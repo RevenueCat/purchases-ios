@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
 
   s.homepage         = "http://revenue.cat"
   s.license          =  { :type => 'MIT' }
-  s.author           = { "Revenue Cat Inc." => "jacob@revenuecat.com" }
+  s.author           = { "Revenue Cat, Inc." => "jacob@revenuecat.com" }
   s.source           = { :git => "https://github.com/revenuecat/purchases-ios.git", :tag => s.version.to_s }
 
   s.ios.deployment_target = '9.0'
@@ -17,4 +17,9 @@ Pod::Spec.new do |s|
   s.source_files = [
     'Purchases/Classes/**/*'
   ]
+
+  s.public_header_files = [
+    "Purchases/Classes/Public/*.h"
+  ]
+
 end
