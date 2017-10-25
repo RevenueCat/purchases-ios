@@ -50,7 +50,7 @@ class BackendTests: XCTestCase {
     }
 
     let httpClient = MockHTTPClient()
-    let sharedSecret = "asharedsecret"
+    let apiKey = "asharedsecret"
     let bundleID = "com.bundle.id"
     let userID = "user"
     let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
@@ -73,7 +73,7 @@ class BackendTests: XCTestCase {
 
     override func setUp() {
         backend = RCBackend.init(httpClient: httpClient,
-                                  sharedSecret: sharedSecret)
+                                 apiKey: apiKey)
     }
 
     func testPostsReceiptDataCorrectly() {
@@ -91,7 +91,7 @@ class BackendTests: XCTestCase {
         let expectedCall = HTTPRequest(HTTPMethod: "POST", path: "/receipts", body: [
             "app_user_id": userID,
             "fetch_token": receiptData.base64EncodedString()
-            ], headers: ["Authorization": "Basic " + sharedSecret])
+            ], headers: ["Authorization": "Basic " + apiKey])
 
         expect(self.httpClient.calls.count).to(equal(1))
         if self.httpClient.calls.count > 0 {
@@ -170,7 +170,7 @@ class BackendTests: XCTestCase {
             XCTAssertEqual(call.HTTPMethod, "GET")
             XCTAssertNil(call.body)
             XCTAssertNotNil(call.headers?["Authorization"])
-            XCTAssertEqual(call.headers?["Authorization"], "Basic " + sharedSecret)
+            XCTAssertEqual(call.headers?["Authorization"], "Basic " + apiKey)
         }
     }
 

@@ -134,11 +134,10 @@ class PurchasesTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        purchases = RCPurchases.init(sharedSecret: sharedSecret,
-                                      appUserID: appUserID,
-                                      productFetcher: productFetcher,
-                                      backend:backend,
-                                      storeKitWrapper: storeKitWrapper)
+        purchases = RCPurchases.init(appUserID: appUserID,
+                                     productFetcher: productFetcher,
+                                     backend:backend,
+                                     storeKitWrapper: storeKitWrapper)
 
         purchases!.delegate = purchasesDelegate
     }

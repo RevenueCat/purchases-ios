@@ -33,14 +33,14 @@ NS_ASSUME_NONNULL_BEGIN
 
  @warning If you don't pass a *unique* identifier per user or install every purchases shared with all users. If you do not have an account system you can use an `NSUUID` and persist it using `NSUserDefaults`.
 
- @param sharedSecret The shared secret generated for your app from https://www.revenuecat.com/
+ @param APIKey The API Key generated for your app from https://www.revenuecat.com/
 
  @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices.
 
  @return An instantiated `RCPurchases` object
  */
-- (instancetype _Nullable)initWithSharedSecret:(NSString *)sharedSecret
-                                     appUserID:(NSString *)appUserID;
+- (instancetype _Nullable)initWithAPIKey:(NSString * _Nonnull)APIKey
+                               appUserID:(NSString *)appUserID;
 
 /**
  Delegate for `RCPurchases` instance. Object is responsible for handling completed purchases and updated subscription information.
