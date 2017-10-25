@@ -126,8 +126,7 @@ class PurchasesTests: XCTestCase {
     let storeKitWrapper = MockStoreKitWrapper()
 
     let purchasesDelegate = PurchasesDelegate()
-
-    let sharedSecret = "thisisasecret"
+    
     let appUserID = "app_user"
 
     var purchases: RCPurchases?
@@ -142,7 +141,7 @@ class PurchasesTests: XCTestCase {
         purchases!.delegate = purchasesDelegate
     }
     
-    func testIsAbleToBeIntializedWithASharedSecret() {
+    func testIsAbleToBeIntialized() {
         expect(self.purchases).toNot(beNil())
     }
 
