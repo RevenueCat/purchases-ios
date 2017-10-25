@@ -12,6 +12,8 @@ Pod::Spec.new do |s|
   s.author           = { "Revenue Cat, Inc." => "jacob@revenuecat.com" }
   s.source           = { :git => "https://github.com/revenuecat/purchases-ios.git", :tag => s.version.to_s }
 
+  s.framework      = 'StoreKit'
+
   s.ios.deployment_target = '9.0'
 
   s.source_files = [
