@@ -6,7 +6,7 @@
 //  Copyright © 2017 RevenueCat, Inc. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import <StoreKit/StoreKit.h>
 
 FOUNDATION_EXPORT double PurchasesVersionNumber;
 FOUNDATION_EXPORT const unsigned char PurchasesVersionString[];
