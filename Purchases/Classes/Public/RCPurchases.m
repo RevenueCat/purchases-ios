@@ -82,8 +82,12 @@
         [self.notificationCenter addObserver:self
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:UIApplicationDidBecomeActiveNotification object:nil];
+        [self updatePurchaserInfo];
     } else {
         self.storeKitWrapper.delegate = nil;
+        [self.notificationCenter removeObserver:self
+                                           name:UIApplicationDidBecomeActiveNotification
+                                         object:nil];
     }
 }
 
@@ -104,6 +108,10 @@
 }
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif {
+    [self updatePurchaserInfo];
+}
+
+- (void)updatePurchaserInfo {
     [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable info,
                                                                              NSError * _Nullable error) {
         if (error == nil) {
