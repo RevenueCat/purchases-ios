@@ -132,6 +132,16 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)purchases:(RCPurchases *)purchases failedTransaction:(SKPaymentTransaction *)transaction withReason:(NSError *)failureReason;
 
+/**
+ Called whenever `RCPurchases` receives an updated purchaser info outside of a purchaser. This will happen periodically 
+ throughout the life of the app (e.g. UIApplicationDidBecomeActive) the lifecyle of the app.
+
+ @param purchases Related `RCPurchases` object
+ @param purchaserInfo Updated `RCPurchaserInfo`
+ */
+
+- (void)purchases:(RCPurchases *)purchases updatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
+
 @end
 
 NS_ASSUME_NONNULL_END

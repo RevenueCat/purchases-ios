@@ -107,6 +107,22 @@ class PurchasesTests: XCTestCase {
         }
     }
 
+    class MockNotificationCenter: NotificationCenter {
+
+        var observers = [(AnyObject, Selector, NSNotification.Name?, Any?)]();
+
+        override func addObserver(_ observer: Any, selector
+            aSelector: Selector, name aName: NSNotification.Name?, object anObject: Any?) {
+            observers.append((observer as AnyObject, aSelector, aName, anObject))
+        }
+
+        func fireNotifications() {
+            for (observer, selector, _, _) in observers {
+                _ = observer.perform(selector);
+            }
+        }
+    }
+
     class PurchasesDelegate: RCPurchasesDelegate {
         var completedTransaction: SKPaymentTransaction?
         var purchaserInfo: RCPurchaserInfo?
@@ -119,11 +135,16 @@ class PurchasesTests: XCTestCase {
         func purchases(_ purchases: RCPurchases, failedTransaction transaction: SKPaymentTransaction, withReason failureReason: Error) {
             self.failedTransaction = transaction
         }
+
+        func purchases(_ purchases: RCPurchases, updatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
+            self.purchaserInfo = purchaserInfo
+        }
     }
 
     let productFetcher = MockProductFetcher()
     let backend = MockBackend()
     let storeKitWrapper = MockStoreKitWrapper()
+    let notificationCenter = MockNotificationCenter();
 
     let purchasesDelegate = PurchasesDelegate()
     
@@ -375,5 +396,21 @@ class PurchasesTests: XCTestCase {
         purchases!.delegate = purchasesDelegate
 
         expect(self.storeKitWrapper.delegate).toNot(beNil())
+    }
+
+    func testSubscribesToUIApplicationDidBecomeActive() {
+        expect(self.notificationCenter.observers.count).to(equal(1));
+        if self.notificationCenter.observers.count > 0 {
+            let (_, _, name, _) = self.notificationCenter.observers[0];
+            expect(name).to(equal(NSNotification.Name.UIApplicationDidBecomeActive))
+        }
+    }
+
+    func testTriggersCallToBackend() {
+        expect(self.backend.userID).toEventuallyNot(beNil());
+    }
+
+    func testAutomaticallyFetchesPurchaserInfoOnDidBecomeActive() {
+        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil());
     }
 }
