@@ -44,7 +44,7 @@ RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:@"myappAPIKey"
                                                    appUserID:@"uniqueidforuser"];
 ```
 
-#### 3. Create a delegate to handle new purchases
+#### 3. Create a delegate to handle new purchases and purchaser info.
 
 ```swift
 self.purchases.delegate = self
@@ -59,6 +59,10 @@ func purchases(_ purchases: RCPurchases,
                    failedTransaction transaction: SKPaymentTransaction,
                    withReason failureReason: Error) {
   displayErrorMessage((failurerReason as! NSError).localizedDescription)
+}
+
+func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
+  handleNewPurchaserInfo(info: purchaserInfo)
 }
 ```
 
@@ -75,6 +79,10 @@ purchases.delegate = delegateObject;
 failedTransaction:(SKPaymentTransaction *)transaction 
        withReason:(NSError *)failureReason {
        [self displayErrorMessage:failureReason.localizedDescription];
+}
+
+- (void)purchases:(RCPurchases *)purchases receivedUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo {
+  [self saveNewPurchaserInfo:purchaserInfo]; 
 }
 
 ```
