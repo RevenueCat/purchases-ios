@@ -17,7 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype _Nullable)initWithAppUserID:(NSString *)appUserID
                              productFetcher:(RCProductFetcher *)productFetcher
                                     backend:(RCBackend *)backend
-                            storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper;
+                            storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
+                         notificationCenter:(NSNotificationCenter *)notificationCenter;
 
 @end
 

@@ -21,6 +21,9 @@
 @property (nonatomic) RCProductFetcher *productFetcher;
 @property (nonatomic) RCBackend *backend;
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
+@property (nonatomic) NSNotificationCenter *notificationCenter;
+
+@property (nonatomic) BOOL updatingPurchaserInfo;
 
 @end
 
@@ -34,7 +37,8 @@
     return [self initWithAppUserID:appUserID
                     productFetcher:fetcher
                            backend:backend
-                   storeKitWrapper:storeKitWrapper];
+                   storeKitWrapper:storeKitWrapper
+                notificationCenter:[NSNotificationCenter defaultCenter]];
 }
 + (NSString *)frameworkVersion {
     return @"0.2.0-SNAPSHOT";
@@ -44,6 +48,7 @@
                              productFetcher:(RCProductFetcher *)productFetcher
                                     backend:(RCBackend *)backend
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
+                         notificationCenter:(NSNotificationCenter *)notificationCenter
 {
     if (self = [super init])
     {
@@ -53,6 +58,9 @@
         self.backend = backend;
         self.storeKitWrapper = storeKitWrapper;
         self.storeKitWrapper.delegate = self;
+        self.notificationCenter = notificationCenter;
+
+        self.updatingPurchaserInfo = NO;
 
         [self.storeKitWrapper addObserver:self forKeyPath:@"purchasing" options:0 context:NULL];
         [self.backend addObserver:self forKeyPath:@"purchasing" options:0 context:NULL];
@@ -75,8 +83,15 @@
 
     if (delegate != nil) {
         self.storeKitWrapper.delegate = self;
+        [self.notificationCenter addObserver:self
+                                    selector:@selector(applicationDidBecomeActive:)
+                                        name:UIApplicationDidBecomeActiveNotification object:nil];
+        [self updatePurchaserInfo];
     } else {
         self.storeKitWrapper.delegate = nil;
+        [self.notificationCenter removeObserver:self
+                                           name:UIApplicationDidBecomeActiveNotification
+                                         object:nil];
     }
 }
 
@@ -94,6 +109,24 @@
         [self willChangeValueForKey:@"purchasing"];
         [self didChangeValueForKey:@"purchasing"];
     }
+}
+
+- (void)applicationDidBecomeActive:(__unused NSNotification *)notif {
+    [self updatePurchaserInfo];
+}
+
+- (void)updatePurchaserInfo {
+    if (self.updatingPurchaserInfo) return;
+    self.updatingPurchaserInfo = YES;
+    [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable info,
+                                                                             NSError * _Nullable error) {
+        if (error == nil) {
+            NSParameterAssert(self.delegate);
+            [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+        }
+
+        self.updatingPurchaserInfo = NO;
+    }];
 }
 
 - (void)productsWithIdentifiers:(NSSet<NSString *> *)productIdentifiers

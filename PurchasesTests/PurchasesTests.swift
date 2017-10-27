@@ -107,6 +107,26 @@ class PurchasesTests: XCTestCase {
         }
     }
 
+    class MockNotificationCenter: NotificationCenter {
+
+        var observers = [(AnyObject, Selector, NSNotification.Name?, Any?)]();
+
+        override func addObserver(_ observer: Any, selector
+            aSelector: Selector, name aName: NSNotification.Name?, object anObject: Any?) {
+            observers.append((observer as AnyObject, aSelector, aName, anObject))
+        }
+
+        override func removeObserver(_ anObserver: Any, name aName: NSNotification.Name?, object anObject: Any?) {
+            observers = observers.filter {$0.0 !== anObserver as AnyObject || $0.2 != aName}
+        }
+
+        func fireNotifications() {
+            for (observer, selector, _, _) in observers {
+                _ = observer.perform(selector, with:nil);
+            }
+        }
+    }
+
     class PurchasesDelegate: RCPurchasesDelegate {
         var completedTransaction: SKPaymentTransaction?
         var purchaserInfo: RCPurchaserInfo?
@@ -119,11 +139,16 @@ class PurchasesTests: XCTestCase {
         func purchases(_ purchases: RCPurchases, failedTransaction transaction: SKPaymentTransaction, withReason failureReason: Error) {
             self.failedTransaction = transaction
         }
+
+        func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
+            self.purchaserInfo = purchaserInfo
+        }
     }
 
     let productFetcher = MockProductFetcher()
     let backend = MockBackend()
     let storeKitWrapper = MockStoreKitWrapper()
+    let notificationCenter = MockNotificationCenter();
 
     let purchasesDelegate = PurchasesDelegate()
     
@@ -136,7 +161,8 @@ class PurchasesTests: XCTestCase {
         purchases = RCPurchases.init(appUserID: appUserID,
                                      productFetcher: productFetcher,
                                      backend:backend,
-                                     storeKitWrapper: storeKitWrapper)
+                                     storeKitWrapper: storeKitWrapper,
+                                     notificationCenter:notificationCenter)
 
         purchases!.delegate = purchasesDelegate
     }
@@ -154,16 +180,6 @@ class PurchasesTests: XCTestCase {
 
         expect(products).toEventuallyNot(beNil())
         expect(products).toEventually(haveCount(productIdentifiers.count))
-    }
-
-    func testIsAbleToGetPurchaserInfo() {
-        var purchaserInfo: RCPurchaserInfo?
-        purchases!.purchaserInfo() { (newPurchaserInfo) in
-            purchaserInfo = newPurchaserInfo
-        }
-
-        expect(purchaserInfo).toEventuallyNot(beNil())
-        expect(self.backend.userID).toEventually(equal(appUserID))
     }
 
     func testSetsSelfAsStoreKitWrapperDelegate() {
@@ -375,5 +391,39 @@ class PurchasesTests: XCTestCase {
         purchases!.delegate = purchasesDelegate
 
         expect(self.storeKitWrapper.delegate).toNot(beNil())
+    }
+
+    func testSubscribesToUIApplicationDidBecomeActive() {
+        expect(self.notificationCenter.observers.count).to(equal(1));
+        if self.notificationCenter.observers.count > 0 {
+            let (_, _, name, _) = self.notificationCenter.observers[0];
+            expect(name).to(equal(NSNotification.Name.UIApplicationDidBecomeActive))
+        }
+    }
+
+    func testTriggersCallToBackend() {
+        notificationCenter.fireNotifications();
+        expect(self.backend.userID).toEventuallyNot(beNil());
+    }
+
+    func testAutomaticallyFetchesPurchaserInfoOnDidBecomeActive() {
+        notificationCenter.fireNotifications();
+        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil());
+    }
+
+    func testRemovesObservationWhenDelegateNild() {
+        purchases!.delegate = nil
+
+        expect(self.notificationCenter.observers.count).to(equal(0));
+    }
+
+    func testSettingDelegateUpdatesSubscriberInfo() {
+        purchases!.delegate = nil
+
+        purchasesDelegate.purchaserInfo = nil
+
+        purchases!.delegate = purchasesDelegate
+
+        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
     }
 }

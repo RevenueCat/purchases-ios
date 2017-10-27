@@ -62,17 +62,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)productsWithIdentifiers:(NSSet<NSString *> *)productIdentifiers
                      completion:(void (^)(NSArray<SKProduct *>* products))completion;
 
-
-/**
- Fetches the latest `RCPurchaserInfo` for the `appUserID` from the server.
-
- You should call this whenever the app is unused for a period of time to check if the user has renewed the subscription from another device. A good time to check might be when `UIApplicationDidBecomeActiveNotification` is fired if the user's existing subscriptions are expired.
-
- @param completion An @escaping callback that is called when the server responds with the latest subscriber info. If there is a failure for any way `purchaserInfo` will be nil.
-
- */
-- (void)purchaserInfoWithCompletion:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo))completion;
-
 /**
  Purchase the passed `SKProduct`.
 
@@ -131,6 +120,15 @@ NS_ASSUME_NONNULL_BEGIN
 
  */
 - (void)purchases:(RCPurchases *)purchases failedTransaction:(SKPaymentTransaction *)transaction withReason:(NSError *)failureReason;
+
+/**
+ Called whenever `RCPurchases` receives an updated purchaser info outside of a purchase. This will happen periodically 
+ throughout the life of the app (e.g. UIApplicationDidBecomeActive).
+
+ @param purchases Related `RCPurchases` object
+ @param purchaserInfo Updated `RCPurchaserInfo`
+ */
+- (void)purchases:(RCPurchases *)purchases receivedUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
 
 @end
 
