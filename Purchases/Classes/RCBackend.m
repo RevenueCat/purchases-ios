@@ -16,7 +16,7 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 @interface RCBackend ()
 
 @property (nonatomic) RCHTTPClient *httpClient;
-@property (nonatomic) NSString *sharedSecret;
+@property (nonatomic) NSString *APIKey;
 
 @property (nonatomic) NSUInteger purchaseRequestsCount;
 
@@ -24,19 +24,19 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 
 @implementation RCBackend
 
-- (instancetype _Nullable)initWithSharedSecret:(NSString *)sharedSecret
+- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
 {
     RCHTTPClient *client = [[RCHTTPClient alloc] init];
     return [self initWithHTTPClient:client
-                       sharedSecret:sharedSecret];
+                             APIKey:APIKey];
 }
 
 - (instancetype _Nullable)initWithHTTPClient:(RCHTTPClient *)client
-                                sharedSecret:(NSString *)sharedSecret
+                                      APIKey:(NSString *)APIKey
 {
     if (self = [super init]) {
         self.httpClient = client;
-        self.sharedSecret = sharedSecret;
+        self.APIKey = APIKey;
     }
     return self;
 }
@@ -45,7 +45,7 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 {
     return @{
              @"Authorization":
-                 [NSString stringWithFormat:@"Basic %@", self.sharedSecret]
+                 [NSString stringWithFormat:@"Basic %@", self.APIKey]
              };
 }
 

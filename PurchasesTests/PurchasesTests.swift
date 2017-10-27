@@ -126,24 +126,22 @@ class PurchasesTests: XCTestCase {
     let storeKitWrapper = MockStoreKitWrapper()
 
     let purchasesDelegate = PurchasesDelegate()
-
-    let sharedSecret = "thisisasecret"
+    
     let appUserID = "app_user"
 
     var purchases: RCPurchases?
 
     override func setUp() {
         super.setUp()
-        purchases = RCPurchases.init(sharedSecret: sharedSecret,
-                                      appUserID: appUserID,
-                                      productFetcher: productFetcher,
-                                      backend:backend,
-                                      storeKitWrapper: storeKitWrapper)
+        purchases = RCPurchases.init(appUserID: appUserID,
+                                     productFetcher: productFetcher,
+                                     backend:backend,
+                                     storeKitWrapper: storeKitWrapper)
 
         purchases!.delegate = purchasesDelegate
     }
     
-    func testIsAbleToBeIntializedWithASharedSecret() {
+    func testIsAbleToBeIntialized() {
         expect(self.purchases).toNot(beNil())
     }
 

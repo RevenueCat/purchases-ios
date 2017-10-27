@@ -14,11 +14,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCPurchases (Protected)
 
-- (instancetype _Nullable)initWithSharedSecret:(NSString *)sharedSecret
-                                     appUserID:(NSString *)appUserID
-                                productFetcher:(RCProductFetcher *)productFetcher
-                                       backend:(RCBackend *)backend
-                               storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper;
+- (instancetype _Nullable)initWithAppUserID:(NSString *)appUserID
+                             productFetcher:(RCProductFetcher *)productFetcher
+                                    backend:(RCBackend *)backend
+                            storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper;
 
 @end
 

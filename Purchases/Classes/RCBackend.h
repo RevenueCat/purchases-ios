@@ -24,10 +24,10 @@ typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
 
 @interface RCBackend : NSObject
 
-- (instancetype _Nullable)initWithSharedSecret:(NSString *)sharedSecret;
+- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey;
 
 - (instancetype _Nullable)initWithHTTPClient:(RCHTTPClient *)client
-                                sharedSecret:(NSString *)sharedSecret;
+                                      APIKey:(NSString *)APIKey;
 
 - (void)postReceiptData:(NSData *)data
               appUserID:(NSString *)appUserID

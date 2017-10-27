@@ -26,22 +26,22 @@ github "revenuecat/purchases-ios"
 
 #### 1. Create a RevenueCat Account
 
-Go to [RevenueCat](http://www.revenuecat.com), create an account, and obtain a shared secret for your application.
+Go to [RevenueCat](http://www.revenuecat.com), create an account, and obtain an API key for your application.
 
 #### 2. In your app instantiate an `RCPurchases` object with your secret.
 
 ```swift
 import Purchases
 
-self.purchases = RCPurchases.init(sharedSecret: "myappsharedsecret",
-                                     appUserID: "uniqueidforuser")!
+self.purchases = RCPurchases.init(apiKey: "myappapikey",
+                                  appUserID: "uniqueidforuser")!
 ```
 
 ```obj-c
 #import <Purchases/Purchases.h>
 
-RCPurchases *purchases = [[RCPurchases alloc] initWithSharedSecret:@"myappsharedsecret"
-                                                         appUserID:@"uniqueidforuser"];
+RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:@"myappAPIKey"
+                                                   appUserID:@"uniqueidforuser"];
 ```
 
 #### 3. Create a delegate to handle new purchases

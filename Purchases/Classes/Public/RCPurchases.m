@@ -26,26 +26,24 @@
 
 @implementation RCPurchases
 
-- (instancetype _Nullable)initWithSharedSecret:(NSString * _Nonnull)sharedSecret appUserID:(NSString *)appUserID
+- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey appUserID:(NSString *)appUserID
 {
     RCProductFetcher *fetcher = [[RCProductFetcher alloc] init];
-    RCBackend *backend = [[RCBackend alloc] initWithSharedSecret:sharedSecret];
+    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
-    return [self initWithSharedSecret:sharedSecret
-                            appUserID:appUserID
-                       productFetcher:fetcher
-                              backend:backend
-                      storeKitWrapper:storeKitWrapper];
+    return [self initWithAppUserID:appUserID
+                    productFetcher:fetcher
+                           backend:backend
+                   storeKitWrapper:storeKitWrapper];
 }
 + (NSString *)frameworkVersion {
     return @"0.2.0-SNAPSHOT";
 }
 
-- (instancetype _Nullable)initWithSharedSecret:(NSString *)sharedSecret
-                                     appUserID:(NSString *)appUserID
-                                productFetcher:(RCProductFetcher *)productFetcher
-                                       backend:(RCBackend *)backend
-                               storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
+- (instancetype _Nullable)initWithAppUserID:(NSString *)appUserID
+                             productFetcher:(RCProductFetcher *)productFetcher
+                                    backend:(RCBackend *)backend
+                            storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
 {
     if (self = [super init])
     {
