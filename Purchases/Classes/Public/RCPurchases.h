@@ -18,8 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 
  ```
  - (void)setupPurchases {
-     self.purchases = [[Purchases alloc] initWithSharedSecret:@"myappsharedsecret"
-                                                    appUserId:@"a-user-identifier"];
+     self.purchases = [[Purchases alloc] initWithAPIKey:@"myappapikey"
+                                              appUserId:@"a-user-identifier"];
      self.purcahses.delegate = self;
  }
  ```
@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
  @return An instantiated `RCPurchases` object
  */
-- (instancetype _Nullable)initWithAPIKey:(NSString * _Nonnull)APIKey
+- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
                                appUserID:(NSString *)appUserID;
 
 /**
