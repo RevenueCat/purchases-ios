@@ -118,7 +118,7 @@ class PurchasesTests: XCTestCase {
 
         func fireNotifications() {
             for (observer, selector, _, _) in observers {
-                _ = observer.perform(selector);
+                _ = observer.perform(selector, with:nil);
             }
         }
     }
@@ -136,7 +136,7 @@ class PurchasesTests: XCTestCase {
             self.failedTransaction = transaction
         }
 
-        func purchases(_ purchases: RCPurchases, updatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
+        func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
             self.purchaserInfo = purchaserInfo
         }
     }
@@ -157,7 +157,8 @@ class PurchasesTests: XCTestCase {
         purchases = RCPurchases.init(appUserID: appUserID,
                                      productFetcher: productFetcher,
                                      backend:backend,
-                                     storeKitWrapper: storeKitWrapper)
+                                     storeKitWrapper: storeKitWrapper,
+                                     notificationCenter:notificationCenter)
 
         purchases!.delegate = purchasesDelegate
     }
@@ -407,10 +408,12 @@ class PurchasesTests: XCTestCase {
     }
 
     func testTriggersCallToBackend() {
+        notificationCenter.fireNotifications();
         expect(self.backend.userID).toEventuallyNot(beNil());
     }
 
     func testAutomaticallyFetchesPurchaserInfoOnDidBecomeActive() {
+        notificationCenter.fireNotifications();
         expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil());
     }
 }

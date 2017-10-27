@@ -139,8 +139,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param purchases Related `RCPurchases` object
  @param purchaserInfo Updated `RCPurchaserInfo`
  */
-
-- (void)purchases:(RCPurchases *)purchases updatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
+- (void)purchases:(RCPurchases *)purchases receivedUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
 
 @end
 
