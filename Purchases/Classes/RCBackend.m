@@ -18,8 +18,6 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 @property (nonatomic) RCHTTPClient *httpClient;
 @property (nonatomic) NSString *APIKey;
 
-@property (nonatomic) NSUInteger purchaseRequestsCount;
-
 @end
 
 @implementation RCBackend
@@ -109,25 +107,13 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
                                @"app_user_id": appUserID
                            };
 
-    [self willChangeValueForKey:NSStringFromSelector(@selector(purchasing))];
-    self.purchaseRequestsCount++;
-    [self didChangeValueForKey:NSStringFromSelector(@selector(purchasing))];
-
     [self.httpClient performRequest:@"POST"
                                path:@"/receipts"
                                body:body
                             headers:self.headers
                   completionHandler:^(BOOL success, NSDictionary * _Nullable response) {
                       [self handle:success withResponse:response completion:completion];
-
-                      [self willChangeValueForKey:NSStringFromSelector(@selector(purchasing))];
-                      self.purchaseRequestsCount--;
-                      [self didChangeValueForKey:NSStringFromSelector(@selector(purchasing))];
                   }];
-}
-
-- (BOOL)purchasing {
-    return self.purchaseRequestsCount > 0;
 }
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID

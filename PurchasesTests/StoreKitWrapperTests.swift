@@ -121,62 +121,6 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
         expect(self.removedTransactions).to(contain([transaction1, transaction2]))
     }
 
-    func testPurchasingFalseIfAllTransactionsNotPurchasing() {
-        let transaction1 = MockTransaction()
-        let transaction2 = MockTransaction()
-
-        transaction1.mockState = SKPaymentTransactionState.purchased
-        transaction2.mockState = SKPaymentTransactionState.failed
-
-        wrapper?.paymentQueue(paymentQueue, updatedTransactions:[transaction1, transaction2])
-
-        expect(self.wrapper?.purchasing).to(beFalse())
-    }
-
-    func testPurchasingTrueIfOneIsPurchasing() {
-        let transaction1 = MockTransaction()
-        let transaction2 = MockTransaction()
-
-        transaction1.mockState = SKPaymentTransactionState.purchasing
-        transaction2.mockState = SKPaymentTransactionState.purchased
-
-        wrapper?.paymentQueue(paymentQueue, updatedTransactions:[transaction1, transaction2])
-
-        expect(self.wrapper?.purchasing).to(beTrue())
-    }
-
-    func testPurchasingIsKVOCompliant() {
-        class KVOListener: NSObject {
-            var lastValue = false;
-            override func observeValue(forKeyPath keyPath: String?,
-                                       of object: Any?,
-                                       change: [NSKeyValueChangeKey : Any]?,
-                                       context: UnsafeMutableRawPointer?) {
-                lastValue = (object as! RCStoreKitWrapper).purchasing
-            }
-        }
-
-        let listener = KVOListener()
-
-        wrapper!.addObserver(listener, forKeyPath: "purchasing",
-                             options: [.old, .new, .initial],
-                             context: nil)
-
-        expect(listener.lastValue).to(beFalse())
-
-        let transaction1 = MockTransaction()
-        let transaction2 = MockTransaction()
-
-        transaction1.mockState = SKPaymentTransactionState.purchasing
-        transaction2.mockState = SKPaymentTransactionState.purchased
-
-        wrapper?.paymentQueue(paymentQueue, updatedTransactions:[transaction1, transaction2])
-
-        expect(listener.lastValue).to(beTrue())
-
-        wrapper!.removeObserver(listener, forKeyPath: "purchasing")
-    }
-
     func testDoesntAddObserverWithoutDelegate() {
         wrapper?.delegate = nil
 

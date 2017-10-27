@@ -19,8 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) id<RCStoreKitWrapperDelegate> _Nullable delegate;
 
-@property (nonatomic, readonly) BOOL purchasing;
-
 - (void)addPayment:(SKPayment *)payment;
 - (void)finishTransaction:(SKPaymentTransaction *)transaction;
 - (NSData *)receiptData;

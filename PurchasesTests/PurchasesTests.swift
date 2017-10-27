@@ -54,21 +54,6 @@ class PurchasesTests: XCTestCase {
             postReceiptDataCalled = true
             completion(postReceiptPurchaserInfo, postReceiptError)
         }
-
-
-        var mockIsPurchasing: Bool = false {
-            willSet {
-                self.willChangeValue(forKey: "purchasing")
-            }
-            didSet {
-                self.didChangeValue(forKey: "purchasing")
-            }
-        }
-        override var purchasing: Bool {
-            get {
-                return mockIsPurchasing
-            }
-        }
     }
 
     class MockStoreKitWrapper: RCStoreKitWrapper {
@@ -80,20 +65,6 @@ class PurchasesTests: XCTestCase {
         var finishCalled = false
         override func finish(_ transaction: SKPaymentTransaction) {
             finishCalled = true
-        }
-
-        var mockIsPurchasing: Bool = false {
-            willSet {
-                self.willChangeValue(forKey: "purchasing")
-            }
-            didSet {
-                self.didChangeValue(forKey: "purchasing")
-            }
-        }
-        override var purchasing: Bool {
-            get {
-                return mockIsPurchasing
-            }
         }
 
         var mockDelegate: RCStoreKitWrapperDelegate?
@@ -312,24 +283,6 @@ class PurchasesTests: XCTestCase {
         expect(self.purchasesDelegate.purchaserInfo).to(be(self.backend.postReceiptPurchaserInfo))
     }
 
-    func testIsPurchasingLogic() {
-        storeKitWrapper.mockIsPurchasing = false
-        backend.mockIsPurchasing = false
-        expect(self.purchases?.purchasing).to(beFalse())
-
-        storeKitWrapper.mockIsPurchasing = true
-        backend.mockIsPurchasing = false
-        expect(self.purchases?.purchasing).to(beTrue())
-
-        storeKitWrapper.mockIsPurchasing = false
-        backend.mockIsPurchasing = true
-        expect(self.purchases?.purchasing).to(beTrue())
-
-        storeKitWrapper.mockIsPurchasing = true
-        backend.mockIsPurchasing = true
-        expect(self.purchases?.purchasing).to(beTrue())
-    }
-
     func testDoesntIgnorePurchasesThatDoNotHaveApplicationUserNames() {
         let transaction = MockTransaction()
 
@@ -343,44 +296,6 @@ class PurchasesTests: XCTestCase {
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled).to(equal(true))
-    }
-
-    func testPurchasingIsKVOCompliant() {
-        class KVOListener: NSObject {
-            var lastValue = false;
-            override func observeValue(forKeyPath keyPath: String?,
-                                       of object: Any?,
-                                       change: [NSKeyValueChangeKey : Any]?,
-                                       context: UnsafeMutableRawPointer?) {
-                lastValue = (object as! RCPurchases).purchasing
-            }
-        }
-
-        let listener = KVOListener()
-
-        purchases!.addObserver(listener, forKeyPath: "purchasing",
-                               options: [.old, .new, .initial],
-                               context: nil)
-
-        expect(listener.lastValue).to(beFalse())
-
-        storeKitWrapper.mockIsPurchasing = true
-        expect(listener.lastValue).to(beTrue())
-
-        storeKitWrapper.mockIsPurchasing = false
-        expect(listener.lastValue).to(beFalse())
-
-        storeKitWrapper.mockIsPurchasing = true
-        expect(listener.lastValue).to(beTrue())
-
-        storeKitWrapper.mockIsPurchasing = false
-        backend.mockIsPurchasing = true
-        expect(listener.lastValue).to(beTrue())
-
-        backend.mockIsPurchasing = false
-        expect(listener.lastValue).to(beFalse())
-
-        purchases!.removeObserver(listener, forKeyPath: "purchasing")
     }
 
     func testDoesntSetWrapperDelegateUntilDelegateIsSet() {
