@@ -23,6 +23,8 @@
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 
+@property (nonatomic) BOOL updatingPurchaserInfo;
+
 @end
 
 @implementation RCPurchases
@@ -57,6 +59,8 @@
         self.storeKitWrapper = storeKitWrapper;
         self.storeKitWrapper.delegate = self;
         self.notificationCenter = notificationCenter;
+
+        self.updatingPurchaserInfo = NO;
 
         [self.storeKitWrapper addObserver:self forKeyPath:@"purchasing" options:0 context:NULL];
         [self.backend addObserver:self forKeyPath:@"purchasing" options:0 context:NULL];
@@ -112,12 +116,16 @@
 }
 
 - (void)updatePurchaserInfo {
+    if (self.updatingPurchaserInfo) return;
+    self.updatingPurchaserInfo = YES;
     [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable info,
                                                                              NSError * _Nullable error) {
         if (error == nil) {
             NSParameterAssert(self.delegate);
             [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
         }
+
+        self.updatingPurchaserInfo = NO;
     }];
 }
 
