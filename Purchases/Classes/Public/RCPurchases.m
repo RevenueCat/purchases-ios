@@ -61,9 +61,6 @@
         self.notificationCenter = notificationCenter;
 
         self.updatingPurchaserInfo = NO;
-
-        [self.storeKitWrapper addObserver:self forKeyPath:@"purchasing" options:0 context:NULL];
-        [self.backend addObserver:self forKeyPath:@"purchasing" options:0 context:NULL];
     }
 
     return self;
@@ -71,8 +68,7 @@
 
 - (void)dealloc
 {
-    [self.storeKitWrapper removeObserver:self forKeyPath:@"purchasing"];
-    [self.backend removeObserver:self forKeyPath:@"purchasing"];
+    self.delegate = nil;
 }
 
 @synthesize delegate=_delegate;
@@ -98,17 +94,6 @@
 - (id<RCPurchasesDelegate>)delegate
 {
     return _delegate;
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary<NSKeyValueChangeKey,id> *)change
-                       context:(void *)context
-{
-    if ([keyPath isEqualToString:@"purchasing"]) {
-        [self willChangeValueForKey:@"purchasing"];
-        [self didChangeValueForKey:@"purchasing"];
-    }
 }
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif {
@@ -162,10 +147,6 @@
     payment.applicationUsername = self.appUserID;
 
     [self.storeKitWrapper addPayment:payment];
-}
-
-- (BOOL)purchasing {
-    return (self.storeKitWrapper.purchasing || self.backend.purchasing);
 }
 
 /*

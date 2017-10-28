@@ -82,11 +82,6 @@ NS_ASSUME_NONNULL_BEGIN
             quantity:(NSInteger)quantity;
 
 /**
- A KVO compliant property that is `true` when a purchase is being processed, either with Apple or the backend. Can be useful for controlling whether or not the UI is in a `purchasing` state.
- */
-@property (nonatomic, readonly) BOOL purchasing;
-
-/**
  This version of the Purchases framework
 */
 + (NSString *)frameworkVersion;

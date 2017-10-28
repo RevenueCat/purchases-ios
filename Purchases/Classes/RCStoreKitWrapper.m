@@ -12,7 +12,6 @@
 
 @interface RCStoreKitWrapper ()
 @property (nonatomic) SKPaymentQueue *paymentQueue;
-@property (nonatomic) BOOL purchasing;
 @end
 
 @implementation RCStoreKitWrapper
@@ -73,17 +72,10 @@
 
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions
 {
-    BOOL isPurchasing = NO;
     
     for (SKPaymentTransaction *transaction in transactions) {
         [self.delegate storeKitWrapper:self updatedTransaction:transaction];
-
-        if (transaction.transactionState == SKPaymentTransactionStatePurchasing) {
-            isPurchasing = YES;
-        }
     }
-
-    self.purchasing = isPurchasing;
 }
 
 // Sent when transactions are removed from the queue (via finishTransaction:).

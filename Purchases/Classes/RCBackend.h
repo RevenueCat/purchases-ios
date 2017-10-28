@@ -36,8 +36,6 @@ typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
                             completion:(RCBackendResponseHandler)completion;
 
-@property (nonatomic, readonly) BOOL purchasing;
-
 @end
 
 NS_ASSUME_NONNULL_END
