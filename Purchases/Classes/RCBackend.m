@@ -50,7 +50,7 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 - (NSError *)purchaserParsingError
 {
     return [NSError errorWithDomain:RCBackendErrorDomain
-                               code:RCErrorParsingPurchaserInfo
+                               code:0
                            userInfo:@{
                                       NSLocalizedDescriptionKey: @"Error parsing purchaser info."
                                       }];
@@ -59,7 +59,7 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 - (NSError *)errorWithBackendMessage:(NSString *)message
 {
     return [NSError errorWithDomain:RCBackendErrorDomain
-                               code:RCBackendError
+                               code:0
                            userInfo:@{
                                       NSLocalizedDescriptionKey: message
                                       }];
@@ -68,7 +68,7 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 - (NSError *)unexpectedResponseError
 {
     return [NSError errorWithDomain:RCBackendErrorDomain
-                               code:RCUnexpectedBackendResponse
+                               code:0
                            userInfo:@{
                                       NSLocalizedDescriptionKey: @"Received malformed response from the backend."
                                       }];
