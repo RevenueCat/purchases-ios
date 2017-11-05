@@ -73,35 +73,28 @@
     {
 
 
-        BOOL success = false;
+        NSInteger statusCode = 599;
         NSDictionary *responseObject = nil;
-        if (error != nil) {
-            RCLog(@"Error making request to %@: %@", path, error.localizedDescription);
-        } else {
-            NSInteger statusCode = ((NSHTTPURLResponse *)response).statusCode;
+
+        if (error == nil) {
+            statusCode = ((NSHTTPURLResponse *)response).statusCode;
 
             RCDebugLog(@"%@ %@ %d", request.HTTPMethod, request.URL.path, statusCode);
-            
-            if (statusCode < 300) {
-                success = true;
-            } else {
-                success = false;
-            }
 
             NSError *jsonError;
             responseObject = [NSJSONSerialization JSONObjectWithData:data
                                                              options:0
                                                                error:&jsonError];
-
+            
             if (jsonError) {
                 RCLog(@"Error parsing JSON %@", jsonError.localizedDescription);
                 RCLog(@"Data received: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-                success = false;
+                error = jsonError;
             }
         }
 
         if (completionHandler != nil) {
-            completionHandler(0, nil, nil);
+            completionHandler(statusCode, responseObject, error);
         }
     };
 
