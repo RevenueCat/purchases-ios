@@ -111,8 +111,8 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
                                path:@"/receipts"
                                body:body
                             headers:self.headers
-                  completionHandler:^(BOOL success, NSDictionary * _Nullable response) {
-                      [self handle:success withResponse:response completion:completion];
+                  completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
+                      //[self handle:success withResponse:response completion:completion];
                   }];
 }
 
@@ -125,8 +125,8 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
                                path:path
                                body:nil
                             headers:self.headers
-                  completionHandler:^(BOOL success, NSDictionary * _Nullable response) {
-                      [self handle:success withResponse:response completion:completion];
+                  completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
+                      //[self handle:success withResponse:response completion:completion];
                   }];
 }
 

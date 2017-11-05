@@ -36,8 +36,7 @@
                   path:(NSString * _Nonnull)path
                   body:(NSDictionary * _Nullable)requestBody
                headers:(NSDictionary<NSString *, NSString *> * _Nullable)headers
-     completionHandler:(void (^_Nullable)(BOOL success,
-                                          NSDictionary * _Nullable response))completionHandler
+     completionHandler:(RCHTTPClientResponseHandler _Nullable)completionHandler
 {
     NSParameterAssert(!([HTTPMethod isEqualToString:@"GET"] && requestBody));
     NSParameterAssert(([HTTPMethod isEqualToString:@"GET"] || [HTTPMethod isEqualToString:@"POST"]));
@@ -102,7 +101,7 @@
         }
 
         if (completionHandler != nil) {
-            completionHandler(success, responseObject);
+            completionHandler(0, nil, nil);
         }
     };
 

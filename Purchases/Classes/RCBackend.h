@@ -20,7 +20,7 @@ NS_ERROR_ENUM(RCBackendErrorDomain) {
 };
 
 typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
-                                         NSError * _Nullable);
+                                        NSError * _Nullable);
 
 @interface RCBackend : NSObject
 
