@@ -47,19 +47,10 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
              };
 }
 
-- (NSError *)purchaserParsingError
+- (NSError *)errorWithBackendMessage:(NSString *)message finishable:(BOOL)finishable
 {
     return [NSError errorWithDomain:RCBackendErrorDomain
-                               code:0
-                           userInfo:@{
-                                      NSLocalizedDescriptionKey: @"Error parsing purchaser info."
-                                      }];
-}
-
-- (NSError *)errorWithBackendMessage:(NSString *)message
-{
-    return [NSError errorWithDomain:RCBackendErrorDomain
-                               code:0
+                               code:(finishable ? RCFinishableError : RCUnfinishableError)
                            userInfo:@{
                                       NSLocalizedDescriptionKey: message
                                       }];
@@ -68,33 +59,34 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 - (NSError *)unexpectedResponseError
 {
     return [NSError errorWithDomain:RCBackendErrorDomain
-                               code:0
+                               code:RCUnexpectedBackendResponse
                            userInfo:@{
                                       NSLocalizedDescriptionKey: @"Received malformed response from the backend."
                                       }];
 }
 
-- (void)handle:(BOOL)success
+- (void)handle:(NSInteger)statusCode
   withResponse:(NSDictionary * _Nullable)response
-    completion:(RCBackendResponseHandler)completion
-{
+         error:(NSError * _Nullable)error
+    completion:(RCBackendResponseHandler)completion {
+
     RCPurchaserInfo *info = nil;
+    NSError *responseError = nil;
 
-    if (success) {
+    if (statusCode < 300) {
         info = [[RCPurchaserInfo alloc] initWithData:response];
-    }
-
-    if (success && info) {
-        completion(info, nil);
-    } else if (success && (info == nil)) {
-        completion(nil, [self purchaserParsingError]);
-    } else if (response[@"message"]) {
-        completion(nil, [self errorWithBackendMessage:response[@"message"]]);
+        if (info == nil) {
+            responseError = [self unexpectedResponseError];
+        }
     } else {
-        completion(nil, [self unexpectedResponseError]);
+        BOOL finishable = (statusCode < 500);
+        NSString *message = response[@"message"] ?: @"Unknown backend error.";
+        responseError = [self errorWithBackendMessage:message finishable:finishable];
     }
 
+    completion(info, responseError);
 }
+
 
 - (void)postReceiptData:(NSData *)data
               appUserID:(NSString *)appUserID
@@ -112,7 +104,7 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
                                body:body
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      //[self handle:success withResponse:response completion:completion];
+                      [self handle:status withResponse:response error:error completion:completion];
                   }];
 }
 
@@ -126,7 +118,7 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
                                body:nil
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      //[self handle:success withResponse:response completion:completion];
+                      [self handle:status withResponse:response error:error completion:completion];
                   }];
 }
 

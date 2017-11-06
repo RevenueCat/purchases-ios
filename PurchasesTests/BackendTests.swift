@@ -198,7 +198,7 @@ class BackendTests: XCTestCase {
 
         expect(error).toEventuallyNot(beNil())
         expect((error as NSError?)?.domain).to(equal(RCBackendErrorDomain))
-        expect((error as NSError?)?.code).to(equal(RCUnexpectedBackendResponse))
+        expect((error as NSError?)?.code).to(equal(RCFinishableError))
     }
 
     func testHandlesInvalidJSON() {
