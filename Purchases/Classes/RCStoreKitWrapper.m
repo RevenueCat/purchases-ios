@@ -65,23 +65,6 @@
     [self.paymentQueue finishTransaction:transaction];
 }
 
-- (NSData *)receiptData
-{
-    NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
-    return [NSData dataWithContentsOfURL:receiptURL];
-}
-
-- (void)receiptData:(void (^ _Nullable)(NSData *receiptData))completion
-{
-    NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
-    NSData *receiptData = [NSData dataWithContentsOfURL:receiptURL];
-
-    if (receiptData == nil) {
-        // we need to refresh the receipt
-        [[SKReceiptRefreshRequest alloc] init];
-    }
-}
-
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions
 {
     for (SKPaymentTransaction *transaction in transactions) {

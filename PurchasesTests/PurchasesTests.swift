@@ -37,6 +37,10 @@ class PurchasesTests: XCTestCase {
             }
             completion(products)
         }
+
+        override func fetchReceiptData(_ completion: @escaping RCReceiptFetcherCompletionHandler) {
+            completion()
+        }
     }
 
     class MockBackend: RCBackend {
