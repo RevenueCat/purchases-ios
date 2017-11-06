@@ -59,10 +59,27 @@ class ProductFetcherTests: XCTestCase {
         }
     }
 
+    class MockReceiptRequest: SKReceiptRefreshRequest {
+        var startCalled = false
+        override func start() {
+            startCalled = true
+            DispatchQueue.global(qos: .background).async {
+                self.delegate?.requestDidFinish!(self)
+            }
+        }
+    }
+
+
     class MockRequestsFactory: RCProductsRequestFactory {
-        var requests: [MockProductRequest] = []
+        var requests: [SKRequest] = []
         override func request(forProductIdentifiers identifiers: Set<String>) -> SKProductsRequest {
             let r = MockProductRequest(productIdentifiers:identifiers)
+            requests.append(r)
+            return r
+        }
+
+        override func receiptRefreshRequest() -> SKReceiptRefreshRequest {
+            let r = MockReceiptRequest()
             requests.append(r)
             return r
         }
@@ -71,6 +88,7 @@ class ProductFetcherTests: XCTestCase {
     var fetcher: RCProductFetcher?
     var factory: MockRequestsFactory?
     var products: [SKProduct]?
+    var receiptFetched = false
 
     override func setUp() {
         super.setUp()
@@ -80,10 +98,14 @@ class ProductFetcherTests: XCTestCase {
         self.fetcher!.fetchProducts(["com.a.product"]) { (newProducts) in
             self.products = newProducts
         }
+
+        self.fetcher!.fetchReceiptData {
+            self.receiptFetched = true
+        }
     }
 
     func testCreatesARequest() {
-        expect(self.factory!.requests.count).toEventually(be(1), timeout: 1.0)
+        expect(self.factory!.requests.count).toEventually(equal(2))
     }
 
     func testSetsTheRequestDelegate() {
@@ -91,11 +113,15 @@ class ProductFetcherTests: XCTestCase {
     }
 
     func testCallsStartOnRequest() {
-        expect(self.factory!.requests[0].startCalled).toEventually(beTrue(), timeout: 1.0)
+        expect((self.factory!.requests[0] as! MockProductRequest).startCalled).toEventually(beTrue(), timeout: 1.0)
     }
 
     func testReturnsProducts() {
         expect(self.products).toEventuallyNot(beNil(), timeout: 1.0)
         expect(self.products?.count).toEventually(be(1), timeout: 1.0)
+    }
+
+    func testFetchesReceipt() {
+        expect(self.receiptFetched).toEventually(beTrue())
     }
 }

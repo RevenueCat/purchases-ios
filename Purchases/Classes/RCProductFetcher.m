@@ -22,8 +22,8 @@
 @interface RCProductFetcher ()
 @property (nonatomic) RCProductsRequestFactory *requestFactory;
 
-@property (nonatomic) NSMutableArray<SKProductsRequest *> *productRequests;
-@property (nonatomic) NSMutableArray<RCProductFetcherCompletionHandler> *completionHandlers;
+@property (nonatomic) NSMutableArray<SKRequest *> *requests;
+@property (nonatomic) NSMutableArray *completionHandlers;
 
 @end
 
@@ -38,42 +38,60 @@
     if (self = [super init])
     {
         self.requestFactory = requestFactory;
-        self.productRequests = [NSMutableArray new];
+        self.requests = [NSMutableArray new];
         self.completionHandlers = [NSMutableArray new];
     }
     return self;
+}
+
+- (void)startRequest:(SKRequest *)request completion:(id)completion {
+    request.delegate = self;
+
+    @synchronized(self) {
+        [self.requests addObject:request];
+        [self.completionHandlers addObject:completion];
+    }
+
+    [request start];
+
+    NSAssert(self.requests.count == self.completionHandlers.count, @"Corrupted handler storage");
 }
 
 - (void)fetchProducts:(NSSet<NSString *> * _Nonnull)identifiers
            completion:(RCProductFetcherCompletionHandler)completion;
 {
     SKProductsRequest *request = [self.requestFactory requestForProductIdentifiers:identifiers];
-    request.delegate = self;
-    [request start];
+    [self startRequest:request completion:[completion copy]];
+}
 
+- (void)fetchReceiptData:(void (^ _Nonnull)(void))completion
+{
+    SKReceiptRefreshRequest *request = [self.requestFactory receiptRefreshRequest];
+    [self startRequest:request completion:[completion copy]];
+}
+
+- (id)finishRequest:(SKRequest *)request {
+    id handler = nil;
     @synchronized(self) {
-        [self.productRequests addObject:request];
-        [self.completionHandlers addObject:[completion copy]];
+        NSUInteger index = [self.requests indexOfObject:request];
+        handler = [self.completionHandlers objectAtIndex:index];
+        [self.requests removeObjectAtIndex:index];
+        [self.completionHandlers removeObjectAtIndex:index];
     }
+    NSAssert(self.requests.count == self.completionHandlers.count, @"Corrupted handler storage");
+    return handler;
+}
 
-    NSAssert(self.productRequests.count == self.completionHandlers.count, @"Corrupted handler storage");
+- (void)requestDidFinish:(SKRequest *)request
+{
+    void (^handler)(void)  = [self finishRequest:request];
+    handler();
 }
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response
 {
-    RCProductFetcherCompletionHandler handler;
-    @synchronized(self) {
-        NSUInteger index = [self.productRequests indexOfObject:request];
-        handler = [self.completionHandlers objectAtIndex:index];
-
-        [self.productRequests removeObjectAtIndex:index];
-        [self.completionHandlers removeObjectAtIndex:index];
-    }
-
+    RCProductFetcherCompletionHandler handler = [self finishRequest:request];
     handler(response.products);
-
-    NSAssert(self.productRequests.count == self.completionHandlers.count, @"Corrupted handler storage");
 }
-
 
 @end

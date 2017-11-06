@@ -10,11 +10,13 @@
 #import <StoreKit/StoreKit.h>
 
 typedef void(^RCProductFetcherCompletionHandler)(NSArray<SKProduct *> * _Nonnull products);
+typedef void(^RCReceiptFetcherCompletionHandler)(void);
 
 @class SKProduct, SKProductsRequest;
 
 @interface RCProductsRequestFactory : NSObject
 - (SKProductsRequest * _Nonnull)requestForProductIdentifiers:(NSSet<NSString *> * _Nonnull)identifiers;
+- (SKReceiptRefreshRequest * _Nonnull)receiptRefreshRequest;
 @end
 
 @interface RCProductFetcher : NSObject <SKProductsRequestDelegate>
@@ -23,5 +25,7 @@ typedef void(^RCProductFetcherCompletionHandler)(NSArray<SKProduct *> * _Nonnull
 
 - (void)fetchProducts:(NSSet<NSString *> * _Nonnull)identifiers
            completion:(RCProductFetcherCompletionHandler _Nonnull)completion;
+
+- (void)fetchReceiptData:(RCReceiptFetcherCompletionHandler _Nonnull)completion;
 
 @end
