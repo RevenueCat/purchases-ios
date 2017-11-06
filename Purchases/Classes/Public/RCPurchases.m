@@ -167,10 +167,14 @@
                                            completedTransaction:transaction
                                                 withUpdatedInfo:info];
                                        [self.storeKitWrapper finishTransaction:transaction];
-                                   } else if (error) {
+                                   } else if (error.code == RCFinishableError) {
+                                       [self.delegate purchases:self failedTransaction:transaction withReason:error];
+                                       [self.storeKitWrapper finishTransaction:transaction];
+                                   } else if (error.code == RCUnfinishableError) {
                                        [self.delegate purchases:self failedTransaction:transaction withReason:error];
                                    } else {
                                        RCLog(@"Unexpected error from backend");
+                                       [self.delegate purchases:self failedTransaction:transaction withReason:error];
                                    }
                                }];
             break;
