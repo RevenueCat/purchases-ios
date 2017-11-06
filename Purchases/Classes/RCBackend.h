@@ -17,8 +17,7 @@ FOUNDATION_EXPORT NSErrorDomain const RCBackendErrorDomain;
 NS_ERROR_ENUM(RCBackendErrorDomain) {
     RCFinishableError = 0,
     RCUnfinishableError,
-    RCUnexpectedBackendResponse,
-    RCErrorParsingPurchaserInfo
+    RCUnexpectedBackendResponse 
 };
 
 typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
