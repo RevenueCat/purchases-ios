@@ -26,7 +26,7 @@ class MockProduct: SKProduct {
     }
 }
 
-class ProductFetcherTests: XCTestCase {
+class StoreKitRequestFetcher: XCTestCase {
 
     class MockProductResponse: SKProductsResponse {
         var mockProducts: [MockProduct]
