@@ -19,7 +19,7 @@ typedef void(^RCReceiptFetcherCompletionHandler)(void);
 - (SKReceiptRefreshRequest * _Nonnull)receiptRefreshRequest;
 @end
 
-@interface RCProductFetcher : NSObject <SKProductsRequestDelegate>
+@interface RCStoreKitRequestFetcher : NSObject <SKProductsRequestDelegate>
 
 - (instancetype _Nullable)initWithRequestFactory:(RCProductsRequestFactory * _Nonnull)requestFactory;
 

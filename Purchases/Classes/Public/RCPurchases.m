@@ -9,7 +9,7 @@
 #import "RCPurchases.h"
 #import "RCPurchases+Protected.h"
 
-#import "RCProductFetcher.h"
+#import "RCStoreKitRequestFetcher.h"
 #import "RCBackend.h"
 #import "RCStoreKitWrapper.h"
 #import "RCUtils.h"
@@ -18,7 +18,7 @@
 
 @property (nonatomic) NSString *appUserID;
 
-@property (nonatomic) RCProductFetcher *productFetcher;
+@property (nonatomic) RCStoreKitRequestFetcher *productFetcher;
 @property (nonatomic) RCBackend *backend;
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
@@ -31,7 +31,7 @@
 
 - (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey appUserID:(NSString *)appUserID
 {
-    RCProductFetcher *fetcher = [[RCProductFetcher alloc] init];
+    RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
     return [self initWithAppUserID:appUserID
@@ -45,7 +45,7 @@
 }
 
 - (instancetype _Nullable)initWithAppUserID:(NSString *)appUserID
-                             productFetcher:(RCProductFetcher *)productFetcher
+                             productFetcher:(RCStoreKitRequestFetcher *)productFetcher
                                     backend:(RCBackend *)backend
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                          notificationCenter:(NSNotificationCenter *)notificationCenter

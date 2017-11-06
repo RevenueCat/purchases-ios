@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)finishTransaction:(SKPaymentTransaction *)transaction;
 - (NSData *)receiptData;
 
+- (void)receiptData:(void (^ _Nullable)(NSData *receiptData))completion;
+
 @end
 
 @protocol RCStoreKitWrapperDelegate

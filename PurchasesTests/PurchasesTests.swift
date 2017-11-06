@@ -30,7 +30,7 @@ class MockTransaction: SKPaymentTransaction {
 
 class PurchasesTests: XCTestCase {
 
-    class MockProductFetcher: RCProductFetcher {
+    class MockProductFetcher: RCStoreKitRequestFetcher {
         override func fetchProducts(_ identifiers: Set<String>, completion: @escaping RCProductFetcherCompletionHandler) {
             let products = identifiers.map { (identifier) -> MockProduct in
                 MockProduct(mockProductIdentifier: identifier)

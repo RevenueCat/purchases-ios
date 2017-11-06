@@ -85,7 +85,7 @@ class ProductFetcherTests: XCTestCase {
         }
     }
 
-    var fetcher: RCProductFetcher?
+    var fetcher: RCStoreKitRequestFetcher?
     var factory: MockRequestsFactory?
     var products: [SKProduct]?
     var receiptFetched = false
@@ -93,7 +93,7 @@ class ProductFetcherTests: XCTestCase {
     override func setUp() {
         super.setUp()
         self.factory = MockRequestsFactory()
-        self.fetcher = RCProductFetcher(requestFactory: self.factory!)
+        self.fetcher = RCStoreKitRequestFetcher(requestFactory: self.factory!)
 
         self.fetcher!.fetchProducts(["com.a.product"]) { (newProducts) in
             self.products = newProducts

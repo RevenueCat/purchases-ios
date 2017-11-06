@@ -6,7 +6,7 @@
 //  Copyright © 2017 RevenueCat, Inc. All rights reserved.
 //
 
-#import "RCProductFetcher.h"
+#import "RCStoreKitRequestFetcher.h"
 
 #import <StoreKit/StoreKit.h>
 
@@ -17,9 +17,15 @@
 {
     return [[SKProductsRequest alloc] initWithProductIdentifiers:identifiers];
 }
+
+- (SKReceiptRefreshRequest * _Nonnull)receiptRefreshRequest
+{
+    return [[SKReceiptRefreshRequest alloc] init];
+}
+
 @end
 
-@interface RCProductFetcher ()
+@interface RCStoreKitRequestFetcher ()
 @property (nonatomic) RCProductsRequestFactory *requestFactory;
 
 @property (nonatomic) NSMutableArray<SKRequest *> *requests;
@@ -27,7 +33,7 @@
 
 @end
 
-@implementation RCProductFetcher
+@implementation RCStoreKitRequestFetcher
 
 - (instancetype _Nullable)init {
     return [self initWithRequestFactory:[RCProductsRequestFactory new]];
