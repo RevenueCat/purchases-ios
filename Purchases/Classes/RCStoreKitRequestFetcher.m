@@ -91,7 +91,23 @@
 - (void)requestDidFinish:(SKRequest *)request
 {
     void (^handler)(void)  = [self finishRequest:request];
-    handler();
+
+    if ([request isKindOfClass:SKReceiptRefreshRequest.class]) {
+        RCReceiptFetcherCompletionHandler receiptHandler = handler;
+        receiptHandler();
+    }
+}
+
+- (void)request:(SKRequest *)request didFailWithError:(NSError *)error {
+    RCDebugLog(@"SKRequest failed: %@", error.localizedDescription);
+    id handler = [self finishRequest:request];
+    if ([request isKindOfClass:SKReceiptRefreshRequest.class]) {
+        RCReceiptFetcherCompletionHandler receiptHandler = handler;
+        receiptHandler();
+    } else if ([request isKindOfClass:SKProductsRequest.class]) {
+        RCProductFetcherCompletionHandler productsHandler = handler;
+        productsHandler(@[]);
+    }
 }
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response

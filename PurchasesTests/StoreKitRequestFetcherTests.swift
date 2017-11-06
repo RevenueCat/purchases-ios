@@ -42,9 +42,14 @@ class StoreKitRequestFetcher: XCTestCase {
         }
     }
 
+    enum StoreKitError: Error {
+        case unknown
+    }
+
     class MockProductRequest: SKProductsRequest {
         var startCalled = false
         var requestedIdentifiers: Set<String>
+        var fails = false
 
         override init(productIdentifiers: Set<String>) {
             self.requestedIdentifiers = productIdentifiers
@@ -54,33 +59,50 @@ class StoreKitRequestFetcher: XCTestCase {
         override func start() {
             startCalled = true
             DispatchQueue.global(qos: .background).async {
-                self.delegate?.productsRequest(self, didReceive: MockProductResponse(productIdentifiers: self.requestedIdentifiers))
+                if (self.fails) {
+                    self.delegate?.request!(self, didFailWithError: StoreKitError.unknown)
+                } else {
+                    self.delegate?.productsRequest(self, didReceive: MockProductResponse(productIdentifiers: self.requestedIdentifiers))
+                }
             }
         }
     }
 
     class MockReceiptRequest: SKReceiptRefreshRequest {
         var startCalled = false
+        var fails = false
         override func start() {
             startCalled = true
             DispatchQueue.global(qos: .background).async {
-                self.delegate?.requestDidFinish!(self)
+                if (self.fails) {
+                    self.delegate?.request!(self, didFailWithError: StoreKitError.unknown)
+                } else {
+                    self.delegate?.requestDidFinish!(self)
+                }
             }
         }
     }
 
 
     class MockRequestsFactory: RCProductsRequestFactory {
+        let fails: Bool
+
+        init(fails: Bool) {
+            self.fails = fails
+        }
+
         var requests: [SKRequest] = []
         override func request(forProductIdentifiers identifiers: Set<String>) -> SKProductsRequest {
             let r = MockProductRequest(productIdentifiers:identifiers)
             requests.append(r)
+            r.fails = self.fails
             return r
         }
 
         override func receiptRefreshRequest() -> SKReceiptRefreshRequest {
             let r = MockReceiptRequest()
             requests.append(r)
+            r.fails = self.fails
             return r
         }
     }
@@ -90,9 +112,8 @@ class StoreKitRequestFetcher: XCTestCase {
     var products: [SKProduct]?
     var receiptFetched = false
 
-    override func setUp() {
-        super.setUp()
-        self.factory = MockRequestsFactory()
+    func setupFetcher(fails: Bool) {
+        self.factory = MockRequestsFactory(fails: fails)
         self.fetcher = RCStoreKitRequestFetcher(requestFactory: self.factory!)
 
         self.fetcher!.fetchProducts(["com.a.product"]) { (newProducts) in
@@ -105,23 +126,38 @@ class StoreKitRequestFetcher: XCTestCase {
     }
 
     func testCreatesARequest() {
+        setupFetcher(fails: false)
         expect(self.factory!.requests.count).toEventually(equal(2))
     }
 
     func testSetsTheRequestDelegate() {
+        setupFetcher(fails: false)
         expect(self.factory!.requests[0].delegate).toEventually(be(self.fetcher), timeout: 1.0)
     }
 
     func testCallsStartOnRequest() {
+        setupFetcher(fails: false)
         expect((self.factory!.requests[0] as! MockProductRequest).startCalled).toEventually(beTrue(), timeout: 1.0)
     }
 
     func testReturnsProducts() {
+        setupFetcher(fails: false)
         expect(self.products).toEventuallyNot(beNil(), timeout: 1.0)
         expect(self.products?.count).toEventually(be(1), timeout: 1.0)
     }
 
     func testFetchesReceipt() {
+        setupFetcher(fails: false)
+        expect(self.receiptFetched).toEventually(beTrue())
+    }
+
+    func testCallsDelegateWithEmptyProducts() {
+        setupFetcher(fails: true)
+        expect(self.products).toEventually(beEmpty())
+    }
+
+    func testStillCallsReceiptFetchDelegate() {
+        setupFetcher(fails: true)
         expect(self.receiptFetched).toEventually(beTrue())
     }
 }
