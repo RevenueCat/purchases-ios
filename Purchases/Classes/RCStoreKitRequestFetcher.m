@@ -90,9 +90,8 @@
 
 - (void)requestDidFinish:(SKRequest *)request
 {
-    void (^handler)(void)  = [self finishRequest:request];
-
     if ([request isKindOfClass:SKReceiptRefreshRequest.class]) {
+        void (^handler)(void)  = [self finishRequest:request];
         RCReceiptFetcherCompletionHandler receiptHandler = handler;
         receiptHandler();
     }
