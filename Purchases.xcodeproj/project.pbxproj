@@ -16,9 +16,9 @@
 		350FBDE31F7EECAA0065833D /* RCUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDE11F7EE9020065833D /* RCUtils.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDE71F7EEF070065833D /* RCPurchases.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		350FBDEA1F7EEF070065833D /* RCPurchases.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDE81F7EEF070065833D /* RCPurchases.m */; };
-		350FBDED1F7EFB950065833D /* RCProductFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDEB1F7EFB950065833D /* RCProductFetcher.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		350FBDEE1F7EFB950065833D /* RCProductFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDEC1F7EFB950065833D /* RCProductFetcher.m */; };
-		350FBDF01F7EFC410065833D /* ProductFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDEF1F7EFC410065833D /* ProductFetcherTests.swift */; };
+		350FBDED1F7EFB950065833D /* RCStoreKitRequestFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDEB1F7EFB950065833D /* RCStoreKitRequestFetcher.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		350FBDEE1F7EFB950065833D /* RCStoreKitRequestFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDEC1F7EFB950065833D /* RCStoreKitRequestFetcher.m */; };
+		350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDEF1F7EFC410065833D /* StoreKitRequestFetcherTests.swift */; };
 		350FBDF31F7FFD350065833D /* RCStoreKitWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDF11F7FFD340065833D /* RCStoreKitWrapper.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		350FBDF41F7FFD350065833D /* RCStoreKitWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDF21F7FFD340065833D /* RCStoreKitWrapper.m */; };
 		351703CD1F805E5D00EEE27A /* SubscriberInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351703CC1F805E5D00EEE27A /* SubscriberInfoTests.swift */; };
@@ -71,9 +71,9 @@
 		350FBDE11F7EE9020065833D /* RCUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCUtils.h; sourceTree = "<group>"; };
 		350FBDE71F7EEF070065833D /* RCPurchases.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPurchases.h; sourceTree = "<group>"; };
 		350FBDE81F7EEF070065833D /* RCPurchases.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPurchases.m; sourceTree = "<group>"; };
-		350FBDEB1F7EFB950065833D /* RCProductFetcher.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCProductFetcher.h; sourceTree = "<group>"; };
-		350FBDEC1F7EFB950065833D /* RCProductFetcher.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCProductFetcher.m; sourceTree = "<group>"; };
-		350FBDEF1F7EFC410065833D /* ProductFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductFetcherTests.swift; sourceTree = "<group>"; };
+		350FBDEB1F7EFB950065833D /* RCStoreKitRequestFetcher.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCStoreKitRequestFetcher.h; sourceTree = "<group>"; };
+		350FBDEC1F7EFB950065833D /* RCStoreKitRequestFetcher.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCStoreKitRequestFetcher.m; sourceTree = "<group>"; };
+		350FBDEF1F7EFC410065833D /* StoreKitRequestFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitRequestFetcherTests.swift; sourceTree = "<group>"; };
 		350FBDF11F7FFD340065833D /* RCStoreKitWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCStoreKitWrapper.h; sourceTree = "<group>"; };
 		350FBDF21F7FFD340065833D /* RCStoreKitWrapper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCStoreKitWrapper.m; sourceTree = "<group>"; };
 		351703CC1F805E5D00EEE27A /* SubscriberInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberInfoTests.swift; sourceTree = "<group>"; };
@@ -177,8 +177,8 @@
 				35262A2B1F7D783F00C04F2C /* RCHTTPClient.m */,
 				350FBDE11F7EE9020065833D /* RCUtils.h */,
 				350FBDDF1F7EE8F20065833D /* RCUtils.m */,
-				350FBDEB1F7EFB950065833D /* RCProductFetcher.h */,
-				350FBDEC1F7EFB950065833D /* RCProductFetcher.m */,
+				350FBDEB1F7EFB950065833D /* RCStoreKitRequestFetcher.h */,
+				350FBDEC1F7EFB950065833D /* RCStoreKitRequestFetcher.m */,
 				350FBDF11F7FFD340065833D /* RCStoreKitWrapper.h */,
 				350FBDF21F7FFD340065833D /* RCStoreKitWrapper.m */,
 				351F4FA91F80190700F245F4 /* RCBackend.h */,
@@ -194,7 +194,7 @@
 				35262A291F7D783F00C04F2C /* PurchasesTests-Bridging-Header.h */,
 				35262A201F7D77E600C04F2C /* PurchasesTests.swift */,
 				35262A2F1F7D78C600C04F2C /* HTTPClientTests.swift */,
-				350FBDEF1F7EFC410065833D /* ProductFetcherTests.swift */,
+				350FBDEF1F7EFC410065833D /* StoreKitRequestFetcherTests.swift */,
 				35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */,
 				351F4FB11F803D9C00F245F4 /* BackendTests.swift */,
 				351703CC1F805E5D00EEE27A /* SubscriberInfoTests.swift */,
@@ -213,7 +213,7 @@
 			files = (
 				350FBDE31F7EECAA0065833D /* RCUtils.h in Headers */,
 				35262A2C1F7D783F00C04F2C /* RCHTTPClient.h in Headers */,
-				350FBDED1F7EFB950065833D /* RCProductFetcher.h in Headers */,
+				350FBDED1F7EFB950065833D /* RCStoreKitRequestFetcher.h in Headers */,
 				351F4FAB1F80190700F245F4 /* RCBackend.h in Headers */,
 				352C36BF1F9D372D00A15783 /* RCPurchaserInfo+Protected.h in Headers */,
 				350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */,
@@ -325,7 +325,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				350FBDEE1F7EFB950065833D /* RCProductFetcher.m in Sources */,
+				350FBDEE1F7EFB950065833D /* RCStoreKitRequestFetcher.m in Sources */,
 				351F4FAC1F80190700F245F4 /* RCBackend.m in Sources */,
 				350FBDE01F7EE8F20065833D /* RCUtils.m in Sources */,
 				351F4FB01F803D0700F245F4 /* RCPurchaserInfo.m in Sources */,
@@ -343,7 +343,7 @@
 				351F4FB21F803D9C00F245F4 /* BackendTests.swift in Sources */,
 				35262A301F7D78C600C04F2C /* HTTPClientTests.swift in Sources */,
 				35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */,
-				350FBDF01F7EFC410065833D /* ProductFetcherTests.swift in Sources */,
+				350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */,
 				351703CD1F805E5D00EEE27A /* SubscriberInfoTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

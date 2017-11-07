@@ -22,8 +22,9 @@ class BackendTests: XCTestCase {
     }
 
     struct HTTPResponse {
-        let success: Bool
+        let statusCode: NSInteger
         let response: [AnyHashable : Any]?
+        let error: Error?
     }
 
     class MockHTTPClient: RCHTTPClient {
@@ -33,14 +34,14 @@ class BackendTests: XCTestCase {
 
         var shouldFinish = true
 
-        override func performRequest(_ HTTPMethod: String, path: String, body requestBody: [AnyHashable : Any]?, headers: [String: String]?, completionHandler: ((Bool, [AnyHashable : Any]?) -> Void)? = nil) {
+        override func performRequest(_ HTTPMethod: String, path: String, body requestBody: [AnyHashable : Any]?, headers: [String : String]?, completionHandler: RCHTTPClientResponseHandler? = nil) {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
 
             calls.append(HTTPRequest(HTTPMethod: HTTPMethod, path: path, body: requestBody, headers: headers))
 
             if shouldFinish {
-                completionHandler!(response.success, response.response)
+                completionHandler!(response.statusCode, response.response, response.error)
             }
         }
 
@@ -59,7 +60,7 @@ class BackendTests: XCTestCase {
         "subscriber": [
             "subscriptions": [
                 "onemonth_freetrial": [
-                    "expires_date": "2017-08-30T02:40:36"
+                    "expires_date": "2017-08-30T02:40:36Z"
                 ]
             ]
         ]
@@ -77,10 +78,8 @@ class BackendTests: XCTestCase {
     }
 
     func testPostsReceiptDataCorrectly() {
-        let response = HTTPResponse(success: true, response: validSubscriberResponse)
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
-
-
 
         var completionCalled = false
 
@@ -107,8 +106,8 @@ class BackendTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
     }
 
-    func testForwardsErrors() {
-        let response = HTTPResponse(success: false, response: serverErrorResponse)
+    func testForwards500ErrorsCorrectly() {
+        let response = HTTPResponse(statusCode: 501, response: serverErrorResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
         var error: Error?
@@ -119,11 +118,11 @@ class BackendTests: XCTestCase {
 
         expect(error).toEventuallyNot(beNil())
         expect(error?.localizedDescription).to(equal(serverErrorResponse["message"]))
-        expect((error as NSError?)?.code).to(equal(1))
+        expect((error as NSError?)?.code).to(equal(RCUnfinishableError))
     }
 
-    func testHandlesUnexpectedErrors() {
-        let response = HTTPResponse(success: false, response: nil)
+    func testForwards400ErrorsCorrectly() {
+        let response = HTTPResponse(statusCode: 400, response: serverErrorResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
         var error: Error?
@@ -133,12 +132,12 @@ class BackendTests: XCTestCase {
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect((error as NSError?)?.domain).to(equal(RCBackendErrorDomain))
-        expect((error as NSError?)?.code).to(equal(RCUnexpectedBackendResponse))
+        expect(error?.localizedDescription).to(equal(serverErrorResponse["message"]))
+        expect((error as NSError?)?.code).to(equal(RCFinishableError))
     }
 
     func testPostingReceiptCreatesASubscriberInfoObject() {
-        let response = HTTPResponse(success: true, response: validSubscriberResponse)
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
         var purchaserInfo: RCPurchaserInfo?
@@ -155,7 +154,7 @@ class BackendTests: XCTestCase {
     }
 
     func testGetSubscriberCallsBackendProperly() {
-        let response = HTTPResponse(success: true, response: validSubscriberResponse)
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
 
         backend?.getSubscriberData(withAppUserID: userID, completion: { (newPurchaserInfo, newError) in
@@ -175,7 +174,7 @@ class BackendTests: XCTestCase {
     }
 
     func testGetsSubscriberInfo() {
-        let response = HTTPResponse(success: true, response: validSubscriberResponse)
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
 
         var subscriberInfo: RCPurchaserInfo?
@@ -188,7 +187,22 @@ class BackendTests: XCTestCase {
     }
 
     func testHandlesGetSubscriberInfoErrors() {
-        let response = HTTPResponse(success: false, response: nil)
+        let response = HTTPResponse(statusCode: 404, response: nil, error: nil)
+        httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
+
+        var error: Error?
+
+        backend?.getSubscriberData(withAppUserID: userID, completion: { (newSubscriberInfo, newError) in
+            error = newError
+        })
+
+        expect(error).toEventuallyNot(beNil())
+        expect((error as NSError?)?.domain).to(equal(RCBackendErrorDomain))
+        expect((error as NSError?)?.code).to(equal(RCFinishableError))
+    }
+
+    func testHandlesInvalidJSON() {
+        let response = HTTPResponse(statusCode: 200, response: ["sjkaljdklsjadkjs": ""], error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
 
         var error: Error?
@@ -200,20 +214,5 @@ class BackendTests: XCTestCase {
         expect(error).toEventuallyNot(beNil())
         expect((error as NSError?)?.domain).to(equal(RCBackendErrorDomain))
         expect((error as NSError?)?.code).to(equal(RCUnexpectedBackendResponse))
-    }
-
-    func testHandlesInvalidJSON() {
-        let response = HTTPResponse(success: true, response: ["sjkaljdklsjadkjs": ""])
-        httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
-
-        var error: Error?
-
-        backend?.getSubscriberData(withAppUserID: userID, completion: { (newSubscriberInfo, newError) in
-            error = newError
-        })
-
-        expect(error).toEventuallyNot(beNil())
-        expect((error as NSError?)?.domain).to(equal(RCBackendErrorDomain))
-        expect((error as NSError?)?.code).to(equal(RCErrorParsingPurchaserInfo))
     }
 }

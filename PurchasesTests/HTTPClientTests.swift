@@ -180,7 +180,7 @@ class HTTPClientTests: XCTestCase {
             return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
 
-        self.client.performRequest("GET", path: path, body: nil, headers: nil) { (success, data) in
+        self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, error) in
             completionCalled = true
         }
 
@@ -198,17 +198,17 @@ class HTTPClientTests: XCTestCase {
             return response
         }
 
-        self.client.performRequest("GET", path: path, body: nil, headers: nil) { (success, data) in
-            successFailed = (success == false) && (data == nil)
+        self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, responseError) in
+            successFailed = (status >= 500) && (data == nil) && (error == responseError as NSError?)
         }
 
         expect(successFailed).toEventually(equal(true), timeout: 1.0)
     }
 
-    func testServerSideErrors() {
+    func testServerSide400s() {
         let path = "/a_random_path"
-        let errorCode = 400 + arc4random() % 150
-        var successIsFalse = false
+        let errorCode = 400 + arc4random() % 50
+        var correctResponse = false
         var message: String?
 
         stub(condition: isPath("/v1" + path)) { request in
@@ -216,18 +216,57 @@ class HTTPClientTests: XCTestCase {
             return OHHTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
         }
 
-        self.client.performRequest("GET", path: path, body: nil, headers: nil) { (success, data) in
-            successIsFalse = success == false
+        self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, error) in
+            correctResponse = (status == errorCode) && (data != nil) && (error == nil);
             if data != nil {
                 message = data!["message"] as! String?
             }
         }
 
         expect(message).toEventually(equal("something is broken up in the cloud"), timeout: 1.0)
-        expect(successIsFalse).toEventually(beTrue(), timeout: 1.0)
+        expect(correctResponse).toEventually(beTrue(), timeout: 1.0)
     }
 
-    func testWordsForGoodErrorCodes() {
+    func testServerSide500s()  {
+        let path = "/a_random_path"
+        let errorCode = 500 + arc4random() % 50
+        var correctResponse = false
+        var message: String?
+
+        stub(condition: isPath("/v1" + path)) { request in
+            let json = "{\"message\": \"something is broken up in the cloud\"}"
+            return OHHTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
+        }
+
+        self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, error) in
+            correctResponse = (status == errorCode) && (data != nil) && (error == nil);
+            if data != nil {
+                message = data!["message"] as! String?
+            }
+        }
+
+        expect(message).toEventually(equal("something is broken up in the cloud"), timeout: 1.0)
+        expect(correctResponse).toEventually(beTrue(), timeout: 1.0)
+    }
+
+    func testParseError() {
+        let path = "/a_random_path"
+        let errorCode = 200 + arc4random() % 300
+        var correctResponse = false
+
+        stub(condition: isPath("/v1" + path)) { request in
+            let json = "{this is not JSON.csdsd"
+            return OHHTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
+        }
+
+        self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, error) in
+            correctResponse = (status == errorCode) && (data == nil) && (error != nil);
+        }
+
+        expect(correctResponse).toEventually(beTrue(), timeout: 1.0)
+    }
+
+    func testServerSide200s() {
         let path = "/a_random_path"
 
         var successIsTrue = false
@@ -238,8 +277,8 @@ class HTTPClientTests: XCTestCase {
             return OHHTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
         }
 
-        self.client.performRequest("GET", path: path, body: nil, headers: nil) { (success, data) in
-            successIsTrue = (success == true)
+        self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, error) in
+            successIsTrue = (status == 200) && (error == nil);
             if data != nil {
                 message = data!["message"] as! String?
             }

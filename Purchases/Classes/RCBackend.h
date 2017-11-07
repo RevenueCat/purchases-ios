@@ -13,14 +13,15 @@ NS_ASSUME_NONNULL_BEGIN
 @class RCPurchaserInfo, RCHTTPClient;
 
 FOUNDATION_EXPORT NSErrorDomain const RCBackendErrorDomain;
+
 NS_ERROR_ENUM(RCBackendErrorDomain) {
-    RCUnexpectedBackendResponse = 0,
-    RCBackendError,
-    RCErrorParsingPurchaserInfo
+    RCFinishableError = 0,
+    RCUnfinishableError,
+    RCUnexpectedBackendResponse 
 };
 
 typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
-                                         NSError * _Nullable);
+                                        NSError * _Nullable);
 
 @interface RCBackend : NSObject
 

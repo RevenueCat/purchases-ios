@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)addPayment:(SKPayment *)payment;
 - (void)finishTransaction:(SKPaymentTransaction *)transaction;
-- (NSData *)receiptData;
 
 @end
 

@@ -9,7 +9,7 @@
 #import "RCPurchases.h"
 #import "RCPurchases+Protected.h"
 
-#import "RCProductFetcher.h"
+#import "RCStoreKitRequestFetcher.h"
 #import "RCBackend.h"
 #import "RCStoreKitWrapper.h"
 #import "RCUtils.h"
@@ -18,12 +18,13 @@
 
 @property (nonatomic) NSString *appUserID;
 
-@property (nonatomic) RCProductFetcher *productFetcher;
+@property (nonatomic) RCStoreKitRequestFetcher *requestFetcher;
 @property (nonatomic) RCBackend *backend;
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 
 @property (nonatomic) BOOL updatingPurchaserInfo;
+@property (nonatomic) NSDate *purchaserInfoLastChecked;
 
 @end
 
@@ -31,11 +32,11 @@
 
 - (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey appUserID:(NSString *)appUserID
 {
-    RCProductFetcher *fetcher = [[RCProductFetcher alloc] init];
+    RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
     return [self initWithAppUserID:appUserID
-                    productFetcher:fetcher
+                    requestFetcher:fetcher
                            backend:backend
                    storeKitWrapper:storeKitWrapper
                 notificationCenter:[NSNotificationCenter defaultCenter]];
@@ -45,16 +46,15 @@
 }
 
 - (instancetype _Nullable)initWithAppUserID:(NSString *)appUserID
-                             productFetcher:(RCProductFetcher *)productFetcher
+                             requestFetcher:(RCStoreKitRequestFetcher *)requestFetcher
                                     backend:(RCBackend *)backend
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                          notificationCenter:(NSNotificationCenter *)notificationCenter
 {
-    if (self = [super init])
-    {
+    if (self = [super init]) {
         self.appUserID = appUserID;
 
-        self.productFetcher = productFetcher;
+        self.requestFetcher = requestFetcher;
         self.backend = backend;
         self.storeKitWrapper = storeKitWrapper;
         self.storeKitWrapper.delegate = self;
@@ -96,28 +96,34 @@
     return _delegate;
 }
 
-- (void)applicationDidBecomeActive:(__unused NSNotification *)notif {
+- (void)applicationDidBecomeActive:(__unused NSNotification *)notif
+{
     [self updatePurchaserInfo];
 }
 
-- (void)updatePurchaserInfo {
-    if (self.updatingPurchaserInfo) return;
-    self.updatingPurchaserInfo = YES;
-    [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable info,
-                                                                             NSError * _Nullable error) {
+- (void)updatePurchaserInfo
+{
+    NSTimeInterval timeSinceLastCheck = -[self.purchaserInfoLastChecked timeIntervalSinceNow];
+    if (self.purchaserInfoLastChecked != nil && timeSinceLastCheck < 60.) return;
+
+    self.purchaserInfoLastChecked = [NSDate date];
+
+    [self.backend getSubscriberDataWithAppUserID:self.appUserID
+                                      completion:^(RCPurchaserInfo * _Nullable info,
+                                                   NSError * _Nullable error) {
         if (error == nil) {
             NSParameterAssert(self.delegate);
             [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+        } else {
+            self.purchaserInfoLastChecked = nil;
         }
-
-        self.updatingPurchaserInfo = NO;
     }];
 }
 
 - (void)productsWithIdentifiers:(NSSet<NSString *> *)productIdentifiers
                      completion:(void (^)(NSArray<SKProduct *>* products))completion
 {
-    [self.productFetcher fetchProducts:productIdentifiers completion:^(NSArray<SKProduct *> * _Nonnull products) {
+    [self.requestFetcher fetchProducts:productIdentifiers completion:^(NSArray<SKProduct *> * _Nonnull products) {
         completion(products);
     }];
 }
@@ -149,6 +155,41 @@
     [self.storeKitWrapper addPayment:payment];
 }
 
+- (void)receiptData:(void (^ _Nonnull)(NSData * _Nonnull data))completion
+{
+    NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
+    NSData *receiptData = [NSData dataWithContentsOfURL:receiptURL];
+    if (receiptData == nil) {
+        [self.requestFetcher fetchReceiptData:^{
+            NSData *newReceiptData = [NSData dataWithContentsOfURL:receiptURL];
+            completion(newReceiptData ?: [NSData data]);
+        }];
+    } else {
+        completion(receiptData);
+    }
+}
+
+- (void)handleReceiptPostWithTransaction:(SKPaymentTransaction *)transaction
+                           purchaserInfo:(RCPurchaserInfo * _Nullable)info
+                                   error:(NSError * _Nullable)error
+{
+    NSParameterAssert(self.delegate);
+    if (info) {
+        [self.delegate purchases:self
+            completedTransaction:transaction
+                 withUpdatedInfo:info];
+        [self.storeKitWrapper finishTransaction:transaction];
+    } else if (error.code == RCFinishableError) {
+        [self.delegate purchases:self failedTransaction:transaction withReason:error];
+        [self.storeKitWrapper finishTransaction:transaction];
+    } else if (error.code == RCUnfinishableError) {
+        [self.delegate purchases:self failedTransaction:transaction withReason:error];
+    } else {
+        RCLog(@"Unexpected error from backend");
+        [self.delegate purchases:self failedTransaction:transaction withReason:error];
+    }
+}
+
 /*
  RCStoreKitWrapperDelegate
  */
@@ -158,21 +199,16 @@
 {
     switch (transaction.transactionState) {
         case SKPaymentTransactionStatePurchased: {
-            [self.backend postReceiptData:self.storeKitWrapper.receiptData
-                                appUserID:self.appUserID
-                               completion:^(RCPurchaserInfo * _Nullable info, NSError * _Nullable error) {
-                                   NSParameterAssert(self.delegate);
-                                   if (info) {
-                                       [self.delegate purchases:self
-                                           completedTransaction:transaction
-                                                withUpdatedInfo:info];
-                                       [self.storeKitWrapper finishTransaction:transaction];
-                                   } else if (error) {
-                                       [self.delegate purchases:self failedTransaction:transaction withReason:error];
-                                   } else {
-                                       RCLog(@"Unexpected error from backend");
-                                   }
-                               }];
+            [self receiptData:^(NSData * _Nonnull data) {
+                [self.backend postReceiptData:data
+                                    appUserID:self.appUserID
+                                   completion:^(RCPurchaserInfo * _Nullable info,
+                                                NSError * _Nullable error) {
+                                       [self handleReceiptPostWithTransaction:transaction
+                                                                purchaserInfo:info
+                                                                        error:error];
+                                   }];
+            }];
             break;
         }
         case SKPaymentTransactionStateFailed: {

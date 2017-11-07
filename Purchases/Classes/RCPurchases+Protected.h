@@ -8,14 +8,14 @@
 
 #import <Purchases/Purchases.h>
 
-@class RCProductFetcher, RCBackend, RCStoreKitWrapper;
+@class RCStoreKitRequestFetcher, RCBackend, RCStoreKitWrapper;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface RCPurchases (Protected)
 
 - (instancetype _Nullable)initWithAppUserID:(NSString *)appUserID
-                             productFetcher:(RCProductFetcher *)productFetcher
+                             requestFetcher:(RCStoreKitRequestFetcher *)requestFetcher
                                     backend:(RCBackend *)backend
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                          notificationCenter:(NSNotificationCenter *)notificationCenter;

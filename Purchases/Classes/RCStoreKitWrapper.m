@@ -65,14 +65,8 @@
     [self.paymentQueue finishTransaction:transaction];
 }
 
-- (NSData *)receiptData {
-    NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
-    return [NSData dataWithContentsOfURL:receiptURL];
-}
-
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions
 {
-    
     for (SKPaymentTransaction *transaction in transactions) {
         [self.delegate storeKitWrapper:self updatedTransaction:transaction];
     }

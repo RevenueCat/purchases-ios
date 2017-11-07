@@ -31,7 +31,7 @@ static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
             dateFormatter = [[NSDateFormatter alloc] init];
             dateFormatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
-            dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss";
+            dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ssZ";
         });
         
         NSMutableDictionary<NSString *, NSDate *> *dates = [NSMutableDictionary new];

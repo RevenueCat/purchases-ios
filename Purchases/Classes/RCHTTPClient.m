@@ -19,11 +19,13 @@
 
 @implementation RCHTTPClient
 
-+ (NSString *)serverHostName {
++ (NSString *)serverHostName
+{
     return @"api.revenuecat.com";
 }
 
-- (instancetype)init {
+- (instancetype)init
+{
     if (self = [super init]) {
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
         config.HTTPMaximumConnectionsPerHost = 1;
@@ -36,8 +38,7 @@
                   path:(NSString * _Nonnull)path
                   body:(NSDictionary * _Nullable)requestBody
                headers:(NSDictionary<NSString *, NSString *> * _Nullable)headers
-     completionHandler:(void (^_Nullable)(BOOL success,
-                                          NSDictionary * _Nullable response))completionHandler
+     completionHandler:(RCHTTPClientResponseHandler _Nullable)completionHandler
 {
     NSParameterAssert(!([HTTPMethod isEqualToString:@"GET"] && requestBody));
     NSParameterAssert(([HTTPMethod isEqualToString:@"GET"] || [HTTPMethod isEqualToString:@"POST"]));
@@ -74,35 +75,28 @@
     {
 
 
-        BOOL success = false;
+        NSInteger statusCode = 599;
         NSDictionary *responseObject = nil;
-        if (error != nil) {
-            RCLog(@"Error making request to %@: %@", path, error.localizedDescription);
-        } else {
-            NSInteger statusCode = ((NSHTTPURLResponse *)response).statusCode;
+
+        if (error == nil) {
+            statusCode = ((NSHTTPURLResponse *)response).statusCode;
 
             RCDebugLog(@"%@ %@ %d", request.HTTPMethod, request.URL.path, statusCode);
-            
-            if (statusCode < 300) {
-                success = true;
-            } else {
-                success = false;
-            }
 
             NSError *jsonError;
             responseObject = [NSJSONSerialization JSONObjectWithData:data
                                                              options:0
                                                                error:&jsonError];
-
+            
             if (jsonError) {
                 RCLog(@"Error parsing JSON %@", jsonError.localizedDescription);
                 RCLog(@"Data received: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-                success = false;
+                error = jsonError;
             }
         }
 
         if (completionHandler != nil) {
-            completionHandler(success, responseObject);
+            completionHandler(statusCode, responseObject, error);
         }
     };
 

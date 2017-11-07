@@ -30,12 +30,16 @@ class MockTransaction: SKPaymentTransaction {
 
 class PurchasesTests: XCTestCase {
 
-    class MockProductFetcher: RCProductFetcher {
-        override func fetchProducts(_ identifiers: Set<String>, completion: @escaping RCProductFetcherCompletionHandler) {
+    class MockRequestFetcher: RCStoreKitRequestFetcher {
+        override func fetchProducts(_ identifiers: Set<String>, completion: @escaping RCFetchProductsCompletionHandler) {
             let products = identifiers.map { (identifier) -> MockProduct in
                 MockProduct(mockProductIdentifier: identifier)
             }
             completion(products)
+        }
+
+        override func fetchReceiptData(_ completion: @escaping RCFetchReceiptCompletionHandler) {
+            completion()
         }
     }
 
@@ -116,7 +120,7 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    let productFetcher = MockProductFetcher()
+    let requestFetcher = MockRequestFetcher()
     let backend = MockBackend()
     let storeKitWrapper = MockStoreKitWrapper()
     let notificationCenter = MockNotificationCenter();
@@ -130,7 +134,7 @@ class PurchasesTests: XCTestCase {
     override func setUp() {
         super.setUp()
         purchases = RCPurchases.init(appUserID: appUserID,
-                                     productFetcher: productFetcher,
+                                     requestFetcher: requestFetcher,
                                      backend:backend,
                                      storeKitWrapper: storeKitWrapper,
                                      notificationCenter:notificationCenter)
@@ -224,13 +228,29 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptError = BackendError.unknown
+        self.backend.postReceiptError = NSError(domain: "error_domain", code: RCUnfinishableError, userInfo: nil)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled).to(equal(true))
         expect(self.storeKitWrapper.finishCalled).to(beFalse())
+    }
+
+    func testAfterSendingFinishesFromBackendErrorIfAppropriate() {
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.makePurchase(product)
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+
+        self.backend.postReceiptError = NSError(domain: "error_domain", code: RCFinishableError, userInfo: nil)
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.storeKitWrapper.finishCalled).to(beTrue())
     }
 
     func testNotifiesIfTransactionFailsFromBackend() {
@@ -240,7 +260,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptError = BackendError.unknown
+        self.backend.postReceiptError = NSError(domain: "error_domain", code: RCUnfinishableError, userInfo: nil)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -333,11 +353,16 @@ class PurchasesTests: XCTestCase {
     }
 
     func testSettingDelegateUpdatesSubscriberInfo() {
-        purchases!.delegate = nil
+        let purchases = RCPurchases.init(appUserID: appUserID,
+                                     requestFetcher: requestFetcher,
+                                     backend:backend,
+                                     storeKitWrapper: storeKitWrapper,
+                                     notificationCenter:notificationCenter)!
+        purchases.delegate = nil
 
         purchasesDelegate.purchaserInfo = nil
 
-        purchases!.delegate = purchasesDelegate
+        purchases.delegate = purchasesDelegate
 
         expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
     }
