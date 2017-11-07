@@ -1,5 +1,5 @@
 //
-//  ProductFetcherTests.swift
+//  StoreKitRequestFetcherTests.swift
 //  PurchasesTests
 //
 //  Created by Jacob Eiting on 9/29/17.

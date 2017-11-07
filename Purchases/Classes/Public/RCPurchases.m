@@ -51,8 +51,7 @@
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                          notificationCenter:(NSNotificationCenter *)notificationCenter
 {
-    if (self = [super init])
-    {
+    if (self = [super init]) {
         self.appUserID = appUserID;
 
         self.requestFetcher = requestFetcher;
@@ -97,11 +96,13 @@
     return _delegate;
 }
 
-- (void)applicationDidBecomeActive:(__unused NSNotification *)notif {
+- (void)applicationDidBecomeActive:(__unused NSNotification *)notif
+{
     [self updatePurchaserInfo];
 }
 
-- (void)updatePurchaserInfo {
+- (void)updatePurchaserInfo
+{
     NSTimeInterval timeSinceLastCheck = -[self.purchaserInfoLastChecked timeIntervalSinceNow];
     if (self.purchaserInfoLastChecked != nil && timeSinceLastCheck < 60.) return;
 
@@ -154,7 +155,8 @@
     [self.storeKitWrapper addPayment:payment];
 }
 
-- (void)receiptData:(void (^ _Nonnull)(NSData * _Nonnull data))completion {
+- (void)receiptData:(void (^ _Nonnull)(NSData * _Nonnull data))completion
+{
     NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
     NSData *receiptData = [NSData dataWithContentsOfURL:receiptURL];
     if (receiptData == nil) {

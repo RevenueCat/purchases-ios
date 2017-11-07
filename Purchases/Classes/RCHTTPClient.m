@@ -19,11 +19,13 @@
 
 @implementation RCHTTPClient
 
-+ (NSString *)serverHostName {
++ (NSString *)serverHostName
+{
     return @"api.revenuecat.com";
 }
 
-- (instancetype)init {
+- (instancetype)init
+{
     if (self = [super init]) {
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
         config.HTTPMaximumConnectionsPerHost = 1;

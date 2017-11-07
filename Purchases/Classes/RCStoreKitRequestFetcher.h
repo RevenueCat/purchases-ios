@@ -9,8 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
 
-typedef void(^RCProductFetcherCompletionHandler)(NSArray<SKProduct *> * _Nonnull products);
-typedef void(^RCReceiptFetcherCompletionHandler)(void);
+typedef void(^RCFetchProductsCompletionHandler)(NSArray<SKProduct *> * _Nonnull products);
+typedef void(^RCFetchReceiptCompletionHandler)(void);
 
 @class SKProduct, SKProductsRequest;
 
@@ -24,8 +24,8 @@ typedef void(^RCReceiptFetcherCompletionHandler)(void);
 - (instancetype _Nullable)initWithRequestFactory:(RCProductsRequestFactory * _Nonnull)requestFactory;
 
 - (void)fetchProducts:(NSSet<NSString *> * _Nonnull)identifiers
-           completion:(RCProductFetcherCompletionHandler _Nonnull)completion;
+           completion:(RCFetchProductsCompletionHandler _Nonnull)completion;
 
-- (void)fetchReceiptData:(RCReceiptFetcherCompletionHandler _Nonnull)completion;
+- (void)fetchReceiptData:(RCFetchReceiptCompletionHandler _Nonnull)completion;
 
 @end

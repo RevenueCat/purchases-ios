@@ -31,14 +31,14 @@ class MockTransaction: SKPaymentTransaction {
 class PurchasesTests: XCTestCase {
 
     class MockRequestFetcher: RCStoreKitRequestFetcher {
-        override func fetchProducts(_ identifiers: Set<String>, completion: @escaping RCProductFetcherCompletionHandler) {
+        override func fetchProducts(_ identifiers: Set<String>, completion: @escaping RCFetchProductsCompletionHandler) {
             let products = identifiers.map { (identifier) -> MockProduct in
                 MockProduct(mockProductIdentifier: identifier)
             }
             completion(products)
         }
 
-        override func fetchReceiptData(_ completion: @escaping RCReceiptFetcherCompletionHandler) {
+        override func fetchReceiptData(_ completion: @escaping RCFetchReceiptCompletionHandler) {
             completion()
         }
     }

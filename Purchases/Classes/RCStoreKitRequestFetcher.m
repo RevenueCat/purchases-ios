@@ -41,8 +41,7 @@
 
 - (instancetype _Nullable)initWithRequestFactory:(RCProductsRequestFactory * _Nonnull)requestFactory;
 {
-    if (self = [super init])
-    {
+    if (self = [super init]) {
         self.requestFactory = requestFactory;
         self.requests = [NSMutableArray new];
         self.completionHandlers = [NSMutableArray new];
@@ -64,7 +63,7 @@
 }
 
 - (void)fetchProducts:(NSSet<NSString *> * _Nonnull)identifiers
-           completion:(RCProductFetcherCompletionHandler)completion;
+           completion:(RCFetchProductsCompletionHandler)completion;
 {
     SKProductsRequest *request = [self.requestFactory requestForProductIdentifiers:identifiers];
     [self startRequest:request completion:[completion copy]];
@@ -76,7 +75,8 @@
     [self startRequest:request completion:[completion copy]];
 }
 
-- (id)finishRequest:(SKRequest *)request {
+- (id)finishRequest:(SKRequest *)request
+{
     id handler = nil;
     @synchronized(self) {
         NSUInteger index = [self.requests indexOfObject:request];
@@ -92,26 +92,27 @@
 {
     if ([request isKindOfClass:SKReceiptRefreshRequest.class]) {
         void (^handler)(void)  = [self finishRequest:request];
-        RCReceiptFetcherCompletionHandler receiptHandler = handler;
+        RCFetchReceiptCompletionHandler receiptHandler = handler;
         receiptHandler();
     }
 }
 
-- (void)request:(SKRequest *)request didFailWithError:(NSError *)error {
+- (void)request:(SKRequest *)request didFailWithError:(NSError *)error
+{
     RCDebugLog(@"SKRequest failed: %@", error.localizedDescription);
     id handler = [self finishRequest:request];
     if ([request isKindOfClass:SKReceiptRefreshRequest.class]) {
-        RCReceiptFetcherCompletionHandler receiptHandler = handler;
+        RCFetchReceiptCompletionHandler receiptHandler = handler;
         receiptHandler();
     } else if ([request isKindOfClass:SKProductsRequest.class]) {
-        RCProductFetcherCompletionHandler productsHandler = handler;
+        RCFetchProductsCompletionHandler productsHandler = handler;
         productsHandler(@[]);
     }
 }
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response
 {
-    RCProductFetcherCompletionHandler handler = [self finishRequest:request];
+    RCFetchProductsCompletionHandler handler = [self finishRequest:request];
     handler(response.products);
 }
 

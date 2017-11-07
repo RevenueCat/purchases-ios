@@ -68,7 +68,8 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 - (void)handle:(NSInteger)statusCode
   withResponse:(NSDictionary * _Nullable)response
          error:(NSError * _Nullable)error
-    completion:(RCBackendResponseHandler)completion {
+    completion:(RCBackendResponseHandler)completion
+{
 
     RCPurchaserInfo *info = nil;
     NSError *responseError = nil;
@@ -92,7 +93,6 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
               appUserID:(NSString *)appUserID
              completion:(RCBackendResponseHandler)completion
 {
-    // TODO: This can be nil, handle that case
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
     NSDictionary *body = @{
                                @"fetch_token": fetchToken,
