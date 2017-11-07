@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "Purchases"
-  s.version          = "0.3.0-SNAPSHOT"
+  s.version          = "0.3.0"
   s.summary          = "Subscription and in-app-purchase backend service."
 
   s.description      = <<-DESC
@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
 
   s.homepage         = "http://revenue.cat"
   s.license          =  { :type => 'MIT' }
-  s.author           = { "Revenue Cat, Inc." => "jacob@revenuecat.com" }
+  s.author           = { "RevenueCat, Inc." => "jacob@revenuecat.com" }
   s.source           = { :git => "https://github.com/revenuecat/purchases-ios.git", :tag => s.version.to_s }
 
   s.framework      = 'StoreKit'

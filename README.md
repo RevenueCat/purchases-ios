@@ -14,7 +14,7 @@ Purchases is a client for the [RevenueCat](https://www.revenuecat.com/) subscrip
 
 ### CocoaPods
 ```
-pod "Purchases", "0.2.0"
+pod "Purchases"
 ```
 
 ### Carthage
