@@ -103,8 +103,9 @@
 - (void)updatePurchaserInfo {
     if (self.updatingPurchaserInfo) return;
     self.updatingPurchaserInfo = YES;
-    [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable info,
-                                                                             NSError * _Nullable error) {
+    [self.backend getSubscriberDataWithAppUserID:self.appUserID
+                                      completion:^(RCPurchaserInfo * _Nullable info,
+                                                   NSError * _Nullable error) {
         if (error == nil) {
             NSParameterAssert(self.delegate);
             [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
