@@ -30,7 +30,7 @@ class MockTransaction: SKPaymentTransaction {
 
 class PurchasesTests: XCTestCase {
 
-    class MockProductFetcher: RCStoreKitRequestFetcher {
+    class MockRequestFetcher: RCStoreKitRequestFetcher {
         override func fetchProducts(_ identifiers: Set<String>, completion: @escaping RCProductFetcherCompletionHandler) {
             let products = identifiers.map { (identifier) -> MockProduct in
                 MockProduct(mockProductIdentifier: identifier)
@@ -120,7 +120,7 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    let productFetcher = MockProductFetcher()
+    let requestFetcher = MockRequestFetcher()
     let backend = MockBackend()
     let storeKitWrapper = MockStoreKitWrapper()
     let notificationCenter = MockNotificationCenter();
@@ -134,7 +134,7 @@ class PurchasesTests: XCTestCase {
     override func setUp() {
         super.setUp()
         purchases = RCPurchases.init(appUserID: appUserID,
-                                     productFetcher: productFetcher,
+                                     requestFetcher: requestFetcher,
                                      backend:backend,
                                      storeKitWrapper: storeKitWrapper,
                                      notificationCenter:notificationCenter)
@@ -353,11 +353,16 @@ class PurchasesTests: XCTestCase {
     }
 
     func testSettingDelegateUpdatesSubscriberInfo() {
-        purchases!.delegate = nil
+        let purchases = RCPurchases.init(appUserID: appUserID,
+                                     requestFetcher: requestFetcher,
+                                     backend:backend,
+                                     storeKitWrapper: storeKitWrapper,
+                                     notificationCenter:notificationCenter)!
+        purchases.delegate = nil
 
         purchasesDelegate.purchaserInfo = nil
 
-        purchases!.delegate = purchasesDelegate
+        purchases.delegate = purchasesDelegate
 
         expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
     }

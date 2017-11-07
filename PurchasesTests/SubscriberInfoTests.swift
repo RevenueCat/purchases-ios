@@ -25,10 +25,10 @@ class BasicSubscriberInfoTests: XCTestCase {
         "subscriber": [
             "subscriptions": [
                 "onemonth_freetrial": [
-                    "expires_date": "2100-08-30T02:40:36"
+                    "expires_date": "2100-08-30T02:40:36Z"
                 ],
                 "threemonth_freetrial": [
-                    "expires_date": "1990-08-30T02:40:36"
+                    "expires_date": "1990-08-30T02:40:36Z"
                 ]
             ]
         ]

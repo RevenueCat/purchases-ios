@@ -36,7 +36,7 @@
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
     return [self initWithAppUserID:appUserID
-                    productFetcher:fetcher
+                    requestFetcher:fetcher
                            backend:backend
                    storeKitWrapper:storeKitWrapper
                 notificationCenter:[NSNotificationCenter defaultCenter]];
@@ -46,7 +46,7 @@
 }
 
 - (instancetype _Nullable)initWithAppUserID:(NSString *)appUserID
-                             productFetcher:(RCStoreKitRequestFetcher *)productFetcher
+                             requestFetcher:(RCStoreKitRequestFetcher *)requestFetcher
                                     backend:(RCBackend *)backend
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                          notificationCenter:(NSNotificationCenter *)notificationCenter
@@ -55,7 +55,7 @@
     {
         self.appUserID = appUserID;
 
-        self.requestFetcher = productFetcher;
+        self.requestFetcher = requestFetcher;
         self.backend = backend;
         self.storeKitWrapper = storeKitWrapper;
         self.storeKitWrapper.delegate = self;

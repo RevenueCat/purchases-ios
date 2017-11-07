@@ -60,7 +60,7 @@ class BackendTests: XCTestCase {
         "subscriber": [
             "subscriptions": [
                 "onemonth_freetrial": [
-                    "expires_date": "2017-08-30T02:40:36"
+                    "expires_date": "2017-08-30T02:40:36Z"
                 ]
             ]
         ]

@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCPurchases (Protected)
 
 - (instancetype _Nullable)initWithAppUserID:(NSString *)appUserID
-                             productFetcher:(RCStoreKitRequestFetcher *)productFetcher
+                             requestFetcher:(RCStoreKitRequestFetcher *)requestFetcher
                                     backend:(RCBackend *)backend
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                          notificationCenter:(NSNotificationCenter *)notificationCenter;
