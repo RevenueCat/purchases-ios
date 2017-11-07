@@ -24,6 +24,7 @@
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 
 @property (nonatomic) BOOL updatingPurchaserInfo;
+@property (nonatomic) NSDate *purchaserInfoLastChecked;
 
 @end
 
@@ -101,17 +102,20 @@
 }
 
 - (void)updatePurchaserInfo {
-    if (self.updatingPurchaserInfo) return;
-    self.updatingPurchaserInfo = YES;
+    NSTimeInterval timeSinceLastCheck = -[self.purchaserInfoLastChecked timeIntervalSinceNow];
+    if (self.purchaserInfoLastChecked != nil && timeSinceLastCheck < 60.) return;
+
+    self.purchaserInfoLastChecked = [NSDate date];
+
     [self.backend getSubscriberDataWithAppUserID:self.appUserID
                                       completion:^(RCPurchaserInfo * _Nullable info,
                                                    NSError * _Nullable error) {
         if (error == nil) {
             NSParameterAssert(self.delegate);
             [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+        } else {
+            self.purchaserInfoLastChecked = nil;
         }
-
-        self.updatingPurchaserInfo = NO;
     }];
 }
 
