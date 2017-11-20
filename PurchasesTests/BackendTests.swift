@@ -83,7 +83,7 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
-        backend?.postReceiptData(receiptData, appUserID: userID, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, productIdentifier: nil, price: nil, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
             completionCalled = true
         })
 
@@ -106,13 +106,62 @@ class BackendTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
     }
 
+    func testPostsReceiptDataWithProductInfoCorrectly() {
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        httpClient.mock(requestPath: "/receipts", response: response)
+
+        let productIdentifier = "a_great_product"
+        let price = 4.99 as NSDecimalNumber
+        let introPrice = 2.99 as NSDecimalNumber
+        let currencyCode = "BFD"
+
+        var completionCalled = false
+
+        backend?.postReceiptData(receiptData, appUserID: userID,
+                                 productIdentifier: productIdentifier,
+                                 price: price,
+                                 introductoryPrice: introPrice,
+                                 currencyCode: currencyCode,
+                                 completion: { (purchaserInfo, error) in
+            completionCalled = true
+        })
+
+        let body: [String: Any] = [
+            "app_user_id": userID,
+            "fetch_token": receiptData.base64EncodedString(),
+            "product_id": productIdentifier,
+            "price": price,
+            "introductory_price": introPrice,
+            "currency": currencyCode
+        ]
+
+        let expectedCall = HTTPRequest(HTTPMethod: "POST", path: "/receipts",
+                                       body: body , headers: ["Authorization": "Basic " + apiKey])
+
+        expect(self.httpClient.calls.count).to(equal(1))
+
+        if self.httpClient.calls.count > 0 {
+            let call = self.httpClient.calls[0]
+
+            XCTAssertEqual(call.path, expectedCall.path)
+            XCTAssertEqual(call.HTTPMethod, expectedCall.HTTPMethod)
+            XCTAssert(call.body!.keys == expectedCall.body!.keys)
+            XCTAssertNotNil(call.headers?["Authorization"])
+            XCTAssertEqual(call.headers?["Authorization"], expectedCall.headers?["Authorization"])
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+    }
+
     func testForwards500ErrorsCorrectly() {
         let response = HTTPResponse(statusCode: 501, response: serverErrorResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
         var error: Error?
 
-        backend?.postReceiptData(receiptData, appUserID: userID, completion: { (purchaserInfo, newError) in
+        backend?.postReceiptData(receiptData, appUserID: userID, productIdentifier: nil,
+                                 price: nil, introductoryPrice: nil, currencyCode: nil,
+                                 completion: { (purchaserInfo, newError) in
             error = newError
         })
 
@@ -127,7 +176,8 @@ class BackendTests: XCTestCase {
 
         var error: Error?
 
-        backend?.postReceiptData(receiptData, appUserID: userID, completion: { (purchaserInfo, newError) in
+        backend?.postReceiptData(receiptData, appUserID: userID, productIdentifier: nil,
+                                 price: nil, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, newError) in
             error = newError
         })
 
@@ -142,7 +192,9 @@ class BackendTests: XCTestCase {
 
         var purchaserInfo: RCPurchaserInfo?
 
-        backend?.postReceiptData(receiptData, appUserID: userID, completion: { (newPurchaserInfo, newError) in
+        backend?.postReceiptData(receiptData, appUserID: userID, productIdentifier: nil,
+                                 price: nil, introductoryPrice: nil, currencyCode: nil,
+                                 completion: { (newPurchaserInfo, newError) in
             purchaserInfo = newPurchaserInfo
         })
 

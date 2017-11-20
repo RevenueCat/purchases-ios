@@ -91,13 +91,30 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 
 - (void)postReceiptData:(NSData *)data
               appUserID:(NSString *)appUserID
+      productIdentifier:(NSString *)productIdentifier
+                  price:(NSDecimalNumber *)price
+      introductoryPrice:(NSDecimalNumber *)introductoryPrice
+           currencyCode:(NSString *)currencyCode
              completion:(RCBackendResponseHandler)completion
 {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
-    NSDictionary *body = @{
-                               @"fetch_token": fetchToken,
-                               @"app_user_id": appUserID
-                           };
+    NSMutableDictionary *body = [NSMutableDictionary dictionaryWithDictionary:
+                                 @{
+                                   @"fetch_token": fetchToken,
+                                   @"app_user_id": appUserID
+                                   }];
+
+    if (productIdentifier &&
+        price &&
+        introductoryPrice &&
+        currencyCode) {
+        [body addEntriesFromDictionary:@{
+                                         @"product_id": productIdentifier,
+                                         @"price": price,
+                                         @"introductory_price": introductoryPrice,
+                                         @"currency": currencyCode
+                                         }];
+    }
 
     [self.httpClient performRequest:@"POST"
                                path:@"/receipts"
