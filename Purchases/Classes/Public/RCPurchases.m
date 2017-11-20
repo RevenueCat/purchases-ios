@@ -23,7 +23,6 @@
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 
-@property (nonatomic) BOOL updatingPurchaserInfo;
 @property (nonatomic) NSDate *purchaserInfoLastChecked;
 
 @end
@@ -59,8 +58,6 @@
         self.storeKitWrapper = storeKitWrapper;
         self.storeKitWrapper.delegate = self;
         self.notificationCenter = notificationCenter;
-
-        self.updatingPurchaserInfo = NO;
     }
 
     return self;
