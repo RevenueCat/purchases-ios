@@ -24,6 +24,14 @@ class MockProduct: SKProduct {
     override var productIdentifier: String {
         return self.mockProductIdentifier
     }
+
+    override var priceLocale: Locale {
+        return Locale.current
+    }
+
+    override var price: NSDecimalNumber {
+        return 2.99 as NSDecimalNumber
+    }
 }
 
 class StoreKitRequestFetcher: XCTestCase {

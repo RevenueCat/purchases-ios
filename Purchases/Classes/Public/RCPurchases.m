@@ -24,6 +24,7 @@
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 
 @property (nonatomic) NSDate *purchaserInfoLastChecked;
+@property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
 
 @end
 
@@ -58,6 +59,8 @@
         self.storeKitWrapper = storeKitWrapper;
         self.storeKitWrapper.delegate = self;
         self.notificationCenter = notificationCenter;
+
+        self.productsByIdentifier = [NSMutableDictionary new];
     }
 
     return self;
@@ -121,6 +124,12 @@
                      completion:(void (^)(NSArray<SKProduct *>* products))completion
 {
     [self.requestFetcher fetchProducts:productIdentifiers completion:^(NSArray<SKProduct *> * _Nonnull products) {
+        @synchronized(self) {
+            for (SKProduct *product in products) {
+                self.productsByIdentifier[product.productIdentifier] = product;
+            }
+        }
+
         completion(products);
     }];
 }
@@ -199,6 +208,10 @@
             [self receiptData:^(NSData * _Nonnull data) {
                 [self.backend postReceiptData:data
                                     appUserID:self.appUserID
+                            productIdentifier:nil
+                                        price:nil
+                            introductoryPrice:nil
+                                 currencyCode:nil
                                    completion:^(RCPurchaserInfo * _Nullable info,
                                                 NSError * _Nullable error) {
                                        [self handleReceiptPostWithTransaction:transaction

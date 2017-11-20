@@ -51,13 +51,21 @@ class PurchasesTests: XCTestCase {
         }
 
         var postReceiptDataCalled = false
-        var postReceiptData: Any?
+        var postedProductID : String?
+        var postedPrice : NSDecimalNumber?
+        var postedIntroPrice : NSDecimalNumber?
+        var postedCurrencyCode : String?
         var postReceiptPurchaserInfo: RCPurchaserInfo?
         var postReceiptError: Error?
 
-        override func postReceiptData(_ data: Data, appUserID: String, completion: @escaping RCBackendResponseHandler) {
+        override func postReceiptData(_ data: Data, appUserID: String, productIdentifier: String?, price: NSDecimalNumber?, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
             postReceiptDataCalled = true
-            postReceiptData = try? JSONSerialization.jsonObject(with: data)
+
+            postedProductID  = productIdentifier
+            postedPrice = price
+            postedIntroPrice = introductoryPrice
+            postedCurrencyCode = currencyCode
+
             completion(postReceiptPurchaserInfo, postReceiptError)
         }
     }
@@ -238,12 +246,12 @@ class PurchasesTests: XCTestCase {
             
             expect(self.backend.postReceiptDataCalled).to(equal(true))
             expect(self.backend.postReceiptData).toNot(beNil())
-            if let data = self.backend.postReceiptData as! [String: Any]? {
-                expect(data["product_id"] as? String).to(equal(product.productIdentifier))
-                expect(data["price"] as? Decimal).to(equal(product.price.decimalValue))
-                expect(data["introductory_price"]).to(beNil())
-                expect(data["currency"] as? String).to(equal(product.priceLocale.currencyCode!))
-            }
+
+            expect(self.backend.postedProductID).to(equal(product.productIdentifier))
+            expect(self.backend.postedPrice).to(equal(product.price))
+            expect(self.backend.postedIntroPrice).to(beNil())
+            expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
+
             expect(self.storeKitWrapper.finishCalled).to(beTrue())
         }
     }
@@ -263,12 +271,11 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
         
-        if let data = self.backend.postReceiptData as! [String: Any]? {
-            expect(data["product_id"]).to(beNil())
-            expect(data["price"] as? Decimal).to(beNil())
-            expect(data["introductory_price"]).to(beNil())
-            expect(data["currency"] as? String).to(beNil())
-        }
+
+        expect(self.backend.postedProductID).to(beNil())
+        expect(self.backend.postedPrice).to(beNil())
+        expect(self.backend.postedIntroPrice).to(beNil())
+        expect(self.backend.postedCurrencyCode).to(beNil())
     }
     
     enum BackendError: Error {
