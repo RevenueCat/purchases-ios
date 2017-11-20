@@ -219,8 +219,7 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.finishCalled).to(beTrue())
     }
     
-    func testSendsProductInfo() {
-        
+    func testSendsProductInfoIfProductIsCached() {
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
         purchases!.products(withIdentifiers:Set(productIdentifiers)) { (newProducts) in
             let product = newProducts[0];
@@ -248,7 +247,30 @@ class PurchasesTests: XCTestCase {
             expect(self.storeKitWrapper.finishCalled).to(beTrue())
         }
     }
-
+    
+    func testDoesntSendProductInfoIfProductIsntCached() {
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.makePurchase(product)
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        if let data = self.backend.postReceiptData as! [String: Any]? {
+            expect(data["product_id"]).to(beNil())
+            expect(data["price"] as? Decimal).to(beNil())
+            expect(data["introductory_price"]).to(beNil())
+            expect(data["currency"] as? String).to(beNil())
+        }
+    }
+    
     enum BackendError: Error {
         case unknown
     }
