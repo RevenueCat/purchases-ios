@@ -106,12 +106,10 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 
     if (productIdentifier &&
         price &&
-        introductoryPrice &&
         currencyCode) {
         [body addEntriesFromDictionary:@{
                                          @"product_id": productIdentifier,
                                          @"price": price,
-                                         @"introductory_price": introductoryPrice,
                                          @"currency": currencyCode
                                          }];
     }
