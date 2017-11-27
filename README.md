@@ -133,7 +133,7 @@ In case the user has purchased or subscribed on another device.
 ```swift
 func applicationDidBecomeActive(_ application: UIApplication) {
   self.purchases.purchaserInfo { (info) in
-    if info != nil {
+    if let info = info {
         self.saveNewPurchaserInfo(info: info!)
     }
   }
