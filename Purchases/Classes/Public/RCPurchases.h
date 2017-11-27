@@ -15,14 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  `RCPurchases` is the entry point for Purchases.framework. It should be instantiated as soon as your app has a unique user id for your user. This can be when a user logs in if you have accounts or on launch if you can generate a random user identifier.
-
- ```
- - (void)setupPurchases {
-     self.purchases = [[Purchases alloc] initWithAPIKey:@"myappapikey"
-                                              appUserId:@"a-user-identifier"];
-     self.purcahses.delegate = self;
- }
- ```
  */
 @interface RCPurchases : NSObject
 
