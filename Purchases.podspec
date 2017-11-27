@@ -11,6 +11,7 @@ Pod::Spec.new do |s|
   s.license          =  { :type => 'MIT' }
   s.author           = { "RevenueCat, Inc." => "jacob@revenuecat.com" }
   s.source           = { :git => "https://github.com/revenuecat/purchases-ios.git", :tag => s.version.to_s }
+  s.documentation_url = "https://www.revenuecat.com/docs/index.html"
 
   s.framework      = 'StoreKit'
 
