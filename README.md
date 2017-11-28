@@ -58,7 +58,7 @@ func purchases(_ purchases: RCPurchases,
 func purchases(_ purchases: RCPurchases,
                    failedTransaction transaction: SKPaymentTransaction,
                    withReason failureReason: Error) {
-  displayErrorMessage((failurerReason as! NSError).localizedDescription)
+  displayErrorMessage((failureReason as! NSError).localizedDescription)
 }
 
 func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
