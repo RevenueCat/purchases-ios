@@ -52,17 +52,23 @@ self.purchases.delegate = self
 func purchases(_ purchases: RCPurchases,
           completedTransaction transaction: SKPaymentTransaction,
           withUpdatedInfo purchaserInfo: RCPurchaserInfo) {
-  handleNewPurchaserInfo(info: purchaserInfo)
+  DispatchQueue.main.async {
+    self.handleNewPurchaserInfo(info: purchaserInfo)
+  }
 }
 
 func purchases(_ purchases: RCPurchases,
                    failedTransaction transaction: SKPaymentTransaction,
                    withReason failureReason: Error) {
-  displayErrorMessage((failureReason as! NSError).localizedDescription)
+  DispatchQueue.main.async {
+    displayErrorMessage((failureReason as! NSError).localizedDescription)
+  }
 }
 
 func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
-  handleNewPurchaserInfo(info: purchaserInfo)
+  DispatchQueue.main.async {
+    handleNewPurchaserInfo(info: purchaserInfo)
+  }
 }
 ```
 
@@ -107,7 +113,7 @@ self.purchases.products(withIdentifiers: productIDs) { (products) in
 
 NSSet *myProductIDs = [NSSet setWithArray:@["com.myapp.subscription_product"]];
 
-[self.purchases productsWithIdentifiers: completion:^(NSArray<SKProduct *> * _Nonnull products) {
+[self.purchases productsWithIdentifiers:myProductIDs completion:^(NSArray<SKProduct *> * _Nonnull products) {
   if (products.count == 0) {
     [self displayErrorMessage:@"Error fetching products"];
   } else {
@@ -141,7 +147,7 @@ func purchases(_ purchases: RCPurchases,
 
 ```obj-c
 - (void)applicationDidBecomeActive:(UIApplication *) {
-    [self.purchasers purchaserInfoWithCompletion:^(RCPurchaserInfo *purchaserInfo) {
+    [self.purchases purchaserInfoWithCompletion:^(RCPurchaserInfo *purchaserInfo) {
       dispatch_async(dispatch_get_main_queue(), ^{
         [self saveNewPurchaserInfo:purchaserInfo];
       })
