@@ -131,7 +131,6 @@ class BackendTests: XCTestCase {
             "fetch_token": receiptData.base64EncodedString(),
             "product_id": productIdentifier,
             "price": price,
-            "introductory_price": introPrice,
             "currency": currencyCode
         ]
 
