@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "Purchases"
-  s.version          = "0.4.0-SNAPSHOT"
+  s.version          = "0.4.0"
   s.summary          = "Subscription and in-app-purchase backend service."
 
   s.description      = <<-DESC
@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
 
   s.framework      = 'StoreKit'
 
-  s.ios.deployment_target = '9.0'
+  s.ios.deployment_target = '10.0'
 
   s.source_files = [
     'Purchases/Classes/**/*'

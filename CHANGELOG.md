@@ -1,3 +1,6 @@
+## 0.4.0
+- Add tracking of product prices to allow for real time revenue tracking on RevenueCat.com
+
 ## 0.3.0
 - Improve handling of Apple and Backend errors
 - Handles missing receipts case
