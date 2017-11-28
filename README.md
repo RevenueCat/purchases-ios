@@ -58,7 +58,7 @@ func purchases(_ purchases: RCPurchases,
 func purchases(_ purchases: RCPurchases,
                    failedTransaction transaction: SKPaymentTransaction,
                    withReason failureReason: Error) {
-  displayErrorMessage((failurerReason as! NSError).localizedDescription)
+  displayErrorMessage((failureReason as! NSError).localizedDescription)
 }
 
 func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
@@ -133,7 +133,7 @@ In case the user has purchased or subscribed on another device.
 ```swift
 func applicationDidBecomeActive(_ application: UIApplication) {
   self.purchases.purchaserInfo { (info) in
-    if info != nil {
+    if let info = info {
         self.saveNewPurchaserInfo(info: info!)
     }
   }

@@ -51,11 +51,21 @@ class PurchasesTests: XCTestCase {
         }
 
         var postReceiptDataCalled = false
+        var postedProductID : String?
+        var postedPrice : NSDecimalNumber?
+        var postedIntroPrice : NSDecimalNumber?
+        var postedCurrencyCode : String?
         var postReceiptPurchaserInfo: RCPurchaserInfo?
         var postReceiptError: Error?
 
-        override func postReceiptData(_ data: Data, appUserID: String, completion: @escaping RCBackendResponseHandler) {
+        override func postReceiptData(_ data: Data, appUserID: String, productIdentifier: String?, price: NSDecimalNumber?, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
             postReceiptDataCalled = true
+
+            postedProductID  = productIdentifier
+            postedPrice = price
+            postedIntroPrice = introductoryPrice
+            postedCurrencyCode = currencyCode
+
             completion(postReceiptPurchaserInfo, postReceiptError)
         }
     }
@@ -216,7 +226,58 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(equal(true))
         expect(self.storeKitWrapper.finishCalled).to(beTrue())
     }
+    
+    func testSendsProductInfoIfProductIsCached() {
+        let productIdentifiers = ["com.product.id1", "com.product.id2"]
+        purchases!.products(withIdentifiers:Set(productIdentifiers)) { (newProducts) in
+            let product = newProducts[0];
+            self.purchases?.makePurchase(product)
+            
+            let transaction = MockTransaction()
+            transaction.mockPayment = self.storeKitWrapper.payment!
+            
+            transaction.mockState = SKPaymentTransactionState.purchasing
+            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+            
+            self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+            
+            transaction.mockState = SKPaymentTransactionState.purchased
+            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+            
+            expect(self.backend.postReceiptDataCalled).to(equal(true))
+            expect(self.backend.postReceiptData).toNot(beNil())
 
+            expect(self.backend.postedProductID).to(equal(product.productIdentifier))
+            expect(self.backend.postedPrice).to(equal(product.price))
+            expect(self.backend.postedIntroPrice).to(beNil())
+            expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
+
+            expect(self.storeKitWrapper.finishCalled).to(beTrue())
+        }
+    }
+    
+    func testDoesntSendProductInfoIfProductIsntCached() {
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.makePurchase(product)
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+
+        expect(self.backend.postedProductID).to(beNil())
+        expect(self.backend.postedPrice).to(beNil())
+        expect(self.backend.postedIntroPrice).to(beNil())
+        expect(self.backend.postedCurrencyCode).to(beNil())
+    }
+    
     enum BackendError: Error {
         case unknown
     }

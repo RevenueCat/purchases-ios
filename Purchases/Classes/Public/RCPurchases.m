@@ -23,8 +23,8 @@
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 
-@property (nonatomic) BOOL updatingPurchaserInfo;
 @property (nonatomic) NSDate *purchaserInfoLastChecked;
+@property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
 
 @end
 
@@ -60,7 +60,7 @@
         self.storeKitWrapper.delegate = self;
         self.notificationCenter = notificationCenter;
 
-        self.updatingPurchaserInfo = NO;
+        self.productsByIdentifier = [NSMutableDictionary new];
     }
 
     return self;
@@ -124,6 +124,11 @@
                      completion:(void (^)(NSArray<SKProduct *>* products))completion
 {
     [self.requestFetcher fetchProducts:productIdentifiers completion:^(NSArray<SKProduct *> * _Nonnull products) {
+        @synchronized(self) {
+            for (SKProduct *product in products) {
+                self.productsByIdentifier[product.productIdentifier] = product;
+            }
+        }
         completion(products);
     }];
 }
@@ -199,16 +204,7 @@
 {
     switch (transaction.transactionState) {
         case SKPaymentTransactionStatePurchased: {
-            [self receiptData:^(NSData * _Nonnull data) {
-                [self.backend postReceiptData:data
-                                    appUserID:self.appUserID
-                                   completion:^(RCPurchaserInfo * _Nullable info,
-                                                NSError * _Nullable error) {
-                                       [self handleReceiptPostWithTransaction:transaction
-                                                                purchaserInfo:info
-                                                                        error:error];
-                                   }];
-            }];
+            [self handlePurchasedTransaction:transaction];
             break;
         }
         case SKPaymentTransactionStateFailed: {
@@ -229,5 +225,36 @@
 
 }
 
+- (SKProduct * _Nullable)productForIdentifier:(NSString *)productIdentifier
+{
+    @synchronized(self) {
+        return self.productsByIdentifier[productIdentifier];
+    }
+}
+
+- (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction
+{
+    [self receiptData:^(NSData * _Nonnull data) {
+        SKProduct *product = [self productForIdentifier:transaction.payment.productIdentifier];
+
+        NSString *productIdentifier = product.productIdentifier;
+        NSDecimalNumber *price = product.price;
+        NSDecimalNumber *introPrice = nil; // TODO: Implement introductory prices
+        NSString *currencyCode = product.priceLocale.currencyCode;
+
+        [self.backend postReceiptData:data
+                            appUserID:self.appUserID
+                    productIdentifier:productIdentifier
+                                price:price
+                    introductoryPrice:introPrice
+                         currencyCode:currencyCode
+                           completion:^(RCPurchaserInfo * _Nullable info,
+                                        NSError * _Nullable error) {
+                               [self handleReceiptPostWithTransaction:transaction
+                                                        purchaserInfo:info
+                                                                error:error];
+                           }];
+    }];
+}
 
 @end
