@@ -42,7 +42,7 @@
                 notificationCenter:[NSNotificationCenter defaultCenter]];
 }
 + (NSString *)frameworkVersion {
-    return @"0.4.0";
+    return @"0.4.1";
 }
 
 - (instancetype _Nullable)initWithAppUserID:(NSString *)appUserID
