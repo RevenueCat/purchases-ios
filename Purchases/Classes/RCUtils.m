@@ -8,7 +8,7 @@
 
 #import "RCUtils.h"
 
-static BOOL RCShouldShowLogs = YES;
+static BOOL RCShouldShowLogs = NO;
 
 void RCSetShowDebugLogs(BOOL showDebugLogs)
 {
