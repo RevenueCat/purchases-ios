@@ -127,23 +127,24 @@ self.purchases.makePurchase(mySubscriptionProduct)
 [purchases makePurchase:mySubscriptionProduct];
 ```
 
-#### 7. Check for subscription updates on launch
-In case the user has purchased or subscribed on another device.
+#### 7. Handle user information updates
+The latest purchaser information can come at any time, be prepared to receive it
 
 ```swift
-func applicationDidBecomeActive(_ application: UIApplication) {
-  self.purchases.purchaserInfo { (info) in
-    if let info = info {
-        self.saveNewPurchaserInfo(info: info!)
+func purchases(_ purchases: RCPurchases,
+               receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
+    DispatchQueue.main.async {
+      self.handleNewPurchaserInfo(info: purchaserInfo)
     }
-  }
 }
 ```
 
 ```obj-c
 - (void)applicationDidBecomeActive:(UIApplication *) {
     [self.purchasers purchaserInfoWithCompletion:^(RCPurchaserInfo *purchaserInfo) {
-      [self saveNewPurchaserInfo:purchaserInfo];
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [self saveNewPurchaserInfo:purchaserInfo];
+      })
     }]
 }
 ```
