@@ -146,12 +146,10 @@ func purchases(_ purchases: RCPurchases,
 ```
 
 ```obj-c
-- (void)applicationDidBecomeActive:(UIApplication *) {
-    [self.purchases purchaserInfoWithCompletion:^(RCPurchaserInfo *purchaserInfo) {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        [self saveNewPurchaserInfo:purchaserInfo];
-      })
-    }]
+- (void)purchases:(RCPurchases *)purchases receivedUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self handleNewPurchaserInfo:purchaserInfo];
+    });
 }
 ```
 
