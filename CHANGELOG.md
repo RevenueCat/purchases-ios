@@ -1,6 +1,9 @@
 ## 0.4.1
 - Documentation improvements
 
+## 0.4.1
+- Documentation improvements
+
 ## 0.4.0
 - Add tracking of product prices to allow for real time revenue tracking on RevenueCat.com
 
