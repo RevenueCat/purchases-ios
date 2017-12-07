@@ -33,8 +33,8 @@ Go to [RevenueCat](http://www.revenuecat.com), create an account, and obtain an 
 ```swift
 import Purchases
 
-self.purchases = RCPurchases.init(apiKey: "myappapikey",
-                                  appUserID: "uniqueidforuser")!
+self.purchases = RCPurchases(apiKey: "myappapikey",
+                             appUserID: "uniqueidforuser")!
 ```
 
 ```obj-c
