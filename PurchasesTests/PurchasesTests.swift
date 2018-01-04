@@ -31,6 +31,8 @@ class MockTransaction: SKPaymentTransaction {
 class PurchasesTests: XCTestCase {
 
     class MockRequestFetcher: RCStoreKitRequestFetcher {
+        var refreshReceiptCalled = false
+
         override func fetchProducts(_ identifiers: Set<String>, completion: @escaping RCFetchProductsCompletionHandler) {
             let products = identifiers.map { (identifier) -> MockProduct in
                 MockProduct(mockProductIdentifier: identifier)
@@ -39,6 +41,7 @@ class PurchasesTests: XCTestCase {
         }
 
         override func fetchReceiptData(_ completion: @escaping RCFetchReceiptCompletionHandler) {
+            refreshReceiptCalled = true
             completion()
         }
     }
@@ -426,5 +429,15 @@ class PurchasesTests: XCTestCase {
         purchases.delegate = purchasesDelegate
 
         expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
+    }
+
+    func testRestoringPurchasesPostsTheReceipt() {
+        purchases!.restoreForAppStoreAccount()
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+    }
+
+    func testRestoringPurchasesRefreshesAndRefreshesTheReceipt() {
+        purchases!.restoreForAppStoreAccount()
+        expect(self.requestFetcher.refreshReceiptCalled).to(equal(true))
     }
 }
