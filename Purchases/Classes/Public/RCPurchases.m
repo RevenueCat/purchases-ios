@@ -259,7 +259,18 @@
 
 - (void)restorePurchasesForAppStoreAccount
 {
+    [self receiptData:^(NSData * _Nonnull data) {
+        [self.backend postReceiptData:data
+                            appUserID:self.appUserID
+                    productIdentifier:nil
+                                price:nil
+                    introductoryPrice:nil
+                         currencyCode:nil
+                           completion:^(RCPurchaserInfo * _Nullable info,
+                                        NSError * _Nullable error) {
 
+                           }];
+    }];
 }
 
 @end
