@@ -257,7 +257,7 @@
     }];
 }
 
-- (void)restorePurchasesForAppStoreAccount
+- (void)restoreTransactionsForAppStoreAccount
 {
     [self receiptData:^(NSData * _Nonnull data) {
         [self.backend postReceiptData:data

@@ -82,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 
  If you want to transfer purchases even if there is an active subscription, you can set this in the RevenueCat web app. You should use this if you app doesn't have a seperate account to system that you use to restore purchases.
  */
-- (void)restorePurchasesForAppStoreAccount;
+- (void)restoreTransactionsForAppStoreAccount;
 
 /**
  This version of the Purchases framework
@@ -97,7 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
  @note Delegate methods can be called at any time after the `delegate` is set, not just in response to `makePurchase:` calls. Ensure your app is capable of handling completed transactions anytime `delegate` is set.
  */
 @protocol RCPurchasesDelegate
-
+@required
 /**
  Called when a transaction has been succesfully posted to the backend. This will be called in response to `makePurchase:` call but can also occur at other times, especially when dealing with subscriptions.
 
@@ -127,6 +127,24 @@ NS_ASSUME_NONNULL_BEGIN
  @param purchaserInfo Updated `RCPurchaserInfo`
  */
 - (void)purchases:(RCPurchases *)purchases receivedUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
+
+@optional
+
+/**
+ Called when `RCPurchases` completes a restoration that was initiated with `restorePurchasesForAppStoreAccount`;
+
+ @param purchases Related `RCPurchases` object
+ @param purchaserInfo Updated `RCPurchaserInfo`
+ */
+- (void)purchases:(RCPurchases *)purchases restoredTransactionsWithPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
+
+/**
+ Called when restoring a transaction fails.
+
+ @param purchases Related `RCPurchases` object
+ @param failureReason `NSError` containing the reason for the failure
+ */
+- (void)purchases:(RCPurchases *)purchases failedToRestoreTransactionsWithReason:(NSError *)failureReason;
 
 @end
 

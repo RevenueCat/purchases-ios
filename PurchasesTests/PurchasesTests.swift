@@ -432,12 +432,12 @@ class PurchasesTests: XCTestCase {
     }
 
     func testRestoringPurchasesPostsTheReceipt() {
-        purchases!.restoreForAppStoreAccount()
+        purchases!.restoreTransactionsForAppStoreAccount()
         expect(self.backend.postReceiptDataCalled).to(equal(true))
     }
 
     func testRestoringPurchasesRefreshesAndRefreshesTheReceipt() {
-        purchases!.restoreForAppStoreAccount()
+        purchases!.restoreTransactionsForAppStoreAccount()
         expect(self.requestFetcher.refreshReceiptCalled).to(equal(true))
     }
 }
