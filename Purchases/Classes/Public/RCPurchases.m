@@ -257,4 +257,9 @@
     }];
 }
 
+- (void)restorePurchasesForAppStoreAccount
+{
+
+}
+
 @end
