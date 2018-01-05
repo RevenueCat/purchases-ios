@@ -77,7 +77,8 @@ NS_ASSUME_NONNULL_BEGIN
  This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. The the receipt is being used by another existing user, they will lose their subscription. An App Store account can only be used to provide purchases to one `appUserID` at a time.
 
  @note This will may force your users to enter the App Store password so should only be performed on request of the user.
- @warning Calling this method requires that the optional delegate methods `purchases:restoredTransactionsWithPurchaserInfo:` and `purchases:failedToRestoreTransactionsWithReason:` are implemented. 
+ 
+ @warning Calling this method requires that the optional delegate methods `purchases:restoredTransactionsWithPurchaserInfo:` and `purchases:failedToRestoreTransactionsWithReason:` are implemented.
  */
 - (void)restoreTransactionsForAppStoreAccount;
 
@@ -128,7 +129,7 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 
 /**
- Called when `RCPurchases` completes a restoration that was initiated with `restorePurchasesForAppStoreAccount`;
+ Called when `RCPurchases` completes a restoration that was initiated with `restoreTransactionsForAppStoreAccount`;
 
  @param purchases Related `RCPurchases` object
  @param purchaserInfo Updated `RCPurchaserInfo`

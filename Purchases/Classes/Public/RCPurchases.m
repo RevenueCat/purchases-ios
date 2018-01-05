@@ -260,10 +260,8 @@
 
 - (void)restoreTransactionsForAppStoreAccount
 {
-    // For restoring all we do is refresh the receipt and send it to the backend
-    // if there are no active subscriptions this will just work. If the receipt
-    // has an active subscription, it will depend on the app's transfer behavior
-    // preference
+    // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
+    // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
     [self receiptData:^(NSData * _Nonnull data) {
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
