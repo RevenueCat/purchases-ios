@@ -131,6 +131,16 @@ class PurchasesTests: XCTestCase {
         func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
             self.purchaserInfo = purchaserInfo
         }
+
+        var restoredPurchaserInfo: RCPurchaserInfo?
+        func purchases(_ purchases: RCPurchases, restoredTransactionsWith purchaserInfo: RCPurchaserInfo) {
+            restoredPurchaserInfo = purchaserInfo
+        }
+
+        var restoredError: Error?
+        func purchases(_ purchases: RCPurchases, failedToRestoreTransactionsWithReason failureReason: Error) {
+            restoredError = failureReason
+        }
     }
 
     let requestFetcher = MockRequestFetcher()
@@ -440,4 +450,24 @@ class PurchasesTests: XCTestCase {
         purchases!.restoreTransactionsForAppStoreAccount()
         expect(self.requestFetcher.refreshReceiptCalled).to(equal(true))
     }
+
+    func testRestoringPurchasesCallsSuccessDelegateMethod() {
+        let purchaserInfo = RCPurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = purchaserInfo
+
+        purchases!.restoreTransactionsForAppStoreAccount()
+
+        expect(self.purchasesDelegate.restoredPurchaserInfo).to(equal(purchaserInfo))
+    }
+
+    func testRestorePurchasesCallsFailureDelegateMethodOnFailure() {
+        let error = NSError(domain: "error_domain", code: RCFinishableError, userInfo: nil)
+        self.backend.postReceiptError = error
+
+        purchases!.restoreTransactionsForAppStoreAccount()
+
+        expect(self.purchasesDelegate.failedTransaction).to(equal(error))
+    }
+
+
 }
