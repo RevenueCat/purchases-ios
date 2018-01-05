@@ -83,13 +83,16 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil, price: nil, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+        let isRestore = arc4random_uniform(2) == 0
+
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
             completionCalled = true
         })
 
         let expectedCall = HTTPRequest(HTTPMethod: "POST", path: "/receipts", body: [
             "app_user_id": userID,
-            "fetch_token": receiptData.base64EncodedString()
+            "fetch_token": receiptData.base64EncodedString(),
+            "is_restore": isRestore
             ], headers: ["Authorization": "Basic " + apiKey])
 
         expect(self.httpClient.calls.count).to(equal(1))
@@ -130,6 +133,7 @@ class BackendTests: XCTestCase {
         let body: [String: Any] = [
             "app_user_id": userID,
             "fetch_token": receiptData.base64EncodedString(),
+            "is_restore": false,
             "product_id": productIdentifier,
             "price": price,
             "currency": currencyCode
@@ -267,4 +271,6 @@ class BackendTests: XCTestCase {
         expect((error as NSError?)?.domain).to(equal(RCBackendErrorDomain))
         expect((error as NSError?)?.code).to(equal(RCUnexpectedBackendResponse))
     }
+
+
 }
