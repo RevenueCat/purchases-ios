@@ -259,6 +259,10 @@
 
 - (void)restoreTransactionsForAppStoreAccount
 {
+    // For restoring all we do is refresh the receipt and send it to the backend
+    // if there are no active subscriptions this will just work. If the receipt
+    // has an active subscription, it will depend on the app's transfer behavior
+    // preference
     [self receiptData:^(NSData * _Nonnull data) {
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
@@ -268,7 +272,13 @@
                          currencyCode:nil
                            completion:^(RCPurchaserInfo * _Nullable info,
                                         NSError * _Nullable error) {
-
+                               if (info) {
+                                   [self.delegate purchases:self restoredTransactionsWithPurchaserInfo:info];
+                               } else if (error) {
+                                   [self.delegate purchases:self failedToRestoreTransactionsWithReason:error];
+                               } else {
+                                   RCLog(@"Unexpected error restoring transactions");
+                               }
                            }];
     }];
 }

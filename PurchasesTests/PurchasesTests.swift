@@ -466,7 +466,8 @@ class PurchasesTests: XCTestCase {
 
         purchases!.restoreTransactionsForAppStoreAccount()
 
-        expect(self.purchasesDelegate.failedTransaction).to(equal(error))
+        expect(self.purchasesDelegate.restoredPurchaserInfo).to(beNil())
+        expect(self.purchasesDelegate.restoredError).toNot(beNil())
     }
 
 
