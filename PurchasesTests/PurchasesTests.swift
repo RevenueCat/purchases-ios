@@ -54,15 +54,17 @@ class PurchasesTests: XCTestCase {
         }
 
         var postReceiptDataCalled = false
-        var postedProductID : String?
-        var postedPrice : NSDecimalNumber?
-        var postedIntroPrice : NSDecimalNumber?
-        var postedCurrencyCode : String?
+        var postedIsRestore: Bool?
+        var postedProductID: String?
+        var postedPrice: NSDecimalNumber?
+        var postedIntroPrice: NSDecimalNumber?
+        var postedCurrencyCode: String?
         var postReceiptPurchaserInfo: RCPurchaserInfo?
         var postReceiptError: Error?
 
-        override func postReceiptData(_ data: Data, appUserID: String, productIdentifier: String?, price: NSDecimalNumber?, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
+        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
             postReceiptDataCalled = true
+            postedIsRestore = isRestore
 
             postedProductID  = productIdentifier
             postedPrice = price
@@ -446,9 +448,14 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(equal(true))
     }
 
-    func testRestoringPurchasesRefreshesAndRefreshesTheReceipt() {
+    func testRestoringPurchasesRefreshesAndPostsTheReceipt() {
         purchases!.restoreTransactionsForAppStoreAccount()
         expect(self.requestFetcher.refreshReceiptCalled).to(equal(true))
+    }
+
+    func testRestoringPurchasesSetsIsRestore() {
+        purchases!.restoreTransactionsForAppStoreAccount()
+        expect(self.backend.postedIsRestore!).to(equal(true))
     }
 
     func testRestoringPurchasesCallsSuccessDelegateMethod() {

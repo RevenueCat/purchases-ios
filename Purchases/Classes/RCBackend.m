@@ -91,6 +91,7 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 
 - (void)postReceiptData:(NSData *)data
               appUserID:(NSString *)appUserID
+              isRestore:(BOOL)isRestore
       productIdentifier:(NSString *)productIdentifier
                   price:(NSDecimalNumber *)price
       introductoryPrice:(NSDecimalNumber *)introductoryPrice

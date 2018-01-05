@@ -83,7 +83,7 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
-        backend?.postReceiptData(receiptData, appUserID: userID, productIdentifier: nil, price: nil, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil, price: nil, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
             completionCalled = true
         })
 
@@ -118,6 +118,7 @@ class BackendTests: XCTestCase {
         var completionCalled = false
 
         backend?.postReceiptData(receiptData, appUserID: userID,
+                                 isRestore: false,
                                  productIdentifier: productIdentifier,
                                  price: price,
                                  introductoryPrice: introPrice,
@@ -158,7 +159,7 @@ class BackendTests: XCTestCase {
 
         var error: Error?
 
-        backend?.postReceiptData(receiptData, appUserID: userID, productIdentifier: nil,
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil,
                                  price: nil, introductoryPrice: nil, currencyCode: nil,
                                  completion: { (purchaserInfo, newError) in
             error = newError
@@ -175,7 +176,7 @@ class BackendTests: XCTestCase {
 
         var error: Error?
 
-        backend?.postReceiptData(receiptData, appUserID: userID, productIdentifier: nil,
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil,
                                  price: nil, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, newError) in
             error = newError
         })
@@ -191,7 +192,7 @@ class BackendTests: XCTestCase {
 
         var purchaserInfo: RCPurchaserInfo?
 
-        backend?.postReceiptData(receiptData, appUserID: userID, productIdentifier: nil,
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil,
                                  price: nil, introductoryPrice: nil, currencyCode: nil,
                                  completion: { (newPurchaserInfo, newError) in
             purchaserInfo = newPurchaserInfo

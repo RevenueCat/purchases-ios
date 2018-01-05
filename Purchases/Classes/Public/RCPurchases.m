@@ -244,6 +244,7 @@
 
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
+                            isRestore:NO
                     productIdentifier:productIdentifier
                                 price:price
                     introductoryPrice:introPrice
@@ -266,6 +267,7 @@
     [self receiptData:^(NSData * _Nonnull data) {
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
+                            isRestore:YES
                     productIdentifier:nil
                                 price:nil
                     introductoryPrice:nil
