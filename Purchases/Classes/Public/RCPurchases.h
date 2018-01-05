@@ -74,13 +74,9 @@ NS_ASSUME_NONNULL_BEGIN
             quantity:(NSInteger)quantity;
 
 /**
- This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`.
+ This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. The the receipt is being used by another existing user, they will lose their subscription. An App Store account can only be used to provide purchases to one `appUserID` at a time.
 
- If this App Store account is already associated with another `appUserID` that has an active subscription this will produce an error. This prevents one App Store account from providing subscriptions for multiple users. This is the default behavior.
-
- If the App Store account has no active subscriptions or purchases it will restore and transfer purchases and subscriptions to the current `appUserID`.
-
- If you want to transfer purchases even if there is an active subscription, you can set this in the RevenueCat web app. You should use this if you app doesn't have a seperate account to system that you use to restore purchases.
+ @note This will may force your users to enter the App Store password so should only be performed on request of the user.
  */
 - (void)restoreTransactionsForAppStoreAccount;
 
