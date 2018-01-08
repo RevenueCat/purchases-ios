@@ -13,6 +13,7 @@
 #import "RCBackend.h"
 #import "RCStoreKitWrapper.h"
 #import "RCUtils.h"
+#import "NSLocale+RCExtensions.h"
 
 @interface RCPurchases () <RCStoreKitWrapperDelegate>
 
@@ -240,7 +241,7 @@
         NSString *productIdentifier = product.productIdentifier;
         NSDecimalNumber *price = product.price;
         NSDecimalNumber *introPrice = nil; // TODO: Implement introductory prices
-        NSString *currencyCode = product.priceLocale.currencyCode;
+        NSString *currencyCode = product.priceLocale.rc_currencyCode;
 
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
