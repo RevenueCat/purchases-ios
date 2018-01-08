@@ -34,6 +34,8 @@
 		35262A2D1F7D783F00C04F2C /* RCHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 35262A2B1F7D783F00C04F2C /* RCHTTPClient.m */; };
 		35262A301F7D78C600C04F2C /* HTTPClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35262A2F1F7D78C600C04F2C /* HTTPClientTests.swift */; };
 		352C36BF1F9D372D00A15783 /* RCPurchaserInfo+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 352C36BE1F9D372D00A15783 /* RCPurchaserInfo+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */; };
+		359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */; };
 		35A60EAA1F82993E00D2FAE8 /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */; };
 /* End PBXBuildFile section */
@@ -94,6 +96,8 @@
 		35262A2F1F7D78C600C04F2C /* HTTPClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClientTests.swift; sourceTree = "<group>"; };
 		352C36BB1F9D228200A15783 /* Purchases-umbrella.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Purchases-umbrella.h"; sourceTree = "<group>"; };
 		352C36BE1F9D372D00A15783 /* RCPurchaserInfo+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCPurchaserInfo+Protected.h"; sourceTree = "<group>"; };
+		359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSLocale+RCExtensions.h"; sourceTree = "<group>"; };
+		359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSLocale+RCExtensions.m"; sourceTree = "<group>"; };
 		35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCPurchases+Protected.h"; sourceTree = "<group>"; };
 		35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWrapperTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -184,6 +188,8 @@
 				351F4FA91F80190700F245F4 /* RCBackend.h */,
 				351F4FAA1F80190700F245F4 /* RCBackend.m */,
 				352C36BB1F9D228200A15783 /* Purchases-umbrella.h */,
+				359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */,
+				359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -214,6 +220,7 @@
 				350FBDE31F7EECAA0065833D /* RCUtils.h in Headers */,
 				35262A2C1F7D783F00C04F2C /* RCHTTPClient.h in Headers */,
 				350FBDED1F7EFB950065833D /* RCStoreKitRequestFetcher.h in Headers */,
+				359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */,
 				351F4FAB1F80190700F245F4 /* RCBackend.h in Headers */,
 				352C36BF1F9D372D00A15783 /* RCPurchaserInfo+Protected.h in Headers */,
 				350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */,
@@ -328,6 +335,7 @@
 				350FBDEE1F7EFB950065833D /* RCStoreKitRequestFetcher.m in Sources */,
 				351F4FAC1F80190700F245F4 /* RCBackend.m in Sources */,
 				350FBDE01F7EE8F20065833D /* RCUtils.m in Sources */,
+				359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */,
 				351F4FB01F803D0700F245F4 /* RCPurchaserInfo.m in Sources */,
 				350FBDEA1F7EEF070065833D /* RCPurchases.m in Sources */,
 				35262A2D1F7D783F00C04F2C /* RCHTTPClient.m in Sources */,
@@ -408,7 +416,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -460,7 +468,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
