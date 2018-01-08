@@ -74,6 +74,15 @@ NS_ASSUME_NONNULL_BEGIN
             quantity:(NSInteger)quantity;
 
 /**
+ This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, that user will lose their subscription. An App Store account can only be used to provide subscriptions to one `appUserID` at a time.
+
+ @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI.
+ 
+ @warning Calling this method requires that the optional delegate methods `purchases:restoredTransactionsWithPurchaserInfo:` and `purchases:failedToRestoreTransactionsWithReason:` are implemented.
+ */
+- (void)restoreTransactionsForAppStoreAccount;
+
+/**
  This version of the Purchases framework
 */
 + (NSString *)frameworkVersion;
@@ -86,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
  @note Delegate methods can be called at any time after the `delegate` is set, not just in response to `makePurchase:` calls. Ensure your app is capable of handling completed transactions anytime `delegate` is set.
  */
 @protocol RCPurchasesDelegate
-
+@required
 /**
  Called when a transaction has been succesfully posted to the backend. This will be called in response to `makePurchase:` call but can also occur at other times, especially when dealing with subscriptions.
 
@@ -116,6 +125,24 @@ NS_ASSUME_NONNULL_BEGIN
  @param purchaserInfo Updated `RCPurchaserInfo`
  */
 - (void)purchases:(RCPurchases *)purchases receivedUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
+
+@optional
+
+/**
+ Called when `RCPurchases` completes a restoration that was initiated with `restoreTransactionsForAppStoreAccount`;
+
+ @param purchases Related `RCPurchases` object
+ @param purchaserInfo Updated `RCPurchaserInfo`
+ */
+- (void)purchases:(RCPurchases *)purchases restoredTransactionsWithPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
+
+/**
+ Called when restoring a transaction fails.
+
+ @param purchases Related `RCPurchases` object
+ @param failureReason `NSError` containing the reason for the failure
+ */
+- (void)purchases:(RCPurchases *)purchases failedToRestoreTransactionsWithReason:(NSError *)failureReason;
 
 @end
 

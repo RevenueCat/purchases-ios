@@ -32,6 +32,7 @@ typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
 
 - (void)postReceiptData:(NSData *)data
               appUserID:(NSString *)appUserID
+              isRestore:(BOOL)isRestore
       productIdentifier:(NSString * _Nullable)productIdentifier
                   price:(NSDecimalNumber * _Nullable)price
       introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice

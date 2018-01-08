@@ -91,6 +91,7 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 
 - (void)postReceiptData:(NSData *)data
               appUserID:(NSString *)appUserID
+              isRestore:(BOOL)isRestore
       productIdentifier:(NSString *)productIdentifier
                   price:(NSDecimalNumber *)price
       introductoryPrice:(NSDecimalNumber *)introductoryPrice
@@ -101,7 +102,8 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
     NSMutableDictionary *body = [NSMutableDictionary dictionaryWithDictionary:
                                  @{
                                    @"fetch_token": fetchToken,
-                                   @"app_user_id": appUserID
+                                   @"app_user_id": appUserID,
+                                   @"is_restore": @(isRestore)
                                    }];
 
     if (productIdentifier &&

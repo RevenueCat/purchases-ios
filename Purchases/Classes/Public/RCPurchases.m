@@ -244,6 +244,7 @@
 
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
+                            isRestore:NO
                     productIdentifier:productIdentifier
                                 price:price
                     introductoryPrice:introPrice
@@ -253,6 +254,31 @@
                                [self handleReceiptPostWithTransaction:transaction
                                                         purchaserInfo:info
                                                                 error:error];
+                           }];
+    }];
+}
+
+- (void)restoreTransactionsForAppStoreAccount
+{
+    // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
+    // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
+    [self receiptData:^(NSData * _Nonnull data) {
+        [self.backend postReceiptData:data
+                            appUserID:self.appUserID
+                            isRestore:YES
+                    productIdentifier:nil
+                                price:nil
+                    introductoryPrice:nil
+                         currencyCode:nil
+                           completion:^(RCPurchaserInfo * _Nullable info,
+                                        NSError * _Nullable error) {
+                               if (info) {
+                                   [self.delegate purchases:self restoredTransactionsWithPurchaserInfo:info];
+                               } else if (error) {
+                                   [self.delegate purchases:self failedToRestoreTransactionsWithReason:error];
+                               } else {
+                                   RCLog(@"Unexpected error restoring transactions");
+                               }
                            }];
     }];
 }

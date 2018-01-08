@@ -31,6 +31,8 @@ class MockTransaction: SKPaymentTransaction {
 class PurchasesTests: XCTestCase {
 
     class MockRequestFetcher: RCStoreKitRequestFetcher {
+        var refreshReceiptCalled = false
+
         override func fetchProducts(_ identifiers: Set<String>, completion: @escaping RCFetchProductsCompletionHandler) {
             let products = identifiers.map { (identifier) -> MockProduct in
                 MockProduct(mockProductIdentifier: identifier)
@@ -39,6 +41,7 @@ class PurchasesTests: XCTestCase {
         }
 
         override func fetchReceiptData(_ completion: @escaping RCFetchReceiptCompletionHandler) {
+            refreshReceiptCalled = true
             completion()
         }
     }
@@ -51,15 +54,17 @@ class PurchasesTests: XCTestCase {
         }
 
         var postReceiptDataCalled = false
-        var postedProductID : String?
-        var postedPrice : NSDecimalNumber?
-        var postedIntroPrice : NSDecimalNumber?
-        var postedCurrencyCode : String?
+        var postedIsRestore: Bool?
+        var postedProductID: String?
+        var postedPrice: NSDecimalNumber?
+        var postedIntroPrice: NSDecimalNumber?
+        var postedCurrencyCode: String?
         var postReceiptPurchaserInfo: RCPurchaserInfo?
         var postReceiptError: Error?
 
-        override func postReceiptData(_ data: Data, appUserID: String, productIdentifier: String?, price: NSDecimalNumber?, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
+        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
             postReceiptDataCalled = true
+            postedIsRestore = isRestore
 
             postedProductID  = productIdentifier
             postedPrice = price
@@ -127,6 +132,16 @@ class PurchasesTests: XCTestCase {
 
         func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
             self.purchaserInfo = purchaserInfo
+        }
+
+        var restoredPurchaserInfo: RCPurchaserInfo?
+        func purchases(_ purchases: RCPurchases, restoredTransactionsWith purchaserInfo: RCPurchaserInfo) {
+            restoredPurchaserInfo = purchaserInfo
+        }
+
+        var restoredError: Error?
+        func purchases(_ purchases: RCPurchases, failedToRestoreTransactionsWithReason failureReason: Error) {
+            restoredError = failureReason
         }
     }
 
@@ -427,4 +442,40 @@ class PurchasesTests: XCTestCase {
 
         expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
     }
+
+    func testRestoringPurchasesPostsTheReceipt() {
+        purchases!.restoreTransactionsForAppStoreAccount()
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+    }
+
+    func testRestoringPurchasesRefreshesAndPostsTheReceipt() {
+        purchases!.restoreTransactionsForAppStoreAccount()
+        expect(self.requestFetcher.refreshReceiptCalled).to(equal(true))
+    }
+
+    func testRestoringPurchasesSetsIsRestore() {
+        purchases!.restoreTransactionsForAppStoreAccount()
+        expect(self.backend.postedIsRestore!).to(equal(true))
+    }
+
+    func testRestoringPurchasesCallsSuccessDelegateMethod() {
+        let purchaserInfo = RCPurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = purchaserInfo
+
+        purchases!.restoreTransactionsForAppStoreAccount()
+
+        expect(self.purchasesDelegate.restoredPurchaserInfo).to(equal(purchaserInfo))
+    }
+
+    func testRestorePurchasesCallsFailureDelegateMethodOnFailure() {
+        let error = NSError(domain: "error_domain", code: RCFinishableError, userInfo: nil)
+        self.backend.postReceiptError = error
+
+        purchases!.restoreTransactionsForAppStoreAccount()
+
+        expect(self.purchasesDelegate.restoredPurchaserInfo).to(beNil())
+        expect(self.purchasesDelegate.restoredError).toNot(beNil())
+    }
+
+
 }
