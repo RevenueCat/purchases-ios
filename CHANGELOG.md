@@ -1,3 +1,7 @@
+## 0.5.0
+- Add support for restoring purchases via `restoreTransactionsForAppStoreAccount`
+- Add support for iOS 9.0
+
 ## 0.4.0
 - Add tracking of product prices to allow for real time revenue tracking on RevenueCat.com
 
