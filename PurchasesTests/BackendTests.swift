@@ -242,6 +242,22 @@ class BackendTests: XCTestCase {
         expect(subscriberInfo).toEventuallyNot(beNil())
     }
 
+    func testEncodesSubscriberUserID() {
+        let encodeableUserID = "userid with spaces";
+        let encodedUserID = "userid%20with%20spaces";
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        httpClient.mock(requestPath: "/subscribers/" + encodedUserID, response: response)
+        httpClient.mock(requestPath: "/subscribers/" + encodeableUserID, response: HTTPResponse(statusCode: 404, response: nil, error: nil))
+
+        var subscriberInfo: RCPurchaserInfo?
+
+        backend?.getSubscriberData(withAppUserID: encodeableUserID, completion: { (newSubscriberInfo, newError) in
+            subscriberInfo = newSubscriberInfo
+        })
+
+        expect(subscriberInfo).toEventuallyNot(beNil())
+    }
+
     func testHandlesGetSubscriberInfoErrors() {
         let response = HTTPResponse(statusCode: 404, response: nil, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
@@ -271,6 +287,5 @@ class BackendTests: XCTestCase {
         expect((error as NSError?)?.domain).to(equal(RCBackendErrorDomain))
         expect((error as NSError?)?.code).to(equal(RCUnexpectedBackendResponse))
     }
-
 
 }
