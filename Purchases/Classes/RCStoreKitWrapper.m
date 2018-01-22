@@ -80,4 +80,9 @@
     }
 }
 
+- (BOOL)paymentQueue:(SKPaymentQueue *)queue shouldAddStorePayment:(SKPayment *)payment forProduct:(SKProduct *)product
+{
+    return false;
+}
+
 @end

@@ -58,6 +58,15 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
     func storeKitWrapper(_ storeKitWrapper: RCStoreKitWrapper, removedTransaction transaction: SKPaymentTransaction) {
         removedTransactions.append(transaction)
     }
+    
+    var promoPayment: SKPayment?
+    var promoProduct: SKProduct?
+    var shouldAddPromo = false
+    func storeKitWrapper(_ storeKitWrapper: RCStoreKitWrapper, shouldAddStore payment: SKPayment, for product: SKProduct) -> Bool {
+        promoPayment = payment
+        promoProduct = product
+        return shouldAddPromo
+    }
 
     func testObservesThePaymentQueue() {
         expect(self.paymentQueue.observers.count).to(equal(1))
@@ -80,6 +89,27 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
         wrapper?.paymentQueue(paymentQueue, updatedTransactions: [transaction])
 
         expect(self.updatedTransactions).to(contain(transaction))
+    }
+    
+    func testCallsDelegateWhenPromoPurchaseIsAvailable() {
+        let product = SKProduct.init();
+        let payment = SKPayment.init(product: product)
+        
+        wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
+        
+        expect(self.promoPayment).to(be(payment));
+        expect(self.promoProduct).to(be(product))
+    }
+    
+    func testPromotDelegateMethodPassesBackReturnValueFromOwnDelegate() {
+        let product = SKProduct.init();
+        let payment = SKPayment.init(product: product)
+        
+        shouldAddPromo = (arc4random() % 2 == 0) as Bool
+        
+        let result = wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
+        
+        expect(result).to(equal(self.shouldAddPromo))
     }
 
     func testCallsDelegateOncePerTransaction() {

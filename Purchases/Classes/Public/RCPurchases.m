@@ -233,6 +233,11 @@
     }
 }
 
+- (BOOL)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper shouldAddStorePayment:(SKPayment *)payment
+{
+    return NO;
+}
+
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction
 {
     [self receiptData:^(NSData * _Nonnull data) {
