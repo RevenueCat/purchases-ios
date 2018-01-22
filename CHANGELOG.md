@@ -1,3 +1,7 @@
+## 0.6.0
+- Add support for [promotional purchases](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/PromotingIn-AppPurchases/PromotingIn-AppPurchases.html). 
+- Adds support for `appUserId`s with non-url compatable characters
+
 ## 0.5.0
 - Add support for restoring purchases via `restoreTransactionsForAppStoreAccount`
 - Add support for iOS 9.0
