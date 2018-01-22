@@ -226,6 +226,11 @@
 
 }
 
+- (BOOL)storeKitWrapper:(nonnull RCStoreKitWrapper *)storeKitWrapper shouldAddStorePayment:(nonnull SKPayment *)payment forProduct:(nonnull SKProduct *)product {
+    return NO;
+}
+
+
 - (SKProduct * _Nullable)productForIdentifier:(NSString *)productIdentifier
 {
     @synchronized(self) {
