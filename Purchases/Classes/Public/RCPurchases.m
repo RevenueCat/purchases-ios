@@ -235,7 +235,7 @@
     if ([(id<NSObject>)self.delegate respondsToSelector:@selector(purchases:shouldPurchasePromoProduct:)]) {
         return [self.delegate purchases:self shouldPurchasePromoProduct:product];
     } else {
-        return YES;
+        return NO;
     }
 }
 
@@ -245,11 +245,6 @@
     @synchronized(self) {
         return self.productsByIdentifier[productIdentifier];
     }
-}
-
-- (BOOL)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper shouldAddStorePayment:(SKPayment *)payment
-{
-    return NO;
 }
 
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction

@@ -145,7 +145,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)purchases:(RCPurchases *)purchases failedToRestoreTransactionsWithReason:(NSError *)failureReason;
 
 /**
- Called when a user initiates an in-app purchase from the App Store. Use this method to determine if your app is able to handle a purchase at the current time. If yes, return true and `RCPurchases` will initiate a purchase and should finish with one of the appropriate delegate methods. If you are not ready, cache the product and pass it to `makePurchase:` as soon as the app is  ready. If you don't want to ever make the purchase, simply ignore the call. The default return value is `YES`, if you don't override this delegate method, `RCPurchases` will always initiate a purchase when a user taps a promo purchase from the App Store.
+ Called when a user initiates an in-app purchase from the App Store. Use this method to determine if your app is able to handle a purchase at the current time. If yes, return true and `RCPurchases` will initiate a purchase and should finish with one of the appropriate delegate methods. If you are not ready, cache the product and pass it to `makePurchase:` as soon as the app is  ready. If you don't want to ever make the purchase, simply ignore the call. The default return value is `NO`, if you don't override this delegate method, `RCPurchases` will not proceed with promotional purchases.
  
  @param product `SKProduct` the product that was selected from the app store
  */
