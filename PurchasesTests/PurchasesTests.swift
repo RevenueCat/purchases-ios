@@ -146,8 +146,8 @@ class PurchasesTests: XCTestCase {
         
         var promoProduct: SKProduct?
         var shouldAddPromo = false
-        var makeDeferredPurchase: RCDeferedPromotionalPurchase?
-        func purchases(_ purchases: RCPurchases, shouldPurchasePromoProduct product: SKProduct, defermentBlock makeDeferredPurchase: @escaping RCDeferedPromotionalPurchase) -> Bool {
+        var makeDeferredPurchase: RCDeferredPromotionalPurchaseBlock?
+        func purchases(_ purchases: RCPurchases, shouldPurchasePromoProduct product: SKProduct, defermentBlock makeDeferredPurchase: @escaping RCDeferredPromotionalPurchaseBlock) -> Bool {
             promoProduct = product
             self.makeDeferredPurchase = makeDeferredPurchase
             return shouldAddPromo

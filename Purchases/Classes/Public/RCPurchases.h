@@ -11,7 +11,7 @@
 @class SKProduct, SKPayment, SKPaymentTransaction, RCPurchaserInfo, RCPurchases;
 @protocol RCPurchasesDelegate;
 
-typedef void (^RCDeferedPromotionalPurchase)(void);
+typedef void (^RCDeferredPromotionalPurchaseBlock)(void);
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -151,7 +151,7 @@ NS_ASSUME_NONNULL_BEGIN
  
  @param product `SKProduct` the product that was selected from the app store
  */
-- (BOOL)purchases:(RCPurchases *)purchases shouldPurchasePromoProduct:(SKProduct *)product defermentBlock:(RCDeferedPromotionalPurchase)makeDeferredPurchase;
+- (BOOL)purchases:(RCPurchases *)purchases shouldPurchasePromoProduct:(SKProduct *)product defermentBlock:(RCDeferredPromotionalPurchaseBlock)makeDeferredPurchase;
 
 @end
 
