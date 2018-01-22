@@ -82,7 +82,7 @@
 
 - (BOOL)paymentQueue:(SKPaymentQueue *)queue shouldAddStorePayment:(SKPayment *)payment forProduct:(SKProduct *)product
 {
-    return false;
+    return [self.delegate storeKitWrapper:self shouldAddStorePayment:payment forProduct:product];
 }
 
 @end
