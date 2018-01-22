@@ -227,7 +227,16 @@
 }
 
 - (BOOL)storeKitWrapper:(nonnull RCStoreKitWrapper *)storeKitWrapper shouldAddStorePayment:(nonnull SKPayment *)payment forProduct:(nonnull SKProduct *)product {
-    return NO;
+    
+    @synchronized(self) {
+        self.productsByIdentifier[product.productIdentifier] = product;
+    }
+    
+    if ([(id<NSObject>)self.delegate respondsToSelector:@selector(purchases:shouldPurchasePromoProduct:)]) {
+        return [self.delegate purchases:self shouldPurchasePromoProduct:product];
+    } else {
+        return YES;
+    }
 }
 
 

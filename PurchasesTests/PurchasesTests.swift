@@ -485,7 +485,7 @@ class PurchasesTests: XCTestCase {
     }
     
     func testCallsShouldAddPromoPaymentDelegateMethod() {
-        let product = SKProduct.init()
+        let product = MockProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init()
         
         storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
@@ -494,10 +494,11 @@ class PurchasesTests: XCTestCase {
     }
     
     func testShouldAddPromoPaymentDelegateMethodPassesUpResult() {
-        let product = SKProduct.init()
+        let product = MockProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init()
         
         let randomBool = (arc4random() % 2 == 0) as Bool
+        purchasesDelegate.shouldAddPromo = randomBool
         
         let result = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
         
