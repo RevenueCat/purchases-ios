@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class SKProduct, SKPaymentTransaction, RCPurchaserInfo, RCPurchases;
+@class SKProduct, SKPayment, SKPaymentTransaction, RCPurchaserInfo, RCPurchases;
 @protocol RCPurchasesDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -143,6 +143,13 @@ NS_ASSUME_NONNULL_BEGIN
  @param failureReason `NSError` containing the reason for the failure
  */
 - (void)purchases:(RCPurchases *)purchases failedToRestoreTransactionsWithReason:(NSError *)failureReason;
+
+/**
+ Called when a user initiates an in-app purchase from the App Store. Use this method to determine if your app is able to handle a purchase at the current time. If yes, return true and `RCPurchases` will initiate a purchase and should finish with one of the appropriate delegate methods. If you are not ready, cache the product and pass it to `makePurchase:` as soon as the app is  ready. If you don't want to ever make the purchase, simply ignore the call. The default return value is `NO`, if you don't override this delegate method, `RCPurchases` will not proceed with promotional purchases.
+ 
+ @param product `SKProduct` the product that was selected from the app store
+ */
+- (BOOL)purchases:(RCPurchases *)purchases shouldPurchasePromoProduct:(SKProduct *)product;
 
 @end
 

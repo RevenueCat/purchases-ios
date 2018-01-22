@@ -143,6 +143,13 @@ class PurchasesTests: XCTestCase {
         func purchases(_ purchases: RCPurchases, failedToRestoreTransactionsWithReason failureReason: Error) {
             restoredError = failureReason
         }
+        
+        var promoProduct: SKProduct?
+        var shouldAddPromo = false
+        func purchases(_ purchases: RCPurchases, shouldPurchasePromoProduct product: SKProduct) -> Bool {
+            promoProduct = product
+            return shouldAddPromo
+        }
     }
 
     let requestFetcher = MockRequestFetcher()
@@ -476,6 +483,47 @@ class PurchasesTests: XCTestCase {
         expect(self.purchasesDelegate.restoredPurchaserInfo).to(beNil())
         expect(self.purchasesDelegate.restoredError).toNot(beNil())
     }
-
-
+    
+    func testCallsShouldAddPromoPaymentDelegateMethod() {
+        let product = MockProduct(mockProductIdentifier: "mock_product")
+        let payment = SKPayment.init()
+        
+        storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
+        
+        expect(self.purchasesDelegate.promoProduct).to(be(product))
+    }
+    
+    func testShouldAddPromoPaymentDelegateMethodPassesUpResult() {
+        let product = MockProduct(mockProductIdentifier: "mock_product")
+        let payment = SKPayment.init()
+        
+        let randomBool = (arc4random() % 2 == 0) as Bool
+        purchasesDelegate.shouldAddPromo = randomBool
+        
+        let result = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
+        
+        expect(randomBool).to(equal(result))
+    }
+    
+    func testShouldCacheProductsFromPromoPaymentDelegateMethod() {
+        let product = MockProduct(mockProductIdentifier: "mock_product")
+        let payment = SKPayment.init(product: product)
+        
+        storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
+        
+        purchases?.makePurchase(product)
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.backend.postedProductID).to(equal(product.productIdentifier))
+        expect(self.backend.postedPrice).to(equal(product.price))
+    }
 }

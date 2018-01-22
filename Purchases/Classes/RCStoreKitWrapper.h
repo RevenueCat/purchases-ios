@@ -32,6 +32,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
      removedTransaction:(SKPaymentTransaction *)transaction;
 
+- (BOOL)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
+  shouldAddStorePayment:(SKPayment *)payment
+             forProduct:(SKProduct *)product;
+
 @end
 
 NS_ASSUME_NONNULL_END
