@@ -233,7 +233,9 @@
     }
     
     if ([(id<NSObject>)self.delegate respondsToSelector:@selector(purchases:shouldPurchasePromoProduct:defermentBlock:)]) {
-        return [self.delegate purchases:self shouldPurchasePromoProduct:product defermentBlock:^{}];
+        return [self.delegate purchases:self shouldPurchasePromoProduct:product defermentBlock:^{
+            [self.storeKitWrapper addPayment:payment];
+        }];
     } else {
         return NO;
     }
