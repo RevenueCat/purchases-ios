@@ -146,8 +146,10 @@ class PurchasesTests: XCTestCase {
         
         var promoProduct: SKProduct?
         var shouldAddPromo = false
-        func purchases(_ purchases: RCPurchases, shouldPurchasePromoProduct product: SKProduct) -> Bool {
+        var makeDeferredPurchase: RCDeferredPromotionalPurchaseBlock?
+        func purchases(_ purchases: RCPurchases, shouldPurchasePromoProduct product: SKProduct, defermentBlock makeDeferredPurchase: @escaping RCDeferredPromotionalPurchaseBlock) -> Bool {
             promoProduct = product
+            self.makeDeferredPurchase = makeDeferredPurchase
             return shouldAddPromo
         }
     }
@@ -511,10 +513,8 @@ class PurchasesTests: XCTestCase {
         
         storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
         
-        purchases?.makePurchase(product)
-        
         let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockPayment = payment
         
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -525,5 +525,21 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(equal(true))
         expect(self.backend.postedProductID).to(equal(product.productIdentifier))
         expect(self.backend.postedPrice).to(equal(product.price))
+    }
+    
+    func testDeferBlockMakesPayment() {
+        let product = MockProduct(mockProductIdentifier: "mock_product")
+        let payment = SKPayment.init(product: product)
+        
+        purchasesDelegate.shouldAddPromo = false
+        storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
+        
+        expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
+        
+        expect(self.storeKitWrapper.payment).to(beNil())
+        
+        self.purchasesDelegate.makeDeferredPurchase!()
+        
+        expect(self.storeKitWrapper.payment).to(be(payment))
     }
 }
