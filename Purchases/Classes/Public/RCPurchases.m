@@ -264,6 +264,7 @@
                             isRestore:NO
                     productIdentifier:productIdentifier
                                 price:price
+                          paymentMode:RCPaymentModeNone
                     introductoryPrice:introPrice
                          currencyCode:currencyCode
                            completion:^(RCPurchaserInfo * _Nullable info,
@@ -285,6 +286,7 @@
                             isRestore:YES
                     productIdentifier:nil
                                 price:nil
+                          paymentMode:RCPaymentModeNone
                     introductoryPrice:nil
                          currencyCode:nil
                            completion:^(RCPurchaserInfo * _Nullable info,

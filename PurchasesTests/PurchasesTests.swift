@@ -62,7 +62,7 @@ class PurchasesTests: XCTestCase {
         var postReceiptPurchaserInfo: RCPurchaserInfo?
         var postReceiptError: Error?
 
-        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
+        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
             postReceiptDataCalled = true
             postedIsRestore = isRestore
 

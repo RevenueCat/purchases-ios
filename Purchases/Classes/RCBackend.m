@@ -94,6 +94,7 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
               isRestore:(BOOL)isRestore
       productIdentifier:(NSString *)productIdentifier
                   price:(NSDecimalNumber *)price
+            paymentMode:(RCPaymentMode)paymentMode
       introductoryPrice:(NSDecimalNumber *)introductoryPrice
            currencyCode:(NSString *)currencyCode
              completion:(RCBackendResponseHandler)completion

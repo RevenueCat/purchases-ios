@@ -20,6 +20,13 @@ NS_ERROR_ENUM(RCBackendErrorDomain) {
     RCUnexpectedBackendResponse 
 };
 
+typedef NS_ENUM(NSInteger, RCPaymentMode) {
+    RCPaymentModeNone = -1,
+    RCPaymentModePayAsYouGo = 0,
+    RCPaymentModePayUpFront = 1,
+    RCPaymentModeFreeTrial = 2
+};
+
 typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
                                         NSError * _Nullable);
 
@@ -35,6 +42,7 @@ typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
               isRestore:(BOOL)isRestore
       productIdentifier:(NSString * _Nullable)productIdentifier
                   price:(NSDecimalNumber * _Nullable)price
+            paymentMode:(RCPaymentMode)paymentMode
       introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice
            currencyCode:(NSString * _Nullable)currencyCode
              completion:(RCBackendResponseHandler)completion;
