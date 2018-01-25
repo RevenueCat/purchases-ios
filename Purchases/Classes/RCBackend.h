@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <StoreKit/StoreKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,6 +27,8 @@ typedef NS_ENUM(NSInteger, RCPaymentMode) {
     RCPaymentModePayUpFront = 1,
     RCPaymentModeFreeTrial = 2
 };
+
+RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode);
 
 typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
                                         NSError * _Nullable);

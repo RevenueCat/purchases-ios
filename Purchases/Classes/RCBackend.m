@@ -13,6 +13,20 @@
 
 NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 
+RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
+{
+    switch (paymentMode) {
+        case SKProductDiscountPaymentModePayUpFront:
+            return RCPaymentModePayUpFront;
+        case SKProductDiscountPaymentModePayAsYouGo:
+            return RCPaymentModePayAsYouGo;
+        case SKProductDiscountPaymentModeFreeTrial:
+            return RCPaymentModeFreeTrial;
+        default:
+            return RCPaymentModeNone;
+    }
+}
+
 @interface RCBackend ()
 
 @property (nonatomic) RCHTTPClient *httpClient;
