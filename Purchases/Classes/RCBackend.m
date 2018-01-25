@@ -115,6 +115,13 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
                                          @"price": price,
                                          @"currency": currencyCode
                                          }];
+
+        if (paymentMode != RCPaymentModeNone) {
+            [body addEntriesFromDictionary:@{
+                                             @"payment_mode": @((NSUInteger)paymentMode),
+                                             @"introductory_price": introductoryPrice
+                                             }];
+        }
     }
 
     [self.httpClient performRequest:@"POST"

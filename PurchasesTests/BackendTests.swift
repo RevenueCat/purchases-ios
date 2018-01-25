@@ -166,8 +166,8 @@ class BackendTests: XCTestCase {
         backend?.postReceiptData(receiptData, appUserID: userID,
                                  isRestore: false,
                                  productIdentifier: "product",
-                                 price: 2.99, paymentMode: RCPaymentMode.payAsYouGo,
-                                 introductoryPrice: nil,
+                                 price: 2.99, paymentMode: paymentMode,
+                                 introductoryPrice: 1.99,
                                  currencyCode: "USD",
                                  completion: { (purchaserInfo, error) in
                                     completionCalled = true
@@ -179,7 +179,7 @@ class BackendTests: XCTestCase {
     func checkCall(expectedValue: Int) {
         let call = self.httpClient.calls.last!
         if let mode = call.body!["payment_mode"] as? Int {
-            XCTAssert(mode == expectedValue)
+            XCTAssertEqual(mode, expectedValue)
         } else {
             XCTFail("payment mode not in params")
         }
@@ -198,6 +198,13 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
         postPaymentMode(paymentMode: RCPaymentMode.payUpFront)
         checkCall(expectedValue: 1)
+    }
+
+    func testFreeTrialPostsCorrectly() {
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        httpClient.mock(requestPath: "/receipts", response: response)
+        postPaymentMode(paymentMode: RCPaymentMode.freeTrial)
+        checkCall(expectedValue: 2)
     }
 
     func testForwards500ErrorsCorrectly() {
