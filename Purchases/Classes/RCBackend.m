@@ -128,7 +128,8 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
                             completion:(RCBackendResponseHandler)completion
 {
-    NSString *path = [NSString stringWithFormat:@"/subscribers/%@", appUserID];
+    NSString *escapedAppUserID = [appUserID stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@", escapedAppUserID];
 
     [self.httpClient performRequest:@"GET"
                                path:path
