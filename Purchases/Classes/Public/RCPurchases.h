@@ -76,7 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
             quantity:(NSInteger)quantity;
 
 /**
- This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, that user will lose their subscription. An App Store account can only be used to provide subscriptions to one `appUserID` at a time.
+ This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user. Going forward, either `appUserID` will be able to reference the same user.
 
  @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI.
  
