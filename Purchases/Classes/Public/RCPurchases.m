@@ -113,7 +113,6 @@
                                       completion:^(RCPurchaserInfo * _Nullable info,
                                                    NSError * _Nullable error) {
         if (error == nil) {
-            NSParameterAssert(self.delegate);
             [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
         } else {
             self.purchaserInfoLastChecked = nil;
@@ -179,7 +178,6 @@
                            purchaserInfo:(RCPurchaserInfo * _Nullable)info
                                    error:(NSError * _Nullable)error
 {
-    NSParameterAssert(self.delegate);
     if (info) {
         [self.delegate purchases:self
             completedTransaction:transaction
