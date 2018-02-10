@@ -273,7 +273,7 @@
     }];
 }
 
-- (void)restoreTransactionsForAppStoreAccount
+- (void)restoreTransactionsForAppStoreAccount:(RCReceivePurchaserInfoBlock)receivePurchaserInfo
 {
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
@@ -285,16 +285,7 @@
                                 price:nil
                     introductoryPrice:nil
                          currencyCode:nil
-                           completion:^(RCPurchaserInfo * _Nullable info,
-                                        NSError * _Nullable error) {
-                               if (info) {
-                                   [self.delegate purchases:self restoredTransactionsWithPurchaserInfo:info];
-                               } else if (error) {
-                                   [self.delegate purchases:self failedToRestoreTransactionsWithReason:error];
-                               } else {
-                                   RCLog(@"Unexpected error restoring transactions");
-                               }
-                           }];
+                           completion:receivePurchaserInfo];
     }];
 }
 
