@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <StoreKit/StoreKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -19,6 +20,15 @@ NS_ERROR_ENUM(RCBackendErrorDomain) {
     RCUnfinishableError,
     RCUnexpectedBackendResponse 
 };
+
+typedef NS_ENUM(NSInteger, RCPaymentMode) {
+    RCPaymentModeNone = -1,
+    RCPaymentModePayAsYouGo = 0,
+    RCPaymentModePayUpFront = 1,
+    RCPaymentModeFreeTrial = 2
+};
+
+RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode);
 
 typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
                                         NSError * _Nullable);
@@ -35,6 +45,7 @@ typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
               isRestore:(BOOL)isRestore
       productIdentifier:(NSString * _Nullable)productIdentifier
                   price:(NSDecimalNumber * _Nullable)price
+            paymentMode:(RCPaymentMode)paymentMode
       introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice
            currencyCode:(NSString * _Nullable)currencyCode
              completion:(RCBackendResponseHandler)completion;

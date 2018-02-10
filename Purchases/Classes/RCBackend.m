@@ -13,6 +13,20 @@
 
 NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 
+RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
+{
+    switch (paymentMode) {
+        case SKProductDiscountPaymentModePayUpFront:
+            return RCPaymentModePayUpFront;
+        case SKProductDiscountPaymentModePayAsYouGo:
+            return RCPaymentModePayAsYouGo;
+        case SKProductDiscountPaymentModeFreeTrial:
+            return RCPaymentModeFreeTrial;
+        default:
+            return RCPaymentModeNone;
+    }
+}
+
 @interface RCBackend ()
 
 @property (nonatomic) RCHTTPClient *httpClient;
@@ -94,6 +108,7 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
               isRestore:(BOOL)isRestore
       productIdentifier:(NSString *)productIdentifier
                   price:(NSDecimalNumber *)price
+            paymentMode:(RCPaymentMode)paymentMode
       introductoryPrice:(NSDecimalNumber *)introductoryPrice
            currencyCode:(NSString *)currencyCode
              completion:(RCBackendResponseHandler)completion
@@ -114,6 +129,13 @@ NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
                                          @"price": price,
                                          @"currency": currencyCode
                                          }];
+
+        if (paymentMode != RCPaymentModeNone) {
+            [body addEntriesFromDictionary:@{
+                                             @"payment_mode": @((NSUInteger)paymentMode),
+                                             @"introductory_price": introductoryPrice
+                                             }];
+        }
     }
 
     [self.httpClient performRequest:@"POST"

@@ -254,7 +254,17 @@
 
         NSString *productIdentifier = product.productIdentifier;
         NSDecimalNumber *price = product.price;
-        NSDecimalNumber *introPrice = nil; // TODO: Implement introductory prices
+
+        RCPaymentMode paymentMode = RCPaymentModeNone;
+        NSDecimalNumber *introPrice = nil;
+
+        if (@available(iOS 11.2, *)) {
+            if (product.introductoryPrice) {
+                paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
+                introPrice = product.introductoryPrice.price;
+            }
+        }
+
         NSString *currencyCode = product.priceLocale.rc_currencyCode;
 
         [self.backend postReceiptData:data
@@ -262,6 +272,7 @@
                             isRestore:NO
                     productIdentifier:productIdentifier
                                 price:price
+                          paymentMode:paymentMode
                     introductoryPrice:introPrice
                          currencyCode:currencyCode
                            completion:^(RCPurchaserInfo * _Nullable info,
@@ -283,6 +294,7 @@
                             isRestore:YES
                     productIdentifier:nil
                                 price:nil
+                          paymentMode:RCPaymentModeNone
                     introductoryPrice:nil
                          currencyCode:nil
                            completion:^(RCPurchaserInfo * _Nullable info,

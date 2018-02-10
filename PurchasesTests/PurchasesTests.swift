@@ -57,18 +57,22 @@ class PurchasesTests: XCTestCase {
         var postedIsRestore: Bool?
         var postedProductID: String?
         var postedPrice: NSDecimalNumber?
+        var postedPaymentMode: RCPaymentMode?
         var postedIntroPrice: NSDecimalNumber?
         var postedCurrencyCode: String?
         var postReceiptPurchaserInfo: RCPurchaserInfo?
         var postReceiptError: Error?
 
-        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
+        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
             postReceiptDataCalled = true
             postedIsRestore = isRestore
 
             postedProductID  = productIdentifier
             postedPrice = price
+
+            postedPaymentMode = paymentMode
             postedIntroPrice = introductoryPrice
+
             postedCurrencyCode = currencyCode
 
             completion(postReceiptPurchaserInfo, postReceiptError)
@@ -251,6 +255,7 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.finishCalled).to(beTrue())
     }
     
+
     func testSendsProductInfoIfProductIsCached() {
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
         purchases!.products(withIdentifiers:Set(productIdentifiers)) { (newProducts) in
@@ -273,7 +278,15 @@ class PurchasesTests: XCTestCase {
 
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
             expect(self.backend.postedPrice).to(equal(product.price))
-            expect(self.backend.postedIntroPrice).to(beNil())
+
+            if #available(iOS 11.2, *) {
+                expect(self.backend.postedPaymentMode).to(equal(RCPaymentMode.payAsYouGo))
+                expect(self.backend.postedIntroPrice).to(equal(product.introductoryPrice?.price))
+            } else {
+                expect(self.backend.postedPaymentMode).to(equal(RCPaymentMode.none))
+                expect(self.backend.postedIntroPrice).to(beNil())
+            }
+            
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
 
             expect(self.storeKitWrapper.finishCalled).to(beTrue())
