@@ -132,22 +132,6 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 
 /**
- Called when `RCPurchases` completes a restoration that was initiated with `restoreTransactionsForAppStoreAccount`;
-
- @param purchases Related `RCPurchases` object
- @param purchaserInfo Updated `RCPurchaserInfo`
- */
-- (void)purchases:(RCPurchases *)purchases restoredTransactionsWithPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
-
-/**
- Called when restoring a transaction fails.
-
- @param purchases Related `RCPurchases` object
- @param failureReason `NSError` containing the reason for the failure
- */
-- (void)purchases:(RCPurchases *)purchases failedToRestoreTransactionsWithReason:(NSError *)failureReason;
-
-/**
  Called when a user initiates a promotional in-app purchase from the App Store. Use this method to tell `RCPurchases` if your app is able to handle a purchase at the current time. If yes, return true and `RCPurchases` will initiate a purchase and will finish with one of the appropriate `RCPurchasesDelegate` methods. If the app is not in a state to make a purchase: cache the defermentBlock, return no, then call the defermentBlock when the app is ready to make the promotional purchase. If the purchase should never be made, do not cache the defermentBlock and return `NO`. The default return value is `NO`, if you don't override this delegate method, `RCPurchases` will not proceed with promotional purchases.
  
  @param product `SKProduct` the product that was selected from the app store
