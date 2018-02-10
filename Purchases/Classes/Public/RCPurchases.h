@@ -71,12 +71,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)makePurchase:(SKProduct *)product;
 
 /**
- Same as `makePurchase:` but allows you to set the quantity. Only valid for consumable products.
- */
-- (void)makePurchase:(SKProduct *)product
-            quantity:(NSInteger)quantity;
-
-/**
  This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user. Going forward, either `appUserID` will be able to reference the same user.
 
  @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI.
