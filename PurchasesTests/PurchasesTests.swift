@@ -558,4 +558,13 @@ class PurchasesTests: XCTestCase {
         
         expect(self.storeKitWrapper.payment).to(be(payment))
     }
+
+    func testGetUpdatedPurchaserInfo() {
+        var purchaserInfo: RCPurchaserInfo?
+        purchases!.updatedPurchaserInfo { (info, error) in
+            purchaserInfo = info
+        }
+        expect(self.backend.postReceiptDataCalled).to(beFalse());
+        expect(purchaserInfo).toEventuallyNot(beNil());
+    }
 }

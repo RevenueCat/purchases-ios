@@ -133,7 +133,7 @@
     }];
 }
 
-- (void)purchaserInfoWithCompletion:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo))completion
+- (void)updatedPurchaserInfo:(RCReceivePurchaserInfoBlock)receivePurchaserInfo
 {
     [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable purchaserInfo, NSError * _Nullable error) {
 
@@ -141,20 +141,13 @@
             RCLog(@"Error fetching purchaser info: %@", error.localizedDescription);
         }
 
-        completion(purchaserInfo);
+        receivePurchaserInfo(purchaserInfo, error);
     }];
 }
 
 - (void)makePurchase:(SKProduct *)product
 {
-    [self makePurchase:product quantity:1];
-}
-
-- (void)makePurchase:(SKProduct *)product
-            quantity:(NSInteger)quantity
-{
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-    payment.quantity = quantity;
     payment.applicationUsername = self.appUserID;
 
     [self.storeKitWrapper addPayment:payment];

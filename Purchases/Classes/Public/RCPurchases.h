@@ -80,6 +80,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)restoreTransactionsForAppStoreAccount:(RCReceivePurchaserInfoBlock)receivePurchaserInfo;
 
 /**
+ Fetches the latest purchaser info from the backend. This will happen periodically on `applicationDidResumeActive:` and will trigger the delegate method `purchases:receivedUpdatedPurchaserInfo:`. You can use this method if you'd like to refresh the purchaser info manually.
+ */
+- (void)updatedPurchaserInfo:(RCReceivePurchaserInfoBlock)receivePurchaserInfo;
+
+/**
  This version of the Purchases framework
 */
 + (NSString *)frameworkVersion;
