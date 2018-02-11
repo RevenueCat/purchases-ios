@@ -25,6 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// Returns the latest expiration date of all products, nil if there are none
 @property (readonly) NSDate * _Nullable latestExpirationDate;
 
+/// Returns all the non-consumable purchases a user has made.
+@property (readonly) NSSet<NSString *> *nonConsumablePurchases;
+
 /**
  Get the expiration date for a given product identifier.
 

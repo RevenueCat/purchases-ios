@@ -11,6 +11,7 @@
 @interface RCPurchaserInfo ()
 
 @property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDates;
+@property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 
 @end
 
@@ -53,13 +54,17 @@ static dispatch_once_t onceToken;
         }
 
         self.expirationDates = [NSDictionary dictionaryWithDictionary:dates];
+
+        NSDictionary<NSString *, id> *otherPurchases = subscriberData[@"other_purchases"];
+        self.nonConsumablePurchases = [NSSet setWithArray:[otherPurchases allKeys]];
+
     }
     return self;
 }
 
 - (NSSet<NSString *> *)allPurchasedProductIdentifiers
 {
-    return [NSSet setWithArray:self.expirationDates.allKeys];
+    return [self.nonConsumablePurchases setByAddingObjectsFromArray:self.expirationDates.allKeys];
 }
 
 - (NSSet<NSString *> *)activeSubscriptions
