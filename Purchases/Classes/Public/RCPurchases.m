@@ -133,7 +133,7 @@
     }];
 }
 
-- (void)purchaserInfoWithCompletion:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo))completion
+- (void)updatedPurchaserInfo:(RCReceivePurchaserInfoBlock)receivePurchaserInfo
 {
     [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable purchaserInfo, NSError * _Nullable error) {
 
@@ -141,20 +141,13 @@
             RCLog(@"Error fetching purchaser info: %@", error.localizedDescription);
         }
 
-        completion(purchaserInfo);
+        receivePurchaserInfo(purchaserInfo, error);
     }];
 }
 
 - (void)makePurchase:(SKProduct *)product
 {
-    [self makePurchase:product quantity:1];
-}
-
-- (void)makePurchase:(SKProduct *)product
-            quantity:(NSInteger)quantity
-{
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-    payment.quantity = quantity;
     payment.applicationUsername = self.appUserID;
 
     [self.storeKitWrapper addPayment:payment];
@@ -284,7 +277,7 @@
     }];
 }
 
-- (void)restoreTransactionsForAppStoreAccount
+- (void)restoreTransactionsForAppStoreAccount:(RCReceivePurchaserInfoBlock)receivePurchaserInfo
 {
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
@@ -297,16 +290,7 @@
                           paymentMode:RCPaymentModeNone
                     introductoryPrice:nil
                          currencyCode:nil
-                           completion:^(RCPurchaserInfo * _Nullable info,
-                                        NSError * _Nullable error) {
-                               if (info) {
-                                   [self.delegate purchases:self restoredTransactionsWithPurchaserInfo:info];
-                               } else if (error) {
-                                   [self.delegate purchases:self failedToRestoreTransactionsWithReason:error];
-                               } else {
-                                   RCLog(@"Unexpected error restoring transactions");
-                               }
-                           }];
+                           completion:receivePurchaserInfo];
     }];
 }
 

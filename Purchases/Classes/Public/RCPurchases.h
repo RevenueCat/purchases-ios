@@ -12,6 +12,7 @@
 @protocol RCPurchasesDelegate;
 
 typedef void (^RCDeferredPromotionalPurchaseBlock)(void);
+typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable);
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -70,19 +71,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)makePurchase:(SKProduct *)product;
 
 /**
- Same as `makePurchase:` but allows you to set the quantity. Only valid for consumable products.
- */
-- (void)makePurchase:(SKProduct *)product
-            quantity:(NSInteger)quantity;
-
-/**
  This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user. Going forward, either `appUserID` will be able to reference the same user.
 
  @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI.
  
  @warning Calling this method requires that the optional delegate methods `purchases:restoredTransactionsWithPurchaserInfo:` and `purchases:failedToRestoreTransactionsWithReason:` are implemented.
  */
-- (void)restoreTransactionsForAppStoreAccount;
+- (void)restoreTransactionsForAppStoreAccount:(RCReceivePurchaserInfoBlock)receivePurchaserInfo;
+
+/**
+ Fetches the latest purchaser info from the backend. This will happen periodically on `applicationDidResumeActive:` and will trigger the delegate method `purchases:receivedUpdatedPurchaserInfo:`. You can use this method if you'd like to refresh the purchaser info manually.
+ */
+- (void)updatedPurchaserInfo:(RCReceivePurchaserInfoBlock)receivePurchaserInfo;
 
 /**
  This version of the Purchases framework
@@ -129,22 +129,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)purchases:(RCPurchases *)purchases receivedUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
 
 @optional
-
-/**
- Called when `RCPurchases` completes a restoration that was initiated with `restoreTransactionsForAppStoreAccount`;
-
- @param purchases Related `RCPurchases` object
- @param purchaserInfo Updated `RCPurchaserInfo`
- */
-- (void)purchases:(RCPurchases *)purchases restoredTransactionsWithPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
-
-/**
- Called when restoring a transaction fails.
-
- @param purchases Related `RCPurchases` object
- @param failureReason `NSError` containing the reason for the failure
- */
-- (void)purchases:(RCPurchases *)purchases failedToRestoreTransactionsWithReason:(NSError *)failureReason;
 
 /**
  Called when a user initiates a promotional in-app purchase from the App Store. Use this method to tell `RCPurchases` if your app is able to handle a purchase at the current time. If yes, return true and `RCPurchases` will initiate a purchase and will finish with one of the appropriate `RCPurchasesDelegate` methods. If the app is not in a state to make a purchase: cache the defermentBlock, return no, then call the defermentBlock when the app is ready to make the promotional purchase. If the purchase should never be made, do not cache the defermentBlock and return `NO`. The default return value is `NO`, if you don't override this delegate method, `RCPurchases` will not proceed with promotional purchases.

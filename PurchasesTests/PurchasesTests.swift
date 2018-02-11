@@ -466,17 +466,23 @@ class PurchasesTests: XCTestCase {
     }
 
     func testRestoringPurchasesPostsTheReceipt() {
-        purchases!.restoreTransactionsForAppStoreAccount()
+        purchases!.restoreTransactions { (_, _) in
+
+        }
         expect(self.backend.postReceiptDataCalled).to(equal(true))
     }
 
     func testRestoringPurchasesRefreshesAndPostsTheReceipt() {
-        purchases!.restoreTransactionsForAppStoreAccount()
+        purchases!.restoreTransactions { (_, _) in
+
+        }
         expect(self.requestFetcher.refreshReceiptCalled).to(equal(true))
     }
 
     func testRestoringPurchasesSetsIsRestore() {
-        purchases!.restoreTransactionsForAppStoreAccount()
+        purchases!.restoreTransactions { (_, _) in
+
+        }
         expect(self.backend.postedIsRestore!).to(equal(true))
     }
 
@@ -484,19 +490,29 @@ class PurchasesTests: XCTestCase {
         let purchaserInfo = RCPurchaserInfo()
         self.backend.postReceiptPurchaserInfo = purchaserInfo
 
-        purchases!.restoreTransactionsForAppStoreAccount()
+        var restoredPurchaserInfo: RCPurchaserInfo?
 
-        expect(self.purchasesDelegate.restoredPurchaserInfo).to(equal(purchaserInfo))
+        purchases!.restoreTransactions { (newPurchaserInfo, _) in
+            restoredPurchaserInfo = newPurchaserInfo
+        }
+
+        expect(restoredPurchaserInfo).toEventually(equal(purchaserInfo))
     }
 
     func testRestorePurchasesCallsFailureDelegateMethodOnFailure() {
         let error = NSError(domain: "error_domain", code: RCFinishableError, userInfo: nil)
         self.backend.postReceiptError = error
 
-        purchases!.restoreTransactionsForAppStoreAccount()
+        var restoredPurchaserInfo: RCPurchaserInfo?
+        var restoreError: Error?
 
-        expect(self.purchasesDelegate.restoredPurchaserInfo).to(beNil())
-        expect(self.purchasesDelegate.restoredError).toNot(beNil())
+        purchases!.restoreTransactions { (newPurchaserInfo, newError) in
+            restoredPurchaserInfo = newPurchaserInfo
+            restoreError = newError
+        }
+
+        expect(restoredPurchaserInfo).toEventually(beNil())
+        expect(restoreError).toEventuallyNot(beNil())
     }
     
     func testCallsShouldAddPromoPaymentDelegateMethod() {
@@ -554,5 +570,14 @@ class PurchasesTests: XCTestCase {
         self.purchasesDelegate.makeDeferredPurchase!()
         
         expect(self.storeKitWrapper.payment).to(be(payment))
+    }
+
+    func testGetUpdatedPurchaserInfo() {
+        var purchaserInfo: RCPurchaserInfo?
+        purchases!.updatedPurchaserInfo { (info, error) in
+            purchaserInfo = info
+        }
+        expect(self.backend.postReceiptDataCalled).to(beFalse());
+        expect(purchaserInfo).toEventuallyNot(beNil());
     }
 }
