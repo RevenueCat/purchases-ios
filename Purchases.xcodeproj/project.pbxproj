@@ -37,9 +37,8 @@
 		359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */; };
 		359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */; };
 		35A60EAA1F82993E00D2FAE8 /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35D3AB432030B4C600DE42C5 /* RCIntroEligibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */; };
+		35D3AB432030B4C600DE42C5 /* RCIntroEligibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35D3AB442030B4C600DE42C5 /* RCIntroEligibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */; };
-		35D3AB452030B4C600DE42C5 /* RCIntroEligibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */; };
 		35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -359,7 +358,6 @@
 				35262A211F7D77E600C04F2C /* PurchasesTests.swift in Sources */,
 				351F4FB21F803D9C00F245F4 /* BackendTests.swift in Sources */,
 				35262A301F7D78C600C04F2C /* HTTPClientTests.swift in Sources */,
-				35D3AB452030B4C600DE42C5 /* RCIntroEligibility.m in Sources */,
 				35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */,
 				350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */,
 				351703CD1F805E5D00EEE27A /* PurchaserInfoTests.swift in Sources */,

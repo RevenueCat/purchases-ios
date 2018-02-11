@@ -10,6 +10,7 @@
 
 #import "RCHTTPClient.h"
 #import "RCPurchaserInfo+Protected.h"
+#import "RCIntroEligibility.h"
 
 NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 
@@ -160,6 +161,45 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
                       [self handle:status withResponse:response error:error completion:completion];
                   }];
+}
+
+- (void)getIntroElgibilityForAppUserID:(NSString *)appUserID
+                    productIdentifiers:(NSArray<NSString *> *)productIdentifiers
+                            completion:(RCIntroEligibilityResponseHandler)completion
+{
+    if (productIdentifiers.count == 0) {
+        completion(@{});
+        return;
+    }
+
+    NSString *escapedAppUserID = [appUserID stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/intro_eligibility", escapedAppUserID];
+    [self.httpClient performRequest:@"POST"
+                               path:path
+                               body:@{@"product_identifiers": productIdentifiers}
+                            headers:self.headers
+                  completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
+                      if (statusCode >= 300) {
+                          response = @{};
+                      }
+
+                      NSMutableDictionary *eligibilties = [NSMutableDictionary new];
+                      for (NSString *productID in productIdentifiers) {
+                          NSNumber *e = response[productID];
+                          RCIntroEligibityStatus status;
+                          if (e == nil) {
+                              status = RCIntroEligibityStatusUnknown;
+                          } else if ([e boolValue]) {
+                              status = RCIntroEligibityStatusEligible;
+                          } else {
+                              status = RCIntroEligibityStatusIneligible;
+                          }
+
+                          eligibilties[productID] = [[RCIntroEligibility alloc] initWithEligibilityStatus:status];
+                      }
+
+                      completion([NSDictionary dictionaryWithDictionary:eligibilties]);
+    }];
 }
 
 @end

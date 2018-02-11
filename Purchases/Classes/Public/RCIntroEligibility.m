@@ -24,4 +24,17 @@
     return self;
 }
 
+- (NSString *)description
+{
+    switch (self.status) {
+        case RCIntroEligibityStatusEligible:
+            return @"Eligible for trial or introductory price.";
+        case RCIntroEligibityStatusIneligible:
+            return @"Not eligible for trial or introductory price.";
+        case RCIntroEligibityStatusUnknown:
+        default:
+            return @"Status indeterminate. You may need to assign the subscription group in the RevenueCat web interface.";
+    }
+}
+
 @end
