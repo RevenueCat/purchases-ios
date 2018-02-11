@@ -64,7 +64,7 @@ static dispatch_once_t onceToken;
 
 - (NSSet<NSString *> *)allPurchasedProductIdentifiers
 {
-    return [NSSet setWithArray:self.expirationDates.allKeys];
+    return [self.nonConsumablePurchases setByAddingObjectsFromArray:self.expirationDates.allKeys];
 }
 
 - (NSSet<NSString *> *)activeSubscriptions
