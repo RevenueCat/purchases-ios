@@ -376,4 +376,39 @@ class BackendTests: XCTestCase {
         expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibityStatus.ineligible))
         expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
     }
+
+    func testEligbilityUnknownIfError() {
+        let response = HTTPResponse(statusCode: 499, response: serverErrorResponse, error: nil)
+        let path = "/subscribers/" + userID + "/intro_eligibility"
+        httpClient.mock(requestPath: path, response: response)
+
+        var eligibility: [String: RCIntroEligibility]?
+
+        let products = ["producta", "productb", "productc"]
+        backend?.getIntroElgibility(forAppUserID: userID, productIdentifiers: products, completion: {(productEligbility) in
+            eligibility = productEligbility
+        })
+
+        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+    }
+
+    func testEligbilityUnknownIfUnknownError() {
+        let error = NSError(domain: "myhouse", code: 12, userInfo: nil) as Error
+        let response = HTTPResponse(statusCode: 200, response: serverErrorResponse, error: error)
+        let path = "/subscribers/" + userID + "/intro_eligibility"
+        httpClient.mock(requestPath: path, response: response)
+
+        var eligibility: [String: RCIntroEligibility]?
+
+        let products = ["producta", "productb", "productc"]
+        backend?.getIntroElgibility(forAppUserID: userID, productIdentifiers: products, completion: {(productEligbility) in
+            eligibility = productEligbility
+        })
+
+        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+    }
 }
