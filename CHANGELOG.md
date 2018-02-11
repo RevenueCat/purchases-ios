@@ -1,3 +1,8 @@
+## 0.7.0
+- Change `restoreTransactionsForAppStoreAccount:` to take a completion block since it no long relies on the app store queue. Removed delegate methods.
+- Added `updatedPurchaserInfo:` that allows force refreshing of `RCPurchaserInfo`. Useful if your app needs the latest purchaser info.
+- Removed `makePurchase:quantity:`.
+
 ## 0.6.0
 - Add support for [promotional purchases](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/PromotingIn-AppPurchases/PromotingIn-AppPurchases.html). 
 - Adds support for `appUserId`s with non-url compatable characters
