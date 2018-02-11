@@ -23,6 +23,11 @@ class EmptyPurchaserInfoTests: XCTestCase {
 class BasicPurchaerInfoTests: XCTestCase {
     let validSubscriberResponse = [
         "subscriber": [
+            "other_purchases": [
+                "onetime_purchase": [
+                    "purchase_date": "1990-08-30T02:40:36Z"
+                ]
+            ],
             "subscriptions": [
                 "onemonth_freetrial": [
                     "expires_date": "2100-08-30T02:40:36Z"
@@ -67,5 +72,12 @@ class BasicPurchaerInfoTests: XCTestCase {
         expect(latestExpiration).toNot(beNil())
 
         expect(latestExpiration).to(equal(purchaserInfo!.expirationDate(forProductIdentifier: "onemonth_freetrial")))
+    }
+
+    func testParsesOtherPurchases() {
+        let nonConsumables = purchaserInfo!.nonConsumablePurchases
+        expect(nonConsumables.count).to(equal(1))
+
+        expect(nonConsumables).to(contain(["onetime_purchase"]))
     }
 }
