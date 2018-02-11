@@ -8,13 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
-@class SKProduct, SKPayment, SKPaymentTransaction, RCPurchaserInfo, RCPurchases;
+@class SKProduct, SKPayment, SKPaymentTransaction, RCPurchaserInfo, RCIntroEligibility;
 @protocol RCPurchasesDelegate;
+
+NS_ASSUME_NONNULL_BEGIN
 
 typedef void (^RCDeferredPromotionalPurchaseBlock)(void);
 typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable);
-
-NS_ASSUME_NONNULL_BEGIN
+typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *);
 
 /**
  `RCPurchases` is the entry point for Purchases.framework. It should be instantiated as soon as your app has a unique user id for your user. This can be when a user logs in if you have accounts or on launch if you can generate a random user identifier.
@@ -97,6 +98,18 @@ NS_ASSUME_NONNULL_BEGIN
  Fetches the latest purchaser info from the backend. This will happen periodically on `applicationDidResumeActive:` and will trigger the delegate method `purchases:receivedUpdatedPurchaserInfo:`. You can use this method if you'd like to refresh the purchaser info manually.
  */
 - (void)updatedPurchaserInfo:(RCReceivePurchaserInfoBlock)receivePurchaserInfo;
+
+/**
+ Computes whether or not a user is eligible for the introductory pricing period of a given product. You should use this method to determine whether or not you show the user the normal product price or the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
+
+ @note If you have multiple subscription groups you will need to specify which products belong to which subscription groups on https://app.revenuecat.com/. If RevenueCat can't definitively compute the eligibilty, most like because of missing group information, it will return `RCIntroEligibilityStatusUnknown`. The best course of action on unknown status is to display the non-intro pricing, to not create a misleading situation.
+
+ @param productIdentifiers Array of product identifiers for which you want to compute eligibility
+ @param receiveEligibility A block that receives a dictionary of product_id -> eligibility. Will always have keys for every product passed in via `productIdentifiers`.
+*/
+- (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
+                                      completion:(RCReceiveIntroEligibilityBlock)receiveEligibility;
+
 
 /**
  This version of the Purchases framework

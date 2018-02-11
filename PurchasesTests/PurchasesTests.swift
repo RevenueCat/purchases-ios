@@ -77,6 +77,18 @@ class PurchasesTests: XCTestCase {
 
             completion(postReceiptPurchaserInfo, postReceiptError)
         }
+
+        var postedProductIdentifiers: [String]?
+        override func getIntroElgibility(forAppUserID appUserID: String, productIdentifiers: [String], completion: @escaping RCIntroEligibilityResponseHandler) {
+            postedProductIdentifiers = productIdentifiers
+
+            var eligibilities = [String: RCIntroEligibility]()
+            for productID in productIdentifiers {
+                eligibilities[productID] = RCIntroEligibility(eligibilityStatus: RCIntroEligibityStatus.eligible)
+            }
+
+            completion(eligibilities);
+        }
     }
 
     class MockStoreKitWrapper: RCStoreKitWrapper {
@@ -678,5 +690,9 @@ class PurchasesTests: XCTestCase {
         setupAnonPurchases()
 
         expect(self.purchases?.appUserID).to(equal(appUserID))
+    }
+    
+    func testGetEligibility() {
+        purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in}
     }
 }
