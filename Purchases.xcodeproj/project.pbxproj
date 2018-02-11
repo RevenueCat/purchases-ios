@@ -21,7 +21,7 @@
 		350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDEF1F7EFC410065833D /* StoreKitRequestFetcherTests.swift */; };
 		350FBDF31F7FFD350065833D /* RCStoreKitWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDF11F7FFD340065833D /* RCStoreKitWrapper.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		350FBDF41F7FFD350065833D /* RCStoreKitWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDF21F7FFD340065833D /* RCStoreKitWrapper.m */; };
-		351703CD1F805E5D00EEE27A /* SubscriberInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351703CC1F805E5D00EEE27A /* SubscriberInfoTests.swift */; };
+		351703CD1F805E5D00EEE27A /* PurchaserInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351703CC1F805E5D00EEE27A /* PurchaserInfoTests.swift */; };
 		351F4FAB1F80190700F245F4 /* RCBackend.h in Headers */ = {isa = PBXBuildFile; fileRef = 351F4FA91F80190700F245F4 /* RCBackend.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		351F4FAC1F80190700F245F4 /* RCBackend.m in Sources */ = {isa = PBXBuildFile; fileRef = 351F4FAA1F80190700F245F4 /* RCBackend.m */; };
 		351F4FAF1F803D0700F245F4 /* RCPurchaserInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 351F4FAD1F803D0700F245F4 /* RCPurchaserInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -78,7 +78,7 @@
 		350FBDEF1F7EFC410065833D /* StoreKitRequestFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitRequestFetcherTests.swift; sourceTree = "<group>"; };
 		350FBDF11F7FFD340065833D /* RCStoreKitWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCStoreKitWrapper.h; sourceTree = "<group>"; };
 		350FBDF21F7FFD340065833D /* RCStoreKitWrapper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCStoreKitWrapper.m; sourceTree = "<group>"; };
-		351703CC1F805E5D00EEE27A /* SubscriberInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberInfoTests.swift; sourceTree = "<group>"; };
+		351703CC1F805E5D00EEE27A /* PurchaserInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaserInfoTests.swift; sourceTree = "<group>"; };
 		351F4FA91F80190700F245F4 /* RCBackend.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCBackend.h; sourceTree = "<group>"; };
 		351F4FAA1F80190700F245F4 /* RCBackend.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCBackend.m; sourceTree = "<group>"; };
 		351F4FAD1F803D0700F245F4 /* RCPurchaserInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPurchaserInfo.h; sourceTree = "<group>"; };
@@ -203,7 +203,7 @@
 				350FBDEF1F7EFC410065833D /* StoreKitRequestFetcherTests.swift */,
 				35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */,
 				351F4FB11F803D9C00F245F4 /* BackendTests.swift */,
-				351703CC1F805E5D00EEE27A /* SubscriberInfoTests.swift */,
+				351703CC1F805E5D00EEE27A /* PurchaserInfoTests.swift */,
 				35262A221F7D77E600C04F2C /* Info.plist */,
 				350FBDD61F7DF1640065833D /* Frameworks */,
 			);
@@ -352,7 +352,7 @@
 				35262A301F7D78C600C04F2C /* HTTPClientTests.swift in Sources */,
 				35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */,
 				350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */,
-				351703CD1F805E5D00EEE27A /* SubscriberInfoTests.swift in Sources */,
+				351703CD1F805E5D00EEE27A /* PurchaserInfoTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

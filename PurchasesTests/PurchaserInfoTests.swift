@@ -1,5 +1,5 @@
 //
-//  SubscriberInfoTests.swift
+//  PurchaserInfoTests.swift
 //  PurchasesTests
 //
 //  Created by Jacob Eiting on 9/30/17.
@@ -12,15 +12,15 @@ import Nimble
 
 import Purchases
 
-class EmptySubscriberInfoTests: XCTestCase {
-    let subscriberInfo = RCPurchaserInfo.init(data: [AnyHashable : Any]())
+class EmptyPurchaserInfoTests: XCTestCase {
+    let purchaserInfo = RCPurchaserInfo.init(data: [AnyHashable : Any]())
 
     func testEmptyDataYieldsANilInfo() {
-        expect(RCPurchaserInfo.init(data: [AnyHashable : Any]())).to(beNil())
+        expect(self.purchaserInfo).to(beNil())
     }
 }
 
-class BasicSubscriberInfoTests: XCTestCase {
+class BasicPurchaerInfoTests: XCTestCase {
     let validSubscriberResponse = [
         "subscriber": [
             "subscriptions": [
@@ -34,38 +34,38 @@ class BasicSubscriberInfoTests: XCTestCase {
         ]
     ]
 
-    var subscriberInfo: RCPurchaserInfo?
+    var purchaserInfo: RCPurchaserInfo?
 
     override func setUp() {
         super.setUp()
 
-        subscriberInfo = RCPurchaserInfo.init(data: validSubscriberResponse)
+        purchaserInfo = RCPurchaserInfo.init(data: validSubscriberResponse)
     }
 
     func testParsesSubscriptions() {
-        expect(self.subscriberInfo).toNot(beNil())
+        expect(self.purchaserInfo).toNot(beNil())
     }
 
     func testParsesExpirationDate() {
-        let expireDate = subscriberInfo!.expirationDate(forProductIdentifier: "onemonth_freetrial")!
+        let expireDate = purchaserInfo!.expirationDate(forProductIdentifier: "onemonth_freetrial")!
         expect(expireDate.timeIntervalSince1970).to(equal(4123276836))
     }
 
     func testListActiveSubscriptions() {
-        XCTAssertEqual(Set(["onemonth_freetrial"]), subscriberInfo!.activeSubscriptions)
+        XCTAssertEqual(Set(["onemonth_freetrial"]), purchaserInfo!.activeSubscriptions)
     }
 
     func testAllPurchasedProductIdentifier() {
-        let allPurchased = subscriberInfo!.allPurchasedProductIdentifiers
+        let allPurchased = purchaserInfo!.allPurchasedProductIdentifiers
 
         expect(allPurchased).to(equal(Set(["onemonth_freetrial", "threemonth_freetrial"])))
     }
 
     func testLatestExpirationDateHelper() {
-        let latestExpiration = subscriberInfo!.latestExpirationDate
+        let latestExpiration = purchaserInfo!.latestExpirationDate
 
         expect(latestExpiration).toNot(beNil())
 
-        expect(latestExpiration).to(equal(subscriberInfo!.expirationDate(forProductIdentifier: "onemonth_freetrial")))
+        expect(latestExpiration).to(equal(purchaserInfo!.expirationDate(forProductIdentifier: "onemonth_freetrial")))
     }
 }
