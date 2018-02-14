@@ -23,6 +23,7 @@
 @property (nonatomic) RCBackend *backend;
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
+@property (nonatomic) NSUserDefaults *userDefaults;
 
 @property (nonatomic) NSDate *purchaserInfoLastChecked;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
@@ -36,11 +37,13 @@
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
+    NSUserDefaults *userDefaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.revenuecat.userdefaults"];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                            backend:backend
                    storeKitWrapper:storeKitWrapper
-                notificationCenter:[NSNotificationCenter defaultCenter]];
+                notificationCenter:[NSNotificationCenter defaultCenter]
+                      userDefaults:userDefaults];
 }
 + (NSString *)frameworkVersion {
     return @"0.8.0-SNAPSHOT";
@@ -51,6 +54,7 @@
                                     backend:(RCBackend *)backend
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                          notificationCenter:(NSNotificationCenter *)notificationCenter
+                               userDefaults:(NSUserDefaults *)userDefaults
 {
     if (self = [super init]) {
         self.appUserID = appUserID;
@@ -60,6 +64,7 @@
         self.storeKitWrapper = storeKitWrapper;
         self.storeKitWrapper.delegate = self;
         self.notificationCenter = notificationCenter;
+        self.userDefaults = userDefaults;
 
         self.productsByIdentifier = [NSMutableDictionary new];
     }

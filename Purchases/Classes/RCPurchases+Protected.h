@@ -18,7 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
                              requestFetcher:(RCStoreKitRequestFetcher *)requestFetcher
                                     backend:(RCBackend *)backend
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
-                         notificationCenter:(NSNotificationCenter *)notificationCenter;
+                         notificationCenter:(NSNotificationCenter *)notificationCenter
+                               userDefaults:(NSUserDefaults *)userDefaults;
 
 @end
 

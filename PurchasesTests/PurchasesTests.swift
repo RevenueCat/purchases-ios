@@ -121,6 +121,10 @@ class PurchasesTests: XCTestCase {
         }
     }
 
+    class MockUserDefaults: UserDefaults {
+
+    }
+
     class PurchasesDelegate: RCPurchasesDelegate {
         var completedTransaction: SKPaymentTransaction?
         var purchaserInfo: RCPurchaserInfo?
@@ -162,6 +166,7 @@ class PurchasesTests: XCTestCase {
     let backend = MockBackend()
     let storeKitWrapper = MockStoreKitWrapper()
     let notificationCenter = MockNotificationCenter();
+    let userDefaults = MockUserDefaults();
 
     let purchasesDelegate = PurchasesDelegate()
     
@@ -175,7 +180,8 @@ class PurchasesTests: XCTestCase {
                                      requestFetcher: requestFetcher,
                                      backend:backend,
                                      storeKitWrapper: storeKitWrapper,
-                                     notificationCenter:notificationCenter)
+                                     notificationCenter:notificationCenter,
+                                     userDefaults:userDefaults)
 
         purchases!.delegate = purchasesDelegate
     }
@@ -451,11 +457,12 @@ class PurchasesTests: XCTestCase {
     }
 
     func testSettingDelegateUpdatesSubscriberInfo() {
-        let purchases = RCPurchases.init(appUserID: appUserID,
-                                     requestFetcher: requestFetcher,
-                                     backend:backend,
-                                     storeKitWrapper: storeKitWrapper,
-                                     notificationCenter:notificationCenter)!
+        let purchases = RCPurchases(appUserID: appUserID,
+                                    requestFetcher: requestFetcher,
+                                    backend: backend,
+                                    storeKitWrapper: storeKitWrapper,
+                                    notificationCenter: notificationCenter,
+                                    userDefaults: userDefaults)!
         purchases.delegate = nil
 
         purchasesDelegate.purchaserInfo = nil
