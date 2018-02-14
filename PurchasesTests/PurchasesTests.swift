@@ -126,6 +126,10 @@ class PurchasesTests: XCTestCase {
         override func string(forKey defaultName: String) -> String? {
             return appUserID
         }
+
+        override func set(_ value: Any?, forKey defaultName: String) {
+            appUserID = value as! String?
+        }
     }
 
     class PurchasesDelegate: RCPurchasesDelegate {
@@ -178,23 +182,23 @@ class PurchasesTests: XCTestCase {
     var purchases: RCPurchases?
 
     func setupPurchases() {
-        purchases = RCPurchases.init(appUserID: appUserID,
-                                     requestFetcher: requestFetcher,
-                                     backend:backend,
-                                     storeKitWrapper: storeKitWrapper,
-                                     notificationCenter:notificationCenter,
-                                     userDefaults:userDefaults)
+        purchases = RCPurchases(appUserID: appUserID,
+                                requestFetcher: requestFetcher,
+                                backend:backend,
+                                storeKitWrapper: storeKitWrapper,
+                                notificationCenter:notificationCenter,
+                                userDefaults:userDefaults)
 
         purchases!.delegate = purchasesDelegate
     }
 
     func setupAnonPurchases() {
-        purchases = RCPurchases.init(appUserID: nil,
-                                     requestFetcher: requestFetcher,
-                                     backend:backend,
-                                     storeKitWrapper: storeKitWrapper,
-                                     notificationCenter:notificationCenter,
-                                     userDefaults:userDefaults)
+        purchases = RCPurchases(appUserID: nil,
+                                requestFetcher: requestFetcher,
+                                backend:backend,
+                                storeKitWrapper: storeKitWrapper,
+                                notificationCenter:notificationCenter,
+                                userDefaults:userDefaults)
 
         purchases!.delegate = purchasesDelegate
     }
@@ -631,7 +635,21 @@ class PurchasesTests: XCTestCase {
         expect(purchaserInfo).toEventuallyNot(beNil());
     }
 
-    func testAnonPurchasesGeneratesAnAppID() {
+    func testAnonPurchasesGeneratesAnAppUserID() {
         setupAnonPurchases()
+        expect(self.purchases?.appUserID).toNot(beEmpty())
+    }
+
+    func testAnonPurchasesSavesTheAppUserID() {
+        setupAnonPurchases()
+        expect(self.userDefaults.appUserID).toNot(beNil())
+    }
+
+    func testAnonPurchasesReadsSavedAppUserID() {
+        let appUserID = "jerry"
+        userDefaults.appUserID = appUserID
+        setupAnonPurchases()
+
+        expect(self.purchases?.appUserID).to(equal(appUserID))
     }
 }
