@@ -32,7 +32,12 @@
 
 @implementation RCPurchases
 
-- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey appUserID:(NSString *)appUserID
+- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
+{
+    return [self initWithAPIKey:APIKey appUserID:nil];
+}
+
+- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
 {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
