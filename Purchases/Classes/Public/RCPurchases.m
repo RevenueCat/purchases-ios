@@ -30,6 +30,8 @@
 
 @end
 
+NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
+
 @implementation RCPurchases
 
 - (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
@@ -62,6 +64,15 @@
                                userDefaults:(NSUserDefaults *)userDefaults
 {
     if (self = [super init]) {
+
+        if (appUserID == nil) {
+            appUserID = [userDefaults stringForKey:RCAppUserDefaultsKey];
+            if (appUserID == nil) {
+                NSString *generatedUserID = NSUUID.new.UUIDString;
+                [userDefaults setObject:generatedUserID forKey:RCAppUserDefaultsKey];
+                appUserID = generatedUserID;
+            }
+        }
         self.appUserID = appUserID;
 
         self.requestFetcher = requestFetcher;
