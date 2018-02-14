@@ -28,6 +28,8 @@
 @property (nonatomic) NSDate *purchaserInfoLastChecked;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
 
+@property (nonatomic) BOOL isUsingAnonymousID;
+
 @end
 
 NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
@@ -72,6 +74,7 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
                 [userDefaults setObject:generatedUserID forKey:RCAppUserDefaultsKey];
                 appUserID = generatedUserID;
             }
+            self.isUsingAnonymousID = YES;
         }
         self.appUserID = appUserID;
 
@@ -283,7 +286,7 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
 
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
-                            isRestore:NO
+                            isRestore:self.isUsingAnonymousID
                     productIdentifier:productIdentifier
                                 price:price
                           paymentMode:paymentMode
