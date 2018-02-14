@@ -263,6 +263,25 @@ class PurchasesTests: XCTestCase {
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.backend.postedIsRestore).to(equal(false))
+    }
+
+    func testReceiptsSendsAsRestoreWhenAnon() {
+        setupAnonPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.makePurchase(product)
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.backend.postedIsRestore).to(equal(true))
     }
 
     func testFinishesTransactionsIfSentToBackendCorrectly() {
@@ -527,6 +546,14 @@ class PurchasesTests: XCTestCase {
 
     func testRestoringPurchasesSetsIsRestore() {
         setupPurchases()
+        purchases!.restoreTransactions { (_, _) in
+
+        }
+        expect(self.backend.postedIsRestore!).to(equal(true))
+    }
+
+    func testRestoringPurchasesSetsIsRestoreForAnon() {
+        setupAnonPurchases()
         purchases!.restoreTransactions { (_, _) in
 
         }
