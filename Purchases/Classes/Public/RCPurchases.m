@@ -46,7 +46,7 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
-    NSUserDefaults *userDefaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.revenuecat.userdefaults"];
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                            backend:backend
