@@ -69,7 +69,7 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
  @param productIdentifiers A set of product identifiers for in app purchases setup via iTunesConnect. This should be either hard coded in your application, from a file, or from a custom endpoint if you want to be able to deploy new IAPs without an app update.
  @param completion An @escaping callback that is called with the loaded products. If the fetch fails for any reason it will return an empty array.
  */
-- (void)productsWithIdentifiers:(NSSet<NSString *> *)productIdentifiers
+- (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
                      completion:(void (^)(NSArray<SKProduct *>* products))completion;
 
 /**
@@ -102,7 +102,7 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
 /**
  Computes whether or not a user is eligible for the introductory pricing period of a given product. You should use this method to determine whether or not you show the user the normal product price or the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
 
- @note If you have multiple subscription groups you will need to specify which products belong to which subscription groups on https://app.revenuecat.com/. If RevenueCat can't definitively compute the eligibilty, most like because of missing group information, it will return `RCIntroEligibilityStatusUnknown`. The best course of action on unknown status is to display the non-intro pricing, to not create a misleading situation.
+ @note If you have multiple subscription groups you will need to specify which products belong to which subscription groups on https://app.revenuecat.com/. If RevenueCat can't definitively compute the eligibilty, most likely because of missing group information, it will return `RCIntroEligibilityStatusUnknown`. The best course of action on unknown status is to display the non-intro pricing, to not create a misleading situation.
 
  @param productIdentifiers Array of product identifiers for which you want to compute eligibility
  @param receiveEligibility A block that receives a dictionary of product_id -> eligibility. Will always have keys for every product passed in via `productIdentifiers`.
