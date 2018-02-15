@@ -701,16 +701,6 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in}
 
-        expect(self.backend.postReceiptDataCalled).to(beTrue())
-    }
-
-    func testGetEligibilityRespectsAnonIDRules() {
-        setupPurchases()
-        purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in}
-        expect(self.backend.postedIsRestore).to(beFalse())
-
-        setupAnonPurchases()
-        purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in}
-        expect(self.backend.postedIsRestore).to(beTrue())
+        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
     }
 }
