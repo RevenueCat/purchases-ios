@@ -79,7 +79,7 @@ class PurchasesTests: XCTestCase {
         }
 
         var postedProductIdentifiers: [String]?
-        override func getIntroElgibility(forAppUserID appUserID: String, productIdentifiers: [String], completion: @escaping RCIntroEligibilityResponseHandler) {
+        override func getIntroElgibility(forAppUserID appUserID: String, receiptData: Data?, productIdentifiers: [String], completion: @escaping RCIntroEligibilityResponseHandler) {
             postedProductIdentifiers = productIdentifiers
 
             var eligibilities = [String: RCIntroEligibility]()
@@ -693,6 +693,24 @@ class PurchasesTests: XCTestCase {
     }
     
     func testGetEligibility() {
+        setupPurchases()
         purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in}
+    }
+
+    func testGetEligibilitySendsAReceipt() {
+        setupPurchases()
+        purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in}
+
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+    }
+
+    func testGetEligibilityRespectsAnonIDRules() {
+        setupPurchases()
+        purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in}
+        expect(self.backend.postedIsRestore).to(beFalse())
+
+        setupAnonPurchases()
+        purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in}
+        expect(self.backend.postedIsRestore).to(beTrue())
     }
 }

@@ -57,6 +57,7 @@ typedef void(^RCIntroEligibilityResponseHandler)(NSDictionary<NSString *,
                             completion:(RCBackendResponseHandler)completion;
 
 - (void)getIntroElgibilityForAppUserID:(NSString *)appUserID
+                           receiptData:(NSData * _Nullable)receiptData
                     productIdentifiers:(NSArray<NSString *> *)productIdentifiers
                             completion:(RCIntroEligibilityResponseHandler)completion;
 

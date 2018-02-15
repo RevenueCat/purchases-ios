@@ -164,6 +164,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 }
 
 - (void)getIntroElgibilityForAppUserID:(NSString *)appUserID
+                           receiptData:(NSData *)receiptData
                     productIdentifiers:(NSArray<NSString *> *)productIdentifiers
                             completion:(RCIntroEligibilityResponseHandler)completion
 {
@@ -172,11 +173,16 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
         return;
     }
 
+    NSString *fetchToken = [receiptData base64EncodedStringWithOptions:0];
+
     NSString *escapedAppUserID = [appUserID stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/intro_eligibility", escapedAppUserID];
     [self.httpClient performRequest:@"POST"
                                path:path
-                               body:@{@"product_identifiers": productIdentifiers}
+                               body:@{
+                                      @"product_identifiers": productIdentifiers,
+                                      @"fetch_token": fetchToken
+                                      }
                             headers:self.headers
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
                       if (statusCode >= 300) {

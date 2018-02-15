@@ -99,11 +99,11 @@ class BackendTests: XCTestCase {
         if self.httpClient.calls.count > 0 {
             let call = self.httpClient.calls[0]
 
-            XCTAssertEqual(call.path, expectedCall.path)
-            XCTAssertEqual(call.HTTPMethod, expectedCall.HTTPMethod)
+            expect(call.path).to(equal(expectedCall.path))
+            expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
             XCTAssertEqual(call.body!.keys, expectedCall.body!.keys)
-            XCTAssertNotNil(call.headers?["Authorization"])
-            XCTAssertEqual(call.headers?["Authorization"], expectedCall.headers?["Authorization"])
+            expect(call.headers?["Authorization"]).toNot(beNil())
+            expect(call.headers?["Authorization"]).to(equal(expectedCall.headers?["Authorization"]))
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -150,11 +150,12 @@ class BackendTests: XCTestCase {
         if self.httpClient.calls.count > 0 {
             let call = self.httpClient.calls[0]
 
-            XCTAssertEqual(call.path, expectedCall.path)
-            XCTAssertEqual(call.HTTPMethod, expectedCall.HTTPMethod)
+            expect(call.path).to(equal(expectedCall.path))
+            expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
             XCTAssert(call.body!.keys == expectedCall.body!.keys)
-            XCTAssertNotNil(call.headers?["Authorization"])
-            XCTAssertEqual(call.headers?["Authorization"], expectedCall.headers?["Authorization"])
+
+            expect(call.headers?["Authorization"]).toNot(beNil())
+            expect(call.headers?["Authorization"]).to(equal(expectedCall.headers?["Authorization"]))
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -339,7 +340,7 @@ class BackendTests: XCTestCase {
     }
 
     func testEmptyEligibiltyCheckDoesNothing() {
-        backend?.getIntroElgibility(forAppUserID: userID, productIdentifiers: [], completion: { (eligibilities) in
+        backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: [], completion: { (eligibilities) in
 
         })
         expect(self.httpClient.calls.count).to(equal(0))
@@ -353,7 +354,7 @@ class BackendTests: XCTestCase {
         var eligibility: [String: RCIntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroElgibility(forAppUserID: userID, productIdentifiers: products, completion: {(productEligbility) in
+        backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
             eligibility = productEligbility
         })
 
@@ -361,13 +362,14 @@ class BackendTests: XCTestCase {
         if httpClient.calls.count > 0 {
             let call = httpClient.calls[0]
 
-            XCTAssertEqual(path, "/subscribers/" + userID + "/intro_eligibility")
-            XCTAssertEqual(call.HTTPMethod, "POST")
-            XCTAssertNotNil(call.headers?["Authorization"])
-            XCTAssertEqual(call.headers?["Authorization"], "Basic " + apiKey)
+            expect(path).to(equal("/subscribers/" + userID + "/intro_eligibility"))
+            expect(call.HTTPMethod).to(equal("POST"))
+            expect(call.headers!["Authorization"]).toNot(beNil())
+            expect(call.headers!["Authorization"]).to(equal("Basic " + apiKey))
 
-            XCTAssertNotNil(call.body)
-            XCTAssertEqual(call.body!["product_identifiers"] as! [String], products)
+            expect(call.body).toNot(beNil())
+            expect(call.body!["product_identifiers"] as? [String]).to(equal(products))
+            expect(call.body!["fetch_token"]).toNot(beNil())
         }
 
         expect(eligibility).toEventuallyNot(beNil())
@@ -385,7 +387,7 @@ class BackendTests: XCTestCase {
         var eligibility: [String: RCIntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroElgibility(forAppUserID: userID, productIdentifiers: products, completion: {(productEligbility) in
+        backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
             eligibility = productEligbility
         })
 
@@ -403,7 +405,7 @@ class BackendTests: XCTestCase {
         var eligibility: [String: RCIntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroElgibility(forAppUserID: userID, productIdentifiers: products, completion: {(productEligbility) in
+        backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
             eligibility = productEligbility
         })
 
