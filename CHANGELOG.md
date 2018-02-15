@@ -1,3 +1,6 @@
+## 0.8.0
+- Add support of initializing without an `appUserID`. This standardizes and simplifies behavior for apps without account systems.
+
 ## 0.7.0
 - Change `restoreTransactionsForAppStoreAccount:` to take a completion block since it no long relies on the app store queue. Removed delegate methods.
 - Added `updatedPurchaserInfo:` that allows force refreshing of `RCPurchaserInfo`. Useful if your app needs the latest purchaser info.

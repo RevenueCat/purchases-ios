@@ -63,7 +63,7 @@ class BasicPurchaerInfoTests: XCTestCase {
     func testAllPurchasedProductIdentifier() {
         let allPurchased = purchaserInfo!.allPurchasedProductIdentifiers
 
-        expect(allPurchased).to(equal(Set(["onemonth_freetrial", "threemonth_freetrial"])))
+        expect(allPurchased).to(equal(Set(["onemonth_freetrial", "threemonth_freetrial", "onetime_purchase"])))
     }
 
     func testLatestExpirationDateHelper() {

@@ -27,20 +27,31 @@
 @property (nonatomic) NSDate *purchaserInfoLastChecked;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
 
+@property (nonatomic) BOOL isUsingAnonymousID;
+
 @end
+
+NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
 
 @implementation RCPurchases
 
-- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey appUserID:(NSString *)appUserID
+- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
+{
+    return [self initWithAPIKey:APIKey appUserID:nil];
+}
+
+- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
 {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                            backend:backend
                    storeKitWrapper:storeKitWrapper
-                notificationCenter:[NSNotificationCenter defaultCenter]];
+                notificationCenter:[NSNotificationCenter defaultCenter]
+                      userDefaults:userDefaults];
 }
 + (NSString *)frameworkVersion {
     return @"0.8.0-SNAPSHOT";
@@ -51,8 +62,19 @@
                                     backend:(RCBackend *)backend
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                          notificationCenter:(NSNotificationCenter *)notificationCenter
+                               userDefaults:(NSUserDefaults *)userDefaults
 {
     if (self = [super init]) {
+
+        if (appUserID == nil) {
+            appUserID = [userDefaults stringForKey:RCAppUserDefaultsKey];
+            if (appUserID == nil) {
+                NSString *generatedUserID = NSUUID.new.UUIDString;
+                [userDefaults setObject:generatedUserID forKey:RCAppUserDefaultsKey];
+                appUserID = generatedUserID;
+            }
+            self.isUsingAnonymousID = YES;
+        }
         self.appUserID = appUserID;
 
         self.requestFetcher = requestFetcher;
@@ -262,7 +284,7 @@
 
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
-                            isRestore:NO
+                            isRestore:self.isUsingAnonymousID
                     productIdentifier:productIdentifier
                                 price:price
                           paymentMode:paymentMode

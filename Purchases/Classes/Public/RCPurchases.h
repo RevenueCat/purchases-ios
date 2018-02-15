@@ -22,11 +22,22 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCPurchases : NSObject
 
 /**
- Initializes an `RCPurchases` object with specified shared secret and app user ID.
+ Initializes an `RCPurchases` object with specified API key.
+
+ @note Use this initializer if your app does not have an account system. `Purchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`.
+
+ @param APIKey The API Key generated for your app from https://www.revenuecat.com/
+
+ @return An instantiated `RCPurchases` object
+ */
+- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey;
+
+/**
+ Initializes an `RCPurchases` object with specified API key and app user ID.
 
  @note Best practice is to use a salted hash of your unique app user ids for improved privacy.
 
- @warning If you don't pass a *unique* identifier per user or install every purchases shared with all users. If you do not have an account system you can use an `NSUUID` and persist it using `NSUserDefaults`.
+ @warning Use this initializer if you have your own user identifiers that you manage, such as in the case that you have an account system that you manage.
 
  @param APIKey The API Key generated for your app from https://www.revenuecat.com/
 
@@ -35,7 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
  @return An instantiated `RCPurchases` object
  */
 - (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
-                               appUserID:(NSString *)appUserID;
+                               appUserID:(NSString * _Nullable)appUserID;
+
+/// The `appUserID` used by `RCPurchases`. If not passed on initialization this will be generated and cached by `RCPurchases`.
+@property (nonatomic, readonly) NSString *appUserID;
 
 /**
  Delegate for `RCPurchases` instance. Object is responsible for handling completed purchases and updated subscription information.
