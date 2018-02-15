@@ -23,7 +23,6 @@
 @property (nonatomic) RCBackend *backend;
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
-@property (nonatomic) NSUserDefaults *userDefaults;
 
 @property (nonatomic) NSDate *purchaserInfoLastChecked;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
@@ -83,7 +82,6 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
         self.storeKitWrapper = storeKitWrapper;
         self.storeKitWrapper.delegate = self;
         self.notificationCenter = notificationCenter;
-        self.userDefaults = userDefaults;
 
         self.productsByIdentifier = [NSMutableDictionary new];
     }
