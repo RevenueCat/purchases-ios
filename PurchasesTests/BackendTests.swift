@@ -347,13 +347,13 @@ class BackendTests: XCTestCase {
     }
 
     func testPostsProductIdentifiers() {
-        let response = HTTPResponse(statusCode: 200, response: ["producta": true, "productb": false], error: nil)
+        let response = HTTPResponse(statusCode: 200, response: ["producta": true, "productb": false, "productd": NSNull()], error: nil)
         let path = "/subscribers/" + userID + "/intro_eligibility"
         httpClient.mock(requestPath: path, response: response)
 
         var eligibility: [String: RCIntroEligibility]?
 
-        let products = ["producta", "productb", "productc"]
+        let products = ["producta", "productb", "productc", "productd"]
         backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
             eligibility = productEligbility
         })
@@ -377,6 +377,7 @@ class BackendTests: XCTestCase {
         expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibityStatus.eligible))
         expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibityStatus.ineligible))
         expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["productd"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
     }
 
     func testEligbilityUnknownIfError() {

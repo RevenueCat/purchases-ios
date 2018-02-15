@@ -193,7 +193,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                       for (NSString *productID in productIdentifiers) {
                           NSNumber *e = response[productID];
                           RCIntroEligibityStatus status;
-                          if (e == nil) {
+                          if (e == nil || [e isKindOfClass:[NSNull class]]) {
                               status = RCIntroEligibityStatusUnknown;
                           } else if ([e boolValue]) {
                               status = RCIntroEligibityStatusEligible;
