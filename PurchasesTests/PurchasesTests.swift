@@ -77,6 +77,18 @@ class PurchasesTests: XCTestCase {
 
             completion(postReceiptPurchaserInfo, postReceiptError)
         }
+
+        var postedProductIdentifiers: [String]?
+        override func getIntroElgibility(forAppUserID appUserID: String, receiptData: Data?, productIdentifiers: [String], completion: @escaping RCIntroEligibilityResponseHandler) {
+            postedProductIdentifiers = productIdentifiers
+
+            var eligibilities = [String: RCIntroEligibility]()
+            for productID in productIdentifiers {
+                eligibilities[productID] = RCIntroEligibility(eligibilityStatus: RCIntroEligibityStatus.eligible)
+            }
+
+            completion(eligibilities);
+        }
     }
 
     class MockStoreKitWrapper: RCStoreKitWrapper {
@@ -212,7 +224,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         var products: [SKProduct]?
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
-        purchases!.products(withIdentifiers:Set(productIdentifiers)) { (newProducts) in
+        purchases!.products(withIdentifiers:productIdentifiers) { (newProducts) in
             products = newProducts
         }
 
@@ -308,7 +320,7 @@ class PurchasesTests: XCTestCase {
     func testSendsProductInfoIfProductIsCached() {
         setupPurchases()
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
-        purchases!.products(withIdentifiers:Set(productIdentifiers)) { (newProducts) in
+        purchases!.products(withIdentifiers:productIdentifiers) { (newProducts) in
             let product = newProducts[0];
             self.purchases?.makePurchase(product)
             
@@ -678,5 +690,17 @@ class PurchasesTests: XCTestCase {
         setupAnonPurchases()
 
         expect(self.purchases?.appUserID).to(equal(appUserID))
+    }
+    
+    func testGetEligibility() {
+        setupPurchases()
+        purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in}
+    }
+
+    func testGetEligibilitySendsAReceipt() {
+        setupPurchases()
+        purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in}
+
+        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
     }
 }

@@ -1,3 +1,6 @@
+## 0.9.0
+- Add support of checking eligibilty of introductory prices. RevenueCat will now be able to tell you definitively what version of a product you should present in your UI.
+
 ## 0.8.0
 - Add support of initializing without an `appUserID`. This standardizes and simplifies behavior for apps without account systems.
 

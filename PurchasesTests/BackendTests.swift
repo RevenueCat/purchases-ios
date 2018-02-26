@@ -99,11 +99,11 @@ class BackendTests: XCTestCase {
         if self.httpClient.calls.count > 0 {
             let call = self.httpClient.calls[0]
 
-            XCTAssertEqual(call.path, expectedCall.path)
-            XCTAssertEqual(call.HTTPMethod, expectedCall.HTTPMethod)
+            expect(call.path).to(equal(expectedCall.path))
+            expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
             XCTAssertEqual(call.body!.keys, expectedCall.body!.keys)
-            XCTAssertNotNil(call.headers?["Authorization"])
-            XCTAssertEqual(call.headers?["Authorization"], expectedCall.headers?["Authorization"])
+            expect(call.headers?["Authorization"]).toNot(beNil())
+            expect(call.headers?["Authorization"]).to(equal(expectedCall.headers?["Authorization"]))
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -150,11 +150,12 @@ class BackendTests: XCTestCase {
         if self.httpClient.calls.count > 0 {
             let call = self.httpClient.calls[0]
 
-            XCTAssertEqual(call.path, expectedCall.path)
-            XCTAssertEqual(call.HTTPMethod, expectedCall.HTTPMethod)
+            expect(call.path).to(equal(expectedCall.path))
+            expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
             XCTAssert(call.body!.keys == expectedCall.body!.keys)
-            XCTAssertNotNil(call.headers?["Authorization"])
-            XCTAssertEqual(call.headers?["Authorization"], expectedCall.headers?["Authorization"])
+
+            expect(call.headers?["Authorization"]).toNot(beNil())
+            expect(call.headers?["Authorization"]).to(equal(expectedCall.headers?["Authorization"]))
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -338,4 +339,79 @@ class BackendTests: XCTestCase {
         expect((error as NSError?)?.code).to(equal(RCUnexpectedBackendResponse))
     }
 
+    func testEmptyEligibiltyCheckDoesNothing() {
+        backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: [], completion: { (eligibilities) in
+
+        })
+        expect(self.httpClient.calls.count).to(equal(0))
+    }
+
+    func testPostsProductIdentifiers() {
+        let response = HTTPResponse(statusCode: 200, response: ["producta": true, "productb": false, "productd": NSNull()], error: nil)
+        let path = "/subscribers/" + userID + "/intro_eligibility"
+        httpClient.mock(requestPath: path, response: response)
+
+        var eligibility: [String: RCIntroEligibility]?
+
+        let products = ["producta", "productb", "productc", "productd"]
+        backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
+            eligibility = productEligbility
+        })
+
+        expect(self.httpClient.calls.count).to(equal(1))
+        if httpClient.calls.count > 0 {
+            let call = httpClient.calls[0]
+
+            expect(path).to(equal("/subscribers/" + userID + "/intro_eligibility"))
+            expect(call.HTTPMethod).to(equal("POST"))
+            expect(call.headers!["Authorization"]).toNot(beNil())
+            expect(call.headers!["Authorization"]).to(equal("Basic " + apiKey))
+
+            expect(call.body).toNot(beNil())
+            expect(call.body!["product_identifiers"] as? [String]).to(equal(products))
+            expect(call.body!["fetch_token"]).toNot(beNil())
+        }
+
+        expect(eligibility).toEventuallyNot(beNil())
+        expect(eligibility?.keys).toEventually(contain(products))
+        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibityStatus.eligible))
+        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibityStatus.ineligible))
+        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["productd"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+    }
+
+    func testEligbilityUnknownIfError() {
+        let response = HTTPResponse(statusCode: 499, response: serverErrorResponse, error: nil)
+        let path = "/subscribers/" + userID + "/intro_eligibility"
+        httpClient.mock(requestPath: path, response: response)
+
+        var eligibility: [String: RCIntroEligibility]?
+
+        let products = ["producta", "productb", "productc"]
+        backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
+            eligibility = productEligbility
+        })
+
+        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+    }
+
+    func testEligbilityUnknownIfUnknownError() {
+        let error = NSError(domain: "myhouse", code: 12, userInfo: nil) as Error
+        let response = HTTPResponse(statusCode: 200, response: serverErrorResponse, error: error)
+        let path = "/subscribers/" + userID + "/intro_eligibility"
+        httpClient.mock(requestPath: path, response: response)
+
+        var eligibility: [String: RCIntroEligibility]?
+
+        let products = ["producta", "productb", "productc"]
+        backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
+            eligibility = productEligbility
+        })
+
+        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+    }
 }

@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCPurchaserInfo, RCHTTPClient;
+@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility;
 
 FOUNDATION_EXPORT NSErrorDomain const RCBackendErrorDomain;
 
@@ -33,6 +33,9 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
                                         NSError * _Nullable);
 
+typedef void(^RCIntroEligibilityResponseHandler)(NSDictionary<NSString *,
+                                                 RCIntroEligibility *> *);
+
 @interface RCBackend : NSObject
 
 - (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey;
@@ -52,6 +55,11 @@ typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
                             completion:(RCBackendResponseHandler)completion;
+
+- (void)getIntroElgibilityForAppUserID:(NSString *)appUserID
+                           receiptData:(NSData * _Nullable)receiptData
+                    productIdentifiers:(NSArray<NSString *> *)productIdentifiers
+                            completion:(RCIntroEligibilityResponseHandler)completion;
 
 @end
 

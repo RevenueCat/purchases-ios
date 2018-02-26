@@ -37,6 +37,8 @@
 		359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */; };
 		359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */; };
 		35A60EAA1F82993E00D2FAE8 /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		35D3AB432030B4C600DE42C5 /* RCIntroEligibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		35D3AB442030B4C600DE42C5 /* RCIntroEligibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */; };
 		35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -99,6 +101,8 @@
 		359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSLocale+RCExtensions.h"; sourceTree = "<group>"; };
 		359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSLocale+RCExtensions.m"; sourceTree = "<group>"; };
 		35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCPurchases+Protected.h"; sourceTree = "<group>"; };
+		35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibility.h; sourceTree = "<group>"; };
+		35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCIntroEligibility.m; sourceTree = "<group>"; };
 		35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWrapperTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -140,6 +144,8 @@
 				350FBDE81F7EEF070065833D /* RCPurchases.m */,
 				351F4FAD1F803D0700F245F4 /* RCPurchaserInfo.h */,
 				351F4FAE1F803D0700F245F4 /* RCPurchaserInfo.m */,
+				35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */,
+				35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */,
 			);
 			path = Public;
 			sourceTree = "<group>";
@@ -219,6 +225,7 @@
 			files = (
 				350FBDE31F7EECAA0065833D /* RCUtils.h in Headers */,
 				35262A2C1F7D783F00C04F2C /* RCHTTPClient.h in Headers */,
+				35D3AB432030B4C600DE42C5 /* RCIntroEligibility.h in Headers */,
 				350FBDED1F7EFB950065833D /* RCStoreKitRequestFetcher.h in Headers */,
 				359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */,
 				351F4FAB1F80190700F245F4 /* RCBackend.h in Headers */,
@@ -335,6 +342,7 @@
 				350FBDEE1F7EFB950065833D /* RCStoreKitRequestFetcher.m in Sources */,
 				351F4FAC1F80190700F245F4 /* RCBackend.m in Sources */,
 				350FBDE01F7EE8F20065833D /* RCUtils.m in Sources */,
+				35D3AB442030B4C600DE42C5 /* RCIntroEligibility.m in Sources */,
 				359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */,
 				351F4FB01F803D0700F245F4 /* RCPurchaserInfo.m in Sources */,
 				350FBDEA1F7EEF070065833D /* RCPurchases.m in Sources */,

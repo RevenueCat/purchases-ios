@@ -167,6 +167,17 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
     }];
 }
 
+- (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
+                                      completion:(RCReceiveIntroEligibilityBlock)receiveEligibility
+{
+    [self receiptData:^(NSData * _Nonnull data) {
+        [self.backend getIntroElgibilityForAppUserID:self.appUserID
+                                         receiptData:data
+                                  productIdentifiers:productIdentifiers
+                                          completion:receiveEligibility];
+    }];
+}
+
 - (void)makePurchase:(SKProduct *)product
 {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
