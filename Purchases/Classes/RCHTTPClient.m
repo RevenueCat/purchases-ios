@@ -21,7 +21,7 @@
 
 + (NSString *)serverHostName
 {
-    return @"staging.revenuecat.com";
+    return @"api.revenuecat.com";
 }
 
 - (instancetype)init
