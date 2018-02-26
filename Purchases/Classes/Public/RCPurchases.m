@@ -54,7 +54,7 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
                       userDefaults:userDefaults];
 }
 + (NSString *)frameworkVersion {
-    return @"0.9.0";
+    return @"0.10.0-SNAPSHOT";
 }
 
 - (instancetype _Nullable)initWithAppUserID:(NSString *)appUserID
