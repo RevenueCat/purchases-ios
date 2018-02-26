@@ -105,7 +105,7 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
  @note If you have multiple subscription groups you will need to specify which products belong to which subscription groups on https://app.revenuecat.com/. If RevenueCat can't definitively compute the eligibilty, most likely because of missing group information, it will return `RCIntroEligibilityStatusUnknown`. The best course of action on unknown status is to display the non-intro pricing, to not create a misleading situation.
 
  @param productIdentifiers Array of product identifiers for which you want to compute eligibility
- @param receiveEligibility A block that receives a dictionary of product_id -> eligibility. Will always have keys for every product passed in via `productIdentifiers`.
+ @param receiveEligibility A block that receives a dictionary of product_id -> `RCIntroEligibility`.
 */
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
                                       completion:(RCReceiveIntroEligibilityBlock)receiveEligibility;
