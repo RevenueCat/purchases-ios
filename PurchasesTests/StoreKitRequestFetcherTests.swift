@@ -205,4 +205,19 @@ class StoreKitRequestFetcher: XCTestCase {
         setupFetcher(fails: false)
         expect(self.factory?.requests).to(haveCount(2))
     }
+    
+    func testFetchesReceiptMultipleTimes() {
+        setupFetcher(fails: false)
+        expect(self.receiptFetched).toEventually(beTrue())
+        var fetchedAgain = false
+        
+        self.fetcher!.fetchReceiptData {
+            fetchedAgain = true
+        }
+        
+        expect(fetchedAgain).toEventually(beTrue())
+        
+        expect(self.factory?.requests).to(haveCount(3))
+    }
+    
 }
