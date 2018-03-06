@@ -136,6 +136,7 @@ class StoreKitRequestFetcher: XCTestCase {
     var factory: MockRequestsFactory?
     var products: [SKProduct]?
     var receiptFetched = false
+    var receiptFetchedCallbackCount = 0
 
     func setupFetcher(fails: Bool) {
         self.factory = MockRequestsFactory(fails: fails)
@@ -147,6 +148,15 @@ class StoreKitRequestFetcher: XCTestCase {
 
         self.fetcher!.fetchReceiptData {
             self.receiptFetched = true
+            self.receiptFetchedCallbackCount += 1
+        }
+        
+        self.fetcher!.fetchReceiptData {
+            self.receiptFetchedCallbackCount += 1
+        }
+        
+        self.fetcher!.fetchReceiptData {
+            self.receiptFetchedCallbackCount += 1
         }
     }
 
@@ -184,5 +194,15 @@ class StoreKitRequestFetcher: XCTestCase {
     func testStillCallsReceiptFetchDelegate() {
         setupFetcher(fails: true)
         expect(self.receiptFetched).toEventually(beTrue())
+    }
+    
+    func testCanSupportMultipleReceiptCalls() {
+        setupFetcher(fails: false)
+        expect(self.receiptFetchedCallbackCount).toEventually(equal(3))
+    }
+    
+    func testOnlyCreatesOneRefreshRequest() {
+        setupFetcher(fails: false)
+        expect(self.factory?.requests).to(haveCount(2))
     }
 }

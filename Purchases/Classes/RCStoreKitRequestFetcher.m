@@ -28,8 +28,11 @@
 @interface RCStoreKitRequestFetcher ()
 @property (nonatomic) RCProductsRequestFactory *requestFactory;
 
-@property (nonatomic) NSMutableArray<SKRequest *> *requests;
-@property (nonatomic) NSMutableArray *completionHandlers;
+@property (nonatomic) NSMutableArray<SKRequest *> *productsRequests;
+@property (nonatomic) NSMutableArray *productsCompletionHandlers;
+
+@property (nonatomic) SKRequest *receiptRefreshRequest;
+@property (nonatomic) NSMutableArray *receiptRefreshCompletionHandlers;
 
 @end
 
@@ -43,8 +46,11 @@
 {
     if (self = [super init]) {
         self.requestFactory = requestFactory;
-        self.requests = [NSMutableArray new];
-        self.completionHandlers = [NSMutableArray new];
+        self.productsRequests = [NSMutableArray new];
+        self.productsCompletionHandlers = [NSMutableArray new];
+        
+        self.receiptRefreshRequest = nil;
+        self.receiptRefreshCompletionHandlers = [NSMutableArray new];
     }
     return self;
 }
@@ -53,13 +59,13 @@
     request.delegate = self;
 
     @synchronized(self) {
-        [self.requests addObject:request];
-        [self.completionHandlers addObject:completion];
+        [self.productsRequests addObject:request];
+        [self.productsCompletionHandlers addObject:completion];
     }
 
     [request start];
 
-    NSAssert(self.requests.count == self.completionHandlers.count, @"Corrupted handler storage");
+    NSAssert(self.productsRequests.count == self.productsCompletionHandlers.count, @"Corrupted handler storage");
 }
 
 - (void)fetchProducts:(NSSet<NSString *> * _Nonnull)identifiers
@@ -71,48 +77,68 @@
 
 - (void)fetchReceiptData:(void (^ _Nonnull)(void))completion
 {
-    SKReceiptRefreshRequest *request = [self.requestFactory receiptRefreshRequest];
-    [self startRequest:request completion:[completion copy]];
+    
+    @synchronized(self) {
+        [self.receiptRefreshCompletionHandlers addObject:[completion copy]];
+        
+        if (self.receiptRefreshRequest == nil) {
+            self.receiptRefreshRequest = [self.requestFactory receiptRefreshRequest];
+            self.receiptRefreshRequest.delegate = self;
+            [self.receiptRefreshRequest start];
+        }
+    }
 }
 
-- (id)finishRequest:(SKRequest *)request
+- (RCFetchProductsCompletionHandler)finishProductsRequest:(SKRequest *)request
 {
     id handler = nil;
     @synchronized(self) {
-        NSUInteger index = [self.requests indexOfObject:request];
-        handler = [self.completionHandlers objectAtIndex:index];
-        [self.requests removeObjectAtIndex:index];
-        [self.completionHandlers removeObjectAtIndex:index];
+        NSUInteger index = [self.productsRequests indexOfObject:request];
+        handler = [self.productsCompletionHandlers objectAtIndex:index];
+        [self.productsRequests removeObjectAtIndex:index];
+        [self.productsCompletionHandlers removeObjectAtIndex:index];
     }
-    NSAssert(self.requests.count == self.completionHandlers.count, @"Corrupted handler storage");
+    NSAssert(self.productsRequests.count == self.productsCompletionHandlers.count, @"Corrupted handler storage");
     return handler;
+}
+
+- (NSArray<RCFetchReceiptCompletionHandler> *)finishReceiptRequest:(SKRequest *)request
+{
+    @synchronized(self) {
+        self.receiptRefreshRequest = nil;
+        NSArray *handlers = [NSArray arrayWithArray:self.receiptRefreshCompletionHandlers];
+        self.receiptRefreshCompletionHandlers = [NSMutableArray new];
+        return handlers;
+    }
 }
 
 - (void)requestDidFinish:(SKRequest *)request
 {
     if ([request isKindOfClass:SKReceiptRefreshRequest.class]) {
-        void (^handler)(void)  = [self finishRequest:request];
-        RCFetchReceiptCompletionHandler receiptHandler = handler;
-        receiptHandler();
+        NSArray<RCFetchReceiptCompletionHandler> *receiptHandlers = [self finishReceiptRequest:request];
+        for (RCFetchReceiptCompletionHandler receiptHandler in receiptHandlers) {
+            receiptHandler();
+        }
     }
 }
 
 - (void)request:(SKRequest *)request didFailWithError:(NSError *)error
 {
     RCDebugLog(@"SKRequest failed: %@", error.localizedDescription);
-    id handler = [self finishRequest:request];
     if ([request isKindOfClass:SKReceiptRefreshRequest.class]) {
-        RCFetchReceiptCompletionHandler receiptHandler = handler;
-        receiptHandler();
+        NSArray<RCFetchReceiptCompletionHandler> *receiptHandlers = [self finishReceiptRequest:request];
+        for (RCFetchReceiptCompletionHandler receiptHandler in receiptHandlers) {
+            receiptHandler();
+        }
     } else if ([request isKindOfClass:SKProductsRequest.class]) {
-        RCFetchProductsCompletionHandler productsHandler = handler;
+        RCFetchProductsCompletionHandler productsHandler = [self finishProductsRequest:request];
         productsHandler(@[]);
     }
 }
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response
 {
-    RCFetchProductsCompletionHandler handler = [self finishRequest:request];
+    RCFetchProductsCompletionHandler handler = [self finishProductsRequest:request];
     handler(response.products);
 }
 
