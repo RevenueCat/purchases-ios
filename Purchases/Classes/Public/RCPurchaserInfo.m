@@ -59,7 +59,8 @@ static dispatch_once_t onceToken;
         NSDictionary<NSString *, id> *otherPurchases = subscriberData[@"other_purchases"];
         self.nonConsumablePurchases = [NSSet setWithArray:[otherPurchases allKeys]];
 
-        self.originalApplicationVersion = subscriberData[@"original_application_version"];
+        NSString *originalApplicationVersion = subscriberData[@"original_application_version"];
+        self.originalApplicationVersion = [originalApplicationVersion isKindOfClass:[NSNull class]] ? nil : originalApplicationVersion;
 
     }
     return self;
