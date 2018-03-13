@@ -89,8 +89,8 @@ class BasicPurchaerInfoTests: XCTestCase {
         let purchaserInfo = RCPurchaserInfo(data: [
             "subscriber": [
                 "original_application_version": "1.0",
-                "subscriptions": [],
-                "other_purchases": []
+                "subscriptions": [:],
+                "other_purchases": [:]
             ]])
         expect(purchaserInfo!.originalApplicationVersion).to(equal("1.0"))
     }

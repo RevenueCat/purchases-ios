@@ -12,6 +12,7 @@
 
 @property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDates;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
+@property (nonatomic) NSString *originalApplicationVersion;
 
 @end
 
@@ -58,6 +59,8 @@ static dispatch_once_t onceToken;
         NSDictionary<NSString *, id> *otherPurchases = subscriberData[@"other_purchases"];
         self.nonConsumablePurchases = [NSSet setWithArray:[otherPurchases allKeys]];
 
+        self.originalApplicationVersion = subscriberData[@"original_application_version"];
+
     }
     return self;
 }
@@ -96,11 +99,6 @@ static dispatch_once_t onceToken;
 - (NSDate *)expirationDateForProductIdentifier:(NSString *)productIdentifier
 {
     return self.expirationDates[productIdentifier];
-}
-
-- (NSString *)originalApplicationVersion
-{
-    return nil;
 }
 
 @end
