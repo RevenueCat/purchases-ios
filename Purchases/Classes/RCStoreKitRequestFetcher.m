@@ -55,29 +55,24 @@
     return self;
 }
 
-- (void)startRequest:(SKRequest *)request completion:(id)completion {
-    request.delegate = self;
-
-    @synchronized(self) {
-        [self.productsRequests addObject:request];
-        [self.productsCompletionHandlers addObject:completion];
-    }
-
-    [request start];
-
-    NSAssert(self.productsRequests.count == self.productsCompletionHandlers.count, @"Corrupted handler storage");
-}
-
 - (void)fetchProducts:(NSSet<NSString *> * _Nonnull)identifiers
            completion:(RCFetchProductsCompletionHandler)completion;
 {
     SKProductsRequest *request = [self.requestFactory requestForProductIdentifiers:identifiers];
-    [self startRequest:request completion:[completion copy]];
+    request.delegate = self;
+    
+    @synchronized(self) {
+        [self.productsRequests addObject:request];
+        [self.productsCompletionHandlers addObject:[completion copy]];
+    }
+    
+    [request start];
+    
+    NSAssert(self.productsRequests.count == self.productsCompletionHandlers.count, @"Corrupted handler storage");
 }
 
 - (void)fetchReceiptData:(void (^ _Nonnull)(void))completion
 {
-    
     @synchronized(self) {
         [self.receiptRefreshCompletionHandlers addObject:[completion copy]];
         
