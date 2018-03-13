@@ -327,4 +327,8 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
     }];
 }
 
+- (void)updateOriginalApplicationVersion:(RCReceivePurchaserInfoBlock)receivePurchaserInfo {
+    
+}
+
 @end
