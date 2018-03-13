@@ -33,6 +33,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 @property (nonatomic) RCHTTPClient *httpClient;
 @property (nonatomic) NSString *APIKey;
 
+@property (nonatomic) NSMutableDictionary<NSString *, NSMutableArray *> *receiptCallbacksCache;
+
 @end
 
 @implementation RCBackend
@@ -50,6 +52,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     if (self = [super init]) {
         self.httpClient = client;
         self.APIKey = APIKey;
+
+        self.receiptCallbacksCache = [NSMutableDictionary new];
     }
     return self;
 }
@@ -122,6 +126,21 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                    @"is_restore": @(isRestore)
                                    }];
 
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@", @(isRestore), fetchToken];
+    @synchronized(self) {
+        NSMutableArray *callbacks = [self.receiptCallbacksCache objectForKey:cacheKey];
+        BOOL cacheMiss = callbacks == nil;
+
+        if (cacheMiss) {
+            callbacks = [NSMutableArray new];
+            self.receiptCallbacksCache[cacheKey] = callbacks;
+        }
+
+        [callbacks addObject:[completion copy]];
+
+        if (!cacheMiss) return;
+    }
+
     if (productIdentifier &&
         price &&
         currencyCode) {
@@ -144,7 +163,16 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                body:body
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      [self handle:status withResponse:response error:error completion:completion];
+                      @synchronized(self) {
+                          NSMutableArray *callbacks = self.receiptCallbacksCache[cacheKey];
+                          NSParameterAssert(callbacks);
+
+                          for (RCBackendResponseHandler callback in callbacks) {
+                              [self handle:status withResponse:response error:error completion:callback];
+                          }
+
+                          self.receiptCallbacksCache[cacheKey] = nil;
+                      }
                   }];
 }
 
