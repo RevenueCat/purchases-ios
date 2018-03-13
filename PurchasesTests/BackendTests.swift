@@ -55,6 +55,7 @@ class BackendTests: XCTestCase {
     let bundleID = "com.bundle.id"
     let userID = "user"
     let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
+    let receiptData2 = "an awesomeer receipt".data(using: String.Encoding.utf8)!
 
     let validSubscriberResponse = [
         "subscriber": [
@@ -107,6 +108,67 @@ class BackendTests: XCTestCase {
         }
 
         expect(completionCalled).toEventually(beTrue())
+    }
+
+
+    func testCachesRequestsForSameReceipt() {
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        httpClient.mock(requestPath: "/receipts", response: response)
+
+        var completionCalled = 0
+
+        let isRestore = arc4random_uniform(2) == 0
+
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+            completionCalled += 1
+        })
+
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+            completionCalled += 1
+        })
+
+        expect(self.httpClient.calls.count).to(equal(1))
+        expect(completionCalled).toEventually(equal(2))
+    }
+
+    func testDoesntCacheForDifferentRestore() {
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        httpClient.mock(requestPath: "/receipts", response: response)
+
+        var completionCalled = 0
+
+        let isRestore = arc4random_uniform(2) == 0
+
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+            completionCalled += 1
+        })
+
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: !isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+            completionCalled += 1
+        })
+
+        expect(self.httpClient.calls.count).to(equal(2))
+        expect(completionCalled).toEventually(equal(2))
+    }
+
+    func testDoesntCacheForDifferentReceipts() {
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        httpClient.mock(requestPath: "/receipts", response: response)
+
+        var completionCalled = 0
+
+        let isRestore = arc4random_uniform(2) == 0
+
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+            completionCalled += 1
+        })
+
+        backend?.postReceiptData(receiptData2, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+            completionCalled += 1
+        })
+
+        expect(self.httpClient.calls.count).to(equal(2))
+        expect(completionCalled).toEventually(equal(2))
     }
 
     func testPostsReceiptDataWithProductInfoCorrectly() {
