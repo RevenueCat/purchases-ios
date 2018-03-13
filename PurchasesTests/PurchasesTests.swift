@@ -56,9 +56,9 @@ class PurchasesTests: XCTestCase {
                 info = RCPurchaserInfo(data: [
                     "subscriber": [
                         "subscriptions": [:],
-                        "other_purchases": [:]
-                    ],
-                    "original_application_version": version
+                        "other_purchases": [:],
+                        "original_application_version": version
+                    ]
                 ])
             } else {
                 info = RCPurchaserInfo(data: [
@@ -723,10 +723,11 @@ class PurchasesTests: XCTestCase {
     }
 
     func testFetchVersionDoesntSendAReceiptIfLatestVersionHasVersion() {
+        backend.originalApplicationVersion = "1.0"
+        
         setupPurchases()
         var info: RCPurchaserInfo?
-        backend.originalApplicationVersion = "1.0"
-
+        
         purchases!.updateOriginalApplicationVersion { (newInfo, error) in
             info = newInfo
         }
@@ -743,9 +744,9 @@ class PurchasesTests: XCTestCase {
         self.backend.postReceiptPurchaserInfo = RCPurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
-                "other_purchases": [:]
-            ],
-            "original_application_version": "1.0"
+                "other_purchases": [:],
+                "original_application_version": "1.0"
+            ]
         ])
 
         purchases!.updateOriginalApplicationVersion { (newInfo, error) in
