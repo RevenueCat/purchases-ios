@@ -98,4 +98,9 @@ static dispatch_once_t onceToken;
     return self.expirationDates[productIdentifier];
 }
 
+- (NSString *)originalApplicationVersion
+{
+    return nil;
+}
+
 @end
