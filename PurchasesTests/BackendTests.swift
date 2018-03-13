@@ -41,7 +41,9 @@ class BackendTests: XCTestCase {
             calls.append(HTTPRequest(HTTPMethod: HTTPMethod, path: path, body: requestBody, headers: headers))
 
             if shouldFinish {
-                completionHandler!(response.statusCode, response.response, response.error)
+                DispatchQueue.main.async {
+                    completionHandler!(response.statusCode, response.response, response.error)
+                }
             }
         }
 
