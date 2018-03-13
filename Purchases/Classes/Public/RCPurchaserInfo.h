@@ -29,6 +29,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) NSSet<NSString *> *nonConsumablePurchases;
 
 /**
+ Returns the version number for the version of the application when the user bought the app.
+ Use this for grandfathering users when migrating to subscriptions.
+
+ @note This can be nil, see -[RCPurchases refreshOriginalApplicationVersion:]
+*/
+@property (readonly) NSString * _Nullable originalApplicationVersion;
+
+/**
  Get the expiration date for a given product identifier.
 
  @param productIdentifier Product identifier for subscription product

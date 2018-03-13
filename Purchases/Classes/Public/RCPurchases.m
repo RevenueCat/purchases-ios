@@ -327,4 +327,27 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
     }];
 }
 
+- (void)updateOriginalApplicationVersion:(RCReceivePurchaserInfoBlock)receivePurchaserInfo
+{
+    [self updatedPurchaserInfo:^(RCPurchaserInfo * info, NSError * error) {
+        if (error) {
+            receivePurchaserInfo(nil, error);
+        } else if (info.originalApplicationVersion) {
+            receivePurchaserInfo(info, nil);
+        } else {
+            [self receiptData:^(NSData * _Nonnull data) {
+                [self.backend postReceiptData:data
+                                    appUserID:self.appUserID
+                                    isRestore:NO
+                            productIdentifier:nil
+                                        price:nil
+                                  paymentMode:RCPaymentModeNone
+                            introductoryPrice:nil
+                                 currencyCode:nil
+                                   completion:receivePurchaserInfo];
+            }];
+        }
+    }];
+}
+
 @end

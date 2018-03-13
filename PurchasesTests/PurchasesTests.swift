@@ -48,9 +48,27 @@ class PurchasesTests: XCTestCase {
 
     class MockBackend: RCBackend {
         var userID: String?
+        var originalApplicationVersion: String?
         override func getSubscriberData(withAppUserID appUserID: String, completion: @escaping RCBackendResponseHandler) {
             userID = appUserID
-            completion(RCPurchaserInfo(), nil)
+            var info: RCPurchaserInfo?
+            if let version = originalApplicationVersion {
+                info = RCPurchaserInfo(data: [
+                    "subscriber": [
+                        "subscriptions": [:],
+                        "other_purchases": [:],
+                        "original_application_version": version
+                    ]
+                ])
+            } else {
+                info = RCPurchaserInfo(data: [
+                    "subscriber": [
+                        "subscriptions": [:],
+                        "other_purchases": [:]
+                    ]])
+            }
+
+            completion(info!, nil)
         }
 
         var postReceiptDataCalled = false
@@ -702,5 +720,41 @@ class PurchasesTests: XCTestCase {
         purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in}
 
         expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
+    }
+
+    func testFetchVersionDoesntSendAReceiptIfLatestVersionHasVersion() {
+        backend.originalApplicationVersion = "1.0"
+        
+        setupPurchases()
+        var info: RCPurchaserInfo?
+        
+        purchases!.updateOriginalApplicationVersion { (newInfo, error) in
+            info = newInfo
+        }
+
+        expect(info?.originalApplicationVersion).toEventually(equal("1.0"))
+        expect(self.backend.userID).toEventuallyNot(beNil())
+        expect(self.backend.postReceiptDataCalled).toEventually(beFalse())
+    }
+
+    func testFetchVersionSendsAReceiptIfNoVersion() {
+        setupPurchases()
+        var info: RCPurchaserInfo?
+
+        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0"
+            ]
+        ])
+
+        purchases!.updateOriginalApplicationVersion { (newInfo, error) in
+            info = newInfo
+        }
+
+        expect(info?.originalApplicationVersion).toEventually(equal("1.0"))
+        expect(self.backend.userID).toEventuallyNot(beNil())
+        expect(self.backend.postReceiptDataCalled).toEventuallyNot(beFalse())
     }
 }

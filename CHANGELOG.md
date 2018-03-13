@@ -1,5 +1,7 @@
 ## 0.10.0
 - Prevent race conditions refreshing receipts.
+- Add support for original application version so users can be grandfathered easily
+
 
 ## 0.9.0
 - Add support of checking eligibilty of introductory prices. RevenueCat will now be able to tell you definitively what version of a product you should present in your UI.

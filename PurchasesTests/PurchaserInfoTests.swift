@@ -80,4 +80,18 @@ class BasicPurchaerInfoTests: XCTestCase {
 
         expect(nonConsumables).to(contain(["onetime_purchase"]))
     }
+
+    func testOriginalApplicationVersionNull() {
+        expect(self.purchaserInfo!.originalApplicationVersion).to(beNil())
+    }
+
+    func testOriginalApplicationVersion() {
+        let purchaserInfo = RCPurchaserInfo(data: [
+            "subscriber": [
+                "original_application_version": "1.0",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(purchaserInfo!.originalApplicationVersion).to(equal("1.0"))
+    }
 }
