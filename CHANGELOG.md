@@ -1,3 +1,6 @@
+## 0.10.1
+- Fix cache preventing prices from being posted
+
 ## 0.10.0
 - Prevent race conditions refreshing receipts.
 - Make processing of multiple receipt posts more efficient.
