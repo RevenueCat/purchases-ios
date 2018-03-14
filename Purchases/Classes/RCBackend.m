@@ -126,7 +126,15 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                    @"is_restore": @(isRestore)
                                    }];
 
-    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@", @(isRestore), fetchToken];
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@",
+                          @(isRestore),
+                          fetchToken,
+                          productIdentifier,
+                          price,
+                          currencyCode,
+                          @((NSUInteger)paymentMode),
+                          introductoryPrice];
+    
     @synchronized(self) {
         NSMutableArray *callbacks = [self.receiptCallbacksCache objectForKey:cacheKey];
         BOOL cacheMiss = callbacks == nil;
