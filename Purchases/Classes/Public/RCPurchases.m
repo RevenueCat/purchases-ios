@@ -80,7 +80,7 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
         self.requestFetcher = requestFetcher;
         self.backend = backend;
         self.storeKitWrapper = storeKitWrapper;
-        self.storeKitWrapper.delegate = self;
+        
         self.notificationCenter = notificationCenter;
 
         self.productsByIdentifier = [NSMutableDictionary new];
@@ -251,7 +251,6 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
 }
 
 - (BOOL)storeKitWrapper:(nonnull RCStoreKitWrapper *)storeKitWrapper shouldAddStorePayment:(nonnull SKPayment *)payment forProduct:(nonnull SKProduct *)product {
-    
     @synchronized(self) {
         self.productsByIdentifier[product.productIdentifier] = product;
     }
