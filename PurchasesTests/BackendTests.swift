@@ -202,7 +202,6 @@ class BackendTests: XCTestCase {
 
         let currencyCode = "BFD"
 
-        let introPrice = 2.99 as NSDecimalNumber
         let paymentMode = RCPaymentMode.none
 
         var completionCalled = false
@@ -211,7 +210,7 @@ class BackendTests: XCTestCase {
                                  isRestore: false,
                                  productIdentifier: productIdentifier,
                                  price: price, paymentMode: paymentMode,
-                                 introductoryPrice: introPrice,
+                                 introductoryPrice: nil,
                                  currencyCode: currencyCode,
                                  completion: { (purchaserInfo, error) in
             completionCalled = true

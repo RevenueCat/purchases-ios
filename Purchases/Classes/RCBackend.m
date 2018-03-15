@@ -149,21 +149,24 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
         if (!cacheMiss) return;
     }
 
-    if (productIdentifier &&
-        price &&
-        currencyCode) {
-        [body addEntriesFromDictionary:@{
-                                         @"product_id": productIdentifier,
-                                         @"price": price,
-                                         @"currency": currencyCode
-                                         }];
+    if (productIdentifier) {
+        body[@"product_id"] = productIdentifier;
+    }
 
-        if (paymentMode != RCPaymentModeNone) {
-            [body addEntriesFromDictionary:@{
-                                             @"payment_mode": @((NSUInteger)paymentMode),
-                                             @"introductory_price": introductoryPrice
-                                             }];
-        }
+    if (price) {
+        body[@"price"] = price;
+    }
+
+    if (currencyCode) {
+        body[@"currency"] = currencyCode;
+    }
+
+    if (paymentMode != RCPaymentModeNone) {
+        body[@"payment_mode"] = @((NSUInteger)paymentMode);
+    }
+
+    if (introductoryPrice) {
+        body[@"introductory_price"] = introductoryPrice;
     }
 
     [self.httpClient performRequest:@"POST"
