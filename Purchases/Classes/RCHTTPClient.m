@@ -11,6 +11,13 @@
 #import "RCUtils.h"
 #import "RCPurchases.h"
 
+static NSString *overrideHostName = nil;
+
+void RCOverrideServerHost(NSString *hostname)
+{
+    overrideHostName = hostname;
+}
+
 @interface RCHTTPClient ()
 
 @property (nonatomic) NSURLSession *session;
@@ -21,7 +28,7 @@
 
 + (NSString *)serverHostName
 {
-    return @"api.revenuecat.com";
+    return  (overrideHostName) ? overrideHostName : @"api.revenuecat.com";
 }
 
 - (instancetype)init
