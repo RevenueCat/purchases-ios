@@ -245,6 +245,23 @@ class BackendTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
     }
 
+    func testIndividualParamsCanBeNil() {
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        httpClient.mock(requestPath: "/receipts", response: response)
+
+        var completionCalled = false
+
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: "product_id", price: 9.99, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+            completionCalled = true
+        })
+
+        expect(self.httpClient.calls.count).to(equal(1))
+        expect(completionCalled).toEventually(beTrue())
+
+        let call = self.httpClient.calls[0]
+        expect(call.body!["price"]).toNot(beNil())
+    }
+
     func postPaymentMode(paymentMode: RCPaymentMode) {
         var completionCalled = false
 
