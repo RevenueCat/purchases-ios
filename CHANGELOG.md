@@ -1,3 +1,6 @@
+## 0.10.2
+- Workaround for a StoreKit issue (38476489) where priceLocale is missing on promotional purchases
+
 ## 0.10.1
 - Fix cache preventing prices from being posted
 
