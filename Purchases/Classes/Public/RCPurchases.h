@@ -89,8 +89,6 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
  This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user. Going forward, either `appUserID` will be able to reference the same user.
 
  @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI.
- 
- @warning Calling this method requires that the optional delegate methods `purchases:restoredTransactionsWithPurchaserInfo:` and `purchases:failedToRestoreTransactionsWithReason:` are implemented.
  */
 - (void)restoreTransactionsForAppStoreAccount:(RCReceivePurchaserInfoBlock)receivePurchaserInfo;
 
