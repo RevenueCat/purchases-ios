@@ -99,7 +99,7 @@ failedTransaction:(SKPaymentTransaction *)transaction
 productIDs = /* */
 
 self.purchases.products(withIdentifiers: productIDs) { (products) in
-  if producst.count == 0 {
+  if products.count == 0 {
     displayErrorMessage:("Error fetching products")
   } else {
     let mySubscriptionProduct = products[0]
