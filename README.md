@@ -111,7 +111,7 @@ self.purchases.products(withIdentifiers: productIDs) { (products) in
 
 ```obj-c
 
-NSSet *myProductIDs = [NSSet setWithArray:@["com.myapp.subscription_product"]];
+NSArray *myProductIDs = @["com.myapp.subscription_product"];
 
 [self.purchases productsWithIdentifiers:myProductIDs completion:^(NSArray<SKProduct *> * _Nonnull products) {
   if (products.count == 0) {

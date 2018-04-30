@@ -21,14 +21,9 @@ For apps where subscriptions can be purchased outside of a logged in account, yo
 
 To restore purchases with RevenueCat, you should call the follow:
 ```
-self.purchases.restoreTransactionsForAppStoreAccount();
+self.purchases.restoreTransactions(RCReceivePurchaserInfoBlock);
 ```
 
-Any other users using the current App Store account for their subscriptions will lose their subscriptions. This is the desired behavior to keep users from sharing App Store accounts to share subscriptions.
+If you initialized RCPurchases with an `appUserID`, different users using the same receipt will lose their subscription. This prevents users from sharing receipts. 
 
-Make sure you also implement the restoration related optional delegate methods:
-
-```
-- (void)purchases:(RCPurchases *)purchases restoredTransactionsWithPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
-- (void)purchases:(RCPurchases *)purchases failedToRestoreTransactionsWithReason:(NSError *)failureReason;
-```
+If you didn't pass an `appUserID` when instantiating `RCPurchases`, a random ID is created and restoring transactions will allow both `appUserID`'s to share the subscription.
