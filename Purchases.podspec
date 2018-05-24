@@ -16,9 +16,21 @@ Pod::Spec.new do |s|
   s.framework      = 'StoreKit'
 
   s.ios.deployment_target = '9.0'
+  s.osx.deployment_target = '10.12'
 
   s.source_files = [
-    'Purchases/Classes/**/*'
+    'Purchases/Classes/*.h',
+    'Purchases/Classes/*.m',
+    'Purchases/Classes/Public/*.h',
+    'Purchases/Classes/Public/*.m',
+  ]
+
+  s.ios.source_files = [
+    'Purchases/Classes/Public/Umbrella/Purchases.h'
+  ]
+
+  s.osx.source_files = [
+    'Purchases/Classes/Public/Umbrella/Purchases_macOS.h'
   ]
 
   s.public_header_files = [

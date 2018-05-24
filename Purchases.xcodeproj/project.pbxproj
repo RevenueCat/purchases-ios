@@ -172,8 +172,7 @@
 		350FBDE61F7EEEDF0065833D /* Public */ = {
 			isa = PBXGroup;
 			children = (
-				35262A011F7C4B9100C04F2C /* Purchases.h */,
-				35C98D9320B72EE7006DCBB5 /* Purchases_macOS.h */,
+				35F26F9B20B7369A0025FA0A /* Umbrella */,
 				350FBDE71F7EEF070065833D /* RCPurchases.h */,
 				350FBDE81F7EEF070065833D /* RCPurchases.m */,
 				351F4FAD1F803D0700F245F4 /* RCPurchaserInfo.h */,
@@ -250,6 +249,15 @@
 				350FBDD61F7DF1640065833D /* Frameworks */,
 			);
 			path = PurchasesTests;
+			sourceTree = "<group>";
+		};
+		35F26F9B20B7369A0025FA0A /* Umbrella */ = {
+			isa = PBXGroup;
+			children = (
+				35262A011F7C4B9100C04F2C /* Purchases.h */,
+				35C98D9320B72EE7006DCBB5 /* Purchases_macOS.h */,
+			);
+			path = Umbrella;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
