@@ -8,9 +8,9 @@
 
 #import <StoreKit/StoreKit.h>
 
-FOUNDATION_EXPORT double PurchasesVersionNumber;
-FOUNDATION_EXPORT const unsigned char PurchasesVersionString[];
+FOUNDATION_EXPORT double Purchases_macOSVersionNumber;
+FOUNDATION_EXPORT const unsigned char Purchases_macOSVersionString[];
 
-#import <Purchases/RCPurchases.h>
-#import <Purchases/RCPurchaserInfo.h>
-#import <Purchases/RCIntroEligibility.h>
+#import <Purchases_macOS/RCPurchases.h>
+#import <Purchases_macOS/RCPurchaserInfo.h>
+#import <Purchases_macOS/RCIntroEligibility.h>
