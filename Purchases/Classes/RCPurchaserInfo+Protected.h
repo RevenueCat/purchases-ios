@@ -6,7 +6,7 @@
 //  Copyright © 2017 RevenueCat, Inc. All rights reserved.
 //
 
-#import <Purchases/Purchases.h>
+#import "RCPurchaserInfo.h"
 
 @interface RCPurchaserInfo (Protected)
 
