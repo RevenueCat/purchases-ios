@@ -9,6 +9,7 @@
 #import "RCHTTPClient.h"
 #import "RCUtils.h"
 #import "RCPurchases.h"
+#import "RCCrossPlatformSupport.h"
 
 static NSString *overrideHostName = nil;
 
@@ -59,7 +60,7 @@ void RCOverrideServerHost(NSString *hostname)
     NSMutableDictionary *defaultHeaders = [NSMutableDictionary
                                            dictionaryWithDictionary:@{@"content-type": @"application/json",
                                                                       @"X-Version": [RCPurchases frameworkVersion],
-                                                                      @"X-Platform": @"iOS",
+                                                                      @"X-Platform": PLATFORM_HEADER,
                                                                       @"X-Platform-Version": [self.class systemVersion]
                                                                       }];
     [defaultHeaders addEntriesFromDictionary:headers];
