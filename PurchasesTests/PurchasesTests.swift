@@ -156,23 +156,21 @@ class PurchasesTests: XCTestCase {
         let purchaserInfoCachePrefix = "com.revenuecat.userdefaults.purchaserInfo"
 
         var appUserID: String?
-        var cachedUserInfo = [String : String]()
+        var cachedUserInfo = [String : Data]()
 
         override func string(forKey defaultName: String) -> String? {
-            if (defaultName == appUserIDKey) {
-                return appUserID
-            } else if (defaultName.starts(with: purchaserInfoCachePrefix)) {
-                return cachedUserInfo[defaultName];
-            } else {
-                return nil
-            }
+            return appUserID;
+        }
+
+        override func data(forKey defaultName: String) -> Data? {
+            return cachedUserInfo[defaultName];
         }
 
         override func set(_ value: Any?, forKey defaultName: String) {
             if (defaultName == appUserIDKey) {
                 appUserID = value as! String?
             } else if (defaultName.starts(with: purchaserInfoCachePrefix)){
-                cachedUserInfo[defaultName] = value as! String?
+                cachedUserInfo[defaultName] = value as! Data?
             }
         }
     }
@@ -598,9 +596,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         let purchaserInfo = RCPurchaserInfo()
         self.backend.postReceiptPurchaserInfo = purchaserInfo
-
-
-
+        
         purchases!.restoreTransactionsForAppStoreAccount()
 
         expect(self.purchasesDelegate.purchaserInfo).toEventually(equal(purchaserInfo))
@@ -755,12 +751,12 @@ class PurchasesTests: XCTestCase {
         expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
 
         expect(self.userDefaults.cachedUserInfo.count).to(equal(1))
-        let purchaserInfo = userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo"]
+        let purchaserInfo = userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + self.purchases!.appUserID]
         expect(purchaserInfo).toNot(beNil())
 
         do {
             if (purchaserInfo != nil) {
-                try JSONSerialization.jsonObject(with: (purchaserInfo?.data(using: String.Encoding.utf8)!)!, options: [])
+                try JSONSerialization.jsonObject(with: purchaserInfo!, options: [])
             }
         } catch {
             fail()

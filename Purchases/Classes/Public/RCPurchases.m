@@ -12,6 +12,7 @@
 #import "RCStoreKitRequestFetcher.h"
 #import "RCBackend.h"
 #import "RCStoreKitWrapper.h"
+#import "RCPurchaserInfo+Protected.h"
 #import "RCUtils.h"
 #import "NSLocale+RCExtensions.h"
 #import "RCPurchaserInfo.h"
@@ -25,6 +26,7 @@
 @property (nonatomic) RCBackend *backend;
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
+@property (nonatomic) NSUserDefaults *userDefaults;
 
 @property (nonatomic) NSDate *purchaserInfoLastChecked;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
@@ -34,6 +36,7 @@
 @end
 
 NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
+NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults.purchaserInfo.";
 
 @implementation RCPurchases
 
@@ -84,6 +87,7 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
         self.storeKitWrapper = storeKitWrapper;
         
         self.notificationCenter = notificationCenter;
+        self.userDefaults = userDefaults;
 
         self.productsByIdentifier = [NSMutableDictionary new];
     }
@@ -137,7 +141,7 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
                                       completion:^(RCPurchaserInfo * _Nullable info,
                                                    NSError * _Nullable error) {
         if (error == nil) {
-            [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+            [self handleUpdatedPurchaserInfo:info error:nil];
         } else {
             self.purchaserInfoLastChecked = nil;
         }
@@ -161,11 +165,7 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
 {
     [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable purchaserInfo, NSError * _Nullable error) {
 
-        if (error) {
-            RCLog(@"Error fetching purchaser info: %@", error.localizedDescription);
-        } else if(purchaserInfo) {
-            [self.delegate purchases:self receivedUpdatedPurchaserInfo:purchaserInfo];
-        }
+        [self handleUpdatedPurchaserInfo:purchaserInfo error:error];
     }];
 }
 
@@ -279,6 +279,18 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
     if (error) {
         [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
     } else if (info) {
+
+        if (info.JSONObject) {
+            NSError *jsonError = nil;
+            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:info.JSONObject
+                                                               options:0
+                                                                 error:&jsonError];
+            if (jsonError == nil) {
+                [self.userDefaults setObject:jsonData
+                                      forKey:[RCPurchaserInfoAppUserDefaultsKeyBase stringByAppendingString:self.appUserID]];
+            }
+        }
+
         [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
     }
 }
