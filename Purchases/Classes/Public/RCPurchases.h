@@ -96,7 +96,7 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
 /**
  Fetches the latest purchaser info from the backend. This will happen periodically on `applicationDidResumeActive:` and will trigger the delegate method `purchases:receivedUpdatedPurchaserInfo:`. You can use this method if you'd like to refresh the purchaser info manually. Triggers purchases:receivedUpdatedPurchaserInfo: delegate method to be called.
  */
-- (void)updatedPurchaserInfo;
+- (void)updatePurchaserInfo;
 
 /**
  Computes whether or not a user is eligible for the introductory pricing period of a given product. You should use this method to determine whether or not you show the user the normal product price or the introductory price. This also applies to trials (trials are considered a type of introductory pricing).

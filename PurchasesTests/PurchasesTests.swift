@@ -668,7 +668,7 @@ class PurchasesTests: XCTestCase {
     func testGetUpdatedPurchaserInfo() {
         setupPurchases()
 
-        purchases!.updatedPurchaserInfo()
+        purchases!.updatePurchaserInfo()
 
         expect(self.backend.postReceiptDataCalled).to(beFalse());
         expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil());

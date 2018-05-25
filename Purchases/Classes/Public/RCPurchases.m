@@ -345,7 +345,7 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
     [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable info,
                                                                              NSError * _Nullable error) {
         if (error) {
-            RCLog(@"Error fetching original application version %@", error);
+            [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
         } else if (info.originalApplicationVersion) {
             [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
         } else {
