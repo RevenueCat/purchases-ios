@@ -1,3 +1,8 @@
+## 0.11.0
+- RCPurchases now caches the most recent RCPurchaserInfo. Apps no longer need to implement there own offline caching of subscription status.
+- Change block based methods to use delegate. restoreTransactions and updatePurchaserInfo no longer take blocks. This means all new RCPurchaserInfo objects will be sent via the delegate methods.
+- macOS support. Purchases now works with macOS. Contact jacob@revenuecat.com if interested in beta testing.
+
 ## 0.10.2
 - Workaround for a StoreKit issue (38476489) where priceLocale is missing on promotional purchases
 
