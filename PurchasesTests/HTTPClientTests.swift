@@ -114,7 +114,7 @@ class HTTPClientTests: XCTestCase {
         let path = "/a_random_path"
         var headerPresent = false
 
-        stub(condition: hasHeaderNamed("X-Platform-Version", value: UIDevice.current.systemVersion)) { request in
+        stub(condition: hasHeaderNamed("X-Platform-Version", value: ProcessInfo().operatingSystemVersionString)) { request in
             headerPresent = true
             return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
