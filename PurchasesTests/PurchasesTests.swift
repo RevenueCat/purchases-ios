@@ -179,14 +179,9 @@ class PurchasesTests: XCTestCase {
             self.purchaserInfo = purchaserInfo
         }
 
-        var restoredPurchaserInfo: RCPurchaserInfo?
-        func purchases(_ purchases: RCPurchases, restoredTransactionsWith purchaserInfo: RCPurchaserInfo) {
-            restoredPurchaserInfo = purchaserInfo
-        }
-
-        var restoredError: Error?
-        func purchases(_ purchases: RCPurchases, failedToRestoreTransactionsWithReason failureReason: Error) {
-            restoredError = failureReason
+        var updatePurchaserInfoError: Error?
+        func purchases(_ purchases: RCPurchases, failedToUpdatePurchaserInfoWithError failureReason: Error) {
+            updatePurchaserInfoError = failureReason
         }
         
         var promoProduct: SKProduct?
@@ -560,33 +555,27 @@ class PurchasesTests: XCTestCase {
 
     func testRestoringPurchasesPostsTheReceipt() {
         setupPurchases()
-        purchases!.restoreTransactions { (_, _) in
-
-        }
+        purchases!.restoreTransactionsForAppStoreAccount()
         expect(self.backend.postReceiptDataCalled).to(equal(true))
     }
 
     func testRestoringPurchasesRefreshesAndPostsTheReceipt() {
         setupPurchases()
-        purchases!.restoreTransactions { (_, _) in
+        purchases!.restoreTransactionsForAppStoreAccount()
 
-        }
         expect(self.requestFetcher.refreshReceiptCalled).to(equal(true))
     }
 
     func testRestoringPurchasesSetsIsRestore() {
         setupPurchases()
-        purchases!.restoreTransactions { (_, _) in
-
-        }
+        purchases!.restoreTransactionsForAppStoreAccount()
         expect(self.backend.postedIsRestore!).to(equal(true))
     }
 
     func testRestoringPurchasesSetsIsRestoreForAnon() {
         setupAnonPurchases()
-        purchases!.restoreTransactions { (_, _) in
+        purchases!.restoreTransactionsForAppStoreAccount()
 
-        }
         expect(self.backend.postedIsRestore!).to(equal(true))
     }
 
@@ -595,30 +584,24 @@ class PurchasesTests: XCTestCase {
         let purchaserInfo = RCPurchaserInfo()
         self.backend.postReceiptPurchaserInfo = purchaserInfo
 
-        var restoredPurchaserInfo: RCPurchaserInfo?
 
-        purchases!.restoreTransactions { (newPurchaserInfo, _) in
-            restoredPurchaserInfo = newPurchaserInfo
-        }
 
-        expect(restoredPurchaserInfo).toEventually(equal(purchaserInfo))
+        purchases!.restoreTransactionsForAppStoreAccount()
+
+        expect(self.purchasesDelegate.purchaserInfo).toEventually(equal(purchaserInfo))
     }
 
     func testRestorePurchasesCallsFailureDelegateMethodOnFailure() {
         setupPurchases()
         let error = NSError(domain: "error_domain", code: RCFinishableError, userInfo: nil)
         self.backend.postReceiptError = error
+        self.purchasesDelegate.purchaserInfo = nil
 
-        var restoredPurchaserInfo: RCPurchaserInfo?
-        var restoreError: Error?
+        purchases!.restoreTransactionsForAppStoreAccount()
 
-        purchases!.restoreTransactions { (newPurchaserInfo, newError) in
-            restoredPurchaserInfo = newPurchaserInfo
-            restoreError = newError
-        }
 
-        expect(restoredPurchaserInfo).toEventually(beNil())
-        expect(restoreError).toEventuallyNot(beNil())
+        expect(self.purchasesDelegate.purchaserInfo).toEventually(beNil())
+        expect(self.purchasesDelegate.updatePurchaserInfoError).toEventuallyNot(beNil())
     }
     
     func testCallsShouldAddPromoPaymentDelegateMethod() {
@@ -684,12 +667,11 @@ class PurchasesTests: XCTestCase {
 
     func testGetUpdatedPurchaserInfo() {
         setupPurchases()
-        var purchaserInfo: RCPurchaserInfo?
-        purchases!.updatedPurchaserInfo { (info, error) in
-            purchaserInfo = info
-        }
+
+        purchases!.updatePurchaserInfo()
+
         expect(self.backend.postReceiptDataCalled).to(beFalse());
-        expect(purchaserInfo).toEventuallyNot(beNil());
+        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil());
     }
 
     func testAnonPurchasesGeneratesAnAppUserID() {
@@ -726,20 +708,16 @@ class PurchasesTests: XCTestCase {
         backend.originalApplicationVersion = "1.0"
         
         setupPurchases()
-        var info: RCPurchaserInfo?
         
-        purchases!.updateOriginalApplicationVersion { (newInfo, error) in
-            info = newInfo
-        }
+        purchases!.updateOriginalApplicationVersion()
 
-        expect(info?.originalApplicationVersion).toEventually(equal("1.0"))
+        expect(self.purchasesDelegate.purchaserInfo?.originalApplicationVersion).toEventually(equal("1.0"))
         expect(self.backend.userID).toEventuallyNot(beNil())
         expect(self.backend.postReceiptDataCalled).toEventually(beFalse())
     }
 
     func testFetchVersionSendsAReceiptIfNoVersion() {
         setupPurchases()
-        var info: RCPurchaserInfo?
 
         self.backend.postReceiptPurchaserInfo = RCPurchaserInfo(data: [
             "subscriber": [
@@ -749,11 +727,9 @@ class PurchasesTests: XCTestCase {
             ]
         ])
 
-        purchases!.updateOriginalApplicationVersion { (newInfo, error) in
-            info = newInfo
-        }
+        purchases!.updateOriginalApplicationVersion()
 
-        expect(info?.originalApplicationVersion).toEventually(equal("1.0"))
+        expect(self.purchasesDelegate.purchaserInfo?.originalApplicationVersion).toEventually(equal("1.0"))
         expect(self.backend.userID).toEventuallyNot(beNil())
         expect(self.backend.postReceiptDataCalled).toEventuallyNot(beFalse())
     }

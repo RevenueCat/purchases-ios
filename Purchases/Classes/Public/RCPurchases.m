@@ -157,15 +157,15 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
     }];
 }
 
-- (void)updatedPurchaserInfo:(RCReceivePurchaserInfoBlock)receivePurchaserInfo
+- (void)updatedPurchaserInfo
 {
     [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable purchaserInfo, NSError * _Nullable error) {
 
         if (error) {
             RCLog(@"Error fetching purchaser info: %@", error.localizedDescription);
+        } else if(purchaserInfo) {
+            [self.delegate purchases:self receivedUpdatedPurchaserInfo:purchaserInfo];
         }
-
-        receivePurchaserInfo(purchaserInfo, error);
     }];
 }
 
@@ -274,6 +274,15 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
     }
 }
 
+- (void)handleUpdatedPurchaserInfo:(RCPurchaserInfo * _Nullable)info error:(NSError * _Nullable)error
+{
+    if (error) {
+        [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
+    } else if (info) {
+        [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+    }
+}
+
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction
 {
     [self receiptData:^(NSData * _Nonnull data) {
@@ -311,7 +320,7 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
     }];
 }
 
-- (void)restoreTransactionsForAppStoreAccount:(RCReceivePurchaserInfoBlock)receivePurchaserInfo
+- (void)restoreTransactionsForAppStoreAccount
 {
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
@@ -324,17 +333,21 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
                           paymentMode:RCPaymentModeNone
                     introductoryPrice:nil
                          currencyCode:nil
-                           completion:receivePurchaserInfo];
+                           completion:^(RCPurchaserInfo * _Nullable info,
+                                        NSError * _Nullable error) {
+                               [self handleUpdatedPurchaserInfo:info error:error];
+                           }];
     }];
 }
 
-- (void)updateOriginalApplicationVersion:(RCReceivePurchaserInfoBlock)receivePurchaserInfo
+- (void)updateOriginalApplicationVersion
 {
-    [self updatedPurchaserInfo:^(RCPurchaserInfo * info, NSError * error) {
+    [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable info,
+                                                                             NSError * _Nullable error) {
         if (error) {
-            receivePurchaserInfo(nil, error);
+            [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
         } else if (info.originalApplicationVersion) {
-            receivePurchaserInfo(info, nil);
+            [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
         } else {
             [self receiptData:^(NSData * _Nonnull data) {
                 [self.backend postReceiptData:data
@@ -345,7 +358,9 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
                                   paymentMode:RCPaymentModeNone
                             introductoryPrice:nil
                                  currencyCode:nil
-                                   completion:receivePurchaserInfo];
+                                   completion:^(RCPurchaserInfo * _Nullable info, NSError * _Nullable error) {
+                                       [self handleUpdatedPurchaserInfo:info error:error];
+                                   }];
             }];
         }
     }];

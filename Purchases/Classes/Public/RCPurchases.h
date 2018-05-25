@@ -14,7 +14,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef void (^RCDeferredPromotionalPurchaseBlock)(void);
-typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable);
 typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *);
 
 /**
@@ -88,14 +87,16 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
 /**
  This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user. Going forward, either `appUserID` will be able to reference the same user.
 
+ Triggers purchases:receivedUpdatedPurchaserInfo: delegate method to be called.
+
  @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI.
  */
-- (void)restoreTransactionsForAppStoreAccount:(RCReceivePurchaserInfoBlock)receivePurchaserInfo;
+- (void)restoreTransactionsForAppStoreAccount;
 
 /**
- Fetches the latest purchaser info from the backend. This will happen periodically on `applicationDidResumeActive:` and will trigger the delegate method `purchases:receivedUpdatedPurchaserInfo:`. You can use this method if you'd like to refresh the purchaser info manually.
+ Fetches the latest purchaser info from the backend. This will happen periodically on `applicationDidResumeActive:` and will trigger the delegate method `purchases:receivedUpdatedPurchaserInfo:`. You can use this method if you'd like to refresh the purchaser info manually. Triggers purchases:receivedUpdatedPurchaserInfo: delegate method to be called.
  */
-- (void)updatedPurchaserInfo:(RCReceivePurchaserInfoBlock)receivePurchaserInfo;
+- (void)updatePurchaserInfo;
 
 /**
  Computes whether or not a user is eligible for the introductory pricing period of a given product. You should use this method to determine whether or not you show the user the normal product price or the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
@@ -110,8 +111,9 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
 
 /**
  Reads the App Store receipt and reads the original application version. Use this if RCPurchaserInfo.originalApplicationVersion is nil.
+ Triggers purchases:receivedUpdatedPurchaserInfo: delegate method to be called;
  */
-- (void)updateOriginalApplicationVersion:(RCReceivePurchaserInfoBlock)receivePurchaserInfo;
+- (void)updateOriginalApplicationVersion;
 
 /**
  This version of the Purchases framework
@@ -156,6 +158,11 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
  @param purchaserInfo Updated `RCPurchaserInfo`
  */
 - (void)purchases:(RCPurchases *)purchases receivedUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
+
+/**
+ Called whenever RCPurchases fails to fetch a purchaserInfo.
+*/
+- (void)purchases:(RCPurchases *)purchases failedToUpdatePurchaserInfoWithError:(NSError *)error;
 
 @optional
 
