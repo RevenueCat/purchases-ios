@@ -107,7 +107,7 @@
 		351F4FB11F803D9C00F245F4 /* BackendTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendTests.swift; sourceTree = "<group>"; };
 		352629FE1F7C4B9100C04F2C /* Purchases.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Purchases.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		35262A011F7C4B9100C04F2C /* Purchases.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Purchases.h; sourceTree = "<group>"; };
-		35262A021F7C4B9100C04F2C /* Info-iOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-iOS.plist"; sourceTree = "<group>"; };
+		35262A021F7C4B9100C04F2C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		35262A1E1F7D77E600C04F2C /* PurchasesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PurchasesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		35262A201F7D77E600C04F2C /* PurchasesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesTests.swift; sourceTree = "<group>"; };
 		35262A221F7D77E600C04F2C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -120,7 +120,7 @@
 		359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSLocale+RCExtensions.m"; sourceTree = "<group>"; };
 		35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCPurchases+Protected.h"; sourceTree = "<group>"; };
 		35C98D7320B729FA006DCBB5 /* Purchases_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Purchases_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		35C98D7B20B72B0B006DCBB5 /* Info-macOS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-macOS.plist"; sourceTree = "<group>"; };
+		35C98D7B20B72B0B006DCBB5 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		35C98D9320B72EE7006DCBB5 /* Purchases_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Purchases_macOS.h; sourceTree = "<group>"; };
 		35C98D9420B7306A006DCBB5 /* RCCrossPlatformSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCCrossPlatformSupport.h; sourceTree = "<group>"; };
 		35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibility.h; sourceTree = "<group>"; };
@@ -185,7 +185,6 @@
 				35262A001F7C4B9100C04F2C /* Purchases */,
 				35262A1F1F7D77E600C04F2C /* PurchasesTests */,
 				352629FF1F7C4B9100C04F2C /* Products */,
-				35DFC68520B87646004584CC /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -202,9 +201,9 @@
 		35262A001F7C4B9100C04F2C /* Purchases */ = {
 			isa = PBXGroup;
 			children = (
+				35D8527D20B8793900CDA7DD /* iOS */,
+				35D8527C20B8793200CDA7DD /* Mac */,
 				35262A181F7C51A400C04F2C /* Classes */,
-				35C98D7B20B72B0B006DCBB5 /* Info-macOS.plist */,
-				35262A021F7C4B9100C04F2C /* Info-iOS.plist */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -248,11 +247,20 @@
 			path = PurchasesTests;
 			sourceTree = "<group>";
 		};
-		35DFC68520B87646004584CC /* Frameworks */ = {
+		35D8527C20B8793200CDA7DD /* Mac */ = {
 			isa = PBXGroup;
 			children = (
+				35C98D7B20B72B0B006DCBB5 /* Info.plist */,
 			);
-			name = Frameworks;
+			path = Mac;
+			sourceTree = "<group>";
+		};
+		35D8527D20B8793900CDA7DD /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				35262A021F7C4B9100C04F2C /* Info.plist */,
+			);
+			path = iOS;
 			sourceTree = "<group>";
 		};
 		35F26F9B20B7369A0025FA0A /* Umbrella */ = {
@@ -629,7 +637,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "Purchases/Info-iOS.plist";
+				INFOPLIST_FILE = Purchases/iOS/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -651,7 +659,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "Purchases/Info-iOS.plist";
+				INFOPLIST_FILE = Purchases/iOS/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -680,6 +688,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OBJC_BRIDGING_HEADER = "PurchasesTests/PurchasesTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -701,6 +710,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "PurchasesTests/PurchasesTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -721,7 +731,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = "Purchases/Info-macOS.plist";
+				INFOPLIST_FILE = Purchases/Mac/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
@@ -747,7 +757,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = "Purchases/Info-macOS.plist";
+				INFOPLIST_FILE = Purchases/Mac/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
