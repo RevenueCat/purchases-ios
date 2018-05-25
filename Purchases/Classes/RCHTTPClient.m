@@ -5,11 +5,11 @@
 //  Created by Jacob Eiting on 9/28/17.
 //  Copyright © 2017 RevenueCat, Inc. All rights reserved.
 //
-#import <UIKit/UIKit.h>
 
 #import "RCHTTPClient.h"
 #import "RCUtils.h"
 #import "RCPurchases.h"
+#import "RCCrossPlatformSupport.h"
 
 static NSString *overrideHostName = nil;
 
@@ -41,6 +41,11 @@ void RCOverrideServerHost(NSString *hostname)
     return self;
 }
 
++ (NSString *)systemVersion {
+    NSProcessInfo *info = [[NSProcessInfo alloc] init];
+    return info.operatingSystemVersionString;
+}
+
 - (void)performRequest:(NSString * _Nonnull)HTTPMethod
                   path:(NSString * _Nonnull)path
                   body:(NSDictionary * _Nullable)requestBody
@@ -55,8 +60,8 @@ void RCOverrideServerHost(NSString *hostname)
     NSMutableDictionary *defaultHeaders = [NSMutableDictionary
                                            dictionaryWithDictionary:@{@"content-type": @"application/json",
                                                                       @"X-Version": [RCPurchases frameworkVersion],
-                                                                      @"X-Platform": @"iOS",
-                                                                      @"X-Platform-Version": UIDevice.currentDevice.systemVersion
+                                                                      @"X-Platform": PLATFORM_HEADER,
+                                                                      @"X-Platform-Version": [self.class systemVersion]
                                                                       }];
     [defaultHeaders addEntriesFromDictionary:headers];
 

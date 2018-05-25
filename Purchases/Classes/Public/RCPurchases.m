@@ -14,6 +14,8 @@
 #import "RCStoreKitWrapper.h"
 #import "RCUtils.h"
 #import "NSLocale+RCExtensions.h"
+#import "RCPurchaserInfo.h"
+#import "RCCrossPlatformSupport.h"
 
 @interface RCPurchases () <RCStoreKitWrapperDelegate>
 
@@ -104,12 +106,12 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
         self.storeKitWrapper.delegate = self;
         [self.notificationCenter addObserver:self
                                     selector:@selector(applicationDidBecomeActive:)
-                                        name:UIApplicationDidBecomeActiveNotification object:nil];
+                                        name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
         [self updatePurchaserInfo];
     } else {
         self.storeKitWrapper.delegate = nil;
         [self.notificationCenter removeObserver:self
-                                           name:UIApplicationDidBecomeActiveNotification
+                                           name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME
                                          object:nil];
     }
 }
@@ -283,7 +285,7 @@ NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
         RCPaymentMode paymentMode = RCPaymentModeNone;
         NSDecimalNumber *introPrice = nil;
 
-        if (@available(iOS 11.2, *)) {
+        if (@available(iOS 11.2, macOS 10.13.2, *)) {
             if (product.introductoryPrice) {
                 paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
                 introPrice = product.introductoryPrice.price;
