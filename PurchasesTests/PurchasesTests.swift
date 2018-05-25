@@ -152,13 +152,28 @@ class PurchasesTests: XCTestCase {
     }
 
     class MockUserDefaults: UserDefaults {
+        let appUserIDKey = "com.revenuecat.userdefaults.appUserID"
+        let purchaserInfoCachePrefix = "com.revenuecat.userdefaults.purchaserInfo"
+
         var appUserID: String?
+        var cachedUserInfo = [String : String]()
+
         override func string(forKey defaultName: String) -> String? {
-            return appUserID
+            if (defaultName == appUserIDKey) {
+                return appUserID
+            } else if (defaultName.starts(with: purchaserInfoCachePrefix)) {
+                return cachedUserInfo[defaultName];
+            } else {
+                return nil
+            }
         }
 
         override func set(_ value: Any?, forKey defaultName: String) {
-            appUserID = value as! String?
+            if (defaultName == appUserIDKey) {
+                appUserID = value as! String?
+            } else if (defaultName.starts(with: purchaserInfoCachePrefix)){
+                cachedUserInfo[defaultName] = value as! String?
+            }
         }
     }
 
@@ -732,5 +747,24 @@ class PurchasesTests: XCTestCase {
         expect(self.purchasesDelegate.purchaserInfo?.originalApplicationVersion).toEventually(equal("1.0"))
         expect(self.backend.userID).toEventuallyNot(beNil())
         expect(self.backend.postReceiptDataCalled).toEventuallyNot(beFalse())
+    }
+
+    func testCachesPurchaserInfo() {
+        setupPurchases()
+
+        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
+
+        expect(self.userDefaults.cachedUserInfo.count).to(equal(1))
+        let purchaserInfo = userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo"]
+        expect(purchaserInfo).toNot(beNil())
+
+        do {
+            if (purchaserInfo != nil) {
+                try JSONSerialization.jsonObject(with: (purchaserInfo?.data(using: String.Encoding.utf8)!)!, options: [])
+            }
+        } catch {
+            fail()
+        }
+
     }
 }
