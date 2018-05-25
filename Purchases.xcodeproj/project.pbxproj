@@ -7,11 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		350FBDD81F7DF1830065833D /* OHHTTPStubs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDD71F7DF17F0065833D /* OHHTTPStubs.framework */; };
-		350FBDDA1F7DFDA10065833D /* OHHTTPStubs.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDD71F7DF17F0065833D /* OHHTTPStubs.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		350FBDDB1F7DFDA50065833D /* Purchases.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		350FBDDD1F7EA3570065833D /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
-		350FBDDE1F7EA3600065833D /* Nimble.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		350FBDE01F7EE8F20065833D /* RCUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDDF1F7EE8F20065833D /* RCUtils.m */; };
 		350FBDE31F7EECAA0065833D /* RCUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDE11F7EE9020065833D /* RCUtils.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDE71F7EEF070065833D /* RCPurchases.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -34,6 +29,7 @@
 		35262A2D1F7D783F00C04F2C /* RCHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 35262A2B1F7D783F00C04F2C /* RCHTTPClient.m */; };
 		35262A301F7D78C600C04F2C /* HTTPClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35262A2F1F7D78C600C04F2C /* HTTPClientTests.swift */; };
 		352C36BF1F9D372D00A15783 /* RCPurchaserInfo+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 352C36BE1F9D372D00A15783 /* RCPurchaserInfo+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		356D65F620B873AF00576D45 /* Purchases.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */; };
 		359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */; };
 		35A60EAA1F82993E00D2FAE8 /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -62,11 +58,13 @@
 		35C98D9720B732CD006DCBB5 /* Purchases_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 35C98D9320B72EE7006DCBB5 /* Purchases_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35D3AB432030B4C600DE42C5 /* RCIntroEligibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35D3AB442030B4C600DE42C5 /* RCIntroEligibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */; };
+		35DFC68620B87646004584CC /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
+		35DFC68720B87646004584CC /* OHHTTPStubs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDD71F7DF17F0065833D /* OHHTTPStubs.framework */; };
 		35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		35262A241F7D77E600C04F2C /* PBXContainerItemProxy */ = {
+		35DFC68220B8757C004584CC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
 			proxyType = 1;
@@ -82,9 +80,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				350FBDDE1F7EA3600065833D /* Nimble.framework in Copy Frameworks */,
-				350FBDDA1F7DFDA10065833D /* OHHTTPStubs.framework in Copy Frameworks */,
-				350FBDDB1F7DFDA50065833D /* Purchases.framework in Copy Frameworks */,
+				356D65F620B873AF00576D45 /* Purchases.framework in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -144,9 +140,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				350FBDDD1F7EA3570065833D /* Nimble.framework in Frameworks */,
+				35DFC68620B87646004584CC /* Nimble.framework in Frameworks */,
+				35DFC68720B87646004584CC /* OHHTTPStubs.framework in Frameworks */,
 				35262A231F7D77E600C04F2C /* Purchases.framework in Frameworks */,
-				350FBDD81F7DF1830065833D /* OHHTTPStubs.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,6 +185,7 @@
 				35262A001F7C4B9100C04F2C /* Purchases */,
 				35262A1F1F7D77E600C04F2C /* PurchasesTests */,
 				352629FF1F7C4B9100C04F2C /* Products */,
+				35DFC68520B87646004584CC /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -249,6 +246,13 @@
 				350FBDD61F7DF1640065833D /* Frameworks */,
 			);
 			path = PurchasesTests;
+			sourceTree = "<group>";
+		};
+		35DFC68520B87646004584CC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		35F26F9B20B7369A0025FA0A /* Umbrella */ = {
@@ -331,12 +335,13 @@
 				35262A1A1F7D77E600C04F2C /* Sources */,
 				35262A1B1F7D77E600C04F2C /* Frameworks */,
 				35262A1C1F7D77E600C04F2C /* Resources */,
+				35DFC68420B875B6004584CC /* Copy Frameworks */,
 				350FBDD91F7DFD900065833D /* Copy Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				35262A251F7D77E600C04F2C /* PBXTargetDependency */,
+				35DFC68320B8757C004584CC /* PBXTargetDependency */,
 			);
 			name = PurchasesTests;
 			productName = PurchasesTests;
@@ -429,6 +434,25 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		35DFC68420B875B6004584CC /* Copy Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/iOS/Nimble.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/OHHTTPStubs.framework",
+			);
+			name = "Copy Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		352629F91F7C4B9100C04F2C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -478,10 +502,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		35262A251F7D77E600C04F2C /* PBXTargetDependency */ = {
+		35DFC68320B8757C004584CC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 352629FD1F7C4B9100C04F2C /* Purchases */;
-			targetProxy = 35262A241F7D77E600C04F2C /* PBXContainerItemProxy */;
+			targetProxy = 35DFC68220B8757C004584CC /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
