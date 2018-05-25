@@ -94,4 +94,10 @@ class BasicPurchaerInfoTests: XCTestCase {
             ]])
         expect(purchaserInfo!.originalApplicationVersion).to(equal("1.0"))
     }
+
+    func testPreservesOriginalJSONSerializableObject() {
+        let json = purchaserInfo?.jsonObject()
+        let newInfo = RCPurchaserInfo(data: json!)
+        expect(newInfo).toNot(beNil())
+    }
 }

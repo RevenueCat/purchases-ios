@@ -14,6 +14,8 @@
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic) NSString *originalApplicationVersion;
 
+@property (nonatomic) NSDictionary *originalData;
+
 @end
 
 static NSDateFormatter *dateFormatter;
@@ -27,6 +29,8 @@ static dispatch_once_t onceToken;
         if (data[@"subscriber"] == nil) {
             return nil;
         }
+
+        self.originalData = data;
 
         NSDictionary *subscriberData = data[@"subscriber"];
 
@@ -100,6 +104,10 @@ static dispatch_once_t onceToken;
 - (NSDate *)expirationDateForProductIdentifier:(NSString *)productIdentifier
 {
     return self.expirationDates[productIdentifier];
+}
+
+- (NSDictionary * _Nonnull)JSONObject {
+    return self.originalData;
 }
 
 @end

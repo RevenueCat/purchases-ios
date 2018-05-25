@@ -12,4 +12,6 @@
 
 - (instancetype _Nullable)initWithData:(NSDictionary * _Nonnull)data;
 
+- (NSDictionary * _Nonnull)JSONObject;
+
 @end
