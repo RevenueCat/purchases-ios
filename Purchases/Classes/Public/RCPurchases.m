@@ -111,6 +111,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
         [self.notificationCenter addObserver:self
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
+        [self readPurchaserInfoFromCache];
         [self updatePurchaserInfo];
     } else {
         self.storeKitWrapper.delegate = nil;
@@ -128,6 +129,33 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif
 {
     [self updatePurchaserInfo];
+}
+
+- (void)readPurchaserInfoFromCache {
+    NSData *purchaserInfoData = [self.userDefaults dataForKey:self.purchaserInfoUserDefaultCacheKey];
+    if (purchaserInfoData) {
+        NSError *jsonError;
+        NSDictionary *infoDict = [NSJSONSerialization JSONObjectWithData:purchaserInfoData options:0 error:&jsonError];
+        if (jsonError == nil && infoDict != nil) {
+            RCPurchaserInfo *info = [[RCPurchaserInfo alloc] initWithData:infoDict];
+            if (info) {
+                [self handleUpdatedPurchaserInfo:info error:nil];
+            }
+        }
+    }
+}
+
+- (void)cachePurchaserInfo:(RCPurchaserInfo *)info {
+    if (info.JSONObject) {
+        NSError *jsonError = nil;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:info.JSONObject
+                                                           options:0
+                                                             error:&jsonError];
+        if (jsonError == nil) {
+            [self.userDefaults setObject:jsonData
+                                  forKey:self.purchaserInfoUserDefaultCacheKey];
+        }
+    }
 }
 
 - (void)updatePurchaserInfo
@@ -274,23 +302,16 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     }
 }
 
+- (NSString *)purchaserInfoUserDefaultCacheKey {
+    return [RCPurchaserInfoAppUserDefaultsKeyBase stringByAppendingString:self.appUserID];
+}
+
 - (void)handleUpdatedPurchaserInfo:(RCPurchaserInfo * _Nullable)info error:(NSError * _Nullable)error
 {
     if (error) {
         [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
     } else if (info) {
-
-        if (info.JSONObject) {
-            NSError *jsonError = nil;
-            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:info.JSONObject
-                                                               options:0
-                                                                 error:&jsonError];
-            if (jsonError == nil) {
-                [self.userDefaults setObject:jsonData
-                                      forKey:[RCPurchaserInfoAppUserDefaultsKeyBase stringByAppendingString:self.appUserID]];
-            }
-        }
-
+        [self cachePurchaserInfo:info];
         [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
     }
 }
