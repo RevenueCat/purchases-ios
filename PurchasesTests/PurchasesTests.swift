@@ -49,6 +49,7 @@ class PurchasesTests: XCTestCase {
     class MockBackend: RCBackend {
         var userID: String?
         var originalApplicationVersion: String?
+        var timeout = false
         override func getSubscriberData(withAppUserID appUserID: String, completion: @escaping RCBackendResponseHandler) {
             userID = appUserID
             var info: RCPurchaserInfo?
@@ -68,7 +69,9 @@ class PurchasesTests: XCTestCase {
                     ]])
             }
 
-            completion(info!, nil)
+            if (!timeout) {
+                completion(info!, nil)
+            }
         }
 
         var postReceiptDataCalled = false
@@ -152,13 +155,26 @@ class PurchasesTests: XCTestCase {
     }
 
     class MockUserDefaults: UserDefaults {
+        let appUserIDKey = "com.revenuecat.userdefaults.appUserID"
+        let purchaserInfoCachePrefix = "com.revenuecat.userdefaults.purchaserInfo"
+
         var appUserID: String?
+        var cachedUserInfo = [String : Data]()
+
         override func string(forKey defaultName: String) -> String? {
-            return appUserID
+            return appUserID;
+        }
+
+        override func data(forKey defaultName: String) -> Data? {
+            return cachedUserInfo[defaultName];
         }
 
         override func set(_ value: Any?, forKey defaultName: String) {
-            appUserID = value as! String?
+            if (defaultName == appUserIDKey) {
+                appUserID = value as! String?
+            } else if (defaultName.starts(with: purchaserInfoCachePrefix)){
+                cachedUserInfo[defaultName] = value as! Data?
+            }
         }
     }
 
@@ -583,9 +599,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         let purchaserInfo = RCPurchaserInfo()
         self.backend.postReceiptPurchaserInfo = purchaserInfo
-
-
-
+        
         purchases!.restoreTransactionsForAppStoreAccount()
 
         expect(self.purchasesDelegate.purchaserInfo).toEventually(equal(purchaserInfo))
@@ -732,5 +746,39 @@ class PurchasesTests: XCTestCase {
         expect(self.purchasesDelegate.purchaserInfo?.originalApplicationVersion).toEventually(equal("1.0"))
         expect(self.backend.userID).toEventuallyNot(beNil())
         expect(self.backend.postReceiptDataCalled).toEventuallyNot(beFalse())
+    }
+
+    func testCachesPurchaserInfo() {
+        setupPurchases()
+
+        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
+
+        expect(self.userDefaults.cachedUserInfo.count).to(equal(1))
+        let purchaserInfo = userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + self.purchases!.appUserID]
+        expect(purchaserInfo).toNot(beNil())
+
+        do {
+            if (purchaserInfo != nil) {
+                try JSONSerialization.jsonObject(with: purchaserInfo!, options: [])
+            }
+        } catch {
+            fail()
+        }
+    }
+
+    func testSendsCachesPurchaserInfoToDelegateIfExistsOnLaunch() {
+        let info = RCPurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]]);
+        let object = try! JSONSerialization.data(withJSONObject: info!.jsonObject(), options:[]);
+        self.userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + appUserID] = object
+        self.backend.timeout = true
+
+        setupPurchases()
+
+        expect(self.purchasesDelegate.purchaserInfo).toNot(beNil())
+
     }
 }
