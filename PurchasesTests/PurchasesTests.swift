@@ -49,6 +49,7 @@ class PurchasesTests: XCTestCase {
     class MockBackend: RCBackend {
         var userID: String?
         var originalApplicationVersion: String?
+        var timeout = false
         override func getSubscriberData(withAppUserID appUserID: String, completion: @escaping RCBackendResponseHandler) {
             userID = appUserID
             var info: RCPurchaserInfo?
@@ -68,7 +69,9 @@ class PurchasesTests: XCTestCase {
                     ]])
             }
 
-            completion(info!, nil)
+            if (!timeout) {
+                completion(info!, nil)
+            }
         }
 
         var postReceiptDataCalled = false
@@ -761,6 +764,21 @@ class PurchasesTests: XCTestCase {
         } catch {
             fail()
         }
+    }
+
+    func testSendsCachesPurchaserInfoToDelegateIfExistsOnLaunch() {
+        let info = RCPurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]]);
+        let object = try! JSONSerialization.data(withJSONObject: info!.jsonObject(), options:[]);
+        self.userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + appUserID] = object
+        self.backend.timeout = true
+
+        setupPurchases()
+
+        expect(self.purchasesDelegate.purchaserInfo).toNot(beNil())
 
     }
 }
