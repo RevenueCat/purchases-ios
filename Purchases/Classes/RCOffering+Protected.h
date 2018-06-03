@@ -10,7 +10,7 @@
 
 @interface RCOffering (Protected)
 
-@property (readwrite) NSString *activeProductIdentifier;
-@property (readwrite) SKProduct *activeProduct;
+@property (readwrite, nonatomic) NSString *activeProductIdentifier;
+@property (readwrite, nonatomic) SKProduct *activeProduct;
 
 @end

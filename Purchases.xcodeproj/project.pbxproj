@@ -60,14 +60,14 @@
 		35CE74F520C389E000CE09D8 /* RCEntitlement.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE74F220C389E000CE09D8 /* RCEntitlement.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35CE74F620C389E000CE09D8 /* RCEntitlement.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74F320C389E000CE09D8 /* RCEntitlement.m */; };
 		35CE74F720C389E000CE09D8 /* RCEntitlement.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74F320C389E000CE09D8 /* RCEntitlement.m */; };
-		35CE74F820C389E000CE09D8 /* RCEntitlement.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74F320C389E000CE09D8 /* RCEntitlement.m */; };
 		35CE74FB20C38A7100CE09D8 /* RCOffering.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE74F920C38A7100CE09D8 /* RCOffering.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35CE74FC20C38A7100CE09D8 /* RCOffering.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE74F920C38A7100CE09D8 /* RCOffering.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35CE74FD20C38A7100CE09D8 /* RCOffering.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74FA20C38A7100CE09D8 /* RCOffering.m */; };
 		35CE74FE20C38A7100CE09D8 /* RCOffering.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74FA20C38A7100CE09D8 /* RCOffering.m */; };
-		35CE74FF20C38A7100CE09D8 /* RCOffering.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74FA20C38A7100CE09D8 /* RCOffering.m */; };
 		35CE750120C3932900CE09D8 /* RCOffering+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE750020C3932900CE09D8 /* RCOffering+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35CE750220C3932900CE09D8 /* RCOffering+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE750020C3932900CE09D8 /* RCOffering+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		35CE750420C39A0F00CE09D8 /* RCEntitlement+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE750320C396E400CE09D8 /* RCEntitlement+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		35CE750520C39A1000CE09D8 /* RCEntitlement+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE750320C396E400CE09D8 /* RCEntitlement+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35D3AB432030B4C600DE42C5 /* RCIntroEligibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35D3AB442030B4C600DE42C5 /* RCIntroEligibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */; };
 		35DFC68620B87646004584CC /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
@@ -140,6 +140,7 @@
 		35CE74F920C38A7100CE09D8 /* RCOffering.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOffering.h; sourceTree = "<group>"; };
 		35CE74FA20C38A7100CE09D8 /* RCOffering.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCOffering.m; sourceTree = "<group>"; };
 		35CE750020C3932900CE09D8 /* RCOffering+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCOffering+Protected.h"; sourceTree = "<group>"; };
+		35CE750320C396E400CE09D8 /* RCEntitlement+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCEntitlement+Protected.h"; sourceTree = "<group>"; };
 		35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibility.h; sourceTree = "<group>"; };
 		35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCIntroEligibility.m; sourceTree = "<group>"; };
 		35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWrapperTests.swift; sourceTree = "<group>"; };
@@ -235,6 +236,7 @@
 				350FBDE61F7EEEDF0065833D /* Public */,
 				35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */,
 				352C36BE1F9D372D00A15783 /* RCPurchaserInfo+Protected.h */,
+				35CE750320C396E400CE09D8 /* RCEntitlement+Protected.h */,
 				35CE750020C3932900CE09D8 /* RCOffering+Protected.h */,
 				35262A2A1F7D783F00C04F2C /* RCHTTPClient.h */,
 				35262A2B1F7D783F00C04F2C /* RCHTTPClient.m */,
@@ -314,6 +316,7 @@
 				35A60EAA1F82993E00D2FAE8 /* RCPurchases+Protected.h in Headers */,
 				351F4FAF1F803D0700F245F4 /* RCPurchaserInfo.h in Headers */,
 				35CE750120C3932900CE09D8 /* RCOffering+Protected.h in Headers */,
+				35CE750420C39A0F00CE09D8 /* RCEntitlement+Protected.h in Headers */,
 				350FBDF31F7FFD350065833D /* RCStoreKitWrapper.h in Headers */,
 				35C98D9520B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */,
 				35262A0F1F7C4B9100C04F2C /* Purchases.h in Headers */,
@@ -338,6 +341,7 @@
 				35CE750220C3932900CE09D8 /* RCOffering+Protected.h in Headers */,
 				35CE74FC20C38A7100CE09D8 /* RCOffering.h in Headers */,
 				35C98D8F20B72BE9006DCBB5 /* RCBackend.h in Headers */,
+				35CE750520C39A1000CE09D8 /* RCEntitlement+Protected.h in Headers */,
 				35C98D9620B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */,
 				35C98D9020B72C1B006DCBB5 /* NSLocale+RCExtensions.h in Headers */,
 			);
@@ -516,9 +520,7 @@
 				351F4FB21F803D9C00F245F4 /* BackendTests.swift in Sources */,
 				35262A301F7D78C600C04F2C /* HTTPClientTests.swift in Sources */,
 				35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */,
-				35CE74FF20C38A7100CE09D8 /* RCOffering.m in Sources */,
 				350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */,
-				35CE74F820C389E000CE09D8 /* RCEntitlement.m in Sources */,
 				351703CD1F805E5D00EEE27A /* PurchaserInfoTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

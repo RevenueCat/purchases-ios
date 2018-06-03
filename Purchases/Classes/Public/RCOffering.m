@@ -8,6 +8,13 @@
 
 #import "RCOffering.h"
 
+@interface RCOffering ()
+
+@property (readwrite, nonatomic) NSString *activeProductIdentifier;
+@property (readwrite, nonatomic) SKProduct *activeProduct;
+
+@end
+
 @implementation RCOffering
 
 @end

@@ -8,6 +8,21 @@
 
 #import "RCEntitlement.h"
 
+@interface RCEntitlement ()
+
+@property (readwrite, nonatomic) NSDictionary<NSString *, RCOffering *> *offerings;
+
+@end
+
 @implementation RCEntitlement
+
+- (instancetype)initWithOfferings:(NSDictionary<NSString *, RCOffering *> *)offerings
+{
+    if (self = [super init])
+    {
+        self.offerings = offerings;
+    }
+    return self;
+}
 
 @end
