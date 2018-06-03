@@ -17,6 +17,8 @@
 #import "NSLocale+RCExtensions.h"
 #import "RCPurchaserInfo.h"
 #import "RCCrossPlatformSupport.h"
+#import "RCEntitlement+Protected.h"
+#import "RCOffering+Protected.h"
 
 @interface RCPurchases () <RCStoreKitWrapperDelegate>
 
@@ -188,11 +190,39 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     }];
 }
 
+- (void)performOnEachOfferingInEntitlements:(NSDictionary<NSString *,RCEntitlement *> *)entitlements block:(void (^)(RCOffering *offering))block
+{
+    for (NSString *entitlementID in entitlements) {
+        RCEntitlement *entitlement = entitlements[entitlementID];
+        for (NSString *offeringID in entitlement.offerings) {
+            RCOffering *offering = entitlement.offerings[offeringID];
+            block(offering);
+        }
+    }
+}
+
 - (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *entitlements))completion
 {
     [self.backend getEntitlementsForAppUserID:self.appUserID
                                    completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
-        completion(entitlements);
+                                       NSMutableSet *productIdentifiers = [NSMutableSet new];
+
+                                       [self performOnEachOfferingInEntitlements:entitlements block:^(RCOffering *offering) {
+                                           [productIdentifiers addObject:offering.activeProductIdentifier];
+                                       }];
+
+                                       [self.requestFetcher fetchProducts:productIdentifiers completion:^(NSArray<SKProduct *> * _Nonnull products) {
+                                           NSMutableDictionary *productsById = [NSMutableDictionary new];
+                                           for (SKProduct *p in products) {
+                                               productsById[p.productIdentifier] = p;
+                                           }
+
+                                           [self performOnEachOfferingInEntitlements:entitlements block:^(RCOffering *offering) {
+                                               offering.activeProduct = productsById[offering.activeProductIdentifier];
+                                           }];
+                                           completion(entitlements);
+                                       }];
+
     }];
 }
 

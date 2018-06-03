@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef void (^RCDeferredPromotionalPurchaseBlock)(void);
 typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *);
+typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement *> *);
 
 /**
  `RCPurchases` is the entry point for Purchases.framework. It should be instantiated as soon as your app has a unique user id for your user. This can be when a user logs in if you have accounts or on launch if you can generate a random user identifier.
@@ -80,7 +81,7 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
 
  @note completion` may be called without `SKProduct`s that you are expecting. This is usually caused by iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect. Also ensure that you have an active developer program subscription and you have signed the latest paid application agreements.
  */
-- (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *entitlements))completion;
+- (void)entitlements:(RCReceiveEntitlementsBlock)completion;
 
 /**
  Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.
