@@ -528,6 +528,7 @@ class BackendTests: XCTestCase {
             entitlements = newEntitlements
         })
 
+        expect(self.httpClient.calls.count).toNot(equal(0))
         expect(entitlements).toEventuallyNot(beNil())
         expect(entitlements?.count).toEventually(equal(0))
     }

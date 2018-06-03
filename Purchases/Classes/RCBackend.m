@@ -107,6 +107,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     completion(info, responseError);
 }
 
+- (NSString *)escapedAppUserID:(NSString *)appUserID {
+    return [appUserID stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
+}
+
 
 - (void)postReceiptData:(NSData *)data
               appUserID:(NSString *)appUserID
@@ -190,7 +194,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
                             completion:(RCBackendResponseHandler)completion
 {
-    NSString *escapedAppUserID = [appUserID stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@", escapedAppUserID];
 
     [self.httpClient performRequest:@"GET"
@@ -214,7 +218,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
     NSString *fetchToken = [receiptData base64EncodedStringWithOptions:0];
 
-    NSString *escapedAppUserID = [appUserID stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/intro_eligibility", escapedAppUserID];
     [self.httpClient performRequest:@"POST"
                                path:path
@@ -250,7 +254,15 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 - (void)getEntitlementsForAppUserID:(NSString *)appUserID
                          completion:(RCEntitlementResponseHandler)completion
 {
-    
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/products", escapedAppUserID];
+    [self.httpClient performRequest:@"GET"
+                               path:path
+                               body:nil
+                            headers:self.headers
+                  completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
+                      completion([NSDictionary new]);
+    }];
 }
 
 @end
