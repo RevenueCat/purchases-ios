@@ -247,4 +247,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     }];
 }
 
+- (void)getEntitlementsForAppUserID:(NSString *)appUserID
+                         completion:(RCEntitlementResponseHandler)completion
+{
+    
+}
+
 @end
