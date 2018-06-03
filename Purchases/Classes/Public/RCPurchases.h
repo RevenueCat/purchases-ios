@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class SKProduct, SKPayment, SKPaymentTransaction, RCPurchaserInfo, RCIntroEligibility;
+@class SKProduct, SKPayment, SKPaymentTransaction, RCPurchaserInfo, RCIntroEligibility, RCEntitlement;
 @protocol RCPurchasesDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -72,6 +72,15 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
  @note `RCPurchases` will not listen for any `SKTransactions` until the delegate is set. This prevents `SKTransactions` from being processed before your app is ready to handle them.
  */
 @property (nonatomic, weak) id<RCPurchasesDelegate> _Nullable delegate;
+
+/**
+ Fetch entitlements for this user. This will get the correct set of products for this user and fetch their product info from Apple. This is the preferred method of getting product info. You must configure entitlements via the RevenueCat web app.
+
+ @note This method is precached, so should be available by the time you are ready to display purchase UI.
+
+ @note completion` may be called without `SKProduct`s that you are expecting. This is usually caused by iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect. Also ensure that you have an active developer program subscription and you have signed the latest paid application agreements.
+ */
+- (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *entitlements))completion;
 
 /**
  Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.

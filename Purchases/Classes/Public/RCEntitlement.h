@@ -12,6 +12,6 @@
 
 @interface RCEntitlement : NSObject
 
-@property (readonly) NSArray<RCOffering> *offerings;
+@property (readonly) NSDictionary<NSString *, RCOffering *> *offerings;
 
 @end
