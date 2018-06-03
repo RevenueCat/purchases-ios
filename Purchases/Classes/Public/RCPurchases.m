@@ -188,6 +188,14 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     }];
 }
 
+- (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *entitlements))completion
+{
+    [self.backend getEntitlementsForAppUserID:self.appUserID
+                                   completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
+        completion(entitlements);
+    }];
+}
+
 - (void)productsWithIdentifiers:(NSSet<NSString *> *)productIdentifiers
                      completion:(void (^)(NSArray<SKProduct *>* products))completion
 {

@@ -110,6 +110,16 @@ class PurchasesTests: XCTestCase {
 
             completion(eligibilities);
         }
+
+        var gotEntitlements = false
+        override func getEntitlementsForAppUserID(_ appUserID: String, completion: @escaping RCEntitlementResponseHandler) {
+            gotEntitlements = true
+
+            let offering = RCOffering()
+            offering.activeProductIdentifier = "monthly_freetrial"
+            let entitlement = RCEntitlement(offerings: ["monthly" : offering])
+            completion(["pro" : entitlement!])
+        }
     }
 
     class MockStoreKitWrapper: RCStoreKitWrapper {
@@ -787,6 +797,22 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
 
         expect(self.purchasesDelegate.purchaserInfo).toNot(beNil())
+    }
+
+    func testGetsProductInfoFromEntitlements() {
+        setupPurchases()
+
+        var entitlements: [String : RCEntitlement]?
+        purchases?.entitlements({ (newEntitlements) in
+            entitlements = newEntitlements
+            if (entitlements != nil) {
+                let pro = entitlements!["pro"]!;
+                expect(pro.offerings["monthly"]).toNot(beNil())
+                expect(pro.offerings["monthly"]?.activeProduct).toNot(beNil())
+            }
+        })
+        expect(self.backend.gotEntitlements).toEventually(beTrue())
+        expect(entitlements?.count).toEventually(equal(1))
 
     }
 }
