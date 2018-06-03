@@ -39,6 +39,8 @@ class BasicPurchaerInfoTests: XCTestCase {
         ]
     ]
 
+    let validTwoProductsJSON = "{\"subscriber\": {\"original_application_version\": \"1.0\",\"other_purchases\": {},\"subscriptions\":{\"product_a\": {\"expires_date\": \"2018-05-27T06:24:50Z\",\"period_type\": \"normal\"},\"product_b\": {\"expires_date\": \"2018-05-27T05:24:50Z\",\"period_type\": \"normal\"}}}}";
+
     var purchaserInfo: RCPurchaserInfo?
 
     override func setUp() {
@@ -99,5 +101,11 @@ class BasicPurchaerInfoTests: XCTestCase {
         let json = purchaserInfo?.jsonObject()
         let newInfo = RCPurchaserInfo(data: json!)
         expect(newInfo).toNot(beNil())
+    }
+
+    func testTwoProductJson() {
+        let json = try! JSONSerialization.jsonObject(with: validTwoProductsJSON.data(using: String.Encoding.utf8)!, options: [])
+        let info = RCPurchaserInfo(data: json as! [AnyHashable : Any])
+        expect(info?.latestExpirationDate).toNot(beNil())
     }
 }
