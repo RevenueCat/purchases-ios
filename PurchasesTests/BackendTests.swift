@@ -73,8 +73,6 @@ class BackendTests: XCTestCase {
         "message": "something is bad up in the cloud"
     ]
 
-    let noEntitlementsResponse = Dictionary<String, String>()
-
     var backend: RCBackend?
 
     override func setUp() {
@@ -517,6 +515,8 @@ class BackendTests: XCTestCase {
         expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
     }
 
+    let noEntitlementsResponse = Dictionary<String, String>()
+
     func testGetEntitlementsCallsHTTPMethod() {
         let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
         let path = "/subscribers/" + userID + "/products"
@@ -531,6 +531,37 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count).toNot(equal(0))
         expect(entitlements).toEventuallyNot(beNil())
         expect(entitlements?.count).toEventually(equal(0))
+    }
+
+    let oneEntitlementResponse = [
+        "pro": [
+            "monthly" : [
+                "active_product_identifier" : "monthly_freetrial"
+            ],
+            "annual" : [
+                "active_product_identifier" : "annual_freetrial"
+            ]
+        ]
+    ]
+
+    func testGetEntitlementsBasicEntitlement() {
+        let response = HTTPResponse(statusCode: 200, response: oneEntitlementResponse, error: nil)
+        let path = "/subscribers/" + userID + "/products"
+        httpClient.mock(requestPath: path, response: response)
+
+        var entitlements: [String : RCEntitlement]?
+
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements) in
+            entitlements = newEntitlements
+        })
+
+        expect(entitlements?.count).toEventually(equal(1))
+        expect(entitlements?.keys).toEventually(contain("pro"))
+        expect(entitlements!["pro"]?.offerings.count).toEventually(equal(2))
+        expect(entitlements!["pro"]?.offerings["monthly"]).toEventuallyNot(beNil())
+        expect(entitlements!["pro"]?.offerings["annual"]).toEventuallyNot(beNil())
+        expect(entitlements!["pro"]?.offerings["annual"]?.activeProduct).toEventually(beNil())
+        expect(entitlements!["pro"]?.offerings["annual"]?.activeProductIdentifier).toEventually(equal("annual_freetrial"))
     }
     
 }
