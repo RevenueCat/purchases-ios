@@ -253,6 +253,28 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     }];
 }
 
+- (NSDictionary<NSString *, RCEntitlement *> *)parseEntitlementResponse:(NSDictionary *)response
+{
+    NSMutableDictionary *entitlements = [NSMutableDictionary new];
+
+    for (NSString *proID in response) {
+        NSDictionary *entDict = response[proID];
+        NSMutableDictionary *offerings = [NSMutableDictionary new];
+        for (NSString *offeringID in entDict) {
+            NSDictionary *offDict = entDict[offeringID];
+
+            RCOffering *offering = [[RCOffering alloc] init];
+            offering.activeProductIdentifier = offDict[@"active_product_identifier"];
+
+            offerings[offeringID] = offering;
+
+        }
+        entitlements[proID] = [[RCEntitlement alloc] initWithOfferings:offerings];
+    }
+
+    return [NSDictionary dictionaryWithDictionary:entitlements];
+}
+
 - (void)getEntitlementsForAppUserID:(NSString *)appUserID
                          completion:(RCEntitlementResponseHandler)completion
 {
@@ -264,23 +286,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                             headers:self.headers
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
                       if (statusCode < 300) {
-                          NSMutableDictionary *entitlements = [NSMutableDictionary new];
-
-                          for (NSString *proID in response) {
-                              NSDictionary *entDict = response[proID];
-                              NSMutableDictionary *offerings = [NSMutableDictionary new];
-                              for (NSString *offeringID in entDict) {
-                                  NSDictionary *offDict = entDict[offeringID];
-
-                                  RCOffering *offering = [[RCOffering alloc] init];
-                                  offering.activeProductIdentifier = offDict[@"active_product_identifier"];
-
-                                  offerings[offeringID] = offering;
-
-                              }
-                              entitlements[proID] = [[RCEntitlement alloc] initWithOfferings:offerings];
-                          }
-
+                          NSDictionary *entitlements = [self parseEntitlementResponse:response];
                           completion(entitlements);
                       }
     }];
