@@ -257,11 +257,16 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 {
     NSMutableDictionary *entitlements = [NSMutableDictionary new];
 
-    for (NSString *proID in response) {
-        NSDictionary *entDict = response[proID];
+    NSDictionary *entitlementsResponse = response[@"entitlements"];
+
+    for (NSString *proID in entitlementsResponse) {
+        NSDictionary *entDict = entitlementsResponse[proID];
+
         NSMutableDictionary *offerings = [NSMutableDictionary new];
-        for (NSString *offeringID in entDict) {
-            NSDictionary *offDict = entDict[offeringID];
+        NSDictionary *offeringsResponse = entDict[@"offerings"];
+
+        for (NSString *offeringID in offeringsResponse) {
+            NSDictionary *offDict = offeringsResponse[offeringID];
 
             RCOffering *offering = [[RCOffering alloc] init];
             offering.activeProductIdentifier = offDict[@"active_product_identifier"];

@@ -534,12 +534,16 @@ class BackendTests: XCTestCase {
     }
 
     let oneEntitlementResponse = [
-        "pro": [
-            "monthly" : [
-                "active_product_identifier" : "monthly_freetrial"
-            ],
-            "annual" : [
-                "active_product_identifier" : "annual_freetrial"
+        "entitlements" : [
+            "pro" : [
+                "offerings" : [
+                    "monthly" : [
+                        "active_product_identifier" : "monthly_freetrial"
+                    ],
+                    "annual" : [
+                        "active_product_identifier" : "annual_freetrial"
+                    ]
+                ]
             ]
         ]
     ]
