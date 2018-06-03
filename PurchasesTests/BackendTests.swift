@@ -73,6 +73,8 @@ class BackendTests: XCTestCase {
         "message": "something is bad up in the cloud"
     ]
 
+    let noEntitlementsResponse = Dictionary<String, String>()
+
     var backend: RCBackend?
 
     override func setUp() {
@@ -515,5 +517,19 @@ class BackendTests: XCTestCase {
         expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
     }
 
+    func testGetEntitlementsCallsHTTPMethod() {
+        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
+        let path = "/subscribers/" + userID + "/products"
+        httpClient.mock(requestPath: path, response: response)
+
+        var entitlements: [String : RCEntitlement]?
+
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements) in
+            entitlements = newEntitlements
+        })
+
+        expect(entitlements).toEventuallyNot(beNil())
+        expect(entitlements?.count).toEventually(equal(0))
+    }
     
 }
