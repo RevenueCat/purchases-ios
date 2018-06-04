@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
  @return The expiration date for the passed in `entitlement`, can be `nil`
  */
-- (NSDate * _Nullable)expirationForEntitlement:(NSString *)entitlementId;
+- (NSDate * _Nullable)expirationDateForEntitlement:(NSString *)entitlementId;
 
 /// All *subscription* product identifiers with expiration dates in the future.
 @property (readonly) NSSet<NSString *> *activeSubscriptions;

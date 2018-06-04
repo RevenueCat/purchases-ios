@@ -117,7 +117,7 @@ class BasicPurchaerInfoTests: XCTestCase {
         let info = RCPurchaserInfo(data: json as! [AnyHashable : Any])
         expect(info?.latestExpirationDate).toNot(beNil())
     }
-    
+
     func testActiveEntitlements() {
         let entitlements = purchaserInfo!.activeEntitlements
         expect(entitlements).to(contain("pro"));
@@ -125,7 +125,7 @@ class BasicPurchaerInfoTests: XCTestCase {
     }
 
     func testGetExpirationDates() {
-        let proDate = purchaserInfo!.expiration(forEntitlement: "pro")
+        let proDate = purchaserInfo!.expirationDate(forEntitlement: "pro")
         expect(proDate?.timeIntervalSince1970).to(equal(4123276836))
     }
 }

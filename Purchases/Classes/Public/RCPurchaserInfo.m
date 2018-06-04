@@ -10,7 +10,8 @@
 
 @interface RCPurchaserInfo ()
 
-@property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDates;
+@property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDatesByProduct;
+@property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDateByEntitlement;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic) NSString *originalApplicationVersion;
 
@@ -58,7 +59,22 @@ static dispatch_once_t onceToken;
             dates[productID] = date;
         }
 
-        self.expirationDates = [NSDictionary dictionaryWithDictionary:dates];
+        self.expirationDatesByProduct = [NSDictionary dictionaryWithDictionary:dates];
+
+        dates = [NSMutableDictionary new];
+        NSDictionary *entitlements = subscriberData[@"entitlements"];
+        for (NSString *entitlementID in entitlements) {
+            NSString *dateString = entitlements[entitlementID][@"expires_date"];
+            NSDate *date = [dateFormatter dateFromString:dateString];
+
+            if (date == nil) {
+                return nil;
+            }
+
+            dates[entitlementID] = date;
+        }
+
+        self.expirationDateByEntitlement = [NSDictionary dictionaryWithDictionary:dates];
 
         NSDictionary<NSString *, id> *otherPurchases = subscriberData[@"other_purchases"];
         self.nonConsumablePurchases = [NSSet setWithArray:[otherPurchases allKeys]];
@@ -72,27 +88,32 @@ static dispatch_once_t onceToken;
 
 - (NSSet<NSString *> *)allPurchasedProductIdentifiers
 {
-    return [self.nonConsumablePurchases setByAddingObjectsFromArray:self.expirationDates.allKeys];
+    return [self.nonConsumablePurchases setByAddingObjectsFromArray:self.expirationDatesByProduct.allKeys];
+}
+
+- (NSSet<NSString *> *)activeKeys:(NSDictionary<NSString *, NSDate *> *)dates
+{
+    NSMutableSet *activeSubscriptions = [NSMutableSet setWithCapacity:dates.count];
+
+    for (NSString *productIdentifier in dates) {
+        if (dates[productIdentifier].timeIntervalSinceNow > 0) {
+            [activeSubscriptions addObject:productIdentifier];
+        }
+    }
+
+    return [NSSet setWithSet:activeSubscriptions];
 }
 
 - (NSSet<NSString *> *)activeSubscriptions
 {
-    NSMutableSet *activeSubscriptions = [NSMutableSet setWithCapacity:self.expirationDates.count];
-
-    for (NSString *productIdentifier in self.expirationDates) {
-        if (self.expirationDates[productIdentifier].timeIntervalSinceNow > 0) {
-            [activeSubscriptions addObject:productIdentifier];
-        }
-    }
-    
-    return [NSSet setWithSet:activeSubscriptions];
+    return [self activeKeys:self.expirationDatesByProduct];
 }
 
 - (NSDate * _Nullable)latestExpirationDate
 {
     NSDate *maxDate = nil;
 
-    for (NSDate *date in self.expirationDates.allValues) {
+    for (NSDate *date in self.expirationDatesByProduct.allValues) {
         if (date.timeIntervalSince1970 > maxDate.timeIntervalSince1970) {
             maxDate = date;
         }
@@ -103,17 +124,17 @@ static dispatch_once_t onceToken;
 
 - (NSDate *)expirationDateForProductIdentifier:(NSString *)productIdentifier
 {
-    return self.expirationDates[productIdentifier];
+    return self.expirationDatesByProduct[productIdentifier];
 }
 
 - (NSSet<NSString *> *)activeEntitlements
 {
-    return nil;
+    return [self activeKeys:self.expirationDateByEntitlement];
 }
 
 - (NSDate *)expirationDateForEntitlement:(NSString *)entitlementId
 {
-    return nil;
+    return self.expirationDateByEntitlement[entitlementId];
 }
 
 
