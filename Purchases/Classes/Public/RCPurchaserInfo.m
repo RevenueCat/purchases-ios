@@ -106,6 +106,17 @@ static dispatch_once_t onceToken;
     return self.expirationDates[productIdentifier];
 }
 
+- (NSSet<NSString *> *)activeEntitlements
+{
+    return nil;
+}
+
+- (NSDate *)expirationDateForEntitlement:(NSString *)entitlementId
+{
+    return nil;
+}
+
+
 - (NSDictionary * _Nonnull)JSONObject {
     return self.originalData;
 }

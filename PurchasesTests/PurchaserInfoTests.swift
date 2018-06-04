@@ -35,6 +35,14 @@ class BasicPurchaerInfoTests: XCTestCase {
                 "threemonth_freetrial": [
                     "expires_date": "1990-08-30T02:40:36Z"
                 ]
+            ],
+            "entitlements": [
+                "pro" : [
+                    "expires_date" : "2100-08-30T02:40:36Z"
+                ],
+                "old_pro" : [
+                    "expires_date" : "1990-08-30T02:40:36Z"
+                ]
             ]
         ]
     ]
@@ -103,9 +111,21 @@ class BasicPurchaerInfoTests: XCTestCase {
         expect(newInfo).toNot(beNil())
     }
 
+
     func testTwoProductJson() {
         let json = try! JSONSerialization.jsonObject(with: validTwoProductsJSON.data(using: String.Encoding.utf8)!, options: [])
         let info = RCPurchaserInfo(data: json as! [AnyHashable : Any])
         expect(info?.latestExpirationDate).toNot(beNil())
+    }
+    
+    func testActiveEntitlements() {
+        let entitlements = purchaserInfo!.activeEntitlements
+        expect(entitlements).to(contain("pro"));
+        expect(entitlements).toNot(contain("old_pro"));
+    }
+
+    func testGetExpirationDates() {
+        let proDate = purchaserInfo!.expiration(forEntitlement: "pro")
+        expect(proDate?.timeIntervalSince1970).to(equal(4123276836))
     }
 }
