@@ -40,41 +40,16 @@ static dispatch_once_t onceToken;
             dateFormatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
             dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ssZ";
         });
-        
-        NSMutableDictionary<NSString *, NSDate *> *dates = [NSMutableDictionary new];
 
         NSDictionary *subscriptions = subscriberData[@"subscriptions"];
         if (subscriptions == nil) {
             return nil;
         }
 
-        for (NSString *productID in subscriptions) {
-            NSString *dateString = subscriptions[productID][@"expires_date"];
-            NSDate *date = [dateFormatter dateFromString:dateString];
+        self.expirationDatesByProduct = [self parseExpirationDate:subscriptions];
 
-            if (date == nil) {
-                return nil;
-            }
-
-            dates[productID] = date;
-        }
-
-        self.expirationDatesByProduct = [NSDictionary dictionaryWithDictionary:dates];
-
-        dates = [NSMutableDictionary new];
         NSDictionary *entitlements = subscriberData[@"entitlements"];
-        for (NSString *entitlementID in entitlements) {
-            NSString *dateString = entitlements[entitlementID][@"expires_date"];
-            NSDate *date = [dateFormatter dateFromString:dateString];
-
-            if (date == nil) {
-                return nil;
-            }
-
-            dates[entitlementID] = date;
-        }
-
-        self.expirationDateByEntitlement = [NSDictionary dictionaryWithDictionary:dates];
+        self.expirationDateByEntitlement = [self parseExpirationDate:entitlements];
 
         NSDictionary<NSString *, id> *otherPurchases = subscriberData[@"other_purchases"];
         self.nonConsumablePurchases = [NSSet setWithArray:[otherPurchases allKeys]];
@@ -84,6 +59,24 @@ static dispatch_once_t onceToken;
 
     }
     return self;
+}
+
+- (NSDictionary<NSString *, NSDate *> *)parseExpirationDate:(NSDictionary<NSString *, NSDictionary *> *)expirationDates
+{
+    NSMutableDictionary<NSString *, NSDate *> *dates = [NSMutableDictionary new];
+
+    for (NSString *identifier in expirationDates) {
+        NSString *dateString = expirationDates[identifier][@"expires_date"];
+        NSDate *date = [dateFormatter dateFromString:dateString];
+
+        if (date == nil) {
+            return nil;
+        }
+
+        dates[identifier] = date;
+    }
+
+    return [NSDictionary dictionaryWithDictionary:dates];
 }
 
 - (NSSet<NSString *> *)allPurchasedProductIdentifiers
