@@ -119,11 +119,6 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
 - (void)restoreTransactionsForAppStoreAccount;
 
 /**
- Fetches the latest purchaser info from the backend. This will happen periodically on `applicationDidResumeActive:` and will trigger the delegate method `purchases:receivedUpdatedPurchaserInfo:`. You can use this method if you'd like to refresh the purchaser info manually. Triggers purchases:receivedUpdatedPurchaserInfo: delegate method to be called.
- */
-- (void)updatePurchaserInfo;
-
-/**
  Computes whether or not a user is eligible for the introductory pricing period of a given product. You should use this method to determine whether or not you show the user the normal product price or the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
 
  @note If you have multiple subscription groups you will need to specify which products belong to which subscription groups on https://app.revenuecat.com/. If RevenueCat can't definitively compute the eligibilty, most likely because of missing group information, it will return `RCIntroEligibilityStatusUnknown`. The best course of action on unknown status is to display the non-intro pricing, to not create a misleading situation.

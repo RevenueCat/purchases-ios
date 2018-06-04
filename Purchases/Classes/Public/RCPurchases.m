@@ -30,7 +30,8 @@
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 @property (nonatomic) NSUserDefaults *userDefaults;
 
-@property (nonatomic) NSDate *purchaserInfoLastChecked;
+@property (nonatomic) NSDate *cachesLastUpdated;
+@property (nonatomic) NSDictionary<NSString *, RCEntitlement *> *cachedEntitlements;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
 
 @property (nonatomic) BOOL isUsingAnonymousID;
@@ -126,7 +127,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
         [self readPurchaserInfoFromCache];
-        [self updatePurchaserInfo];
+        [self updateCaches];
     } else {
         self.storeKitWrapper.delegate = nil;
         [self.notificationCenter removeObserver:self
@@ -142,7 +143,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif
 {
-    [self updatePurchaserInfo];
+    [self updateCaches];
 }
 
 - (void)readPurchaserInfoFromCache {
@@ -172,12 +173,12 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     }
 }
 
-- (void)updatePurchaserInfo
+- (void)updateCaches
 {
-    NSTimeInterval timeSinceLastCheck = -[self.purchaserInfoLastChecked timeIntervalSinceNow];
-    if (self.purchaserInfoLastChecked != nil && timeSinceLastCheck < 60.) return;
+    NSTimeInterval timeSinceLastCheck = -[self.cachesLastUpdated timeIntervalSinceNow];
+    if (self.cachesLastUpdated != nil && timeSinceLastCheck < 60.) return;
 
-    self.purchaserInfoLastChecked = [NSDate date];
+    self.cachesLastUpdated = [NSDate date];
 
     [self.backend getSubscriberDataWithAppUserID:self.appUserID
                                       completion:^(RCPurchaserInfo * _Nullable info,
@@ -185,7 +186,15 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
         if (error == nil) {
             [self handleUpdatedPurchaserInfo:info error:nil];
         } else {
-            self.purchaserInfoLastChecked = nil;
+            self.cachesLastUpdated = nil;
+        }
+    }];
+
+    [self entitlements:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
+        if (entitlements != nil) {
+            self.cachedEntitlements = entitlements;
+        } else {
+            self.cachesLastUpdated = nil;
         }
     }];
 }
@@ -203,6 +212,11 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *entitlements))completion
 {
+    if (self.cachedEntitlements != nil) {
+        completion(self.cachedEntitlements);
+        return;
+    }
+    
     [self.backend getEntitlementsForAppUserID:self.appUserID
                                    completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
                                        NSMutableSet *productIdentifiers = [NSMutableSet new];

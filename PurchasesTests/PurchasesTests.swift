@@ -697,14 +697,6 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.payment).to(be(payment))
     }
 
-    func testGetUpdatedPurchaserInfo() {
-        setupPurchases()
-
-        purchases!.updatePurchaserInfo()
-
-        expect(self.backend.postReceiptDataCalled).to(beFalse());
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil());
-    }
 
     func testAnonPurchasesGeneratesAnAppUserID() {
         setupAnonPurchases()
