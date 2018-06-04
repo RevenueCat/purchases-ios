@@ -111,9 +111,9 @@ class PurchasesTests: XCTestCase {
             completion(eligibilities);
         }
 
-        var gotEntitlements = false
+        var gotEntitlements = 0
         override func getEntitlementsForAppUserID(_ appUserID: String, completion: @escaping RCEntitlementResponseHandler) {
-            gotEntitlements = true
+            gotEntitlements += 1
 
             let offering = RCOffering()
             offering.activeProductIdentifier = "monthly_freetrial"
@@ -811,8 +811,19 @@ class PurchasesTests: XCTestCase {
                 expect(pro.offerings["monthly"]?.activeProduct).toNot(beNil())
             }
         })
-        expect(self.backend.gotEntitlements).toEventually(beTrue())
+        expect(self.backend.gotEntitlements).toEventually(equal(1))
         expect(entitlements?.count).toEventually(equal(1))
+    }
 
+    func testCachesProducts() {
+        setupPurchases()
+
+        purchases?.entitlements({ (newEntitlements) in
+
+        })
+        purchases?.entitlements({ (newEntitlements) in
+
+        })
+        expect(self.backend.gotEntitlements).toEventually(equal(1))
     }
 }
