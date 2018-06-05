@@ -75,15 +75,6 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
 @property (nonatomic, weak) id<RCPurchasesDelegate> _Nullable delegate;
 
 /**
- Fetch entitlements for this user. This will get the correct set of products for this user and fetch their product info from Apple. This is the preferred method of getting product info. You must configure entitlements via the RevenueCat web app.
-
- @note This method is precached, so should be available by the time you are ready to display purchase UI.
-
- @note completion` may be called without `SKProduct`s that you are expecting. This is usually caused by iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect. Also ensure that you have an active developer program subscription and you have signed the latest paid application agreements.
- */
-- (void)entitlements:(RCReceiveEntitlementsBlock)completion;
-
-/**
  Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.
 
  @note You may wish to do this soon after app initialization and store the result to speed up your in app purchase experience. Slow purchase screens lead to decreased conversions.
@@ -149,6 +140,15 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
  */
 @protocol RCPurchasesDelegate
 @required
+
+/**
+ Called when RCPurchases receives the entitlements and products. Use this to present your purchase UI. The result of this delegate method may also be available via `RCPurchases.entitlements` property.
+
+ @param purchases Related `RCPurchases` object
+ @param entitlements Map of entitlement id to `RCEntitlement`
+ */
+- (void)purchases:(RCPurchases *)purchases receivedEntitlements:(NSDictionary<NSString *, RCEntitlement *> *)entitlements;
+
 /**
  Called when a transaction has been succesfully posted to the backend. This will be called in response to `makePurchase:` call but can also occur at other times, especially when dealing with subscriptions.
 

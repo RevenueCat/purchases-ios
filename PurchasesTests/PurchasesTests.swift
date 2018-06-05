@@ -218,6 +218,11 @@ class PurchasesTests: XCTestCase {
             updatePurchaserInfoError = error
         }
         
+        var receivedEntitlements: [String : RCEntitlement]?
+        func purchases(_ purchases: RCPurchases, receivedEntitlements entitlements: [String : RCEntitlement]) {
+            receivedEntitlements = entitlements
+        }
+        
         var promoProduct: SKProduct?
         var shouldAddPromo = false
         var makeDeferredPurchase: RCDeferredPromotionalPurchaseBlock?
@@ -793,29 +798,20 @@ class PurchasesTests: XCTestCase {
 
     func testGetsProductInfoFromEntitlements() {
         setupPurchases()
-
-        var entitlements: [String : RCEntitlement]?
-        purchases?.entitlements({ (newEntitlements) in
-            entitlements = newEntitlements
-            if (entitlements != nil) {
-                let pro = entitlements!["pro"]!;
-                expect(pro.offerings["monthly"]).toNot(beNil())
-                expect(pro.offerings["monthly"]?.activeProduct).toNot(beNil())
-            }
-        })
         expect(self.backend.gotEntitlements).toEventually(equal(1))
-        expect(entitlements?.count).toEventually(equal(1))
+        expect(self.purchasesDelegate.receivedEntitlements).toNot(beNil())
+        guard let entitlements = self.purchasesDelegate.receivedEntitlements else { return}
+
+        expect(entitlements.count).toEventually(equal(1))
+        let pro = entitlements["pro"]!;
+        expect(pro.offerings["monthly"]).toNot(beNil())
+        expect(pro.offerings["monthly"]?.activeProduct).toNot(beNil())
+
     }
 
     func testCachesProducts() {
         setupPurchases()
-
-        purchases?.entitlements({ (newEntitlements) in
-
-        })
-        purchases?.entitlements({ (newEntitlements) in
-
-        })
+        
         expect(self.backend.gotEntitlements).toEventually(equal(1))
     }
 }
