@@ -190,7 +190,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
         }
     }];
 
-    [self entitlements:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
+    [self getEntitlements:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
         if (entitlements != nil) {
             self.cachedEntitlements = entitlements;
             [self.delegate purchases:self receivedEntitlements:entitlements];
@@ -216,7 +216,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     }
 }
 
-- (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *entitlements))completion
+- (void)getEntitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *entitlements))completion
 {
     [self.backend getEntitlementsForAppUserID:self.appUserID
                                    completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
