@@ -809,9 +809,10 @@ class PurchasesTests: XCTestCase {
 
     }
 
-    func testCachesProducts() {
+    func testCachesEntitlementsCorrectly() {
         setupPurchases()
-        
+
         expect(self.backend.gotEntitlements).toEventually(equal(1))
+        expect(self.purchasesDelegate.receivedEntitlements).toNot(be(purchases!.entitlements))
     }
 }

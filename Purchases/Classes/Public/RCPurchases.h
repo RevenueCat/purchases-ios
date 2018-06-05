@@ -75,6 +75,13 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
 @property (nonatomic, weak) id<RCPurchasesDelegate> _Nullable delegate;
 
 /**
+ Cached, fetched entitlements. This may be unset if the entitlements have not yet been fetched for this `RCPurchases` object. Use the correct `RCEntitlement` to configure and show your purchase UI. `SKProduct`s within the `RCEntitlement` are pre-fetched so up-sell UI can be presented more quickly, increasing conversion rate.
+
+ @note This may be nil. Be sure to handle that case, you can also listen for new entitlements with the delegate method `purchases:receivedEntitlements`
+ */
+@property (readonly) NSDictionary<NSString *, RCEntitlement *> * _Nullable entitlements;
+
+/**
  Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.
 
  @note You may wish to do this soon after app initialization and store the result to speed up your in app purchase experience. Slow purchase screens lead to decreased conversions.
@@ -125,6 +132,7 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
  Triggers purchases:receivedUpdatedPurchaserInfo: delegate method to be called;
  */
 - (void)updateOriginalApplicationVersion;
+
 
 /**
  This version of the Purchases framework

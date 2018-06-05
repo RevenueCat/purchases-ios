@@ -193,10 +193,16 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     [self entitlements:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
         if (entitlements != nil) {
             self.cachedEntitlements = entitlements;
+            [self.delegate purchases:self receivedEntitlements:entitlements];
         } else {
             self.cachesLastUpdated = nil;
         }
     }];
+}
+
+-(NSDictionary<NSString *, RCEntitlement *> * _Nullable)entitlements
+{
+    return self.cachedEntitlements;
 }
 
 - (void)performOnEachOfferingInEntitlements:(NSDictionary<NSString *,RCEntitlement *> *)entitlements block:(void (^)(RCOffering *offering))block
@@ -212,11 +218,6 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *entitlements))completion
 {
-    if (self.cachedEntitlements != nil) {
-        completion(self.cachedEntitlements);
-        return;
-    }
-    
     [self.backend getEntitlementsForAppUserID:self.appUserID
                                    completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
                                        NSMutableSet *productIdentifiers = [NSMutableSet new];
@@ -235,7 +236,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                                                offering.activeProduct = productsById[offering.activeProductIdentifier];
                                            }];
                                            
-                                           [self.delegate purchases:self receivedEntitlements:entitlements];
+                                           completion(entitlements);
                                        }];
 
     }];
