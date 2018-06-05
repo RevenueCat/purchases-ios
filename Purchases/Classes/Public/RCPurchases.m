@@ -234,7 +234,8 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                                            [self performOnEachOfferingInEntitlements:entitlements block:^(RCOffering *offering) {
                                                offering.activeProduct = productsById[offering.activeProductIdentifier];
                                            }];
-                                           completion(entitlements);
+                                           
+                                           [self.delegate purchases:self receivedEntitlements:entitlements];
                                        }];
 
     }];
