@@ -74,12 +74,7 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
  */
 @property (nonatomic, weak) id<RCPurchasesDelegate> _Nullable delegate;
 
-/**
- Cached, fetched entitlements. This may be unset if the entitlements have not yet been fetched for this `RCPurchases` object. Use the correct `RCEntitlement` to configure and show your purchase UI. `SKProduct`s within the `RCEntitlement` are pre-fetched so up-sell UI can be presented more quickly, increasing conversion rate.
-
- @note This may be nil. Be sure to handle that case, you can also listen for new entitlements with the delegate method `purchases:receivedEntitlements`
- */
-@property (readonly) NSDictionary<NSString *, RCEntitlement *> * _Nullable entitlements;
+- (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *))completion;
 
 /**
  Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.
@@ -148,14 +143,6 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
  */
 @protocol RCPurchasesDelegate
 @required
-
-/**
- Called when RCPurchases receives the entitlements and products. Use this to present your purchase UI. The result of this delegate method may also be available via `RCPurchases.entitlements` property.
-
- @param purchases Related `RCPurchases` object
- @param entitlements Map of entitlement id to `RCEntitlement`
- */
-- (void)purchases:(RCPurchases *)purchases receivedEntitlements:(NSDictionary<NSString *, RCEntitlement *> *)entitlements;
 
 /**
  Called when a transaction has been succesfully posted to the backend. This will be called in response to `makePurchase:` call but can also occur at other times, especially when dealing with subscriptions.

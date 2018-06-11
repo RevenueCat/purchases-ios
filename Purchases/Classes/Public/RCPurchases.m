@@ -190,14 +190,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
         }
     }];
 
-    [self getEntitlements:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
-        if (entitlements != nil) {
-            self.cachedEntitlements = entitlements;
-            [self.delegate purchases:self receivedEntitlements:entitlements];
-        } else {
-            self.cachesLastUpdated = nil;
-        }
-    }];
+    [self getEntitlements:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {}];
 }
 
 -(NSDictionary<NSString *, RCEntitlement *> * _Nullable)entitlements
@@ -213,6 +206,15 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
             RCOffering *offering = entitlement.offerings[offeringID];
             block(offering);
         }
+    }
+}
+
+- (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *))completion
+{
+    if (self.cachedEntitlements) {
+        completion(self.cachedEntitlements);
+    } else {
+        [self getEntitlements:completion];
     }
 }
 
@@ -235,7 +237,13 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                                            [self performOnEachOfferingInEntitlements:entitlements block:^(RCOffering *offering) {
                                                offering.activeProduct = productsById[offering.activeProductIdentifier];
                                            }];
-                                           
+
+                                           if (entitlements != nil) {
+                                               self.cachedEntitlements = entitlements;
+                                           } else {
+                                               self.cachesLastUpdated = nil;
+                                           }
+
                                            completion(entitlements);
                                        }];
 
