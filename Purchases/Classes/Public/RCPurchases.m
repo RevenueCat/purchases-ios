@@ -47,10 +47,21 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
 {
+    return [self initWithAPIKey:APIKey appUserID:appUserID userDefaults:nil];
+}
+
+- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
+                               appUserID:(NSString * _Nullable)appUserID
+                            userDefaults:(NSUserDefaults *)userDefaults
+{
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+
+    if (userDefaults == nil) {
+        userDefaults = [NSUserDefaults standardUserDefaults];
+    }
+
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                            backend:backend
@@ -58,6 +69,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                 notificationCenter:[NSNotificationCenter defaultCenter]
                       userDefaults:userDefaults];
 }
+
 + (NSString *)frameworkVersion {
     return @"0.11.0";
 }

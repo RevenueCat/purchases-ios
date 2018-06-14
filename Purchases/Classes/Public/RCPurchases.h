@@ -41,12 +41,27 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
 
  @param APIKey The API Key generated for your app from https://www.revenuecat.com/
 
- @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices.
+ @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
 
  @return An instantiated `RCPurchases` object
  */
 - (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
                                appUserID:(NSString * _Nullable)appUserID;
+
+/**
+ Initializes an `RCPurchases` object with a custom userDefaults. Use this contructor if you want to sync status across
+ a shared container, such as between a host app and an extension.
+
+ @param APIKey The API Key generated for your app from https://www.revenuecat.com/
+
+ @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
+
+ @return An instantiated `RCPurchases` object
+ */
+
+- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
+                               appUserID:(NSString * _Nullable)appUserID
+                            userDefaults:(NSUserDefaults *)userDefaults;
 
 /// The `appUserID` used by `RCPurchases`. If not passed on initialization this will be generated and cached by `RCPurchases`.
 @property (nonatomic, readonly) NSString *appUserID;
