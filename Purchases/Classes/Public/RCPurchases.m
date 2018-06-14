@@ -383,6 +383,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                                if (error) {
                                    [self.delegate purchases:self failedToRestoreTransactionsWithError:error];
                                } else if (info) {
+                                   [self cachePurchaserInfo:info];
                                    [self.delegate purchases:self restoredTransactionsWithPurchaserInfo:info];
                                }
                            }];
