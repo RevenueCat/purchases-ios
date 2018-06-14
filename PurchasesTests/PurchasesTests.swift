@@ -199,6 +199,14 @@ class PurchasesTests: XCTestCase {
         func purchases(_ purchases: RCPurchases, failedToUpdatePurchaserInfoWithError failureReason: Error) {
             updatePurchaserInfoError = failureReason
         }
+
+        func purchases(_ purchases: RCPurchases, restoredTransactionsWith purchaserInfo: RCPurchaserInfo) {
+            self.purchaserInfo = purchaserInfo
+        }
+
+        func purchases(_ purchases: RCPurchases, failedToRestoreTransactionsWithError error: Error) {
+            updatePurchaserInfoError = error
+        }
         
         var promoProduct: SKProduct?
         var shouldAddPromo = false

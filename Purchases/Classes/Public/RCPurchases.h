@@ -175,6 +175,22 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
 - (void)purchases:(RCPurchases *)purchases receivedUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
 
 /**
+ Called when restoring transactions has been completed successfully.
+
+ @param purchases Related `RCPurchases` object
+ @param purchaserInfo Updated `RCPurchaserInfo`
+ */
+- (void)purchases:(RCPurchases *)purchases restoredTransactionsWithPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
+
+/**
+ Called when restoring transactions has failed
+
+ @param purchases Related `RCPurchases` object
+ @param error The failure reason
+ */
+- (void)purchases:(RCPurchases *)purchases failedToRestoreTransactionsWithError:(NSError *)error;
+
+/**
  Called whenever RCPurchases fails to fetch a purchaserInfo.
 */
 - (void)purchases:(RCPurchases *)purchases failedToUpdatePurchaserInfoWithError:(NSError *)error;

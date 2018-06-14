@@ -380,7 +380,11 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                          currencyCode:nil
                            completion:^(RCPurchaserInfo * _Nullable info,
                                         NSError * _Nullable error) {
-                               [self handleUpdatedPurchaserInfo:info error:error];
+                               if (error) {
+                                   [self.delegate purchases:self failedToRestoreTransactionsWithError:error];
+                               } else if (info) {
+                                   [self.delegate purchases:self restoredTransactionsWithPurchaserInfo:info];
+                               }
                            }];
     }];
 }
