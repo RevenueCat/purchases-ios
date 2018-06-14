@@ -61,7 +61,7 @@ typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroE
 
 - (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
                                appUserID:(NSString * _Nullable)appUserID
-                            userDefaults:(NSUserDefaults *)userDefaults;
+                            userDefaults:(NSUserDefaults * _Nullable)userDefaults;
 
 /// The `appUserID` used by `RCPurchases`. If not passed on initialization this will be generated and cached by `RCPurchases`.
 @property (nonatomic, readonly) NSString *appUserID;

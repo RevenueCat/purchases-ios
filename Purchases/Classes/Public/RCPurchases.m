@@ -52,7 +52,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
                                appUserID:(NSString * _Nullable)appUserID
-                            userDefaults:(NSUserDefaults *)userDefaults
+                            userDefaults:(NSUserDefaults * _Nullable)userDefaults
 {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
