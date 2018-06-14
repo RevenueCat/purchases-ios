@@ -1,3 +1,8 @@
+## 0.12.0
+- Remove Carthage dependencies
+- Add delegate methods for restoring
+- Allow RCPurchases to be instantiated with a UserDefaults object, useful for syncing between extensions
+
 ## 0.11.0
 - RCPurchases now caches the most recent RCPurchaserInfo. Apps no longer need to implement there own offline caching of subscription status.
 - Change block based methods to use delegate. restoreTransactions and updatePurchaserInfo no longer take blocks. This means all new RCPurchaserInfo objects will be sent via the delegate methods.

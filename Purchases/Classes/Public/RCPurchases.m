@@ -71,7 +71,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 }
 
 + (NSString *)frameworkVersion {
-    return @"0.11.0";
+    return @"0.12.0";
 }
 
 - (instancetype _Nullable)initWithAppUserID:(NSString *)appUserID
