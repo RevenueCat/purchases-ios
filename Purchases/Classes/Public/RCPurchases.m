@@ -247,6 +247,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                                    error:(NSError * _Nullable)error
 {
     if (info) {
+        [self cachePurchaserInfo:info];
         [self.delegate purchases:self
             completedTransaction:transaction
                  withUpdatedInfo:info];
