@@ -42,7 +42,10 @@ class BasicPurchaerInfoTests: XCTestCase {
                 ],
                 "old_pro" : [
                     "expires_date" : "1990-08-30T02:40:36Z"
-                ]
+                ],
+                "forever_pro" : [
+                    "expires_date" : nil
+                ],
             ]
         ]
     ]
@@ -127,5 +130,10 @@ class BasicPurchaerInfoTests: XCTestCase {
     func testGetExpirationDates() {
         let proDate = purchaserInfo!.expirationDate(forEntitlement: "pro")
         expect(proDate?.timeIntervalSince1970).to(equal(4123276836))
+    }
+
+    func testLifetimeSubscriptions() {
+        let entitlements = purchaserInfo!.activeEntitlements
+        expect(entitlements).to(contain("forever_pro"));
     }
 }
