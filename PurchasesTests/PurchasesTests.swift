@@ -169,6 +169,7 @@ class PurchasesTests: XCTestCase {
         let purchaserInfoCachePrefix = "com.revenuecat.userdefaults.purchaserInfo"
 
         var appUserID: String?
+        var cachedUserInfoCount = 0
         var cachedUserInfo = [String : Data]()
 
         override func string(forKey defaultName: String) -> String? {
@@ -182,7 +183,8 @@ class PurchasesTests: XCTestCase {
         override func set(_ value: Any?, forKey defaultName: String) {
             if (defaultName == appUserIDKey) {
                 appUserID = value as! String?
-            } else if (defaultName.starts(with: purchaserInfoCachePrefix)){
+            } else if (defaultName.starts(with: purchaserInfoCachePrefix)) {
+                cachedUserInfoCount += 1
                 cachedUserInfo[defaultName] = value as! Data?
             }
         }
@@ -774,6 +776,36 @@ class PurchasesTests: XCTestCase {
         } catch {
             fail()
         }
+    }
+
+    func testCachesPurchaserInfoOnPurchase() {
+        setupPurchases()
+
+        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
+
+        expect(self.userDefaults.cachedUserInfo.count).to(equal(1))
+
+        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]]);
+
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.makePurchase(product)
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+
+        expect(self.userDefaults.cachedUserInfoCount).toEventually(equal(2))
     }
 
     func testSendsCachesPurchaserInfoToDelegateIfExistsOnLaunch() {
