@@ -203,7 +203,9 @@ class PurchasesTests: XCTestCase {
             self.failedTransaction = transaction
         }
 
+        var purchaserInfoReceivedCount = 0
         func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
+            purchaserInfoReceivedCount += 1
             self.purchaserInfo = purchaserInfo
         }
 
@@ -564,6 +566,15 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         notificationCenter.fireNotifications();
         expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil());
+    }
+
+    func testBackToBackTriggersReemitCachedPurchaserInfo() {
+        setupPurchases()
+
+        notificationCenter.fireNotifications();
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).to(equal(2));
+        notificationCenter.fireNotifications();
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).to(equal(3));
     }
 
     func testRemovesObservationWhenDelegateNild() {
