@@ -127,6 +127,11 @@ class BasicPurchaerInfoTests: XCTestCase {
         expect(entitlements).toNot(contain("old_pro"));
     }
 
+    func testRandomEntitlement() {
+        let entitlements = purchaserInfo!.activeEntitlements
+        expect(entitlements).toNot(contain("random"));
+    }
+
     func testGetExpirationDates() {
         let proDate = purchaserInfo!.expirationDate(forEntitlement: "pro")
         expect(proDate?.timeIntervalSince1970).to(equal(4123276836))
