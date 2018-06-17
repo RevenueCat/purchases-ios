@@ -176,7 +176,10 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 - (void)updateCaches
 {
     NSTimeInterval timeSinceLastCheck = -[self.cachesLastUpdated timeIntervalSinceNow];
-    if (self.cachesLastUpdated != nil && timeSinceLastCheck < 60.) return;
+    if (self.cachesLastUpdated != nil && timeSinceLastCheck < 60.) {
+        [self readPurchaserInfoFromCache];
+        return;
+    }
 
     self.cachesLastUpdated = [NSDate date];
 
