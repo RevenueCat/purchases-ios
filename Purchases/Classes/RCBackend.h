@@ -3,7 +3,7 @@
 //  Purchases
 //
 //  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2017 RevenueCat, Inc. All rights reserved.
+//  Copyright © 2018 RevenueCat, Inc. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

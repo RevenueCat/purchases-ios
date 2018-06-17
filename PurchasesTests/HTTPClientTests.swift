@@ -3,7 +3,7 @@
 //  PurchasesTests
 //
 //  Created by Jacob Eiting on 9/28/17.
-//  Copyright © 2017 Purchases. All rights reserved.
+//  Copyright © 2018 Purchases. All rights reserved.
 //
 
 import XCTest
