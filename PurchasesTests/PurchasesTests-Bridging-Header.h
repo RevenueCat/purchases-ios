@@ -9,3 +9,7 @@
 #include <Purchases/RCBackend.h>
 #include <Purchases/RCPurchaserInfo.h>
 #include <Purchases/RCPurchaserInfo+Protected.h>
+#include <Purchases/RCEntitlement.h>
+#include <Purchases/RCEntitlement+Protected.h>
+#include <Purchases/RCOffering.h>
+#include <Purchases/RCOffering+Protected.h>

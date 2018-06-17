@@ -17,6 +17,8 @@
 #import "NSLocale+RCExtensions.h"
 #import "RCPurchaserInfo.h"
 #import "RCCrossPlatformSupport.h"
+#import "RCEntitlement+Protected.h"
+#import "RCOffering+Protected.h"
 
 @interface RCPurchases () <RCStoreKitWrapperDelegate>
 
@@ -28,7 +30,8 @@
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 @property (nonatomic) NSUserDefaults *userDefaults;
 
-@property (nonatomic) NSDate *purchaserInfoLastChecked;
+@property (nonatomic) NSDate *cachesLastUpdated;
+@property (nonatomic) NSDictionary<NSString *, RCEntitlement *> *cachedEntitlements;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
 
 @property (nonatomic) BOOL isUsingAnonymousID;
@@ -124,7 +127,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
         [self readPurchaserInfoFromCache];
-        [self updatePurchaserInfo];
+        [self updateCaches];
     } else {
         self.storeKitWrapper.delegate = nil;
         [self.notificationCenter removeObserver:self
@@ -140,7 +143,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif
 {
-    [self updatePurchaserInfo];
+    [self updateCaches];
 }
 
 - (void)readPurchaserInfoFromCache {
@@ -170,12 +173,12 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     }
 }
 
-- (void)updatePurchaserInfo
+- (void)updateCaches
 {
-    NSTimeInterval timeSinceLastCheck = -[self.purchaserInfoLastChecked timeIntervalSinceNow];
-    if (self.purchaserInfoLastChecked != nil && timeSinceLastCheck < 60.) return;
+    NSTimeInterval timeSinceLastCheck = -[self.cachesLastUpdated timeIntervalSinceNow];
+    if (self.cachesLastUpdated != nil && timeSinceLastCheck < 60.) return;
 
-    self.purchaserInfoLastChecked = [NSDate date];
+    self.cachesLastUpdated = [NSDate date];
 
     [self.backend getSubscriberDataWithAppUserID:self.appUserID
                                       completion:^(RCPurchaserInfo * _Nullable info,
@@ -183,8 +186,67 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
         if (error == nil) {
             [self handleUpdatedPurchaserInfo:info error:nil];
         } else {
-            self.purchaserInfoLastChecked = nil;
+            self.cachesLastUpdated = nil;
         }
+    }];
+
+    [self getEntitlements:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {}];
+}
+
+-(NSDictionary<NSString *, RCEntitlement *> * _Nullable)entitlements
+{
+    return self.cachedEntitlements;
+}
+
+- (void)performOnEachOfferingInEntitlements:(NSDictionary<NSString *,RCEntitlement *> *)entitlements block:(void (^)(RCOffering *offering))block
+{
+    for (NSString *entitlementID in entitlements) {
+        RCEntitlement *entitlement = entitlements[entitlementID];
+        for (NSString *offeringID in entitlement.offerings) {
+            RCOffering *offering = entitlement.offerings[offeringID];
+            block(offering);
+        }
+    }
+}
+
+- (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *))completion
+{
+    if (self.cachedEntitlements) {
+        completion(self.cachedEntitlements);
+    } else {
+        [self getEntitlements:completion];
+    }
+}
+
+- (void)getEntitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *entitlements))completion
+{
+    [self.backend getEntitlementsForAppUserID:self.appUserID
+                                   completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
+                                       NSMutableSet *productIdentifiers = [NSMutableSet new];
+
+                                       [self performOnEachOfferingInEntitlements:entitlements block:^(RCOffering *offering) {
+                                           [productIdentifiers addObject:offering.activeProductIdentifier];
+                                       }];
+
+                                       [self.requestFetcher fetchProducts:productIdentifiers completion:^(NSArray<SKProduct *> * _Nonnull products) {
+                                           NSMutableDictionary *productsById = [NSMutableDictionary new];
+                                           for (SKProduct *p in products) {
+                                               productsById[p.productIdentifier] = p;
+                                           }
+
+                                           [self performOnEachOfferingInEntitlements:entitlements block:^(RCOffering *offering) {
+                                               offering.activeProduct = productsById[offering.activeProductIdentifier];
+                                           }];
+
+                                           if (entitlements != nil) {
+                                               self.cachedEntitlements = entitlements;
+                                           } else {
+                                               self.cachesLastUpdated = nil;
+                                           }
+
+                                           completion(entitlements);
+                                       }];
+
     }];
 }
 

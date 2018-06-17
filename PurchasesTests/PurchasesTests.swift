@@ -110,6 +110,16 @@ class PurchasesTests: XCTestCase {
 
             completion(eligibilities);
         }
+
+        var gotEntitlements = 0
+        override func getEntitlementsForAppUserID(_ appUserID: String, completion: @escaping RCEntitlementResponseHandler) {
+            gotEntitlements += 1
+
+            let offering = RCOffering()
+            offering.activeProductIdentifier = "monthly_freetrial"
+            let entitlement = RCEntitlement(offerings: ["monthly" : offering])
+            completion(["pro" : entitlement!])
+        }
     }
 
     class MockStoreKitWrapper: RCStoreKitWrapper {
@@ -687,14 +697,6 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.payment).to(be(payment))
     }
 
-    func testGetUpdatedPurchaserInfo() {
-        setupPurchases()
-
-        purchases!.updatePurchaserInfo()
-
-        expect(self.backend.postReceiptDataCalled).to(beFalse());
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil());
-    }
 
     func testAnonPurchasesGeneratesAnAppUserID() {
         setupAnonPurchases()
@@ -787,6 +789,25 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
 
         expect(self.purchasesDelegate.purchaserInfo).toNot(beNil())
+    }
+
+    func testGetsProductInfoFromEntitlements() {
+        setupPurchases()
+        expect(self.backend.gotEntitlements).toEventually(equal(1))
+
+        var entitlements: [String : RCEntitlement]?
+        self.purchases?.entitlements({ (newEntitlements) in
+            entitlements = newEntitlements
+        })
+
+        expect(entitlements).toEventuallyNot(beNil());
+
+        guard let e = entitlements else { return }
+
+        expect(e.count).toEventually(equal(1))
+        let pro = e["pro"]!;
+        expect(pro.offerings["monthly"]).toNot(beNil())
+        expect(pro.offerings["monthly"]?.activeProduct).toNot(beNil())
 
     }
 }

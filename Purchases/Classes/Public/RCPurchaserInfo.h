@@ -16,6 +16,17 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface RCPurchaserInfo : NSObject
 
+/// All active *entitlements*.
+@property (readonly) NSSet<NSString *> *activeEntitlements;
+
+/** Get the expiration date for a given entitlement.
+
+ @param entitlementId The id of the entitlement.
+
+ @return The expiration date for the passed in `entitlement`, can be `nil`
+ */
+- (NSDate * _Nullable)expirationDateForEntitlement:(NSString *)entitlementId;
+
 /// All *subscription* product identifiers with expiration dates in the future.
 @property (readonly) NSSet<NSString *> *activeSubscriptions;
 

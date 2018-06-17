@@ -11,6 +11,8 @@
 #import "RCHTTPClient.h"
 #import "RCPurchaserInfo+Protected.h"
 #import "RCIntroEligibility.h"
+#import "RCEntitlement+Protected.h"
+#import "RCOffering+Protected.h"
 
 NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 
@@ -107,6 +109,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     completion(info, responseError);
 }
 
+- (NSString *)escapedAppUserID:(NSString *)appUserID {
+    return [appUserID stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
+}
+
 
 - (void)postReceiptData:(NSData *)data
               appUserID:(NSString *)appUserID
@@ -190,7 +196,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
                             completion:(RCBackendResponseHandler)completion
 {
-    NSString *escapedAppUserID = [appUserID stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@", escapedAppUserID];
 
     [self.httpClient performRequest:@"GET"
@@ -214,7 +220,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
     NSString *fetchToken = [receiptData base64EncodedStringWithOptions:0];
 
-    NSString *escapedAppUserID = [appUserID stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/intro_eligibility", escapedAppUserID];
     [self.httpClient performRequest:@"POST"
                                path:path
@@ -244,6 +250,50 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                       }
 
                       completion([NSDictionary dictionaryWithDictionary:eligibilties]);
+    }];
+}
+
+- (NSDictionary<NSString *, RCEntitlement *> *)parseEntitlementResponse:(NSDictionary *)response
+{
+    NSMutableDictionary *entitlements = [NSMutableDictionary new];
+
+    NSDictionary *entitlementsResponse = response[@"entitlements"];
+
+    for (NSString *proID in entitlementsResponse) {
+        NSDictionary *entDict = entitlementsResponse[proID];
+
+        NSMutableDictionary *offerings = [NSMutableDictionary new];
+        NSDictionary *offeringsResponse = entDict[@"offerings"];
+
+        for (NSString *offeringID in offeringsResponse) {
+            NSDictionary *offDict = offeringsResponse[offeringID];
+
+            RCOffering *offering = [[RCOffering alloc] init];
+            offering.activeProductIdentifier = offDict[@"active_product_identifier"];
+
+            offerings[offeringID] = offering;
+
+        }
+        entitlements[proID] = [[RCEntitlement alloc] initWithOfferings:offerings];
+    }
+
+    return [NSDictionary dictionaryWithDictionary:entitlements];
+}
+
+- (void)getEntitlementsForAppUserID:(NSString *)appUserID
+                         completion:(RCEntitlementResponseHandler)completion
+{
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/products", escapedAppUserID];
+    [self.httpClient performRequest:@"GET"
+                               path:path
+                               body:nil
+                            headers:self.headers
+                  completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
+                      if (statusCode < 300) {
+                          NSDictionary *entitlements = [self parseEntitlementResponse:response];
+                          completion(entitlements);
+                      }
     }];
 }
 

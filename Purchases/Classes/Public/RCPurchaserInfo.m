@@ -10,7 +10,8 @@
 
 @interface RCPurchaserInfo ()
 
-@property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDates;
+@property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDatesByProduct;
+@property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDateByEntitlement;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic) NSString *originalApplicationVersion;
 
@@ -39,26 +40,16 @@ static dispatch_once_t onceToken;
             dateFormatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
             dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ssZ";
         });
-        
-        NSMutableDictionary<NSString *, NSDate *> *dates = [NSMutableDictionary new];
 
         NSDictionary *subscriptions = subscriberData[@"subscriptions"];
         if (subscriptions == nil) {
             return nil;
         }
 
-        for (NSString *productID in subscriptions) {
-            NSString *dateString = subscriptions[productID][@"expires_date"];
-            NSDate *date = [dateFormatter dateFromString:dateString];
+        self.expirationDatesByProduct = [self parseExpirationDate:subscriptions];
 
-            if (date == nil) {
-                return nil;
-            }
-
-            dates[productID] = date;
-        }
-
-        self.expirationDates = [NSDictionary dictionaryWithDictionary:dates];
+        NSDictionary *entitlements = subscriberData[@"entitlements"];
+        self.expirationDateByEntitlement = [self parseExpirationDate:entitlements];
 
         NSDictionary<NSString *, id> *otherPurchases = subscriberData[@"other_purchases"];
         self.nonConsumablePurchases = [NSSet setWithArray:[otherPurchases allKeys]];
@@ -70,29 +61,52 @@ static dispatch_once_t onceToken;
     return self;
 }
 
+- (NSDictionary<NSString *, NSDate *> *)parseExpirationDate:(NSDictionary<NSString *, NSDictionary *> *)expirationDates
+{
+    NSMutableDictionary<NSString *, NSDate *> *dates = [NSMutableDictionary new];
+
+    for (NSString *identifier in expirationDates) {
+        NSString *dateString = expirationDates[identifier][@"expires_date"];
+        NSDate *date = [dateFormatter dateFromString:dateString];
+
+        if (date == nil) {
+            return nil;
+        }
+
+        dates[identifier] = date;
+    }
+
+    return [NSDictionary dictionaryWithDictionary:dates];
+}
+
 - (NSSet<NSString *> *)allPurchasedProductIdentifiers
 {
-    return [self.nonConsumablePurchases setByAddingObjectsFromArray:self.expirationDates.allKeys];
+    return [self.nonConsumablePurchases setByAddingObjectsFromArray:self.expirationDatesByProduct.allKeys];
+}
+
+- (NSSet<NSString *> *)activeKeys:(NSDictionary<NSString *, NSDate *> *)dates
+{
+    NSMutableSet *activeSubscriptions = [NSMutableSet setWithCapacity:dates.count];
+
+    for (NSString *productIdentifier in dates) {
+        if (dates[productIdentifier].timeIntervalSinceNow > 0) {
+            [activeSubscriptions addObject:productIdentifier];
+        }
+    }
+
+    return [NSSet setWithSet:activeSubscriptions];
 }
 
 - (NSSet<NSString *> *)activeSubscriptions
 {
-    NSMutableSet *activeSubscriptions = [NSMutableSet setWithCapacity:self.expirationDates.count];
-
-    for (NSString *productIdentifier in self.expirationDates) {
-        if (self.expirationDates[productIdentifier].timeIntervalSinceNow > 0) {
-            [activeSubscriptions addObject:productIdentifier];
-        }
-    }
-    
-    return [NSSet setWithSet:activeSubscriptions];
+    return [self activeKeys:self.expirationDatesByProduct];
 }
 
 - (NSDate * _Nullable)latestExpirationDate
 {
     NSDate *maxDate = nil;
 
-    for (NSDate *date in self.expirationDates.allValues) {
+    for (NSDate *date in self.expirationDatesByProduct.allValues) {
         if (date.timeIntervalSince1970 > maxDate.timeIntervalSince1970) {
             maxDate = date;
         }
@@ -103,8 +117,19 @@ static dispatch_once_t onceToken;
 
 - (NSDate *)expirationDateForProductIdentifier:(NSString *)productIdentifier
 {
-    return self.expirationDates[productIdentifier];
+    return self.expirationDatesByProduct[productIdentifier];
 }
+
+- (NSSet<NSString *> *)activeEntitlements
+{
+    return [self activeKeys:self.expirationDateByEntitlement];
+}
+
+- (NSDate *)expirationDateForEntitlement:(NSString *)entitlementId
+{
+    return self.expirationDateByEntitlement[entitlementId];
+}
+
 
 - (NSDictionary * _Nonnull)JSONObject {
     return self.originalData;

@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility;
+@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCEntitlement;
 
 FOUNDATION_EXPORT NSErrorDomain const RCBackendErrorDomain;
 
@@ -35,6 +35,8 @@ typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
 
 typedef void(^RCIntroEligibilityResponseHandler)(NSDictionary<NSString *,
                                                  RCIntroEligibility *> *);
+
+typedef void(^RCEntitlementResponseHandler)(NSDictionary<NSString *, RCEntitlement *> *);
 
 @interface RCBackend : NSObject
 
@@ -60,6 +62,9 @@ typedef void(^RCIntroEligibilityResponseHandler)(NSDictionary<NSString *,
                            receiptData:(NSData * _Nullable)receiptData
                     productIdentifiers:(NSArray<NSString *> *)productIdentifiers
                             completion:(RCIntroEligibilityResponseHandler)completion;
+
+- (void)getEntitlementsForAppUserID:(NSString *)appUserID
+                         completion:(RCEntitlementResponseHandler)completion;
 
 @end
 
