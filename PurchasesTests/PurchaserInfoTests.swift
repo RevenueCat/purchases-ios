@@ -141,4 +141,8 @@ class BasicPurchaerInfoTests: XCTestCase {
         let entitlements = purchaserInfo!.activeEntitlements
         expect(entitlements).to(contain("forever_pro"));
     }
+
+    func testExpirationLifetime() {
+        expect(self.purchaserInfo!.expirationDate(forEntitlement: "forever_pro")).to(beNil())
+    }
 }
