@@ -19,15 +19,17 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
 
 /**
  `RCPurchases` is the entry point for Purchases.framework. It should be instantiated as soon as your app has a unique user id for your user. This can be when a user logs in if you have accounts or on launch if you can generate a random user identifier.
+
+ @warning Only one instance of RCPurchases should be instantiated at a time!
  */
 @interface RCPurchases : NSObject
 
 /**
  Initializes an `RCPurchases` object with specified API key.
 
- @note Use this initializer if your app does not have an account system. `Purchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`.
+ @note Use this initializer if your app does not have an account system. `RCPurchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`. This also affects the behavior of `restoreTransactionsForAppStoreAccount`.
 
- @param APIKey The API Key generated for your app from https://www.revenuecat.com/
+ @param APIKey The API Key generated for your app from https://app.revenuecat.com/
 
  @return An instantiated `RCPurchases` object
  */
@@ -36,11 +38,11 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
 /**
  Initializes an `RCPurchases` object with specified API key and app user ID.
 
- @note Best practice is to use a salted hash of your unique app user ids for improved privacy.
+ @note Best practice is to use a salted hash of your unique app user ids.
 
- @warning Use this initializer if you have your own user identifiers that you manage, such as in the case that you have an account system that you manage.
+ @warning Use this initializer if you have your own user identifiers that you manage.
 
- @param APIKey The API Key generated for your app from https://www.revenuecat.com/
+ @param APIKey The API Key generated for your app from https://app.revenuecat.com/
 
  @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
 
@@ -50,10 +52,10 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
                                appUserID:(NSString * _Nullable)appUserID;
 
 /**
- Initializes an `RCPurchases` object with a custom userDefaults. Use this contructor if you want to sync status across
+ Initializes an `RCPurchases` object with a custom userDefaults. Use this constructor if you want to sync status across
  a shared container, such as between a host app and an extension.
 
- @param APIKey The API Key generated for your app from https://www.revenuecat.com/
+ @param APIKey The API Key generated for your app from https://app.revenuecat.com/
 
  @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
 
@@ -68,18 +70,26 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
 @property (nonatomic, readonly) NSString *appUserID;
 
 /**
- Delegate for `RCPurchases` instance. Object is responsible for handling completed purchases and updated subscription information.
+ Delegate for `RCPurchases` instance. The delegate is responsible for handling completed purchases and updated purchaser information.
 
- @note `RCPurchases` will not listen for any `SKTransactions` until the delegate is set. This prevents `SKTransactions` from being processed before your app is ready to handle them.
+ @note `RCPurchases` will not listen for any purchases until the delegate is set. This prevents transactions from being processed before your app is ready to handle them.
  */
 @property (nonatomic, weak) id<RCPurchasesDelegate> _Nullable delegate;
 
+/**
+ Fetch the configured entitlements for this user. Entitlements allows you to configure your in-app products via RevenueCat
+ and greatly simplifies management. See the guide (https://docs.revenuecat.com/v1.0/docs/entitlements) for more info.
+
+ Entitlements will be fetched and cached on instantiation so that, by the time they are needed, your prices are
+ loaded for your purchase flow. Time is money.
+
+ @param completion A completion block called when entitlements is available. Called immediately if entitlements are cached.
+ */
 - (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *))completion;
 
 /**
- Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.
-
- @note You may wish to do this soon after app initialization and store the result to speed up your in app purchase experience. Slow purchase screens lead to decreased conversions.
+ Fetches the `SKProducts` for your IAPs for given `productIdentifiers`. Use this method if you aren't using `-entitlements:`.
+ You should use entitlements though.
 
  @note `completion` may be called without `SKProduct`s that you are expecting. This is usually caused by iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect. Also ensure that you have an active developer program subscription and you have signed the latest paid application agreements.
 
@@ -105,7 +115,10 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
 /**
  This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user. Going forward, either `appUserID` will be able to reference the same user.
 
- Triggers purchases:receivedUpdatedPurchaserInfo: delegate method to be called.
+ You shouldn't use this method if you have your own account system. In that case "restoration" is provided by your app passing
+ the same `appUserId` used to purchase originally.
+
+ Triggers `-purchases:receivedUpdatedPurchaserInfo:` delegate method to be called.
 
  @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI.
  */
@@ -145,7 +158,7 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
 @required
 
 /**
- Called when a transaction has been succesfully posted to the backend. This will be called in response to `makePurchase:` call but can also occur at other times, especially when dealing with subscriptions.
+ Called when a transaction has been succesfully posted to the backend. This will be called in response to `makePurchase:` call but can also occur when a subscription renews.
 
  @param purchases Related `RCPurchases` object
  @param transaction The transaction that was approved by `StoreKit` and verified by the backend
@@ -156,7 +169,7 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
   withUpdatedInfo:(RCPurchaserInfo *)purchaserInfo;
 
 /**
- Called when a `transaction` fails to complete purchase with `StoreKit` or fails to be posted to the backend. The `localizedDescription` of `failureReason` will contain a message that may be useful for displaying to the user. Be sure to dismiss any purchasing UI if this method is called. This method can also be called at any time but outside of a purchasing context there often isn't much to do.
+ Called when a `transaction` fails to complete a purchase with `StoreKit` or fails to be posted to the backend. The `localizedDescription` of `failureReason` will contain a message that may be useful for displaying to the user. Be sure to dismiss any purchasing UI if this method is called. This method can also be called at any time but outside of a purchasing context there often isn't much to do.
 
  @param purchases Related `RCPurchases` object
  @param transaction The transaction that failed to complete
