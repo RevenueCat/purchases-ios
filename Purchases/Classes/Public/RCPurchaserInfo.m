@@ -11,7 +11,7 @@
 @interface RCPurchaserInfo ()
 
 @property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDatesByProduct;
-@property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDateByEntitlement;
+@property (nonatomic) NSDictionary<NSString *, NSObject *> *expirationDateByEntitlement;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic) NSString *originalApplicationVersion;
 
@@ -63,17 +63,20 @@ static dispatch_once_t onceToken;
 
 - (NSDictionary<NSString *, NSDate *> *)parseExpirationDate:(NSDictionary<NSString *, NSDictionary *> *)expirationDates
 {
-    NSMutableDictionary<NSString *, NSDate *> *dates = [NSMutableDictionary new];
+    NSMutableDictionary<NSString *, NSObject *> *dates = [NSMutableDictionary new];
 
     for (NSString *identifier in expirationDates) {
-        NSString *dateString = expirationDates[identifier][@"expires_date"];
-        NSDate *date = [dateFormatter dateFromString:dateString];
+        id dateString = expirationDates[identifier][@"expires_date"];
 
-        if (date == nil) {
-            return nil;
+        if ([dateString isKindOfClass:NSString.class]) {
+            NSDate *date = [dateFormatter dateFromString:(NSString *)dateString];
+
+            if (date != nil) {
+                dates[identifier] = date;
+            }
+        } else {
+            dates[identifier] = [NSNull null];
         }
-
-        dates[identifier] = date;
     }
 
     return [NSDictionary dictionaryWithDictionary:dates];
@@ -84,12 +87,13 @@ static dispatch_once_t onceToken;
     return [self.nonConsumablePurchases setByAddingObjectsFromArray:self.expirationDatesByProduct.allKeys];
 }
 
-- (NSSet<NSString *> *)activeKeys:(NSDictionary<NSString *, NSDate *> *)dates
+- (NSSet<NSString *> *)activeKeys:(NSDictionary<NSString *, NSObject *> *)dates
 {
     NSMutableSet *activeSubscriptions = [NSMutableSet setWithCapacity:dates.count];
 
     for (NSString *productIdentifier in dates) {
-        if (dates[productIdentifier].timeIntervalSinceNow > 0) {
+        NSObject *dateOrNull = dates[productIdentifier];
+        if ([dateOrNull isKindOfClass:NSNull.class] || ((NSDate *)dateOrNull).timeIntervalSinceNow > 0) {
             [activeSubscriptions addObject:productIdentifier];
         }
     }
@@ -125,9 +129,10 @@ static dispatch_once_t onceToken;
     return [self activeKeys:self.expirationDateByEntitlement];
 }
 
-- (NSDate *)expirationDateForEntitlement:(NSString *)entitlementId
+- (NSDate * _Nullable)expirationDateForEntitlement:(NSString *)entitlementId
 {
-    return self.expirationDateByEntitlement[entitlementId];
+    NSObject *dateOrNull = self.expirationDateByEntitlement[entitlementId];
+    return [dateOrNull isKindOfClass:NSNull.class] ? nil : (NSDate *)dateOrNull;
 }
 
 
