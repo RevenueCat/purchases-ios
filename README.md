@@ -7,6 +7,8 @@
 
 Purchases is a client for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system. It is an open source framework that provides a wrapper around `StoreKit` and the RevenueCat backend to make implementing iOS in app purchases easy.
 
+Check out the [getting started guide](https://docs.revenuecat.com/v1.0/docs/getting-started-1).
+
 
 ## Installation
 
@@ -33,126 +35,48 @@ Go to [RevenueCat](http://www.revenuecat.com), create an account, and obtain an 
 ```swift
 import Purchases
 
-self.purchases = RCPurchases(apiKey: "myappapikey",
-                             appUserID: "uniqueidforuser")!
+let purchases = RCPurchases(apiKey: "myappapikey")!
+purchases.delegate = self;
 ```
 
 ```obj-c
-#import <Purchases/Purchases.h>
+@import Purchases
 
-RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:@"myappAPIKey"
-                                                   appUserID:@"uniqueidforuser"];
+RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:@"myappAPIKey"];
+purchases.delegate = self;
 ```
 
-#### 3. Create a delegate to handle new purchases and purchaser info.
+#### 3. Make a purchase
 
 ```swift
-self.purchases.delegate = self
+purchases.entitlements({ (entitlements) in
+  let product = entitlements["pro"].offerings["monthly"]!.activeProduct
+  purchases.makePurchase(product)
+})
 
-func purchases(_ purchases: RCPurchases,
-          completedTransaction transaction: SKPaymentTransaction,
-          withUpdatedInfo purchaserInfo: RCPurchaserInfo) {
-  DispatchQueue.main.async {
-    self.handleNewPurchaserInfo(info: purchaserInfo)
-  }
-}
+```
 
-func purchases(_ purchases: RCPurchases,
-                   failedTransaction transaction: SKPaymentTransaction,
-                   withReason failureReason: Error) {
-  DispatchQueue.main.async {
-    displayErrorMessage((failureReason as! NSError).localizedDescription)
-  }
-}
+```obj-c
+[purchases entitlements:^(NSDictionary *entitlements) {
+  SKProduct *product = entitlements[@"pro"].offerings[@"monthly"].activeProduct;
+  [purchases makePurchase:product];
+}];
+```
 
-func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
-  DispatchQueue.main.async {
-    handleNewPurchaserInfo(info: purchaserInfo)
+#### 4. Unlock Entitlements
+```swift
+func purchases(_ purchases: RCPurchases, completedTransaction transaction: SKPaymentTransaction, withUpdatedInfo purchaserInfo: RCPurchaserInfo) {
+  if (purchaseInfo.activeEntitlements.contains("pro")) {
+    // Unlock that great "pro" content.
   }
 }
 ```
 
 ```obj-c
-purchases.delegate = delegateObject;
-
 - (void)purchases:(RCPurchases *)purchases
-    completedTransaction:(SKPaymentTransaction *)transaction
-         withUpdatedInfo:(RCPurchaserInfo *)purchaserInfo {
-         [self saveNewPurchaserInfo:purchaserInfo];
-}
-
-- (void)purchases:(RCPurchases *)purchases 
-failedTransaction:(SKPaymentTransaction *)transaction 
-       withReason:(NSError *)failureReason {
-       [self displayErrorMessage:failureReason.localizedDescription];
-}
-
-- (void)purchases:(RCPurchases *)purchases receivedUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo {
-  [self saveNewPurchaserInfo:purchaserInfo]; 
+completedTransaction:(SKPaymentTransaction *)transaction
+  withUpdatedInfo:(RCPurchaserInfo *)purchaserInfo {  
+  [purchaserInfo.activeEntitlements containsObject:@"pro"];
 }
 
 ```
-
-#### 4. Fetch products
-```swift
-
-productIDs = /* */
-
-self.purchases.products(withIdentifiers: productIDs) { (products) in
-  if products.count == 0 {
-    displayErrorMessage:("Error fetching products")
-  } else {
-    let mySubscriptionProduct = products[0]
-    displayProduct(mySubscriptionProduct);
-  }
-}
-
-```
-
-```obj-c
-
-NSArray *myProductIDs = @["com.myapp.subscription_product"];
-
-[self.purchases productsWithIdentifiers:myProductIDs completion:^(NSArray<SKProduct *> * _Nonnull products) {
-  if (products.count == 0) {
-    [self displayErrorMessage:@"Error fetching products"];
-  } else {
-    SKProduct *mySubscriptionProduct = products[0];
-    [self displayProduct:mySubscriptionProduct];
-  }
-}]
-
-```
-
-#### 5. Make a purchase
-```swift
-self.purchases.makePurchase(mySubscriptionProduct)
-```
-
-```obj-c
-[purchases makePurchase:mySubscriptionProduct];
-```
-
-#### 7. Handle user information updates
-The latest purchaser information can come at any time, be prepared to receive it
-
-```swift
-func purchases(_ purchases: RCPurchases,
-               receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
-    DispatchQueue.main.async {
-      self.handleNewPurchaserInfo(info: purchaserInfo)
-    }
-}
-```
-
-```obj-c
-- (void)purchases:(RCPurchases *)purchases receivedUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self handleNewPurchaserInfo:purchaserInfo];
-    });
-}
-```
-
-#### 6. Make $$$
-
-That's it. RevenueCat will handle all purchase verification and purchase tracking for you so you can focus on building your app.
