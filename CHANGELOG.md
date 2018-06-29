@@ -1,3 +1,6 @@
+## 1.0.1
+- Fix a bug with parsing dates for Thai locales
+
 ## 1.0.0
 - Oh my oh whoa! We made it to version one point oh!
 - Entitlements now supported by the SDK. See [the guide](https://docs.revenuecat.com/v1.0/docs/entitlements) for more info.
