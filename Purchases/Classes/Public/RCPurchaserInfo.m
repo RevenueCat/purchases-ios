@@ -39,6 +39,7 @@ static dispatch_once_t onceToken;
             dateFormatter = [[NSDateFormatter alloc] init];
             dateFormatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
             dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ssZ";
+            dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
         });
 
         NSDictionary *subscriptions = subscriberData[@"subscriptions"];
