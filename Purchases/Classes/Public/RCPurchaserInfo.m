@@ -42,8 +42,6 @@ static dispatch_once_t onceToken;
             dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
         });
 
-        NSLog(@"%@", dateFormatter.locale.localeIdentifier);
-
         NSDictionary *subscriptions = subscriberData[@"subscriptions"];
         if (subscriptions == nil) {
             return nil;
