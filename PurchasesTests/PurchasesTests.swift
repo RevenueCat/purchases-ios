@@ -32,8 +32,12 @@ class PurchasesTests: XCTestCase {
 
     class MockRequestFetcher: RCStoreKitRequestFetcher {
         var refreshReceiptCalled = false
-
+        var failProducts = false
         override func fetchProducts(_ identifiers: Set<String>, completion: @escaping RCFetchProductsCompletionHandler) {
+            if (failProducts) {
+                completion([SKProduct]())
+                return
+            }
             let products = identifiers.map { (identifier) -> MockProduct in
                 MockProduct(mockProductIdentifier: identifier)
             }
@@ -108,12 +112,17 @@ class PurchasesTests: XCTestCase {
                 eligibilities[productID] = RCIntroEligibility(eligibilityStatus: RCIntroEligibityStatus.eligible)
             }
 
-            completion(eligibilities);
+            completion(eligibilities)
         }
 
+        var failEntitlements = false
         var gotEntitlements = 0
         override func getEntitlementsForAppUserID(_ appUserID: String, completion: @escaping RCEntitlementResponseHandler) {
             gotEntitlements += 1
+            if (failEntitlements) {
+                completion(nil)
+                return
+            }
 
             let offering = RCOffering()
             offering.activeProductIdentifier = "monthly_freetrial"
@@ -851,6 +860,32 @@ class PurchasesTests: XCTestCase {
         let pro = e["pro"]!;
         expect(pro.offerings["monthly"]).toNot(beNil())
         expect(pro.offerings["monthly"]?.activeProduct).toNot(beNil())
+
+    }
+
+    func testFailBackendEntitlementsReturnsNil() {
+        self.backend.failEntitlements = true
+        setupPurchases()
+
+        var entitlements: [String : RCEntitlement]?
+        self.purchases?.entitlements({ (newEntitlements) in
+            entitlements = newEntitlements
+        })
+
+        expect(entitlements).toEventually(beNil());
+
+    }
+
+    func testMissingProductDetailsReturnsNil() {
+        requestFetcher.failProducts = true
+        setupPurchases()
+
+        var entitlements: [String : RCEntitlement]?
+        self.purchases?.entitlements({ (newEntitlements) in
+            entitlements = newEntitlements
+        })
+
+        expect(entitlements).toEventually(beNil());
 
     }
 }

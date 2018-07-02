@@ -221,12 +221,16 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     }
 }
 
-- (void)getEntitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *entitlements))completion
+- (void)getEntitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> * _Nullable entitlements))completion
 {
     [self.backend getEntitlementsForAppUserID:self.appUserID
                                    completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
-                                       NSMutableSet *productIdentifiers = [NSMutableSet new];
+                                       if (entitlements == nil) {
+                                           completion(nil);
+                                           return;
+                                       }
 
+                                       NSMutableSet *productIdentifiers = [NSMutableSet new];
                                        [self performOnEachOfferingInEntitlements:entitlements block:^(RCOffering *offering) {
                                            [productIdentifiers addObject:offering.activeProductIdentifier];
                                        }];
@@ -237,9 +241,17 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                                                productsById[p.productIdentifier] = p;
                                            }
 
+                                           __block BOOL productMissing = NO;
+
                                            [self performOnEachOfferingInEntitlements:entitlements block:^(RCOffering *offering) {
                                                offering.activeProduct = productsById[offering.activeProductIdentifier];
+                                               productMissing |= (offering.activeProduct == nil);
                                            }];
+
+                                           if (productMissing) {
+                                               completion(nil);
+                                               return;
+                                           }
 
                                            if (entitlements != nil) {
                                                self.cachedEntitlements = entitlements;

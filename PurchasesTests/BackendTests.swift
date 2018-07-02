@@ -567,5 +567,19 @@ class BackendTests: XCTestCase {
         expect(entitlements!["pro"]?.offerings["annual"]?.activeProduct).toEventually(beNil())
         expect(entitlements!["pro"]?.offerings["annual"]?.activeProductIdentifier).toEventually(equal("annual_freetrial"))
     }
+
+    func testGetEntitlementsFailSendsNil() {
+        let response = HTTPResponse(statusCode: 500, response: oneEntitlementResponse, error: nil)
+        let path = "/subscribers/" + userID + "/products"
+        httpClient.mock(requestPath: path, response: response)
+
+        var entitlements: [String : RCEntitlement]?
+
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements) in
+            entitlements = newEntitlements
+        })
+
+        expect(entitlements).toEventually(beNil());
+    }
     
 }
