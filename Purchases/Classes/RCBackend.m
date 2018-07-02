@@ -293,6 +293,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                       if (statusCode < 300) {
                           NSDictionary *entitlements = [self parseEntitlementResponse:response];
                           completion(entitlements);
+                      } else {
+                          completion(nil);
                       }
     }];
 }

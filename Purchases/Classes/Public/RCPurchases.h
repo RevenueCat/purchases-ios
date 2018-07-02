@@ -83,7 +83,7 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
  Entitlements will be fetched and cached on instantiation so that, by the time they are needed, your prices are
  loaded for your purchase flow. Time is money.
 
- @param completion A completion block called when entitlements is available. Called immediately if entitlements are cached.
+ @param completion A completion block called when entitlements is available. Called immediately if entitlements are cached. Entitlements can be nil if an error occurred.
  */
 - (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *))completion;
 

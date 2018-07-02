@@ -36,7 +36,7 @@ typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
 typedef void(^RCIntroEligibilityResponseHandler)(NSDictionary<NSString *,
                                                  RCIntroEligibility *> *);
 
-typedef void(^RCEntitlementResponseHandler)(NSDictionary<NSString *, RCEntitlement *> *);
+typedef void(^RCEntitlementResponseHandler)(NSDictionary<NSString *, RCEntitlement *> * _Nullable);
 
 @interface RCBackend : NSObject
 
