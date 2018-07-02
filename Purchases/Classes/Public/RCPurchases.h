@@ -85,7 +85,7 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
 
  @param completion A completion block called when entitlements is available. Called immediately if entitlements are cached. Entitlements can be nil if an error occurred.
  */
-- (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *))completion;
+- (void)entitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> * _Nullable))completion;
 
 /**
  Fetches the `SKProducts` for your IAPs for given `productIdentifiers`. Use this method if you aren't using `-entitlements:`.

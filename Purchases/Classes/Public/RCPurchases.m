@@ -221,7 +221,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     }
 }
 
-- (void)getEntitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> *entitlements))completion
+- (void)getEntitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> * _Nullable entitlements))completion
 {
     [self.backend getEntitlementsForAppUserID:self.appUserID
                                    completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
