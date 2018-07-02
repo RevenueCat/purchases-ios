@@ -26,7 +26,7 @@ static dispatch_once_t onceToken;
 
 - (instancetype _Nullable)initWithData:(NSDictionary *)data
 {
-    if (self == [super init]) {
+    if (self = [super init]) {
         if (data[@"subscriber"] == nil) {
             return nil;
         }
