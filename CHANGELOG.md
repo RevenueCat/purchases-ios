@@ -1,3 +1,7 @@
+## 1.0.2
+- Improved error handling for fetching entitlements
+- Delegate methods are now guaranteed to run on the main thread
+
 ## 1.0.1
 - Fix a bug with parsing dates for Thai locales
 
