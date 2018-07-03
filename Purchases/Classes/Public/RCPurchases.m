@@ -323,21 +323,23 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                            purchaserInfo:(RCPurchaserInfo * _Nullable)info
                                    error:(NSError * _Nullable)error
 {
-    if (info) {
-        [self cachePurchaserInfo:info];
-        [self.delegate purchases:self
-            completedTransaction:transaction
-                 withUpdatedInfo:info];
-        [self.storeKitWrapper finishTransaction:transaction];
-    } else if (error.code == RCFinishableError) {
-        [self.delegate purchases:self failedTransaction:transaction withReason:error];
-        [self.storeKitWrapper finishTransaction:transaction];
-    } else if (error.code == RCUnfinishableError) {
-        [self.delegate purchases:self failedTransaction:transaction withReason:error];
-    } else {
-        RCLog(@"Unexpected error from backend");
-        [self.delegate purchases:self failedTransaction:transaction withReason:error];
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (info) {
+            [self cachePurchaserInfo:info];
+            [self.delegate purchases:self
+                completedTransaction:transaction
+                     withUpdatedInfo:info];
+            [self.storeKitWrapper finishTransaction:transaction];
+        } else if (error.code == RCFinishableError) {
+            [self.delegate purchases:self failedTransaction:transaction withReason:error];
+            [self.storeKitWrapper finishTransaction:transaction];
+        } else if (error.code == RCUnfinishableError) {
+            [self.delegate purchases:self failedTransaction:transaction withReason:error];
+        } else {
+            RCLog(@"Unexpected error from backend");
+            [self.delegate purchases:self failedTransaction:transaction withReason:error];
+        }
+    });
 }
 
 /*
@@ -353,7 +355,9 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
             break;
         }
         case SKPaymentTransactionStateFailed: {
-            [self.delegate purchases:self failedTransaction:transaction withReason:transaction.error];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.delegate purchases:self failedTransaction:transaction withReason:transaction.error];
+            });
             [self.storeKitWrapper finishTransaction:transaction];
             break;
         }
@@ -398,12 +402,15 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (void)handleUpdatedPurchaserInfo:(RCPurchaserInfo * _Nullable)info error:(NSError * _Nullable)error
 {
-    if (error) {
-        [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
-    } else if (info) {
-        [self cachePurchaserInfo:info];
-        [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
-    }
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (error) {
+            [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
+        } else if (info) {
+            [self cachePurchaserInfo:info];
+            [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+        }
+    });
 }
 
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction
