@@ -141,6 +141,12 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
  */
 - (void)updateOriginalApplicationVersion;
 
+/**
+ Forces a refresh of the purchaser info. This will happen automatically in most cases and shouldn't be called.
+ Triggers purchases:receivedUpdatedPurchaserInfo: delegate method to be called;
+ */
+- (void)updatePurchaserInfo;
+
 
 /**
  This version of the Purchases framework
