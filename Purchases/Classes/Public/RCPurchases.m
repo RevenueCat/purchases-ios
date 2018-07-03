@@ -278,7 +278,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     }];
 }
 
-- (void)updatedPurchaserInfo
+- (void)updatePurchaserInfo
 {
     [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable purchaserInfo, NSError * _Nullable error) {
 
