@@ -1,3 +1,6 @@
+## 1.0.3
+- Fix version number in Plist
+
 ## 1.0.2
 - Improved error handling for fetching entitlements
 - Delegate methods are now guaranteed to run on the main thread
