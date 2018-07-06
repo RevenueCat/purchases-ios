@@ -1,3 +1,6 @@
+## 1.0.4
+- Fix version number in Plist for real
+
 ## 1.0.3
 - Fix version number in Plist
 
