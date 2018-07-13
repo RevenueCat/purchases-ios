@@ -299,4 +299,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     }];
 }
 
+- (void)postAttributionData:(NSDictionary *)data
+               forAppUserID:(NSString *)appUserID
+{
+    
+}
+
 @end

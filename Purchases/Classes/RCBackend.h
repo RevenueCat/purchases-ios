@@ -66,6 +66,9 @@ typedef void(^RCEntitlementResponseHandler)(NSDictionary<NSString *, RCEntitleme
 - (void)getEntitlementsForAppUserID:(NSString *)appUserID
                          completion:(RCEntitlementResponseHandler)completion;
 
+- (void)postAttributionData:(NSDictionary *)data
+               forAppUserID:(NSString *)appUserID;
+
 @end
 
 NS_ASSUME_NONNULL_END
