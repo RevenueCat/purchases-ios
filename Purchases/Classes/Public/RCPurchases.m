@@ -115,6 +115,13 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     self.delegate = nil;
 }
 
+- (void)addAttributionData:(NSDictionary *)data
+               fromNetwork:(RCAttributionSource)attributionSource
+{
+    
+}
+
+
 @synthesize delegate=_delegate;
 
 - (void)setDelegate:(id<RCPurchasesDelegate>)delegate

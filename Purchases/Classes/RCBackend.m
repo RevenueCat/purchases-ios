@@ -300,6 +300,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 }
 
 - (void)postAttributionData:(NSDictionary *)data
+                fromNetwork:(RCAttributionSource)source
                forAppUserID:(NSString *)appUserID
 {
     
