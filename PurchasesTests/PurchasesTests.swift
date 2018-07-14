@@ -129,6 +129,7 @@ class PurchasesTests: XCTestCase {
             let entitlement = RCEntitlement(offerings: ["monthly" : offering])
             completion(["pro" : entitlement!])
         }
+
         var postedAttributionData: [AnyHashable : Any]?
         var postedAttributionFromSource: RCAttributionSource?
         var postedAttributionAppUserId: String?
@@ -907,6 +908,15 @@ class PurchasesTests: XCTestCase {
 
         self.purchases?.addAttributionData([:], fromNetwork: RCAttributionSource.adjust)
 
-        expect(self.backend.postedAttributionFromSource).toEventually(beNil())
+        expect(self.backend.postedAttributionData).toEventually(beNil())
+    }
+
+    func testPassesTheArrayForAllSources() {
+        setupPurchases()
+        let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
+
+        self.purchases?.addAttributionData(data, fromNetwork: RCAttributionSource.appleSearchAds)
+
+        expect(data.keys).toEventually(equal(self.backend.postedAttributionData?.keys))
     }
 }
