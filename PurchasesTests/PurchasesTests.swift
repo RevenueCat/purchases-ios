@@ -917,6 +917,8 @@ class PurchasesTests: XCTestCase {
 
         self.purchases?.addAttributionData(data, fromNetwork: RCAttributionSource.appleSearchAds)
 
-        expect(data.keys).toEventually(equal(self.backend.postedAttributionData?.keys))
+        expect(self.backend.postedAttributionData?.keys).toEventually(equal(data.keys))
+        expect(self.backend.postedAttributionFromSource).toEventually(equal(RCAttributionSource.appleSearchAds))
+        expect(self.backend.postedAttributionAppUserId).toEventually(equal(self.purchases?.appUserID))
     }
 }
