@@ -303,7 +303,17 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                 fromNetwork:(RCAttributionSource)source
                forAppUserID:(NSString *)appUserID
 {
-    
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attribution", escapedAppUserID];
+
+    [self.httpClient performRequest:@"POST"
+                               path:path
+                               body:@{
+                                      @"source": @(source),
+                                      @"data": data
+                                      }
+                            headers:self.headers
+                  completionHandler:nil];
 }
 
 @end
