@@ -26,8 +26,9 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
  */
 typedef NS_ENUM(NSInteger, RCAttributionSource) {
     RCAttributionSourceAppleSearchAds = 0,
+    RCAttributionSourceAdjust,
     RCAttributionSourceAppsFlyer,
-    RCAttributionSourceAdjust
+    RCAttributionSourceAppsBranch
 };
 
 /**
