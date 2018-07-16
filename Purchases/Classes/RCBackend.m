@@ -300,7 +300,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 }
 
 - (void)postAttributionData:(NSDictionary *)data
-                fromNetwork:(RCAttributionSource)source
+                fromNetwork:(RCAttributionSource)network
                forAppUserID:(NSString *)appUserID
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
@@ -309,7 +309,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     [self.httpClient performRequest:@"POST"
                                path:path
                                body:@{
-                                      @"source": @(source),
+                                      @"network": @(network),
                                       @"data": data
                                       }
                             headers:self.headers
