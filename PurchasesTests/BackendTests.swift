@@ -600,7 +600,7 @@ class BackendTests: XCTestCase {
 
         let call = self.httpClient.calls[0];
         expect(call.body?.keys).to(contain("data"))
-        expect(call.body?.keys).to(contain("source"))
+        expect(call.body?.keys).to(contain("network"))
 
         let postedData = call.body?["data"] as! [ String : String ];
         expect(postedData.keys).to(equal(data.keys))
