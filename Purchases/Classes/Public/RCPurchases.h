@@ -28,7 +28,7 @@ typedef NS_ENUM(NSInteger, RCAttributionSource) {
     RCAttributionSourceAppleSearchAds = 0,
     RCAttributionSourceAdjust,
     RCAttributionSourceAppsFlyer,
-    RCAttributionSourceAppsBranch
+    RCAttributionSourceBranch
 };
 
 /**
