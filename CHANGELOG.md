@@ -1,3 +1,9 @@
+## 1.0.5
+- Fix for entitlements will now have null active products if the product is not available from StoreKit
+
+## 1.0.4
+- Fix version number in Plist for real
+
 ## 1.0.3
 - Fix version number in Plist
 
