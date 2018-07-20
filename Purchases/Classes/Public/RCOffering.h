@@ -12,6 +12,8 @@
 
 @interface RCOffering : NSObject
 
-@property (readonly) SKProduct *activeProduct;
+// The active product, this will be null if the product is not available, usually because it has not been approved
+// for sale
+@property (readonly) SKProduct * _Nullable activeProduct;
 
 @end

@@ -889,7 +889,7 @@ class PurchasesTests: XCTestCase {
             entitlements = newEntitlements
         })
 
-        expect(entitlements).toEventually(beNil());
-
+        expect(entitlements).toEventuallyNot(beNil());
+        expect(entitlements).toEventually(haveCount(1))
     }
 }

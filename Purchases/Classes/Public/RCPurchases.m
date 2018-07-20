@@ -241,17 +241,9 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                                                productsById[p.productIdentifier] = p;
                                            }
 
-                                           __block BOOL productMissing = NO;
-
                                            [self performOnEachOfferingInEntitlements:entitlements block:^(RCOffering *offering) {
                                                offering.activeProduct = productsById[offering.activeProductIdentifier];
-                                               productMissing |= (offering.activeProduct == nil);
                                            }];
-
-                                           if (productMissing) {
-                                               completion(nil);
-                                               return;
-                                           }
 
                                            if (entitlements != nil) {
                                                self.cachedEntitlements = entitlements;
