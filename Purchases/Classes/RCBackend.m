@@ -299,4 +299,21 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     }];
 }
 
+- (void)postAttributionData:(NSDictionary *)data
+                fromNetwork:(RCAttributionSource)network
+               forAppUserID:(NSString *)appUserID
+{
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attribution", escapedAppUserID];
+
+    [self.httpClient performRequest:@"POST"
+                               path:path
+                               body:@{
+                                      @"network": @(network),
+                                      @"data": data
+                                      }
+                            headers:self.headers
+                  completionHandler:nil];
+}
+
 @end

@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
 
+#import "Purchases.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCEntitlement;
@@ -65,6 +67,10 @@ typedef void(^RCEntitlementResponseHandler)(NSDictionary<NSString *, RCEntitleme
 
 - (void)getEntitlementsForAppUserID:(NSString *)appUserID
                          completion:(RCEntitlementResponseHandler)completion;
+
+- (void)postAttributionData:(NSDictionary *)data
+                fromNetwork:(RCAttributionSource)source
+               forAppUserID:(NSString *)appUserID;
 
 @end
 

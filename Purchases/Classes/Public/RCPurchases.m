@@ -74,7 +74,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 }
 
 + (NSString *)frameworkVersion {
-    return @"1.1.0-SNAPSHOT";
+    return @"1.1.0";
 }
 
 - (instancetype _Nullable)initWithAppUserID:(NSString *)appUserID
@@ -114,6 +114,17 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 {
     self.delegate = nil;
 }
+
+- (void)addAttributionData:(NSDictionary *)data
+               fromNetwork:(RCAttributionSource)network
+{
+    if (data.count > 0) {
+        [self.backend postAttributionData:data
+                              fromNetwork:network
+                             forAppUserID:self.appUserID];
+    }
+}
+
 
 @synthesize delegate=_delegate;
 

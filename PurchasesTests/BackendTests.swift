@@ -42,7 +42,9 @@ class BackendTests: XCTestCase {
 
             if shouldFinish {
                 DispatchQueue.main.async {
-                    completionHandler!(response.statusCode, response.response, response.error)
+                    if completionHandler != nil {
+                        completionHandler!(response.statusCode, response.response, response.error)
+                    }
                 }
             }
         }
@@ -581,5 +583,26 @@ class BackendTests: XCTestCase {
 
         expect(entitlements).toEventually(beNil());
     }
-    
+
+    func testPostAttributesPutsDataInDataKey() {
+        let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
+        let path = "/subscribers/" + userID + "/attribution"
+        httpClient.mock(requestPath: path, response: response)
+
+        let data = ["a" : "b", "c" : "d"];
+
+        backend?.postAttributionData(data, fromNetwork: RCAttributionSource.appleSearchAds, forAppUserID: userID)
+
+        expect(self.httpClient.calls.count).to(equal(1))
+        if (self.httpClient.calls.count == 0) {
+            return
+        }
+
+        let call = self.httpClient.calls[0];
+        expect(call.body?.keys).to(contain("data"))
+        expect(call.body?.keys).to(contain("network"))
+
+        let postedData = call.body?["data"] as! [ String : String ];
+        expect(postedData.keys).to(equal(data.keys))
+    }
 }

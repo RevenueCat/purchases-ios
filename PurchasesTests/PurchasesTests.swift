@@ -129,6 +129,16 @@ class PurchasesTests: XCTestCase {
             let entitlement = RCEntitlement(offerings: ["monthly" : offering])
             completion(["pro" : entitlement!])
         }
+
+        var postedAttributionData: [AnyHashable : Any]?
+        var postedAttributionFromSource: RCAttributionSource?
+        var postedAttributionAppUserId: String?
+        override func postAttributionData(_ data: [AnyHashable : Any], fromNetwork source: RCAttributionSource, forAppUserID appUserID: String) {
+            postedAttributionData = data
+            postedAttributionAppUserId = appUserID
+            postedAttributionFromSource = source
+        }
+
     }
 
     class MockStoreKitWrapper: RCStoreKitWrapper {
@@ -891,5 +901,24 @@ class PurchasesTests: XCTestCase {
 
         expect(entitlements).toEventuallyNot(beNil());
         expect(entitlements).toEventually(haveCount(1))
+    }
+
+    func testAddAttributionDoesntCallEmptyDict() {
+        setupPurchases()
+
+        self.purchases?.addAttributionData([:], fromNetwork: RCAttributionSource.adjust)
+
+        expect(self.backend.postedAttributionData).toEventually(beNil())
+    }
+
+    func testPassesTheArrayForAllSources() {
+        setupPurchases()
+        let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
+
+        self.purchases?.addAttributionData(data, fromNetwork: RCAttributionSource.appleSearchAds)
+
+        expect(self.backend.postedAttributionData?.keys).toEventually(equal(data.keys))
+        expect(self.backend.postedAttributionFromSource).toEventually(equal(RCAttributionSource.appleSearchAds))
+        expect(self.backend.postedAttributionAppUserId).toEventually(equal(self.purchases?.appUserID))
     }
 }
