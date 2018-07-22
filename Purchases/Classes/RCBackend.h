@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
 
-#import "Purchases.h"
+#import "RCPurchases.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
