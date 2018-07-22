@@ -300,7 +300,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 }
 
 - (void)postAttributionData:(NSDictionary *)data
-                fromNetwork:(RCAttributionSource)network
+                fromNetwork:(RCAttributionNetwork)network
                forAppUserID:(NSString *)appUserID
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];

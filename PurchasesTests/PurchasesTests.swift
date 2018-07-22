@@ -131,12 +131,12 @@ class PurchasesTests: XCTestCase {
         }
 
         var postedAttributionData: [AnyHashable : Any]?
-        var postedAttributionFromSource: RCAttributionSource?
+        var postedAttributionFromNetwork: RCAttributionNetwork?
         var postedAttributionAppUserId: String?
-        override func postAttributionData(_ data: [AnyHashable : Any], fromNetwork source: RCAttributionSource, forAppUserID appUserID: String) {
+        override func postAttributionData(_ data: [AnyHashable : Any], from network: RCAttributionNetwork, forAppUserID appUserID: String) {
             postedAttributionData = data
             postedAttributionAppUserId = appUserID
-            postedAttributionFromSource = source
+            postedAttributionFromNetwork = network
         }
 
     }
@@ -906,7 +906,7 @@ class PurchasesTests: XCTestCase {
     func testAddAttributionDoesntCallEmptyDict() {
         setupPurchases()
 
-        self.purchases?.addAttributionData([:], fromNetwork: RCAttributionSource.adjust)
+        self.purchases?.addAttributionData([:], from: RCAttributionNetwork.adjust)
 
         expect(self.backend.postedAttributionData).toEventually(beNil())
     }
@@ -915,10 +915,10 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
 
-        self.purchases?.addAttributionData(data, fromNetwork: RCAttributionSource.appleSearchAds)
+        self.purchases?.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds)
 
         expect(self.backend.postedAttributionData?.keys).toEventually(equal(data.keys))
-        expect(self.backend.postedAttributionFromSource).toEventually(equal(RCAttributionSource.appleSearchAds))
+        expect(self.backend.postedAttributionFromNetwork).toEventually(equal(RCAttributionNetwork.appleSearchAds))
         expect(self.backend.postedAttributionAppUserId).toEventually(equal(self.purchases?.appUserID))
     }
 }
