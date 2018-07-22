@@ -1,5 +1,5 @@
 ## 1.1.0
-- Attribution! You can now pass attribution data from Apple Search Ads, AppsFlyer, Adust and Branch. You can then few the ROI of your campaigns, including revenue coming from referrals. 
+- Attribution! You can now pass attribution data from Apple Search Ads, AppsFlyer, Adjust and Branch. You can then view the ROI of your campaigns, including revenue coming from referrals. 
 
 ## 1.0.5
 - Fix for entitlements will now have null active products if the product is not available from StoreKit
