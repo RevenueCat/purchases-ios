@@ -911,7 +911,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedAttributionData).toEventually(beNil())
     }
 
-    func testPassesTheArrayForAllSources() {
+    func testPassesTheArrayForAllNetworks() {
         setupPurchases()
         let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
 

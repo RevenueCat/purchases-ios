@@ -69,7 +69,7 @@ typedef void(^RCEntitlementResponseHandler)(NSDictionary<NSString *, RCEntitleme
                          completion:(RCEntitlementResponseHandler)completion;
 
 - (void)postAttributionData:(NSDictionary *)data
-                fromNetwork:(RCAttributionNetwork)source
+                fromNetwork:(RCAttributionNetwork)network
                forAppUserID:(NSString *)appUserID;
 
 @end
