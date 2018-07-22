@@ -116,7 +116,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 }
 
 - (void)addAttributionData:(NSDictionary *)data
-               fromNetwork:(RCAttributionSource)network
+               fromNetwork:(RCAttributionNetwork)network
 {
     if (data.count > 0) {
         [self.backend postAttributionData:data
