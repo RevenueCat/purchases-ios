@@ -25,15 +25,9 @@ Pod::Spec.new do |s|
     'Purchases/Classes/Public/*.m',
   ]
 
-  s.ios.source_files = [
-    'Purchases/Classes/Public/Umbrella/Purchases.h'
-  ]
-
-  s.osx.source_files = [
-    'Purchases/Classes/Public/Umbrella/Purchases_macOS.h'
-  ]
 
   s.public_header_files = [
+    'Purchases/Classes/Public/Umbrella/Purchases.h',
     "Purchases/Classes/Public/*.h"
   ]
 
