@@ -1,3 +1,8 @@
+## 1.1.1
+- Delegate methods now only dispatch if they are not on the main thread. This makes sure the cached PurchaserInfo is delivered on setting the delegate.
+- Allow developer to indicate anonymous ID behavior
+- Add "Purchases.h" to CocoaPods headers
+
 ## 1.1.0
 - Attribution! You can now pass attribution data from Apple Search Ads, AppsFlyer, Adjust and Branch. You can then view the ROI of your campaigns, including revenue coming from referrals. 
 
