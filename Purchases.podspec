@@ -19,6 +19,7 @@ Pod::Spec.new do |s|
   s.osx.deployment_target = '10.12'
 
   s.source_files = [
+    'Purchases/Classes/Public/Umbrella/Purchases.h',
     'Purchases/Classes/*.h',
     'Purchases/Classes/*.m',
     'Purchases/Classes/Public/*.h',
