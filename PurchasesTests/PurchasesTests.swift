@@ -591,9 +591,9 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
 
         notificationCenter.fireNotifications();
-        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1));
-        notificationCenter.fireNotifications();
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2));
+        notificationCenter.fireNotifications();
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(3));
     }
 
     func testRemovesObservationWhenDelegateNild() {
