@@ -34,8 +34,6 @@
 @property (nonatomic) NSDictionary<NSString *, RCEntitlement *> *cachedEntitlements;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
 
-@property (nonatomic) BOOL isUsingAnonymousID;
-
 @end
 
 NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
@@ -477,12 +475,14 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                          currencyCode:nil
                            completion:^(RCPurchaserInfo * _Nullable info,
                                         NSError * _Nullable error) {
-                               if (error) {
-                                   [self.delegate purchases:self failedToRestoreTransactionsWithError:error];
-                               } else if (info) {
-                                   [self cachePurchaserInfo:info];
-                                   [self.delegate purchases:self restoredTransactionsWithPurchaserInfo:info];
-                               }
+                               [self dispatch:^{
+                                   if (error) {
+                                       [self.delegate purchases:self failedToRestoreTransactionsWithError:error];
+                                   } else if (info) {
+                                       [self cachePurchaserInfo:info];
+                                       [self.delegate purchases:self restoredTransactionsWithPurchaserInfo:info];
+                                   }
+                               }];
                            }];
     }];
 }
@@ -492,9 +492,13 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable info,
                                                                              NSError * _Nullable error) {
         if (error) {
-            [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
+            [self dispatch:^{
+                [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
+            }];
         } else if (info.originalApplicationVersion) {
-            [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+            [self dispatch:^{
+                [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+            }];
         } else {
             [self receiptData:^(NSData * _Nonnull data) {
                 [self.backend postReceiptData:data
