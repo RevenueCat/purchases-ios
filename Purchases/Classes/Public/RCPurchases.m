@@ -244,7 +244,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                                            [productIdentifiers addObject:offering.activeProductIdentifier];
                                        }];
 
-                                       [self.requestFetcher fetchProducts:productIdentifiers completion:^(NSArray<SKProduct *> * _Nonnull products) {
+                                       [self productsWithIdentifiers:productIdentifiers.allObjects completion:^(NSArray<SKProduct *> * _Nonnull products) {
                                            NSMutableDictionary *productsById = [NSMutableDictionary new];
                                            for (SKProduct *p in products) {
                                                productsById[p.productIdentifier] = p;
@@ -262,7 +262,6 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
                                            completion(entitlements);
                                        }];
-
     }];
 }
 
