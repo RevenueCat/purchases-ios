@@ -874,7 +874,36 @@ class PurchasesTests: XCTestCase {
         let pro = e["pro"]!;
         expect(pro.offerings["monthly"]).toNot(beNil())
         expect(pro.offerings["monthly"]?.activeProduct).toNot(beNil())
+    }
 
+    func testProductInfoIsCachedForEntitlements() {
+        setupPurchases()
+        expect(self.backend.gotEntitlements).toEventually(equal(1))
+
+        self.purchases?.entitlements({ (newEntitlements) in
+            let product = (newEntitlements?["pro"]?.offerings["monthly"]?.activeProduct)!;
+            self.purchases?.makePurchase(product)
+
+            let transaction = MockTransaction()
+            transaction.mockPayment = self.storeKitWrapper.payment!
+
+            transaction.mockState = SKPaymentTransactionState.purchasing
+            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+            self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+
+            transaction.mockState = SKPaymentTransactionState.purchased
+            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+            expect(self.backend.postReceiptDataCalled).to(equal(true))
+            expect(self.backend.postReceiptData).toNot(beNil())
+
+            expect(self.backend.postedProductID).to(equal(product.productIdentifier))
+            expect(self.backend.postedPrice).to(equal(product.price))
+            expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
+
+            expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
+        })
     }
 
     func testFailBackendEntitlementsReturnsNil() {
