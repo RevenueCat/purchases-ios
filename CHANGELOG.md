@@ -1,3 +1,6 @@
+## 1.1.2
+- Fix to ensure prices are properly collected when using entitlements
+
 ## 1.1.1
 - Delegate methods now only dispatch if they are not on the main thread. This makes sure the cached PurchaserInfo is delivered on setting the delegate.
 - Allow developer to indicate anonymous ID behavior
