@@ -89,7 +89,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
  */
 @property (nonatomic) BOOL isUsingAnonymousID;
 
-/// Default to true, set this to false if you are finishing transactions with your own StoreKit queue listener
+/// Default to YES, set this to NO if you are finishing transactions with your own StoreKit queue listener
 @property (nonatomic) BOOL finishTransactions;
 
 /**
