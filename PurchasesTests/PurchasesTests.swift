@@ -385,6 +385,27 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(equal(true))
         expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
     }
+
+    func testDoesntFinishTransactionsIfFinishingDisbaled() {
+        setupPurchases()
+        self.purchases?.finishTransactions = false
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.makePurchase(product)
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
+    }
     
 
     func testSendsProductInfoIfProductIsCached() {
