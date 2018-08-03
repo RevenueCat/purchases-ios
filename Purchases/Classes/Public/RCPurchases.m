@@ -103,6 +103,8 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
         self.userDefaults = userDefaults;
 
         self.productsByIdentifier = [NSMutableDictionary new];
+
+        self.finishTransactions = YES;
     }
 
     return self;
@@ -329,10 +331,14 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
             [self.delegate purchases:self
                 completedTransaction:transaction
                      withUpdatedInfo:info];
-            [self.storeKitWrapper finishTransaction:transaction];
+            if (self.finishTransactions) {
+                [self.storeKitWrapper finishTransaction:transaction];
+            }
         } else if (error.code == RCFinishableError) {
             [self.delegate purchases:self failedTransaction:transaction withReason:error];
-            [self.storeKitWrapper finishTransaction:transaction];
+            if (self.finishTransactions) {
+                [self.storeKitWrapper finishTransaction:transaction];
+            }
         } else if (error.code == RCUnfinishableError) {
             [self.delegate purchases:self failedTransaction:transaction withReason:error];
         } else {
@@ -358,7 +364,9 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
             [self dispatch:^{
                 [self.delegate purchases:self failedTransaction:transaction withReason:transaction.error];
             }];
-            [self.storeKitWrapper finishTransaction:transaction];
+            if (self.finishTransactions) {
+                [self.storeKitWrapper finishTransaction:transaction];
+            }
             break;
         }
         case SKPaymentTransactionStateDeferred:
