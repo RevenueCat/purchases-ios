@@ -1,3 +1,6 @@
+## 1.1.3
+- Add option for disabling transaction finishing.
+
 ## 1.1.2
 - Fix to ensure prices are properly collected when using entitlements
 
