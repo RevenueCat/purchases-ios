@@ -1,3 +1,6 @@
+## 1.1.4
+- Make RCPurchases initializer return a non-optional
+
 ## 1.1.3
 - Add option for disabling transaction finishing.
 
