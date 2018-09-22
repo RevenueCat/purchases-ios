@@ -191,7 +191,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 
  @note Delegate methods can be called at any time after the `delegate` is set, not just in response to `makePurchase:` calls. Ensure your app is capable of handling completed transactions anytime `delegate` is set.
  */
-@protocol RCPurchasesDelegate
+@protocol RCPurchasesDelegate <NSObject>
 @required
 
 /**

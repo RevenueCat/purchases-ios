@@ -387,7 +387,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
         self.productsByIdentifier[product.productIdentifier] = product;
     }
     
-    if ([(id<NSObject>)self.delegate respondsToSelector:@selector(purchases:shouldPurchasePromoProduct:defermentBlock:)]) {
+    if ([self.delegate respondsToSelector:@selector(purchases:shouldPurchasePromoProduct:defermentBlock:)]) {
         return [self.delegate purchases:self shouldPurchasePromoProduct:product defermentBlock:^{
             [self.storeKitWrapper addPayment:payment];
         }];
