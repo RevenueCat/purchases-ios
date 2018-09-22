@@ -209,7 +209,7 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    class PurchasesDelegate: RCPurchasesDelegate {
+    class PurchasesDelegate: NSObject, RCPurchasesDelegate {
         var completedTransaction: SKPaymentTransaction?
         var purchaserInfo: RCPurchaserInfo?
         func purchases(_ purchases: RCPurchases, completedTransaction transaction: SKPaymentTransaction, withUpdatedInfo purchaserInfo: RCPurchaserInfo) {
