@@ -20,8 +20,9 @@ class EmptyPurchaserInfoTests: XCTestCase {
     }
 }
 
-class BasicPurchaerInfoTests: XCTestCase {
+class BasicPurchaserInfoTests: XCTestCase {
     let validSubscriberResponse = [
+        "request_date": "2018-10-19T02:40:36Z",
         "subscriber": [
             "other_purchases": [
                 "onetime_purchase": [
@@ -48,9 +49,17 @@ class BasicPurchaerInfoTests: XCTestCase {
                 ],
             ]
         ]
-    ]
+    ] as [String : Any]
 
-    let validTwoProductsJSON = "{\"subscriber\": {\"original_application_version\": \"1.0\",\"other_purchases\": {},\"subscriptions\":{\"product_a\": {\"expires_date\": \"2018-05-27T06:24:50Z\",\"period_type\": \"normal\"},\"product_b\": {\"expires_date\": \"2018-05-27T05:24:50Z\",\"period_type\": \"normal\"}}}}";
+    let validTwoProductsJSON = "{" +
+            "\"request_date\": \"2018-05-20T06:24:50Z\"," +
+            "\"subscriber\": {" +
+            "\"original_application_version\": \"1.0\"," +
+            "\"other_purchases\": {}," +
+            "\"subscriptions\":{" +
+                "\"product_a\": {\"expires_date\": \"2018-05-27T06:24:50Z\",\"period_type\": \"normal\"}," +
+                "\"product_b\": {\"expires_date\": \"2018-05-27T05:24:50Z\",\"period_type\": \"normal\"}" +
+            "}}}";
 
     var purchaserInfo: RCPurchaserInfo?
 
@@ -145,4 +154,46 @@ class BasicPurchaerInfoTests: XCTestCase {
     func testExpirationLifetime() {
         expect(self.purchaserInfo!.expirationDate(forEntitlement: "forever_pro")).to(beNil())
     }
+
+    func testRequestDate() {
+        expect(self.purchaserInfo!.requestDate).toNot(beNil())
+    }
+
+    func testIfRequestDateIsNilUsesCurrentTime() {
+        let response = [
+            "subscriber": [
+                "other_purchases": [
+                    "onetime_purchase": [
+                        "purchase_date": "1990-08-30T02:40:36Z"
+                    ]
+                ],
+                "subscriptions": [
+                    "onemonth_freetrial": [
+                        "expires_date": "2100-08-30T02:40:36Z"
+                    ],
+                    "threemonth_freetrial": [
+                        "expires_date": "1990-08-30T02:40:36Z"
+                    ]
+                ],
+                "entitlements": [
+                    "pro" : [
+                        "expires_date" : "2100-08-30T02:40:36Z"
+                    ],
+                    "old_pro" : [
+                        "expires_date" : "1990-08-30T02:40:36Z"
+                    ],
+                    "forever_pro" : [
+                        "expires_date" : nil
+                    ],
+                ]
+            ]
+            ] as [String : Any]
+        let purchaserInfoWithoutRequestData = RCPurchaserInfo.init(data: response)
+
+        let entitlements = purchaserInfoWithoutRequestData!.activeEntitlements
+        expect(entitlements).to(contain("pro"));
+        expect(entitlements).toNot(contain("old_pro"));
+    }
+    
+    
 }
