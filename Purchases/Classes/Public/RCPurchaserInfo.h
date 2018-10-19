@@ -56,6 +56,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (NSDate * _Nullable)expirationDateForProductIdentifier:(NSString *)productIdentifier;
 
+/**
+ Returns the fetch date of this Purchaser info.
+ @note Can be nil if was cached before we added this
+*/
+@property (readonly) NSDate * _Nullable requestDate;
+
 @end
 
 NS_ASSUME_NONNULL_END

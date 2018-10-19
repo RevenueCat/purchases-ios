@@ -14,9 +14,8 @@
 @property (nonatomic) NSDictionary<NSString *, NSObject *> *expirationDateByEntitlement;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic) NSString *originalApplicationVersion;
-
 @property (nonatomic) NSDictionary *originalData;
-
+@property (nonatomic) NSDate * _Nullable requestDate;
 @end
 
 static NSDateFormatter *dateFormatter;
@@ -41,6 +40,7 @@ static dispatch_once_t onceToken;
             dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ssZ";
             dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
         });
+        self.requestDate = [dateFormatter dateFromString:(NSString *)data[@"request_date"]];
 
         NSDictionary *subscriptions = subscriberData[@"subscriptions"];
         if (subscriptions == nil) {
@@ -92,14 +92,26 @@ static dispatch_once_t onceToken;
 {
     NSMutableSet *activeSubscriptions = [NSMutableSet setWithCapacity:dates.count];
 
-    for (NSString *productIdentifier in dates) {
-        NSObject *dateOrNull = dates[productIdentifier];
-        if ([dateOrNull isKindOfClass:NSNull.class] || ((NSDate *)dateOrNull).timeIntervalSinceNow > 0) {
-            [activeSubscriptions addObject:productIdentifier];
+    for (NSString *identifier in dates) {
+        NSDate *dateOrNull = (NSDate *)dates[identifier];
+        if ([dateOrNull isKindOfClass:NSNull.class] || [self isActive:dateOrNull]) {
+            // If the expiration date is not null and the day we fetched this is before the expiration,
+            // then this is an active subscription
+            [activeSubscriptions addObject:identifier];
         }
     }
 
     return [NSSet setWithSet:activeSubscriptions];
+}
+
+- (BOOL)isActive:(NSDate *)dateOrNull {
+    // Check if the date this purchaser info was fetched is before this products expiration date
+    // We need to check against the fetched date since this object could be cached
+    if (self.requestDate) {
+        return [self.requestDate compare:dateOrNull] == NSOrderedAscending;
+    } else { // The date this purchaser info was fetched can be nil if it is an old cached version
+        return dateOrNull.timeIntervalSinceNow > 0;
+    }
 }
 
 - (NSSet<NSString *> *)activeSubscriptions
