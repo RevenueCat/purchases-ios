@@ -8,6 +8,6 @@
 1. Zip `build/Release-iphoneos/Purchases.framework` and `build/Release-iphoneos/Purchases.dsym`
 1. Create a [new github release](https://github.com/revenuecat/purchases-ios/releases)
 1. Upload `Purchases.framework.zip` and `Purchases.dsym.zip` to the new release
-1. Update the version number in `RCPurchases.m`, `Purchases.podspec`, `README.md` and in `Purchases/Info.plist` to the snapshot version for the next release, i.e. `x.y.z-SNAPSHOT`
+1. Update the version number in `RCPurchases.m`, `Purchases.podspec` and in `Purchases/Info.plist` to the snapshot version for the next release, i.e. `x.y.z-SNAPSHOT`
 1. `git commit -am "Preparing for next version"`
 1. `git push origin master`
