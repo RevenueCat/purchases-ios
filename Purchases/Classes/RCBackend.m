@@ -16,7 +16,7 @@
 
 NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
 
-API_AVAILABLE(ios(11.2))
+API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
 {
     switch (paymentMode) {

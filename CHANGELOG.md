@@ -1,3 +1,8 @@
+## 1.1.5
+- Conform RCPurchasesDelegate to NSObject
+- Adds requestDate to the purchaser info to avoid edge cases
+- Add iOS 11.2 availability annotations
+
 ## 1.1.4
 - Make RCPurchases initializer return a non-optional
 
@@ -13,7 +18,7 @@
 - Add "Purchases.h" to CocoaPods headers
 
 ## 1.1.0
-- Attribution! You can now pass attribution data from Apple Search Ads, AppsFlyer, Adjust and Branch. You can then view the ROI of your campaigns, including revenue coming from referrals. 
+- Attribution! You can now pass attribution data from Apple Search Ads, AppsFlyer, Adjust and Branch. You can then view the ROI of your campaigns, including revenue coming from referrals.
 
 ## 1.0.5
 - Fix for entitlements will now have null active products if the product is not available from StoreKit
@@ -67,10 +72,10 @@
 - Change `restoreTransactionsForAppStoreAccount:` to take a completion block since it no long relies on the app store queue. Removed delegate methods.
 - Added `updatedPurchaserInfo:` that allows force refreshing of `RCPurchaserInfo`. Useful if your app needs the latest purchaser info.
 - Removed `makePurchase:quantity:`.
-- Add `nonConsumablePurchases` on `RCPurchaserInfo`. Non-consumable purchases will now Just Work (tm). 
+- Add `nonConsumablePurchases` on `RCPurchaserInfo`. Non-consumable purchases will now Just Work (tm).
 
 ## 0.6.0
-- Add support for [promotional purchases](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/PromotingIn-AppPurchases/PromotingIn-AppPurchases.html). 
+- Add support for [promotional purchases](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/PromotingIn-AppPurchases/PromotingIn-AppPurchases.html).
 - Adds support for `appUserId`s with non-url compatable characters
 
 ## 0.5.0

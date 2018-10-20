@@ -80,9 +80,11 @@
     }
 }
 
+#ifndef TARGET_OS_MAC
 - (BOOL)paymentQueue:(SKPaymentQueue *)queue shouldAddStorePayment:(SKPayment *)payment forProduct:(SKProduct *)product
 {
     return [self.delegate storeKitWrapper:self shouldAddStorePayment:payment forProduct:product];
 }
+#endif
 
 @end
