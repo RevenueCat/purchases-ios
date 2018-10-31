@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) NSString * _Nullable originalApplicationVersion;
 
 /**
- Get the expiration date for a given product identifier.
+ Get the expiration date for a given product identifier. You should use Entitlements though!
  
  @param productIdentifier Product identifier for product
  
@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDate * _Nullable)expirationDateForProductIdentifier:(NSString *)productIdentifier;
 
 /**
- Get the purchase date for a given product identifier.
+ Get the purchase date for a given product identifier. You should use Entitlements though!
  
  @param productIdentifier Product identifier for subscription product
  
