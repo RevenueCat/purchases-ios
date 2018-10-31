@@ -19,14 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// All active *entitlements*.
 @property (readonly) NSSet<NSString *> *activeEntitlements;
 
-/** Get the expiration date for a given entitlement.
-
- @param entitlementId The id of the entitlement.
-
- @return The expiration date for the passed in `entitlement`, can be `nil`
- */
-- (NSDate * _Nullable)expirationDateForEntitlement:(NSString *)entitlementId;
-
 /// All *subscription* product identifiers with expiration dates in the future.
 @property (readonly) NSSet<NSString *> *activeSubscriptions;
 
@@ -42,24 +34,50 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Returns the version number for the version of the application when the user bought the app.
  Use this for grandfathering users when migrating to subscriptions.
-
+ 
  @note This can be nil, see -[RCPurchases refreshOriginalApplicationVersion:]
-*/
+ */
 @property (readonly) NSString * _Nullable originalApplicationVersion;
 
 /**
  Get the expiration date for a given product identifier.
-
- @param productIdentifier Product identifier for subscription product
-
+ 
+ @param productIdentifier Product identifier for product
+ 
  @return The expiration date for `productIdentifier`, `nil` if product never purchased
  */
 - (NSDate * _Nullable)expirationDateForProductIdentifier:(NSString *)productIdentifier;
 
 /**
+ Get the purchase date for a given product identifier.
+ 
+ @param productIdentifier Product identifier for subscription product
+ 
+ @return The purchase date for `productIdentifier`, `nil` if product never purchased
+ */
+- (NSDate * _Nullable)purchaseDateForProductIdentifier:(NSString *)productIdentifier;
+
+/** Get the expiration date for a given entitlement.
+ 
+ @param entitlementId The id of the entitlement.
+ 
+ @return The expiration date for the passed in `entitlement`, can be `nil`
+ */
+- (NSDate * _Nullable)expirationDateForEntitlement:(NSString *)entitlementId;
+
+/**
+ Get the purchase date for a given entitlement identifier.
+ 
+ @param entitlementId Entitlement identifier for entitlement
+ 
+ @return The purchase date for `entitlementId`, `nil` if product never purchased
+ */
+- (NSDate * _Nullable)purchaseDateForEntitlement:(NSString *)entitlementId;
+
+/**
  Returns the fetch date of this Purchaser info.
  @note Can be nil if was cached before we added this
-*/
+ */
 @property (readonly) NSDate * _Nullable requestDate;
 
 @end
