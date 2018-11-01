@@ -41,14 +41,58 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 @implementation RCPurchases
 
+static RCPurchases *_singleton = nil;
+
+@synthesize delegate=_delegate;
+
++ (NSString *)frameworkVersion {
+    return @"1.2.0-SNAPSHOT";
+}
+
++ (instancetype)defaultInstance {
+    if (!_singleton) {
+        RCLog(@"There is no default instance. Make sure you configure Purchases before trying to get the default instance.");
+    }
+    return _singleton;
+}
+
++ (void)setDefaultInstance:(RCPurchases *)instance {
+    @synchronized(_singleton) {
+        _singleton = instance;
+    }
+}
+
++ (instancetype)configureWithAPIKey:(NSString *)APIKey
+{
+    RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:APIKey];
+    [RCPurchases setDefaultInstance:purchases];
+    return purchases;
+}
+
 - (instancetype)initWithAPIKey:(NSString *)APIKey
 {
     return [self initWithAPIKey:APIKey appUserID:nil];
 }
 
++ (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
+{
+    RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:APIKey appUserID:appUserID];
+    [RCPurchases setDefaultInstance:purchases];
+    return purchases;
+}
+
 - (instancetype)initWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
 {
     return [self initWithAPIKey:APIKey appUserID:appUserID userDefaults:nil];
+}
+
++ (instancetype)configureWithAPIKey:(NSString *)APIKey
+                          appUserID:(NSString * _Nullable)appUserID
+                       userDefaults:(NSUserDefaults * _Nullable)userDefaults
+{
+    RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults];
+    [RCPurchases setDefaultInstance:purchases];
+    return purchases;
 }
 
 - (instancetype)initWithAPIKey:(NSString *)APIKey
@@ -69,10 +113,6 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                    storeKitWrapper:storeKitWrapper
                 notificationCenter:[NSNotificationCenter defaultCenter]
                       userDefaults:userDefaults];
-}
-
-+ (NSString *)frameworkVersion {
-    return @"1.2.0-SNAPSHOT";
 }
 
 - (instancetype)initWithAppUserID:(NSString *)appUserID
@@ -124,9 +164,6 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                              forAppUserID:self.appUserID];
     }
 }
-
-
-@synthesize delegate=_delegate;
 
 - (void)setDelegate:(id<RCPurchasesDelegate>)delegate
 {
@@ -292,10 +329,10 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                                       completion:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
     [self receiptData:^(NSData * _Nonnull data) {
-        [self.backend getIntroElgibilityForAppUserID:self.appUserID
-                                         receiptData:data
-                                  productIdentifiers:productIdentifiers
-                                          completion:receiveEligibility];
+        [self.backend getIntroEligibilityForAppUserID:self.appUserID
+                                          receiptData:data
+                                   productIdentifiers:productIdentifiers
+                                           completion:receiveEligibility];
     }];
 }
 

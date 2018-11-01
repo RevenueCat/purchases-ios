@@ -38,6 +38,15 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
  */
 @interface RCPurchases : NSObject
 
++ (instancetype)configureWithAPIKey:(NSString *)APIKey;
++ (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID;
++ (instancetype)configureWithAPIKey:(NSString *)APIKey
+                          appUserID:(NSString * _Nullable)appUserID
+                       userDefaults:(NSUserDefaults * _Nullable)userDefaults;
+
++ (instancetype)defaultInstance;
++ (void)setDefaultInstance:(RCPurchases *)instance;
+
 /**
  Initializes an `RCPurchases` object with specified API key.
 
