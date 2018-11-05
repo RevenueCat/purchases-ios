@@ -104,7 +104,7 @@ class PurchasesTests: XCTestCase {
         }
 
         var postedProductIdentifiers: [String]?
-        override func getIntroElgibility(forAppUserID appUserID: String, receiptData: Data?, productIdentifiers: [String], completion: @escaping RCIntroEligibilityResponseHandler) {
+        override func getIntroEligibility(forAppUserID appUserID: String, receiptData: Data?, productIdentifiers: [String], completion: @escaping RCIntroEligibilityResponseHandler) {
             postedProductIdentifiers = productIdentifiers
 
             var eligibilities = [String: RCIntroEligibility]()
@@ -970,5 +970,20 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedAttributionData?.keys).toEventually(equal(data.keys))
         expect(self.backend.postedAttributionFromNetwork).toEventually(equal(RCAttributionNetwork.appleSearchAds))
         expect(self.backend.postedAttributionAppUserId).toEventually(equal(self.purchases?.appUserID))
+    }
+
+    func testSharedInstanceIsSetWhenConfiguring() {
+        let purchases = RCPurchases.configure(withAPIKey: "")
+        expect(RCPurchases.shared()).toEventually(equal(purchases))
+    }
+    
+    func testSharedInstanceIsSetWhenConfiguringWithAppUserID() {
+        let purchases = RCPurchases.configure(withAPIKey: "", appUserID:"")
+        expect(RCPurchases.shared()).toEventually(equal(purchases))
+    }
+    
+    func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaults() {
+        let purchases = RCPurchases.configure(withAPIKey: "", appUserID: "", userDefaults: nil)
+        expect(RCPurchases.shared()).toEventually(equal(purchases))
     }
 }
