@@ -303,10 +303,10 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 }
 
-- (void)productsWithIdentifiers:(NSSet<NSString *> *)productIdentifiers
+- (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
                      completion:(void (^)(NSArray<SKProduct *>* products))completion
 {
-    [self.requestFetcher fetchProducts:productIdentifiers completion:^(NSArray<SKProduct *> * _Nonnull products) {
+    [self.requestFetcher fetchProducts:[NSSet setWithArray:productIdentifiers] completion:^(NSArray<SKProduct *> * _Nonnull products) {
         @synchronized(self) {
             for (SKProduct *product in products) {
                 self.productsByIdentifier[product.productIdentifier] = product;

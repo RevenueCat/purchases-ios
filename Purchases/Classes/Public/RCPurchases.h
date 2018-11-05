@@ -178,7 +178,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
  @param productIdentifiers A set of product identifiers for in app purchases setup via iTunesConnect. This should be either hard coded in your application, from a file, or from a custom endpoint if you want to be able to deploy new IAPs without an app update.
  @param completion An @escaping callback that is called with the loaded products. If the fetch fails for any reason it will return an empty array.
  */
-- (void)productsWithIdentifiers:(NSSet<NSString *> *)productIdentifiers
+- (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
                      completion:(void (^)(NSArray<SKProduct *>* products))completion;
 
 /**
