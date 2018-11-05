@@ -56,7 +56,7 @@ static RCPurchases *_sharedPurchases = nil;
 }
 
 + (void)setDefaultInstance:(RCPurchases *)instance {
-    @synchronized(_sharedPurchases) {
+    @synchronized([RCPurchases class]) {
         _sharedPurchases = instance;
     }
 }
