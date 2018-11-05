@@ -41,24 +41,23 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 @implementation RCPurchases
 
-static RCPurchases *_singleton = nil;
-
+static RCPurchases *_sharedPurchases = nil;
 @synthesize delegate=_delegate;
 
 + (NSString *)frameworkVersion {
     return @"1.2.0-SNAPSHOT";
 }
 
-+ (instancetype)defaultInstance {
-    if (!_singleton) {
-        RCLog(@"There is no default instance. Make sure you configure Purchases before trying to get the default instance.");
++ (instancetype)sharedPurchases {
+    if (!_sharedPurchases) {
+        RCLog(@"There is no singleton instance. Make sure you configure Purchases before trying to get the default instance.");
     }
-    return _singleton;
+    return _sharedPurchases;
 }
 
 + (void)setDefaultInstance:(RCPurchases *)instance {
-    @synchronized(_singleton) {
-        _singleton = instance;
+    @synchronized(_sharedPurchases) {
+        _sharedPurchases = instance;
     }
 }
 

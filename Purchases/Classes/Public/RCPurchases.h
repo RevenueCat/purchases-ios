@@ -39,7 +39,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 @interface RCPurchases : NSObject
 
 /**
- Configures an instance of the Purchases SDK with an specified API key. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases defaultInstance]
+ Configures an instance of the Purchases SDK with an specified API key. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
 
  @note Use this initializer if your app does not have an account system.`RCPurchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`. This also affects the behavior of `restoreTransactionsForAppStoreAccount`.
 
@@ -50,7 +50,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 + (instancetype)configureWithAPIKey:(NSString *)APIKey;
 
 /**
- Configures an instance of the Purchases SDK with an specified API key and app user ID. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases defaultInstance]
+ Configures an instance of the Purchases SDK with an specified API key and app user ID. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
 
  @note Best practice is to use a salted hash of your unique app user ids.
 
@@ -65,7 +65,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 + (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID;
 
 /**
- Configures an instance of the Purchases SDK with object with a custom userDefaults. Use this constructor if you want to sync status across a shared container, such as between a host app and an extension. The instance of the Purchases SDK will be set as a singleton. You should access the singleton instance using [RCPurchases defaultInstance]
+ Configures an instance of the Purchases SDK with object with a custom userDefaults. Use this constructor if you want to sync status across a shared container, such as between a host app and an extension. The instance of the Purchases SDK will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
 
  @param APIKey The API Key generated for your app from https://app.revenuecat.com/
 
@@ -82,7 +82,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 /**
  @return A singleton `RCPurchases` object. Call this after a configure method to access the singleton.
  */
-+ (instancetype)defaultInstance;
++ (instancetype)sharedPurchases;
 
 /**
  Configures an instance of the Purchases SDK as a singleton. The configure methods call this internally so it's preferably to set the default instance through a configure method. Use this method only if you want to override what the configure methods are doing.
