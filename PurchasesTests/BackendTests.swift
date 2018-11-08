@@ -442,7 +442,7 @@ class BackendTests: XCTestCase {
     }
 
     func testEmptyEligibiltyCheckDoesNothing() {
-        backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: [], completion: { (eligibilities) in
+        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: [], completion: { (eligibilities) in
 
         })
         expect(self.httpClient.calls.count).to(equal(0))
@@ -456,7 +456,7 @@ class BackendTests: XCTestCase {
         var eligibility: [String: RCIntroEligibility]?
 
         let products = ["producta", "productb", "productc", "productd"]
-        backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
+        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
             eligibility = productEligbility
         })
 
@@ -490,7 +490,7 @@ class BackendTests: XCTestCase {
         var eligibility: [String: RCIntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
+        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
             eligibility = productEligbility
         })
 
@@ -508,7 +508,7 @@ class BackendTests: XCTestCase {
         var eligibility: [String: RCIntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroElgibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
+        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
             eligibility = productEligbility
         })
 

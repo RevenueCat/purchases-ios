@@ -61,10 +61,10 @@ typedef void(^RCEntitlementResponseHandler)(NSDictionary<NSString *, RCEntitleme
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
                             completion:(RCBackendResponseHandler)completion;
 
-- (void)getIntroElgibilityForAppUserID:(NSString *)appUserID
-                           receiptData:(NSData * _Nullable)receiptData
-                    productIdentifiers:(NSArray<NSString *> *)productIdentifiers
-                            completion:(RCIntroEligibilityResponseHandler)completion;
+- (void)getIntroEligibilityForAppUserID:(NSString *)appUserID
+                            receiptData:(NSData *)receiptData
+                     productIdentifiers:(NSArray<NSString *> *)productIdentifiers
+                             completion:(RCIntroEligibilityResponseHandler)completion;
 
 - (void)getEntitlementsForAppUserID:(NSString *)appUserID
                          completion:(RCEntitlementResponseHandler)completion;

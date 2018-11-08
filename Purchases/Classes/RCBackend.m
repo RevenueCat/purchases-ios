@@ -209,10 +209,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                   }];
 }
 
-- (void)getIntroElgibilityForAppUserID:(NSString *)appUserID
-                           receiptData:(NSData *)receiptData
-                    productIdentifiers:(NSArray<NSString *> *)productIdentifiers
-                            completion:(RCIntroEligibilityResponseHandler)completion
+- (void)getIntroEligibilityForAppUserID:(NSString *)appUserID
+                            receiptData:(NSData *)receiptData
+                     productIdentifiers:(NSArray<NSString *> *)productIdentifiers
+                             completion:(RCIntroEligibilityResponseHandler)completion
 {
     if (productIdentifiers.count == 0) {
         completion(@{});
