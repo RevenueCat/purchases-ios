@@ -72,44 +72,34 @@ static dispatch_once_t onceToken;
 
 - (NSDictionary<NSString *, NSDate *> *)parseExpirationDate:(NSDictionary<NSString *, NSDictionary *> *)expirationDates
 {
-    NSMutableDictionary<NSString *, NSObject *> *dates = [NSMutableDictionary new];
-    
-    for (NSString *identifier in expirationDates) {
-        id dateString = expirationDates[identifier][@"expires_date"];
-        
-        if ([dateString isKindOfClass:NSString.class]) {
-            NSDate *date = [dateFormatter dateFromString:(NSString *)dateString];
-            
-            if (date != nil) {
-                dates[identifier] = date;
-            }
-        } else {
-            dates[identifier] = [NSNull null];
-        }
-    }
-    
-    return [NSDictionary dictionaryWithDictionary:dates];
+    return [self parseDatesIn:expirationDates withLabel:@"expires_date"];
 }
 
 - (NSDictionary<NSString *, NSDate *> *)parsePurchaseDate:(NSDictionary<NSString *, NSDictionary *> *)purchaseDates
 {
-    NSMutableDictionary<NSString *, NSObject *> *dates = [NSMutableDictionary new];
-    
-    for (NSString *identifier in purchaseDates) {
-        id dateString = purchaseDates[identifier][@"purchase_date"];
-        
+    return [self parseDatesIn:purchaseDates withLabel:@"purchase_date"];
+}
+
+- (NSDictionary<NSString *, NSDate *> *)parseDatesIn:(NSDictionary<NSString *, NSDictionary *> *)dates
+                                           withLabel:(NSString *)label
+{
+    NSMutableDictionary<NSString *, NSObject *> *parsedDates = [NSMutableDictionary new];
+
+    for (NSString *identifier in dates) {
+        id dateString = dates[identifier][label];
+
         if ([dateString isKindOfClass:NSString.class]) {
             NSDate *date = [dateFormatter dateFromString:(NSString *)dateString];
-            
+
             if (date != nil) {
-                dates[identifier] = date;
+                parsedDates[identifier] = date;
             }
         } else {
-            dates[identifier] = [NSNull null];
+            parsedDates[identifier] = [NSNull null];
         }
     }
-    
-    return [NSDictionary dictionaryWithDictionary:dates];
+
+    return [NSDictionary dictionaryWithDictionary:parsedDates];
 }
 
 - (NSSet<NSString *> *)allPurchasedProductIdentifiers

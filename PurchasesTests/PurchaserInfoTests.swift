@@ -31,7 +31,8 @@ class BasicPurchaserInfoTests: XCTestCase {
             ],
             "subscriptions": [
                 "onemonth_freetrial": [
-                    "expires_date": "2100-08-30T02:40:36Z"
+                    "expires_date": "2100-08-30T02:40:36Z",
+                    "period_type": "normal"
                 ],
                 "threemonth_freetrial": [
                     "expires_date": "1990-08-30T02:40:36Z"
@@ -39,7 +40,9 @@ class BasicPurchaserInfoTests: XCTestCase {
             ],
             "entitlements": [
                 "pro" : [
-                    "expires_date" : "2100-08-30T02:40:36Z"
+                    "expires_date" : "2100-08-30T02:40:36Z",
+                    "product_identifier": "onemonth_freetrial",
+                    "purchase_date": "2018-10-26T23:17:53Z"
                 ],
                 "old_pro" : [
                     "expires_date" : "1990-08-30T02:40:36Z"
@@ -194,6 +197,45 @@ class BasicPurchaserInfoTests: XCTestCase {
         expect(entitlements).to(contain("pro"));
         expect(entitlements).toNot(contain("old_pro"));
     }
-    
-    
+
+    func testPurchaseDate() {
+        let purchaseDate = self.purchaserInfo!.purchaseDate(forEntitlement: "pro")
+        expect(purchaseDate).to(equal(Date(timeIntervalSinceReferenceDate: 562288673)))
+    }
+
+    func testPurchaseDateEmpty() {
+
+        let response = [
+            "subscriber": [
+                "other_purchases": [
+                    "onetime_purchase": [
+                        "expires_date": "1990-08-30T02:40:36Z"
+                    ]
+                ],
+                "subscriptions": [
+                    "onemonth_freetrial": [
+                        "expires_date": "2100-08-30T02:40:36Z"
+                    ],
+                    "threemonth_freetrial": [
+                        "expires_date": "1990-08-30T02:40:36Z"
+                    ]
+                ],
+                "entitlements": [
+                    "pro" : [
+                        "expires_date" : "2100-08-30T02:40:36Z"
+                    ],
+                    "old_pro" : [
+                        "expires_date" : "1990-08-30T02:40:36Z"
+                    ],
+                    "forever_pro" : [
+                        "expires_date" : nil
+                    ],
+                ]
+            ]
+        ] as [String : Any]
+        let purchaserInfoWithoutRequestData = RCPurchaserInfo.init(data: response)
+        let purchaseDate = purchaserInfoWithoutRequestData!.purchaseDate(forEntitlement: "pro")
+        expect(purchaseDate).to(beNil())
+    }
+
 }
