@@ -34,9 +34,60 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 /**
  `RCPurchases` is the entry point for Purchases.framework. It should be instantiated as soon as your app has a unique user id for your user. This can be when a user logs in if you have accounts or on launch if you can generate a random user identifier.
 
- @warning Only one instance of RCPurchases should be instantiated at a time!
+ @warning Only one instance of RCPurchases should be instantiated at a time! Use a configure method to let the framework handle the singleton instance for you.
  */
 @interface RCPurchases : NSObject
+
+/**
+ Configures an instance of the Purchases SDK with a specified API key. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
+
+ @note Use this initializer if your app does not have an account system. `RCPurchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`. This also affects the behavior of `restoreTransactionsForAppStoreAccount`.
+
+ @param APIKey The API Key generated for your app from https://app.revenuecat.com/
+
+ @return An instantiated `RCPurchases` object that has been set as a singleton.
+ */
++ (instancetype)configureWithAPIKey:(NSString *)APIKey;
+
+/**
+ Configures an instance of the Purchases SDK with a specified API key and app user ID. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
+
+ @note Best practice is to use a salted hash of your unique app user ids.
+
+ @warning Use this initializer if you have your own user identifiers that you manage.
+
+ @param APIKey The API Key generated for your app from https://app.revenuecat.com/
+
+ @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
+
+ @return An instantiated `RCPurchases` object that has been set as a singleton.
+ */
++ (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID;
+
+/**
+ Configures an instance of the Purchases SDK with object with a custom userDefaults. Use this constructor if you want to sync status across a shared container, such as between a host app and an extension. The instance of the Purchases SDK will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
+
+ @param APIKey The API Key generated for your app from https://app.revenuecat.com/
+
+ @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
+
+ @param userDefaults Custom userDefaults to use
+
+ @return An instantiated `RCPurchases` object that has been set as a singleton.
+ */
++ (instancetype)configureWithAPIKey:(NSString *)APIKey
+                          appUserID:(NSString * _Nullable)appUserID
+                       userDefaults:(NSUserDefaults * _Nullable)userDefaults;
+
+/**
+ @return A singleton `RCPurchases` object. Call this after a configure method to access the singleton.
+ */
++ (instancetype)sharedPurchases;
+
+/**
+ Sets an instance of the Purchases SDK as a singleton. The configure methods call this internally so it's preferably to set the default instance through a configure method. Use this method only if you want to override what the configure methods are doing.
+ */
++ (void)setDefaultInstance:(RCPurchases *)instance;
 
 /**
  Initializes an `RCPurchases` object with specified API key.
@@ -66,16 +117,16 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
                      appUserID:(NSString * _Nullable)appUserID;
 
 /**
- Initializes an `RCPurchases` object with a custom userDefaults. Use this constructor if you want to sync status across
- a shared container, such as between a host app and an extension.
+ Initializes an `RCPurchases` object with a custom userDefaults. Use this constructor if you want to sync status across a shared container, such as between a host app and an extension.
 
  @param APIKey The API Key generated for your app from https://app.revenuecat.com/
 
  @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
 
+ @param userDefaults Custom userDefaults to use
+
  @return An instantiated `RCPurchases` object
  */
-
 - (instancetype)initWithAPIKey:(NSString *)APIKey
                      appUserID:(NSString * _Nullable)appUserID
                   userDefaults:(NSUserDefaults * _Nullable)userDefaults;

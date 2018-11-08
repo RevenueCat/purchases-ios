@@ -41,14 +41,57 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 @implementation RCPurchases
 
+static RCPurchases *_sharedPurchases = nil;
+@synthesize delegate=_delegate;
+
++ (NSString *)frameworkVersion {
+    return @"1.2.0-SNAPSHOT";
+}
+
++ (instancetype)sharedPurchases {
+    if (!_sharedPurchases) {
+        RCLog(@"There is no singleton instance. Make sure you configure Purchases before trying to get the default instance.");
+    }
+    return _sharedPurchases;
+}
+
++ (void)setDefaultInstance:(RCPurchases *)instance {
+    @synchronized([RCPurchases class]) {
+        _sharedPurchases = instance;
+    }
+}
+
++ (instancetype)configureWithAPIKey:(NSString *)APIKey
+{
+    RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:APIKey];
+    [RCPurchases setDefaultInstance:purchases];
+    return purchases;
+}
+
 - (instancetype)initWithAPIKey:(NSString *)APIKey
 {
     return [self initWithAPIKey:APIKey appUserID:nil];
 }
 
++ (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
+{
+    RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:APIKey appUserID:appUserID];
+    [RCPurchases setDefaultInstance:purchases];
+    return purchases;
+}
+
 - (instancetype)initWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
 {
     return [self initWithAPIKey:APIKey appUserID:appUserID userDefaults:nil];
+}
+
++ (instancetype)configureWithAPIKey:(NSString *)APIKey
+                          appUserID:(NSString * _Nullable)appUserID
+                       userDefaults:(NSUserDefaults * _Nullable)userDefaults
+{
+    RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults];
+    [RCPurchases setDefaultInstance:purchases];
+    return purchases;
 }
 
 - (instancetype)initWithAPIKey:(NSString *)APIKey
@@ -69,10 +112,6 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                    storeKitWrapper:storeKitWrapper
                 notificationCenter:[NSNotificationCenter defaultCenter]
                       userDefaults:userDefaults];
-}
-
-+ (NSString *)frameworkVersion {
-    return @"1.2.0-SNAPSHOT";
 }
 
 - (instancetype)initWithAppUserID:(NSString *)appUserID
@@ -124,9 +163,6 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                              forAppUserID:self.appUserID];
     }
 }
-
-
-@synthesize delegate=_delegate;
 
 - (void)setDelegate:(id<RCPurchasesDelegate>)delegate
 {
@@ -267,10 +303,10 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     }];
 }
 
-- (void)productsWithIdentifiers:(NSSet<NSString *> *)productIdentifiers
+- (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
                      completion:(void (^)(NSArray<SKProduct *>* products))completion
 {
-    [self.requestFetcher fetchProducts:productIdentifiers completion:^(NSArray<SKProduct *> * _Nonnull products) {
+    [self.requestFetcher fetchProducts:[NSSet setWithArray:productIdentifiers] completion:^(NSArray<SKProduct *> * _Nonnull products) {
         @synchronized(self) {
             for (SKProduct *product in products) {
                 self.productsByIdentifier[product.productIdentifier] = product;
@@ -292,10 +328,10 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                                       completion:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
     [self receiptData:^(NSData * _Nonnull data) {
-        [self.backend getIntroElgibilityForAppUserID:self.appUserID
-                                         receiptData:data
-                                  productIdentifiers:productIdentifiers
-                                          completion:receiveEligibility];
+        [self.backend getIntroEligibilityForAppUserID:self.appUserID
+                                          receiptData:data
+                                   productIdentifiers:productIdentifiers
+                                           completion:receiveEligibility];
     }];
 }
 
