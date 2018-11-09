@@ -605,4 +605,29 @@ class BackendTests: XCTestCase {
         let postedData = call.body?["data"] as! [ String : String ];
         expect(postedData.keys).to(equal(data.keys))
     }
+
+    func testAliasCallsBackendProperly() {
+        var completionCalled = false
+
+        let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
+        httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
+
+        backend?.alias(userID, with: "new_alias", completion:{ (newPurchaserInfo, newError) in completionCalled = true
+        })
+
+        expect(self.httpClient.calls.count).to(equal(1))
+    
+        let call = self.httpClient.calls[0]
+
+        XCTAssertEqual(call.path, "/subscribers/" + userID + "/alias")
+        XCTAssertEqual(call.HTTPMethod, "POST")
+        XCTAssertNotNil(call.headers?["Authorization"])
+        XCTAssertEqual(call.headers?["Authorization"], "Basic " + apiKey)
+        
+        expect(call.body?.keys).to(contain("new_app_user_id"))
+
+        let postedData = call.body?["new_app_user_id"] as! String ;
+        XCTAssertEqual(postedData, "new_alias")
+        expect(completionCalled).toEventually(beTrue())
+    }
 }
