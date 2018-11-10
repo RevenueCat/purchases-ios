@@ -87,6 +87,7 @@ class PurchasesTests: XCTestCase {
         var postedCurrencyCode: String?
         var postReceiptPurchaserInfo: RCPurchaserInfo?
         var postReceiptError: Error?
+        var aliasError: Error?
 
         override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
             postReceiptDataCalled = true
@@ -128,6 +129,14 @@ class PurchasesTests: XCTestCase {
             offering.activeProductIdentifier = "monthly_freetrial"
             let entitlement = RCEntitlement(offerings: ["monthly" : offering])
             completion(["pro" : entitlement!])
+        }
+        
+        override func createAlias(forAppUserID appUserID: String, withNewAppUserID newAppUserID: String, completion: ((Error?) -> Void)? = nil) {
+            if (aliasError != nil) {
+                completion!(aliasError)
+            } else {
+                completion!(nil)
+            }
         }
 
         var postedAttributionData: [AnyHashable : Any]?
@@ -986,4 +995,25 @@ class PurchasesTests: XCTestCase {
         let purchases = RCPurchases.configure(withAPIKey: "", appUserID: "", userDefaults: nil)
         expect(RCPurchases.shared()).toEventually(equal(purchases))
     }
+    
+    func testCreateAliasCallsBackend() {
+        setupPurchases()
+
+        var completionCalled = false
+        self.backend.aliasError = nil
+        self.purchases?.createAlias("cesarpedro", completion: { (error) in
+            completionCalled = error == nil
+        })
+
+        expect(completionCalled).toEventually(beTrue())
+        
+        self.backend.aliasError = NSError(domain: "error_domain", code: RCFinishableError, userInfo: nil)
+        
+        self.purchases?.createAlias("cesarpedro", completion: { (error) in
+            completionCalled = error == nil
+        })
+        
+        expect(completionCalled).toEventually(beFalse())
+    }
+    
 }

@@ -612,7 +612,8 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
 
-        backend?.alias(userID, with: "new_alias", completion:{ (newPurchaserInfo, newError) in completionCalled = true
+        backend?.createAlias(forAppUserID: userID, withNewAppUserID: "new_alias", completion: { (error) in
+            completionCalled = true
         })
 
         expect(self.httpClient.calls.count).to(equal(1))
