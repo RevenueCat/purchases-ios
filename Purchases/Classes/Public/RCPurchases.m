@@ -571,8 +571,8 @@ static RCPurchases *_sharedPurchases = nil;
         if (error == nil) {
             [self.userDefaults setObject:alias forKey:RCAppUserDefaultsKey];
             self.appUserID = alias;
-            completion(nil);
-        } else {
+        }
+        if (completion != nil) {
             completion(error);
         }
     }];

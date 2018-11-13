@@ -117,12 +117,12 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     NSError *responseError = nil;
     
     if (statusCode > 300) {
-        BOOL finishable = (statusCode < 500);
-        NSString *message = response[@"message"] ?: @"Unknown backend error.";
-        responseError = [self errorWithBackendMessage:message finishable:finishable];
+        responseError = [self unexpectedResponseError];
     }
     
-    completion(responseError);
+    if (completion != nil) {
+        completion(responseError);
+    }
 }
 
 - (NSString *)escapedAppUserID:(NSString *)appUserID {
