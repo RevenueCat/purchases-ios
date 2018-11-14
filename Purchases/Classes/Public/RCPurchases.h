@@ -248,6 +248,17 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
  */
 - (void)createAlias:(NSString *)alias completion:(void (^)(NSError * _Nullable error))completion;
 
+/**
+ This function will identify the current user with an appUserID. Tipically this would be used after a log out to identify a new user without calling configure
+ @param appUserID The appUserID that should be linked to the currently user
+ */
+- (void)identify:(NSString * _Nullable)appUserID;
+
+/**
+ * Resets the Purchases client clearing the save appUserID. This will generate a random user id and save it in the cache.
+ */
+- (void) reset;
+    
 @end
 
 /**

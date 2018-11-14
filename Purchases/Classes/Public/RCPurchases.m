@@ -122,6 +122,17 @@ static RCPurchases *_sharedPurchases = nil;
                      userDefaults:(NSUserDefaults *)userDefaults
 {
     if (self = [super init]) {
+        
+        if (appUserID == nil) {
+            appUserID = [userDefaults stringForKey:RCAppUserDefaultsKey];
+            if (appUserID == nil) {
+                appUserID = [self generateAndCacheID];
+            }
+            self.isUsingAnonymousID = YES;
+        } else {
+            [self identify:appUserID];
+        }
+        self.appUserID = appUserID;
 
         if (appUserID == nil) {
             appUserID = [userDefaults stringForKey:RCAppUserDefaultsKey];
@@ -569,13 +580,32 @@ static RCPurchases *_sharedPurchases = nil;
 {
     [self.backend createAliasForAppUserID:self.appUserID withNewAppUserID:alias completion:^(NSError * _Nullable error) {
         if (error == nil) {
-            [self.userDefaults setObject:alias forKey:RCAppUserDefaultsKey];
-            self.appUserID = alias;
+            [self identify:alias];
         }
         if (completion != nil) {
             completion(error);
         }
     }];
+}
+
+- (void)identify:(NSString *)appUserID
+{
+    [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
+    self.appUserID = appUserID;
+    self.isUsingAnonymousID = NO;
+}
+
+- (void)reset
+{
+    self.appUserID = [self generateAndCacheID];
+    self.isUsingAnonymousID = YES;
+}
+
+- (NSString *)generateAndCacheID
+{
+    NSString *generatedUserID = NSUUID.new.UUIDString;
+    [self.userDefaults setObject:generatedUserID forKey:RCAppUserDefaultsKey];
+    return generatedUserID;
 }
 
 @end
