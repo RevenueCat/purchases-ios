@@ -122,7 +122,8 @@ static RCPurchases *_sharedPurchases = nil;
                      userDefaults:(NSUserDefaults *)userDefaults
 {
     if (self = [super init]) {
-        
+        self.userDefaults = userDefaults;
+
         if (appUserID == nil) {
             appUserID = [userDefaults stringForKey:RCAppUserDefaultsKey];
             if (appUserID == nil) {
@@ -150,7 +151,6 @@ static RCPurchases *_sharedPurchases = nil;
         self.storeKitWrapper = storeKitWrapper;
         
         self.notificationCenter = notificationCenter;
-        self.userDefaults = userDefaults;
 
         self.productsByIdentifier = [NSMutableDictionary new];
 

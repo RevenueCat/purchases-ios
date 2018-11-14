@@ -101,7 +101,7 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
         expect(self.promoProduct).to(be(product))
     }
     
-    func testPromotDelegateMethodPassesBackReturnValueFromOwnDelegate() {
+    func testPromoDelegateMethodPassesBackReturnValueFromOwnDelegate() {
         let product = SKProduct.init();
         let payment = SKPayment.init(product: product)
         

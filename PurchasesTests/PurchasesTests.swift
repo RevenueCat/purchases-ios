@@ -218,7 +218,7 @@ class PurchasesTests: XCTestCase {
         }
         
         override func removeObject(forKey defaultName: String) {
-            cachedUserInfo[defaultName] = nil
+            appUserID = nil
         }
     }
 
