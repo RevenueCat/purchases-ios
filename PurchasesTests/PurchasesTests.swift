@@ -216,6 +216,10 @@ class PurchasesTests: XCTestCase {
                 cachedUserInfo[defaultName] = value as! Data?
             }
         }
+        
+        override func removeObject(forKey defaultName: String) {
+            cachedUserInfo[defaultName] = nil
+        }
     }
 
     class PurchasesDelegate: NSObject, RCPurchasesDelegate {
@@ -1014,6 +1018,42 @@ class PurchasesTests: XCTestCase {
         })
         
         expect(completionCalled).toEventually(beFalse())
+    }
+    
+    func testIdentify() {
+        setupPurchases()
+        
+        let newAppUserID = "cesarPedro"
+        self.purchases?.identify(newAppUserID)
+        identifiedSuccesfully(appUserID: newAppUserID)
+    }
+
+    func testCreateAliasIdentifies() {
+        setupPurchases()
+        self.backend.aliasError = nil
+        
+        let newAppUserID = "cesarPedro"
+        self.purchases?.createAlias(newAppUserID, completion: { (error) in
+            self.identifiedSuccesfully(appUserID: newAppUserID)
+        })
+        
+    }
+    
+    func testInitCallsIdentifies() {
+        setupPurchases()
+        self.identifiedSuccesfully(appUserID: appUserID)
+    }
+    
+    func testResetCreatesRandomIDAndCachesIt() {
+        setupPurchases()
+        self.purchases?.reset()
+        expect(self.userDefaults.appUserID).toNot(beNil())
+    }
+    
+    private func identifiedSuccesfully(appUserID: String) {
+        expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
+        expect(self.purchases?.appUserID).to(equal(appUserID))
+        expect(self.purchases?.isUsingAnonymousID).to(beFalse())
     }
     
 }
