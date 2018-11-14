@@ -122,7 +122,16 @@ static RCPurchases *_sharedPurchases = nil;
                      userDefaults:(NSUserDefaults *)userDefaults
 {
     if (self = [super init]) {
+        self.requestFetcher = requestFetcher;
+        self.backend = backend;
+        self.storeKitWrapper = storeKitWrapper;
+        
+        self.notificationCenter = notificationCenter;
         self.userDefaults = userDefaults;
+        
+        self.productsByIdentifier = [NSMutableDictionary new];
+        
+        self.finishTransactions = YES;
 
         if (appUserID == nil) {
             appUserID = [userDefaults stringForKey:RCAppUserDefaultsKey];
@@ -130,31 +139,10 @@ static RCPurchases *_sharedPurchases = nil;
                 appUserID = [self generateAndCacheID];
             }
             self.isUsingAnonymousID = YES;
+            self.appUserID = appUserID;
         } else {
             [self identify:appUserID];
         }
-        self.appUserID = appUserID;
-
-        if (appUserID == nil) {
-            appUserID = [userDefaults stringForKey:RCAppUserDefaultsKey];
-            if (appUserID == nil) {
-                NSString *generatedUserID = NSUUID.new.UUIDString;
-                [userDefaults setObject:generatedUserID forKey:RCAppUserDefaultsKey];
-                appUserID = generatedUserID;
-            }
-            self.isUsingAnonymousID = YES;
-        }
-        self.appUserID = appUserID;
-
-        self.requestFetcher = requestFetcher;
-        self.backend = backend;
-        self.storeKitWrapper = storeKitWrapper;
-        
-        self.notificationCenter = notificationCenter;
-
-        self.productsByIdentifier = [NSMutableDictionary new];
-
-        self.finishTransactions = YES;
     }
 
     return self;
@@ -592,7 +580,6 @@ static RCPurchases *_sharedPurchases = nil;
 {
     [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
     self.appUserID = appUserID;
-    self.isUsingAnonymousID = NO;
 }
 
 - (void)reset
