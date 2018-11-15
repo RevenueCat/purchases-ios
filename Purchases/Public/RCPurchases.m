@@ -122,28 +122,27 @@ static RCPurchases *_sharedPurchases = nil;
                      userDefaults:(NSUserDefaults *)userDefaults
 {
     if (self = [super init]) {
-
-        if (appUserID == nil) {
-            appUserID = [userDefaults stringForKey:RCAppUserDefaultsKey];
-            if (appUserID == nil) {
-                NSString *generatedUserID = NSUUID.new.UUIDString;
-                [userDefaults setObject:generatedUserID forKey:RCAppUserDefaultsKey];
-                appUserID = generatedUserID;
-            }
-            self.isUsingAnonymousID = YES;
-        }
-        self.appUserID = appUserID;
-
         self.requestFetcher = requestFetcher;
         self.backend = backend;
         self.storeKitWrapper = storeKitWrapper;
         
         self.notificationCenter = notificationCenter;
         self.userDefaults = userDefaults;
-
+        
         self.productsByIdentifier = [NSMutableDictionary new];
-
+        
         self.finishTransactions = YES;
+
+        if (appUserID == nil) {
+            appUserID = [userDefaults stringForKey:RCAppUserDefaultsKey];
+            if (appUserID == nil) {
+                appUserID = [self generateAndCacheID];
+            }
+            self.isUsingAnonymousID = YES;
+            self.appUserID = appUserID;
+        } else {
+            [self identify:appUserID];
+        }
     }
 
     return self;
@@ -558,6 +557,42 @@ static RCPurchases *_sharedPurchases = nil;
             }];
         }
     }];
+}
+
+- (void)createAlias:(NSString *)alias
+{
+    [self createAlias:self.appUserID completion:^(NSError * _Nullable error) {}];
+}
+
+- (void)createAlias:(NSString *)alias completion:(void (^)(NSError * _Nullable error))completion
+{
+    [self.backend createAliasForAppUserID:self.appUserID withNewAppUserID:alias completion:^(NSError * _Nullable error) {
+        if (error == nil) {
+            [self identify:alias];
+        }
+        if (completion != nil) {
+            completion(error);
+        }
+    }];
+}
+
+- (void)identify:(NSString *)appUserID
+{
+    [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
+    self.appUserID = appUserID;
+}
+
+- (void)reset
+{
+    self.appUserID = [self generateAndCacheID];
+    self.isUsingAnonymousID = YES;
+}
+
+- (NSString *)generateAndCacheID
+{
+    NSString *generatedUserID = NSUUID.new.UUIDString;
+    [self.userDefaults setObject:generatedUserID forKey:RCAppUserDefaultsKey];
+    return generatedUserID;
 }
 
 @end
