@@ -33,41 +33,13 @@
 		359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */; };
 		359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */; };
 		35A60EAA1F82993E00D2FAE8 /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35C98D7D20B72B90006DCBB5 /* RCPurchases.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDE81F7EEF070065833D /* RCPurchases.m */; };
-		35C98D7E20B72B92006DCBB5 /* RCPurchaserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 351F4FAE1F803D0700F245F4 /* RCPurchaserInfo.m */; };
-		35C98D7F20B72B93006DCBB5 /* RCIntroEligibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */; };
-		35C98D8020B72B97006DCBB5 /* RCHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 35262A2B1F7D783F00C04F2C /* RCHTTPClient.m */; };
-		35C98D8120B72B9D006DCBB5 /* RCUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDDF1F7EE8F20065833D /* RCUtils.m */; };
-		35C98D8220B72BA0006DCBB5 /* RCStoreKitRequestFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDEC1F7EFB950065833D /* RCStoreKitRequestFetcher.m */; };
-		35C98D8320B72BA3006DCBB5 /* RCStoreKitWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDF21F7FFD340065833D /* RCStoreKitWrapper.m */; };
-		35C98D8420B72BA6006DCBB5 /* RCBackend.m in Sources */ = {isa = PBXBuildFile; fileRef = 351F4FAA1F80190700F245F4 /* RCBackend.m */; };
-		35C98D8520B72BAB006DCBB5 /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */; };
-		35C98D8720B72BC3006DCBB5 /* RCPurchases.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDE71F7EEF070065833D /* RCPurchases.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		35C98D8820B72BC5006DCBB5 /* RCPurchaserInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 351F4FAD1F803D0700F245F4 /* RCPurchaserInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		35C98D8920B72BC8006DCBB5 /* RCIntroEligibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		35C98D8A20B72BDC006DCBB5 /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35C98D8B20B72BDD006DCBB5 /* RCHTTPClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 35262A2A1F7D783F00C04F2C /* RCHTTPClient.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35C98D8C20B72BDF006DCBB5 /* RCUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDE11F7EE9020065833D /* RCUtils.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35C98D8D20B72BE1006DCBB5 /* RCStoreKitRequestFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDEB1F7EFB950065833D /* RCStoreKitRequestFetcher.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35C98D8E20B72BE6006DCBB5 /* RCStoreKitWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDF11F7FFD340065833D /* RCStoreKitWrapper.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35C98D8F20B72BE9006DCBB5 /* RCBackend.h in Headers */ = {isa = PBXBuildFile; fileRef = 351F4FA91F80190700F245F4 /* RCBackend.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35C98D9020B72C1B006DCBB5 /* NSLocale+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */; };
-		35C98D9120B72C2E006DCBB5 /* RCPurchaserInfo+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 352C36BE1F9D372D00A15783 /* RCPurchaserInfo+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35C98D9520B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 35C98D9420B7306A006DCBB5 /* RCCrossPlatformSupport.h */; };
-		35C98D9620B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 35C98D9420B7306A006DCBB5 /* RCCrossPlatformSupport.h */; };
-		35C98D9720B732CD006DCBB5 /* Purchases_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 35C98D9320B72EE7006DCBB5 /* Purchases_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35CE74F420C389E000CE09D8 /* RCEntitlement.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE74F220C389E000CE09D8 /* RCEntitlement.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		35CE74F520C389E000CE09D8 /* RCEntitlement.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE74F220C389E000CE09D8 /* RCEntitlement.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35CE74F620C389E000CE09D8 /* RCEntitlement.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74F320C389E000CE09D8 /* RCEntitlement.m */; };
-		35CE74F720C389E000CE09D8 /* RCEntitlement.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74F320C389E000CE09D8 /* RCEntitlement.m */; };
 		35CE74FB20C38A7100CE09D8 /* RCOffering.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE74F920C38A7100CE09D8 /* RCOffering.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		35CE74FC20C38A7100CE09D8 /* RCOffering.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE74F920C38A7100CE09D8 /* RCOffering.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35CE74FD20C38A7100CE09D8 /* RCOffering.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74FA20C38A7100CE09D8 /* RCOffering.m */; };
-		35CE74FE20C38A7100CE09D8 /* RCOffering.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74FA20C38A7100CE09D8 /* RCOffering.m */; };
 		35CE750120C3932900CE09D8 /* RCOffering+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE750020C3932900CE09D8 /* RCOffering+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35CE750220C3932900CE09D8 /* RCOffering+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE750020C3932900CE09D8 /* RCOffering+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35CE750420C39A0F00CE09D8 /* RCEntitlement+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE750320C396E400CE09D8 /* RCEntitlement+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35CE750520C39A1000CE09D8 /* RCEntitlement+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE750320C396E400CE09D8 /* RCEntitlement+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35D3AB432030B4C600DE42C5 /* RCIntroEligibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35D3AB442030B4C600DE42C5 /* RCIntroEligibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */; };
 		35DFC68620B87646004584CC /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
@@ -131,9 +103,6 @@
 		359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSLocale+RCExtensions.h"; sourceTree = "<group>"; };
 		359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSLocale+RCExtensions.m"; sourceTree = "<group>"; };
 		35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCPurchases+Protected.h"; sourceTree = "<group>"; };
-		35C98D7320B729FA006DCBB5 /* Purchases_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Purchases_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		35C98D7B20B72B0B006DCBB5 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		35C98D9320B72EE7006DCBB5 /* Purchases_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Purchases_macOS.h; sourceTree = "<group>"; };
 		35C98D9420B7306A006DCBB5 /* RCCrossPlatformSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCCrossPlatformSupport.h; sourceTree = "<group>"; };
 		35CE74F220C389E000CE09D8 /* RCEntitlement.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCEntitlement.h; sourceTree = "<group>"; };
 		35CE74F320C389E000CE09D8 /* RCEntitlement.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCEntitlement.m; sourceTree = "<group>"; };
@@ -164,13 +133,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		35C98D6F20B729FA006DCBB5 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -186,7 +148,7 @@
 		350FBDE61F7EEEDF0065833D /* Public */ = {
 			isa = PBXGroup;
 			children = (
-				35F26F9B20B7369A0025FA0A /* Umbrella */,
+				35262A011F7C4B9100C04F2C /* Purchases.h */,
 				350FBDE71F7EEF070065833D /* RCPurchases.h */,
 				350FBDE81F7EEF070065833D /* RCPurchases.m */,
 				351F4FAD1F803D0700F245F4 /* RCPurchaserInfo.h */,
@@ -215,22 +177,11 @@
 			children = (
 				352629FE1F7C4B9100C04F2C /* Purchases.framework */,
 				35262A1E1F7D77E600C04F2C /* PurchasesTests.xctest */,
-				35C98D7320B729FA006DCBB5 /* Purchases_macOS.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
 		35262A001F7C4B9100C04F2C /* Purchases */ = {
-			isa = PBXGroup;
-			children = (
-				35D8527D20B8793900CDA7DD /* iOS */,
-				35D8527C20B8793200CDA7DD /* Mac */,
-				35262A181F7C51A400C04F2C /* Classes */,
-			);
-			path = Purchases;
-			sourceTree = "<group>";
-		};
-		35262A181F7C51A400C04F2C /* Classes */ = {
 			isa = PBXGroup;
 			children = (
 				350FBDE61F7EEEDF0065833D /* Public */,
@@ -251,8 +202,9 @@
 				359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */,
 				359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */,
 				35C98D9420B7306A006DCBB5 /* RCCrossPlatformSupport.h */,
+				35262A021F7C4B9100C04F2C /* Info.plist */,
 			);
-			path = Classes;
+			path = Purchases;
 			sourceTree = "<group>";
 		};
 		35262A1F1F7D77E600C04F2C /* PurchasesTests */ = {
@@ -269,31 +221,6 @@
 				350FBDD61F7DF1640065833D /* Frameworks */,
 			);
 			path = PurchasesTests;
-			sourceTree = "<group>";
-		};
-		35D8527C20B8793200CDA7DD /* Mac */ = {
-			isa = PBXGroup;
-			children = (
-				35C98D7B20B72B0B006DCBB5 /* Info.plist */,
-			);
-			path = Mac;
-			sourceTree = "<group>";
-		};
-		35D8527D20B8793900CDA7DD /* iOS */ = {
-			isa = PBXGroup;
-			children = (
-				35262A021F7C4B9100C04F2C /* Info.plist */,
-			);
-			path = iOS;
-			sourceTree = "<group>";
-		};
-		35F26F9B20B7369A0025FA0A /* Umbrella */ = {
-			isa = PBXGroup;
-			children = (
-				35262A011F7C4B9100C04F2C /* Purchases.h */,
-				35C98D9320B72EE7006DCBB5 /* Purchases_macOS.h */,
-			);
-			path = Umbrella;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -320,30 +247,6 @@
 				350FBDF31F7FFD350065833D /* RCStoreKitWrapper.h in Headers */,
 				35C98D9520B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */,
 				35262A0F1F7C4B9100C04F2C /* Purchases.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		35C98D7020B729FA006DCBB5 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				35C98D9720B732CD006DCBB5 /* Purchases_macOS.h in Headers */,
-				35C98D8720B72BC3006DCBB5 /* RCPurchases.h in Headers */,
-				35C98D8820B72BC5006DCBB5 /* RCPurchaserInfo.h in Headers */,
-				35C98D8920B72BC8006DCBB5 /* RCIntroEligibility.h in Headers */,
-				35C98D8A20B72BDC006DCBB5 /* RCPurchases+Protected.h in Headers */,
-				35C98D9120B72C2E006DCBB5 /* RCPurchaserInfo+Protected.h in Headers */,
-				35C98D8B20B72BDD006DCBB5 /* RCHTTPClient.h in Headers */,
-				35C98D8C20B72BDF006DCBB5 /* RCUtils.h in Headers */,
-				35C98D8D20B72BE1006DCBB5 /* RCStoreKitRequestFetcher.h in Headers */,
-				35C98D8E20B72BE6006DCBB5 /* RCStoreKitWrapper.h in Headers */,
-				35CE74F520C389E000CE09D8 /* RCEntitlement.h in Headers */,
-				35CE750220C3932900CE09D8 /* RCOffering+Protected.h in Headers */,
-				35CE74FC20C38A7100CE09D8 /* RCOffering.h in Headers */,
-				35C98D8F20B72BE9006DCBB5 /* RCBackend.h in Headers */,
-				35CE750520C39A1000CE09D8 /* RCEntitlement+Protected.h in Headers */,
-				35C98D9620B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */,
-				35C98D9020B72C1B006DCBB5 /* NSLocale+RCExtensions.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -388,24 +291,6 @@
 			productReference = 35262A1E1F7D77E600C04F2C /* PurchasesTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		35C98D7220B729FA006DCBB5 /* Purchases_macOS */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 35C98D7A20B729FA006DCBB5 /* Build configuration list for PBXNativeTarget "Purchases_macOS" */;
-			buildPhases = (
-				35C98D6E20B729FA006DCBB5 /* Sources */,
-				35C98D6F20B729FA006DCBB5 /* Frameworks */,
-				35C98D7020B729FA006DCBB5 /* Headers */,
-				35C98D7120B729FA006DCBB5 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = Purchases_macOS;
-			productName = Purchases_macOS;
-			productReference = 35C98D7320B729FA006DCBB5 /* Purchases_macOS.framework */;
-			productType = "com.apple.product-type.framework";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -425,10 +310,6 @@
 						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 					};
-					35C98D7220B729FA006DCBB5 = {
-						CreatedOnToolsVersion = 9.3.1;
-						ProvisioningStyle = Automatic;
-					};
 				};
 			};
 			buildConfigurationList = 352629F81F7C4B9100C04F2C /* Build configuration list for PBXProject "Purchases" */;
@@ -444,7 +325,6 @@
 			projectRoot = "";
 			targets = (
 				352629FD1F7C4B9100C04F2C /* Purchases */,
-				35C98D7220B729FA006DCBB5 /* Purchases_macOS */,
 				35262A1D1F7D77E600C04F2C /* PurchasesTests */,
 			);
 		};
@@ -459,13 +339,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		35262A1C1F7D77E600C04F2C /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		35C98D7120B729FA006DCBB5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -522,24 +395,6 @@
 				35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */,
 				350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */,
 				351703CD1F805E5D00EEE27A /* PurchaserInfoTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		35C98D6E20B729FA006DCBB5 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				35C98D7D20B72B90006DCBB5 /* RCPurchases.m in Sources */,
-				35C98D7E20B72B92006DCBB5 /* RCPurchaserInfo.m in Sources */,
-				35C98D7F20B72B93006DCBB5 /* RCIntroEligibility.m in Sources */,
-				35C98D8020B72B97006DCBB5 /* RCHTTPClient.m in Sources */,
-				35C98D8120B72B9D006DCBB5 /* RCUtils.m in Sources */,
-				35C98D8220B72BA0006DCBB5 /* RCStoreKitRequestFetcher.m in Sources */,
-				35CE74F720C389E000CE09D8 /* RCEntitlement.m in Sources */,
-				35C98D8320B72BA3006DCBB5 /* RCStoreKitWrapper.m in Sources */,
-				35C98D8420B72BA6006DCBB5 /* RCBackend.m in Sources */,
-				35C98D8520B72BAB006DCBB5 /* NSLocale+RCExtensions.m in Sources */,
-				35CE74FE20C38A7100CE09D8 /* RCOffering.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -666,21 +521,25 @@
 		35262A131F7C4B9100C04F2C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = "";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Purchases/iOS/Info.plist;
+				INFOPLIST_FILE = Purchases/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.purchases.Purchases;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -688,21 +547,25 @@
 		35262A141F7C4B9100C04F2C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = "";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Purchases/iOS/Info.plist;
+				INFOPLIST_FILE = Purchases/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.purchases.Purchases;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -722,7 +585,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.purchases.PurchasesTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos macosx";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OBJC_BRIDGING_HEADER = "PurchasesTests/PurchasesTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -747,64 +610,12 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.purchases.PurchasesTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos macosx";
 				SWIFT_OBJC_BRIDGING_HEADER = "PurchasesTests/PurchasesTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		35C98D7820B729FA006DCBB5 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = "";
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = Purchases/Mac/Info.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.Purchases;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
-			};
-			name = Debug;
-		};
-		35C98D7920B729FA006DCBB5 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = "";
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = Purchases/Mac/Info.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.Purchases;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
@@ -834,15 +645,6 @@
 			buildConfigurations = (
 				35262A271F7D77E600C04F2C /* Debug */,
 				35262A281F7D77E600C04F2C /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		35C98D7A20B729FA006DCBB5 /* Build configuration list for PBXNativeTarget "Purchases_macOS" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				35C98D7820B729FA006DCBB5 /* Debug */,
-				35C98D7920B729FA006DCBB5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
