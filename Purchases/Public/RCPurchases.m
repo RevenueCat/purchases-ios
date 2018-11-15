@@ -45,7 +45,7 @@ static RCPurchases *_sharedPurchases = nil;
 @synthesize delegate=_delegate;
 
 + (NSString *)frameworkVersion {
-    return @"1.2.0-SNAPSHOT";
+    return @"1.2.0-rc1";
 }
 
 + (instancetype)sharedPurchases {
@@ -125,12 +125,12 @@ static RCPurchases *_sharedPurchases = nil;
         self.requestFetcher = requestFetcher;
         self.backend = backend;
         self.storeKitWrapper = storeKitWrapper;
-        
+
         self.notificationCenter = notificationCenter;
         self.userDefaults = userDefaults;
-        
+
         self.productsByIdentifier = [NSMutableDictionary new];
-        
+
         self.finishTransactions = YES;
 
         if (appUserID == nil) {
@@ -408,7 +408,7 @@ static RCPurchases *_sharedPurchases = nil;
         case SKPaymentTransactionStatePurchasing:
         case SKPaymentTransactionStateRestored:
             break;
-    }    
+    }
 }
 
 - (void)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
@@ -421,7 +421,7 @@ static RCPurchases *_sharedPurchases = nil;
     @synchronized(self) {
         self.productsByIdentifier[product.productIdentifier] = product;
     }
-    
+
     if ([self.delegate respondsToSelector:@selector(purchases:shouldPurchasePromoProduct:defermentBlock:)]) {
         return [self.delegate purchases:self shouldPurchasePromoProduct:product defermentBlock:^{
             [self.storeKitWrapper addPayment:payment];
