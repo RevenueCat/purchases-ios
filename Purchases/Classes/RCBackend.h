@@ -73,6 +73,10 @@ typedef void(^RCEntitlementResponseHandler)(NSDictionary<NSString *, RCEntitleme
                 fromNetwork:(RCAttributionNetwork)network
                forAppUserID:(NSString *)appUserID;
 
+- (void)createAliasForAppUserID:(NSString *)appUserID
+               withNewAppUserID:(NSString *)newAppUserID
+                     completion:(void (^ _Nullable)(NSError * _Nullable error))completion;
+
 @end
 
 NS_ASSUME_NONNULL_END

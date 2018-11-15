@@ -110,6 +110,21 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     completion(info, responseError);
 }
 
+- (void)handle:(NSInteger)statusCode
+  withResponse:(NSDictionary * _Nullable)response
+    completion:(void (^)(NSError * _Nullable error))completion
+{
+    NSError *responseError = nil;
+    
+    if (statusCode > 300) {
+        responseError = [self unexpectedResponseError];
+    }
+    
+    if (completion != nil) {
+        completion(responseError);
+    }
+}
+
 - (NSString *)escapedAppUserID:(NSString *)appUserID {
     return [appUserID stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
 }
@@ -315,6 +330,23 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                       }
                             headers:self.headers
                   completionHandler:nil];
+}
+
+- (void)createAliasForAppUserID:(NSString *)appUserID
+               withNewAppUserID:(NSString *)newAppUserID
+                     completion:(void (^ _Nullable)(NSError * _Nullable error))completion
+{
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/alias", escapedAppUserID];
+    [self.httpClient performRequest:@"POST"
+                               path:path
+                               body:@{
+                                       @"new_app_user_id": newAppUserID
+                               }
+                            headers:self.headers
+                  completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
+                      [self handle:status withResponse:response completion:completion];
+                  }];
 }
 
 @end
