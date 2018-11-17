@@ -1053,7 +1053,7 @@ class PurchasesTests: XCTestCase {
     private func identifiedSuccesfully(appUserID: String) {
         expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
         expect(self.purchases?.appUserID).to(equal(appUserID))
-        expect(self.purchases?.isUsingAnonymousID).to(beFalse())
+        expect(self.purchases?.allowSharingAppStoreAccount).to(beFalse())
     }
     
 }

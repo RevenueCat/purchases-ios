@@ -138,7 +138,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
  If a user tries to purchase a product that is active on the current app store account, we will treat it as a restore and alias
  the new ID with the previous id.
  */
-@property (nonatomic) BOOL isUsingAnonymousID;
+@property (nonatomic) BOOL allowSharingAppStoreAccount;
 
 /// Default to YES, set this to NO if you are finishing transactions with your own StoreKit queue listener
 @property (nonatomic) BOOL finishTransactions;

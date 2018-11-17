@@ -138,7 +138,7 @@ static RCPurchases *_sharedPurchases = nil;
             if (appUserID == nil) {
                 appUserID = [self generateAndCacheID];
             }
-            self.isUsingAnonymousID = YES;
+            self.allowSharingAppStoreAccount = YES;
             self.appUserID = appUserID;
         } else {
             [self identify:appUserID];
@@ -487,7 +487,7 @@ static RCPurchases *_sharedPurchases = nil;
 
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
-                            isRestore:self.isUsingAnonymousID
+                            isRestore:self.allowSharingAppStoreAccount
                     productIdentifier:productIdentifier
                                 price:price
                           paymentMode:paymentMode
@@ -585,7 +585,7 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)reset
 {
     self.appUserID = [self generateAndCacheID];
-    self.isUsingAnonymousID = YES;
+    self.allowSharingAppStoreAccount = YES;
 }
 
 - (NSString *)generateAndCacheID
