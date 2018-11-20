@@ -580,12 +580,20 @@ static RCPurchases *_sharedPurchases = nil;
 {
     [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
     self.appUserID = appUserID;
+    self.cachesLastUpdated = nil;
+    if (self.delegate != nil) {
+        [self updateCaches];
+    }
 }
 
 - (void)reset
 {
     self.appUserID = [self generateAndCacheID];
     self.isUsingAnonymousID = YES;
+    self.cachesLastUpdated = nil;
+    if (self.delegate != nil) {
+        [self updateCaches];
+    }
 }
 
 - (NSString *)generateAndCacheID

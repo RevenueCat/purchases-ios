@@ -1026,6 +1026,7 @@ class PurchasesTests: XCTestCase {
         let newAppUserID = "cesarPedro"
         self.purchases?.identify(newAppUserID)
         identifiedSuccesfully(appUserID: newAppUserID)
+        expect(self.userDefaults.cachedUserInfo.count).to(equal(2))
     }
 
     func testCreateAliasIdentifies() {
@@ -1048,6 +1049,21 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         self.purchases?.reset()
         expect(self.userDefaults.appUserID).toNot(beNil())
+    }
+    
+    func testIdentifyForcesCache() {
+        setupPurchases()
+        self.purchases?.identify("new")
+        expect(self.userDefaults.cachedUserInfo.count).to(equal(2))
+        let purchaserInfo = userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo.new"]
+        expect(purchaserInfo).toNot(beNil())
+
+    }
+    
+    func testResetForcesCache() {
+        setupPurchases()
+        self.purchases?.reset()
+        expect(self.userDefaults.cachedUserInfo.count).to(equal(2))
     }
     
     private func identifiedSuccesfully(appUserID: String) {
