@@ -88,6 +88,7 @@ class PurchasesTests: XCTestCase {
         var postReceiptPurchaserInfo: RCPurchaserInfo?
         var postReceiptError: Error?
         var aliasError: Error?
+        var aliasCalled = false
 
         override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
             postReceiptDataCalled = true
@@ -132,9 +133,11 @@ class PurchasesTests: XCTestCase {
         }
         
         override func createAlias(forAppUserID appUserID: String, withNewAppUserID newAppUserID: String, completion: ((Error?) -> Void)? = nil) {
+            aliasCalled = true
             if (aliasError != nil) {
                 completion!(aliasError)
             } else {
+                userID = newAppUserID
                 completion!(nil)
             }
         }
@@ -1000,7 +1003,7 @@ class PurchasesTests: XCTestCase {
         expect(RCPurchases.shared()).toEventually(equal(purchases))
     }
     
-    func testCreateAliasCallsBackend() {
+    func testCreateAliasWithCompletionCallsBackend() {
         setupPurchases()
 
         var completionCalled = false
@@ -1018,6 +1021,14 @@ class PurchasesTests: XCTestCase {
         })
         
         expect(completionCalled).toEventually(beFalse())
+    }
+    
+    func testCreateAliasCallsBackend() {
+        setupPurchases()
+        self.backend.aliasCalled = false
+        self.purchases?.createAlias("cesarpedro")
+        
+        expect(self.backend.aliasCalled).toEventually(beTrue())
     }
     
     func testIdentify() {
@@ -1064,6 +1075,28 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         self.purchases?.reset()
         expect(self.userDefaults.cachedUserInfo.count).to(equal(2))
+    }
+    
+    func testCreateAliasChangesAppUserId() {
+        setupPurchases()
+        
+        self.backend.aliasCalled = false
+        self.backend.aliasError = nil
+        self.purchases?.createAlias("cesarpedro")
+        
+        expect(self.backend.userID).to(be("cesarpedro"))
+    }
+    
+    func testCreateAliasWithCompletionChangesAppUserId() {
+        setupPurchases()
+        
+        self.backend.aliasCalled = false
+        self.backend.aliasError = nil
+        self.purchases?.createAlias("cesarpedro", completion: { (error) in
+            
+        })
+        
+        expect(self.backend.userID).to(be("cesarpedro"))
     }
     
     private func identifiedSuccesfully(appUserID: String) {

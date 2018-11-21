@@ -561,7 +561,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)createAlias:(NSString *)alias
 {
-    [self createAlias:self.appUserID completion:^(NSError * _Nullable error) {}];
+    [self createAlias:alias completion:^(NSError * _Nullable error) {}];
 }
 
 - (void)createAlias:(NSString *)alias completion:(void (^)(NSError * _Nullable error))completion
