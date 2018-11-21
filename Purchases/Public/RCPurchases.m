@@ -561,7 +561,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)createAlias:(NSString *)alias
 {
-    [self createAlias:self.appUserID completion:^(NSError * _Nullable error) {}];
+    [self createAlias:alias completion:^(NSError * _Nullable error) {}];
 }
 
 - (void)createAlias:(NSString *)alias completion:(void (^)(NSError * _Nullable error))completion
@@ -580,12 +580,20 @@ static RCPurchases *_sharedPurchases = nil;
 {
     [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
     self.appUserID = appUserID;
+    self.cachesLastUpdated = nil;
+    if (self.delegate != nil) {
+        [self updateCaches];
+    }
 }
 
 - (void)reset
 {
     self.appUserID = [self generateAndCacheID];
     self.isUsingAnonymousID = YES;
+    self.cachesLastUpdated = nil;
+    if (self.delegate != nil) {
+        [self updateCaches];
+    }
 }
 
 - (NSString *)generateAndCacheID
