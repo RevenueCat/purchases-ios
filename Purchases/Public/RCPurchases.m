@@ -45,7 +45,7 @@ static RCPurchases *_sharedPurchases = nil;
 @synthesize delegate=_delegate;
 
 + (NSString *)frameworkVersion {
-    return @"1.2.0-rc1";
+    return @"1.2.0-rc2";
 }
 
 + (instancetype)sharedPurchases {
