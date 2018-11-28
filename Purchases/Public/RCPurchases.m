@@ -571,7 +571,9 @@ static RCPurchases *_sharedPurchases = nil;
             [self identify:alias];
         }
         if (completion != nil) {
-            completion(error);
+            [self dispatch:^{
+                completion(error);
+            }];
         }
     }];
 }
