@@ -1,3 +1,7 @@
+## 1.2.0
+- Singleton management handled by the SDK
+- Adds reset, identify and create alias calls
+
 ## 1.1.5
 - Conform RCPurchasesDelegate to NSObject
 - Adds requestDate to the purchaser info to avoid edge cases
