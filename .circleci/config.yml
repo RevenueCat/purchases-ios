@@ -8,9 +8,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Carthage
-          command: brew install carthage
-      - run:
           name: Carthage Update
           command: carthage update
       - run: bundle install
