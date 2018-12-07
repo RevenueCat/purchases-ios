@@ -18,7 +18,7 @@ jobs:
             SCAN_DEVICE: iPhone XS
             SCAN_SCHEME: Purchases
       - store_test_results:
-          path: output/scan
+          path: fastlane/test_output
       - store_artifacts:
           path: output
 workflows:
