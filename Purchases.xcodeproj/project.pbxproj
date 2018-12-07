@@ -29,6 +29,7 @@
 		35262A2D1F7D783F00C04F2C /* RCHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 35262A2B1F7D783F00C04F2C /* RCHTTPClient.m */; };
 		35262A301F7D78C600C04F2C /* HTTPClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35262A2F1F7D78C600C04F2C /* HTTPClientTests.swift */; };
 		352C36BF1F9D372D00A15783 /* RCPurchaserInfo+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 352C36BE1F9D372D00A15783 /* RCPurchaserInfo+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		35395CB421B9F59E00286D13 /* RCIntroEligibility+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35395CB321B9EB1000286D13 /* RCIntroEligibility+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		356D65F620B873AF00576D45 /* Purchases.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */; };
 		359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */; };
@@ -100,6 +101,7 @@
 		35262A2B1F7D783F00C04F2C /* RCHTTPClient.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCHTTPClient.m; sourceTree = "<group>"; };
 		35262A2F1F7D78C600C04F2C /* HTTPClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClientTests.swift; sourceTree = "<group>"; };
 		352C36BE1F9D372D00A15783 /* RCPurchaserInfo+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCPurchaserInfo+Protected.h"; sourceTree = "<group>"; };
+		35395CB321B9EB1000286D13 /* RCIntroEligibility+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCIntroEligibility+Protected.h"; sourceTree = "<group>"; };
 		359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSLocale+RCExtensions.h"; sourceTree = "<group>"; };
 		359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSLocale+RCExtensions.m"; sourceTree = "<group>"; };
 		35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCPurchases+Protected.h"; sourceTree = "<group>"; };
@@ -186,6 +188,7 @@
 			children = (
 				350FBDE61F7EEEDF0065833D /* Public */,
 				35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */,
+				35395CB321B9EB1000286D13 /* RCIntroEligibility+Protected.h */,
 				352C36BE1F9D372D00A15783 /* RCPurchaserInfo+Protected.h */,
 				35CE750320C396E400CE09D8 /* RCEntitlement+Protected.h */,
 				35CE750020C3932900CE09D8 /* RCOffering+Protected.h */,
@@ -239,6 +242,7 @@
 				359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */,
 				351F4FAB1F80190700F245F4 /* RCBackend.h in Headers */,
 				352C36BF1F9D372D00A15783 /* RCPurchaserInfo+Protected.h in Headers */,
+				35395CB421B9F59E00286D13 /* RCIntroEligibility+Protected.h in Headers */,
 				350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */,
 				35A60EAA1F82993E00D2FAE8 /* RCPurchases+Protected.h in Headers */,
 				351F4FAF1F803D0700F245F4 /* RCPurchaserInfo.h in Headers */,

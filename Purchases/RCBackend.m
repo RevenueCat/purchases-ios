@@ -11,6 +11,7 @@
 #import "RCHTTPClient.h"
 #import "RCPurchaserInfo+Protected.h"
 #import "RCIntroEligibility.h"
+#import "RCIntroEligibility+Protected.h"
 #import "RCEntitlement+Protected.h"
 #import "RCOffering+Protected.h"
 

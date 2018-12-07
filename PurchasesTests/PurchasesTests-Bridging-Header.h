@@ -13,3 +13,4 @@
 #include <Purchases/RCEntitlement+Protected.h>
 #include <Purchases/RCOffering.h>
 #include <Purchases/RCOffering+Protected.h>
+#include <Purchases/RCIntroEligibility+Protected.h>

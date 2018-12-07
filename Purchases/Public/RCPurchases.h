@@ -13,9 +13,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ Deferred block for `shouldPurchasePromoProduct:defermentBlock`
+ */
 typedef void (^RCDeferredPromotionalPurchaseBlock)(void);
+
+/**
+ Completion block for `checkTrialOrIntroductoryPriceEligibility:completion`
+ */
 typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *);
-typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement *> *);
 
 /**
  @typedef RCAttributionNetwork
@@ -25,9 +31,21 @@ typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement
  @constant RCAttributionNetworkAdjust Adjust https://www.adjust.com/
  */
 typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
+    /**
+     Apple's search ads
+     */
     RCAttributionNetworkAppleSearchAds = 0,
+    /**
+     Adjust https://www.adjust.com/
+     */
     RCAttributionNetworkAdjust,
+    /**
+     AppsFlyer https://www.appsflyer.com/
+     */
     RCAttributionNetworkAppsFlyer,
+    /**
+     Branch https://www.branch.io/
+     */
     RCAttributionNetworkBranch
 };
 
