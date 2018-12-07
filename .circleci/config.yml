@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test:
+  runtest:
     macos:
       xcode: "10.0.0"
     working_directory: ~/purchases-ios
