@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build-and-test:
+    macos:
+      xcode: "10.1"
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - run: bundle install
+      - run:
+          name: Run tests
+          command: fastlane scan
+          environment:
+            SCAN_DEVICE: iPhone XS
+            SCAN_SCHEME: PurchasesTests
