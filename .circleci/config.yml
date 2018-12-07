@@ -14,3 +14,8 @@ jobs:
           environment:
             SCAN_DEVICE: iPhone XS
             SCAN_SCHEME: PurchasesTests
+workflows:
+  version: 2
+  build-test:
+    jobs:
+      - runtest
