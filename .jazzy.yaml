@@ -5,4 +5,4 @@ objc: true
 umbrella_header: Purchases/Public/Purchases.h
 module: Purchases
 sdk: iphonesimulator
-output: docs/objc_output
+output: docs
