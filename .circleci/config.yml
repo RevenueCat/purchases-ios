@@ -1,8 +1,8 @@
 version: 2
 jobs:
-  build-and-test:
+  test:
     macos:
-      xcode: "10.1"
+      xcode: "10.0.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
