@@ -11,6 +11,9 @@ jobs:
       - run:
           name: Run tests
           command: fastlane scan
+          environment:
+            SCAN_DEVICE: iPhone XS
+            SCAN_SCHEME: Purchases
 workflows:
   version: 2
   build-test:
