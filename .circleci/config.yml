@@ -20,7 +20,7 @@ jobs:
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
-          path: output
+          path: fastlane/test_output
 workflows:
   version: 2
   build-test:
