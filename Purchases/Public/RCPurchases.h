@@ -19,7 +19,14 @@ typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError
 typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *);
 typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement *> * _Nullable, NSError * _Nullable);
 typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *);
-typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction *transaction, RCPurchaserInfo * _Nullable, NSError * _Nullable);
+typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable);
+
+FOUNDATION_EXPORT NSErrorDomain const RCPurchasesAPIErrorDomain;
+
+NS_ERROR_ENUM(RCPurchasesAPIErrorDomain) {
+    RCDuplicateMakePurchaseCallsError = 0
+};
+
 
 /**
  Deferred block for `shouldPurchasePromoProduct:defermentBlock`

@@ -20,6 +20,8 @@
 #import "RCEntitlement+Protected.h"
 #import "RCOffering+Protected.h"
 
+NSErrorDomain const RCPurchasesAPIErrorDomain = @"RCPurchasesAPIErrorDomain";
+
 @interface RCPurchases () <RCStoreKitWrapperDelegate>
 
 @property (nonatomic) NSString *appUserID;
@@ -342,6 +344,13 @@ static RCPurchases *_sharedPurchases = nil;
     payment.applicationUsername = self.appUserID;
     
     @synchronized (self) {
+        if (self.purchaseCompleteCallbacks[product.productIdentifier]) {
+            completion(nil, nil, [NSError errorWithDomain:RCPurchasesAPIErrorDomain
+                                                     code:RCDuplicateMakePurchaseCallsError
+                                                 userInfo:@{
+                                                            NSLocalizedDescriptionKey: @"Purchase already in progress for this product."
+                                                            }]);
+        }
         self.purchaseCompleteCallbacks[product.productIdentifier] = [completion copy];
     }
 
