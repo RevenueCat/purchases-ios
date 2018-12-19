@@ -124,14 +124,14 @@ class PurchasesTests: XCTestCase {
         override func getEntitlementsForAppUserID(_ appUserID: String, completion: @escaping RCEntitlementResponseHandler) {
             gotEntitlements += 1
             if (failEntitlements) {
-                completion(nil)
+                completion(nil, NSError.init(domain: RCBackendErrorDomain, code: 0, userInfo:nil))
                 return
             }
 
             let offering = RCOffering()
             offering.activeProductIdentifier = "monthly_freetrial"
             let entitlement = RCEntitlement(offerings: ["monthly" : offering])
-            completion(["pro" : entitlement!])
+            completion(["pro" : entitlement!], nil)
         }
         
         override func createAlias(forAppUserID appUserID: String, withNewAppUserID newAppUserID: String, completion: ((Error?) -> Void)? = nil) {
@@ -954,7 +954,20 @@ class PurchasesTests: XCTestCase {
             receivedInfo = info
         }
         
-        expect(receivedInfo).toEventuallyNot(beNil())
+        expect(receivedInfo).toNot(beNil())
+    }
+    
+    func testDoesntSendCacheIfNoCacheAndCallsBackendAgain() {
+        self.backend.timeout = true
+        
+        setupPurchases()
+        
+        expect(self.backend.getSubscriberCallCount).to(equal(1))
+        
+        purchases!.purchaserInfo { (info, error) in
+        }
+        
+        expect(self.backend.getSubscriberCallCount).to(equal(2))
     }
 
     func testGetsProductInfoFromEntitlements() {

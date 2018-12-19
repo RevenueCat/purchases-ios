@@ -310,9 +310,9 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
                       if (statusCode < 300) {
                           NSDictionary *entitlements = [self parseEntitlementResponse:response];
-                          completion(entitlements);
+                          completion(entitlements, nil);
                       } else {
-                          completion(nil);
+                          completion(nil, [self unexpectedResponseError]);
                       }
     }];
 }

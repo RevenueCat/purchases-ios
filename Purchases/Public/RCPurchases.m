@@ -235,8 +235,25 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
     RCPurchaserInfo *info = [self readPurchaserInfoFromCache];
-    // TODO: Calls the backend if not in the cache/
-    completion(info, nil);
+    if (info) {
+        if (completion) {
+            completion(info, nil);
+        }
+        return;
+    } else {
+        [self.backend getSubscriberDataWithAppUserID:self.appUserID
+                                          completion:^(RCPurchaserInfo *info, NSError *error) {
+                                              if (error) {
+                                                  if (completion) {
+                                                      completion(nil, error);
+                                                  } else {
+                                                      completion(info, nil);
+                                                  }
+                                              }
+                                          }];
+    }
+    
+    
 }
 
 -(NSDictionary<NSString *, RCEntitlement *> * _Nullable)entitlements
@@ -267,9 +284,11 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)getEntitlements:(RCReceiveEntitlementsBlock _Nullable)completion
 {
     [self.backend getEntitlementsForAppUserID:self.appUserID
-                                   completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
-                                       if (entitlements == nil) {
-                                           // TODO: get an error from the underlying call and call completion
+                                   completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements, NSError *error) {
+                                       if (error != nil) {
+                                           if (completion) {
+                                               completion(nil, error);
+                                           }
                                            return;
                                        }
 

@@ -526,7 +526,7 @@ class BackendTests: XCTestCase {
 
         var entitlements: [String : RCEntitlement]?
 
-        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements) in
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
             entitlements = newEntitlements
         })
 
@@ -557,7 +557,7 @@ class BackendTests: XCTestCase {
 
         var entitlements: [String : RCEntitlement]?
 
-        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements) in
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
             entitlements = newEntitlements
         })
 
@@ -577,7 +577,7 @@ class BackendTests: XCTestCase {
 
         var entitlements: [String : RCEntitlement]?
 
-        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements) in
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
             entitlements = newEntitlements
         })
 
