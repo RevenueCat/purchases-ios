@@ -514,10 +514,14 @@ static RCPurchases *_sharedPurchases = nil;
                                         NSError * _Nullable error) {
                                [self dispatch:^{
                                    if (error) {
-//                                       [self.delegate purchases:self failedToRestoreTransactionsWithError:error];
+                                       if (completion) {
+                                           completion(nil, error);
+                                       }
                                    } else if (info) {
                                        [self cachePurchaserInfo:info];
-//                                       [self.delegate purchases:self restoredTransactionsWithPurchaserInfo:info];
+                                       if (completion) {
+                                           completion(info, nil);
+                                       }
                                    }
                                }];
                            }];
