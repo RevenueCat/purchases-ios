@@ -152,7 +152,7 @@ static RCPurchases *_sharedPurchases = nil;
         [self.notificationCenter addObserver:self
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
-        [self readPurchaserInfoFromCache];
+        
         [self updateCaches];
     }
 
@@ -213,7 +213,6 @@ static RCPurchases *_sharedPurchases = nil;
 {
     NSTimeInterval timeSinceLastCheck = -[self.cachesLastUpdated timeIntervalSinceNow];
     if (self.cachesLastUpdated != nil && timeSinceLastCheck < 60.) {
-        [self readPurchaserInfoFromCache];
         return;
     }
 
