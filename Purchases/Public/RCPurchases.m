@@ -147,6 +147,13 @@ static RCPurchases *_sharedPurchases = nil;
         } else {
             [self identify:appUserID completionBlock:nil];
         }
+        
+        self.storeKitWrapper.delegate = self;
+        [self.notificationCenter addObserver:self
+                                    selector:@selector(applicationDidBecomeActive:)
+                                        name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
+        [self readPurchaserInfoFromCache];
+        [self updateCaches];
     }
 
     return self;
@@ -154,6 +161,10 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)dealloc
 {
+    self.storeKitWrapper.delegate = nil;
+    [self.notificationCenter removeObserver:self
+                                       name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME
+                                     object:nil];
     self.delegate = nil;
 }
 
@@ -165,30 +176,6 @@ static RCPurchases *_sharedPurchases = nil;
                               fromNetwork:network
                              forAppUserID:self.appUserID];
     }
-}
-
-- (void)setDelegate:(id<RCPurchasesDelegate>)delegate
-{
-    _delegate = delegate;
-
-    if (delegate != nil) {
-        self.storeKitWrapper.delegate = self;
-        [self.notificationCenter addObserver:self
-                                    selector:@selector(applicationDidBecomeActive:)
-                                        name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
-        [self readPurchaserInfoFromCache];
-        [self updateCaches];
-    } else {
-        self.storeKitWrapper.delegate = nil;
-        [self.notificationCenter removeObserver:self
-                                           name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME
-                                         object:nil];
-    }
-}
-
-- (id<RCPurchasesDelegate>)delegate
-{
-    return _delegate;
 }
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif
