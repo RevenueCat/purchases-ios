@@ -239,7 +239,7 @@ static RCPurchases *_sharedPurchases = nil;
         }
     }];
 
-    [self getEntitlements:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {}];
+    [self getEntitlements:nil];
 }
 
 -(NSDictionary<NSString *, RCEntitlement *> * _Nullable)entitlements
@@ -261,18 +261,18 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)entitlementsWithCompletionBlock:(RCReceiveEntitlementsBlock)completion
 {
     if (self.cachedEntitlements) {
-        completion(self.cachedEntitlements);
+        completion(self.cachedEntitlements, nil);
     } else {
         [self getEntitlements:completion];
     }
 }
 
-- (void)getEntitlements:(void (^)(NSDictionary<NSString *, RCEntitlement *> * _Nullable entitlements))completion
+- (void)getEntitlements:(RCReceiveEntitlementsBlock _Nullable)completion
 {
     [self.backend getEntitlementsForAppUserID:self.appUserID
                                    completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements) {
                                        if (entitlements == nil) {
-                                           completion(nil);
+                                           // TODO: get an error from the underlying call and call completion
                                            return;
                                        }
 
@@ -297,7 +297,7 @@ static RCPurchases *_sharedPurchases = nil;
                                                self.cachesLastUpdated = nil;
                                            }
 
-                                           completion(entitlements);
+                                           completion(entitlements, nil);
                                        }];
     }];
 }

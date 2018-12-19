@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable);
 typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *);
-typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement *> *);
+typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement *> * _Nullable, NSError * _Nullable);
 typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *);
 
 /**
@@ -193,7 +193,8 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
  @param alias The new appUserID that should be linked to the currently identified appUserID
  @param completion An optional completion block called when the aliasing has been successful. This completion block will receive an error if there's been one.
  */
-- (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock)completion;
+- (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock)completion
+NS_SWIFT_NAME(createAlias(_:_:));
 
 /**
  This function will identify the current user with an appUserID. Typically this would be used after a logout to identify a new user without calling configure
@@ -228,7 +229,8 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 
  @param completion A completion block called when entitlements is available. Called immediately if entitlements are cached. Entitlements can be nil if an error occurred.
  */
-- (void)entitlementsWithCompletionBlock:(RCReceiveEntitlementsBlock)completion;
+- (void)entitlementsWithCompletionBlock:(RCReceiveEntitlementsBlock)completion
+NS_SWIFT_NAME(entitlements(_:));
 
 /**
  Fetches the `SKProducts` for your IAPs for given `productIdentifiers`. Use this method if you aren't using `-entitlements:`.
@@ -265,7 +267,8 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 
  @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI.
  */
-- (void)restoreTransactionsWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion;
+- (void)restoreTransactionsWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+NS_SWIFT_NAME(restoreTransactions(_:));
 
 /**
  Computes whether or not a user is eligible for the introductory pricing period of a given product. You should use this method to determine whether or not you show the user the normal product price or the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
