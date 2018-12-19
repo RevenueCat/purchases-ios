@@ -605,6 +605,29 @@ class PurchasesTests: XCTestCase {
         
         expect(callCount).toEventually(equal(1))
     }
+    
+    func testCompletionBlockNotCalledForDifferentProducts() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let otherProduct = MockProduct(mockProductIdentifier: "com.product.id2")
+        
+        var callCount = 0
+        
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            callCount += 1
+        }
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = SKPayment.init(product: otherProduct)
+        
+        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(callCount).toEventually(equal(0))
+    }
 
     func testDoesntIgnorePurchasesThatDoNotHaveApplicationUserNames() {
         setupPurchases()
