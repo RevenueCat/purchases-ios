@@ -562,8 +562,13 @@ class PurchasesTests: XCTestCase {
     func testCallsDelegateAfterBackendResponse() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        
+        var purchaserInfo: RCPurchaserInfo?
+        var receivedError: Error?
+        
         self.purchases?.makePurchase(product) { (tx, info, error) in
-            
+            purchaserInfo = info
+            receivedError = error
         }
 
         let transaction = MockTransaction()
@@ -574,7 +579,8 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        expect(self.purchasesDelegate.purchaserInfo).toEventually(be(self.backend.postReceiptPurchaserInfo))
+        expect(purchaserInfo).toEventually(be(self.backend.postReceiptPurchaserInfo))
+        expect(receivedError).toEventually(beNil())
     }
 
     func testDoesntIgnorePurchasesThatDoNotHaveApplicationUserNames() {

@@ -33,6 +33,7 @@
 @property (nonatomic) NSDate *cachesLastUpdated;
 @property (nonatomic) NSDictionary<NSString *, RCEntitlement *> *cachedEntitlements;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
+@property (nonatomic) NSMutableDictionary<NSString *, RCPurchaseCompletedBlock> *purchaseCompleteCallbacks;
 
 @end
 
@@ -130,6 +131,7 @@ static RCPurchases *_sharedPurchases = nil;
         self.userDefaults = userDefaults;
 
         self.productsByIdentifier = [NSMutableDictionary new];
+        self.purchaseCompleteCallbacks = [NSMutableDictionary new];
 
         self.finishTransactions = YES;
 
@@ -338,6 +340,10 @@ static RCPurchases *_sharedPurchases = nil;
 {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
     payment.applicationUsername = self.appUserID;
+    
+    @synchronized (self) {
+        self.purchaseCompleteCallbacks[product.productIdentifier] = [completion copy];
+    }
 
     [self.storeKitWrapper addPayment:payment];
 }
@@ -361,24 +367,36 @@ static RCPurchases *_sharedPurchases = nil;
                                    error:(NSError * _Nullable)error
 {
     [self dispatch:^{
+        RCPurchaseCompletedBlock completion = nil;
+        @synchronized (self) {
+             completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
+        }
+        
         if (info) {
             [self cachePurchaserInfo:info];
-//            [self.delegate purchases:self
-//                completedTransaction:transaction
-//                     withUpdatedInfo:info];
+            if (completion) {
+                completion(transaction, info, nil);
+            }
+            // TODO call delegate
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if (error.code == RCFinishableError) {
-//            [self.delegate purchases:self failedTransaction:transaction withReason:error];
+            if (completion) {
+                completion(transaction, nil, error);
+            }
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if (error.code == RCUnfinishableError) {
-//            [self.delegate purchases:self failedTransaction:transaction withReason:error];
+            if (completion) {
+                completion(transaction, nil, error);
+            }
         } else {
             RCLog(@"Unexpected error from backend");
-//            [self.delegate purchases:self failedTransaction:transaction withReason:error];
+            if (completion) {
+                completion(transaction, nil, error);
+            }
         }
     }];
 }
