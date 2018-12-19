@@ -297,7 +297,9 @@ static RCPurchases *_sharedPurchases = nil;
                                                self.cachesLastUpdated = nil;
                                            }
 
-                                           completion(entitlements, nil);
+                                           if (completion) {
+                                               completion(entitlements, nil);
+                                           }
                                        }];
     }];
 }
