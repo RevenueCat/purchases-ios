@@ -878,10 +878,14 @@ class PurchasesTests: XCTestCase {
                 "original_application_version": "1.0"
             ]
         ])
+        
+        var receivedPurchaserInfo: RCPurchaserInfo?
 
-        purchases?.updateOriginalApplicationVersion(completionBlock: nil)
+        purchases?.updateOriginalApplicationVersion { (info, error) in
+            receivedPurchaserInfo = info
+        }
 
-        expect(self.purchasesDelegate.purchaserInfo?.originalApplicationVersion).toEventually(equal("1.0"))
+        expect(receivedPurchaserInfo?.originalApplicationVersion).toEventually(equal("1.0"))
         expect(self.backend.userID).toEventuallyNot(beNil())
         expect(self.backend.postReceiptDataCalled).toEventuallyNot(beFalse())
     }

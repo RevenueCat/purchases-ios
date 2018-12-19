@@ -487,11 +487,8 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)handleUpdatedPurchaserInfo:(RCPurchaserInfo * _Nullable)info error:(NSError * _Nullable)error
 {
     [self dispatch:^{
-        if (error) {
-//            [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
-        } else if (info) {
+        if (info) {
             [self cachePurchaserInfo:info];
-//            [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
         }
     }];
 }
@@ -570,11 +567,11 @@ static RCPurchases *_sharedPurchases = nil;
                                                                              NSError * _Nullable error) {
         if (error) {
             [self dispatch:^{
-//                [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
+                completion(nil, error);
             }];
         } else if (info.originalApplicationVersion) {
             [self dispatch:^{
-//                [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+                completion(info, nil);
             }];
         } else {
             [self receiptData:^(NSData * _Nonnull data) {
@@ -588,6 +585,9 @@ static RCPurchases *_sharedPurchases = nil;
                                  currencyCode:nil
                                    completion:^(RCPurchaserInfo * _Nullable info, NSError * _Nullable error) {
                                        [self handleUpdatedPurchaserInfo:info error:error];
+                                       if (completion) {
+                                           completion(info, error);
+                                       }
                                    }];
             }];
         }
