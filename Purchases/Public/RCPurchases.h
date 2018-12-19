@@ -19,6 +19,7 @@ typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError
 typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *);
 typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement *> * _Nullable, NSError * _Nullable);
 typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *);
+typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction *transaction, RCPurchaserInfo * _Nullable, NSError * _Nullable);
 
 /**
  Deferred block for `shouldPurchasePromoProduct:defermentBlock`
@@ -258,7 +259,8 @@ NS_SWIFT_NAME(entitlements(_:));
 
  @param product The `SKProduct` the user intends to purchase
  */
-- (void)makePurchase:(SKProduct *)product;
+- (void)makePurchase:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
+NS_SWIFT_NAME(makePurchase(_:_:));
 
 /**
  This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user. Going forward, either `appUserID` will be able to reference the same user.

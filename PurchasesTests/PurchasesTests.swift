@@ -304,7 +304,9 @@ class PurchasesTests: XCTestCase {
     func testAddsPaymentToWrapper() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         expect(self.storeKitWrapper.payment).toNot(beNil())
         expect(self.storeKitWrapper.payment?.productIdentifier).to(equal(product.productIdentifier))
@@ -313,7 +315,9 @@ class PurchasesTests: XCTestCase {
     func testTransitioningToPurchasing() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -327,7 +331,9 @@ class PurchasesTests: XCTestCase {
     func testTransitioningToPurchasedSendsToBackend() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -345,7 +351,9 @@ class PurchasesTests: XCTestCase {
     func testReceiptsSendsAsRestoreWhenAnon() {
         setupAnonPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -363,7 +371,9 @@ class PurchasesTests: XCTestCase {
     func testFinishesTransactionsIfSentToBackendCorrectly() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -384,7 +394,9 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         self.purchases?.finishTransactions = false
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -407,7 +419,9 @@ class PurchasesTests: XCTestCase {
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
         purchases!.products(withIdentifiers:productIdentifiers) { (newProducts) in
             let product = newProducts[0];
-            self.purchases?.makePurchase(product)
+            self.purchases?.makePurchase(product) { (tx, info, error) in
+                
+            }
             
             let transaction = MockTransaction()
             transaction.mockPayment = self.storeKitWrapper.payment!
@@ -443,7 +457,9 @@ class PurchasesTests: XCTestCase {
     func testDoesntSendProductInfoIfProductIsntCached() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
         
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -470,7 +486,9 @@ class PurchasesTests: XCTestCase {
     func testAfterSendingDoesntFinishTransactionIfBackendError() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -487,7 +505,9 @@ class PurchasesTests: XCTestCase {
     func testAfterSendingFinishesFromBackendErrorIfAppropriate() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -504,7 +524,9 @@ class PurchasesTests: XCTestCase {
     func testNotifiesIfTransactionFailsFromBackend() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -521,7 +543,9 @@ class PurchasesTests: XCTestCase {
     func testNotifiesIfTransactionFailsFromStoreKit() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -538,7 +562,9 @@ class PurchasesTests: XCTestCase {
     func testCallsDelegateAfterBackendResponse() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -815,7 +841,9 @@ class PurchasesTests: XCTestCase {
             ]]);
 
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -877,7 +905,9 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.gotEntitlements).toEventually(equal(1))
         self.purchases?.entitlements { (newEntitlements, _) in
             let product = (newEntitlements?["pro"]?.offerings["monthly"]?.activeProduct)!;
-            self.purchases?.makePurchase(product)
+            self.purchases?.makePurchase(product) { (tx, info, error) in
+                
+            }
             
             let transaction = MockTransaction()
             transaction.mockPayment = self.storeKitWrapper.payment!

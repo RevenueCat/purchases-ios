@@ -334,7 +334,7 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 }
 
-- (void)makePurchase:(SKProduct *)product
+- (void)makePurchase:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
 {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
     payment.applicationUsername = self.appUserID;
