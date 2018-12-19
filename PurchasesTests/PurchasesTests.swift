@@ -226,35 +226,11 @@ class PurchasesTests: XCTestCase {
     }
 
     class PurchasesDelegate: NSObject, RCPurchasesDelegate {
-        var completedTransaction: SKPaymentTransaction?
         var purchaserInfo: RCPurchaserInfo?
-        func purchases(_ purchases: RCPurchases, completedTransaction transaction: SKPaymentTransaction, withUpdatedInfo purchaserInfo: RCPurchaserInfo) {
-            self.completedTransaction = transaction
-            self.purchaserInfo = purchaserInfo
-        }
-
-        var failedTransaction: SKPaymentTransaction?
-        func purchases(_ purchases: RCPurchases, failedTransaction transaction: SKPaymentTransaction, withReason failureReason: Error) {
-            self.failedTransaction = transaction
-        }
-
         var purchaserInfoReceivedCount = 0
         func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
             purchaserInfoReceivedCount += 1
             self.purchaserInfo = purchaserInfo
-        }
-
-        var updatePurchaserInfoError: Error?
-        func purchases(_ purchases: RCPurchases, failedToUpdatePurchaserInfoWithError failureReason: Error) {
-            updatePurchaserInfoError = failureReason
-        }
-
-        func purchases(_ purchases: RCPurchases, restoredTransactionsWith purchaserInfo: RCPurchaserInfo) {
-            self.purchaserInfo = purchaserInfo
-        }
-
-        func purchases(_ purchases: RCPurchases, failedToRestoreTransactionsWithError error: Error) {
-            updatePurchaserInfoError = error
         }
         
         var promoProduct: SKProduct?
@@ -538,7 +514,6 @@ class PurchasesTests: XCTestCase {
 
         expect(self.backend.postReceiptDataCalled).to(equal(true))
         expect(self.storeKitWrapper.finishCalled).to(beFalse())
-        expect(self.purchasesDelegate.failedTransaction).toEventually(be(transaction))
     }
 
     func testNotifiesIfTransactionFailsFromStoreKit() {
@@ -556,7 +531,6 @@ class PurchasesTests: XCTestCase {
 
         expect(self.backend.postReceiptDataCalled).to(equal(false))
         expect(self.storeKitWrapper.finishCalled).to(beTrue())
-        expect(self.purchasesDelegate.failedTransaction).toEventually(be(transaction))
     }
 
     func testCallsDelegateAfterBackendResponse() {
@@ -572,7 +546,6 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        expect(self.purchasesDelegate.completedTransaction).toEventually(be(transaction))
         expect(self.purchasesDelegate.purchaserInfo).toEventually(be(self.backend.postReceiptPurchaserInfo))
     }
 
@@ -684,14 +657,17 @@ class PurchasesTests: XCTestCase {
 
     func testRestoringPurchasesCallsSuccessDelegateMethod() {
         setupPurchases()
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
 
         let purchaserInfo = RCPurchaserInfo()
         self.backend.postReceiptPurchaserInfo = purchaserInfo
+        
+        var receivedPurchaserInfo: RCPurchaserInfo?
 
-        purchases!.restoreTransactions(nil)
+        purchases!.restoreTransactions { (info, error) in
+            receivedPurchaserInfo = info
+        }
 
-        expect(self.purchasesDelegate.purchaserInfo).toEventually(equal(purchaserInfo))
+        expect(receivedPurchaserInfo).toEventually(equal(purchaserInfo))
     }
 
     func testRestorePurchasesCallsFailureDelegateMethodOnFailure() {
@@ -706,7 +682,6 @@ class PurchasesTests: XCTestCase {
 
 
         expect(self.purchasesDelegate.purchaserInfo).toEventually(beNil())
-        expect(self.purchasesDelegate.updatePurchaserInfoError).toEventuallyNot(beNil())
     }
     
     func testCallsShouldAddPromoPaymentDelegateMethod() {
