@@ -54,7 +54,9 @@ class PurchasesTests: XCTestCase {
         var userID: String?
         var originalApplicationVersion: String?
         var timeout = false
+        var getSubscriberCallCount = 0
         override func getSubscriberData(withAppUserID appUserID: String, completion: @escaping RCBackendResponseHandler) {
+            getSubscriberCallCount += 1
             userID = appUserID
             var info: RCPurchaserInfo?
             if let version = originalApplicationVersion {
@@ -594,16 +596,7 @@ class PurchasesTests: XCTestCase {
     func testAutomaticallyFetchesPurchaserInfoOnDidBecomeActive() {
         setupPurchases()
         notificationCenter.fireNotifications();
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil());
-    }
-
-    func testBackToBackTriggersReemitCachedPurchaserInfo() {
-        setupPurchases()
-
-        notificationCenter.fireNotifications();
-        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2));
-        notificationCenter.fireNotifications();
-        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(3));
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
     }
 
     func testRemovesObservationWhenDelegateNild() {
@@ -611,22 +604,6 @@ class PurchasesTests: XCTestCase {
         purchases!.delegate = nil
 
         expect(self.notificationCenter.observers.count).to(equal(0));
-    }
-
-    func testSettingDelegateUpdatesSubscriberInfo() {
-        let purchases = RCPurchases(appUserID: appUserID,
-                                    requestFetcher: requestFetcher,
-                                    backend: backend,
-                                    storeKitWrapper: storeKitWrapper,
-                                    notificationCenter: notificationCenter,
-                                    userDefaults: userDefaults)!
-        purchases.delegate = nil
-
-        purchasesDelegate.purchaserInfo = nil
-
-        purchases.delegate = purchasesDelegate
-
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
     }
 
     func testRestoringPurchasesPostsTheReceipt() {
@@ -782,10 +759,12 @@ class PurchasesTests: XCTestCase {
         backend.originalApplicationVersion = "1.0"
         
         setupPurchases()
-        
-        purchases!.updateOriginalApplicationVersion(completionBlock: nil)
+        var receivedInfo: RCPurchaserInfo?
+        purchases!.updateOriginalApplicationVersion { (info, error) in
+            receivedInfo = info
+        }
 
-        expect(self.purchasesDelegate.purchaserInfo?.originalApplicationVersion).toEventually(equal("1.0"))
+        expect(receivedInfo?.originalApplicationVersion).toEventually(equal("1.0"))
         expect(self.backend.userID).toEventuallyNot(beNil())
         expect(self.backend.postReceiptDataCalled).toEventually(beFalse())
     }
@@ -811,8 +790,6 @@ class PurchasesTests: XCTestCase {
     func testCachesPurchaserInfo() {
         setupPurchases()
 
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
-
         expect(self.userDefaults.cachedUserInfo.count).to(equal(1))
         let purchaserInfo = userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + self.purchases!.appUserID]
         expect(purchaserInfo).toNot(beNil())
@@ -828,8 +805,6 @@ class PurchasesTests: XCTestCase {
 
     func testCachesPurchaserInfoOnPurchase() {
         setupPurchases()
-
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
 
         expect(self.userDefaults.cachedUserInfo.count).to(equal(1))
 
@@ -856,7 +831,7 @@ class PurchasesTests: XCTestCase {
         expect(self.userDefaults.cachedUserInfoCount).toEventually(equal(2))
     }
 
-    func testSendsCachesPurchaserInfoToDelegateIfExistsOnLaunch() {
+    func testSendsCachedPurchaserInfoToGetter() {
         let info = RCPurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
@@ -867,8 +842,14 @@ class PurchasesTests: XCTestCase {
         self.backend.timeout = true
 
         setupPurchases()
-
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
+        
+        var receivedInfo: RCPurchaserInfo?
+        
+        purchases!.purchaserInfo { (info, error) in
+            receivedInfo = info
+        }
+        
+        expect(receivedInfo).toEventuallyNot(beNil())
     }
 
     func testGetsProductInfoFromEntitlements() {

@@ -192,18 +192,17 @@ static RCPurchases *_sharedPurchases = nil;
     [self updateCaches];
 }
 
-- (void)readPurchaserInfoFromCache {
+- (RCPurchaserInfo *)readPurchaserInfoFromCache {
     NSData *purchaserInfoData = [self.userDefaults dataForKey:self.purchaserInfoUserDefaultCacheKey];
     if (purchaserInfoData) {
         NSError *jsonError;
         NSDictionary *infoDict = [NSJSONSerialization JSONObjectWithData:purchaserInfoData options:0 error:&jsonError];
         if (jsonError == nil && infoDict != nil) {
             RCPurchaserInfo *info = [[RCPurchaserInfo alloc] initWithData:infoDict];
-            if (info) {
-                [self handleUpdatedPurchaserInfo:info error:nil];
-            }
+            return info;
         }
     }
+    return nil;
 }
 
 - (void)cachePurchaserInfo:(RCPurchaserInfo *)info {
@@ -240,6 +239,12 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 
     [self getEntitlements:nil];
+}
+
+- (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
+{
+    RCPurchaserInfo *info = [self readPurchaserInfoFromCache];
+    completion(info, nil);
 }
 
 -(NSDictionary<NSString *, RCEntitlement *> * _Nullable)entitlements

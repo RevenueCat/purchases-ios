@@ -220,6 +220,9 @@ NS_SWIFT_NAME(createAlias(_:_:));
 
 #pragma mark Purchases
 
+- (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
+NS_SWIFT_NAME(purchaserInfo(_:));
+
 /**
  Fetch the configured entitlements for this user. Entitlements allows you to configure your in-app products via RevenueCat
  and greatly simplifies management. See the guide (https://docs.revenuecat.com/v1.0/docs/entitlements) for more info.
