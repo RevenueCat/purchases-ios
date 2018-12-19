@@ -670,18 +670,20 @@ class PurchasesTests: XCTestCase {
         expect(receivedPurchaserInfo).toEventually(equal(purchaserInfo))
     }
 
-    func testRestorePurchasesCallsFailureDelegateMethodOnFailure() {
+    func testRestorePurchasesPassesErrorOnFailure() {
         setupPurchases()
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
         
         let error = NSError(domain: "error_domain", code: RCFinishableError, userInfo: nil)
         self.backend.postReceiptError = error
         self.purchasesDelegate.purchaserInfo = nil
-
-        purchases!.restoreTransactions(nil)
-
-
-        expect(self.purchasesDelegate.purchaserInfo).toEventually(beNil())
+        
+        var receivedError: Error?
+        
+        purchases!.restoreTransactions { (_, newError) in
+            receivedError = newError
+        }
+        
+        expect(receivedError).toEventuallyNot(beNil())
     }
     
     func testCallsShouldAddPromoPaymentDelegateMethod() {
