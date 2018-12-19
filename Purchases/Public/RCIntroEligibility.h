@@ -16,15 +16,28 @@
  @constant RCIntroEligibityStatusEligible The user is eligible for a free trial or intro pricing for this product.
  */
 typedef NS_ENUM(NSInteger, RCIntroEligibityStatus) {
+    /**
+     RevenueCat doesn't have enough information to determine eligibility.
+     */
     RCIntroEligibityStatusUnknown = 0,
+    /**
+     The user is not eligible for a free trial or intro pricing for this product.
+     */
     RCIntroEligibityStatusIneligible,
+    /**
+     The user is eligible for a free trial or intro pricing for this product.
+     */
     RCIntroEligibityStatusEligible
 };
 
+/**
+ Class that holds the introductory price status
+ */
 @interface RCIntroEligibility : NSObject
 
-- (instancetype)initWithEligibilityStatus:(RCIntroEligibityStatus)status;
-
+/**
+ The introductory price eligibility status
+ */
 @property (readonly) RCIntroEligibityStatus status;
 
 @end

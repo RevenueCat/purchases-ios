@@ -1,0 +1,8 @@
+clean: true
+author: RevenueCat
+author_url: https://www.revenuecat.com
+objc: true
+umbrella_header: Purchases/Public/Purchases.h
+module: Purchases
+sdk: iphonesimulator
+output: docs
