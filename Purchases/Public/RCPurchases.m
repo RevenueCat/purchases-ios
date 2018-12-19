@@ -398,6 +398,10 @@ static RCPurchases *_sharedPurchases = nil;
                 completion(transaction, nil, error);
             }
         }
+        
+        @synchronized (self) {
+            self.purchaseCompleteCallbacks[transaction.payment.productIdentifier] = nil;
+        }
     }];
 }
 
