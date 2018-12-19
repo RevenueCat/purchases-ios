@@ -248,6 +248,7 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
     RCPurchaserInfo *info = [self readPurchaserInfoFromCache];
+    // TODO: Calls the backend if not in the cache/
     completion(info, nil);
 }
 

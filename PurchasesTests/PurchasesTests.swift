@@ -666,11 +666,11 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(equal(true))
     }
 
-    func testDoesntSetWrapperDelegateUntilDelegateIsSet() {
+    func testDoesntSetWrapperDelegateToNilIfDelegateNil() {
         setupPurchases()
         purchases!.delegate = nil
 
-        expect(self.storeKitWrapper.delegate).to(beNil())
+        expect(self.storeKitWrapper.delegate).toNot(beNil())
 
         purchases!.delegate = purchasesDelegate
 
@@ -698,11 +698,11 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
     }
 
-    func testRemovesObservationWhenDelegateNild() {
+    func testDoesntRemovesObservationWhenDelegateNild() {
         setupPurchases()
         purchases!.delegate = nil
 
-        expect(self.notificationCenter.observers.count).to(equal(0));
+        expect(self.notificationCenter.observers.count).to(equal(1));
     }
 
     func testRestoringPurchasesPostsTheReceipt() {
