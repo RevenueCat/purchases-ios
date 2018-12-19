@@ -582,6 +582,29 @@ class PurchasesTests: XCTestCase {
         expect(purchaserInfo).toEventually(be(self.backend.postReceiptPurchaserInfo))
         expect(receivedError).toEventually(beNil())
     }
+    
+    func testCompletionBlockOnlyCalledOnce() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        
+        var callCount = 0
+        
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            callCount += 1
+        }
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        
+        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(callCount).toEventually(equal(1))
+    }
 
     func testDoesntIgnorePurchasesThatDoNotHaveApplicationUserNames() {
         setupPurchases()
