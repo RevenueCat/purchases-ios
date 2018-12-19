@@ -1,1 +1,28 @@
 version: 2
+jobs:
+  runtest:
+    macos:
+      xcode: "10.0.0"
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - run:
+          name: Carthage Update
+          command: carthage update
+      - run: bundle install
+      - run:
+          name: Run tests
+          command: fastlane scan
+          environment:
+            SCAN_DEVICE: iPhone XS
+            SCAN_SCHEME: Purchases
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output
+workflows:
+  version: 2
+  build-test:
+    jobs:
+      - runtest
