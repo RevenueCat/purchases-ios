@@ -141,7 +141,7 @@ static RCPurchases *_sharedPurchases = nil;
             self.allowSharingAppStoreAccount = YES;
             self.appUserID = appUserID;
         } else {
-            [self identify:appUserID];
+            [self identify:appUserID completion:nil];
         }
     }
 
@@ -315,6 +315,7 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 }
 
+
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
                                       completion:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
@@ -355,22 +356,22 @@ static RCPurchases *_sharedPurchases = nil;
     [self dispatch:^{
         if (info) {
             [self cachePurchaserInfo:info];
-            [self.delegate purchases:self
-                completedTransaction:transaction
-                     withUpdatedInfo:info];
+//            [self.delegate purchases:self
+//                completedTransaction:transaction
+//                     withUpdatedInfo:info];
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if (error.code == RCFinishableError) {
-            [self.delegate purchases:self failedTransaction:transaction withReason:error];
+//            [self.delegate purchases:self failedTransaction:transaction withReason:error];
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if (error.code == RCUnfinishableError) {
-            [self.delegate purchases:self failedTransaction:transaction withReason:error];
+//            [self.delegate purchases:self failedTransaction:transaction withReason:error];
         } else {
             RCLog(@"Unexpected error from backend");
-            [self.delegate purchases:self failedTransaction:transaction withReason:error];
+//            [self.delegate purchases:self failedTransaction:transaction withReason:error];
         }
     }];
 }
@@ -389,7 +390,7 @@ static RCPurchases *_sharedPurchases = nil;
         }
         case SKPaymentTransactionStateFailed: {
             [self dispatch:^{
-                [self.delegate purchases:self failedTransaction:transaction withReason:transaction.error];
+//                [self.delegate purchases:self failedTransaction:transaction withReason:transaction.error];
             }];
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
@@ -449,10 +450,10 @@ static RCPurchases *_sharedPurchases = nil;
 {
     [self dispatch:^{
         if (error) {
-            [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
+//            [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
         } else if (info) {
             [self cachePurchaserInfo:info];
-            [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+//            [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
         }
     }];
 }
@@ -494,7 +495,7 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 }
 
-- (void)restoreTransactionsForAppStoreAccount
+- (void)restoreTransactionsForAppStoreAccount:(RCReceivePurchaserInfoBlock)completion
 {
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
@@ -511,27 +512,27 @@ static RCPurchases *_sharedPurchases = nil;
                                         NSError * _Nullable error) {
                                [self dispatch:^{
                                    if (error) {
-                                       [self.delegate purchases:self failedToRestoreTransactionsWithError:error];
+//                                       [self.delegate purchases:self failedToRestoreTransactionsWithError:error];
                                    } else if (info) {
                                        [self cachePurchaserInfo:info];
-                                       [self.delegate purchases:self restoredTransactionsWithPurchaserInfo:info];
+//                                       [self.delegate purchases:self restoredTransactionsWithPurchaserInfo:info];
                                    }
                                }];
                            }];
     }];
 }
 
-- (void)updateOriginalApplicationVersion
+- (void)updateOriginalApplicationVersion:(RCReceivePurchaserInfoBlock)completion
 {
     [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable info,
                                                                              NSError * _Nullable error) {
         if (error) {
             [self dispatch:^{
-                [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
+//                [self.delegate purchases:self failedToUpdatePurchaserInfoWithError:error];
             }];
         } else if (info.originalApplicationVersion) {
             [self dispatch:^{
-                [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+//                [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
             }];
         } else {
             [self receiptData:^(NSData * _Nonnull data) {
@@ -560,7 +561,7 @@ static RCPurchases *_sharedPurchases = nil;
 {
     [self.backend createAliasForAppUserID:self.appUserID withNewAppUserID:alias completion:^(NSError * _Nullable error) {
         if (error == nil) {
-            [self identify:alias];
+            [self identify:alias completion:nil];
         }
         if (completion != nil) {
             [self dispatch:^{
@@ -570,7 +571,7 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 }
 
-- (void)identify:(NSString *)appUserID
+- (void)identify:(NSString *)appUserID completion:(RCReceivePurchaserInfoBlock)completion
 {
     [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
     self.appUserID = appUserID;

@@ -199,7 +199,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
  This function will identify the current user with an appUserID. Typically this would be used after a logout to identify a new user without calling configure
  @param appUserID The appUserID that should be linked to the currently user
  */
-- (void)identify:(NSString * _Nullable)appUserID completion:(RCReceivePurchaserInfoBlock)completion;
+- (void)identify:(NSString * _Nullable)appUserID completion:(RCReceivePurchaserInfoBlock _Nullable)completion;
 
 /**
  * Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
