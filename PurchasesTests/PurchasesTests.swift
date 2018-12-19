@@ -628,6 +628,26 @@ class PurchasesTests: XCTestCase {
         
         expect(callCount).toEventually(equal(0))
     }
+    
+    func testCallingPurchaseWhileSameProductPendingIssuesError() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        
+        // First one "works"
+        self.purchases?.makePurchase(product) { (tx, info, error) in }
+        
+        var receivedInfo: RCPurchaserInfo?
+        var receivedError: Error?
+        
+        // Second one issues an error
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            receivedInfo = info
+            receivedError = error
+        }
+        
+        expect(receivedInfo).toEventually(beNil())
+        expect(receivedError).toEventuallyNot(beNil())
+    }
 
     func testDoesntIgnorePurchasesThatDoNotHaveApplicationUserNames() {
         setupPurchases()
