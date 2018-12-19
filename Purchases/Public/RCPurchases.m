@@ -141,7 +141,7 @@ static RCPurchases *_sharedPurchases = nil;
             self.allowSharingAppStoreAccount = YES;
             self.appUserID = appUserID;
         } else {
-            [self identify:appUserID completion:nil];
+            [self identify:appUserID completionBlock:nil];
         }
     }
 
@@ -230,8 +230,8 @@ static RCPurchases *_sharedPurchases = nil;
     self.cachesLastUpdated = [NSDate date];
 
     [self.backend getSubscriberDataWithAppUserID:self.appUserID
-                                      completion:^(RCPurchaserInfo * _Nullable info,
-                                                   NSError * _Nullable error) {
+                                 completion:^(RCPurchaserInfo * _Nullable info,
+                                              NSError * _Nullable error) {
         if (error == nil) {
             [self handleUpdatedPurchaserInfo:info error:nil];
         } else {
@@ -258,7 +258,7 @@ static RCPurchases *_sharedPurchases = nil;
     }
 }
 
-- (void)entitlements:(RCReceiveEntitlementsBlock)completion
+- (void)entitlementsWithCompletionBlock:(RCReceiveEntitlementsBlock)completion
 {
     if (self.cachedEntitlements) {
         completion(self.cachedEntitlements);
@@ -281,7 +281,7 @@ static RCPurchases *_sharedPurchases = nil;
                                            [productIdentifiers addObject:offering.activeProductIdentifier];
                                        }];
 
-                                       [self productsWithIdentifiers:productIdentifiers.allObjects completion:^(NSArray<SKProduct *> * _Nonnull products) {
+                                       [self productsWithIdentifiers:productIdentifiers.allObjects completionBlock:^(NSArray<SKProduct *> * _Nonnull products) {
                                            NSMutableDictionary *productsById = [NSMutableDictionary new];
                                            for (SKProduct *p in products) {
                                                productsById[p.productIdentifier] = p;
@@ -303,7 +303,7 @@ static RCPurchases *_sharedPurchases = nil;
 }
 
 - (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
-                     completion:(void (^)(NSArray<SKProduct *>* products))completion
+                     completionBlock:(void (^)(NSArray<SKProduct *>* products))completion
 {
     [self.requestFetcher fetchProducts:[NSSet setWithArray:productIdentifiers] completion:^(NSArray<SKProduct *> * _Nonnull products) {
         @synchronized(self) {
@@ -317,7 +317,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
-                                      completion:(RCReceiveIntroEligibilityBlock)receiveEligibility
+                                      completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
     [self receiptData:^(NSData * _Nonnull data) {
         [self.backend getIntroEligibilityForAppUserID:self.appUserID
@@ -495,7 +495,7 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 }
 
-- (void)restoreTransactionsForAppStoreAccount:(RCReceivePurchaserInfoBlock)completion
+- (void)restoreTransactionsWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
@@ -522,7 +522,7 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 }
 
-- (void)updateOriginalApplicationVersion:(RCReceivePurchaserInfoBlock)completion
+- (void)updateOriginalApplicationVersionWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
 {
     [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable info,
                                                                              NSError * _Nullable error) {
@@ -554,14 +554,14 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)createAlias:(NSString *)alias
 {
-    [self createAlias:alias completion:^(RCPurchaserInfo *info, NSError *e) {}];
+    [self createAlias:alias completionBlock:^(RCPurchaserInfo *info, NSError *e) {}];
 }
 
-- (void)createAlias:(NSString *)alias completion:(RCReceivePurchaserInfoBlock)completion
+- (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock)completion
 {
     [self.backend createAliasForAppUserID:self.appUserID withNewAppUserID:alias completion:^(NSError * _Nullable error) {
         if (error == nil) {
-            [self identify:alias completion:nil];
+            [self identify:alias completionBlock:nil];
         }
         if (completion != nil) {
             [self dispatch:^{
@@ -571,7 +571,7 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 }
 
-- (void)identify:(NSString *)appUserID completion:(RCReceivePurchaserInfoBlock)completion
+- (void)identify:(NSString *)appUserID completionBlock:(RCReceivePurchaserInfoBlock)completion
 {
     [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
     self.appUserID = appUserID;

@@ -193,13 +193,13 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
  @param alias The new appUserID that should be linked to the currently identified appUserID
  @param completion An optional completion block called when the aliasing has been successful. This completion block will receive an error if there's been one.
  */
-- (void)createAlias:(NSString *)alias completion:(RCReceivePurchaserInfoBlock)completion;
+- (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock)completion;
 
 /**
  This function will identify the current user with an appUserID. Typically this would be used after a logout to identify a new user without calling configure
  @param appUserID The appUserID that should be linked to the currently user
  */
-- (void)identify:(NSString * _Nullable)appUserID completion:(RCReceivePurchaserInfoBlock _Nullable)completion;
+- (void)identify:(NSString * _Nullable)appUserID completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion;
 
 /**
  * Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
@@ -228,7 +228,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 
  @param completion A completion block called when entitlements is available. Called immediately if entitlements are cached. Entitlements can be nil if an error occurred.
  */
-- (void)entitlements:(RCReceiveEntitlementsBlock)completion;
+- (void)entitlementsWithCompletionBlock:(RCReceiveEntitlementsBlock)completion;
 
 /**
  Fetches the `SKProducts` for your IAPs for given `productIdentifiers`. Use this method if you aren't using `-entitlements:`.
@@ -240,7 +240,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
  @param completion An @escaping callback that is called with the loaded products. If the fetch fails for any reason it will return an empty array.
  */
 - (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
-                     completion:(RCReceiveProductsBlock)completion;
+                     completionBlock:(RCReceiveProductsBlock)completion;
 
 /**
  Purchase the passed `SKProduct`.
@@ -265,7 +265,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 
  @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI.
  */
-- (void)restoreTransactionsForAppStoreAccount:(RCReceivePurchaserInfoBlock)completion;
+- (void)restoreTransactionsWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion;
 
 /**
  Computes whether or not a user is eligible for the introductory pricing period of a given product. You should use this method to determine whether or not you show the user the normal product price or the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
@@ -276,13 +276,13 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
  @param receiveEligibility A block that receives a dictionary of product_id -> `RCIntroEligibility`.
 */
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
-                                      completion:(RCReceiveIntroEligibilityBlock)receiveEligibility;
+                                      completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility;
 
 /**
  Reads the App Store receipt and reads the original application version. Use this if RCPurchaserInfo.originalApplicationVersion is nil.
  Triggers purchases:receivedUpdatedPurchaserInfo: delegate method to be called;
  */
-- (void)updateOriginalApplicationVersion:(RCReceivePurchaserInfoBlock)completion;
+- (void)updateOriginalApplicationVersionWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion;
     
 @end
 
