@@ -144,7 +144,9 @@ static RCPurchases *_sharedPurchases = nil;
             }
             self.allowSharingAppStoreAccount = YES;
             self.appUserID = appUserID;
+            [self updateCaches];
         } else {
+            // this will call updateCaches
             [self identify:appUserID completionBlock:nil];
         }
         
@@ -152,8 +154,6 @@ static RCPurchases *_sharedPurchases = nil;
         [self.notificationCenter addObserver:self
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
-        
-        [self updateCaches];
     }
 
     return self;
@@ -253,11 +253,6 @@ static RCPurchases *_sharedPurchases = nil;
     }
     
     
-}
-
--(NSDictionary<NSString *, RCEntitlement *> * _Nullable)entitlements
-{
-    return self.cachedEntitlements;
 }
 
 - (void)performOnEachOfferingInEntitlements:(NSDictionary<NSString *,RCEntitlement *> *)entitlements block:(void (^)(RCOffering *offering))block
@@ -624,9 +619,7 @@ static RCPurchases *_sharedPurchases = nil;
     [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
     self.appUserID = appUserID;
     self.cachesLastUpdated = nil;
-    if (self.delegate != nil) {
-        [self updateCaches];
-    }
+    [self updateCaches];
 }
 
 - (void)reset
@@ -634,9 +627,7 @@ static RCPurchases *_sharedPurchases = nil;
     self.appUserID = [self generateAndCacheID];
     self.allowSharingAppStoreAccount = YES;
     self.cachesLastUpdated = nil;
-    if (self.delegate != nil) {
-        [self updateCaches];
-    }
+    [self updateCaches];
 }
 
 - (NSString *)generateAndCacheID
