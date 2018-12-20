@@ -320,16 +320,23 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/products", escapedAppUserID];
+    
+    if ([self addCallback:completion forKey:path]) {
+        return;
+    }
+    
     [self.httpClient performRequest:@"GET"
                                path:path
                                body:nil
                             headers:self.headers
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
-                      if (statusCode < 300) {
-                          NSDictionary *entitlements = [self parseEntitlementResponse:response];
-                          completion(entitlements, nil);
-                      } else {
-                          completion(nil, [self unexpectedResponseError]);
+                      for (RCEntitlementResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
+                          if (statusCode < 300) {
+                              NSDictionary *entitlements = [self parseEntitlementResponse:response];
+                              completion(entitlements, nil);
+                          } else {
+                              completion(nil, [self unexpectedResponseError]);
+                          }
                       }
     }];
 }
