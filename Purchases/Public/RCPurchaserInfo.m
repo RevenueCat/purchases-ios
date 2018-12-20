@@ -7,6 +7,7 @@
 //
 
 #import "RCPurchaserInfo.h"
+#import "RCPurchaserInfo+Protected.h"
 
 @interface RCPurchaserInfo ()
 
@@ -16,8 +17,10 @@
 @property (nonatomic) NSDictionary<NSString *, NSObject *> *purchaseDateByEntitlement;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic) NSString *originalApplicationVersion;
+
 @property (nonatomic) NSDictionary *originalData;
 @property (nonatomic) NSDate * _Nullable requestDate;
+
 @end
 
 static NSDateFormatter *dateFormatter;
@@ -174,6 +177,16 @@ static dispatch_once_t onceToken;
 
 - (NSDictionary * _Nonnull)JSONObject {
     return self.originalData;
+}
+
+- (BOOL)isEqual:(RCPurchaserInfo *)other
+{
+    return ([self.expirationDatesByProduct isEqual:other.expirationDatesByProduct]
+            && [self.purchaseDatesByProduct isEqual:other.purchaseDatesByProduct]
+            && [self.expirationDateByEntitlement isEqual:other.expirationDateByEntitlement]
+            && [self.purchaseDateByEntitlement isEqual:other.purchaseDateByEntitlement]
+            && [self.nonConsumablePurchases isEqual:other.nonConsumablePurchases]
+            && [self.originalApplicationVersion isEqual:other.originalApplicationVersion]);
 }
 
 @end
