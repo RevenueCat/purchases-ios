@@ -375,7 +375,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
-        var purchaserInfo: RCPurchaserInfo?
+        var purchaserInfo: PurchaserInfo?
 
         backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil,
                                  price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil,
@@ -414,7 +414,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
 
-        var subscriberInfo: RCPurchaserInfo?
+        var subscriberInfo: PurchaserInfo?
 
         backend?.getSubscriberData(withAppUserID: userID, completion: { (newSubscriberInfo, newError) in
             subscriberInfo = newSubscriberInfo
@@ -430,7 +430,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/subscribers/" + encodedUserID, response: response)
         httpClient.mock(requestPath: "/subscribers/" + encodeableUserID, response: HTTPResponse(statusCode: 404, response: nil, error: nil))
 
-        var subscriberInfo: RCPurchaserInfo?
+        var subscriberInfo: PurchaserInfo?
 
         backend?.getSubscriberData(withAppUserID: encodeableUserID, completion: { (newSubscriberInfo, newError) in
             subscriberInfo = newSubscriberInfo

@@ -65,9 +65,9 @@ class PurchasesTests: XCTestCase {
         override func getSubscriberData(withAppUserID appUserID: String, completion: @escaping RCBackendResponseHandler) {
             getSubscriberCallCount += 1
             userID = appUserID
-            var info: RCPurchaserInfo?
+            var info: PurchaserInfo?
             if let version = originalApplicationVersion {
-                info = RCPurchaserInfo(data: [
+                info = PurchaserInfo(data: [
                     "subscriber": [
                         "subscriptions": [:],
                         "other_purchases": [:],
@@ -75,7 +75,7 @@ class PurchasesTests: XCTestCase {
                     ]
                 ])
             } else {
-                info = RCPurchaserInfo(data: [
+                info = PurchaserInfo(data: [
                     "subscriber": [
                         "subscriptions": [:],
                         "other_purchases": [:]
@@ -94,7 +94,7 @@ class PurchasesTests: XCTestCase {
         var postedPaymentMode: RCPaymentMode?
         var postedIntroPrice: NSDecimalNumber?
         var postedCurrencyCode: String?
-        var postReceiptPurchaserInfo: RCPurchaserInfo?
+        var postReceiptPurchaserInfo: PurchaserInfo?
         var postReceiptError: Error?
         var aliasError: Error?
         var aliasCalled = false
@@ -235,9 +235,9 @@ class PurchasesTests: XCTestCase {
     }
 
     class PurchasesDelegate: NSObject, RCPurchasesDelegate {
-        var purchaserInfo: RCPurchaserInfo?
+        var purchaserInfo: PurchaserInfo?
         var purchaserInfoReceivedCount = 0
-        func purchases(_ purchases: Purchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
+        func purchases(_ purchases: Purchases, receivedUpdatedPurchaserInfo purchaserInfo: PurchaserInfo) {
             purchaserInfoReceivedCount += 1
             self.purchaserInfo = purchaserInfo
         }
@@ -388,7 +388,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -411,7 +411,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -436,7 +436,7 @@ class PurchasesTests: XCTestCase {
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
             
-            self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+            self.backend.postReceiptPurchaserInfo = PurchaserInfo()
             
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -474,7 +474,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
         
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
         
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -573,7 +573,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
         
-        var purchaserInfo: RCPurchaserInfo?
+        var purchaserInfo: PurchaserInfo?
         var receivedError: Error?
         
         self.purchases?.makePurchase(product) { (tx, info, error) in
@@ -584,7 +584,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -606,7 +606,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
         
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
         
         transaction.mockState = SKPaymentTransactionState.purchased
         
@@ -630,7 +630,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = SKPayment.init(product: otherProduct)
         
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
         
         transaction.mockState = SKPaymentTransactionState.purchased
         
@@ -646,7 +646,7 @@ class PurchasesTests: XCTestCase {
         // First one "works"
         self.purchases?.makePurchase(product) { (tx, info, error) in }
         
-        var receivedInfo: RCPurchaserInfo?
+        var receivedInfo: PurchaserInfo?
         var receivedError: Error?
         
         // Second one issues an error
@@ -744,16 +744,16 @@ class PurchasesTests: XCTestCase {
     func testRestoringPurchasesCallsSuccessDelegateMethod() {
         setupPurchases()
 
-        let purchaserInfo = RCPurchaserInfo()
+        let purchaserInfo = PurchaserInfo()
         self.backend.postReceiptPurchaserInfo = purchaserInfo
         
-        var receivedPurchaserInfo: RCPurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
 
         purchases!.restoreTransactions { (info, error) in
             receivedPurchaserInfo = info
         }
 
-        expect(receivedPurchaserInfo).toEventually(equal(purchaserInfo))
+        expect(receivedPurchaserInfo).toEventually(be(purchaserInfo))
     }
 
     func testRestorePurchasesPassesErrorOnFailure() {
@@ -868,7 +868,7 @@ class PurchasesTests: XCTestCase {
         backend.originalApplicationVersion = "1.0"
         
         setupPurchases()
-        var receivedInfo: RCPurchaserInfo?
+        var receivedInfo: PurchaserInfo?
         purchases!.updateOriginalApplicationVersion { (info, error) in
             receivedInfo = info
         }
@@ -881,7 +881,7 @@ class PurchasesTests: XCTestCase {
     func testFetchVersionSendsAReceiptIfNoVersion() {
         setupPurchases()
 
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo(data: [
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:],
@@ -889,7 +889,7 @@ class PurchasesTests: XCTestCase {
             ]
         ])
         
-        var receivedPurchaserInfo: RCPurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
 
         purchases?.updateOriginalApplicationVersion { (info, error) in
             receivedPurchaserInfo = info
@@ -921,7 +921,7 @@ class PurchasesTests: XCTestCase {
 
         expect(self.userDefaults.cachedUserInfo.count).to(equal(1))
 
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo(data: [
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:]
@@ -947,7 +947,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testSendsCachedPurchaserInfoToGetter() {
-        let info = RCPurchaserInfo(data: [
+        let info = PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:]
@@ -958,7 +958,7 @@ class PurchasesTests: XCTestCase {
 
         setupPurchases()
         
-        var receivedInfo: RCPurchaserInfo?
+        var receivedInfo: PurchaserInfo?
         
         purchases!.purchaserInfo { (info, error) in
             receivedInfo = info
@@ -1015,7 +1015,7 @@ class PurchasesTests: XCTestCase {
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
             
-            self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+            self.backend.postReceiptPurchaserInfo = PurchaserInfo()
             
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
