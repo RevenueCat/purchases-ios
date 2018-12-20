@@ -130,6 +130,34 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     return [appUserID stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
 }
 
+- (BOOL)addCallback:(id)completion forKey:(NSString *)key
+{
+    @synchronized(self) {
+        NSMutableArray *callbacks = [self.receiptCallbacksCache objectForKey:key];
+        BOOL cacheMiss = callbacks == nil;
+        
+        if (cacheMiss) {
+            callbacks = [NSMutableArray new];
+            self.receiptCallbacksCache[key] = callbacks;
+        }
+        
+        [callbacks addObject:[completion copy]];
+        
+        BOOL shouldReturn = !cacheMiss;
+        return shouldReturn;
+    }
+}
+
+- (NSMutableArray *)getCallbacksAndClearForKey:(NSString *)key {
+    @synchronized(self) {
+        NSMutableArray *callbacks = self.receiptCallbacksCache[key];
+        NSParameterAssert(callbacks);
+        
+        self.receiptCallbacksCache[key] = nil;
+        
+        return callbacks;
+    }
+}
 
 - (void)postReceiptData:(NSData *)data
               appUserID:(NSString *)appUserID
@@ -159,18 +187,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                           @((NSUInteger)paymentMode),
                           introductoryPrice];
     
-    @synchronized(self) {
-        NSMutableArray *callbacks = [self.receiptCallbacksCache objectForKey:cacheKey];
-        BOOL cacheMiss = callbacks == nil;
-
-        if (cacheMiss) {
-            callbacks = [NSMutableArray new];
-            self.receiptCallbacksCache[cacheKey] = callbacks;
-        }
-
-        [callbacks addObject:[completion copy]];
-
-        if (!cacheMiss) return;
+    if ([self addCallback:completion forKey:cacheKey]) {
+        return;
     }
 
     if (productIdentifier) {
@@ -198,15 +216,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                body:body
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      @synchronized(self) {
-                          NSMutableArray *callbacks = self.receiptCallbacksCache[cacheKey];
-                          NSParameterAssert(callbacks);
-
-                          for (RCBackendResponseHandler callback in callbacks) {
-                              [self handle:status withResponse:response error:error completion:callback];
-                          }
-
-                          self.receiptCallbacksCache[cacheKey] = nil;
+                      for (RCBackendResponseHandler callback in [self getCallbacksAndClearForKey:cacheKey]) {
+                          [self handle:status withResponse:response error:error completion:callback];
                       }
                   }];
 }
