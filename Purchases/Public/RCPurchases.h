@@ -69,6 +69,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 
  @warning Only one instance of RCPurchases should be instantiated at a time! Use a configure method to let the framework handle the singleton instance for you.
  */
+NS_SWIFT_NAME(Purchases)
 @interface RCPurchases : NSObject
 
 /**
@@ -115,7 +116,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 /**
  @return A singleton `RCPurchases` object. Call this after a configure method to access the singleton.
  */
-+ (instancetype)sharedPurchases;
+@property (class, nonatomic, readonly) RCPurchases *sharedPurchases;
 
 /**
  Sets an instance of the Purchases SDK as a singleton. The configure methods call this internally so it's preferably to set the default instance through a configure method. Use this method only if you want to override what the configure methods are doing.
@@ -208,8 +209,8 @@ NS_SWIFT_NAME(createAlias(_:_:));
  This function will identify the current user with an appUserID. Typically this would be used after a logout to identify a new user without calling configure
  @param appUserID The appUserID that should be linked to the currently user
  */
-- (void)identify:(NSString * _Nullable)appUserID completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion;
-
+- (void)identify:(NSString * _Nullable)appUserID completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+NS_SWIFT_NAME(identify(_:_:));
 /**
  * Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
  */

@@ -209,7 +209,11 @@ static RCPurchases *_sharedPurchases = nil;
     }
 }
 
-- (void)updateCaches
+- (void)updateCaches {
+    [self updateCachesWithCompletionBlock:nil];
+}
+
+- (void)updateCachesWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
 {
     NSTimeInterval timeSinceLastCheck = -[self.cachesLastUpdated timeIntervalSinceNow];
     if (self.cachesLastUpdated != nil && timeSinceLastCheck < 60.) {
@@ -221,12 +225,18 @@ static RCPurchases *_sharedPurchases = nil;
     [self.backend getSubscriberDataWithAppUserID:self.appUserID
                                  completion:^(RCPurchaserInfo * _Nullable info,
                                               NSError * _Nullable error) {
-        if (error == nil) {
-            [self handleUpdatedPurchaserInfo:info error:nil];
-        } else {
-            self.cachesLastUpdated = nil;
-        }
-    }];
+                                     if (error == nil) {
+                                         [self handleUpdatedPurchaserInfo:info error:nil];
+                                     } else {
+                                         self.cachesLastUpdated = nil;
+                                     }
+                                     
+                                     if (completion) {
+                                         [self dispatch:^{
+                                             completion(info, error);
+                                         }];
+                                     }
+                                 }];
 
     [self getEntitlements:nil];
 }
@@ -234,25 +244,18 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
     RCPurchaserInfo *info = [self readPurchaserInfoFromCache];
-    if (info) {
-        if (completion) {
-            completion(info, nil);
-        }
-        return;
+    if (info && completion) {
+        completion(info, nil);
     } else {
         [self.backend getSubscriberDataWithAppUserID:self.appUserID
                                           completion:^(RCPurchaserInfo *info, NSError *error) {
-                                              if (error) {
-                                                  if (completion) {
-                                                      completion(nil, error);
-                                                  } else {
-                                                      completion(info, nil);
-                                                  }
+                                              if (completion) {
+                                                  [self dispatch:^{
+                                                      completion(info, error);
+                                                  }];
                                               }
                                           }];
     }
-    
-    
 }
 
 - (void)performOnEachOfferingInEntitlements:(NSDictionary<NSString *,RCEntitlement *> *)entitlements block:(void (^)(RCOffering *offering))block
@@ -387,7 +390,6 @@ static RCPurchases *_sharedPurchases = nil;
             if (completion) {
                 completion(transaction, info, nil);
             }
-            // TODO call delegate
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
@@ -428,11 +430,23 @@ static RCPurchases *_sharedPurchases = nil;
             break;
         }
         case SKPaymentTransactionStateFailed: {
-            [self dispatch:^{
-//                [self.delegate purchases:self failedTransaction:transaction withReason:transaction.error];
-            }];
+            RCPurchaseCompletedBlock completion = nil;
+            @synchronized (self) {
+                completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
+            }
+            
+            if (completion) {
+                [self dispatch:^{
+                    completion(transaction, nil, transaction.error);
+                }];
+            }
+            
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
+            }
+            
+            @synchronized (self) {
+                self.purchaseCompleteCallbacks[transaction.payment.productIdentifier] = nil;
             }
             break;
         }
@@ -604,12 +618,13 @@ static RCPurchases *_sharedPurchases = nil;
 {
     [self.backend createAliasForAppUserID:self.appUserID withNewAppUserID:alias completion:^(NSError * _Nullable error) {
         if (error == nil) {
-            [self identify:alias completionBlock:nil];
-        }
-        if (completion != nil) {
-            [self dispatch:^{
-                completion(nil, error);
-            }];
+            [self identify:alias completionBlock:completion];
+        } else {
+            if (completion != nil) {
+                [self dispatch:^{
+                    completion(nil, error);
+                }];
+            }
         }
     }];
 }
@@ -619,7 +634,7 @@ static RCPurchases *_sharedPurchases = nil;
     [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
     self.appUserID = appUserID;
     self.cachesLastUpdated = nil;
-    [self updateCaches];
+    [self updateCachesWithCompletionBlock:completion];
 }
 
 - (void)reset

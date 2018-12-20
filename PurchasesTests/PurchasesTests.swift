@@ -26,6 +26,13 @@ class MockTransaction: SKPaymentTransaction {
             return mockState
         }
     }
+    
+    var mockError: Error?
+    override var error: Error? {
+        get {
+            return mockError
+        }
+    }
 }
 
 class PurchasesTests: XCTestCase {
@@ -230,7 +237,7 @@ class PurchasesTests: XCTestCase {
     class PurchasesDelegate: NSObject, RCPurchasesDelegate {
         var purchaserInfo: RCPurchaserInfo?
         var purchaserInfoReceivedCount = 0
-        func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
+        func purchases(_ purchases: Purchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
             purchaserInfoReceivedCount += 1
             self.purchaserInfo = purchaserInfo
         }
@@ -238,7 +245,7 @@ class PurchasesTests: XCTestCase {
         var promoProduct: SKProduct?
         var shouldAddPromo = false
         var makeDeferredPurchase: RCDeferredPromotionalPurchaseBlock?
-        func purchases(_ purchases: RCPurchases, shouldPurchasePromoProduct product: SKProduct, defermentBlock makeDeferredPurchase: @escaping RCDeferredPromotionalPurchaseBlock) -> Bool {
+        func purchases(_ purchases: Purchases, shouldPurchasePromoProduct product: SKProduct, defermentBlock makeDeferredPurchase: @escaping RCDeferredPromotionalPurchaseBlock) -> Bool {
             promoProduct = product
             self.makeDeferredPurchase = makeDeferredPurchase
             return shouldAddPromo
@@ -255,10 +262,10 @@ class PurchasesTests: XCTestCase {
     
     let appUserID = "app_user"
 
-    var purchases: RCPurchases?
+    var purchases: Purchases?
 
     func setupPurchases() {
-        purchases = RCPurchases(appUserID: appUserID,
+        purchases = Purchases(appUserID: appUserID,
                                 requestFetcher: requestFetcher,
                                 backend:backend,
                                 storeKitWrapper: storeKitWrapper,
@@ -269,7 +276,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func setupAnonPurchases() {
-        purchases = RCPurchases(appUserID: nil,
+        purchases = Purchases(appUserID: nil,
                                 requestFetcher: requestFetcher,
                                 backend:backend,
                                 storeKitWrapper: storeKitWrapper,
@@ -543,11 +550,13 @@ class PurchasesTests: XCTestCase {
     func testNotifiesIfTransactionFailsFromStoreKit() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        var receivedError: Error?
         self.purchases?.makePurchase(product) { (tx, info, error) in
-            
+            receivedError = error
         }
 
         let transaction = MockTransaction()
+        transaction.mockError = NSError.init(domain: SKErrorDomain, code: 2, userInfo: nil)
         transaction.mockPayment = self.storeKitWrapper.payment!
 
         self.backend.postReceiptError = BackendError.unknown
@@ -557,6 +566,7 @@ class PurchasesTests: XCTestCase {
 
         expect(self.backend.postReceiptDataCalled).to(equal(false))
         expect(self.storeKitWrapper.finishCalled).to(beTrue())
+        expect(receivedError).toEventuallyNot(beNil())
     }
 
     func testCallsDelegateAfterBackendResponse() {
@@ -1067,18 +1077,18 @@ class PurchasesTests: XCTestCase {
     }
 
     func testSharedInstanceIsSetWhenConfiguring() {
-        let purchases = RCPurchases.configure(withAPIKey: "")
-        expect(RCPurchases.shared()).toEventually(equal(purchases))
+        let purchases = Purchases.configure(withAPIKey: "")
+        expect(Purchases.shared).toEventually(equal(purchases))
     }
     
     func testSharedInstanceIsSetWhenConfiguringWithAppUserID() {
-        let purchases = RCPurchases.configure(withAPIKey: "", appUserID:"")
-        expect(RCPurchases.shared()).toEventually(equal(purchases))
+        let purchases = Purchases.configure(withAPIKey: "", appUserID:"")
+        expect(Purchases.shared).toEventually(equal(purchases))
     }
     
     func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaults() {
-        let purchases = RCPurchases.configure(withAPIKey: "", appUserID: "", userDefaults: nil)
-        expect(RCPurchases.shared()).toEventually(equal(purchases))
+        let purchases = Purchases.configure(withAPIKey: "", appUserID: "", userDefaults: nil)
+        expect(Purchases.shared).toEventually(equal(purchases))
     }
     
     func testCreateAliasWithCompletionCallsBackend() {
