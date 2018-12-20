@@ -194,6 +194,34 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count).to(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
+    
+    func testCachesSubscriberGetsForSameSubscriber() {
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
+        
+        backend?.getSubscriberData(withAppUserID: userID, completion: { (newPurchaserInfo, newError) in
+        })
+        
+        backend?.getSubscriberData(withAppUserID: userID, completion: { (newPurchaserInfo, newError) in
+        })
+        
+        expect(self.httpClient.calls.count).to(equal(1))
+    }
+    
+    func testDoesntCacheSubscriberGetsForSameSubscriber() {
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        let userID2 = "user_id_2"
+        httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
+        httpClient.mock(requestPath: "/subscribers/" + userID2, response: response)
+        
+        backend?.getSubscriberData(withAppUserID: userID, completion: { (newPurchaserInfo, newError) in
+        })
+        
+        backend?.getSubscriberData(withAppUserID: userID2, completion: { (newPurchaserInfo, newError) in
+        })
+        
+        expect(self.httpClient.calls.count).to(equal(2))
+    }
 
     func testPostsReceiptDataWithProductInfoCorrectly() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
@@ -533,6 +561,29 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count).toNot(equal(0))
         expect(entitlements).toEventuallyNot(beNil())
         expect(entitlements?.count).toEventually(equal(0))
+    }
+    
+    func testGetEntitlementsCachesForSameUserID() {
+        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
+        let path = "/subscribers/" + userID + "/products"
+        httpClient.mock(requestPath: path, response: response)
+        
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in })
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in })
+        
+        expect(self.httpClient.calls.count).to(equal(1))
+    }
+    
+    func testGetEntitlementsDoesntCacheForMultipleUserID() {
+        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
+        let userID2 = "user_id_2"
+        httpClient.mock(requestPath: "/subscribers/" + userID + "/products", response: response)
+        httpClient.mock(requestPath: "/subscribers/" + userID2 + "/products", response: response)
+        
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in })
+        backend?.getEntitlementsForAppUserID(userID2, completion: { (newEntitlements, error) in })
+        
+        expect(self.httpClient.calls.count).to(equal(2))
     }
 
     let oneEntitlementResponse = [
