@@ -204,7 +204,6 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
 
     func testPurchaseDateEmpty() {
-
         let response = [
             "subscriber": [
                 "other_purchases": [
@@ -236,6 +235,20 @@ class BasicPurchaserInfoTests: XCTestCase {
         let purchaserInfoWithoutRequestData = PurchaserInfo(data: response)
         let purchaseDate = purchaserInfoWithoutRequestData!.purchaseDate(forEntitlement: "pro")
         expect(purchaseDate).to(beNil())
+    }
+    
+    func testEmptyInfosEqual() {
+        let info1 = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        let info2 = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(info1).to(equal(info2))
     }
 
 }

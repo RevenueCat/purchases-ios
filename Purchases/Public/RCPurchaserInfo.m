@@ -181,12 +181,17 @@ static dispatch_once_t onceToken;
 
 - (BOOL)isEqual:(RCPurchaserInfo *)other
 {
-    return ([self.expirationDatesByProduct isEqual:other.expirationDatesByProduct]
-            && [self.purchaseDatesByProduct isEqual:other.purchaseDatesByProduct]
-            && [self.expirationDateByEntitlement isEqual:other.expirationDateByEntitlement]
-            && [self.purchaseDateByEntitlement isEqual:other.purchaseDateByEntitlement]
-            && [self.nonConsumablePurchases isEqual:other.nonConsumablePurchases]
-            && [self.originalApplicationVersion isEqual:other.originalApplicationVersion]);
+    BOOL isEqual = ([self.expirationDatesByProduct isEqual:other.expirationDatesByProduct]
+                    && [self.purchaseDatesByProduct isEqual:other.purchaseDatesByProduct]
+                    && [self.expirationDateByEntitlement isEqual:other.expirationDateByEntitlement]
+                    && [self.purchaseDateByEntitlement isEqual:other.purchaseDateByEntitlement]
+                    && [self.nonConsumablePurchases isEqual:other.nonConsumablePurchases]);
+    
+    if (self.originalApplicationVersion) {
+        isEqual = isEqual && ([self.originalApplicationVersion isEqual:other.originalApplicationVersion]);
+    }
+    
+    return isEqual;
 }
 
 @end
