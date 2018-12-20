@@ -250,5 +250,47 @@ class BasicPurchaserInfoTests: XCTestCase {
             ]])
         expect(info1).to(equal(info2))
     }
+    
+    func testDifferentFetchDatesStillEqual() {
+        let info1 = PurchaserInfo(data: [
+            "request_date": "2018-12-19T02:40:36Z",
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        let info2 = PurchaserInfo(data: [
+            "request_date": "2018-11-19T02:40:36Z",
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(info1).to(equal(info2))
+    }
+    
+    func testDifferentActiveEntitlementsNotEqual() {
+        let info1 = PurchaserInfo(data: [
+            "request_date": "2018-12-20T02:40:36Z",
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "entitlements": [
+                    "pro" : [
+                        "expires_date" : "2018-12-19T02:40:36Z"
+                    ]
+                ]
+            ]])
+        let info2 = PurchaserInfo(data: [
+            "request_date": "2018-11-19T02:40:36Z",
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "entitlements": [
+                    "pro" : [
+                        "expires_date" : "2018-12-19T02:40:36Z"
+                    ]
+                ]
+            ]])
+        expect(info1).toNot(equal(info2))
+    }
 
 }

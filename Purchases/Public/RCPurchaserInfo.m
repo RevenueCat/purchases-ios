@@ -187,8 +187,10 @@ static dispatch_once_t onceToken;
                     && [self.purchaseDateByEntitlement isEqual:other.purchaseDateByEntitlement]
                     && [self.nonConsumablePurchases isEqual:other.nonConsumablePurchases]);
     
+    isEqual &= ([self.activeEntitlements isEqual:other.activeEntitlements]);
+    
     if (self.originalApplicationVersion) {
-        isEqual = isEqual && ([self.originalApplicationVersion isEqual:other.originalApplicationVersion]);
+        isEqual &= ([self.originalApplicationVersion isEqual:other.originalApplicationVersion]);
     }
     
     return isEqual;

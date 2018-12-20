@@ -207,6 +207,7 @@ class StoreKitRequestFetcher: XCTestCase {
     }
     
     func testFetchesReceiptMultipleTimes() {
+        // TODO: This test is failing sometimes
         setupFetcher(fails: false)
         expect(self.receiptFetched).toEventually(beTrue())
         var fetchedAgain = false
