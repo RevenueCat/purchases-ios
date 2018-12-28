@@ -40,6 +40,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) NSString * _Nullable originalApplicationVersion;
 
 /**
+ Returns the AppUserID originally associated with the app store account, which should
+ provide a unique user identifier spanning devices when anonymous authentication is used.
+ */
+@property (readonly) NSString * _Nullable originalAppUserID;
+
+/**
  Get the expiration date for a given product identifier. You should use Entitlements though!
  
  @param productIdentifier Product identifier for product

@@ -16,6 +16,7 @@
 @property (nonatomic) NSDictionary<NSString *, NSObject *> *purchaseDateByEntitlement;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic) NSString *originalApplicationVersion;
+@property (nonatomic) NSString *originalAppUserID;
 @property (nonatomic) NSDictionary *originalData;
 @property (nonatomic) NSDate * _Nullable requestDate;
 @end
@@ -66,6 +67,8 @@ static dispatch_once_t onceToken;
         NSString *originalApplicationVersion = subscriberData[@"original_application_version"];
         self.originalApplicationVersion = [originalApplicationVersion isKindOfClass:[NSNull class]] ? nil : originalApplicationVersion;
         
+        NSString *originalAppUserID = subscriberData[@"original_app_user_id"];
+        self.originalAppUserID = [originalAppUserID isKindOfClass:[NSNull class]] ? nil : originalAppUserID;
     }
     return self;
 }
