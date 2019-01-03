@@ -98,7 +98,7 @@ class StoreKitRequestFetcher: XCTestCase {
         var fails = false
         override func start() {
             startCalled = true
-            DispatchQueue.global(qos: .background).async {
+            DispatchQueue.main.async {
                 if (self.fails) {
                     self.delegate?.request!(self, didFailWithError: StoreKitError.unknown)
                 } else {
@@ -207,7 +207,6 @@ class StoreKitRequestFetcher: XCTestCase {
     }
     
     func testFetchesReceiptMultipleTimes() {
-        // TODO: This test is failing sometimes
         setupFetcher(fails: false)
         expect(self.receiptFetched).toEventually(beTrue())
         var fetchedAgain = false
