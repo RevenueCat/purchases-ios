@@ -217,18 +217,17 @@ static RCPurchases *_sharedPurchases = nil;
     }
 }
 
+- (BOOL)isCacheStale {
+    NSTimeInterval timeSinceLastCheck = -[self.cachesLastUpdated timeIntervalSinceNow];
+    return (self.cachesLastUpdated != nil && timeSinceLastCheck < 60.);
+}
+
 - (void)updateCaches {
     [self updateCachesWithCompletionBlock:nil];
 }
 
 - (void)updateCachesWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
 {
-    NSTimeInterval timeSinceLastCheck = -[self.cachesLastUpdated timeIntervalSinceNow];
-    
-    if ((self.cachesLastUpdated != nil && timeSinceLastCheck < 60.)) {
-        return;
-    }
-
     [self.backend getSubscriberDataWithAppUserID:self.appUserID
                                  completion:^(RCPurchaserInfo * _Nullable info,
                                               NSError * _Nullable error) {
@@ -246,7 +245,7 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
     RCPurchaserInfo *info = [self readPurchaserInfoFromCache];
-    if (info) {
+    if (info && ![self isCacheStale]) {
         CALL_IF_SET(completion, info, nil);
     } else {
         [self updateCachesWithCompletionBlock:completion];
@@ -491,8 +490,6 @@ static RCPurchases *_sharedPurchases = nil;
         dispatch_async(dispatch_get_main_queue(), block);
     }
 }
-
-
 
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction
 {
