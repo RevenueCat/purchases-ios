@@ -202,7 +202,7 @@ NS_SWIFT_NAME(Purchases)
  @param alias The new appUserID that should be linked to the currently identified appUserID
  @param completion An optional completion block called when the aliasing has been successful. This completion block will receive an error if there's been one.
  */
-- (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock)completion
+- (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
 NS_SWIFT_NAME(createAlias(_:_:));
 
 /**
