@@ -354,6 +354,7 @@ static RCPurchases *_sharedPurchases = nil;
                                                  userInfo:@{
                                                             NSLocalizedDescriptionKey: @"Purchase already in progress for this product."
                                                             }]);
+            return;
         }
         self.purchaseCompleteCallbacks[product.productIdentifier] = [completion copy];
     }

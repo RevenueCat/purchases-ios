@@ -83,7 +83,7 @@ class StoreKitRequestFetcher: XCTestCase {
 
         override func start() {
             startCalled = true
-            DispatchQueue.global(qos: .background).async {
+            DispatchQueue.main.async {
                 if (self.fails) {
                     self.delegate?.request!(self, didFailWithError: StoreKitError.unknown)
                 } else {
