@@ -293,12 +293,6 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 */
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
                                       completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility;
-
-/**
- Reads the App Store receipt and reads the original application version. Use this if RCPurchaserInfo.originalApplicationVersion is nil.
- Triggers purchases:receivedUpdatedPurchaserInfo: delegate method to be called;
- */
-- (void)updateOriginalApplicationVersionWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion;
     
 @end
 

@@ -550,37 +550,6 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 }
 
-- (void)updateOriginalApplicationVersionWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
-{
-    [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable info,
-                                                                             NSError * _Nullable error) {
-        if (error) {
-            CALL_AND_DISPATCH_IF_SET(completion, nil, error);
-        } else if (info.originalApplicationVersion) {
-            CALL_AND_DISPATCH_IF_SET(completion, info, nil);
-        } else {
-            [self receiptData:^(NSData * _Nonnull data) {
-                [self.backend postReceiptData:data
-                                    appUserID:self.appUserID
-                                    isRestore:NO
-                            productIdentifier:nil
-                                        price:nil
-                                  paymentMode:RCPaymentModeNone
-                            introductoryPrice:nil
-                                 currencyCode:nil
-                                   completion:^(RCPurchaserInfo * _Nullable info, NSError * _Nullable error) {
-                                       [self cachePurchaserInfo:info];
-                                       if (completion) {
-                                           [self dispatch:^{
-                                               CALL_AND_DISPATCH_IF_SET(completion, info, error);
-                                           }];
-                                       }
-                                   }];
-            }];
-        }
-    }];
-}
-
 - (void)clearCaches {
     [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
     self.cachesLastUpdated = nil;

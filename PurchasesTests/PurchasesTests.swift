@@ -867,20 +867,6 @@ class PurchasesTests: XCTestCase {
         expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
     }
 
-    func testFetchVersionDoesntSendAReceiptIfLatestVersionHasVersion() {
-        backend.originalApplicationVersion = "1.0"
-        
-        setupPurchases()
-        var receivedInfo: PurchaserInfo?
-        purchases!.updateOriginalApplicationVersion { (info, error) in
-            receivedInfo = info
-        }
-
-        expect(receivedInfo?.originalApplicationVersion).toEventually(equal("1.0"))
-        expect(self.backend.userID).toEventuallyNot(beNil())
-        expect(self.backend.postReceiptDataCalled).toEventually(beFalse())
-    }
-
     func testFetchVersionSendsAReceiptIfNoVersion() {
         setupPurchases()
 
@@ -894,7 +880,7 @@ class PurchasesTests: XCTestCase {
         
         var receivedPurchaserInfo: PurchaserInfo?
 
-        purchases?.updateOriginalApplicationVersion { (info, error) in
+        purchases?.restoreTransactions { (info, error) in
             receivedPurchaserInfo = info
         }
 
