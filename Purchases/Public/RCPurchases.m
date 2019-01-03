@@ -382,28 +382,21 @@ static RCPurchases *_sharedPurchases = nil;
         
         if (info) {
             [self cachePurchaserInfo:info];
-            if (completion) {
-                completion(transaction, info, nil);
-            }
+            CALL_IF_SET(completion, transaction, info, nil);
+            
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if (error.code == RCFinishableError) {
-            if (completion) {
-                completion(transaction, nil, error);
-            }
+            CALL_IF_SET(completion, transaction, nil, error);
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if (error.code == RCUnfinishableError) {
-            if (completion) {
-                completion(transaction, nil, error);
-            }
+            CALL_IF_SET(completion, transaction, nil, error);
         } else {
             RCLog(@"Unexpected error from backend");
-            if (completion) {
-                completion(transaction, nil, error);
-            }
+            CALL_IF_SET(completion, transaction, nil, error);
         }
         
         @synchronized (self) {
@@ -430,11 +423,7 @@ static RCPurchases *_sharedPurchases = nil;
                 completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
             }
             
-            if (completion) {
-                [self dispatch:^{
-                    completion(transaction, nil, transaction.error);
-                }];
-            }
+            CALL_AND_DISPATCH_IF_SET(completion, transaction, nil, transaction.error);
             
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
@@ -454,9 +443,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
      removedTransaction:(SKPaymentTransaction *)transaction
-{
-
-}
+{}
 
 - (BOOL)storeKitWrapper:(nonnull RCStoreKitWrapper *)storeKitWrapper shouldAddStorePayment:(nonnull SKPayment *)payment forProduct:(nonnull SKProduct *)product {
     @synchronized(self) {
