@@ -20,6 +20,9 @@
 #import "RCEntitlement+Protected.h"
 #import "RCOffering+Protected.h"
 
+#define CALL_AND_DISPATCH_IF_SET(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
+#define CALL_IF_SET(completion, ...) if (completion) completion(__VA_ARGS__);
+
 NSErrorDomain const RCPurchasesAPIErrorDomain = @"RCPurchasesAPIErrorDomain";
 
 @interface RCPurchases () <RCStoreKitWrapperDelegate>
@@ -197,15 +200,20 @@ static RCPurchases *_sharedPurchases = nil;
 }
 
 - (void)cachePurchaserInfo:(RCPurchaserInfo *)info {
-    if (info.JSONObject) {
-        NSError *jsonError = nil;
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:info.JSONObject
-                                                           options:0
-                                                             error:&jsonError];
-        if (jsonError == nil) {
-            [self.userDefaults setObject:jsonData
-                                  forKey:self.purchaserInfoUserDefaultCacheKey];
-        }
+    if (info) {
+        [self dispatch:^{
+            if (info.JSONObject) {
+                NSError *jsonError = nil;
+                NSData *jsonData = [NSJSONSerialization dataWithJSONObject:info.JSONObject
+                                                                   options:0
+                                                                     error:&jsonError];
+                if (jsonError == nil) {
+                    [self.userDefaults setObject:jsonData
+                                          forKey:self.purchaserInfoUserDefaultCacheKey];
+                }
+            }
+            self.cachesLastUpdated = [NSDate date];
+        }];
     }
 }
 
@@ -216,26 +224,20 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)updateCachesWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
 {
     NSTimeInterval timeSinceLastCheck = -[self.cachesLastUpdated timeIntervalSinceNow];
-    if (self.cachesLastUpdated != nil && timeSinceLastCheck < 60.) {
+    
+    if ((self.cachesLastUpdated != nil && timeSinceLastCheck < 60.)) {
         return;
     }
-
-    self.cachesLastUpdated = [NSDate date];
 
     [self.backend getSubscriberDataWithAppUserID:self.appUserID
                                  completion:^(RCPurchaserInfo * _Nullable info,
                                               NSError * _Nullable error) {
                                      if (error == nil) {
-                                         [self handleUpdatedPurchaserInfo:info error:nil];
+                                         [self cachePurchaserInfo:info];
                                      } else {
                                          self.cachesLastUpdated = nil;
                                      }
-                                     
-                                     if (completion) {
-                                         [self dispatch:^{
-                                             completion(info, error);
-                                         }];
-                                     }
+                                     CALL_AND_DISPATCH_IF_SET(completion, info, error);
                                  }];
 
     [self getEntitlements:nil];
@@ -244,17 +246,10 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
     RCPurchaserInfo *info = [self readPurchaserInfoFromCache];
-    if (info && completion) {
-        completion(info, nil);
+    if (info) {
+        CALL_IF_SET(completion, info, nil);
     } else {
-        [self.backend getSubscriberDataWithAppUserID:self.appUserID
-                                          completion:^(RCPurchaserInfo *info, NSError *error) {
-                                              if (completion) {
-                                                  [self dispatch:^{
-                                                      completion(info, error);
-                                                  }];
-                                              }
-                                          }];
+        [self updateCachesWithCompletionBlock:completion];
     }
 }
 
@@ -272,7 +267,7 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)entitlementsWithCompletionBlock:(RCReceiveEntitlementsBlock)completion
 {
     if (self.cachedEntitlements) {
-        completion(self.cachedEntitlements, nil);
+        CALL_IF_SET(completion, self.cachedEntitlements, nil)
     } else {
         [self getEntitlements:completion];
     }
@@ -283,9 +278,7 @@ static RCPurchases *_sharedPurchases = nil;
     [self.backend getEntitlementsForAppUserID:self.appUserID
                                    completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements, NSError *error) {
                                        if (error != nil) {
-                                           if (completion) {
-                                               completion(nil, error);
-                                           }
+                                           CALL_AND_DISPATCH_IF_SET(completion, nil, error);
                                            return;
                                        }
 
@@ -309,10 +302,8 @@ static RCPurchases *_sharedPurchases = nil;
                                            } else {
                                                self.cachesLastUpdated = nil;
                                            }
-
-                                           if (completion) {
-                                               completion(entitlements, nil);
-                                           }
+                                           
+                                           CALL_AND_DISPATCH_IF_SET(completion, entitlements, nil);
                                        }];
     }];
 }
@@ -326,7 +317,7 @@ static RCPurchases *_sharedPurchases = nil;
                 self.productsByIdentifier[product.productIdentifier] = product;
             }
         }
-        completion(products);
+        CALL_AND_DISPATCH_IF_SET(completion, products);
     }];
 }
 
@@ -338,7 +329,9 @@ static RCPurchases *_sharedPurchases = nil;
         [self.backend getIntroEligibilityForAppUserID:self.appUserID
                                           receiptData:data
                                    productIdentifiers:productIdentifiers
-                                           completion:receiveEligibility];
+                                           completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
+                                               CALL_AND_DISPATCH_IF_SET(receiveEligibility, result);
+                                           }];
     }];
 }
 
@@ -500,14 +493,6 @@ static RCPurchases *_sharedPurchases = nil;
 }
 
 
-- (void)handleUpdatedPurchaserInfo:(RCPurchaserInfo * _Nullable)info error:(NSError * _Nullable)error
-{
-    [self dispatch:^{
-        if (info) {
-            [self cachePurchaserInfo:info];
-        }
-    }];
-}
 
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction
 {
@@ -563,14 +548,10 @@ static RCPurchases *_sharedPurchases = nil;
                                         NSError * _Nullable error) {
                                [self dispatch:^{
                                    if (error) {
-                                       if (completion) {
-                                           completion(nil, error);
-                                       }
+                                       CALL_AND_DISPATCH_IF_SET(completion, nil, error);
                                    } else if (info) {
                                        [self cachePurchaserInfo:info];
-                                       if (completion) {
-                                           completion(info, nil);
-                                       }
+                                       CALL_AND_DISPATCH_IF_SET(completion, info, nil);
                                    }
                                }];
                            }];
@@ -582,13 +563,9 @@ static RCPurchases *_sharedPurchases = nil;
     [self.backend getSubscriberDataWithAppUserID:self.appUserID completion:^(RCPurchaserInfo * _Nullable info,
                                                                              NSError * _Nullable error) {
         if (error) {
-            [self dispatch:^{
-                completion(nil, error);
-            }];
+            CALL_AND_DISPATCH_IF_SET(completion, nil, error);
         } else if (info.originalApplicationVersion) {
-            [self dispatch:^{
-                completion(info, nil);
-            }];
+            CALL_AND_DISPATCH_IF_SET(completion, info, nil);
         } else {
             [self receiptData:^(NSData * _Nonnull data) {
                 [self.backend postReceiptData:data
@@ -600,9 +577,11 @@ static RCPurchases *_sharedPurchases = nil;
                             introductoryPrice:nil
                                  currencyCode:nil
                                    completion:^(RCPurchaserInfo * _Nullable info, NSError * _Nullable error) {
-                                       [self handleUpdatedPurchaserInfo:info error:error];
+                                       [self cachePurchaserInfo:info];
                                        if (completion) {
-                                           completion(info, error);
+                                           [self dispatch:^{
+                                               CALL_AND_DISPATCH_IF_SET(completion, info, error);
+                                           }];
                                        }
                                    }];
             }];
@@ -612,7 +591,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)createAlias:(NSString *)alias
 {
-    [self createAlias:alias completionBlock:^(RCPurchaserInfo *info, NSError *e) {}];
+    [self createAlias:alias completionBlock:nil];
 }
 
 - (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock)completion
@@ -621,11 +600,7 @@ static RCPurchases *_sharedPurchases = nil;
         if (error == nil) {
             [self identify:alias completionBlock:completion];
         } else {
-            if (completion != nil) {
-                [self dispatch:^{
-                    completion(nil, error);
-                }];
-            }
+            CALL_AND_DISPATCH_IF_SET(completion, nil, error);
         }
     }];
 }
