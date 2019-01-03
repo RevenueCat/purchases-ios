@@ -78,7 +78,7 @@ purchases.entitlements { entitlements in
     [purchases makePurchase:product];
 }];
 ```
->`makePurchase` handles the underlying framework interaction and automatically validates purchases with Apple through our secure servers. This helps reduce `in-app-purchase` fraud and decreases the complexity of your app. Receipt tokens are stored remotely and always kept up-to-date.
+>`makePurchase` handles the underlying framework interaction and automatically validates purchases with Apple through our secure servers. This helps reduce in-app purchase fraud and decreases the complexity of your app. Receipt tokens are stored remotely and always kept up-to-date.
 
 #### 4. Unlock Content
 Once the purchase is made, verified, and stored, we will send you the latest version of a purchaser's available entitlements - this is done via the *Purchases* listener/delegate. It is your responsibility to unlock appropriate content or features in response to this.
