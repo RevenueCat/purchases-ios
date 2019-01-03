@@ -164,8 +164,10 @@ class PurchasesTests: XCTestCase {
 
     class MockStoreKitWrapper: RCStoreKitWrapper {
         var payment: SKPayment?
+        var addPaymentCallCount = 0
         override func add(_ newPayment: SKPayment) {
             payment = newPayment
+            addPaymentCallCount += 1
         }
 
         var finishCalled = false
@@ -657,6 +659,7 @@ class PurchasesTests: XCTestCase {
         
         expect(receivedInfo).toEventually(beNil())
         expect(receivedError).toEventuallyNot(beNil())
+        expect(self.storeKitWrapper.addPaymentCallCount).to(equal(1))
     }
 
     func testDoesntIgnorePurchasesThatDoNotHaveApplicationUserNames() {
