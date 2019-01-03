@@ -78,10 +78,10 @@ purchases.entitlements { entitlements in
     [purchases makePurchase:product];
 }];
 ```
->`makePurchase` handles the underlying framework interaction and automatically validates purchases with Apple through our secure servers. This helps reduce in-app-purchase fraud and decreases the complexity of your app. Receipt tokens are stored remotely and always kept up-to-date.
+>`makePurchase` handles the underlying framework interaction and automatically validates purchases with Apple through our secure servers. This helps reduce `in-app-purchase` fraud and decreases the complexity of your app. Receipt tokens are stored remotely and always kept up-to-date.
 
 #### 4. Unlock Content
-Once the purchase is made, verified, and stored, we will send you the latest version of a purchaser's available entitlements - this is done via the *Purchases* listener/delegate. It is on you to unlock appropriate content or features in response to this.
+Once the purchase is made, verified, and stored, we will send you the latest version of a purchaser's available entitlements - this is done via the *Purchases* listener/delegate. It is your responsibility to unlock appropriate content or features in response to this.
 
 ```swift
 func purchases(_ purchases: RCPurchases, completedTransaction transaction: SKPaymentTransaction, withUpdatedInfo purchaserInfo: RCPurchaserInfo) {
@@ -150,7 +150,7 @@ func displayUpsellScreen() {
 You can use Github Issues to report any bugs and issues with *Purchases*. Here is some advice for users that want to report an issue:
 
 1. Make sure that you are using the latest version of *Purchases*. The issue that you are about to report may be already fixed in the latest master branch version: https://github.com/revenuecat/purchases-ios/tree/master.
-2. Providing reproducible steps for the issue will shorten the time it takes for it to be fixed. A JSFiddle is always welcomed, and you can start from this [basic one](https://jsfiddle.net/froala/wc5c3jhk/).
+2. Providing reproducible steps for the issue will shorten the time it takes for it to be fixed - a Gist is always welcomed!
 3. Since some issues are Sandbox specific, specifying what environment you encountered the issue might help.
 ​
 
