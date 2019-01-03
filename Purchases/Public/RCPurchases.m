@@ -219,7 +219,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (BOOL)isCacheStale {
     NSTimeInterval timeSinceLastCheck = -[self.cachesLastUpdated timeIntervalSinceNow];
-    return (self.cachesLastUpdated != nil && timeSinceLastCheck < 60.);
+    return (self.cachesLastUpdated != nil && timeSinceLastCheck < 60. * 5);
 }
 
 - (void)updateCaches {
@@ -248,9 +248,12 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
-    RCPurchaserInfo *info = [self readPurchaserInfoFromCache];
-    if (info && ![self isCacheStale]) {
-        CALL_IF_SET(completion, info, nil);
+    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
+    if (infoFromCache) {
+        CALL_IF_SET(completion, infoFromCache, nil);
+        if ([self isCacheStale]) {
+            [self updateCaches];
+        }
     } else {
         [self updateCachesWithCompletionBlock:completion];
     }
@@ -270,7 +273,10 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)entitlementsWithCompletionBlock:(RCReceiveEntitlementsBlock)completion
 {
     if (self.cachedEntitlements) {
-        CALL_IF_SET(completion, self.cachedEntitlements, nil)
+        CALL_IF_SET(completion, self.cachedEntitlements, nil);
+        if ([self isCacheStale]) {
+            [self updateCaches];
+        }
     } else {
         [self updateEntitlementsCache:completion];
     }
