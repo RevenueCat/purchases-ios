@@ -575,6 +575,12 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 }
 
+- (void)clearCaches {
+    [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
+    self.cachesLastUpdated = nil;
+    self.cachedEntitlements = nil;
+}
+
 - (void)createAlias:(NSString *)alias
 {
     [self createAlias:alias completionBlock:nil];
@@ -593,17 +599,15 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)identify:(NSString *)appUserID completionBlock:(RCReceivePurchaserInfoBlock)completion
 {
-    [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
+    [self clearCaches];
     self.appUserID = appUserID;
-    self.cachesLastUpdated = nil;
     [self updateCachesWithCompletionBlock:completion];
 }
 
 - (void)reset
 {
+    [self clearCaches];
     self.appUserID = [self generateAndCacheID];
-    self.allowSharingAppStoreAccount = YES;
-    self.cachesLastUpdated = nil;
     [self updateCaches];
 }
 
