@@ -298,8 +298,6 @@ static RCPurchases *_sharedPurchases = nil;
 
                                            if (entitlements != nil) {
                                                self.cachedEntitlements = entitlements;
-                                           } else {
-                                               self.cachesLastUpdated = nil;
                                            }
                                            
                                            CALL_AND_DISPATCH_IF_SET(completion, entitlements, nil);
