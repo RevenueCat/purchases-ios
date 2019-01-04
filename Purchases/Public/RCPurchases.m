@@ -139,6 +139,12 @@ static RCPurchases *_sharedPurchases = nil;
         self.purchaseCompleteCallbacks = [NSMutableDictionary new];
 
         self.finishTransactions = YES;
+        
+        RCReceivePurchaserInfoBlock callDelegate = ^void(RCPurchaserInfo *info, NSError *error) {
+            if (info) {
+                [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+            }
+        };
 
         if (appUserID == nil) {
             appUserID = [userDefaults stringForKey:RCAppUserDefaultsKey];
@@ -147,18 +153,10 @@ static RCPurchases *_sharedPurchases = nil;
             }
             self.allowSharingAppStoreAccount = YES;
             self.appUserID = appUserID;
-            [self updateCachesWithCompletionBlock:^(RCPurchaserInfo *info, NSError *error) {
-                if (info) {
-                    [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
-                }
-            }];
+            [self updateCachesWithCompletionBlock:callDelegate];
         } else {
             // this will call updateCaches
-            [self identify:appUserID completionBlock:^(RCPurchaserInfo *info, NSError *error) {
-                if (info) {
-                    [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
-                }
-            }];
+            [self identify:appUserID completionBlock:callDelegate];
         }
         
         self.storeKitWrapper.delegate = self;

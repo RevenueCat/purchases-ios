@@ -299,6 +299,11 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
     }
+    
+    func testFirstInitializationCallDelegateForAnon() {
+        setupAnonPurchases()
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
+    }
 
     func testIsAbleToFetchProducts() {
         setupPurchases()
