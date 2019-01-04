@@ -83,7 +83,9 @@ class PurchasesTests: XCTestCase {
             }
 
             if (!timeout) {
-                completion(info!, nil)
+                DispatchQueue.main.async {
+                    completion(info!, nil)
+                }
             }
         }
 
@@ -291,6 +293,11 @@ class PurchasesTests: XCTestCase {
     func testIsAbleToBeIntialized() {
         setupPurchases()
         expect(self.purchases).toNot(beNil())
+    }
+    
+    func testFirstInitializationCallDelegate() {
+        setupPurchases()
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
     }
 
     func testIsAbleToFetchProducts() {
@@ -892,10 +899,11 @@ class PurchasesTests: XCTestCase {
     func testCachesPurchaserInfo() {
         setupPurchases()
 
-        expect(self.userDefaults.cachedUserInfo.count).to(equal(1))
-        let purchaserInfo = userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + self.purchases!.appUserID]
-        expect(purchaserInfo).toNot(beNil())
-
+        expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(1))
+        expect(self.userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + self.purchases!.appUserID]).toEventuallyNot(beNil())
+        
+        let purchaserInfo = self.userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + self.purchases!.appUserID]
+        
         do {
             if (purchaserInfo != nil) {
                 try JSONSerialization.jsonObject(with: purchaserInfo!, options: [])
@@ -908,7 +916,7 @@ class PurchasesTests: XCTestCase {
     func testCachesPurchaserInfoOnPurchase() {
         setupPurchases()
 
-        expect(self.userDefaults.cachedUserInfo.count).to(equal(1))
+        expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(1))
 
         self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [
             "subscriber": [
@@ -1114,7 +1122,7 @@ class PurchasesTests: XCTestCase {
         let newAppUserID = "cesarPedro"
         self.purchases?.identify(newAppUserID)
         identifiedSuccesfully(appUserID: newAppUserID)
-        expect(self.userDefaults.cachedUserInfo.count).to(equal(2))
+        expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
     }
 
     func testCreateAliasIdentifies() {
@@ -1141,7 +1149,7 @@ class PurchasesTests: XCTestCase {
     func testIdentifyForcesCache() {
         setupPurchases()
         self.purchases?.identify("new")
-        expect(self.userDefaults.cachedUserInfo.count).to(equal(2))
+        expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
         let purchaserInfo = userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo.new"]
         expect(purchaserInfo).toNot(beNil())
 
@@ -1150,7 +1158,7 @@ class PurchasesTests: XCTestCase {
     func testResetForcesCache() {
         setupPurchases()
         self.purchases?.reset()
-        expect(self.userDefaults.cachedUserInfo.count).to(equal(2))
+        expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
     }
     
     func testCreateAliasChangesAppUserId() {

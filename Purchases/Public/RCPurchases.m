@@ -147,10 +147,18 @@ static RCPurchases *_sharedPurchases = nil;
             }
             self.allowSharingAppStoreAccount = YES;
             self.appUserID = appUserID;
-            [self updateCaches];
+            [self updateCachesWithCompletionBlock:^(RCPurchaserInfo *info, NSError *error) {
+                if (info) {
+                    [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+                }
+            }];
         } else {
             // this will call updateCaches
-            [self identify:appUserID completionBlock:nil];
+            [self identify:appUserID completionBlock:^(RCPurchaserInfo *info, NSError *error) {
+                if (info) {
+                    [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+                }
+            }];
         }
         
         self.storeKitWrapper.delegate = self;
@@ -187,7 +195,7 @@ static RCPurchases *_sharedPurchases = nil;
 }
 
 - (RCPurchaserInfo *)readPurchaserInfoFromCache {
-    NSData *purchaserInfoData = [self.userDefaults dataForKey:self.purchaserInfoUserDefaultCacheKey];
+    NSData *purchaserInfoData = [self.userDefaults dataForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:self.appUserID]];
     if (purchaserInfoData) {
         NSError *jsonError;
         NSDictionary *infoDict = [NSJSONSerialization JSONObjectWithData:purchaserInfoData options:0 error:&jsonError];
@@ -199,7 +207,7 @@ static RCPurchases *_sharedPurchases = nil;
     return nil;
 }
 
-- (void)cachePurchaserInfo:(RCPurchaserInfo *)info {
+- (void)cachePurchaserInfo:(RCPurchaserInfo *)info forAppUserID:(NSString *)appUserID {
     if (info) {
         [self dispatch:^{
             if (info.JSONObject) {
@@ -209,7 +217,7 @@ static RCPurchases *_sharedPurchases = nil;
                                                                      error:&jsonError];
                 if (jsonError == nil) {
                     [self.userDefaults setObject:jsonData
-                                          forKey:self.purchaserInfoUserDefaultCacheKey];
+                                          forKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
                 }
             }
             self.cachesLastUpdated = [NSDate date];
@@ -234,11 +242,12 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)updatePurchaserInfoCache:(RCReceivePurchaserInfoBlock _Nullable)completion
 {
+    NSString *appUserID = self.appUserID;
     [self.backend getSubscriberDataWithAppUserID:self.appUserID
                                       completion:^(RCPurchaserInfo * _Nullable info,
                                                    NSError * _Nullable error) {
                                           if (error == nil) {
-                                              [self cachePurchaserInfo:info];
+                                              [self cachePurchaserInfo:info forAppUserID:appUserID];
                                           } else {
                                               self.cachesLastUpdated = nil;
                                           }
@@ -387,9 +396,8 @@ static RCPurchases *_sharedPurchases = nil;
         }
         
         if (info) {
-            [self cachePurchaserInfo:info];
+            [self cachePurchaserInfo:info forAppUserID:self.appUserID];
             CALL_IF_SET(completion, transaction, info, nil);
-            
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
@@ -473,8 +481,8 @@ static RCPurchases *_sharedPurchases = nil;
     }
 }
 
-- (NSString *)purchaserInfoUserDefaultCacheKey {
-    return [RCPurchaserInfoAppUserDefaultsKeyBase stringByAppendingString:self.appUserID];
+- (NSString *)purchaserInfoUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {
+    return [RCPurchaserInfoAppUserDefaultsKeyBase stringByAppendingString:appUserID];
 }
 
 - (void)dispatch:(void (^ _Nonnull)(void))block
@@ -542,7 +550,7 @@ static RCPurchases *_sharedPurchases = nil;
                                    if (error) {
                                        CALL_AND_DISPATCH_IF_SET(completion, nil, error);
                                    } else if (info) {
-                                       [self cachePurchaserInfo:info];
+                                       [self cachePurchaserInfo:info forAppUserID:self.appUserID];
                                        CALL_AND_DISPATCH_IF_SET(completion, info, nil);
                                    }
                                }];
