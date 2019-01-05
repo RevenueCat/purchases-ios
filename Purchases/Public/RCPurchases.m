@@ -399,7 +399,13 @@ static RCPurchases *_sharedPurchases = nil;
         
         if (info) {
             [self cachePurchaserInfo:info forAppUserID:self.appUserID];
+            
             CALL_IF_SET(completion, transaction, info, nil);
+            
+            if (!completion) {
+                [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+            }
+            
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }

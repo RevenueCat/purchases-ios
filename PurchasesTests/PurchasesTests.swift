@@ -304,6 +304,29 @@ class PurchasesTests: XCTestCase {
         setupAnonPurchases()
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
     }
+    
+    func testDelegateIsCalledForRandomPurchaseSuccess() {
+        setupPurchases()
+        
+        let purchaserInfo = PurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = purchaserInfo
+        
+        let product = MockProduct(mockProductIdentifier: "product")
+        let payment = SKPayment(product: product)
+        
+        let transaction = MockTransaction()
+        
+        transaction.mockPayment = payment
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
+    }
 
     func testIsAbleToFetchProducts() {
         setupPurchases()
