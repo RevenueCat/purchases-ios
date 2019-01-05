@@ -37,7 +37,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 @property (nonatomic) RCHTTPClient *httpClient;
 @property (nonatomic) NSString *APIKey;
 
-@property (nonatomic) NSMutableDictionary<NSString *, NSMutableArray *> *receiptCallbacksCache;
+@property (nonatomic) NSMutableDictionary<NSString *, NSMutableArray *> *callbacksCache;
 
 @end
 
@@ -57,7 +57,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
         self.httpClient = client;
         self.APIKey = APIKey;
 
-        self.receiptCallbacksCache = [NSMutableDictionary new];
+        self.callbacksCache = [NSMutableDictionary new];
     }
     return self;
 }
@@ -133,12 +133,12 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 - (BOOL)addCallback:(id)completion forKey:(NSString *)key
 {
     @synchronized(self) {
-        NSMutableArray *callbacks = [self.receiptCallbacksCache objectForKey:key];
+        NSMutableArray *callbacks = [self.callbacksCache objectForKey:key];
         BOOL cacheMiss = callbacks == nil;
         
         if (cacheMiss) {
             callbacks = [NSMutableArray new];
-            self.receiptCallbacksCache[key] = callbacks;
+            self.callbacksCache[key] = callbacks;
         }
         
         [callbacks addObject:[completion copy]];
@@ -150,10 +150,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
 - (NSMutableArray *)getCallbacksAndClearForKey:(NSString *)key {
     @synchronized(self) {
-        NSMutableArray *callbacks = self.receiptCallbacksCache[key];
+        NSMutableArray *callbacks = self.callbacksCache[key];
         NSParameterAssert(callbacks);
         
-        self.receiptCallbacksCache[key] = nil;
+        self.callbacksCache[key] = nil;
         
         return callbacks;
     }

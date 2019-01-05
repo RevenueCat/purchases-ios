@@ -722,6 +722,12 @@ class PurchasesTests: XCTestCase {
         notificationCenter.fireNotifications();
         expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
     }
+    
+    func testAutomaticallyCallsDelegateOnDidBecomeActiveAndUpdate() {
+        setupPurchases()
+        notificationCenter.fireNotifications();
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
+    }
 
     func testDoesntRemovesObservationWhenDelegateNild() {
         setupPurchases()

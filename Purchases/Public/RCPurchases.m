@@ -189,7 +189,11 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif
 {
-    [self updateCaches];
+    [self updateCachesWithCompletionBlock:^(RCPurchaserInfo *info, NSError *error) {
+        if (info) {
+            [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+        }
+    }];
 }
 
 - (RCPurchaserInfo *)readPurchaserInfoFromCache {
@@ -225,7 +229,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (BOOL)isCacheStale {
     NSTimeInterval timeSinceLastCheck = -[self.cachesLastUpdated timeIntervalSinceNow];
-    return (self.cachesLastUpdated != nil && timeSinceLastCheck < 60. * 5);
+    return !(self.cachesLastUpdated != nil && timeSinceLastCheck < 60. * 5);
 }
 
 - (void)updateCaches {
@@ -557,7 +561,9 @@ static RCPurchases *_sharedPurchases = nil;
 }
 
 - (void)clearCaches {
-    [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
+    if (self.appUserID) {
+        [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:self.appUserID]];
+    }
     self.cachesLastUpdated = nil;
     self.cachedEntitlements = nil;
 }
