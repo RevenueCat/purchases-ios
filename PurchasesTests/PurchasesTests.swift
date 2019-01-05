@@ -327,6 +327,82 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(equal(true))
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
+    
+    func testDelegateIsOnlyCalledOnceIfPurchaserInfoTheSame() {
+        setupPurchases()
+        
+        let purchaserInfo1 = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0"
+            ]
+        ])
+        
+        let purchaserInfo2 = purchaserInfo1
+        
+        let product = MockProduct(mockProductIdentifier: "product")
+        let payment = SKPayment(product: product)
+        
+        let transaction = MockTransaction()
+        
+        transaction.mockPayment = payment
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        self.backend.postReceiptPurchaserInfo = purchaserInfo1
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        self.backend.postReceiptPurchaserInfo = purchaserInfo2
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
+    }
+    
+    func testDelegateIsCalledTwiceIfPurchaserInfoTheDifferent() {
+        setupPurchases()
+        
+        let purchaserInfo1 = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0"
+            ]
+            ])
+        
+        let purchaserInfo2 = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "2.0"
+            ]
+            ])
+        
+        let product = MockProduct(mockProductIdentifier: "product")
+        let payment = SKPayment(product: product)
+        
+        let transaction = MockTransaction()
+        
+        transaction.mockPayment = payment
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        self.backend.postReceiptPurchaserInfo = purchaserInfo1
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        self.backend.postReceiptPurchaserInfo = purchaserInfo2
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(3))
+    }
 
     func testIsAbleToFetchProducts() {
         setupPurchases()

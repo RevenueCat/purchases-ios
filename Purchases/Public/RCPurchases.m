@@ -39,6 +39,7 @@ NSErrorDomain const RCPurchasesAPIErrorDomain = @"RCPurchasesAPIErrorDomain";
 @property (nonatomic) NSDictionary<NSString *, RCEntitlement *> *cachedEntitlements;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
 @property (nonatomic) NSMutableDictionary<NSString *, RCPurchaseCompletedBlock> *purchaseCompleteCallbacks;
+@property (nonatomic) RCPurchaserInfo *lastSentPurchaserInfo;
 
 @end
 
@@ -403,7 +404,7 @@ static RCPurchases *_sharedPurchases = nil;
             CALL_IF_SET(completion, transaction, info, nil);
             
             if (!completion) {
-                [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+                [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
             }
             
             if (self.finishTransactions) {
@@ -425,6 +426,13 @@ static RCPurchases *_sharedPurchases = nil;
             self.purchaseCompleteCallbacks[transaction.payment.productIdentifier] = nil;
         }
     }];
+}
+
+- (void)sendUpdatedPurchaserInfoToDelegateIfChanged:(RCPurchaserInfo *)info {
+    if (![self.lastSentPurchaserInfo isEqual:info]) {
+        [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+        self.lastSentPurchaserInfo = info;
+    }
 }
 
 /*
@@ -480,7 +488,6 @@ static RCPurchases *_sharedPurchases = nil;
         return NO;
     }
 }
-
 
 - (SKProduct * _Nullable)productForIdentifier:(NSString *)productIdentifier
 {
