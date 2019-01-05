@@ -292,7 +292,7 @@ NS_SWIFT_NAME(restoreTransactions(_:));
  @param receiveEligibility A block that receives a dictionary of product_id -> `RCIntroEligibility`.
 */
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
-                                      completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility;
+                                 completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility;
     
 @end
 
