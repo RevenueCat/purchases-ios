@@ -143,7 +143,7 @@ static RCPurchases *_sharedPurchases = nil;
         
         RCReceivePurchaserInfoBlock callDelegate = ^void(RCPurchaserInfo *info, NSError *error) {
             if (info) {
-                [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+                [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
             }
         };
 
@@ -192,7 +192,7 @@ static RCPurchases *_sharedPurchases = nil;
 {
     [self updateCachesWithCompletionBlock:^(RCPurchaserInfo *info, NSError *error) {
         if (info) {
-            [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+            [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
         }
     }];
 }
