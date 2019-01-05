@@ -36,7 +36,7 @@ NSErrorDomain const RCPurchasesAPIErrorDomain = @"RCPurchasesAPIErrorDomain";
 @property (nonatomic) NSUserDefaults *userDefaults;
 
 @property (nonatomic) NSDate *cachesLastUpdated;
-@property (nonatomic) NSDictionary<NSString *, RCEntitlement *> *cachedEntitlements;
+@property (nonatomic) RCEntitlements *cachedEntitlements;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
 @property (nonatomic) NSMutableDictionary<NSString *, RCPurchaseCompletedBlock> *purchaseCompleteCallbacks;
 @property (nonatomic) RCPurchaserInfo *lastSentPurchaserInfo;

@@ -196,4 +196,9 @@ static dispatch_once_t onceToken;
     return isEqual;
 }
 
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"<PurchaserInfo originalApplicationVersion: %@,\n activeEntitlements: %@,\n activeSubscriptions: %@,\n nonConsumablePurchases: %@,\n requestDate: %@\n>", self.originalApplicationVersion, self.activeEntitlements, self.activeSubscriptions, self.nonConsumablePurchases, self.requestDate];
+}
+
 @end

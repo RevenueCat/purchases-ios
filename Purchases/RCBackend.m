@@ -288,7 +288,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     }];
 }
 
-- (NSDictionary<NSString *, RCEntitlement *> *)parseEntitlementResponse:(NSDictionary *)response
+- (RCEntitlements *)parseEntitlementResponse:(NSDictionary *)response
 {
     NSMutableDictionary *entitlements = [NSMutableDictionary new];
 

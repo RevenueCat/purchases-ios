@@ -139,7 +139,7 @@ class PurchasesTests: XCTestCase {
 
             let offering = RCOffering()
             offering.activeProductIdentifier = "monthly_freetrial"
-            let entitlement = RCEntitlement(offerings: ["monthly" : offering])
+            let entitlement = Entitlement(offerings: ["monthly" : offering])
             completion(["pro" : entitlement!], nil)
         }
         
@@ -238,7 +238,7 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    class PurchasesDelegate: NSObject, RCPurchasesDelegate {
+    class Delegate: NSObject, PurchasesDelegate {
         var purchaserInfo: PurchaserInfo?
         var purchaserInfoReceivedCount = 0
         func purchases(_ purchases: Purchases, receivedUpdatedPurchaserInfo purchaserInfo: PurchaserInfo) {
@@ -262,7 +262,7 @@ class PurchasesTests: XCTestCase {
     let notificationCenter = MockNotificationCenter();
     let userDefaults = MockUserDefaults();
 
-    let purchasesDelegate = PurchasesDelegate()
+    let purchasesDelegate = Delegate()
     
     let appUserID = "app_user"
 
@@ -1091,7 +1091,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         expect(self.backend.gotEntitlements).toEventually(equal(1))
 
-        var entitlements: [String : RCEntitlement]?
+        var entitlements: [String : Entitlement]?
         
         self.purchases?.entitlements { (newEntitlements, _)  in
             entitlements = newEntitlements
@@ -1142,7 +1142,7 @@ class PurchasesTests: XCTestCase {
         self.backend.failEntitlements = true
         setupPurchases()
 
-        var entitlements: [String : RCEntitlement]?
+        var entitlements: [String : Entitlement]?
         self.purchases?.entitlements({ (newEntitlements, _) in
             entitlements = newEntitlements
         })
@@ -1155,7 +1155,7 @@ class PurchasesTests: XCTestCase {
         requestFetcher.failProducts = true
         setupPurchases()
 
-        var entitlements: [String : RCEntitlement]?
+        var entitlements: [String : Entitlement]?
         self.purchases?.entitlements({ (newEntitlements, _) in
             entitlements = newEntitlements
         })

@@ -552,7 +552,7 @@ class BackendTests: XCTestCase {
         let path = "/subscribers/" + userID + "/products"
         httpClient.mock(requestPath: path, response: response)
 
-        var entitlements: [String : RCEntitlement]?
+        var entitlements: [String : Entitlement]?
 
         backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
             entitlements = newEntitlements
@@ -606,7 +606,7 @@ class BackendTests: XCTestCase {
         let path = "/subscribers/" + userID + "/products"
         httpClient.mock(requestPath: path, response: response)
 
-        var entitlements: [String : RCEntitlement]?
+        var entitlements: [String : Entitlement]?
 
         backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
             entitlements = newEntitlements
@@ -626,7 +626,7 @@ class BackendTests: XCTestCase {
         let path = "/subscribers/" + userID + "/products"
         httpClient.mock(requestPath: path, response: response)
 
-        var entitlements: [String : RCEntitlement]?
+        var entitlements: [String : Entitlement]?
 
         backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
             entitlements = newEntitlements

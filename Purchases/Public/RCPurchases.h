@@ -8,18 +8,18 @@
 
 #import <Foundation/Foundation.h>
 
+#import "RCEntitlement.h"
+
 @class SKProduct, SKPayment, SKPaymentTransaction, RCPurchaserInfo, RCIntroEligibility, RCEntitlement;
 @protocol RCPurchasesDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
 
-
-
-typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable);
-typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *);
-typedef void (^RCReceiveEntitlementsBlock)(NSDictionary<NSString *,RCEntitlement *> * _Nullable, NSError * _Nullable);
-typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *);
-typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable);
+typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceivePurchaserInfoBlock);
+typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *) NS_SWIFT_NAME(Purchases.ReceiveIntroEligibilityBlock);
+typedef void (^RCReceiveEntitlementsBlock)(RCEntitlements * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceiveEntitlementsBlock);
+typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *) NS_SWIFT_NAME(Purchases.ReceiveProductsBlock);
+typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PurchaseCompletedBlock);
 
 FOUNDATION_EXPORT NSErrorDomain const RCPurchasesAPIErrorDomain;
 
@@ -301,6 +301,7 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 
  @note Delegate methods can be called at any time after the `delegate` is set, not just in response to `makePurchase:` calls. Ensure your app is capable of handling completed transactions anytime `delegate` is set.
  */
+NS_SWIFT_NAME(PurchasesDelegate)
 @protocol RCPurchasesDelegate <NSObject>
 @required
 

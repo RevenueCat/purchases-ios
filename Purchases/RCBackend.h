@@ -10,6 +10,7 @@
 #import <StoreKit/StoreKit.h>
 
 #import "RCPurchases.h"
+#import "RCEntitlement.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -39,7 +40,7 @@ typedef void(^RCBackendResponseHandler)(RCPurchaserInfo * _Nullable,
 typedef void(^RCIntroEligibilityResponseHandler)(NSDictionary<NSString *,
                                                  RCIntroEligibility *> *);
 
-typedef void(^RCEntitlementResponseHandler)(NSDictionary<NSString *, RCEntitlement *> * _Nullable, NSError * _Nullable);
+typedef void(^RCEntitlementResponseHandler)(RCEntitlements * _Nullable, NSError * _Nullable);
 
 @interface RCBackend : NSObject
 
