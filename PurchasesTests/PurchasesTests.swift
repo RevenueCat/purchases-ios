@@ -137,7 +137,7 @@ class PurchasesTests: XCTestCase {
                 return
             }
 
-            let offering = RCOffering()
+            let offering = Offering()
             offering.activeProductIdentifier = "monthly_freetrial"
             let entitlement = Entitlement(offerings: ["monthly" : offering])
             completion(["pro" : entitlement!], nil)
