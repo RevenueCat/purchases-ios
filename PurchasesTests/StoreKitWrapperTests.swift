@@ -85,6 +85,7 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
         wrapper?.add(payment)
 
         let transaction = MockTransaction()
+        transaction.mockPayment = payment
 
         wrapper?.paymentQueue(paymentQueue, updatedTransactions: [transaction])
 
@@ -120,7 +121,9 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
         wrapper?.add(payment2)
 
         let transaction1 = MockTransaction()
+        transaction1.mockPayment = payment1
         let transaction2 = MockTransaction()
+        transaction2.mockPayment = payment2
 
         wrapper?.paymentQueue(paymentQueue, updatedTransactions: [transaction1,
                                                                   transaction2])
@@ -144,7 +147,9 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
 
     func testCallsRemovedTransactionDelegateMethod() {
         let transaction1 = MockTransaction()
+        transaction1.mockPayment = SKPayment.init(product: SKProduct.init())
         let transaction2 = MockTransaction()
+        transaction2.mockPayment = SKPayment.init(product: SKProduct.init())
 
         wrapper?.paymentQueue(paymentQueue, removedTransactions: [transaction1, transaction2])
 
