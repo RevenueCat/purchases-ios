@@ -201,14 +201,14 @@ static dispatch_once_t onceToken;
     NSMutableDictionary *activeSubscriptions = [NSMutableDictionary dictionary];
     for (NSString *active in self.activeSubscriptions) {
         activeSubscriptions[active] = @{
-                                        @"expiresDate": [self expirationDateForProductIdentifier:active]
+                                        @"expiresDate": [self expirationDateForProductIdentifier:active] ?: @"null"
                                         };
     }
     
     NSMutableDictionary *activeEntitlements = [NSMutableDictionary dictionary];
     for (NSString *active in self.activeEntitlements) {
         activeEntitlements[active] = @{
-                                        @"expiresDate": [self expirationDateForEntitlement:active]
+                                        @"expiresDate": [self expirationDateForEntitlement:active] ?: @"null"
                                         };
     }
     
