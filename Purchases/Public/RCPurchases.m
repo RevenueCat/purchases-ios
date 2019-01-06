@@ -140,6 +140,8 @@ static RCPurchases *_sharedPurchases = nil;
 {
     if (self = [super init]) {
         RCDebugLog(@"Debug logging enabled.");
+        RCDebugLog(@"SDK Version - %@", self.class.frameworkVersion);
+        RCDebugLog(@"Initial App User ID - %@", appUserID);
         
         self.requestFetcher = requestFetcher;
         self.backend = backend;
@@ -163,7 +165,9 @@ static RCPurchases *_sharedPurchases = nil;
             appUserID = [userDefaults stringForKey:RCAppUserDefaultsKey];
             if (appUserID == nil) {
                 appUserID = [self generateAndCacheID];
+                RCDebugLog(@"Generated New App User ID - %@", appUserID);
             }
+            
             self.allowSharingAppStoreAccount = YES;
             self.appUserID = appUserID;
             [self updateCachesWithCompletionBlock:callDelegate];
@@ -202,7 +206,9 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif
 {
+    RCDebugLog(@"applicationDidBecomeActive");
     if ([self isCacheStale]) {
+        RCDebugLog(@"Cache is stale, updating caches");
         [self updateCachesWithCompletionBlock:^(RCPurchaserInfo *info, NSError *error) {
             if (info) {
                 [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
@@ -276,11 +282,14 @@ static RCPurchases *_sharedPurchases = nil;
 {
     RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
     if (infoFromCache) {
+        RCDebugLog(@"Vending purchaserInfo from cache");
         CALL_IF_SET(completion, infoFromCache, nil);
         if ([self isCacheStale]) {
+            RCDebugLog(@"Cache is stale, updating caches");
             [self updateCaches];
         }
     } else {
+        RCDebugLog(@"No cached purchaser info, fetching");
         [self updateCachesWithCompletionBlock:completion];
     }
 }
@@ -299,11 +308,14 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)entitlementsWithCompletionBlock:(RCReceiveEntitlementsBlock)completion
 {
     if (self.cachedEntitlements) {
+        RCDebugLog(@"Vending entitlements from cache");
         CALL_IF_SET(completion, self.cachedEntitlements, nil);
         if ([self isCacheStale]) {
+            RCDebugLog(@"Cache is stale, updating caches");
             [self updateCaches];
         }
     } else {
+        RCDebugLog(@"No cached entitlements, fetching");
         [self updateEntitlementsCache:completion];
     }
 }
@@ -313,6 +325,7 @@ static RCPurchases *_sharedPurchases = nil;
     [self.backend getEntitlementsForAppUserID:self.appUserID
                                    completion:^(NSDictionary<NSString *,RCEntitlement *> *entitlements, NSError *error) {
                                        if (error != nil) {
+                                           RCLog(@"Error fetching entitlements - %@", error);
                                            CALL_AND_DISPATCH_IF_SET(completion, nil, error);
                                            return;
                                        }
@@ -327,10 +340,25 @@ static RCPurchases *_sharedPurchases = nil;
                                            for (SKProduct *p in products) {
                                                productsById[p.productIdentifier] = p;
                                            }
+                                           
+                                           NSMutableArray *missingProducts = [NSMutableArray new];
 
                                            [self performOnEachOfferingInEntitlements:entitlements block:^(RCOffering *offering) {
-                                               offering.activeProduct = productsById[offering.activeProductIdentifier];
+                                               SKProduct *product = productsById[offering.activeProductIdentifier];
+                                               
+                                               
+                                               if (product == nil) {
+                                                   [missingProducts addObject:offering.activeProductIdentifier];
+                                               }
+                                               
+                                               offering.activeProduct = product;
                                            }];
+                                           
+                                           if (missingProducts.count > 0) {
+                                               RCLog(@"Could not find SKProduct for %@", missingProducts);
+                                               RCLog(@"Ensure your products are correctly configured in App Store Connect");
+                                               RCLog(@"See https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard");
+                                           }
 
                                            if (entitlements != nil) {
                                                self.cachedEntitlements = entitlements;
@@ -374,6 +402,8 @@ static RCPurchases *_sharedPurchases = nil;
     // from triggering a refresh.
     self.cachesLastUpdated = [NSDate date];
     
+    RCDebugLog(@"makePurchase - %@", product.productIdentifier);
+    
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
     payment.applicationUsername = self.appUserID;
     
@@ -396,9 +426,14 @@ static RCPurchases *_sharedPurchases = nil;
 {
     NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
     NSData *receiptData = [NSData dataWithContentsOfURL:receiptURL];
+    RCDebugLog(@"Loaded receipt from %@", receiptURL);
     if (receiptData == nil) {
+        RCDebugLog(@"Receipt empty, fetching");
         [self.requestFetcher fetchReceiptData:^{
             NSData *newReceiptData = [NSData dataWithContentsOfURL:receiptURL];
+            if (newReceiptData == nil) {
+                RCLog(@"Unable to load receipt, ensure you are logged in to a Sandbox account");
+            }
             completion(newReceiptData ?: [NSData data]);
         }];
     } else {
