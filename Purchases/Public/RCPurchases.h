@@ -254,7 +254,8 @@ NS_SWIFT_NAME(entitlements(_:));
  @param completion An @escaping callback that is called with the loaded products. If the fetch fails for any reason it will return an empty array.
  */
 - (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
-                     completionBlock:(RCReceiveProductsBlock)completion;
+                     completionBlock:(RCReceiveProductsBlock)completion
+NS_SWIFT_NAME(products(_:_:));
 
 /**
  Purchase the passed `SKProduct`.

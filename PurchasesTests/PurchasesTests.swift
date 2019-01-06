@@ -429,7 +429,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         var products: [SKProduct]?
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
-        purchases!.products(withIdentifiers:productIdentifiers) { (newProducts) in
+        purchases!.products(productIdentifiers) { (newProducts) in
             products = newProducts
         }
 
@@ -558,7 +558,7 @@ class PurchasesTests: XCTestCase {
     func testSendsProductInfoIfProductIsCached() {
         setupPurchases()
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
-        purchases!.products(withIdentifiers:productIdentifiers) { (newProducts) in
+        purchases!.products(productIdentifiers) { (newProducts) in
             let product = newProducts[0];
             self.purchases?.makePurchase(product) { (tx, info, error) in
                 
