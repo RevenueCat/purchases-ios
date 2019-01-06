@@ -63,6 +63,7 @@
         SKProductsRequest *newRequest = nil;
         
         if (self.productsRequests[identifiers] == nil) {
+            RCDebugLog(@"Requesting products with identifiers: %@", identifiers);
             newRequest = [self.requestFactory requestForProductIdentifiers:identifiers];
             newRequest.delegate = self;
             
@@ -156,7 +157,16 @@
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response
 {
+    RCDebugLog(@"Products request finished");
+    RCDebugLog(@"Valid Products:");
+    for (SKProduct *p in response.products)
+    {
+        RCDebugLog(@"%@ - %@", p.productIdentifier, p);
+    }
+    RCDebugLog(@"Invalid Product Identifiers - %@", response.invalidProductIdentifiers);
+    
     NSArray<RCFetchProductsCompletionHandler> *handlers = [self finishProductsRequest:request];
+    RCDebugLog(@"%d completion handlers waiting on products", handlers.count);
     for (RCFetchProductsCompletionHandler handler in handlers)
     {
         handler(response.products);

@@ -51,6 +51,16 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 static RCPurchases *_sharedPurchases = nil;
 @synthesize delegate=_delegate;
 
++ (void)setDebugLogsEnabled:(BOOL)enabled
+{
+    RCSetShowDebugLogs(enabled);
+}
+
++ (BOOL)debugLogsEnabled
+{
+    return RCShowDebugLogs();
+}
+
 + (NSString *)frameworkVersion {
     return @"1.3.0-SNAPSHOT";
 }
@@ -129,6 +139,8 @@ static RCPurchases *_sharedPurchases = nil;
                      userDefaults:(NSUserDefaults *)userDefaults
 {
     if (self = [super init]) {
+        RCDebugLog(@"Debug logging enabled.");
+        
         self.requestFetcher = requestFetcher;
         self.backend = backend;
         self.storeKitWrapper = storeKitWrapper;

@@ -73,6 +73,11 @@ NS_SWIFT_NAME(Purchases)
 @interface RCPurchases : NSObject
 
 /**
+ Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat
+*/
+@property (class, nonatomic, assign) BOOL debugLogsEnabled;
+
+/**
  Configures an instance of the Purchases SDK with a specified API key. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
 
  @note Use this initializer if your app does not have an account system. `RCPurchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`. This also affects the behavior of `restoreTransactionsForAppStoreAccount`.
