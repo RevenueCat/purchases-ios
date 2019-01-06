@@ -312,7 +312,7 @@ NS_SWIFT_NAME(PurchasesDelegate)
  @param purchases Related `RCPurchases` object
  @param purchaserInfo Updated `RCPurchaserInfo`
  */
-- (void)purchases:(RCPurchases *)purchases receivedUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
+- (void)purchases:(RCPurchases *)purchases didReceivePurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
 
 @optional
 

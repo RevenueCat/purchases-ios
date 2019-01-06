@@ -241,7 +241,7 @@ class PurchasesTests: XCTestCase {
     class Delegate: NSObject, PurchasesDelegate {
         var purchaserInfo: PurchaserInfo?
         var purchaserInfoReceivedCount = 0
-        func purchases(_ purchases: Purchases, receivedUpdatedPurchaserInfo purchaserInfo: PurchaserInfo) {
+        func purchases(_ purchases: Purchases, didReceive purchaserInfo: PurchaserInfo) {
             purchaserInfoReceivedCount += 1
             self.purchaserInfo = purchaserInfo
         }

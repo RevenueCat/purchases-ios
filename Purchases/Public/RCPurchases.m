@@ -436,7 +436,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)sendUpdatedPurchaserInfoToDelegateIfChanged:(RCPurchaserInfo *)info {
     if (![self.lastSentPurchaserInfo isEqual:info]) {
-        [self.delegate purchases:self receivedUpdatedPurchaserInfo:info];
+        [self.delegate purchases:self didReceivePurchaserInfo:info];
         self.lastSentPurchaserInfo = info;
     }
 }
