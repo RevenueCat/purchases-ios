@@ -641,8 +641,10 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
 {
+    RCDebugLog(@"Creating an alias to %@ from %@", self.appUserID, alias);
     [self.backend createAliasForAppUserID:self.appUserID withNewAppUserID:alias completion:^(NSError * _Nullable error) {
         if (error == nil) {
+            RCDebugLog(@"Alias created");
             [self identify:alias completionBlock:completion];
         } else {
             CALL_AND_DISPATCH_IF_SET(completion, nil, error);
@@ -652,6 +654,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)identify:(NSString *)appUserID completionBlock:(RCReceivePurchaserInfoBlock)completion
 {
+    RCDebugLog(@"Changing App User ID: %@ -> %@", self.appUserID, appUserID);
     [self clearCaches];
     self.appUserID = appUserID;
     [self updateCachesWithCompletionBlock:completion];
