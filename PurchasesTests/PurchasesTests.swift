@@ -3,7 +3,7 @@
 //  PurchasesTests
 //
 //  Created by Jacob Eiting on 9/28/17.
-//  Copyright © 2018 Purchases. All rights reserved.
+//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
 import XCTest

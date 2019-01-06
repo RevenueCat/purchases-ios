@@ -3,7 +3,7 @@
 //  Purchases
 //
 //  Created by Jacob Eiting on 2/11/18.
-//  Copyright © 2018 Purchases. All rights reserved.
+//  Copyright © 2019 Purchases. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

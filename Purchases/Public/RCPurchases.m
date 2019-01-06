@@ -3,7 +3,7 @@
 //  Purchases
 //
 //  Created by Jacob Eiting on 9/29/17.
-//  Copyright © 2018 RevenueCat, Inc. All rights reserved.
+//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
 #import "RCPurchases.h"
@@ -62,7 +62,7 @@ static RCPurchases *_sharedPurchases = nil;
 }
 
 + (NSString *)frameworkVersion {
-    return @"1.3.0-SNAPSHOT";
+    return @"2.0.0-SNAPSHOT";
 }
 
 + (instancetype)sharedPurchases {

@@ -3,7 +3,7 @@
 //  Purchases
 //
 //  Created by Jacob Eiting on 6/2/18.
-//  Copyright © 2018 Purchases. All rights reserved.
+//  Copyright © 2019 Purchases. All rights reserved.
 //
 
 #import "RCEntitlement.h"

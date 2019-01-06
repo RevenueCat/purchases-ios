@@ -3,7 +3,7 @@
 //  Purchases
 //
 //  Created by Jacob Eiting on 5/24/18.
-//  Copyright © 2018 Purchases. All rights reserved.
+//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
 #if TARGET_OS_IPHONE

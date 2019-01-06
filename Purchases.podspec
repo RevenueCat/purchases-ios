@@ -1,15 +1,15 @@
 Pod::Spec.new do |s|
   s.name             = "Purchases"
-  s.version          = "1.3.0-SNAPSHOT"
+  s.version          = "2.0.0-SNAPSHOT"
   s.summary          = "Subscription and in-app-purchase backend service."
 
   s.description      = <<-DESC
-                       Save yourself the hastle of implementing a subscriptions backend. Use RevenueCat instead http://revenue.cat
+                       Save yourself the hastle of implementing a subscriptions backend. Use RevenueCat instead https://www.revenuecat.com/
                        DESC
 
-  s.homepage         = "http://revenue.cat"
+  s.homepage         = "https://www.revenuecat.com/"
   s.license          =  { :type => 'MIT' }
-  s.author           = { "RevenueCat, Inc." => "jacob@revenuecat.com" }
+  s.author           = { "RevenueCat, Inc." => "support@revenuecat.com" }
   s.source           = { :git => "https://github.com/revenuecat/purchases-ios.git", :tag => s.version.to_s }
   s.documentation_url = "https://docs.revenuecat.com/"
 
