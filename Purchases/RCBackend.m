@@ -330,13 +330,15 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                body:nil
                             headers:self.headers
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
+                      NSDictionary *entitlements = nil;
+                      if (statusCode < 300) {
+                           entitlements = [self parseEntitlementResponse:response];
+                      } else {
+                          error = [self unexpectedResponseError];
+                      }
+                      
                       for (RCEntitlementResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
-                          if (statusCode < 300) {
-                              NSDictionary *entitlements = [self parseEntitlementResponse:response];
-                              completion(entitlements, nil);
-                          } else {
-                              completion(nil, [self unexpectedResponseError]);
-                          }
+                          completion(entitlements, error);
                       }
     }];
 }

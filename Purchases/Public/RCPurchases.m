@@ -190,11 +190,13 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif
 {
-    [self updateCachesWithCompletionBlock:^(RCPurchaserInfo *info, NSError *error) {
-        if (info) {
-            [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-        }
-    }];
+    if ([self isCacheStale]) {
+        [self updateCachesWithCompletionBlock:^(RCPurchaserInfo *info, NSError *error) {
+            if (info) {
+                [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
+            }
+        }];
+    }
 }
 
 - (RCPurchaserInfo *)readPurchaserInfoFromCache {
@@ -223,7 +225,6 @@ static RCPurchases *_sharedPurchases = nil;
                                           forKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
                 }
             }
-            self.cachesLastUpdated = [NSDate date];
         }];
     }
 }
@@ -239,6 +240,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)updateCachesWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
 {
+    self.cachesLastUpdated = [NSDate date];
     [self updatePurchaserInfoCache:completion];
     [self updateEntitlementsCache:nil];
 }
@@ -356,6 +358,10 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)makePurchase:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
 {
+    // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
+    // from triggering a refresh.
+    self.cachesLastUpdated = [NSDate date];
+    
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
     payment.applicationUsername = self.appUserID;
     

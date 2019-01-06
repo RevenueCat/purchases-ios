@@ -403,6 +403,27 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(equal(true))
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(3))
     }
+    
+    func testDelegateIsNotCalledIfBlockPassed() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.backend.postedIsRestore).to(equal(false))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
+    }
 
     func testIsAbleToFetchProducts() {
         setupPurchases()
