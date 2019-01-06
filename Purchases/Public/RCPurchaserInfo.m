@@ -198,7 +198,21 @@ static dispatch_once_t onceToken;
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<PurchaserInfo originalApplicationVersion: %@,\n activeEntitlements: %@,\n activeSubscriptions: %@,\n nonConsumablePurchases: %@,\n requestDate: %@\n>", self.originalApplicationVersion, self.activeEntitlements, self.activeSubscriptions, self.nonConsumablePurchases, self.requestDate];
+    NSMutableDictionary *activeSubscriptions = [NSMutableDictionary dictionary];
+    for (NSString *active in self.activeSubscriptions) {
+        activeSubscriptions[active] = @{
+                                        @"expiresDate": [self expirationDateForProductIdentifier:active]
+                                        };
+    }
+    
+    NSMutableDictionary *activeEntitlements = [NSMutableDictionary dictionary];
+    for (NSString *active in self.activeEntitlements) {
+        activeEntitlements[active] = @{
+                                        @"expiresDate": [self expirationDateForEntitlement:active]
+                                        };
+    }
+    
+    return [NSString stringWithFormat:@"<PurchaserInfo\n originalApplicationVersion: %@,\n latestExpirationDate: %@\n activeEntitlements: %@,\n activeSubscriptions: %@,\n nonConsumablePurchases: %@,\n requestDate: %@\n>", self.originalApplicationVersion, self.latestExpirationDate, activeEntitlements, activeSubscriptions, self.nonConsumablePurchases, self.requestDate];
 }
 
 @end
