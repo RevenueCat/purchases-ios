@@ -180,6 +180,22 @@ class StoreKitRequestFetcher: XCTestCase {
         expect(self.products).toEventuallyNot(beNil(), timeout: 1.0)
         expect(self.products?.count).toEventually(be(1), timeout: 1.0)
     }
+    
+    func testReusesRequestsForSameProducts() {
+        setupFetcher(fails: false)
+        
+        var callbackCount = 0
+        self.fetcher!.fetchProducts(["com.a.product", "com.b.product"]) { (newProducts) in
+            callbackCount += 1
+        }
+        
+        self.fetcher!.fetchProducts(["com.a.product", "com.b.product"]) { (newProducts) in
+            callbackCount += 1
+        }
+        
+        expect(self.factory?.requests).to(haveCount(3))
+        expect(callbackCount).toEventually(equal(2))
+    }
 
     func testFetchesReceipt() {
         setupFetcher(fails: false)

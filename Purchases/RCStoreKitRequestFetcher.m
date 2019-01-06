@@ -28,11 +28,11 @@
 @interface RCStoreKitRequestFetcher ()
 @property (nonatomic) RCProductsRequestFactory *requestFactory;
 
-@property (nonatomic) NSMutableArray<SKRequest *> *productsRequests;
-@property (nonatomic) NSMutableArray *productsCompletionHandlers;
+@property (nonatomic) NSMutableDictionary<NSSet *, SKRequest *> *productsRequests;
+@property (nonatomic) NSMutableDictionary<NSSet *, NSMutableArray<RCFetchProductsCompletionHandler> *> *productsCompletionHandlers;
 
 @property (nonatomic) SKRequest *receiptRefreshRequest;
-@property (nonatomic) NSMutableArray *receiptRefreshCompletionHandlers;
+@property (nonatomic) NSMutableArray<RCFetchReceiptCompletionHandler> *receiptRefreshCompletionHandlers;
 
 @end
 
@@ -46,8 +46,8 @@
 {
     if (self = [super init]) {
         self.requestFactory = requestFactory;
-        self.productsRequests = [NSMutableArray new];
-        self.productsCompletionHandlers = [NSMutableArray new];
+        self.productsRequests = [NSMutableDictionary new];
+        self.productsCompletionHandlers = [NSMutableDictionary new];
         
         self.receiptRefreshRequest = nil;
         self.receiptRefreshCompletionHandlers = [NSMutableArray new];
@@ -58,15 +58,26 @@
 - (void)fetchProducts:(NSSet<NSString *> * _Nonnull)identifiers
            completion:(RCFetchProductsCompletionHandler)completion;
 {
-    SKProductsRequest *request = [self.requestFactory requestForProductIdentifiers:identifiers];
-    request.delegate = self;
     
     @synchronized(self) {
-        [self.productsRequests addObject:request];
-        [self.productsCompletionHandlers addObject:[completion copy]];
+        SKProductsRequest *newRequest = nil;
+        
+        if (self.productsRequests[identifiers] == nil) {
+            newRequest = [self.requestFactory requestForProductIdentifiers:identifiers];
+            newRequest.delegate = self;
+            
+            self.productsRequests[identifiers] = newRequest;
+            self.productsCompletionHandlers[identifiers] = [NSMutableArray new];
+        }
+        
+        NSMutableArray *handlers = self.productsCompletionHandlers[identifiers];
+        NSAssert(handlers != nil, @"Curropted handler storage");
+        
+        [handlers addObject:completion];
+        
+        
+        [newRequest start];
     }
-    
-    [request start];
     
     NSAssert(self.productsRequests.count == self.productsCompletionHandlers.count, @"Corrupted handler storage");
 }
@@ -84,17 +95,26 @@
     }
 }
 
-- (RCFetchProductsCompletionHandler)finishProductsRequest:(SKRequest *)request
+- (NSArray<RCFetchProductsCompletionHandler> *)finishProductsRequest:(SKRequest *)request
 {
-    id handler = nil;
+    NSMutableArray<RCFetchProductsCompletionHandler> *handlers;
     @synchronized(self) {
-        NSUInteger index = [self.productsRequests indexOfObject:request];
-        handler = [self.productsCompletionHandlers objectAtIndex:index];
-        [self.productsRequests removeObjectAtIndex:index];
-        [self.productsCompletionHandlers removeObjectAtIndex:index];
+        NSSet *associatedProductIdentifiers = nil;
+        for (NSSet *productIdentifiers in self.productsRequests) {
+            SKRequest *r = self.productsRequests[productIdentifiers];
+            if (r == request) {
+                NSAssert(associatedProductIdentifiers == nil, @"Request maps to multiple product sets");
+                associatedProductIdentifiers = productIdentifiers;
+            }
+        }
+        NSAssert(associatedProductIdentifiers != nil, @"Could not find request in storage");
+        
+        handlers = self.productsCompletionHandlers[associatedProductIdentifiers];
+        [self.productsRequests removeObjectForKey:associatedProductIdentifiers];
+        [self.productsCompletionHandlers removeObjectForKey:associatedProductIdentifiers];
     }
     NSAssert(self.productsRequests.count == self.productsCompletionHandlers.count, @"Corrupted handler storage");
-    return handler;
+    return handlers;
 }
 
 - (NSArray<RCFetchReceiptCompletionHandler> *)finishReceiptRequest:(SKRequest *)request
@@ -126,15 +146,21 @@
             receiptHandler();
         }
     } else if ([request isKindOfClass:SKProductsRequest.class]) {
-        RCFetchProductsCompletionHandler productsHandler = [self finishProductsRequest:request];
-        productsHandler(@[]);
+        NSArray<RCFetchProductsCompletionHandler> *productsHandlers = [self finishProductsRequest:request];
+        for (RCFetchProductsCompletionHandler handler in productsHandlers)
+        {
+            handler(@[]);
+        }
     }
 }
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response
 {
-    RCFetchProductsCompletionHandler handler = [self finishProductsRequest:request];
-    handler(response.products);
+    NSArray<RCFetchProductsCompletionHandler> *handlers = [self finishProductsRequest:request];
+    for (RCFetchProductsCompletionHandler handler in handlers)
+    {
+        handler(response.products);
+    }
 }
 
 @end
