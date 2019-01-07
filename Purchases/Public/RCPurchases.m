@@ -45,7 +45,7 @@ static RCPurchases *_sharedPurchases = nil;
 @synthesize delegate=_delegate;
 
 + (NSString *)frameworkVersion {
-    return @"1.3.0-SNAPSHOT";
+    return @"1.2.1";
 }
 
 + (instancetype)sharedPurchases {

@@ -1,3 +1,6 @@
+## 1.2.1
+- Adds support for Tenjin
+
 ## 1.2.0
 - Singleton management handled by the SDK
 - Adds reset, identify and create alias calls
