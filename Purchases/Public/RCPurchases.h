@@ -46,7 +46,11 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
     /**
      Branch https://www.branch.io/
      */
-    RCAttributionNetworkBranch
+    RCAttributionNetworkBranch,
+    /**
+     Branch https://www.tenjin.io/
+     */
+    RCAttributionNetworkTenjin
 };
 
 /**
