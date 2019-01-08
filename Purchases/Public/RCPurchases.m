@@ -579,6 +579,11 @@ static RCPurchases *_sharedPurchases = nil;
                 introPrice = product.introductoryPrice.price;
             }
         }
+        
+        NSString *subscriptionGroup = nil;
+        if (@available(iOS 12.0, macOS 10.14.0, *)) {
+            subscriptionGroup = product.subscriptionGroupIdentifier;
+        }
 
         NSString *currencyCode = product.priceLocale.rc_currencyCode;
 
@@ -590,7 +595,7 @@ static RCPurchases *_sharedPurchases = nil;
                           paymentMode:paymentMode
                     introductoryPrice:introPrice
                          currencyCode:currencyCode
-                    subscriptionGroup:nil
+                    subscriptionGroup:subscriptionGroup
                            completion:^(RCPurchaserInfo * _Nullable info,
                                         NSError * _Nullable error) {
                                [self handleReceiptPostWithTransaction:transaction
