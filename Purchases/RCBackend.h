@@ -57,6 +57,7 @@ typedef void(^RCEntitlementResponseHandler)(RCEntitlements * _Nullable, NSError 
             paymentMode:(RCPaymentMode)paymentMode
       introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice
            currencyCode:(NSString * _Nullable)currencyCode
+      subscriptionGroup:(NSString * _Nullable)subscriptionGroup
              completion:(RCBackendResponseHandler)completion;
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID

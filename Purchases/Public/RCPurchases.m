@@ -384,7 +384,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
-                                      completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
+                                 completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
     [self receiptData:^(NSData * _Nonnull data) {
         [self.backend getIntroEligibilityForAppUserID:self.appUserID
@@ -590,6 +590,7 @@ static RCPurchases *_sharedPurchases = nil;
                           paymentMode:paymentMode
                     introductoryPrice:introPrice
                          currencyCode:currencyCode
+                    subscriptionGroup:nil
                            completion:^(RCPurchaserInfo * _Nullable info,
                                         NSError * _Nullable error) {
                                [self handleReceiptPostWithTransaction:transaction
@@ -612,6 +613,7 @@ static RCPurchases *_sharedPurchases = nil;
                           paymentMode:RCPaymentModeNone
                     introductoryPrice:nil
                          currencyCode:nil
+                    subscriptionGroup:nil
                            completion:^(RCPurchaserInfo * _Nullable info,
                                         NSError * _Nullable error) {
                                [self dispatch:^{

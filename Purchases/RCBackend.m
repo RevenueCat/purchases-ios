@@ -167,6 +167,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
             paymentMode:(RCPaymentMode)paymentMode
       introductoryPrice:(NSDecimalNumber *)introductoryPrice
            currencyCode:(NSString *)currencyCode
+      subscriptionGroup:(NSString *)subscriptionGroup
              completion:(RCBackendResponseHandler)completion
 {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
@@ -177,7 +178,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                    @"is_restore": @(isRestore)
                                    }];
 
-    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@",
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@",
                           appUserID,
                           @(isRestore),
                           fetchToken,
@@ -185,7 +186,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                           price,
                           currencyCode,
                           @((NSUInteger)paymentMode),
-                          introductoryPrice];
+                          introductoryPrice,
+                          subscriptionGroup];
     
     if ([self addCallback:completion forKey:cacheKey]) {
         return;
@@ -209,6 +211,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
     if (introductoryPrice) {
         body[@"introductory_price"] = introductoryPrice;
+    }
+    
+    if (subscriptionGroup) {
+        body[@"subscription_group_id"] = subscriptionGroup;
     }
 
     [self.httpClient performRequest:@"POST"

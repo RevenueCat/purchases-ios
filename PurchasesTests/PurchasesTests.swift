@@ -101,7 +101,7 @@ class PurchasesTests: XCTestCase {
         var aliasError: Error?
         var aliasCalled = false
 
-        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
+        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, subscriptionGroup: String?, completion: @escaping RCBackendResponseHandler) {
             postReceiptDataCalled = true
             postedIsRestore = isRestore
 
