@@ -578,7 +578,7 @@ static RCPurchases *_sharedPurchases = nil;
         if (![self.lastSentPurchaserInfo isEqual:info]) {
             self.lastSentPurchaserInfo = info;
             [self dispatch:^{
-                [self.delegate purchases:self didReceivePurchaserInfo:info];
+                [self.delegate purchases:self didReceiveUpdatedPurchaserInfo:info];
             }];
         }
     }
