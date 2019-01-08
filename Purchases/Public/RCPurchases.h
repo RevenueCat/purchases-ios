@@ -40,6 +40,7 @@ typedef void (^RCDeferredPromotionalPurchaseBlock)(void);
  @constant RCAttributionNetworkAppleSearchAds Apple's search ads
  @constant RCAttributionNetworkAppsFlyer AppsFlyer https://www.appsflyer.com/
  @constant RCAttributionNetworkAdjust Adjust https://www.adjust.com/
+ @constant RCAttributionNetworkTenjin Tenjin https://www.tenjin.io/
  */
 typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
     /**
@@ -59,7 +60,7 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
      */
     RCAttributionNetworkBranch,
     /**
-     Branch https://www.tenjin.io/
+     Tenjin https://www.tenjin.io/
      */
     RCAttributionNetworkTenjin
 };
@@ -184,11 +185,7 @@ NS_SWIFT_NAME(Purchases)
 /// This version of the Purchases framework
 + (NSString *)frameworkVersion;
 
-/**
- Delegate for `RCPurchases` instance. The delegate is responsible for handling completed purchases and updated purchaser information.
- 
- @note `RCPurchases` will not listen for any purchases until the delegate is set. This prevents transactions from being processed before your app is ready to handle them.
- */
+/// Delegate for `RCPurchases` instance. The delegate is responsible for handling promotional product purchases and changes to purchaser information.
 @property (nonatomic, weak) id<RCPurchasesDelegate> _Nullable delegate;
 
 #pragma mark Identity
@@ -235,7 +232,7 @@ NS_SWIFT_NAME(purchaserInfo(_:));
 
 /**
  Fetch the configured entitlements for this user. Entitlements allows you to configure your in-app products via RevenueCat
- and greatly simplifies management. See the guide (https://docs.revenuecat.com/v1.0/docs/entitlements) for more info.
+ and greatly simplifies management. See the guide (https://docs.revenuecat.com/docs/entitlements) for more info.
 
  Entitlements will be fetched and cached on instantiation so that, by the time they are needed, your prices are
  loaded for your purchase flow. Time is money.
@@ -249,7 +246,7 @@ NS_SWIFT_NAME(entitlements(_:));
  Fetches the `SKProducts` for your IAPs for given `productIdentifiers`. Use this method if you aren't using `-entitlements:`.
  You should use entitlements though.
 
- @note `completion` may be called without `SKProduct`s that you are expecting. This is usually caused by iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect. Also ensure that you have an active developer program subscription and you have signed the latest paid application agreements.
+ @note `completion` may be called without `SKProduct`s that you are expecting. This is usually caused by iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect. Also ensure that you have an active developer program subscription and you have signed the latest paid application agreements. If you're having trouble see: https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard
 
  @param productIdentifiers A set of product identifiers for in app purchases setup via iTunesConnect. This should be either hard coded in your application, from a file, or from a custom endpoint if you want to be able to deploy new IAPs without an app update.
  @param completion An @escaping callback that is called with the loaded products. If the fetch fails for any reason it will return an empty array.
@@ -260,13 +257,13 @@ NS_SWIFT_NAME(products(_:_:));
 
 /**
  Purchase the passed `SKProduct`.
-
+ 
  Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
-
- From here `Purhases` will handle the purchase with `StoreKit` and call `purchases:completedTransaction:withUpdatedInfo:` or `purchases:failedTransaction:withReason:` on the `RCPurchases` `delegate` object.
-
- @note You do not need to finish the transaction yourself in the delegate, Purchases will handle this for you.
-
+ 
+ From here `Purhases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+ 
+ @note You do not need to finish the transaction yourself in the completion callback, Purchases will handle this for you.
+ 
  @param product The `SKProduct` the user intends to purchase
  */
 - (void)makePurchase:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
@@ -277,8 +274,6 @@ NS_SWIFT_NAME(makePurchase(_:_:));
 
  You shouldn't use this method if you have your own account system. In that case "restoration" is provided by your app passing
  the same `appUserId` used to purchase originally.
-
- Triggers `-purchases:receivedUpdatedPurchaserInfo:` delegate method to be called.
 
  @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI.
  */
@@ -299,18 +294,18 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 @end
 
 /**
- Delegate for `RCPurchases` responsible for handling updating your app's state in response to completed purchases.
-
- @note Delegate methods can be called at any time after the `delegate` is set, not just in response to `makePurchase:` calls. Ensure your app is capable of handling completed transactions anytime `delegate` is set.
+ Delegate for `RCPurchases` responsible for handling updating your app's state in response to updated purchaser info or promotional product purchases.
+ 
+ @note Delegate methods can be called at any time after the `delegate` is set, not just in response to `purchaserInfo:` calls. Ensure your app is capable of handling these calls at anytime if `delegate` is set.
  */
 NS_SWIFT_NAME(PurchasesDelegate)
 @protocol RCPurchasesDelegate <NSObject>
 @required
 
 /**
- Called whenever `RCPurchases` receives an updated purchaser info outside of a purchase. This will happen periodically 
- throughout the life of the app (e.g. UIApplicationDidBecomeActive).
-
+ Called whenever `RCPurchases` receives updated purchaser info. This may happen periodically
+ throughout the life of the app if new information becomes available (e.g. UIApplicationDidBecomeActive).
+ 
  @param purchases Related `RCPurchases` object
  @param purchaserInfo Updated `RCPurchaserInfo`
  */
