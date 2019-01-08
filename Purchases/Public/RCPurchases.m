@@ -699,7 +699,7 @@ static RCPurchases *_sharedPurchases = nil;
 {
     [self clearCaches];
     self.appUserID = [self generateAndCacheID];
-    [self updateCaches];
+    [self updateCachesWithCompletionBlock:completion];
 }
 
 - (NSString *)generateAndCacheID

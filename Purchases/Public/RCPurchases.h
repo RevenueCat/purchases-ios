@@ -213,7 +213,7 @@ NS_SWIFT_NAME(identify(_:_:));
 /**
  * Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
  */
-- (void)resetWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion;
+- (void)resetWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
 NS_SWIFT_NAME(reset(_:));
 
 #pragma mark Attribution
