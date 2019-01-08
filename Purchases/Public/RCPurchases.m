@@ -458,11 +458,9 @@ static RCPurchases *_sharedPurchases = nil;
         if (info) {
             [self cachePurchaserInfo:info forAppUserID:self.appUserID];
             
-            CALL_IF_SET(completion, transaction, info, nil);
+            [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
             
-            if (!completion) {
-                [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-            }
+            CALL_IF_SET(completion, transaction, info, nil);
             
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
@@ -659,6 +657,7 @@ static RCPurchases *_sharedPurchases = nil;
                                        CALL_AND_DISPATCH_IF_SET(completion, nil, error);
                                    } else if (info) {
                                        [self cachePurchaserInfo:info forAppUserID:self.appUserID];
+                                       [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
                                        CALL_AND_DISPATCH_IF_SET(completion, info, nil);
                                    }
                                }];

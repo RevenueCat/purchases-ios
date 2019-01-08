@@ -735,6 +735,7 @@ class PurchasesTests: XCTestCase {
 
         expect(purchaserInfo).toEventually(be(self.backend.postReceiptPurchaserInfo))
         expect(receivedError).toEventually(beNil())
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).to(equal(2))
     }
     
     func testCompletionBlockOnlyCalledOnce() {
