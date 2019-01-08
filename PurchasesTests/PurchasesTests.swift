@@ -606,31 +606,6 @@ class PurchasesTests: XCTestCase {
         }
     }
     
-    func testDoesntSendProductInfoIfProductIsntCached() {
-        setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product) { (tx, info, error) in
-            
-        }
-        
-        let transaction = MockTransaction()
-        transaction.mockPayment = self.storeKitWrapper.payment!
-        
-        transaction.mockState = SKPaymentTransactionState.purchasing
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-        
-        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
-        
-        transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-        
-
-        expect(self.backend.postedProductID).to(beNil())
-        expect(self.backend.postedPrice).to(beNil())
-        expect(self.backend.postedIntroPrice).to(beNil())
-        expect(self.backend.postedCurrencyCode).to(beNil())
-    }
-    
     func testFetchesProductInfoIfNotCached() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
