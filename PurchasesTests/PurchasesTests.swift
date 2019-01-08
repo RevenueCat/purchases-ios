@@ -1265,6 +1265,7 @@ class PurchasesTests: XCTestCase {
         self.purchases?.identify(newAppUserID)
         identifiedSuccesfully(appUserID: newAppUserID)
         expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
 
     func testCreateAliasIdentifies() {
@@ -1280,6 +1281,7 @@ class PurchasesTests: XCTestCase {
     func testInitCallsIdentifies() {
         setupPurchases()
         self.identifiedSuccesfully(appUserID: appUserID)
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
     
     func testResetCreatesRandomIDAndCachesIt() {
@@ -1305,13 +1307,15 @@ class PurchasesTests: XCTestCase {
         expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
         let purchaserInfo = userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo.new"]
         expect(purchaserInfo).toNot(beNil())
-
+        
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
     
     func testResetForcesCache() {
         setupPurchases()
         self.purchases?.reset()
         expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
     
     func testCreateAliasChangesAppUserId() {
@@ -1322,6 +1326,7 @@ class PurchasesTests: XCTestCase {
         self.purchases?.createAlias("cesarpedro")
         
         expect(self.backend.userID).to(be("cesarpedro"))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
     
     func testCreateAliasWithCompletionChangesAppUserId() {
@@ -1332,6 +1337,7 @@ class PurchasesTests: XCTestCase {
         self.purchases?.createAlias("cesarpedro")
         
         expect(self.backend.userID).to(be("cesarpedro"))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
     
     private func identifiedSuccesfully(appUserID: String) {
