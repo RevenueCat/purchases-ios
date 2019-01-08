@@ -210,6 +210,7 @@ NS_SWIFT_NAME(createAlias(_:_:));
  */
 - (void)identify:(NSString * _Nullable)appUserID completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
 NS_SWIFT_NAME(identify(_:_:));
+
 /**
  * Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
  */

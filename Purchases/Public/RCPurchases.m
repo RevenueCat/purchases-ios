@@ -48,8 +48,8 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 @implementation RCPurchases
 
+#pragma mark - Configuration
 static RCPurchases *_sharedPurchases = nil;
-@synthesize delegate=_delegate;
 
 + (void)setDebugLogsEnabled:(BOOL)enabled
 {
@@ -195,6 +195,10 @@ static RCPurchases *_sharedPurchases = nil;
     self.delegate = nil;
 }
 
+@synthesize delegate=_delegate;
+
+#pragma mark - Public Methods
+
 - (void)addAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
 {
@@ -203,6 +207,115 @@ static RCPurchases *_sharedPurchases = nil;
                               fromNetwork:network
                              forAppUserID:self.appUserID];
     }
+}
+
+
+- (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
+{
+    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
+    if (infoFromCache) {
+        RCDebugLog(@"Vending purchaserInfo from cache");
+        CALL_IF_SET(completion, infoFromCache, nil);
+        if ([self isCacheStale]) {
+            RCDebugLog(@"Cache is stale, updating caches");
+            [self updateCaches];
+        }
+    } else {
+        RCDebugLog(@"No cached purchaser info, fetching");
+        [self updateCachesWithCompletionBlock:completion];
+    }
+}
+
+- (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
+                completionBlock:(RCReceiveProductsBlock)completion
+{
+    NSMutableArray<SKProduct *> *products = [NSMutableArray array];
+    NSMutableSet<NSString *> *missingProductIdentifiers = [NSMutableSet set];
+    
+    @synchronized(self) {
+        for (NSString *identifier in productIdentifiers) {
+            SKProduct *product = self.productsByIdentifier[identifier];
+            if (product) {
+                [products addObject:product];
+            } else {
+                [missingProductIdentifiers addObject:identifier];
+            }
+        }
+    }
+    
+    if (missingProductIdentifiers.count > 0) {
+        [self.requestFetcher fetchProducts:missingProductIdentifiers
+                                completion:^(NSArray<SKProduct *> * _Nonnull newProducts) {
+                                    @synchronized (self) {
+                                        for (SKProduct *p in newProducts)
+                                        {
+                                            self.productsByIdentifier[p.productIdentifier] = p;
+                                        }
+                                    }
+                                    CALL_AND_DISPATCH_IF_SET(completion, [products arrayByAddingObjectsFromArray:newProducts]);
+                                }];
+    } else {
+        CALL_AND_DISPATCH_IF_SET(completion, products);
+    }
+}
+
+- (void)makePurchase:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
+{
+    // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
+    // from triggering a refresh.
+    self.cachesLastUpdated = [NSDate date];
+    
+    RCDebugLog(@"makePurchase - %@", product.productIdentifier);
+    
+    @synchronized (self) {
+        self.productsByIdentifier[product.productIdentifier] = product;
+    }
+    
+    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
+    payment.applicationUsername = self.appUserID;
+    
+    @synchronized (self) {
+        if (self.purchaseCompleteCallbacks[product.productIdentifier]) {
+            completion(nil, nil, [NSError errorWithDomain:RCPurchasesAPIErrorDomain
+                                                     code:RCDuplicateMakePurchaseCallsError
+                                                 userInfo:@{
+                                                            NSLocalizedDescriptionKey: @"Purchase already in progress for this product."
+                                                            }]);
+            return;
+        }
+        self.purchaseCompleteCallbacks[product.productIdentifier] = [completion copy];
+    }
+    
+    [self.storeKitWrapper addPayment:payment];
+}
+
+- (void)restoreTransactionsWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
+{
+    // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
+    // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
+    [self receiptData:^(NSData * _Nonnull data) {
+        [self.backend postReceiptData:data
+                            appUserID:self.appUserID
+                            isRestore:YES
+                    productIdentifier:nil
+                                price:nil
+                          paymentMode:RCPaymentModeNone
+                    introductoryPrice:nil
+                         currencyCode:nil
+                    subscriptionGroup:nil
+                           completion:^(RCPurchaserInfo * _Nullable info,
+                                        NSError * _Nullable error) {
+                               [self dispatch:^{
+                                   if (error) {
+                                       CALL_AND_DISPATCH_IF_SET(completion, nil, error);
+                                   } else if (info) {
+                                       [self cachePurchaserInfo:info forAppUserID:self.appUserID];
+                                       [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
+                                       CALL_AND_DISPATCH_IF_SET(completion, info, nil);
+                                   }
+                               }];
+                           }];
+    }];
 }
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif
@@ -277,22 +390,6 @@ static RCPurchases *_sharedPurchases = nil;
                                           }
                                           CALL_AND_DISPATCH_IF_SET(completion, info, error);
                                       }];
-}
-
-- (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
-{
-    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
-    if (infoFromCache) {
-        RCDebugLog(@"Vending purchaserInfo from cache");
-        CALL_IF_SET(completion, infoFromCache, nil);
-        if ([self isCacheStale]) {
-            RCDebugLog(@"Cache is stale, updating caches");
-            [self updateCaches];
-        }
-    } else {
-        RCDebugLog(@"No cached purchaser info, fetching");
-        [self updateCachesWithCompletionBlock:completion];
-    }
 }
 
 - (void)performOnEachOfferingInEntitlements:(NSDictionary<NSString *,RCEntitlement *> *)entitlements block:(void (^)(RCOffering *offering))block
@@ -370,20 +467,6 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 }
 
-- (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
-                     completionBlock:(void (^)(NSArray<SKProduct *>* products))completion
-{
-    [self.requestFetcher fetchProducts:[NSSet setWithArray:productIdentifiers] completion:^(NSArray<SKProduct *> * _Nonnull products) {
-        @synchronized(self) {
-            for (SKProduct *product in products) {
-                self.productsByIdentifier[product.productIdentifier] = product;
-            }
-        }
-        CALL_AND_DISPATCH_IF_SET(completion, products);
-    }];
-}
-
-
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
                                  completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
@@ -395,36 +478,6 @@ static RCPurchases *_sharedPurchases = nil;
                                                CALL_AND_DISPATCH_IF_SET(receiveEligibility, result);
                                            }];
     }];
-}
-
-- (void)makePurchase:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
-{
-    // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
-    // from triggering a refresh.
-    self.cachesLastUpdated = [NSDate date];
-    
-    RCDebugLog(@"makePurchase - %@", product.productIdentifier);
-    
-    @synchronized (self) {
-        self.productsByIdentifier[product.productIdentifier] = product;
-    }
-    
-    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-    payment.applicationUsername = self.appUserID;
-    
-    @synchronized (self) {
-        if (self.purchaseCompleteCallbacks[product.productIdentifier]) {
-            completion(nil, nil, [NSError errorWithDomain:RCPurchasesAPIErrorDomain
-                                                     code:RCDuplicateMakePurchaseCallsError
-                                                 userInfo:@{
-                                                            NSLocalizedDescriptionKey: @"Purchase already in progress for this product."
-                                                            }]);
-            return;
-        }
-        self.purchaseCompleteCallbacks[product.productIdentifier] = [completion copy];
-    }
-
-    [self.storeKitWrapper addPayment:payment];
 }
 
 - (void)receiptData:(void (^ _Nonnull)(NSData * _Nonnull data))completion
@@ -545,38 +598,6 @@ static RCPurchases *_sharedPurchases = nil;
     }
 }
 
-- (void)productsForIdentifier:(NSArray<NSString *> *)productIdentifiers completion:(RCReceiveProductsBlock)completion
-{
-    NSMutableArray<SKProduct *> *products = [NSMutableArray array];
-    NSMutableSet<NSString *> *missingProductIdentifiers = [NSMutableSet set];
-    
-    @synchronized(self) {
-        for (NSString *identifier in productIdentifiers) {
-            SKProduct *product = self.productsByIdentifier[identifier];
-            if (product) {
-                [products addObject:product];
-            } else {
-                [missingProductIdentifiers addObject:identifier];
-            }
-        }
-    }
-    
-    if (missingProductIdentifiers.count > 0) {
-        [self.requestFetcher fetchProducts:missingProductIdentifiers
-                                completion:^(NSArray<SKProduct *> * _Nonnull products) {
-            @synchronized (self) {
-                for (SKProduct *p in products)
-                {
-                    self.productsByIdentifier[p.productIdentifier] = p;
-                }
-            }
-            CALL_AND_DISPATCH_IF_SET(completion, [products arrayByAddingObjectsFromArray:products]);
-        }];
-    } else {
-        CALL_AND_DISPATCH_IF_SET(completion, products);
-    }
-}
-
 - (NSString *)purchaserInfoUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {
     return [RCPurchaserInfoAppUserDefaultsKeyBase stringByAppendingString:appUserID];
 }
@@ -593,9 +614,8 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction
 {
     [self receiptData:^(NSData * _Nonnull data) {
-        [self productsForIdentifier:@[transaction.payment.productIdentifier]
-                         completion:^(NSArray<SKProduct *> *products) {
-                             
+        [self productsWithIdentifiers:@[transaction.payment.productIdentifier]
+                      completionBlock:^(NSArray<SKProduct *> *products) {
                              SKProduct *product = products.lastObject;
                              
                              NSString *productIdentifier = product.productIdentifier;
@@ -635,35 +655,6 @@ static RCPurchases *_sharedPurchases = nil;
                                                 }];
                          }];
         }];
-}
-
-- (void)restoreTransactionsWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
-{
-    // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
-    // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
-    [self receiptData:^(NSData * _Nonnull data) {
-        [self.backend postReceiptData:data
-                            appUserID:self.appUserID
-                            isRestore:YES
-                    productIdentifier:nil
-                                price:nil
-                          paymentMode:RCPaymentModeNone
-                    introductoryPrice:nil
-                         currencyCode:nil
-                    subscriptionGroup:nil
-                           completion:^(RCPurchaserInfo * _Nullable info,
-                                        NSError * _Nullable error) {
-                               [self dispatch:^{
-                                   if (error) {
-                                       CALL_AND_DISPATCH_IF_SET(completion, nil, error);
-                                   } else if (info) {
-                                       [self cachePurchaserInfo:info forAppUserID:self.appUserID];
-                                       [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-                                       CALL_AND_DISPATCH_IF_SET(completion, info, nil);
-                                   }
-                               }];
-                           }];
-    }];
 }
 
 - (void)clearCaches {
