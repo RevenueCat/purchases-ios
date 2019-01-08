@@ -46,7 +46,9 @@ class PurchasesTests: XCTestCase {
                 return
             }
             let products = identifiers.map { (identifier) -> MockProduct in
-                MockProduct(mockProductIdentifier: identifier)
+                let p = MockProduct(mockProductIdentifier: identifier)
+                p.mockSubscriptionGroupIdentifier = "1234567"
+                return p
             }
             completion(products)
         }
@@ -96,6 +98,8 @@ class PurchasesTests: XCTestCase {
         var postedPaymentMode: RCPaymentMode?
         var postedIntroPrice: NSDecimalNumber?
         var postedCurrencyCode: String?
+        var postedSubscriptionGroup: String?
+        
         var postReceiptPurchaserInfo: PurchaserInfo?
         var postReceiptError: Error?
         var aliasError: Error?
@@ -110,6 +114,7 @@ class PurchasesTests: XCTestCase {
 
             postedPaymentMode = paymentMode
             postedIntroPrice = introductoryPrice
+            postedSubscriptionGroup = subscriptionGroup
 
             postedCurrencyCode = currencyCode
 
@@ -587,6 +592,10 @@ class PurchasesTests: XCTestCase {
             } else {
                 expect(self.backend.postedPaymentMode).to(equal(RCPaymentMode.none))
                 expect(self.backend.postedIntroPrice).to(beNil())
+            }
+            
+            if #available(iOS 12.0, *) {
+                expect(self.backend.postedSubscriptionGroup).to(equal(product.subscriptionGroupIdentifier))
             }
             
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))

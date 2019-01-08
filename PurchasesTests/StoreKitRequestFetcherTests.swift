@@ -36,6 +36,11 @@ class MockProduct: SKProduct {
     override var productIdentifier: String {
         return self.mockProductIdentifier
     }
+    
+    var mockSubscriptionGroupIdentifier: String?
+    override var subscriptionGroupIdentifier: String? {
+        return self.mockSubscriptionGroupIdentifier;
+    }
 
     override var priceLocale: Locale {
         return Locale.current
