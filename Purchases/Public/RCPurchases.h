@@ -199,12 +199,6 @@ NS_SWIFT_NAME(Purchases)
 /**
  This function will alias two appUserIDs together.
  @param alias The new appUserID that should be linked to the currently identified appUserID
- */
-- (void)createAlias:(NSString *)alias;
-
-/**
- This function will alias two appUserIDs together.
- @param alias The new appUserID that should be linked to the currently identified appUserID
  @param completion An optional completion block called when the aliasing has been successful. This completion block will receive an error if there's been one.
  */
 - (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
@@ -219,7 +213,8 @@ NS_SWIFT_NAME(identify(_:_:));
 /**
  * Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
  */
-- (void)reset;
+- (void)resetWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion;
+NS_SWIFT_NAME(reset(_:));
 
 #pragma mark Attribution
 

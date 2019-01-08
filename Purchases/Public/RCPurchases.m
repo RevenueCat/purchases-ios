@@ -674,11 +674,6 @@ static RCPurchases *_sharedPurchases = nil;
     self.cachedEntitlements = nil;
 }
 
-- (void)createAlias:(NSString *)alias
-{
-    [self createAlias:alias completionBlock:nil];
-}
-
 - (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
 {
     RCDebugLog(@"Creating an alias to %@ from %@", self.appUserID, alias);
@@ -700,7 +695,7 @@ static RCPurchases *_sharedPurchases = nil;
     [self updateCachesWithCompletionBlock:completion];
 }
 
-- (void)reset
+- (void)resetWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
     [self clearCaches];
     self.appUserID = [self generateAndCacheID];

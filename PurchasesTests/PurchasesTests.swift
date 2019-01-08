@@ -1288,6 +1288,17 @@ class PurchasesTests: XCTestCase {
         expect(self.userDefaults.appUserID).toNot(beNil())
     }
     
+    func testResetGetsNewAppUserID() {
+        setupPurchases()
+        var info: PurchaserInfo?
+        
+        self.purchases?.reset() { (newInfo, error) in
+            info = newInfo
+        }
+        
+        expect(info).toEventuallyNot(beNil())
+    }
+    
     func testIdentifyForcesCache() {
         setupPurchases()
         self.purchases?.identify("new")
