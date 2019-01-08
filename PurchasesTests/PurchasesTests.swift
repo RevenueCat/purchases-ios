@@ -66,29 +66,20 @@ class PurchasesTests: XCTestCase {
         var originalApplicationVersion: String?
         var timeout = false
         var getSubscriberCallCount = 0
+        var overridePurchaserInfo = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        
         override func getSubscriberData(withAppUserID appUserID: String, completion: @escaping RCBackendResponseHandler) {
             getSubscriberCallCount += 1
             userID = appUserID
-            var info: PurchaserInfo?
-            if let version = originalApplicationVersion {
-                info = PurchaserInfo(data: [
-                    "subscriber": [
-                        "subscriptions": [:],
-                        "other_purchases": [:],
-                        "original_application_version": version
-                    ]
-                ])
-            } else {
-                info = PurchaserInfo(data: [
-                    "subscriber": [
-                        "subscriptions": [:],
-                        "other_purchases": [:]
-                    ]])
-            }
-
+            
             if (!timeout) {
+                let info = self.overridePurchaserInfo!
                 DispatchQueue.main.async {
-                    completion(info!, nil)
+                    completion(info, nil)
                 }
             }
         }
@@ -1261,7 +1252,15 @@ class PurchasesTests: XCTestCase {
     func testIdentify() {
         setupPurchases()
         
+        self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "2"
+            ]])
+        
         let newAppUserID = "cesarPedro"
+        
         self.purchases?.identify(newAppUserID)
         identifiedSuccesfully(appUserID: newAppUserID)
         expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
@@ -1281,7 +1280,7 @@ class PurchasesTests: XCTestCase {
     func testInitCallsIdentifies() {
         setupPurchases()
         self.identifiedSuccesfully(appUserID: appUserID)
-        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
     }
     
     func testResetCreatesRandomIDAndCachesIt() {
@@ -1303,6 +1302,14 @@ class PurchasesTests: XCTestCase {
     
     func testIdentifyForcesCache() {
         setupPurchases()
+        
+        self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "2"
+            ]])
+        
         self.purchases?.identify("new")
         expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
         let purchaserInfo = userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo.new"]
@@ -1313,6 +1320,14 @@ class PurchasesTests: XCTestCase {
     
     func testResetForcesCache() {
         setupPurchases()
+        
+        self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "2"
+            ]])
+        
         self.purchases?.reset()
         expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
@@ -1323,6 +1338,12 @@ class PurchasesTests: XCTestCase {
         
         self.backend.aliasCalled = false
         self.backend.aliasError = nil
+        self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "2"
+            ]])
         self.purchases?.createAlias("cesarpedro")
         
         expect(self.backend.userID).to(be("cesarpedro"))
@@ -1334,6 +1355,13 @@ class PurchasesTests: XCTestCase {
         
         self.backend.aliasCalled = false
         self.backend.aliasError = nil
+        self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "2"
+            ]])
+        
         self.purchases?.createAlias("cesarpedro")
         
         expect(self.backend.userID).to(be("cesarpedro"))

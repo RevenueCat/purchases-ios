@@ -189,7 +189,8 @@ static dispatch_once_t onceToken;
     
     isEqual &= ([self.activeEntitlements isEqual:other.activeEntitlements]);
     
-    if (self.originalApplicationVersion) {
+    
+    if (self.originalApplicationVersion != nil || other.originalApplicationVersion != nil) {
         isEqual &= ([self.originalApplicationVersion isEqual:other.originalApplicationVersion]);
     }
     

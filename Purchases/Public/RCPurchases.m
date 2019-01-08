@@ -432,9 +432,11 @@ static RCPurchases *_sharedPurchases = nil;
                                                    NSError * _Nullable error) {
                                           if (error == nil) {
                                               [self cachePurchaserInfo:info forAppUserID:appUserID];
+                                              [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
                                           } else {
                                               self.cachesLastUpdated = nil;
                                           }
+                                          
                                           CALL_AND_DISPATCH_IF_SET(completion, info, error);
                                       }];
 }
@@ -572,9 +574,13 @@ static RCPurchases *_sharedPurchases = nil;
 }
 
 - (void)sendUpdatedPurchaserInfoToDelegateIfChanged:(RCPurchaserInfo *)info {
-    if (![self.lastSentPurchaserInfo isEqual:info]) {
-        [self.delegate purchases:self didReceivePurchaserInfo:info];
-        self.lastSentPurchaserInfo = info;
+    @synchronized (self) {
+        if (![self.lastSentPurchaserInfo isEqual:info]) {
+            self.lastSentPurchaserInfo = info;
+            [self dispatch:^{
+                [self.delegate purchases:self didReceivePurchaserInfo:info];
+            }];
+        }
     }
 }
 
