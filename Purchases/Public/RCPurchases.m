@@ -199,6 +199,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 #pragma mark - Public Methods
 
+#pragma mark Attribution
 - (void)addAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
 {
@@ -209,6 +210,35 @@ static RCPurchases *_sharedPurchases = nil;
     }
 }
 
+#pragma mark Identity
+
+- (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+{
+    RCDebugLog(@"Creating an alias to %@ from %@", self.appUserID, alias);
+    [self.backend createAliasForAppUserID:self.appUserID withNewAppUserID:alias completion:^(NSError * _Nullable error) {
+        if (error == nil) {
+            RCDebugLog(@"Alias created");
+            [self identify:alias completionBlock:completion];
+        } else {
+            CALL_AND_DISPATCH_IF_SET(completion, nil, error);
+        }
+    }];
+}
+
+- (void)identify:(NSString *)appUserID completionBlock:(RCReceivePurchaserInfoBlock)completion
+{
+    RCDebugLog(@"Changing App User ID: %@ -> %@", self.appUserID, appUserID);
+    [self clearCaches];
+    self.appUserID = appUserID;
+    [self updateCachesWithCompletionBlock:completion];
+}
+
+- (void)resetWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
+{
+    [self clearCaches];
+    self.appUserID = [self generateAndCacheID];
+    [self updateCachesWithCompletionBlock:completion];
+}
 
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
@@ -225,6 +255,8 @@ static RCPurchases *_sharedPurchases = nil;
         [self updateCachesWithCompletionBlock:completion];
     }
 }
+
+#pragma mark Purchasing
 
 - (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
                 completionBlock:(RCReceiveProductsBlock)completion
@@ -317,6 +349,21 @@ static RCPurchases *_sharedPurchases = nil;
                            }];
     }];
 }
+
+- (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
+                                 completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
+{
+    [self receiptData:^(NSData * _Nonnull data) {
+        [self.backend getIntroEligibilityForAppUserID:self.appUserID
+                                          receiptData:data
+                                   productIdentifiers:productIdentifiers
+                                           completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
+                                               CALL_AND_DISPATCH_IF_SET(receiveEligibility, result);
+                                           }];
+    }];
+}
+
+#pragma mark - Private Methods
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif
 {
@@ -464,19 +511,6 @@ static RCPurchases *_sharedPurchases = nil;
                                            
                                            CALL_AND_DISPATCH_IF_SET(completion, entitlements, nil);
                                        }];
-    }];
-}
-
-- (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
-                                 completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
-{
-    [self receiptData:^(NSData * _Nonnull data) {
-        [self.backend getIntroEligibilityForAppUserID:self.appUserID
-                                          receiptData:data
-                                   productIdentifiers:productIdentifiers
-                                           completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
-                                               CALL_AND_DISPATCH_IF_SET(receiveEligibility, result);
-                                           }];
     }];
 }
 
@@ -663,34 +697,6 @@ static RCPurchases *_sharedPurchases = nil;
     }
     self.cachesLastUpdated = nil;
     self.cachedEntitlements = nil;
-}
-
-- (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
-{
-    RCDebugLog(@"Creating an alias to %@ from %@", self.appUserID, alias);
-    [self.backend createAliasForAppUserID:self.appUserID withNewAppUserID:alias completion:^(NSError * _Nullable error) {
-        if (error == nil) {
-            RCDebugLog(@"Alias created");
-            [self identify:alias completionBlock:completion];
-        } else {
-            CALL_AND_DISPATCH_IF_SET(completion, nil, error);
-        }
-    }];
-}
-
-- (void)identify:(NSString *)appUserID completionBlock:(RCReceivePurchaserInfoBlock)completion
-{
-    RCDebugLog(@"Changing App User ID: %@ -> %@", self.appUserID, appUserID);
-    [self clearCaches];
-    self.appUserID = appUserID;
-    [self updateCachesWithCompletionBlock:completion];
-}
-
-- (void)resetWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
-{
-    [self clearCaches];
-    self.appUserID = [self generateAndCacheID];
-    [self updateCachesWithCompletionBlock:completion];
 }
 
 - (NSString *)generateAndCacheID
