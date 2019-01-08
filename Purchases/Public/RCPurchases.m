@@ -404,6 +404,10 @@ static RCPurchases *_sharedPurchases = nil;
     
     RCDebugLog(@"makePurchase - %@", product.productIdentifier);
     
+    @synchronized (self) {
+        self.productsByIdentifier[product.productIdentifier] = product;
+    }
+    
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
     payment.applicationUsername = self.appUserID;
     
