@@ -7,16 +7,16 @@
 
 *Purchases* is a client for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system. It is an open source framework that provides a wrapper around `StoreKit` and the RevenueCat backend to make implementing in-app purchases in `Swift` or `Objective-C` easy.
 
-Features:
-- Server-side receipt validation
-- [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more
-- Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web.
-- Analytics - automatic calculation of metrics like conversion, mrr, and churn
-- [Online documentation](https://docs.revenuecat.com/docs) up to date
-- [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it
-- Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)
-- Great support - [Help Center](https://docs.revenuecat.com/discuss)
-- Awesome [new features](https://trello.com/b/RZRnWRbI/revenuecat-product-roadmap)
+Features:  
+✅ Server-side receipt validation  
+➡️ [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more   
+🎯 Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web  
+📊 Analytics - automatic calculation of metrics like conversion, mrr, and churn  
+📝 [Online documentation](https://docs.revenuecat.com/docs) up to date  
+🔀 [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it  
+💯 Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)  
+📮 Great support - [Help Center](https://docs.revenuecat.com/discuss)  
+🤩 Awesome [new features](https://trello.com/b/RZRnWRbI/revenuecat-product-roadmap)  
 
 
 ## Installation
@@ -44,81 +44,95 @@ Log in to the [RevenueCat dashboard](https://app.revenuecat.com) and obtain a fr
 #### 2. Initialize an `RCPurchases` object
 > Don't forget to enable the In-App Purchase capability for your project under `Project Target -> Capabilities -> In-App Purchase`
 
-You should only initialize Purchases once (usually on app launch) and share the same instance throughout your app by setting the shared instance in the SDK - *Purchases* will take care of making a singleton for you.
+You should only configure *Purchases* once (usually on app launch) as soon as your app has a unique user id for your user. This can be when a user logs in if you have accounts or on launch if you can generate a random user identifier. The same instance is shared throughout your app by accessing the `.shared` instance in the SDK.
 
 ```swift
 import Purchases
 
-let purchases = RCPurchases.configure(withAPIKey: "my_api_key")
-purchases.delegate = self
+Purchases.debugLogsEnabled = true
+Purchases.configure(withAPIKey: "my_api_key", appUserID: "my_app_user_id")
 ```
 
 ```obj-c
 #import "RCPurchases.h"
 
-RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:@"my_api_key"];
-purchases.delegate = self;
+RCPurchases.debugLogsEnabled = YES;
+[RCPurchases configureWithAPIKey:@"my_api_key" appUserID:@"my_app_user_id"];
 ```
 
 #### 3. Make a purchase
-When it comes time to make a purchase, *Purchases* has a simple method, `makePurchase`. The code sample below shows the process of fetching entitlements (which should be pre-loaded and super fast) and purchasing the "monthly" product offering.
+When it comes time to make a purchase, *Purchases* has a simple method, `makePurchase`. The code sample below shows the process of purchasing a product and confirming it unlocks the "my_entitlement_name" content.
 
 ```swift
-purchases.entitlements { entitlements in
-    guard let pro = entitlements?["my_entitlement_name"] else { return }
-    guard let monthly = pro.offerings["my_offering_name"] else { return }
-    guard let product = monthly.activeProduct else { return }
-    purchases.makePurchase(product)
-}
+Purchases.shared.makePurchase(product, { (transaction, purchaserInfo, error) in
+    if let error = error {
+        // Error making purchase
+    } else if let purchaserInfo = purchaserInfo {
+    
+        if purchaserInfo.activeEntitlements.contains("my_entitlement_name") {
+            // Unlock that great "pro" content
+        }
+        
+    }
+})
 ```
 
 ```obj-c
-[purchases entitlements:^(NSDictionary<NSString *, RCEntitlement *> *entitlements) {
-	SKProduct *product = entitlements[@"my_entitlement_name"].offerings[@"my_offering_name"].activeProduct;
-    [purchases makePurchase:product];
+[[RCPurchases sharedPurchases] makePurchase:product withCompletionBlock:^(SKPaymentTransaction *transaction, RCPurchaserInfo * purchaserInfo, NSError * error) {
+
+    if ([purchaserInfo.activeEntitlements containsObject:@"my_entitlement_name"]) {
+        // Unlock that great "pro" content.
+    }
 }];
 ```
 >`makePurchase` handles the underlying framework interaction and automatically validates purchases with Apple through our secure servers. This helps reduce in-app purchase fraud and decreases the complexity of your app. Receipt tokens are stored remotely and always kept up-to-date.
 
-#### 4. Unlock Content
-Once the purchase is made, verified, and stored, we will send you the latest version of a purchaser's available entitlements - this is done via the *Purchases* listener/delegate. It is your responsibility to unlock appropriate content or features in response to this.
+
+#### 4. Get Subscription Status
+*Purchases* makes it easy to check what active subscriptions the current user has. This can be done two ways within the `.purchaserInfo` method:
+1. Checking active Entitlements - this lets you see what entitlements ([from RevenueCat dashboard](https://app.revenuecat.com)) are active for the user.
+2. Checking the active subscriptions - this lets you see what product ids (from iTunes Connect or Play Store) are active for the user.
 
 ```swift
-func purchases(_ purchases: RCPurchases, completedTransaction transaction: SKPaymentTransaction, withUpdatedInfo purchaserInfo: RCPurchaserInfo) {
-    if purchaserInfo.activeEntitlements.contains("my_entitlement_name") {
-        // Unlock that great "pro" content.
+Purchases.shared.purchaserInfo { (purchaserInfo, error) in
+    if let error = error {
+        // Error fetching entitlements
+    } else if let purchaserInfo = purchaserInfo {
+
+        // Option 1: Check if user has access to entitlement (from RevenueCat dashboard)
+        if purchaserInfo.activeEntitlements.contains("my_entitlement_name") {
+            // Grant user "pro" access
+        }
+
+        // Option 2: Check if user has active subscription (from App Store Connect or Play Store)
+        if purchaserInfo.activeSubscriptions.contains("my_product_identifier") {
+            // Grant user "pro" access
+        }
     }
 }
 ```
 
 ```obj-c
-- (void)purchases:(RCPurchases *)purchases completedTransaction:(SKPaymentTransaction*)transaction withUpdatedInfo:(RCPurchaserInfo *)purchaserInfo {
-    [purchaserInfo.activeEntitlements containsObject:@"my_entitlement_name"];
-}
-```
-
-#### 5. Get Subscription Status
-*Purchases* makes it easy to check what active subscriptions the current user has. This can be done two ways within the `receivedUpdatedPurchaserInfo` listener/delegate:
-1. Checking active Entitlements - this lets you see what entitlements ([from RevenueCat dashboard](https://app.revenuecat.com)) are active for the user.
-2. Checking the active subscriptions - this lets you see what product ids (from iTunes Connect or Play Store) are active for the user.
-
-```swift
-func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
-    let entitlements = purchaserInfo.activeEntitlements
-    let subscriptions = purchaserInfo.activeSubscriptions
-
-    if entitlements.contains("my_entitlement_name") {
-        // print("user is a pro")
+[[RCPurchases sharedPurchases] purchaserInfoWithCompletionBlock:^(RCPurchaserInfo * purchaserInfo, NSError * error) {
+        
+    // Option 1: Check if user has access to entitlement (from RevenueCat dashboard)
+    if ([purchaserInfo.activeEntitlements containsObject:@"my_entitlement_name"]) {
+        // Grant user "pro" access
     }
 
-    if subscriptions.contains("my_subscription_id") {
-        // print("user is a pro")
+    // Option 2: Check if user has active subscription (from App Store Connect or Play Store)
+    if ([purchaserInfo.activeSubscriptions containsObject:@"my_product_identifier"]) {
+	// Grant user "pro" access
     }
-}
+}];
 ```
+>Since the SDK updates and caches the latest PurchaserInfo, the completion block in `.purchaserInfo` won't need to make a network request in most cases. This creates a fast and seamless startup experience.
 
-#### 6. Displaying Available Products
-*Purchases* will automatically fetch the latest *active* entitlements and get the product information from Apple. This means when users launch your purchase screen, products will already be loaded.
+
+#### 5. Displaying Available Products
+*Purchases* will automatically fetch the latest *active* entitlements and get the product information from Apple or Google. This means when users launch your purchase screen, products will already be loaded.
+
+Below is an example of fetching entitlements and launching an upsell screen.
 
 ```swift
 func displayUpsellScreen() {
@@ -137,6 +151,7 @@ func displayUpsellScreen() {
   [self presentViewController:vc animated:YES completion:nil];
 }];
 ```
+
 
 ## Next Steps
 - If you haven't already, make sure your products are configured correctly in the RevenueCat dashboard by checking out our [guide on entitlements :arrow-right:](https://docs.revenuecat.com/docs/entitlements)
