@@ -7,7 +7,8 @@
 
 *Purchases* is a client for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system. It is an open source framework that provides a wrapper around `StoreKit` and the RevenueCat backend to make implementing in-app purchases in `Swift` or `Objective-C` easy.
 
-Features:  
+
+**Features:**  
 ✅ Server-side receipt validation  
 ➡️ [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more   
 🎯 Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web  
@@ -46,6 +47,7 @@ Log in to the [RevenueCat dashboard](https://app.revenuecat.com) and obtain a fr
 
 You should only configure *Purchases* once (usually on app launch) as soon as your app has a unique user id for your user. This can be when a user logs in if you have accounts or on launch if you can generate a random user identifier. The same instance is shared throughout your app by accessing the `.shared` instance in the SDK.
 
+Swift:
 ```swift
 import Purchases
 
@@ -53,6 +55,7 @@ Purchases.debugLogsEnabled = true
 Purchases.configure(withAPIKey: "my_api_key", appUserID: "my_app_user_id")
 ```
 
+Obj-C:
 ```obj-c
 #import "RCPurchases.h"
 
@@ -60,9 +63,11 @@ RCPurchases.debugLogsEnabled = YES;
 [RCPurchases configureWithAPIKey:@"my_api_key" appUserID:@"my_app_user_id"];
 ```
 
+
 #### 3. Make a purchase
 When it comes time to make a purchase, *Purchases* has a simple method, `makePurchase`. The code sample below shows the process of purchasing a product and confirming it unlocks the "my_entitlement_name" content.
 
+Swift:
 ```swift
 Purchases.shared.makePurchase(product, { (transaction, purchaserInfo, error) in
     if let error = error {
@@ -77,6 +82,7 @@ Purchases.shared.makePurchase(product, { (transaction, purchaserInfo, error) in
 })
 ```
 
+Obj-C:
 ```obj-c
 [[RCPurchases sharedPurchases] makePurchase:product withCompletionBlock:^(SKPaymentTransaction *transaction, RCPurchaserInfo * purchaserInfo, NSError * error) {
 
@@ -93,6 +99,7 @@ Purchases.shared.makePurchase(product, { (transaction, purchaserInfo, error) in
 1. Checking active Entitlements - this lets you see what entitlements ([from RevenueCat dashboard](https://app.revenuecat.com)) are active for the user.
 2. Checking the active subscriptions - this lets you see what product ids (from iTunes Connect or Play Store) are active for the user.
 
+Swift:
 ```swift
 Purchases.shared.purchaserInfo { (purchaserInfo, error) in
     if let error = error {
@@ -112,6 +119,7 @@ Purchases.shared.purchaserInfo { (purchaserInfo, error) in
 }
 ```
 
+Obj-C:
 ```obj-c
 [[RCPurchases sharedPurchases] purchaserInfoWithCompletionBlock:^(RCPurchaserInfo * purchaserInfo, NSError * error) {
         
@@ -134,6 +142,7 @@ Purchases.shared.purchaserInfo { (purchaserInfo, error) in
 
 Below is an example of fetching entitlements and launching an upsell screen.
 
+Swift:
 ```swift
 func displayUpsellScreen() {
     purchases?.entitlements({ (ents) in
@@ -144,6 +153,7 @@ func displayUpsellScreen() {
 }
 ```
 
+Obj-C
 ```obj-c
 [self.purchases entitlements:^(NSDictionary<NSString *, RCEntitlement *> *entitlements) {
   UpsellViewController *vc = [[UpsellViewController alloc] init];
