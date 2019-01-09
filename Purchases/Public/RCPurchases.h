@@ -129,48 +129,6 @@ NS_SWIFT_NAME(Purchases)
  */
 + (void)setDefaultInstance:(RCPurchases *)instance;
 
-/**
- Initializes an `RCPurchases` object with specified API key.
-
- @note Use this initializer if your app does not have an account system. `RCPurchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`. This also affects the behavior of `restoreTransactionsForAppStoreAccount`.
-
- @param APIKey The API Key generated for your app from https://app.revenuecat.com/
-
- @return An instantiated `RCPurchases` object
- */
-- (instancetype)initWithAPIKey:(NSString *)APIKey;
-
-/**
- Initializes an `RCPurchases` object with specified API key and app user ID.
-
- @note Best practice is to use a salted hash of your unique app user ids.
-
- @warning Use this initializer if you have your own user identifiers that you manage.
-
- @param APIKey The API Key generated for your app from https://app.revenuecat.com/
-
- @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
-
- @return An instantiated `RCPurchases` object
- */
-- (instancetype)initWithAPIKey:(NSString *)APIKey
-                     appUserID:(NSString * _Nullable)appUserID;
-
-/**
- Initializes an `RCPurchases` object with a custom userDefaults. Use this constructor if you want to sync status across a shared container, such as between a host app and an extension.
-
- @param APIKey The API Key generated for your app from https://app.revenuecat.com/
-
- @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
-
- @param userDefaults Custom userDefaults to use
-
- @return An instantiated `RCPurchases` object
- */
-- (instancetype)initWithAPIKey:(NSString *)APIKey
-                     appUserID:(NSString * _Nullable)appUserID
-                  userDefaults:(NSUserDefaults * _Nullable)userDefaults;
-
 #pragma mark Configuration
 
 /** Set this to true if you are passing in an appUserID but it is anonymous, this is true by default if you didn't pass an appUserID

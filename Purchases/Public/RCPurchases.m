@@ -74,7 +74,9 @@ static RCPurchases *_sharedPurchases = nil;
 
 + (void)setDefaultInstance:(RCPurchases *)instance {
     @synchronized([RCPurchases class]) {
-        RCLog(@"Purchases instance already set. Did you mean to configure two Purchases objects?");
+        if (_sharedPurchases) {
+            RCLog(@"Purchases instance already set. Did you mean to configure two Purchases objects?");
+        }
         _sharedPurchases = instance;
     }
 }
