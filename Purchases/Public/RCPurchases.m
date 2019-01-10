@@ -199,6 +199,25 @@ static RCPurchases *_sharedPurchases = nil;
 
 @synthesize delegate=_delegate;
 
+- (void)setDelegate:(id<RCPurchasesDelegate>)delegate
+{
+    _delegate = delegate;
+    RCDebugLog(@"Delegate set");
+    
+    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
+    if (infoFromCache) {
+        RCDebugLog(@"Delegate vending purchaserInfo from cache");
+        @synchronized (self) {
+            self.lastSentPurchaserInfo = infoFromCache;
+            [self dispatch:^{
+                [self.delegate purchases:self didReceiveUpdatedPurchaserInfo:infoFromCache];
+            }];
+        }
+    } else {
+        RCDebugLog(@"No cached purchaser info, delegate will be called on next fetch");
+    }
+}
+
 #pragma mark - Public Methods
 
 #pragma mark Attribution

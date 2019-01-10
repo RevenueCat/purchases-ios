@@ -254,7 +254,7 @@ NS_SWIFT_NAME(restoreTransactions(_:));
  */
 NS_SWIFT_NAME(PurchasesDelegate)
 @protocol RCPurchasesDelegate <NSObject>
-@required
+@optional
 
 /**
  Called whenever `RCPurchases` receives updated purchaser info. This may happen periodically
