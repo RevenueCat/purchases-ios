@@ -124,10 +124,6 @@ NS_SWIFT_NAME(Purchases)
  */
 @property (class, nonatomic, readonly) RCPurchases *sharedPurchases;
 
-/**
- Sets an instance of the Purchases SDK as a singleton. The configure methods call this internally so it's preferably to set the default instance through a configure method. Use this method only if you want to override what the configure methods are doing.
- */
-+ (void)setDefaultInstance:(RCPurchases *)instance;
 
 #pragma mark Configuration
 
