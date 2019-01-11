@@ -73,17 +73,17 @@ Below is an example of fetching entitlements and launching an upsell screen.
 Swift:
 ```swift
 func displayUpsellScreen() {
-    purchases?.entitlements({ (ents) in
+    Purchases.shared.entitlements { (entitlements, error) in
         let vc = UpsellController()
-        vc.entitlements = ents
+        vc.entitlements = entitlements
         presentViewController(vc, animated: true, completion: nil)
-    })
+    }
 }
 ```
 
 Obj-C
 ```obj-c
-[self.purchases entitlements:^(NSDictionary<NSString *, RCEntitlement *> *entitlements) {
+[[RCPurchases sharedPurchases] entitlementsWithCompletionBlock:^(RCEntitlements *entitlements, NSError *error) {
   UpsellViewController *vc = [[UpsellViewController alloc] init];
   vc.entitlements = entitlements;
   [self presentViewController:vc animated:YES completion:nil];
