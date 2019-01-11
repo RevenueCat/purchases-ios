@@ -168,6 +168,7 @@ Restoring purchases is a mechanism by which your user can restore their in-app p
 If two different App User IDs try to restore transactions from the same underlying store account (Apple or Google) RevenueCat will create an alias between the two App User IDs and count them as the same user going forward.
 
 This is a common if your app does not have accounts and is relying on RevenueCat's random App User IDs.
+
 Swift:
 ```swift
 Purchases.shared.restoreTransactions { (purchaserInfo, error) in
@@ -203,6 +204,10 @@ Obj-C:
 RCPurchases.debugLogsEnabled = YES;
 [RCPurchases configureWithAPIKey:@"my_api_key" appUserID:@"my_app_user_id"];
 ```
+
+**OS_ACTIVITY_MODE**
+>On iOS, disabling `OS_ACTIVITY_MODE` in your XCode scheme will block debug logs from printing in the console. If you have debug logs enabled, but don't see any output, go to `Product -> Scheme -> Edit Scheme...` in Xcode and uncheck the `OS_ACTIVITY_MODE` environment variable.
+
 Example output:
 ```
 2019-01-06 12:47:53.968093-0800 Subtester2[12421:2813128] [Purchases] - DEBUG: Debug logging enabled.
