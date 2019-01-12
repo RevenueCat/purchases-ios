@@ -206,15 +206,7 @@ static RCPurchases *_sharedPurchases = nil;
     
     RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
     if (infoFromCache) {
-        RCDebugLog(@"Delegate vending purchaserInfo from cache");
-        @synchronized (self) {
-            self.lastSentPurchaserInfo = infoFromCache;
-            [self dispatch:^{
-                [self.delegate purchases:self didReceiveUpdatedPurchaserInfo:infoFromCache];
-            }];
-        }
-    } else {
-        RCDebugLog(@"No cached purchaser info, delegate will be called on next fetch");
+        [self sendUpdatedPurchaserInfoToDelegateIfChanged:infoFromCache];
     }
 }
 
@@ -595,12 +587,20 @@ static RCPurchases *_sharedPurchases = nil;
 }
 
 - (void)sendUpdatedPurchaserInfoToDelegateIfChanged:(RCPurchaserInfo *)info {
-    @synchronized (self) {
-        if (![self.lastSentPurchaserInfo isEqual:info]) {
-            self.lastSentPurchaserInfo = info;
-            [self dispatch:^{
-                [self.delegate purchases:self didReceiveUpdatedPurchaserInfo:info];
-            }];
+    
+    if ([self.delegate respondsToSelector:@selector(purchases:didReceiveUpdatedPurchaserInfo:)]) {
+        @synchronized (self) {
+            if (![self.lastSentPurchaserInfo isEqual:info]) {
+                if (self.lastSentPurchaserInfo) {
+                    RCDebugLog(@"Purchaser info updated, sending to delegate");
+                } else {
+                    RCDebugLog(@"Sending latest purchaser info to delegate");
+                }
+                self.lastSentPurchaserInfo = info;
+                [self dispatch:^{
+                    [self.delegate purchases:self didReceiveUpdatedPurchaserInfo:info];
+                }];
+            }
         }
     }
 }
