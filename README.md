@@ -22,18 +22,23 @@
 🤩 | Awesome [new features](https://trello.com/b/RZRnWRbI/revenuecat-product-roadmap)  
 
 
+
+
+## 2.0.0 BETA version 😻
+You're viewing our latest and greatest SDK, that's currently in public beta. To see guides for our latest stable release, `1.x.x`, check out the [master branch](https://github.com/RevenueCat/purchases-ios/).
+
 ## Installation
 
 *Purchases* is available through [CocoaPods](https://cocoapods.org/) and [Carthage](https://github.com/Carthage/Carthage)
 
 ### CocoaPods
 ```
-pod "Purchases"
+pod "Purchases", "2.0.0-rc1"
 ```
 
 ### Carthage
 ```
-github "revenuecat/purchases-ios"
+github "revenuecat/purchases-ios" "2.0.0-rc1"
 ```
 
 
