@@ -12,10 +12,10 @@
 |   | RevenueCat |
 | --- | --- |
 ✅ | Server-side receipt validation
-➡️ | [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more   
+➡️ | [Webhooks](https://docs.revenuecat.com/v2.0/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more   
 🎯 | Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web  
 📊 | Analytics - automatic calculation of metrics like conversion, mrr, and churn  
-📝 | [Online documentation](https://docs.revenuecat.com/docs) up to date  
+📝 | [Online documentation](https://docs.revenuecat.com/v2.0/docs) up to date  
 🔀 | [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it  
 💯 | Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)  
 📮 | Great support - [Help Center](https://docs.revenuecat.com/discuss)  
@@ -54,7 +54,7 @@ carthage update --no-use-binaries
 ```
 
 ## Getting Started
-For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/).
+For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/v2.0/docs).
 
 #### 1. Get a RevenueCat API key
 
@@ -238,14 +238,14 @@ Example output:
 ```
 
 ## Sample Code
-We've added an example in this project showing a simple example using *Purchases* with the RevenueCat backend. Note that the pre-registered in app purchases in the demo apps are for illustration purposes only and may not be valid in App Store Connect. [Set up your own purchases](https://docs.revenuecat.com/docs/entitlements) with RevenueCat to update the example.
+We've added an example in this project showing a simple example using *Purchases* with the RevenueCat backend. Note that the pre-registered in app purchases in the demo apps are for illustration purposes only and may not be valid in App Store Connect. [Set up your own purchases](https://docs.revenuecat.com/v2.0/docs/entitlements) with RevenueCat to update the example.
 
 ## Next Steps
-- Head over to our **[online documentation](https://docs.revenuecat.com/docs)** for complete setup guides
-- If you haven't already, make sure your products are configured correctly in the RevenueCat dashboard by checking out our [guide on entitlements](https://docs.revenuecat.com/docs/entitlements)
-- If you want to use your own user identifiers, read about [setting app user ids](https://docs.revenuecat.com/docs/user-ids)
-- If you're moving to RevenueCat from another system, see our guide on [migrating your existing subscriptions](https://docs.revenuecat.com/docs/migrating-existing-subscriptions)
-- Once you're ready to test your integration, you can follow our guides on [testing purchases](https://docs.revenuecat.com/docs/testing-purchases)
+- Head over to our **[online documentation](https://docs.revenuecat.com/v2.0/docs)** for complete setup guides
+- If you haven't already, make sure your products are configured correctly in the RevenueCat dashboard by checking out our [guide on entitlements](https://docs.revenuecat.com/v2.0/docs/entitlements)
+- If you want to use your own user identifiers, read about [setting app user ids](https://docs.revenuecat.com/v2.0/docs/user-ids)
+- If you're moving to RevenueCat from another system, see our guide on [migrating your existing subscriptions](https://docs.revenuecat.com/v2.0/docs/migrating-existing-subscriptions)
+- Once you're ready to test your integration, you can follow our guides on [testing purchases](https://docs.revenuecat.com/v2.0/docs/testing-purchases)
 
 
 ## Reporting Issues
