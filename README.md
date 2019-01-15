@@ -19,6 +19,11 @@ Features:
 - Awesome [new features](https://trello.com/b/RZRnWRbI/revenuecat-product-roadmap)
 
 
+## Feeling Frisky? 😻
+We have a public beta ready of our **new and improved Purchases SDK v2.0.0**. We've simplified a  lot of the methods, and think you'll like it.
+
+[**Go to the new v2.0.0 Purchases ➡️**](https://github.com/RevenueCat/purchases-ios/tree/2.0.0)
+
 ## Installation
 
 *Purchases* is available through [CocoaPods](https://cocoapods.org/) and [Carthage](https://github.com/Carthage/Carthage)
