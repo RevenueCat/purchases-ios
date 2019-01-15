@@ -3,7 +3,7 @@
 //  Purchases
 //
 //  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2018 RevenueCat, Inc. All rights reserved.
+//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
 #import "RCStoreKitWrapper.h"
@@ -68,6 +68,7 @@
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions
 {
     for (SKPaymentTransaction *transaction in transactions) {
+        RCDebugLog(@"PaymentQueue updatedTransaction: %@ %@ (%@) - %d", transaction.payment.productIdentifier, transaction.transactionIdentifier, transaction.originalTransaction.transactionIdentifier, transaction.transactionState);
         [self.delegate storeKitWrapper:self updatedTransaction:transaction];
     }
 }
@@ -76,6 +77,7 @@
 - (void)paymentQueue:(SKPaymentQueue *)queue removedTransactions:(NSArray<SKPaymentTransaction *> *)transactions
 {
     for (SKPaymentTransaction *transaction in transactions) {
+        RCDebugLog(@"PaymentQueue removedTransaction: %@ %@ (%@) - %d", transaction.payment.productIdentifier, transaction.transactionIdentifier, transaction.originalTransaction.transactionIdentifier, transaction.transactionState);
         [self.delegate storeKitWrapper:self removedTransaction:transaction];
     }
 }

@@ -1,3 +1,8 @@
+## 2.0.0
+- Refactor to all block based methods
+- Optional delegate method to receive changes in Purchaser Info
+- Ability to turn on detailed logging by setting `debugLogsEnabled`
+
 ## 1.2.1
 - Adds support for Tenjin
 

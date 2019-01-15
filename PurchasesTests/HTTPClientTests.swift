@@ -3,7 +3,7 @@
 //  PurchasesTests
 //
 //  Created by Jacob Eiting on 9/28/17.
-//  Copyright © 2018 Purchases. All rights reserved.
+//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
 import XCTest
@@ -99,7 +99,7 @@ class HTTPClientTests: XCTestCase {
         let path = "/a_random_path"
         var headerPresent = false
 
-        stub(condition: hasHeaderNamed("X-Version", value: RCPurchases.frameworkVersion())) { request in
+        stub(condition: hasHeaderNamed("X-Version", value: Purchases.frameworkVersion())) { request in
             headerPresent = true
             return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }

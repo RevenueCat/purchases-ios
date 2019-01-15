@@ -1,0 +1,16 @@
+PODS:
+  - Purchases (2.0.0-SNAPSHOT)
+
+DEPENDENCIES:
+  - Purchases (from `../../`)
+
+EXTERNAL SOURCES:
+  Purchases:
+    :path: "../../"
+
+SPEC CHECKSUMS:
+  Purchases: 28be1135e21907b502f6d0e3e253cd38cf911bed
+
+PODFILE CHECKSUM: b6ad00ca1e6fc400e0898ad2ac4a293958616d2e
+
+COCOAPODS: 1.6.0.beta.2
