@@ -36,11 +36,22 @@ You're viewing our latest and greatest SDK, that's currently in public beta. To 
 pod "Purchases", "2.0.0-rc1"
 ```
 
+And then run:
+
+```
+pod install
+```
+
 ### Carthage
 ```
 github "revenuecat/purchases-ios" "2.0.0-rc1"
 ```
 
+And then run:
+
+```
+carthage update --no-use-binaries
+```
 
 ## Getting Started
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/).
