@@ -305,14 +305,34 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
                      completion:(void (^)(NSArray<SKProduct *>* products))completion
 {
-    [self.requestFetcher fetchProducts:[NSSet setWithArray:productIdentifiers] completion:^(NSArray<SKProduct *> * _Nonnull products) {
-        @synchronized(self) {
-            for (SKProduct *product in products) {
-                self.productsByIdentifier[product.productIdentifier] = product;
+    NSMutableArray<SKProduct *> *products = [NSMutableArray array];
+    NSMutableSet<NSString *> *missingProductIdentifiers = [NSMutableSet set];
+
+    @synchronized(self) {
+        for (NSString *identifier in productIdentifiers) {
+            SKProduct *product = self.productsByIdentifier[identifier];
+            if (product) {
+                [products addObject:product];
+            } else {
+                [missingProductIdentifiers addObject:identifier];
             }
         }
+    }
+
+    if (missingProductIdentifiers.count > 0) {
+        [self.requestFetcher fetchProducts:missingProductIdentifiers
+                                completion:^(NSArray<SKProduct *> * _Nonnull newProducts) {
+                                    @synchronized (self) {
+                                        for (SKProduct *p in newProducts)
+                                        {
+                                            self.productsByIdentifier[p.productIdentifier] = p;
+                                        }
+                                    }
+                                    completion([products arrayByAddingObjectsFromArray:newProducts]);
+                                }];
+    } else {
         completion(products);
-    }];
+    }
 }
 
 - (void)updatePurchaserInfo
@@ -468,38 +488,41 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction
 {
     [self receiptData:^(NSData * _Nonnull data) {
-        SKProduct *product = [self productForIdentifier:transaction.payment.productIdentifier];
+        [self productsWithIdentifiers:@[transaction.payment.productIdentifier]
+                completion:^(NSArray<SKProduct *> *products) {
+                    SKProduct *product = products.lastObject;
 
-        NSString *productIdentifier = product.productIdentifier;
-        NSDecimalNumber *price = product.price;
+                    NSString *productIdentifier = product.productIdentifier;
+                    NSDecimalNumber *price = product.price;
 
-        RCPaymentMode paymentMode = RCPaymentModeNone;
-        NSDecimalNumber *introPrice = nil;
+                    RCPaymentMode paymentMode = RCPaymentModeNone;
+                    NSDecimalNumber *introPrice = nil;
 
-        if (@available(iOS 11.2, macOS 10.13.2, *)) {
-            if (product.introductoryPrice) {
-                paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
-                introPrice = product.introductoryPrice.price;
-            }
-        }
+                    if (@available(iOS 11.2, macOS 10.13.2, *)) {
+                        if (product.introductoryPrice) {
+                            paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
+                            introPrice = product.introductoryPrice.price;
+                        }
+                    }
 
-        NSString *currencyCode = product.priceLocale.rc_currencyCode;
+                    NSString *currencyCode = product.priceLocale.rc_currencyCode;
 
-        [self.backend postReceiptData:data
-                            appUserID:self.appUserID
-                            isRestore:self.allowSharingAppStoreAccount
-                    productIdentifier:productIdentifier
-                                price:price
-                          paymentMode:paymentMode
-                    introductoryPrice:introPrice
-                         currencyCode:currencyCode
-                           completion:^(RCPurchaserInfo * _Nullable info,
-                                        NSError * _Nullable error) {
-                               [self handleReceiptPostWithTransaction:transaction
-                                                        purchaserInfo:info
-                                                                error:error];
-                           }];
-    }];
+                    [self.backend postReceiptData:data
+                                        appUserID:self.appUserID
+                                        isRestore:self.allowSharingAppStoreAccount
+                                productIdentifier:productIdentifier
+                                            price:price
+                                      paymentMode:paymentMode
+                                introductoryPrice:introPrice
+                                     currencyCode:currencyCode
+                                       completion:^(RCPurchaserInfo * _Nullable info,
+                                                    NSError * _Nullable error) {
+                                           [self handleReceiptPostWithTransaction:transaction
+                                                                    purchaserInfo:info
+                                                                            error:error];
+                                       }];
+                }];
+        }];
 }
 
 - (void)restoreTransactionsForAppStoreAccount
