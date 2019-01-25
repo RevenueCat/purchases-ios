@@ -328,7 +328,9 @@ static RCPurchases *_sharedPurchases = nil;
                                             self.productsByIdentifier[p.productIdentifier] = p;
                                         }
                                     }
-                                    completion([products arrayByAddingObjectsFromArray:newProducts]);
+                                    [self dispatch:^{
+                                        completion([products arrayByAddingObjectsFromArray:newProducts]);
+                                    }];
                                 }];
     } else {
         completion(products);
