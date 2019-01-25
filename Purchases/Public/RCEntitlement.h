@@ -11,6 +11,9 @@
 @class RCOffering;
 @class RCEntitlement;
 
+/**
+ An alias for a NSDictionary of Entitlements
+ */
 typedef NSDictionary<NSString *, RCEntitlement *> RCEntitlements NS_SWIFT_NAME(Entitlements);
 
 /**

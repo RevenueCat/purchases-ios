@@ -15,15 +15,45 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ Completion block for calls that send back a Purchaser Info
+ */
 typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceivePurchaserInfoBlock);
+
+/**
+ Completion block for `checkTrialOrIntroductoryPriceEligibility:productIdentifiers completionBlock:receiveEligibility`
+ */
 typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *) NS_SWIFT_NAME(Purchases.ReceiveIntroEligibilityBlock);
+
+/**
+ Completion block for `entitlementsWithCompletionBlock:completion`
+ */
 typedef void (^RCReceiveEntitlementsBlock)(RCEntitlements * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceiveEntitlementsBlock);
+
+/**
+ Completion block for `productsWithIdentifiers:productIdentifiers completionBlock:completion`
+ */
 typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *) NS_SWIFT_NAME(Purchases.ReceiveProductsBlock);
+
+/**
+ Completion block for `makePurchase:product withCompletionBlock:completion`
+ */
 typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PurchaseCompletedBlock);
 
+/**
+ NSErrorDomain for errors occuring within the scope of the Purchases SDK
+ */
 FOUNDATION_EXPORT NSErrorDomain const RCPurchasesAPIErrorDomain;
 
-NS_ERROR_ENUM(RCPurchasesAPIErrorDomain) {
+/**
+ @typedef RCPurchasesAPIErrorDomain
+ @brief Enum of SDK API errors
+ @constant RCDuplicateMakePurchaseCallsError Error triggered when calling make purchase multiple times
+ */
+typedef NS_ERROR_ENUM(RCPurchasesAPIErrorDomain, RCPurchasesAPIErrorEnum) {
+    /**
+    Error triggered when calling make purchase multiple times
+     */
     RCDuplicateMakePurchaseCallsError = 0
 };
 
@@ -181,6 +211,11 @@ NS_SWIFT_NAME(reset(_:));
 
 #pragma mark Purchases
 
+/**
+ Get latest available purchaser info.
+ 
+ @param completion A completion block called when purchaser info is available and not stale. Called immediately if purchaser info is cached. Purchaser info can be nil if an error occurred.
+ */
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(purchaserInfo(_:));
 

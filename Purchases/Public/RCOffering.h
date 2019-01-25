@@ -21,7 +21,14 @@ NS_SWIFT_NAME(Offering)
  */
 @property (readonly) SKProduct * _Nullable activeProduct;
 
+/**
+ @return A String containing the localized price
+ */
 - (NSString *)localizedPriceString;
+
+/**
+ @return A String containing the localized introductory price
+ */
 - (NSString *)localizedIntroductoryPriceString;
 
 @end
