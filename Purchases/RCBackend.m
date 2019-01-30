@@ -144,7 +144,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
         [callbacks addObject:[completion copy]];
         
         BOOL requestAlreadyInFlight = !cacheMiss;
-        return shouldReturn;
+        return requestAlreadyInFlight;
     }
 }
 
