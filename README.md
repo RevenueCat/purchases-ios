@@ -12,10 +12,10 @@
 |   | RevenueCat |
 | --- | --- |
 ✅ | Server-side receipt validation
-➡️ | [Webhooks](https://docs.revenuecat.com/v2.0/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more   
+➡️ | [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more   
 🎯 | Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web  
 📊 | Analytics - automatic calculation of metrics like conversion, mrr, and churn  
-📝 | [Online documentation](https://docs.revenuecat.com/v2.0/docs) up to date  
+📝 | [Online documentation](https://docs.revenuecat.com/docs) up to date  
 🔀 | [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it  
 💯 | Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)  
 📮 | Great support - [Help Center](https://docs.revenuecat.com/discuss)  
@@ -23,17 +23,13 @@
 
 
 
-
-## 2.0.0 BETA version 😻
-You're viewing our latest and greatest SDK, that's currently in public beta. To see guides for our latest stable release, `1.x.x`, check out the [master branch](https://github.com/RevenueCat/purchases-ios/).
-
 ## Installation
 
 *Purchases* is available through [CocoaPods](https://cocoapods.org/) and [Carthage](https://github.com/Carthage/Carthage)
 
 ### CocoaPods
 ```
-pod "Purchases", "2.0.0-rc1"
+pod "Purchases"
 ```
 
 And then run:
@@ -44,7 +40,7 @@ pod install
 
 ### Carthage
 ```
-github "revenuecat/purchases-ios" "2.0.0-rc1"
+github "revenuecat/purchases-ios"
 ```
 
 And then run:
@@ -54,7 +50,7 @@ carthage update --no-use-binaries
 ```
 
 ## Getting Started
-For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/v2.0/docs).
+For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
 
 #### 1. Get a RevenueCat API key
 
@@ -107,7 +103,7 @@ Obj-C
 ```
 
 #### 4. Make a purchase
-When it comes time to make a purchase, *Purchases* has a simple method, `makePurchase`. The code sample below shows the process of purchasing a product and confirming it unlocks the "my_entitlement_name" content.
+When it comes time to make a purchase, *Purchases* has a simple method, `makePurchase`. The code sample below shows the process of purchasing a product and confirming it unlocks the "my_entitlement_identifier" content.
 
 Swift:
 ```swift
@@ -116,7 +112,7 @@ Purchases.shared.makePurchase(product, { (transaction, purchaserInfo, error) in
         // Error making purchase
     } else if let purchaserInfo = purchaserInfo {
     
-        if purchaserInfo.activeEntitlements.contains("my_entitlement_name") {
+        if purchaserInfo.activeEntitlements.contains("my_entitlement_identifier") {
             // Unlock that great "pro" content
         }
         
@@ -128,7 +124,7 @@ Obj-C:
 ```obj-c
 [[RCPurchases sharedPurchases] makePurchase:product withCompletionBlock:^(SKPaymentTransaction *transaction, RCPurchaserInfo * purchaserInfo, NSError * error) {
 
-    if ([purchaserInfo.activeEntitlements containsObject:@"my_entitlement_name"]) {
+    if ([purchaserInfo.activeEntitlements containsObject:@"my_entitlement_identifier"]) {
         // Unlock that great "pro" content.
     }
 }];
@@ -149,7 +145,7 @@ Purchases.shared.purchaserInfo { (purchaserInfo, error) in
     } else if let purchaserInfo = purchaserInfo {
 
         // Option 1: Check if user has access to entitlement (from RevenueCat dashboard)
-        if purchaserInfo.activeEntitlements.contains("my_entitlement_name") {
+        if purchaserInfo.activeEntitlements.contains("my_entitlement_identifier") {
             // Grant user "pro" access
         }
 
@@ -166,7 +162,7 @@ Obj-C:
 [[RCPurchases sharedPurchases] purchaserInfoWithCompletionBlock:^(RCPurchaserInfo * purchaserInfo, NSError * error) {
         
     // Option 1: Check if user has access to entitlement (from RevenueCat dashboard)
-    if ([purchaserInfo.activeEntitlements containsObject:@"my_entitlement_name"]) {
+    if ([purchaserInfo.activeEntitlements containsObject:@"my_entitlement_identifier"]) {
         // Grant user "pro" access
     }
 
@@ -226,30 +222,32 @@ RCPurchases.debugLogsEnabled = YES;
 
 Example output:
 ```
-2019-01-06 12:47:53.968093-0800 Subtester2[12421:2813128] [Purchases] - DEBUG: Debug logging enabled.
-2019-01-06 12:47:53.968133-0800 Subtester2[12421:2813128] [Purchases] - DEBUG: SDK Version - 1.3.0-SNAPSHOT
-2019-01-06 12:47:53.968146-0800 Subtester2[12421:2813128] [Purchases] - DEBUG: Initial App User ID - (null)
-2019-01-06 12:47:53.968369-0800 Subtester2[12421:2813128] [Purchases] - DEBUG: GET /v1/subscribers/D792EF1C-17D8-4568-B874-71485CC969AC
-2019-01-06 12:47:53.968896-0800 Subtester2[12421:2813128] [Purchases] - DEBUG: GET /v1/subscribers/D792EF1C-17D8-4568-B874-71485CC969AC/products
-2019-01-06 12:47:53.998928-0800 Subtester2[12421:2813128] [Purchases] - DEBUG: No cached entitlements, fetching
-2019-01-06 12:47:54.000382-0800 Subtester2[12421:2813128] [Purchases] - DEBUG: Vending purchaserInfo from cache
-2019-01-06 12:47:54.061939-0800 Subtester2[12421:2813128] [Purchases] - DEBUG: applicationDidBecomeActive
-2019-01-06 12:47:54.675072-0800 Subtester2[12421:2813221] [Purchases] - DEBUG: GET /v1/subscribers/D792EF1C-17D8-4568-B874-71485CC969AC/products 200
+[Purchases] - DEBUG: Debug logging enabled.
+[Purchases] - DEBUG: SDK Version - 2.0.0
+[Purchases] - DEBUG: Initial App User ID - (null)
+[Purchases] - DEBUG: GET /v1/subscribers/<APP_USER_ID>
+[Purchases] - DEBUG: GET /v1/subscribers/<APP_USER_ID>/products
+[Purchases] - DEBUG: No cached entitlements, fetching
+[Purchases] - DEBUG: Vending purchaserInfo from cache
+[Purchases] - DEBUG: applicationDidBecomeActive
+[Purchases] - DEBUG: GET /v1/subscribers/<APP_USER_ID>/products 200
 ```
 
-## Sample Code
-We've added an example in this project showing a simple example using *Purchases* with the RevenueCat backend. Note that the pre-registered in app purchases in the demo apps are for illustration purposes only and may not be valid in App Store Connect. [Set up your own purchases](https://docs.revenuecat.com/v2.0/docs/entitlements) with RevenueCat to update the example.
+## Entitlements
+An entitlement represents features or content that a user is "entitled" to. With Entitlements, you can set up your available in-app products remotely and control their availability without the need to update your app. For more information on configuring entitlements, look at our [entitlements documetation](https://docs.revenuecat.com/docs/entitlements).
+
+## Sample App
+We've added an example in this project showing a simple example using *Purchases* with the RevenueCat backend. Note that the pre-registered in app purchases in the demo apps are for illustration purposes only and may not be valid in App Store Connect. [Set up your own purchases](https://docs.revenuecat.com/docs/entitlements) with RevenueCat when running the example.
 
 ## Next Steps
-- Head over to our **[online documentation](https://docs.revenuecat.com/v2.0/docs)** for complete setup guides
-- If you haven't already, make sure your products are configured correctly in the RevenueCat dashboard by checking out our [guide on entitlements](https://docs.revenuecat.com/v2.0/docs/entitlements)
-- If you want to use your own user identifiers, read about [setting app user ids](https://docs.revenuecat.com/v2.0/docs/user-ids)
-- If you're moving to RevenueCat from another system, see our guide on [migrating your existing subscriptions](https://docs.revenuecat.com/v2.0/docs/migrating-existing-subscriptions)
-- Once you're ready to test your integration, you can follow our guides on [testing purchases](https://docs.revenuecat.com/v2.0/docs/testing-purchases)
+- Head over to our **[online documentation](https://docs.revenuecat.com/docs)** for complete setup guides
+- If you haven't already, make sure your products are configured correctly in the RevenueCat dashboard by checking out our [guide on entitlements](https://docs.revenuecat.com/docs/entitlements)
+- If you want to use your own user identifiers, read about [setting app user ids](https://docs.revenuecat.com/docs/user-ids)
+- If you're moving to RevenueCat from another system, see our guide on [migrating your existing subscriptions](https://docs.revenuecat.com/docs/migrating-existing-subscriptions)
+- Once you're ready to test your integration, you can follow our guides on [testing purchases](https://docs.revenuecat.com/docs/testing-purchases)
 
 
 ## Reporting Issues
-
 You can use Github Issues to report any bugs and issues with *Purchases*. Here is some advice for users that want to report an issue:
 
 1. Make sure that you are using the latest version of *Purchases*. The issue that you are about to report may be already fixed in the latest master branch version: https://github.com/revenuecat/purchases-ios/tree/master.
@@ -258,10 +256,12 @@ You can use Github Issues to report any bugs and issues with *Purchases*. Here i
 ​
 
 ## Technical Support or Questions
-
 If you have questions or need help integrating *Purchases* please [contact us](https://www.revenuecat.com/contact) or email *support@revenuecat.com* instead of opening an issue.
 
 
-## Pricing
+## Feature Requests
+If there is something you'd like to see included or feel anything is missing you can add a feature to our [public roadmap](https://trello.com/b/RZRnWRbI/revenuecat-product-roadmap). If the feature already exists, or you see something else you'd like, upvote it.
 
+
+## Pricing
 *Purchases* SDK is free to use but some features require a paid plan. You can find more about that on our website on the [pricing plan page](https://www.revenuecat.com/pricing).
