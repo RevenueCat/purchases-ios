@@ -16,27 +16,27 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- Completion block for calls that send back a Purchaser Info
+ Completion block for calls that send back a `PurchaserInfo`
  */
 typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceivePurchaserInfoBlock);
 
 /**
- Completion block for `checkTrialOrIntroductoryPriceEligibility:productIdentifiers completionBlock:receiveEligibility`
+ Completion block for `checkTrialOrIntroductoryPriceEligibility:completionBlock:`
  */
 typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *) NS_SWIFT_NAME(Purchases.ReceiveIntroEligibilityBlock);
 
 /**
- Completion block for `entitlementsWithCompletionBlock:completion`
+ Completion block for `entitlementsWithCompletionBlock:`
  */
 typedef void (^RCReceiveEntitlementsBlock)(RCEntitlements * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceiveEntitlementsBlock);
 
 /**
- Completion block for `productsWithIdentifiers:productIdentifiers completionBlock:completion`
+ Completion block for `productsWithIdentifiers:completionBlock:`
  */
 typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *) NS_SWIFT_NAME(Purchases.ReceiveProductsBlock);
 
 /**
- Completion block for `makePurchase:product withCompletionBlock:completion`
+ Completion block for `makePurchase:withCompletionBlock:`
  */
 typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PurchaseCompletedBlock);
 
@@ -249,7 +249,7 @@ NS_SWIFT_NAME(products(_:_:));
  
  Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
  
- From here `Purhases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+ From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
  
  @note You do not need to finish the transaction yourself in the completion callback, Purchases will handle this for you.
  
