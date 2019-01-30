@@ -1234,7 +1234,7 @@ class PurchasesTests: XCTestCase {
         
         self.backend.aliasError = NSError(domain: "error_domain", code: RCFinishableError, userInfo: nil)
         
-        self.purchases?.createAlias("cesarpedro") { (info, error) in
+        self.purchases?.createAlias("cesardro") { (info, error) in
             completionCalled = error == nil
         }
         
@@ -1367,7 +1367,35 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.userID).to(be("cesarpedro"))
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
-    
+
+    func testCreateAliasForTheSameUserID() {
+        setupPurchases()
+
+        self.backend.aliasCalled = false
+        self.backend.aliasError = nil
+
+        var completionCalled = false
+        self.purchases?.createAlias(appUserID) { (info, error) in
+            completionCalled = true
+        }
+
+        expect(self.backend.aliasCalled).to(be(false))
+        expect(self.backend.aliasError).to(beNil())
+        expect(completionCalled).toEventually(be(true))
+    }
+
+    func testIdentifyForTheSameUserID() {
+        setupPurchases()
+
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1));
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1));
+
+        self.purchases?.identify(appUserID)
+
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1));
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1));
+    }
+
     private func identifiedSuccesfully(appUserID: String) {
         expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
         expect(self.purchases?.appUserID).to(equal(appUserID))
