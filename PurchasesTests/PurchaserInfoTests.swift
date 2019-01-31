@@ -3,7 +3,7 @@
 //  PurchasesTests
 //
 //  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2018 Purchases. All rights reserved.
+//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
 import Foundation
@@ -13,7 +13,7 @@ import Nimble
 import Purchases
 
 class EmptyPurchaserInfoTests: XCTestCase {
-    let purchaserInfo = RCPurchaserInfo.init(data: [AnyHashable : Any]())
+    let purchaserInfo = PurchaserInfo.init(data: [AnyHashable : Any]())
 
     func testEmptyDataYieldsANilInfo() {
         expect(self.purchaserInfo).to(beNil())
@@ -64,12 +64,12 @@ class BasicPurchaserInfoTests: XCTestCase {
                 "\"product_b\": {\"expires_date\": \"2018-05-27T05:24:50Z\",\"period_type\": \"normal\"}" +
             "}}}";
 
-    var purchaserInfo: RCPurchaserInfo?
+    var purchaserInfo: PurchaserInfo?
 
     override func setUp() {
         super.setUp()
 
-        purchaserInfo = RCPurchaserInfo.init(data: validSubscriberResponse)
+        purchaserInfo = PurchaserInfo(data: validSubscriberResponse)
     }
 
     func testParsesSubscriptions() {
@@ -111,7 +111,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
 
     func testOriginalApplicationVersion() {
-        let purchaserInfo = RCPurchaserInfo(data: [
+        let purchaserInfo = PurchaserInfo(data: [
             "subscriber": [
                 "original_application_version": "1.0",
                 "subscriptions": [:],
@@ -122,14 +122,14 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testPreservesOriginalJSONSerializableObject() {
         let json = purchaserInfo?.jsonObject()
-        let newInfo = RCPurchaserInfo(data: json!)
+        let newInfo = PurchaserInfo(data: json!)
         expect(newInfo).toNot(beNil())
     }
 
 
     func testTwoProductJson() {
         let json = try! JSONSerialization.jsonObject(with: validTwoProductsJSON.data(using: String.Encoding.utf8)!, options: [])
-        let info = RCPurchaserInfo(data: json as! [AnyHashable : Any])
+        let info = PurchaserInfo(data: json as! [AnyHashable : Any])
         expect(info?.latestExpirationDate).toNot(beNil())
     }
 
@@ -191,7 +191,7 @@ class BasicPurchaserInfoTests: XCTestCase {
                 ]
             ]
             ] as [String : Any]
-        let purchaserInfoWithoutRequestData = RCPurchaserInfo.init(data: response)
+        let purchaserInfoWithoutRequestData = PurchaserInfo(data: response)
 
         let entitlements = purchaserInfoWithoutRequestData!.activeEntitlements
         expect(entitlements).to(contain("pro"));
@@ -204,7 +204,6 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
 
     func testPurchaseDateEmpty() {
-
         let response = [
             "subscriber": [
                 "other_purchases": [
@@ -233,9 +232,65 @@ class BasicPurchaserInfoTests: XCTestCase {
                 ]
             ]
         ] as [String : Any]
-        let purchaserInfoWithoutRequestData = RCPurchaserInfo.init(data: response)
+        let purchaserInfoWithoutRequestData = PurchaserInfo(data: response)
         let purchaseDate = purchaserInfoWithoutRequestData!.purchaseDate(forEntitlement: "pro")
         expect(purchaseDate).to(beNil())
+    }
+    
+    func testEmptyInfosEqual() {
+        let info1 = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        let info2 = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(info1).to(equal(info2))
+    }
+    
+    func testDifferentFetchDatesStillEqual() {
+        let info1 = PurchaserInfo(data: [
+            "request_date": "2018-12-19T02:40:36Z",
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        let info2 = PurchaserInfo(data: [
+            "request_date": "2018-11-19T02:40:36Z",
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(info1).to(equal(info2))
+    }
+    
+    func testDifferentActiveEntitlementsNotEqual() {
+        let info1 = PurchaserInfo(data: [
+            "request_date": "2018-12-20T02:40:36Z",
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "entitlements": [
+                    "pro" : [
+                        "expires_date" : "2018-12-19T02:40:36Z"
+                    ]
+                ]
+            ]])
+        let info2 = PurchaserInfo(data: [
+            "request_date": "2018-11-19T02:40:36Z",
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "entitlements": [
+                    "pro" : [
+                        "expires_date" : "2018-12-19T02:40:36Z"
+                    ]
+                ]
+            ]])
+        expect(info1).toNot(equal(info2))
     }
 
 }

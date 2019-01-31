@@ -3,7 +3,7 @@
 //  PurchasesTests
 //
 //  Created by Jacob Eiting on 9/28/17.
-//  Copyright © 2018 Purchases. All rights reserved.
+//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
 import XCTest
@@ -26,6 +26,13 @@ class MockTransaction: SKPaymentTransaction {
             return mockState
         }
     }
+    
+    var mockError: Error?
+    override var error: Error? {
+        get {
+            return mockError
+        }
+    }
 }
 
 class PurchasesTests: XCTestCase {
@@ -33,13 +40,17 @@ class PurchasesTests: XCTestCase {
     class MockRequestFetcher: RCStoreKitRequestFetcher {
         var refreshReceiptCalled = false
         var failProducts = false
+        var requestedProducts: Set<String?>?
         override func fetchProducts(_ identifiers: Set<String>, completion: @escaping RCFetchProductsCompletionHandler) {
             if (failProducts) {
                 completion([SKProduct]())
                 return
             }
+            requestedProducts = identifiers
             let products = identifiers.map { (identifier) -> MockProduct in
-                MockProduct(mockProductIdentifier: identifier)
+                let p = MockProduct(mockProductIdentifier: identifier)
+                p.mockSubscriptionGroupIdentifier = "1234567"
+                return p
             }
             completion(products)
         }
@@ -54,27 +65,22 @@ class PurchasesTests: XCTestCase {
         var userID: String?
         var originalApplicationVersion: String?
         var timeout = false
+        var getSubscriberCallCount = 0
+        var overridePurchaserInfo = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        
         override func getSubscriberData(withAppUserID appUserID: String, completion: @escaping RCBackendResponseHandler) {
+            getSubscriberCallCount += 1
             userID = appUserID
-            var info: RCPurchaserInfo?
-            if let version = originalApplicationVersion {
-                info = RCPurchaserInfo(data: [
-                    "subscriber": [
-                        "subscriptions": [:],
-                        "other_purchases": [:],
-                        "original_application_version": version
-                    ]
-                ])
-            } else {
-                info = RCPurchaserInfo(data: [
-                    "subscriber": [
-                        "subscriptions": [:],
-                        "other_purchases": [:]
-                    ]])
-            }
-
+            
             if (!timeout) {
-                completion(info!, nil)
+                let info = self.overridePurchaserInfo!
+                DispatchQueue.main.async {
+                    completion(info, nil)
+                }
             }
         }
 
@@ -85,12 +91,14 @@ class PurchasesTests: XCTestCase {
         var postedPaymentMode: RCPaymentMode?
         var postedIntroPrice: NSDecimalNumber?
         var postedCurrencyCode: String?
-        var postReceiptPurchaserInfo: RCPurchaserInfo?
+        var postedSubscriptionGroup: String?
+        
+        var postReceiptPurchaserInfo: PurchaserInfo?
         var postReceiptError: Error?
         var aliasError: Error?
         var aliasCalled = false
 
-        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, completion: @escaping RCBackendResponseHandler) {
+        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, subscriptionGroup: String?, completion: @escaping RCBackendResponseHandler) {
             postReceiptDataCalled = true
             postedIsRestore = isRestore
 
@@ -99,6 +107,7 @@ class PurchasesTests: XCTestCase {
 
             postedPaymentMode = paymentMode
             postedIntroPrice = introductoryPrice
+            postedSubscriptionGroup = subscriptionGroup
 
             postedCurrencyCode = currencyCode
 
@@ -122,14 +131,14 @@ class PurchasesTests: XCTestCase {
         override func getEntitlementsForAppUserID(_ appUserID: String, completion: @escaping RCEntitlementResponseHandler) {
             gotEntitlements += 1
             if (failEntitlements) {
-                completion(nil)
+                completion(nil, NSError.init(domain: RCBackendErrorDomain, code: 0, userInfo:nil))
                 return
             }
 
-            let offering = RCOffering()
+            let offering = Offering()
             offering.activeProductIdentifier = "monthly_freetrial"
-            let entitlement = RCEntitlement(offerings: ["monthly" : offering])
-            completion(["pro" : entitlement!])
+            let entitlement = Entitlement(offerings: ["monthly" : offering])
+            completion(["pro" : entitlement!], nil)
         }
         
         override func createAlias(forAppUserID appUserID: String, withNewAppUserID newAppUserID: String, completion: ((Error?) -> Void)? = nil) {
@@ -155,8 +164,10 @@ class PurchasesTests: XCTestCase {
 
     class MockStoreKitWrapper: RCStoreKitWrapper {
         var payment: SKPayment?
+        var addPaymentCallCount = 0
         override func add(_ newPayment: SKPayment) {
             payment = newPayment
+            addPaymentCallCount += 1
         }
 
         var finishCalled = false
@@ -225,42 +236,18 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    class PurchasesDelegate: NSObject, RCPurchasesDelegate {
-        var completedTransaction: SKPaymentTransaction?
-        var purchaserInfo: RCPurchaserInfo?
-        func purchases(_ purchases: RCPurchases, completedTransaction transaction: SKPaymentTransaction, withUpdatedInfo purchaserInfo: RCPurchaserInfo) {
-            self.completedTransaction = transaction
-            self.purchaserInfo = purchaserInfo
-        }
-
-        var failedTransaction: SKPaymentTransaction?
-        func purchases(_ purchases: RCPurchases, failedTransaction transaction: SKPaymentTransaction, withReason failureReason: Error) {
-            self.failedTransaction = transaction
-        }
-
+    class Delegate: NSObject, PurchasesDelegate {
+        var purchaserInfo: PurchaserInfo?
         var purchaserInfoReceivedCount = 0
-        func purchases(_ purchases: RCPurchases, receivedUpdatedPurchaserInfo purchaserInfo: RCPurchaserInfo) {
+        func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) {
             purchaserInfoReceivedCount += 1
             self.purchaserInfo = purchaserInfo
-        }
-
-        var updatePurchaserInfoError: Error?
-        func purchases(_ purchases: RCPurchases, failedToUpdatePurchaserInfoWithError failureReason: Error) {
-            updatePurchaserInfoError = failureReason
-        }
-
-        func purchases(_ purchases: RCPurchases, restoredTransactionsWith purchaserInfo: RCPurchaserInfo) {
-            self.purchaserInfo = purchaserInfo
-        }
-
-        func purchases(_ purchases: RCPurchases, failedToRestoreTransactionsWithError error: Error) {
-            updatePurchaserInfoError = error
         }
         
         var promoProduct: SKProduct?
         var shouldAddPromo = false
         var makeDeferredPurchase: RCDeferredPromotionalPurchaseBlock?
-        func purchases(_ purchases: RCPurchases, shouldPurchasePromoProduct product: SKProduct, defermentBlock makeDeferredPurchase: @escaping RCDeferredPromotionalPurchaseBlock) -> Bool {
+        func purchases(_ purchases: Purchases, shouldPurchasePromoProduct product: SKProduct, defermentBlock makeDeferredPurchase: @escaping RCDeferredPromotionalPurchaseBlock) -> Bool {
             promoProduct = product
             self.makeDeferredPurchase = makeDeferredPurchase
             return shouldAddPromo
@@ -273,14 +260,14 @@ class PurchasesTests: XCTestCase {
     let notificationCenter = MockNotificationCenter();
     let userDefaults = MockUserDefaults();
 
-    let purchasesDelegate = PurchasesDelegate()
+    let purchasesDelegate = Delegate()
     
     let appUserID = "app_user"
 
-    var purchases: RCPurchases?
+    var purchases: Purchases?
 
     func setupPurchases() {
-        purchases = RCPurchases(appUserID: appUserID,
+        purchases = Purchases(appUserID: appUserID,
                                 requestFetcher: requestFetcher,
                                 backend:backend,
                                 storeKitWrapper: storeKitWrapper,
@@ -291,7 +278,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func setupAnonPurchases() {
-        purchases = RCPurchases(appUserID: nil,
+        purchases = Purchases(appUserID: nil,
                                 requestFetcher: requestFetcher,
                                 backend:backend,
                                 storeKitWrapper: storeKitWrapper,
@@ -305,12 +292,142 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         expect(self.purchases).toNot(beNil())
     }
+    
+    func testFirstInitializationCallDelegate() {
+        setupPurchases()
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
+    }
+    
+    func testFirstInitializationCallDelegateForAnon() {
+        setupAnonPurchases()
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
+    }
+    
+    func testDelegateIsCalledForRandomPurchaseSuccess() {
+        setupPurchases()
+        
+        let purchaserInfo = PurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = purchaserInfo
+        
+        let product = MockProduct(mockProductIdentifier: "product")
+        let payment = SKPayment(product: product)
+        
+        let transaction = MockTransaction()
+        
+        transaction.mockPayment = payment
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
+    }
+    
+    func testDelegateIsOnlyCalledOnceIfPurchaserInfoTheSame() {
+        setupPurchases()
+        
+        let purchaserInfo1 = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0"
+            ]
+        ])
+        
+        let purchaserInfo2 = purchaserInfo1
+        
+        let product = MockProduct(mockProductIdentifier: "product")
+        let payment = SKPayment(product: product)
+        
+        let transaction = MockTransaction()
+        
+        transaction.mockPayment = payment
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        self.backend.postReceiptPurchaserInfo = purchaserInfo1
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        self.backend.postReceiptPurchaserInfo = purchaserInfo2
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
+    }
+    
+    func testDelegateIsCalledTwiceIfPurchaserInfoTheDifferent() {
+        setupPurchases()
+        
+        let purchaserInfo1 = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0"
+            ]
+            ])
+        
+        let purchaserInfo2 = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "2.0"
+            ]
+            ])
+        
+        let product = MockProduct(mockProductIdentifier: "product")
+        let payment = SKPayment(product: product)
+        
+        let transaction = MockTransaction()
+        
+        transaction.mockPayment = payment
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        self.backend.postReceiptPurchaserInfo = purchaserInfo1
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        self.backend.postReceiptPurchaserInfo = purchaserInfo2
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(3))
+    }
+    
+    func testDelegateIsNotCalledIfBlockPassed() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(self.backend.postReceiptDataCalled).to(equal(true))
+        expect(self.backend.postedIsRestore).to(equal(false))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
+    }
 
     func testIsAbleToFetchProducts() {
         setupPurchases()
         var products: [SKProduct]?
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
-        purchases!.products(withIdentifiers:productIdentifiers) { (newProducts) in
+        purchases!.products(productIdentifiers) { (newProducts) in
             products = newProducts
         }
 
@@ -326,7 +443,9 @@ class PurchasesTests: XCTestCase {
     func testAddsPaymentToWrapper() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         expect(self.storeKitWrapper.payment).toNot(beNil())
         expect(self.storeKitWrapper.payment?.productIdentifier).to(equal(product.productIdentifier))
@@ -335,7 +454,9 @@ class PurchasesTests: XCTestCase {
     func testTransitioningToPurchasing() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -349,7 +470,9 @@ class PurchasesTests: XCTestCase {
     func testTransitioningToPurchasedSendsToBackend() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -367,7 +490,9 @@ class PurchasesTests: XCTestCase {
     func testReceiptsSendsAsRestoreWhenAnon() {
         setupAnonPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -385,7 +510,9 @@ class PurchasesTests: XCTestCase {
     func testFinishesTransactionsIfSentToBackendCorrectly() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -393,7 +520,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -406,7 +533,9 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         self.purchases?.finishTransactions = false
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -414,7 +543,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -427,9 +556,11 @@ class PurchasesTests: XCTestCase {
     func testSendsProductInfoIfProductIsCached() {
         setupPurchases()
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
-        purchases!.products(withIdentifiers:productIdentifiers) { (newProducts) in
+        purchases!.products(productIdentifiers) { (newProducts) in
             let product = newProducts[0];
-            self.purchases?.makePurchase(product)
+            self.purchases?.makePurchase(product) { (tx, info, error) in
+                
+            }
             
             let transaction = MockTransaction()
             transaction.mockPayment = self.storeKitWrapper.payment!
@@ -437,7 +568,7 @@ class PurchasesTests: XCTestCase {
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
             
-            self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+            self.backend.postReceiptPurchaserInfo = PurchaserInfo()
             
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -456,33 +587,38 @@ class PurchasesTests: XCTestCase {
                 expect(self.backend.postedIntroPrice).to(beNil())
             }
             
+            if #available(iOS 12.0, *) {
+                expect(self.backend.postedSubscriptionGroup).to(equal(product.subscriptionGroupIdentifier))
+            }
+            
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
 
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }
     }
     
-    func testDoesntSendProductInfoIfProductIsntCached() {
+    func testFetchesProductInfoIfNotCached() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
         
         let transaction = MockTransaction()
+        storeKitWrapper.payment = SKPayment(product: product);
         transaction.mockPayment = self.storeKitWrapper.payment!
         
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
         
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
         
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
         
-
-        expect(self.backend.postedProductID).to(beNil())
-        expect(self.backend.postedPrice).to(beNil())
-        expect(self.backend.postedIntroPrice).to(beNil())
-        expect(self.backend.postedCurrencyCode).to(beNil())
+        expect(self.requestFetcher.requestedProducts).to(contain([product.productIdentifier]))
+        
+        expect(self.backend.postedProductID).toNot(beNil())
+        expect(self.backend.postedPrice).toNot(beNil())
+        expect(self.backend.postedIntroPrice).toNot(beNil())
+        expect(self.backend.postedCurrencyCode).toNot(beNil())
     }
     
     enum BackendError: Error {
@@ -492,7 +628,9 @@ class PurchasesTests: XCTestCase {
     func testAfterSendingDoesntFinishTransactionIfBackendError() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -509,7 +647,9 @@ class PurchasesTests: XCTestCase {
     func testAfterSendingFinishesFromBackendErrorIfAppropriate() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -526,7 +666,9 @@ class PurchasesTests: XCTestCase {
     func testNotifiesIfTransactionFailsFromBackend() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -538,15 +680,18 @@ class PurchasesTests: XCTestCase {
 
         expect(self.backend.postReceiptDataCalled).to(equal(true))
         expect(self.storeKitWrapper.finishCalled).to(beFalse())
-        expect(self.purchasesDelegate.failedTransaction).toEventually(be(transaction))
     }
 
     func testNotifiesIfTransactionFailsFromStoreKit() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        var receivedError: Error?
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            receivedError = error
+        }
 
         let transaction = MockTransaction()
+        transaction.mockError = NSError.init(domain: SKErrorDomain, code: 2, userInfo: nil)
         transaction.mockPayment = self.storeKitWrapper.payment!
 
         self.backend.postReceiptError = BackendError.unknown
@@ -556,24 +701,99 @@ class PurchasesTests: XCTestCase {
 
         expect(self.backend.postReceiptDataCalled).to(equal(false))
         expect(self.storeKitWrapper.finishCalled).to(beTrue())
-        expect(self.purchasesDelegate.failedTransaction).toEventually(be(transaction))
+        expect(receivedError).toEventuallyNot(beNil())
     }
 
     func testCallsDelegateAfterBackendResponse() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        
+        var purchaserInfo: PurchaserInfo?
+        var receivedError: Error?
+        
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            purchaserInfo = info
+            receivedError = error
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        expect(self.purchasesDelegate.completedTransaction).toEventually(be(transaction))
-        expect(self.purchasesDelegate.purchaserInfo).toEventually(be(self.backend.postReceiptPurchaserInfo))
+        expect(purchaserInfo).toEventually(be(self.backend.postReceiptPurchaserInfo))
+        expect(receivedError).toEventually(beNil())
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).to(equal(2))
+    }
+    
+    func testCompletionBlockOnlyCalledOnce() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        
+        var callCount = 0
+        
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            callCount += 1
+        }
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(callCount).toEventually(equal(1))
+    }
+    
+    func testCompletionBlockNotCalledForDifferentProducts() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let otherProduct = MockProduct(mockProductIdentifier: "com.product.id2")
+        
+        var callCount = 0
+        
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            callCount += 1
+        }
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = SKPayment.init(product: otherProduct)
+        
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(callCount).toEventually(equal(0))
+    }
+    
+    func testCallingPurchaseWhileSameProductPendingIssuesError() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        
+        // First one "works"
+        self.purchases?.makePurchase(product) { (tx, info, error) in }
+        
+        var receivedInfo: PurchaserInfo?
+        var receivedError: Error?
+        
+        // Second one issues an error
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            receivedInfo = info
+            receivedError = error
+        }
+        
+        expect(receivedInfo).toEventually(beNil())
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(self.storeKitWrapper.addPaymentCallCount).to(equal(1))
     }
 
     func testDoesntIgnorePurchasesThatDoNotHaveApplicationUserNames() {
@@ -581,6 +801,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
 
         let payment = SKMutablePayment()
+        payment.productIdentifier = "test"
 
         expect(payment.applicationUsername).to(equal(""))
 
@@ -592,11 +813,11 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(equal(true))
     }
 
-    func testDoesntSetWrapperDelegateUntilDelegateIsSet() {
+    func testDoesntSetWrapperDelegateToNilIfDelegateNil() {
         setupPurchases()
         purchases!.delegate = nil
 
-        expect(self.storeKitWrapper.delegate).to(beNil())
+        expect(self.storeKitWrapper.delegate).toNot(beNil())
 
         purchases!.delegate = purchasesDelegate
 
@@ -621,92 +842,77 @@ class PurchasesTests: XCTestCase {
     func testAutomaticallyFetchesPurchaserInfoOnDidBecomeActive() {
         setupPurchases()
         notificationCenter.fireNotifications();
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil());
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
     }
-
-    func testBackToBackTriggersReemitCachedPurchaserInfo() {
+    
+    func testAutomaticallyCallsDelegateOnDidBecomeActiveAndUpdate() {
         setupPurchases()
-
         notificationCenter.fireNotifications();
-        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2));
-        notificationCenter.fireNotifications();
-        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(3));
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
     }
 
-    func testRemovesObservationWhenDelegateNild() {
+    func testDoesntRemovesObservationWhenDelegateNild() {
         setupPurchases()
         purchases!.delegate = nil
 
-        expect(self.notificationCenter.observers.count).to(equal(0));
-    }
-
-    func testSettingDelegateUpdatesSubscriberInfo() {
-        let purchases = RCPurchases(appUserID: appUserID,
-                                    requestFetcher: requestFetcher,
-                                    backend: backend,
-                                    storeKitWrapper: storeKitWrapper,
-                                    notificationCenter: notificationCenter,
-                                    userDefaults: userDefaults)!
-        purchases.delegate = nil
-
-        purchasesDelegate.purchaserInfo = nil
-
-        purchases.delegate = purchasesDelegate
-
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
+        expect(self.notificationCenter.observers.count).to(equal(1));
     }
 
     func testRestoringPurchasesPostsTheReceipt() {
         setupPurchases()
-        purchases!.restoreTransactionsForAppStoreAccount()
+        purchases!.restoreTransactions()
         expect(self.backend.postReceiptDataCalled).to(equal(true))
     }
 
     func testRestoringPurchasesRefreshesAndPostsTheReceipt() {
         setupPurchases()
-        purchases!.restoreTransactionsForAppStoreAccount()
+        purchases!.restoreTransactions()
 
         expect(self.requestFetcher.refreshReceiptCalled).to(equal(true))
     }
 
     func testRestoringPurchasesSetsIsRestore() {
         setupPurchases()
-        purchases!.restoreTransactionsForAppStoreAccount()
+        purchases!.restoreTransactions(nil)
         expect(self.backend.postedIsRestore!).to(equal(true))
     }
 
     func testRestoringPurchasesSetsIsRestoreForAnon() {
         setupAnonPurchases()
-        purchases!.restoreTransactionsForAppStoreAccount()
+        purchases!.restoreTransactions(nil)
 
         expect(self.backend.postedIsRestore!).to(equal(true))
     }
 
     func testRestoringPurchasesCallsSuccessDelegateMethod() {
         setupPurchases()
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
 
-        let purchaserInfo = RCPurchaserInfo()
+        let purchaserInfo = PurchaserInfo()
         self.backend.postReceiptPurchaserInfo = purchaserInfo
+        
+        var receivedPurchaserInfo: PurchaserInfo?
 
-        purchases!.restoreTransactionsForAppStoreAccount()
+        purchases!.restoreTransactions { (info, error) in
+            receivedPurchaserInfo = info
+        }
 
-        expect(self.purchasesDelegate.purchaserInfo).toEventually(equal(purchaserInfo))
+        expect(receivedPurchaserInfo).toEventually(be(purchaserInfo))
     }
 
-    func testRestorePurchasesCallsFailureDelegateMethodOnFailure() {
+    func testRestorePurchasesPassesErrorOnFailure() {
         setupPurchases()
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
         
         let error = NSError(domain: "error_domain", code: RCFinishableError, userInfo: nil)
         self.backend.postReceiptError = error
         self.purchasesDelegate.purchaserInfo = nil
-
-        purchases!.restoreTransactionsForAppStoreAccount()
-
-
-        expect(self.purchasesDelegate.purchaserInfo).toEventually(beNil())
-        expect(self.purchasesDelegate.updatePurchaserInfoError).toEventuallyNot(beNil())
+        
+        var receivedError: Error?
+        
+        purchases!.restoreTransactions { (_, newError) in
+            receivedError = newError
+        }
+        
+        expect(receivedError).toEventuallyNot(beNil())
     }
     
     func testCallsShouldAddPromoPaymentDelegateMethod() {
@@ -801,32 +1007,24 @@ class PurchasesTests: XCTestCase {
         expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
     }
 
-    func testFetchVersionDoesntSendAReceiptIfLatestVersionHasVersion() {
-        backend.originalApplicationVersion = "1.0"
-        
-        setupPurchases()
-        
-        purchases!.updateOriginalApplicationVersion()
-
-        expect(self.purchasesDelegate.purchaserInfo?.originalApplicationVersion).toEventually(equal("1.0"))
-        expect(self.backend.userID).toEventuallyNot(beNil())
-        expect(self.backend.postReceiptDataCalled).toEventually(beFalse())
-    }
-
     func testFetchVersionSendsAReceiptIfNoVersion() {
         setupPurchases()
 
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo(data: [
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "1.0"
             ]
         ])
+        
+        var receivedPurchaserInfo: PurchaserInfo?
 
-        purchases!.updateOriginalApplicationVersion()
+        purchases?.restoreTransactions { (info, error) in
+            receivedPurchaserInfo = info
+        }
 
-        expect(self.purchasesDelegate.purchaserInfo?.originalApplicationVersion).toEventually(equal("1.0"))
+        expect(receivedPurchaserInfo?.originalApplicationVersion).toEventually(equal("1.0"))
         expect(self.backend.userID).toEventuallyNot(beNil())
         expect(self.backend.postReceiptDataCalled).toEventuallyNot(beFalse())
     }
@@ -834,12 +1032,11 @@ class PurchasesTests: XCTestCase {
     func testCachesPurchaserInfo() {
         setupPurchases()
 
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
-
-        expect(self.userDefaults.cachedUserInfo.count).to(equal(1))
-        let purchaserInfo = userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + self.purchases!.appUserID]
-        expect(purchaserInfo).toNot(beNil())
-
+        expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(1))
+        expect(self.userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + self.purchases!.appUserID]).toEventuallyNot(beNil())
+        
+        let purchaserInfo = self.userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + self.purchases!.appUserID]
+        
         do {
             if (purchaserInfo != nil) {
                 try JSONSerialization.jsonObject(with: purchaserInfo!, options: [])
@@ -852,18 +1049,18 @@ class PurchasesTests: XCTestCase {
     func testCachesPurchaserInfoOnPurchase() {
         setupPurchases()
 
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
+        expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(1))
 
-        expect(self.userDefaults.cachedUserInfo.count).to(equal(1))
-
-        self.backend.postReceiptPurchaserInfo = RCPurchaserInfo(data: [
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
 
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.makePurchase(product)
+        self.purchases?.makePurchase(product) { (tx, info, error) in
+            
+        }
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
@@ -879,8 +1076,8 @@ class PurchasesTests: XCTestCase {
         expect(self.userDefaults.cachedUserInfoCount).toEventually(equal(2))
     }
 
-    func testSendsCachesPurchaserInfoToDelegateIfExistsOnLaunch() {
-        let info = RCPurchaserInfo(data: [
+    func testSendsCachedPurchaserInfoToGetter() {
+        let info = PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:]
@@ -890,18 +1087,38 @@ class PurchasesTests: XCTestCase {
         self.backend.timeout = true
 
         setupPurchases()
-
-        expect(self.purchasesDelegate.purchaserInfo).toEventuallyNot(beNil())
+        
+        var receivedInfo: PurchaserInfo?
+        
+        purchases!.purchaserInfo { (info, error) in
+            receivedInfo = info
+        }
+        
+        expect(receivedInfo).toNot(beNil())
+    }
+    
+    func testDoesntSendCacheIfNoCacheAndCallsBackendAgain() {
+        self.backend.timeout = true
+        
+        setupPurchases()
+        
+        expect(self.backend.getSubscriberCallCount).to(equal(1))
+        
+        purchases!.purchaserInfo { (info, error) in
+        }
+        
+        expect(self.backend.getSubscriberCallCount).to(equal(2))
     }
 
     func testGetsProductInfoFromEntitlements() {
         setupPurchases()
         expect(self.backend.gotEntitlements).toEventually(equal(1))
 
-        var entitlements: [String : RCEntitlement]?
-        self.purchases?.entitlements({ (newEntitlements) in
+        var entitlements: [String : Entitlement]?
+        
+        self.purchases?.entitlements { (newEntitlements, _)  in
             entitlements = newEntitlements
-        })
+        }
 
         expect(entitlements).toEventuallyNot(beNil());
 
@@ -916,39 +1133,40 @@ class PurchasesTests: XCTestCase {
     func testProductInfoIsCachedForEntitlements() {
         setupPurchases()
         expect(self.backend.gotEntitlements).toEventually(equal(1))
-
-        self.purchases?.entitlements({ (newEntitlements) in
+        self.purchases?.entitlements { (newEntitlements, _) in
             let product = (newEntitlements?["pro"]?.offerings["monthly"]?.activeProduct)!;
-            self.purchases?.makePurchase(product)
-
+            self.purchases?.makePurchase(product) { (tx, info, error) in
+                
+            }
+            
             let transaction = MockTransaction()
             transaction.mockPayment = self.storeKitWrapper.payment!
-
+            
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-
-            self.backend.postReceiptPurchaserInfo = RCPurchaserInfo()
-
+            
+            self.backend.postReceiptPurchaserInfo = PurchaserInfo()
+            
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-
+            
             expect(self.backend.postReceiptDataCalled).to(equal(true))
             expect(self.backend.postReceiptData).toNot(beNil())
-
+            
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
             expect(self.backend.postedPrice).to(equal(product.price))
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
-
+            
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
-        })
+        }
     }
 
     func testFailBackendEntitlementsReturnsNil() {
         self.backend.failEntitlements = true
         setupPurchases()
 
-        var entitlements: [String : RCEntitlement]?
-        self.purchases?.entitlements({ (newEntitlements) in
+        var entitlements: [String : Entitlement]?
+        self.purchases?.entitlements({ (newEntitlements, _) in
             entitlements = newEntitlements
         })
 
@@ -960,8 +1178,8 @@ class PurchasesTests: XCTestCase {
         requestFetcher.failProducts = true
         setupPurchases()
 
-        var entitlements: [String : RCEntitlement]?
-        self.purchases?.entitlements({ (newEntitlements) in
+        var entitlements: [String : Entitlement]?
+        self.purchases?.entitlements({ (newEntitlements, _) in
             entitlements = newEntitlements
         })
 
@@ -989,18 +1207,18 @@ class PurchasesTests: XCTestCase {
     }
 
     func testSharedInstanceIsSetWhenConfiguring() {
-        let purchases = RCPurchases.configure(withAPIKey: "")
-        expect(RCPurchases.shared()).toEventually(equal(purchases))
+        let purchases = Purchases.configure(withAPIKey: "")
+        expect(Purchases.shared).toEventually(equal(purchases))
     }
     
     func testSharedInstanceIsSetWhenConfiguringWithAppUserID() {
-        let purchases = RCPurchases.configure(withAPIKey: "", appUserID:"")
-        expect(RCPurchases.shared()).toEventually(equal(purchases))
+        let purchases = Purchases.configure(withAPIKey: "", appUserID:"")
+        expect(Purchases.shared).toEventually(equal(purchases))
     }
     
     func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaults() {
-        let purchases = RCPurchases.configure(withAPIKey: "", appUserID: "", userDefaults: nil)
-        expect(RCPurchases.shared()).toEventually(equal(purchases))
+        let purchases = Purchases.configure(withAPIKey: "", appUserID: "", userDefaults: nil)
+        expect(Purchases.shared).toEventually(equal(purchases))
     }
     
     func testCreateAliasWithCompletionCallsBackend() {
@@ -1008,17 +1226,17 @@ class PurchasesTests: XCTestCase {
 
         var completionCalled = false
         self.backend.aliasError = nil
-        self.purchases?.createAlias("cesarpedro", completion: { (error) in
+        self.purchases?.createAlias("cesarpedro") { (info, error) in
             completionCalled = error == nil
-        })
-
+        }
+        
         expect(completionCalled).toEventually(beTrue())
         
         self.backend.aliasError = NSError(domain: "error_domain", code: RCFinishableError, userInfo: nil)
         
-        self.purchases?.createAlias("cesarpedro", completion: { (error) in
+        self.purchases?.createAlias("cesardro") { (info, error) in
             completionCalled = error == nil
-        })
+        }
         
         expect(completionCalled).toEventually(beFalse())
     }
@@ -1034,10 +1252,19 @@ class PurchasesTests: XCTestCase {
     func testIdentify() {
         setupPurchases()
         
+        self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "2"
+            ]])
+        
         let newAppUserID = "cesarPedro"
+        
         self.purchases?.identify(newAppUserID)
         identifiedSuccesfully(appUserID: newAppUserID)
-        expect(self.userDefaults.cachedUserInfo.count).to(equal(2))
+        expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
 
     func testCreateAliasIdentifies() {
@@ -1045,15 +1272,15 @@ class PurchasesTests: XCTestCase {
         self.backend.aliasError = nil
         
         let newAppUserID = "cesarPedro"
-        self.purchases?.createAlias(newAppUserID, completion: { (error) in
+        self.purchases?.createAlias(newAppUserID) { (info, error) in
             self.identifiedSuccesfully(appUserID: newAppUserID)
-        })
-        
+        }
     }
     
     func testInitCallsIdentifies() {
         setupPurchases()
         self.identifiedSuccesfully(appUserID: appUserID)
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
     }
     
     func testResetCreatesRandomIDAndCachesIt() {
@@ -1062,19 +1289,48 @@ class PurchasesTests: XCTestCase {
         expect(self.userDefaults.appUserID).toNot(beNil())
     }
     
+    func testResetGetsNewAppUserID() {
+        setupPurchases()
+        var info: PurchaserInfo?
+        
+        self.purchases?.reset() { (newInfo, error) in
+            info = newInfo
+        }
+        
+        expect(info).toEventuallyNot(beNil())
+    }
+    
     func testIdentifyForcesCache() {
         setupPurchases()
+        
+        self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "2"
+            ]])
+        
         self.purchases?.identify("new")
-        expect(self.userDefaults.cachedUserInfo.count).to(equal(2))
+        expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
         let purchaserInfo = userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo.new"]
         expect(purchaserInfo).toNot(beNil())
-
+        
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
     
     func testResetForcesCache() {
         setupPurchases()
+        
+        self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "2"
+            ]])
+        
         self.purchases?.reset()
-        expect(self.userDefaults.cachedUserInfo.count).to(equal(2))
+        expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
     
     func testCreateAliasChangesAppUserId() {
@@ -1082,9 +1338,16 @@ class PurchasesTests: XCTestCase {
         
         self.backend.aliasCalled = false
         self.backend.aliasError = nil
+        self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "2"
+            ]])
         self.purchases?.createAlias("cesarpedro")
         
         expect(self.backend.userID).to(be("cesarpedro"))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
     
     func testCreateAliasWithCompletionChangesAppUserId() {
@@ -1092,13 +1355,47 @@ class PurchasesTests: XCTestCase {
         
         self.backend.aliasCalled = false
         self.backend.aliasError = nil
-        self.purchases?.createAlias("cesarpedro", completion: { (error) in
-            
-        })
+        self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "2"
+            ]])
+        
+        self.purchases?.createAlias("cesarpedro")
         
         expect(self.backend.userID).to(be("cesarpedro"))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
-    
+
+    func testCreateAliasForTheSameUserID() {
+        setupPurchases()
+
+        self.backend.aliasCalled = false
+        self.backend.aliasError = nil
+
+        var completionCalled = false
+        self.purchases?.createAlias(appUserID) { (info, error) in
+            completionCalled = true
+        }
+
+        expect(self.backend.aliasCalled).to(be(false))
+        expect(self.backend.aliasError).to(beNil())
+        expect(completionCalled).toEventually(be(true))
+    }
+
+    func testIdentifyForTheSameUserID() {
+        setupPurchases()
+
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1));
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1));
+
+        self.purchases?.identify(appUserID)
+
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1));
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1));
+    }
+
     private func identifiedSuccesfully(appUserID: String) {
         expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
         expect(self.purchases?.appUserID).to(equal(appUserID))

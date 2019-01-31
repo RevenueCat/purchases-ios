@@ -3,10 +3,11 @@
 //  Purchases
 //
 //  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2018 RevenueCat, Inc. All rights reserved.
+//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
 #import "RCPurchaserInfo.h"
+#import "RCPurchaserInfo+Protected.h"
 
 @interface RCPurchaserInfo ()
 
@@ -16,8 +17,10 @@
 @property (nonatomic) NSDictionary<NSString *, NSObject *> *purchaseDateByEntitlement;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic) NSString *originalApplicationVersion;
+
 @property (nonatomic) NSDictionary *originalData;
 @property (nonatomic) NSDate * _Nullable requestDate;
+
 @end
 
 static NSDateFormatter *dateFormatter;
@@ -174,6 +177,43 @@ static dispatch_once_t onceToken;
 
 - (NSDictionary * _Nonnull)JSONObject {
     return self.originalData;
+}
+
+- (BOOL)isEqual:(RCPurchaserInfo *)other
+{
+    BOOL isEqual = ([self.expirationDatesByProduct isEqual:other.expirationDatesByProduct]
+                    && [self.purchaseDatesByProduct isEqual:other.purchaseDatesByProduct]
+                    && [self.expirationDateByEntitlement isEqual:other.expirationDateByEntitlement]
+                    && [self.purchaseDateByEntitlement isEqual:other.purchaseDateByEntitlement]
+                    && [self.nonConsumablePurchases isEqual:other.nonConsumablePurchases]);
+    
+    isEqual &= ([self.activeEntitlements isEqual:other.activeEntitlements]);
+    
+    
+    if (self.originalApplicationVersion != nil || other.originalApplicationVersion != nil) {
+        isEqual &= ([self.originalApplicationVersion isEqual:other.originalApplicationVersion]);
+    }
+    
+    return isEqual;
+}
+
+- (NSString *)description
+{
+    NSMutableDictionary *activeSubscriptions = [NSMutableDictionary dictionary];
+    for (NSString *active in self.activeSubscriptions) {
+        activeSubscriptions[active] = @{
+                                        @"expiresDate": [self expirationDateForProductIdentifier:active] ?: @"null"
+                                        };
+    }
+    
+    NSMutableDictionary *activeEntitlements = [NSMutableDictionary dictionary];
+    for (NSString *active in self.activeEntitlements) {
+        activeEntitlements[active] = @{
+                                        @"expiresDate": [self expirationDateForEntitlement:active] ?: @"null"
+                                        };
+    }
+    
+    return [NSString stringWithFormat:@"<PurchaserInfo\n originalApplicationVersion: %@,\n latestExpirationDate: %@\n activeEntitlements: %@,\n activeSubscriptions: %@,\n nonConsumablePurchases: %@,\n requestDate: %@\n>", self.originalApplicationVersion, self.latestExpirationDate, activeEntitlements, activeSubscriptions, self.nonConsumablePurchases, self.requestDate];
 }
 
 @end

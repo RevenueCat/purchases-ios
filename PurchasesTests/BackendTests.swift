@@ -3,7 +3,7 @@
 //  PurchasesTests
 //
 //  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2018 Purchases. All rights reserved.
+//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
 import Foundation
@@ -90,7 +90,7 @@ class BackendTests: XCTestCase {
 
         let isRestore = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, completion: { (purchaserInfo, error) in
             completionCalled = true
         })
 
@@ -123,11 +123,11 @@ class BackendTests: XCTestCase {
 
         let isRestore = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
@@ -143,11 +143,11 @@ class BackendTests: XCTestCase {
 
         let isRestore = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: !isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: !isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
@@ -163,11 +163,11 @@ class BackendTests: XCTestCase {
 
         let isRestore = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData2, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData2, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
@@ -183,16 +183,44 @@ class BackendTests: XCTestCase {
 
         let isRestore = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData2, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: "USD", completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData2, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: "USD", subscriptionGroup: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
         expect(self.httpClient.calls.count).to(equal(2))
         expect(completionCalled).toEventually(equal(2))
+    }
+    
+    func testCachesSubscriberGetsForSameSubscriber() {
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
+        
+        backend?.getSubscriberData(withAppUserID: userID, completion: { (newPurchaserInfo, newError) in
+        })
+        
+        backend?.getSubscriberData(withAppUserID: userID, completion: { (newPurchaserInfo, newError) in
+        })
+        
+        expect(self.httpClient.calls.count).to(equal(1))
+    }
+    
+    func testDoesntCacheSubscriberGetsForSameSubscriber() {
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        let userID2 = "user_id_2"
+        httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
+        httpClient.mock(requestPath: "/subscribers/" + userID2, response: response)
+        
+        backend?.getSubscriberData(withAppUserID: userID, completion: { (newPurchaserInfo, newError) in
+        })
+        
+        backend?.getSubscriberData(withAppUserID: userID2, completion: { (newPurchaserInfo, newError) in
+        })
+        
+        expect(self.httpClient.calls.count).to(equal(2))
     }
 
     func testPostsReceiptDataWithProductInfoCorrectly() {
@@ -201,6 +229,7 @@ class BackendTests: XCTestCase {
 
         let productIdentifier = "a_great_product"
         let price = 4.99 as NSDecimalNumber
+        let group = "sub_group"
 
         let currencyCode = "BFD"
 
@@ -214,6 +243,7 @@ class BackendTests: XCTestCase {
                                  price: price, paymentMode: paymentMode,
                                  introductoryPrice: nil,
                                  currencyCode: currencyCode,
+                                 subscriptionGroup: group,
                                  completion: { (purchaserInfo, error) in
             completionCalled = true
         })
@@ -224,7 +254,8 @@ class BackendTests: XCTestCase {
             "is_restore": false,
             "product_id": productIdentifier,
             "price": price,
-            "currency": currencyCode
+            "currency": currencyCode,
+            "subscription_group_id": group
         ]
 
         let expectedCall = HTTPRequest(HTTPMethod: "POST", path: "/receipts",
@@ -252,7 +283,7 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: "product_id", price: 9.99, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: "product_id", price: 9.99, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, completion: { (purchaserInfo, error) in
             completionCalled = true
         })
 
@@ -272,6 +303,7 @@ class BackendTests: XCTestCase {
                                  price: 2.99, paymentMode: paymentMode,
                                  introductoryPrice: 1.99,
                                  currencyCode: "USD",
+                                 subscriptionGroup: "group",
                                  completion: { (purchaserInfo, error) in
                                     completionCalled = true
         })
@@ -317,7 +349,7 @@ class BackendTests: XCTestCase {
         var error: Error?
 
         backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil,
-                                 price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil,
+                                 price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil,
                                  completion: { (purchaserInfo, newError) in
             error = newError
         })
@@ -334,7 +366,7 @@ class BackendTests: XCTestCase {
         var error: Error?
 
         backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil,
-                                 price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, completion: { (purchaserInfo, newError) in
+                                 price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, completion: { (purchaserInfo, newError) in
             error = newError
         })
 
@@ -347,10 +379,10 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
-        var purchaserInfo: RCPurchaserInfo?
+        var purchaserInfo: PurchaserInfo?
 
         backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil,
-                                 price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil,
+                                 price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil,
                                  completion: { (newPurchaserInfo, newError) in
             purchaserInfo = newPurchaserInfo
         })
@@ -386,7 +418,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
 
-        var subscriberInfo: RCPurchaserInfo?
+        var subscriberInfo: PurchaserInfo?
 
         backend?.getSubscriberData(withAppUserID: userID, completion: { (newSubscriberInfo, newError) in
             subscriberInfo = newSubscriberInfo
@@ -402,7 +434,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/subscribers/" + encodedUserID, response: response)
         httpClient.mock(requestPath: "/subscribers/" + encodeableUserID, response: HTTPResponse(statusCode: 404, response: nil, error: nil))
 
-        var subscriberInfo: RCPurchaserInfo?
+        var subscriberInfo: PurchaserInfo?
 
         backend?.getSubscriberData(withAppUserID: encodeableUserID, completion: { (newSubscriberInfo, newError) in
             subscriberInfo = newSubscriberInfo
@@ -524,15 +556,38 @@ class BackendTests: XCTestCase {
         let path = "/subscribers/" + userID + "/products"
         httpClient.mock(requestPath: path, response: response)
 
-        var entitlements: [String : RCEntitlement]?
+        var entitlements: [String : Entitlement]?
 
-        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements) in
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
             entitlements = newEntitlements
         })
 
         expect(self.httpClient.calls.count).toNot(equal(0))
         expect(entitlements).toEventuallyNot(beNil())
         expect(entitlements?.count).toEventually(equal(0))
+    }
+    
+    func testGetEntitlementsCachesForSameUserID() {
+        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
+        let path = "/subscribers/" + userID + "/products"
+        httpClient.mock(requestPath: path, response: response)
+        
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in })
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in })
+        
+        expect(self.httpClient.calls.count).to(equal(1))
+    }
+    
+    func testGetEntitlementsDoesntCacheForMultipleUserID() {
+        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
+        let userID2 = "user_id_2"
+        httpClient.mock(requestPath: "/subscribers/" + userID + "/products", response: response)
+        httpClient.mock(requestPath: "/subscribers/" + userID2 + "/products", response: response)
+        
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in })
+        backend?.getEntitlementsForAppUserID(userID2, completion: { (newEntitlements, error) in })
+        
+        expect(self.httpClient.calls.count).to(equal(2))
     }
 
     let oneEntitlementResponse = [
@@ -555,9 +610,9 @@ class BackendTests: XCTestCase {
         let path = "/subscribers/" + userID + "/products"
         httpClient.mock(requestPath: path, response: response)
 
-        var entitlements: [String : RCEntitlement]?
+        var entitlements: [String : Entitlement]?
 
-        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements) in
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
             entitlements = newEntitlements
         })
 
@@ -575,9 +630,9 @@ class BackendTests: XCTestCase {
         let path = "/subscribers/" + userID + "/products"
         httpClient.mock(requestPath: path, response: response)
 
-        var entitlements: [String : RCEntitlement]?
+        var entitlements: [String : Entitlement]?
 
-        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements) in
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
             entitlements = newEntitlements
         })
 

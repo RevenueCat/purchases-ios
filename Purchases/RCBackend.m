@@ -3,7 +3,7 @@
 //  Purchases
 //
 //  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2018 RevenueCat, Inc. All rights reserved.
+//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
 #import "RCBackend.h"
@@ -37,7 +37,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 @property (nonatomic) RCHTTPClient *httpClient;
 @property (nonatomic) NSString *APIKey;
 
-@property (nonatomic) NSMutableDictionary<NSString *, NSMutableArray *> *receiptCallbacksCache;
+@property (nonatomic) NSMutableDictionary<NSString *, NSMutableArray *> *callbacksCache;
 
 @end
 
@@ -57,7 +57,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
         self.httpClient = client;
         self.APIKey = APIKey;
 
-        self.receiptCallbacksCache = [NSMutableDictionary new];
+        self.callbacksCache = [NSMutableDictionary new];
     }
     return self;
 }
@@ -130,6 +130,34 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     return [appUserID stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]];
 }
 
+- (BOOL)addCallback:(id)completion forKey:(NSString *)key
+{
+    @synchronized(self) {
+        NSMutableArray *callbacks = [self.callbacksCache objectForKey:key];
+        BOOL cacheMiss = callbacks == nil;
+        
+        if (cacheMiss) {
+            callbacks = [NSMutableArray new];
+            self.callbacksCache[key] = callbacks;
+        }
+        
+        [callbacks addObject:[completion copy]];
+        
+        BOOL requestAlreadyInFlight = !cacheMiss;
+        return requestAlreadyInFlight;
+    }
+}
+
+- (NSMutableArray *)getCallbacksAndClearForKey:(NSString *)key {
+    @synchronized(self) {
+        NSMutableArray *callbacks = self.callbacksCache[key];
+        NSParameterAssert(callbacks);
+        
+        self.callbacksCache[key] = nil;
+        
+        return callbacks;
+    }
+}
 
 - (void)postReceiptData:(NSData *)data
               appUserID:(NSString *)appUserID
@@ -139,6 +167,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
             paymentMode:(RCPaymentMode)paymentMode
       introductoryPrice:(NSDecimalNumber *)introductoryPrice
            currencyCode:(NSString *)currencyCode
+      subscriptionGroup:(NSString *)subscriptionGroup
              completion:(RCBackendResponseHandler)completion
 {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
@@ -149,7 +178,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                    @"is_restore": @(isRestore)
                                    }];
 
-    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@",
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@",
                           appUserID,
                           @(isRestore),
                           fetchToken,
@@ -157,20 +186,11 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                           price,
                           currencyCode,
                           @((NSUInteger)paymentMode),
-                          introductoryPrice];
+                          introductoryPrice,
+                          subscriptionGroup];
     
-    @synchronized(self) {
-        NSMutableArray *callbacks = [self.receiptCallbacksCache objectForKey:cacheKey];
-        BOOL cacheMiss = callbacks == nil;
-
-        if (cacheMiss) {
-            callbacks = [NSMutableArray new];
-            self.receiptCallbacksCache[cacheKey] = callbacks;
-        }
-
-        [callbacks addObject:[completion copy]];
-
-        if (!cacheMiss) return;
+    if ([self addCallback:completion forKey:cacheKey]) {
+        return;
     }
 
     if (productIdentifier) {
@@ -192,21 +212,18 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     if (introductoryPrice) {
         body[@"introductory_price"] = introductoryPrice;
     }
+    
+    if (subscriptionGroup) {
+        body[@"subscription_group_id"] = subscriptionGroup;
+    }
 
     [self.httpClient performRequest:@"POST"
                                path:@"/receipts"
                                body:body
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      @synchronized(self) {
-                          NSMutableArray *callbacks = self.receiptCallbacksCache[cacheKey];
-                          NSParameterAssert(callbacks);
-
-                          for (RCBackendResponseHandler callback in callbacks) {
-                              [self handle:status withResponse:response error:error completion:callback];
-                          }
-
-                          self.receiptCallbacksCache[cacheKey] = nil;
+                      for (RCBackendResponseHandler callback in [self getCallbacksAndClearForKey:cacheKey]) {
+                          [self handle:status withResponse:response error:error completion:callback];
                       }
                   }];
 }
@@ -216,13 +233,19 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@", escapedAppUserID];
+    
+    if ([self addCallback:completion forKey:path]) {
+        return;
+    }
 
     [self.httpClient performRequest:@"GET"
                                path:path
                                body:nil
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      [self handle:status withResponse:response error:error completion:completion];
+                      for (RCBackendResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
+                          [self handle:status withResponse:response error:error completion:completion];
+                      }
                   }];
 }
 
@@ -271,7 +294,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     }];
 }
 
-- (NSDictionary<NSString *, RCEntitlement *> *)parseEntitlementResponse:(NSDictionary *)response
+- (RCEntitlements *)parseEntitlementResponse:(NSDictionary *)response
 {
     NSMutableDictionary *entitlements = [NSMutableDictionary new];
 
@@ -303,16 +326,25 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/products", escapedAppUserID];
+    
+    if ([self addCallback:completion forKey:path]) {
+        return;
+    }
+    
     [self.httpClient performRequest:@"GET"
                                path:path
                                body:nil
                             headers:self.headers
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
+                      NSDictionary *entitlements = nil;
                       if (statusCode < 300) {
-                          NSDictionary *entitlements = [self parseEntitlementResponse:response];
-                          completion(entitlements);
+                           entitlements = [self parseEntitlementResponse:response];
                       } else {
-                          completion(nil);
+                          error = [self unexpectedResponseError];
+                      }
+                      
+                      for (RCEntitlementResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
+                          completion(entitlements, error);
                       }
     }];
 }

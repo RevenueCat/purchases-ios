@@ -17,11 +17,11 @@
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.3.0-SNAPSHOT</string>
+	<string>2.0.0</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2018 Purchases. All rights reserved.</string>
+	<string>Copyright © 2019 RevenueCat, Inc. All rights reserved.</string>
 	<key>NSPrincipalClass</key>
 	<string></string>
 </dict>

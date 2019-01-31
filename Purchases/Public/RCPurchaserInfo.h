@@ -3,7 +3,7 @@
 //  Purchases
 //
 //  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2018 RevenueCat, Inc. All rights reserved.
+//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  A container for the most recent purchaser info returned from `RCPurchases`. These objects are non-mutable and do not update automatically.
  */
+NS_SWIFT_NAME(PurchaserInfo)
 @interface RCPurchaserInfo : NSObject
 
 /// All active *entitlements*.
@@ -35,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
  Returns the version number for the version of the application when the user bought the app.
  Use this for grandfathering users when migrating to subscriptions.
  
- @note This can be nil, see -[RCPurchases refreshOriginalApplicationVersion:]
+ @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
  */
 @property (readonly) NSString * _Nullable originalApplicationVersion;
 
