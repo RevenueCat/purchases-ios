@@ -62,7 +62,7 @@ static RCPurchases *_sharedPurchases = nil;
 }
 
 + (NSString *)frameworkVersion {
-    return @"2.0.0-rc1";
+    return @"2.0.0";
 }
 
 + (instancetype)sharedPurchases {
