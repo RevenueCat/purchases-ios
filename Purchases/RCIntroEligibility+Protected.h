@@ -10,7 +10,7 @@
 
 @interface RCIntroEligibility (Protected)
 
-- (instancetype)initWithEligibilityStatus:(RCIntroEligibityStatus)status;
+- (instancetype)initWithEligibilityStatus:(RCIntroEligibilityStatus)status;
 
 @end
 

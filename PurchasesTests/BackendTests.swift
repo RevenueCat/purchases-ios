@@ -488,8 +488,8 @@ class BackendTests: XCTestCase {
         var eligibility: [String: RCIntroEligibility]?
 
         let products = ["producta", "productb", "productc", "productd"]
-        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
-            eligibility = productEligbility
+        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligibility) in
+            eligibility = productEligibility
         })
 
         expect(self.httpClient.calls.count).to(equal(1))
@@ -508,10 +508,10 @@ class BackendTests: XCTestCase {
 
         expect(eligibility).toEventuallyNot(beNil())
         expect(eligibility?.keys).toEventually(contain(products))
-        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibityStatus.eligible))
-        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibityStatus.ineligible))
-        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
-        expect(eligibility!["productd"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibilityStatus.eligible))
+        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibilityStatus.ineligible))
+        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
+        expect(eligibility!["productd"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
     }
 
     func testEligbilityUnknownIfError() {
@@ -526,9 +526,9 @@ class BackendTests: XCTestCase {
             eligibility = productEligbility
         })
 
-        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
-        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
-        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
+        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
+        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
     }
 
     func testEligbilityUnknownIfUnknownError() {
@@ -544,9 +544,9 @@ class BackendTests: XCTestCase {
             eligibility = productEligbility
         })
 
-        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
-        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
-        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibityStatus.unknown))
+        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
+        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
+        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
     }
 
     let noEntitlementsResponse = Dictionary<String, String>()
