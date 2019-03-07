@@ -103,7 +103,7 @@ class BasicPurchaserInfoTests: XCTestCase {
         let nonConsumables = purchaserInfo!.nonConsumablePurchases
         expect(nonConsumables.count).to(equal(1))
 
-        expect(nonConsumables).to(contain(["onetime_purchase"]))
+        expect(nonConsumables as NSSet).to(contain(["onetime_purchase"]))
     }
 
     func testOriginalApplicationVersionNull() {
@@ -135,13 +135,13 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testActiveEntitlements() {
         let entitlements = purchaserInfo!.activeEntitlements
-        expect(entitlements).to(contain("pro"));
-        expect(entitlements).toNot(contain("old_pro"));
+        expect(entitlements as NSSet).to(contain("pro"));
+        expect(entitlements as NSSet).toNot(contain("old_pro"));
     }
 
     func testRandomEntitlement() {
         let entitlements = purchaserInfo!.activeEntitlements
-        expect(entitlements).toNot(contain("random"));
+        expect(entitlements as NSSet).toNot(contain("random"));
     }
 
     func testGetExpirationDates() {
@@ -151,7 +151,7 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testLifetimeSubscriptions() {
         let entitlements = purchaserInfo!.activeEntitlements
-        expect(entitlements).to(contain("forever_pro"));
+        expect(entitlements as NSSet).to(contain("forever_pro"));
     }
 
     func testExpirationLifetime() {
@@ -194,8 +194,8 @@ class BasicPurchaserInfoTests: XCTestCase {
         let purchaserInfoWithoutRequestData = PurchaserInfo(data: response)
 
         let entitlements = purchaserInfoWithoutRequestData!.activeEntitlements
-        expect(entitlements).to(contain("pro"));
-        expect(entitlements).toNot(contain("old_pro"));
+        expect(entitlements as NSSet).to(contain("pro"));
+        expect(entitlements as NSSet).toNot(contain("old_pro"));
     }
 
     func testPurchaseDate() {

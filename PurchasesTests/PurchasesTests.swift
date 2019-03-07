@@ -613,7 +613,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
         
-        expect(self.requestFetcher.requestedProducts).to(contain([product.productIdentifier]))
+        expect(self.requestFetcher.requestedProducts! as NSSet).to(contain([product.productIdentifier]))
         
         expect(self.backend.postedProductID).toNot(beNil())
         expect(self.backend.postedPrice).toNot(beNil())
