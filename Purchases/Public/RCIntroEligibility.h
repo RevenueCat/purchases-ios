@@ -9,25 +9,25 @@
 #import <Foundation/Foundation.h>
 
 /**
- @typedef RCIntroEligibityStatus
+ @typedef RCIntroEligibilityStatus
  @brief Enum of different possible states for intro price eligibility status.
- @constant RCIntroEligibityStatusUnknown RevenueCat doesn't have enough information to determine eligibility.
- @constant RCIntroEligibityStatusIneligible The user is not eligible for a free trial or intro pricing for this product.
- @constant RCIntroEligibityStatusEligible The user is eligible for a free trial or intro pricing for this product.
+ @constant RCIntroEligibilityStatusUnknown RevenueCat doesn't have enough information to determine eligibility.
+ @constant RCIntroEligibilityStatusIneligible The user is not eligible for a free trial or intro pricing for this product.
+ @constant RCIntroEligibilityStatusEligible The user is eligible for a free trial or intro pricing for this product.
  */
-typedef NS_ENUM(NSInteger, RCIntroEligibityStatus) {
+typedef NS_ENUM(NSInteger, RCIntroEligibilityStatus) {
     /**
      RevenueCat doesn't have enough information to determine eligibility.
      */
-    RCIntroEligibityStatusUnknown = 0,
+    RCIntroEligibilityStatusUnknown = 0,
     /**
      The user is not eligible for a free trial or intro pricing for this product.
      */
-    RCIntroEligibityStatusIneligible,
+    RCIntroEligibilityStatusIneligible,
     /**
      The user is eligible for a free trial or intro pricing for this product.
      */
-    RCIntroEligibityStatusEligible
+    RCIntroEligibilityStatusEligible
 };
 
 /**
@@ -38,6 +38,6 @@ typedef NS_ENUM(NSInteger, RCIntroEligibityStatus) {
 /**
  The introductory price eligibility status
  */
-@property (readonly) RCIntroEligibityStatus status;
+@property (readonly) RCIntroEligibilityStatus status;
 
 @end

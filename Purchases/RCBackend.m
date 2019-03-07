@@ -275,22 +275,22 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                           response = @{};
                       }
 
-                      NSMutableDictionary *eligibilties = [NSMutableDictionary new];
+                      NSMutableDictionary *eligibilities = [NSMutableDictionary new];
                       for (NSString *productID in productIdentifiers) {
                           NSNumber *e = response[productID];
-                          RCIntroEligibityStatus status;
+                          RCIntroEligibilityStatus status;
                           if (e == nil || [e isKindOfClass:[NSNull class]]) {
-                              status = RCIntroEligibityStatusUnknown;
+                              status = RCIntroEligibilityStatusUnknown;
                           } else if ([e boolValue]) {
-                              status = RCIntroEligibityStatusEligible;
+                              status = RCIntroEligibilityStatusEligible;
                           } else {
-                              status = RCIntroEligibityStatusIneligible;
+                              status = RCIntroEligibilityStatusIneligible;
                           }
 
-                          eligibilties[productID] = [[RCIntroEligibility alloc] initWithEligibilityStatus:status];
+                          eligibilities[productID] = [[RCIntroEligibility alloc] initWithEligibilityStatus:status];
                       }
 
-                      completion([NSDictionary dictionaryWithDictionary:eligibilties]);
+                      completion([NSDictionary dictionaryWithDictionary:eligibilities]);
     }];
 }
 

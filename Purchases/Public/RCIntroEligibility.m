@@ -10,13 +10,13 @@
 
 @interface RCIntroEligibility ()
 
-@property (nonatomic) RCIntroEligibityStatus status;
+@property (nonatomic) RCIntroEligibilityStatus status;
 
 @end
 
 @implementation RCIntroEligibility
 
-- (instancetype)initWithEligibilityStatus:(RCIntroEligibityStatus)status
+- (instancetype)initWithEligibilityStatus:(RCIntroEligibilityStatus)status
 {
     if (self = [super init]) {
         self.status = status;
@@ -27,11 +27,11 @@
 - (NSString *)description
 {
     switch (self.status) {
-        case RCIntroEligibityStatusEligible:
+        case RCIntroEligibilityStatusEligible:
             return @"Eligible for trial or introductory price.";
-        case RCIntroEligibityStatusIneligible:
+        case RCIntroEligibilityStatusIneligible:
             return @"Not eligible for trial or introductory price.";
-        case RCIntroEligibityStatusUnknown:
+        case RCIntroEligibilityStatusUnknown:
         default:
             return @"Status indeterminate. You may need to assign the subscription group in the RevenueCat web interface.";
     }

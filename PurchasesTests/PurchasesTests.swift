@@ -120,7 +120,7 @@ class PurchasesTests: XCTestCase {
 
             var eligibilities = [String: RCIntroEligibility]()
             for productID in productIdentifiers {
-                eligibilities[productID] = RCIntroEligibility(eligibilityStatus: RCIntroEligibityStatus.eligible)
+                eligibilities[productID] = RCIntroEligibility(eligibilityStatus: RCIntroEligibilityStatus.eligible)
             }
 
             completion(eligibilities)
