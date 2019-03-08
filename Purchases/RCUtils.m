@@ -43,3 +43,10 @@ void RCLog(NSString *format, ...)
     NSLogv(format, args);
     va_end(args);
 }
+
+BOOL RCIsSandbox()
+{
+    NSURL *url = [[NSBundle mainBundle] appStoreReceiptURL];
+    NSString *receiptURLString = [url path];
+    return ([receiptURLString rangeOfString:@"sandboxReceipt"].location != NSNotFound);
+}

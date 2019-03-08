@@ -38,25 +38,7 @@ typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *) NS_SWIFT_NAME(Pur
 /**
  Completion block for `makePurchase:withCompletionBlock:`
  */
-typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PurchaseCompletedBlock);
-
-/**
- NSErrorDomain for errors occuring within the scope of the Purchases SDK
- */
-FOUNDATION_EXPORT NSErrorDomain const RCPurchasesAPIErrorDomain;
-
-/**
- @typedef RCPurchasesAPIErrorDomain
- @brief Enum of SDK API errors
- @constant RCDuplicateMakePurchaseCallsError Error triggered when calling make purchase multiple times
- */
-typedef NS_ERROR_ENUM(RCPurchasesAPIErrorDomain, RCPurchasesAPIErrorEnum) {
-    /**
-    Error triggered when calling make purchase multiple times
-     */
-    RCDuplicateMakePurchaseCallsError = 0
-};
-
+typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable, BOOL userCancelled) NS_SWIFT_NAME(Purchases.PurchaseCompletedBlock);
 
 /**
  Deferred block for `shouldPurchasePromoProduct:defermentBlock`

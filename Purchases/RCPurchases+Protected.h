@@ -7,7 +7,7 @@
 //
 
 
-@class RCPurchases, RCStoreKitRequestFetcher, RCBackend, RCStoreKitWrapper;
+@class RCPurchases, RCStoreKitRequestFetcher, RCBackend, RCStoreKitWrapper, RCReceiptFetcher;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype _Nullable)initWithAppUserID:(NSString * _Nullable)appUserID
                              requestFetcher:(RCStoreKitRequestFetcher *)requestFetcher
+                             receiptFetcher:(RCReceiptFetcher *)receiptFetcher
                                     backend:(RCBackend *)backend
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                          notificationCenter:(NSNotificationCenter *)notificationCenter

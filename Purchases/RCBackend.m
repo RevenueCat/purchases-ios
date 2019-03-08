@@ -14,8 +14,9 @@
 #import "RCIntroEligibility+Protected.h"
 #import "RCEntitlement+Protected.h"
 #import "RCOffering+Protected.h"
-
-NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
+#import "RCPurchasesErrors.h"
+#import "RCPurchasesErrorUtils.h"
+#import "RCUtils.h"
 
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
@@ -65,34 +66,20 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 - (NSDictionary<NSString *, NSString *> *)headers
 {
     return @{
-             @"Authorization":
-                 [NSString stringWithFormat:@"Basic %@", self.APIKey]
-             };
-}
-
-- (NSError *)errorWithBackendMessage:(NSString *)message finishable:(BOOL)finishable
-{
-    return [NSError errorWithDomain:RCBackendErrorDomain
-                               code:(finishable ? RCFinishableError : RCUnfinishableError)
-                           userInfo:@{
-                                      NSLocalizedDescriptionKey: message
-                                      }];
-}
-
-- (NSError *)unexpectedResponseError
-{
-    return [NSError errorWithDomain:RCBackendErrorDomain
-                               code:RCUnexpectedBackendResponse
-                           userInfo:@{
-                                      NSLocalizedDescriptionKey: @"Received malformed response from the backend."
-                                      }];
+            @"Authorization":
+                [NSString stringWithFormat:@"Basic %@", self.APIKey]
+            };
 }
 
 - (void)handle:(NSInteger)statusCode
-  withResponse:(NSDictionary * _Nullable)response
-         error:(NSError * _Nullable)error
-    completion:(RCBackendResponseHandler)completion
+  withResponse:(NSDictionary *_Nullable)response
+         error:(NSError *_Nullable)error
+    completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
+    if (error != nil) {
+        completion(nil, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
+        return;
+    }
 
     RCPurchaserInfo *info = nil;
     NSError *responseError = nil;
@@ -100,12 +87,14 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     if (statusCode < 300) {
         info = [[RCPurchaserInfo alloc] initWithData:response];
         if (info == nil) {
-            responseError = [self unexpectedResponseError];
+            responseError = [RCPurchasesErrorUtils unexpectedBackendResponseError];
         }
     } else {
         BOOL finishable = (statusCode < 500);
-        NSString *message = response[@"message"] ?: @"Unknown backend error.";
-        responseError = [self errorWithBackendMessage:message finishable:finishable];
+        responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
+                                                            backendMessage:response[@"message"]
+                                                                finishable:finishable
+                                                             ];
     }
 
     completion(info, responseError);
@@ -113,16 +102,24 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
 - (void)handle:(NSInteger)statusCode
   withResponse:(NSDictionary * _Nullable)response
-    completion:(void (^)(NSError * _Nullable error))completion
+         error:(NSError * _Nullable)error
+  errorHandler:(void (^)(NSError * _Nullable error))errorHandler
 {
-    NSError *responseError = nil;
-    
-    if (statusCode > 300) {
-        responseError = [self unexpectedResponseError];
+
+    if (error != nil) {
+        errorHandler([RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
+        return;
     }
-    
-    if (completion != nil) {
-        completion(responseError);
+
+    NSError *responseError = nil;
+
+    if (statusCode > 300) {
+        responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
+                                                            backendMessage:response[@"message"]];
+    }
+
+    if (errorHandler != nil) {
+        errorHandler(responseError);
     }
 }
 
@@ -133,7 +130,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 - (BOOL)addCallback:(id)completion forKey:(NSString *)key
 {
     @synchronized(self) {
-        NSMutableArray *callbacks = [self.callbacksCache objectForKey:key];
+        NSMutableArray *callbacks = self.callbacksCache[key];
         BOOL cacheMiss = callbacks == nil;
         
         if (cacheMiss) {
@@ -168,7 +165,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
       introductoryPrice:(NSDecimalNumber *)introductoryPrice
            currencyCode:(NSString *)currencyCode
       subscriptionGroup:(NSString *)subscriptionGroup
-             completion:(RCBackendResponseHandler)completion
+             completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
     NSMutableDictionary *body = [NSMutableDictionary dictionaryWithDictionary:
@@ -222,14 +219,14 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                body:body
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      for (RCBackendResponseHandler callback in [self getCallbacksAndClearForKey:cacheKey]) {
+                      for (RCBackendPurchaserInfoResponseHandler callback in [self getCallbacksAndClearForKey:cacheKey]) {
                           [self handle:status withResponse:response error:error completion:callback];
                       }
                   }];
 }
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
-                            completion:(RCBackendResponseHandler)completion
+                            completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@", escapedAppUserID];
@@ -243,7 +240,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                body:nil
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      for (RCBackendResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
+                      for (RCBackendPurchaserInfoResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
                           [self handle:status withResponse:response error:error completion:completion];
                       }
                   }];
@@ -256,6 +253,17 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 {
     if (productIdentifiers.count == 0) {
         completion(@{});
+        return;
+    }
+    if (receiptData.length == 0) {
+        if (RCIsSandbox()) {
+            RCLog(@"App running on sandbox without a receipt file. Unable to determine into eligibility unless you've purchased before and there is a receipt available.");
+        }
+        NSMutableDictionary *eligibilities = [NSMutableDictionary new];
+        for (NSString *productID in productIdentifiers) {
+            eligibilities[productID] = [[RCIntroEligibility alloc] initWithEligibilityStatus:RCIntroEligibilityStatusUnknown];
+        }
+        completion([NSDictionary dictionaryWithDictionary:eligibilities]);
         return;
     }
 
@@ -271,7 +279,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                       }
                             headers:self.headers
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
-                      if (statusCode >= 300) {
+                      if (statusCode >= 300 || error != nil) {
                           response = @{};
                       }
 
@@ -336,13 +344,20 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                body:nil
                             headers:self.headers
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
+                      if (error != nil) {
+                          for (RCEntitlementResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
+                              completion(nil, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
+                          }
+                          return;
+                      }
                       NSDictionary *entitlements = nil;
                       if (statusCode < 300) {
                            entitlements = [self parseEntitlementResponse:response];
                       } else {
-                          error = [self unexpectedResponseError];
+                          error = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
+                                                                      backendMessage:response[@"message"]];
                       }
-                      
+
                       for (RCEntitlementResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
                           completion(entitlements, error);
                       }
@@ -379,7 +394,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                }
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      [self handle:status withResponse:response completion:completion];
+                      [self handle:status withResponse:response error:error errorHandler:completion];
                   }];
 }
 

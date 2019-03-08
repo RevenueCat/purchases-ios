@@ -15,21 +15,21 @@
 #import "RCPurchaserInfo+Protected.h"
 #import "RCUtils.h"
 #import "NSLocale+RCExtensions.h"
-#import "RCPurchaserInfo.h"
 #import "RCCrossPlatformSupport.h"
-#import "RCEntitlement+Protected.h"
 #import "RCOffering+Protected.h"
+#import "RCPurchasesErrors.h"
+#import "RCPurchasesErrorUtils.h"
+#import "RCReceiptFetcher.h"
 
 #define CALL_AND_DISPATCH_IF_SET(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET(completion, ...) if (completion) completion(__VA_ARGS__);
-
-NSErrorDomain const RCPurchasesAPIErrorDomain = @"RCPurchasesAPIErrorDomain";
 
 @interface RCPurchases () <RCStoreKitWrapperDelegate>
 
 @property (nonatomic) NSString *appUserID;
 
 @property (nonatomic) RCStoreKitRequestFetcher *requestFetcher;
+@property (nonatomic) RCReceiptFetcher *receiptFetcher;
 @property (nonatomic) RCBackend *backend;
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
@@ -119,6 +119,7 @@ static RCPurchases *_sharedPurchases = nil;
                   userDefaults:(NSUserDefaults * _Nullable)userDefaults
 {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
+    RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
 
@@ -128,6 +129,7 @@ static RCPurchases *_sharedPurchases = nil;
 
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
+                    receiptFetcher:receiptFetcher
                            backend:backend
                    storeKitWrapper:storeKitWrapper
                 notificationCenter:[NSNotificationCenter defaultCenter]
@@ -136,6 +138,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (instancetype)initWithAppUserID:(NSString *)appUserID
                    requestFetcher:(RCStoreKitRequestFetcher *)requestFetcher
+                   receiptFetcher:(RCReceiptFetcher *)receiptFetcher
                           backend:(RCBackend *)backend
                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                notificationCenter:(NSNotificationCenter *)notificationCenter
@@ -147,6 +150,7 @@ static RCPurchases *_sharedPurchases = nil;
         RCDebugLog(@"Initial App User ID - %@", appUserID);
         
         self.requestFetcher = requestFetcher;
+        self.receiptFetcher = receiptFetcher;
         self.backend = backend;
         self.storeKitWrapper = storeKitWrapper;
 
@@ -329,11 +333,11 @@ static RCPurchases *_sharedPurchases = nil;
     
     @synchronized (self) {
         if (self.purchaseCompleteCallbacks[product.productIdentifier]) {
-            completion(nil, nil, [NSError errorWithDomain:RCPurchasesAPIErrorDomain
-                                                     code:RCDuplicateMakePurchaseCallsError
+            completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
+                                                     code:RCOperationAlreadyInProgressError
                                                  userInfo:@{
                                                             NSLocalizedDescriptionKey: @"Purchase already in progress for this product."
-                                                            }]);
+                                                            }], false);
             return;
         }
         self.purchaseCompleteCallbacks[product.productIdentifier] = [completion copy];
@@ -347,6 +351,13 @@ static RCPurchases *_sharedPurchases = nil;
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
     [self receiptData:^(NSData * _Nonnull data) {
+        if (data.length == 0) {
+            if (RCIsSandbox()) {
+                RCLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless you've purchased before and there is a receipt available.");
+            }
+            CALL_AND_DISPATCH_IF_SET(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
+            return;
+        }
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
                             isRestore:YES
@@ -539,13 +550,11 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)receiptData:(void (^ _Nonnull)(NSData * _Nonnull data))completion
 {
-    NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
-    NSData *receiptData = [NSData dataWithContentsOfURL:receiptURL];
-    RCDebugLog(@"Loaded receipt from %@", receiptURL);
+    NSData *receiptData = [self.receiptFetcher receiptData];
     if (receiptData == nil) {
         RCDebugLog(@"Receipt empty, fetching");
         [self.requestFetcher fetchReceiptData:^{
-            NSData *newReceiptData = [NSData dataWithContentsOfURL:receiptURL];
+            NSData *newReceiptData = [self.receiptFetcher receiptData];
             if (newReceiptData == nil) {
                 RCLog(@"Unable to load receipt, ensure you are logged in to a Sandbox account");
             }
@@ -571,21 +580,21 @@ static RCPurchases *_sharedPurchases = nil;
             
             [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
             
-            CALL_IF_SET(completion, transaction, info, nil);
+            CALL_IF_SET(completion, transaction, info, nil, false);
             
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
-        } else if (error.code == RCFinishableError) {
-            CALL_IF_SET(completion, transaction, nil, error);
+        } else if ([error.userInfo[RCFinishableKey] boolValue]) {
+            CALL_IF_SET(completion, transaction, nil, error, false);
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
-        } else if (error.code == RCUnfinishableError) {
-            CALL_IF_SET(completion, transaction, nil, error);
+        } else if (![error.userInfo[RCFinishableKey] boolValue]) {
+            CALL_IF_SET(completion, transaction, nil, error, false);
         } else {
             RCLog(@"Unexpected error from backend");
-            CALL_IF_SET(completion, transaction, nil, error);
+            CALL_IF_SET(completion, transaction, nil, error, false);
         }
         
         @synchronized (self) {
@@ -630,8 +639,13 @@ static RCPurchases *_sharedPurchases = nil;
             @synchronized (self) {
                 completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
             }
-            
-            CALL_AND_DISPATCH_IF_SET(completion, transaction, nil, transaction.error);
+
+            CALL_AND_DISPATCH_IF_SET(
+                    completion,
+                    transaction,
+                    nil,
+                    [RCPurchasesErrorUtils purchasesErrorWithSKError:transaction.error],
+                    transaction.error.code == SKErrorPaymentCancelled);
             
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
@@ -683,47 +697,53 @@ static RCPurchases *_sharedPurchases = nil;
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction
 {
     [self receiptData:^(NSData * _Nonnull data) {
-        [self productsWithIdentifiers:@[transaction.payment.productIdentifier]
-                      completionBlock:^(NSArray<SKProduct *> *products) {
-                             SKProduct *product = products.lastObject;
-                             
-                             NSString *productIdentifier = product.productIdentifier;
-                             NSDecimalNumber *price = product.price;
-                             
-                             RCPaymentMode paymentMode = RCPaymentModeNone;
-                             NSDecimalNumber *introPrice = nil;
-                             
-                             if (@available(iOS 11.2, macOS 10.13.2, *)) {
-                                 if (product.introductoryPrice) {
-                                     paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
-                                     introPrice = product.introductoryPrice.price;
-                                 }
-                             }
-                             
-                             NSString *subscriptionGroup = nil;
-                             if (@available(iOS 12.0, macOS 10.14.0, *)) {
-                                 subscriptionGroup = product.subscriptionGroupIdentifier;
-                             }
-                             
-                             NSString *currencyCode = product.priceLocale.rc_currencyCode;
-                             
-                             [self.backend postReceiptData:data
-                                                 appUserID:self.appUserID
-                                                 isRestore:self.allowSharingAppStoreAccount
-                                         productIdentifier:productIdentifier
-                                                     price:price
-                                               paymentMode:paymentMode
-                                         introductoryPrice:introPrice
-                                              currencyCode:currencyCode
-                                         subscriptionGroup:subscriptionGroup
-                                                completion:^(RCPurchaserInfo * _Nullable info,
+        if (data.length == 0) {
+            [self handleReceiptPostWithTransaction:transaction
+                                     purchaserInfo:nil
+                                             error:[RCPurchasesErrorUtils missingReceiptFileError]];
+        } else {
+            [self productsWithIdentifiers:@[transaction.payment.productIdentifier]
+                          completionBlock:^(NSArray<SKProduct *> *products) {
+                              SKProduct *product = products.lastObject;
+
+                              NSString *productIdentifier = product.productIdentifier;
+                              NSDecimalNumber *price = product.price;
+
+                              RCPaymentMode paymentMode = RCPaymentModeNone;
+                              NSDecimalNumber *introPrice = nil;
+
+                              if (@available(iOS 11.2, macOS 10.13.2, *)) {
+                                  if (product.introductoryPrice) {
+                                      paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
+                                      introPrice = product.introductoryPrice.price;
+                                  }
+                              }
+
+                              NSString *subscriptionGroup = nil;
+                              if (@available(iOS 12.0, macOS 10.14.0, *)) {
+                                  subscriptionGroup = product.subscriptionGroupIdentifier;
+                              }
+
+                              NSString *currencyCode = product.priceLocale.rc_currencyCode;
+
+                              [self.backend postReceiptData:data
+                                                  appUserID:self.appUserID
+                                                  isRestore:self.allowSharingAppStoreAccount
+                                          productIdentifier:productIdentifier
+                                                      price:price
+                                                paymentMode:paymentMode
+                                          introductoryPrice:introPrice
+                                               currencyCode:currencyCode
+                                          subscriptionGroup:subscriptionGroup
+                                                 completion:^(RCPurchaserInfo *_Nullable info,
                                                              NSError * _Nullable error) {
-                                                    [self handleReceiptPostWithTransaction:transaction
-                                                                             purchaserInfo:info
-                                                                                     error:error];
-                                                }];
-                         }];
-        }];
+                                                     [self handleReceiptPostWithTransaction:transaction
+                                                                              purchaserInfo:info
+                                                                                      error:error];
+                                                 }];
+                          }];
+        }
+    }];
 }
 
 - (void)clearCaches {

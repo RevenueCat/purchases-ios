@@ -80,7 +80,7 @@ class UpsellViewController: UIViewController {
     func makePurchase(catProduct: SKProduct) {
         
         setState(loading: true)
-        Purchases.shared.makePurchase(catProduct) { (transaction, purchaserInfo, error) in
+        Purchases.shared.makePurchase(catProduct) { (transaction, purchaserInfo, error, userCancelled) in
             if let e = error {
                 print("PURCHASE ERROR: - \(e.localizedDescription)")
                 
