@@ -154,6 +154,7 @@ NS_SWIFT_NAME(Purchases)
  */
 @property (class, nonatomic, readonly) RCPurchases *sharedPurchases;
 
++ (BOOL)canMakePayments;
 
 #pragma mark Configuration
 
