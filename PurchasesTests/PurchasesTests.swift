@@ -40,9 +40,11 @@ class PurchasesTests: XCTestCase {
     class MockReceiptFetcher: RCReceiptFetcher {
         var receiptDataCalled = false
         var shouldReturnReceipt = true
+        var receiptDataTimesCalled = 0
 
         override func receiptData() -> Data? {
             receiptDataCalled = true
+            receiptDataTimesCalled++
             if (shouldReturnReceipt) {
                 return Data(1...3)
             } else {
@@ -891,9 +893,9 @@ class PurchasesTests: XCTestCase {
 
     func testRestoringPurchasesRefreshesAndPostsTheReceipt() {
         setupPurchases()
-        self.receiptFetcher.shouldReturnReceipt = false
         purchases!.restoreTransactions()
 
+        expect(self.receiptFetcher.receiptDataTimesCalled).to(be(2))
         expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
     }
 

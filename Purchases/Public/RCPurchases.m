@@ -553,16 +553,21 @@ static RCPurchases *_sharedPurchases = nil;
     NSData *receiptData = [self.receiptFetcher receiptData];
     if (receiptData == nil) {
         RCDebugLog(@"Receipt empty, fetching");
-        [self.requestFetcher fetchReceiptData:^{
-            NSData *newReceiptData = [self.receiptFetcher receiptData];
-            if (newReceiptData == nil) {
-                RCLog(@"Unable to load receipt, ensure you are logged in to a Sandbox account");
-            }
-            completion(newReceiptData ?: [NSData data]);
-        }];
+        [self refreshReceipt:completion];
     } else {
         completion(receiptData);
     }
+}
+
+- (void)refreshReceipt:(void (^ _Nonnull)(NSData * _Nonnull data))completion
+{
+    [self.requestFetcher fetchReceiptData:^{
+        NSData *newReceiptData = [self.receiptFetcher receiptData];
+        if (newReceiptData == nil) {
+            RCLog(@"Unable to load receipt, ensure you are logged in to a Sandbox account");
+        }
+        completion(newReceiptData ?: [NSData data]);
+    }];
 }
 
 - (void)handleReceiptPostWithTransaction:(SKPaymentTransaction *)transaction
