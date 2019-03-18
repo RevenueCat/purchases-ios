@@ -81,6 +81,11 @@ static RCPurchases *_sharedPurchases = nil;
     }
 }
 
++ (BOOL)canMakePayments
+{
+    return [SKPaymentQueue canMakePayments];
+}
+
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
 {
     RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:APIKey];
