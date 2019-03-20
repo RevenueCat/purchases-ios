@@ -891,11 +891,12 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
 
-    func testRestoringPurchasesRefreshesAndPostsTheReceipt() {
+    func testRestoringPurchasesAlwaysRefreshesAndPostsTheReceipt() {
         setupPurchases()
+        self.receiptFetcher.shouldReturnReceipt = true
         purchases!.restoreTransactions()
 
-        expect(self.receiptFetcher.receiptDataTimesCalled).to(be(2))
+        expect(self.receiptFetcher.receiptDataTimesCalled).to(equal(1))
         expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
     }
 

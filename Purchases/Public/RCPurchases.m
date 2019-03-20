@@ -350,7 +350,7 @@ static RCPurchases *_sharedPurchases = nil;
 {
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
-    [self receiptData:^(NSData * _Nonnull data) {
+    [self refreshReceipt:^(NSData *_Nonnull data) {
         if (data.length == 0) {
             if (RCIsSandbox()) {
                 RCLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless you've purchased before and there is a receipt available.");
@@ -367,8 +367,8 @@ static RCPurchases *_sharedPurchases = nil;
                     introductoryPrice:nil
                          currencyCode:nil
                     subscriptionGroup:nil
-                           completion:^(RCPurchaserInfo * _Nullable info,
-                                        NSError * _Nullable error) {
+                           completion:^(RCPurchaserInfo *_Nullable info,
+                                   NSError *_Nullable error) {
                                [self dispatch:^{
                                    if (error) {
                                        CALL_AND_DISPATCH_IF_SET(completion, nil, error);
