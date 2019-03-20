@@ -53,8 +53,6 @@ static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
             return @"Received malformed response from the backend.";
         case RCInvalidReceiptError:
             return @"The receipt is not valid.";
-        case RCReceiptInUseByOtherSubscriberError:
-            return @"The receipt is in use by other subscriber.";
         case RCInvalidAppUserIdError:
             return @"The app user id is not valid.";
         case RCOperationAlreadyInProgressError:
@@ -98,8 +96,6 @@ static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
             return @"UNEXPECTED_BACKEND_RESPONSE_ERROR";
         case RCInvalidReceiptError:
             return @"INVALID_RECEIPT";
-        case RCReceiptInUseByOtherSubscriberError:
-            return @"RECEIPT_IN_USE_BY_OTHER_SUBSCRIBER_ERROR";
         case RCInvalidAppUserIdError:
             return @"INVALID_APP_USER_ID";
         case RCOperationAlreadyInProgressError:
@@ -117,7 +113,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(NSInteger
         case RCBackendStoreProblem:
             return RCStoreProblemError;
         case RCBackendCannotTransferPurchase:
-            return RCReceiptInUseByOtherSubscriberError;
+            return RCReceiptAlreadyInUseError;
         case RCBackendInvalidReceiptToken:
             return RCInvalidReceiptError;
         case RCBackendInvalidAppStoreSharedSecret:
@@ -148,6 +144,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
                 return RCPurchaseInvalidError;
             case SKErrorPaymentNotAllowed:
                 return RCPurchaseNotAllowedError;
+            #if !TARGET_OS_MAC
             case SKErrorStoreProductNotAvailable:
                 return RCProductNotAvailableForPurchaseError;
             case SKErrorCloudServicePermissionDenied: // Available on iOS 9.3
@@ -156,6 +153,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
                 return RCStoreProblemError;
             case SKErrorCloudServiceRevoked: // Available on iOS 10.3
                 return RCStoreProblemError;
+            #endif
         }
     }
     return RCUnknownError;

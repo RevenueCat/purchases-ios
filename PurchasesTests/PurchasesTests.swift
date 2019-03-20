@@ -44,7 +44,7 @@ class PurchasesTests: XCTestCase {
 
         override func receiptData() -> Data? {
             receiptDataCalled = true
-            receiptDataTimesCalled++
+            receiptDataTimesCalled += 1
             if (shouldReturnReceipt) {
                 return Data(1...3)
             } else {
