@@ -262,12 +262,10 @@ class PurchasesTests: XCTestCase {
         }
         
         var promoProduct: SKProduct?
-        var shouldAddPromo = false
         var makeDeferredPurchase: RCDeferredPromotionalPurchaseBlock?
-        func purchases(_ purchases: Purchases, shouldPurchasePromoProduct product: SKProduct, defermentBlock makeDeferredPurchase: @escaping RCDeferredPromotionalPurchaseBlock) -> Bool {
+        func purchases(_ purchases: Purchases, shouldPurchasePromoProduct product: SKProduct, defermentBlock makeDeferredPurchase: @escaping RCDeferredPromotionalPurchaseBlock) {
             promoProduct = product
             self.makeDeferredPurchase = makeDeferredPurchase
-            return shouldAddPromo
         }
     }
 
@@ -955,17 +953,14 @@ class PurchasesTests: XCTestCase {
         expect(self.purchasesDelegate.promoProduct).to(be(product))
     }
     
-    func testShouldAddPromoPaymentDelegateMethodPassesUpResult() {
+    func testShouldAddPromoPaymentDelegateMethodReturnsFalse() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init()
         
-        let randomBool = (arc4random() % 2 == 0) as Bool
-        purchasesDelegate.shouldAddPromo = randomBool
-        
         let result = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
         
-        expect(randomBool).to(equal(result))
+        expect(result).to(beFalse())
     }
     
     func testShouldCacheProductsFromPromoPaymentDelegateMethod() {
@@ -994,14 +989,15 @@ class PurchasesTests: XCTestCase {
         let product = MockProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init(product: product)
         
-        purchasesDelegate.shouldAddPromo = false
         storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
         
         expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
         
         expect(self.storeKitWrapper.payment).to(beNil())
         
-        self.purchasesDelegate.makeDeferredPurchase!()
+        self.purchasesDelegate.makeDeferredPurchase! { (_, _, _, _) in
+            
+        }
         
         expect(self.storeKitWrapper.payment).to(be(payment))
     }
@@ -1512,6 +1508,31 @@ class PurchasesTests: XCTestCase {
         expect(receivedUserCancelled).toEventually(beFalse())
         expect(receivedError?.code).toEventually(be(PurchasesErrorCode.missingReceiptFileError.rawValue))
         expect(self.backend.postReceiptDataCalled).toEventually(beFalse())
+    }
+    
+    func testDeferBlockCallsCompletionBlockAfterPurchaseCompletes() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "mock_product")
+        let payment = SKPayment.init(product: product)
+        
+        storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
+        
+        expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
+        
+        expect(self.storeKitWrapper.payment).to(beNil())
+
+        var completionCalled = false
+        self.purchasesDelegate.makeDeferredPurchase! { (tx, info, error, userCancelled) in
+            completionCalled = true
+        }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.storeKitWrapper.payment).to(be(payment))
+        expect(completionCalled).toEventually(beTrue())
     }
 
     private func identifiedSuccessfully(appUserID: String) {
