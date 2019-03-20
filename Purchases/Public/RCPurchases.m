@@ -678,12 +678,15 @@ static RCPurchases *_sharedPurchases = nil;
     }
 
     if ([self.delegate respondsToSelector:@selector(purchases:shouldPurchasePromoProduct:defermentBlock:)]) {
-        return [self.delegate purchases:self shouldPurchasePromoProduct:product defermentBlock:^{
-            [self.storeKitWrapper addPayment:payment];
-        }];
-    } else {
-        return NO;
+        [self.delegate purchases:self
+      shouldPurchasePromoProduct:product
+                  defermentBlock:^(RCPurchaseCompletedBlock completion) {
+                      self.purchaseCompleteCallbacks[product.productIdentifier] = [completion copy];
+                      [self.storeKitWrapper addPayment:payment];
+                  }];
     }
+
+    return NO;
 }
 
 - (NSString *)purchaserInfoUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {
