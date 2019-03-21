@@ -34,6 +34,20 @@ void RCDebugLog(NSString *format, ...)
     va_end(args);
 }
 
+void RCErrorLog(NSString *format, ...)
+{
+    if (!RCShouldShowLogs)
+        return;
+
+    va_list args;
+    va_start(args, format);
+
+    format = [NSString stringWithFormat:@"[Purchases] - ERROR: %@", format];
+
+    NSLogv(format, args);
+    va_end(args);
+}
+
 void RCLog(NSString *format, ...)
 {
     va_list args;

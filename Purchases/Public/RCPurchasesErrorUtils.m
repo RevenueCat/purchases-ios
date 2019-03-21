@@ -9,6 +9,7 @@
 #import <StoreKit/StoreKit.h>
 #import "RCPurchasesErrors.h"
 #import "RCPurchasesErrorUtils.h"
+#import "RCUtils.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -204,6 +205,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
 + (NSError *)errorWithCode:(RCPurchasesErrorCode)code
                   userInfo:(NSDictionary *)userInfo
 {
+    RCErrorLog(@"%@", RCPurchasesErrorDescription(code));
     return [NSError errorWithDomain:RCPurchasesErrorDomain code:code userInfo:userInfo];
 }
 
