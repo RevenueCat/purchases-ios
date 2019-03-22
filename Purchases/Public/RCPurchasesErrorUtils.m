@@ -136,7 +136,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
     if ([[skError domain] isEqualToString:SKErrorDomain]) {
         switch ((SKErrorCode) skError.code) {
             case SKErrorUnknown:
-                return RCUnknownError;
+                return RCStoreProblemError;
             case SKErrorClientInvalid:
                 return RCPurchaseNotAllowedError;
             case SKErrorPaymentCancelled:
