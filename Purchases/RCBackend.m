@@ -72,8 +72,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 }
 
 - (void)handle:(NSInteger)statusCode
-  withResponse:(NSDictionary *_Nullable)response
-         error:(NSError *_Nullable)error
+  withResponse:(NSDictionary * _Nullable)response
+         error:(NSError * _Nullable)error
     completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     if (error != nil) {

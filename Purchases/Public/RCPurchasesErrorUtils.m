@@ -168,29 +168,29 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
 }
 
 + (NSError *)errorWithCode:(RCPurchasesErrorCode)code
-                   message:(NSString *_Nullable)message
+                   message:(NSString * _Nullable)message
 {
     return [self errorWithCode:code message:message underlyingError:nil];
 }
 
 
 + (NSError *)errorWithCode:(RCPurchasesErrorCode)code
-           underlyingError:(NSError *_Nullable)underlyingError
+           underlyingError:(NSError * _Nullable)underlyingError
 {
     return [self errorWithCode:code message:nil underlyingError:underlyingError extraUserInfo:nil];
 }
 
 + (NSError *)errorWithCode:(RCPurchasesErrorCode)code
-                   message:(NSString *_Nullable)message
-           underlyingError:(NSError *_Nullable)underlyingError
+                   message:(NSString * _Nullable)message
+           underlyingError:(NSError * _Nullable)underlyingError
 {
     return [self errorWithCode:code message:message underlyingError:underlyingError extraUserInfo:nil];
 }
 
 + (NSError *)errorWithCode:(RCPurchasesErrorCode)code
-                   message:(NSString *_Nullable)message
-           underlyingError:(NSError *_Nullable)underlyingError
-             extraUserInfo:(NSDictionary *_Nullable)extraUserInfo
+                   message:(NSString * _Nullable)message
+           underlyingError:(NSError * _Nullable)underlyingError
+             extraUserInfo:(NSDictionary * _Nullable)extraUserInfo
 {
 
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:extraUserInfo];
@@ -215,8 +215,8 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
                underlyingError:underlyingError];
 }
 
-+ (NSError *)backendUnderlyingError:(NSNumber *_Nullable)backendCode
-                     backendMessage:(NSString *_Nullable)backendMessage
++ (NSError *)backendUnderlyingError:(NSNumber * _Nullable)backendCode
+                     backendMessage:(NSString * _Nullable)backendMessage
 {
 
     return [NSError errorWithDomain:RCBackendErrorDomain
@@ -226,14 +226,14 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
                            }];
 }
 
-+ (NSError *)backendErrorWithBackendCode:(NSNumber *_Nullable)backendCode
-                          backendMessage:(NSString *_Nullable)backendMessage
++ (NSError *)backendErrorWithBackendCode:(NSNumber * _Nullable)backendCode
+                          backendMessage:(NSString * _Nullable)backendMessage
 {
     return [self backendErrorWithBackendCode:backendCode backendMessage:backendMessage extraUserInfo:nil];
 }
 
-+ (NSError *)backendErrorWithBackendCode:(NSNumber *_Nullable)backendCode
-                          backendMessage:(NSString *_Nullable)backendMessage
++ (NSError *)backendErrorWithBackendCode:(NSNumber * _Nullable)backendCode
+                          backendMessage:(NSString * _Nullable)backendMessage
                               finishable:(BOOL)finishable
 {
     return [self backendErrorWithBackendCode:backendCode
@@ -243,9 +243,9 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
                                }];
 }
 
-+ (NSError *)backendErrorWithBackendCode:(NSNumber *_Nullable)backendCode
-                          backendMessage:(NSString *_Nullable)backendMessage
-                           extraUserInfo:(NSDictionary *_Nullable)extraUserInfo
++ (NSError *)backendErrorWithBackendCode:(NSNumber * _Nullable)backendCode
+                          backendMessage:(NSString * _Nullable)backendMessage
+                           extraUserInfo:(NSDictionary * _Nullable)extraUserInfo
 {
     RCPurchasesErrorCode errorCode;
     if (backendCode != nil) {
