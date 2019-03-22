@@ -23,7 +23,7 @@ extern NSErrorUserInfoKey const RCReadableErrorCodeKey NS_SWIFT_NAME(ReadableErr
 
 
 /**
- * @brief Error codes used by the Purchases SDK
+ * Error codes used by the Purchases SDK
  */
 typedef NS_ERROR_ENUM(RCPurchasesErrorDomain, RCPurchasesErrorCode) {
     RCUnknownError = 0,
@@ -45,7 +45,7 @@ typedef NS_ERROR_ENUM(RCPurchasesErrorDomain, RCPurchasesErrorCode) {
 } NS_SWIFT_NAME(PurchasesErrorCode);
 
 /**
- * @brief Error codes sent by the RevenueCat backend. This only includes the errors that matter to the SDK
+ * Error codes sent by the RevenueCat backend. This only includes the errors that matter to the SDK
  */
 typedef NS_ENUM(NSInteger, RCBackendErrorCode) {
     RCBackendInvalidPlatform = 7000,

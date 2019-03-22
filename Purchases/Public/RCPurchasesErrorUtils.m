@@ -22,9 +22,9 @@ NSErrorUserInfoKey const RCReadableErrorCodeKey = @"readable_error_code";
 
 #pragma mark - Standard Error Messages
 
-/** @var RCPurchasesErrorDescription
-    @brief The error description, based on the error code.
-    @remarks No default case so that we get a compiler warning if a new value was added to the enum.
+/**
+ * The error description, based on the error code.
+ * @note No default case so that we get a compiler warning if a new value was added to the enum.
  */
 static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
     switch (code) {
@@ -65,9 +65,9 @@ static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
 }
 
 
-/** @var RCPurchasesErrorCodeString
-    @brief The the error short string, based on the error code.
-    @remarks No default case so that we get a compiler warning if a new value was added to the enum.
+/**
+ * The error short string, based on the error code.
+ * @note No default case so that we get a compiler warning if a new value was added to the enum.
  */
 static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
     switch (code) {
