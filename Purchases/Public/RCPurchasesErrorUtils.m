@@ -134,6 +134,12 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(RCBackend
     return RCUnknownError;
 }
 
+#if TARGET_OS_IPHONE
+    #define CODE_IF_TARGET_IPHONE(code, value) code
+#else
+    #define CODE_IF_TARGET_IPHONE(code, value) ((SKErrorCode) value)
+#endif
+
 static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
     if ([[skError domain] isEqualToString:SKErrorDomain]) {
         switch ((SKErrorCode) skError.code) {
@@ -147,16 +153,14 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
                 return RCPurchaseInvalidError;
             case SKErrorPaymentNotAllowed:
                 return RCPurchaseNotAllowedError;
-            #if !TARGET_OS_MAC
-            case SKErrorStoreProductNotAvailable:
+            case CODE_IF_TARGET_IPHONE(SKErrorStoreProductNotAvailable, 5):
                 return RCProductNotAvailableForPurchaseError;
-            case SKErrorCloudServicePermissionDenied: // Available on iOS 9.3
+            case CODE_IF_TARGET_IPHONE(SKErrorCloudServicePermissionDenied, 6): // Available on iOS 9.3
                 return RCPurchaseNotAllowedError;
-            case SKErrorCloudServiceNetworkConnectionFailed: // Available on iOS 9.3
+            case CODE_IF_TARGET_IPHONE(SKErrorCloudServiceNetworkConnectionFailed, 7): // Available on iOS 9.3
                 return RCStoreProblemError;
-            case SKErrorCloudServiceRevoked: // Available on iOS 10.3
+            case CODE_IF_TARGET_IPHONE(SKErrorCloudServiceRevoked, 8): // Available on iOS 10.3
                 return RCStoreProblemError;
-            #endif
         }
     }
     return RCUnknownError;
