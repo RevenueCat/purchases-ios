@@ -38,30 +38,12 @@ typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *) NS_SWIFT_NAME(Pur
 /**
  Completion block for `makePurchase:withCompletionBlock:`
  */
-typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PurchaseCompletedBlock);
-
-/**
- NSErrorDomain for errors occuring within the scope of the Purchases SDK
- */
-FOUNDATION_EXPORT NSErrorDomain const RCPurchasesAPIErrorDomain;
-
-/**
- @typedef RCPurchasesAPIErrorDomain
- @brief Enum of SDK API errors
- @constant RCDuplicateMakePurchaseCallsError Error triggered when calling make purchase multiple times
- */
-typedef NS_ERROR_ENUM(RCPurchasesAPIErrorDomain, RCPurchasesAPIErrorEnum) {
-    /**
-    Error triggered when calling make purchase multiple times
-     */
-    RCDuplicateMakePurchaseCallsError = 0
-};
-
+typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable, BOOL userCancelled) NS_SWIFT_NAME(Purchases.PurchaseCompletedBlock);
 
 /**
  Deferred block for `shouldPurchasePromoProduct:defermentBlock`
  */
-typedef void (^RCDeferredPromotionalPurchaseBlock)(void);
+typedef void (^RCDeferredPromotionalPurchaseBlock)(RCPurchaseCompletedBlock);
 
 
 /**
@@ -305,11 +287,11 @@ NS_SWIFT_NAME(PurchasesDelegate)
 NS_SWIFT_NAME(purchases(_:didReceiveUpdated:));
 
 /**
- Called when a user initiates a promotional in-app purchase from the App Store. Use this method to tell `RCPurchases` if your app is able to handle a purchase at the current time. If yes, return true and `RCPurchases` will initiate a purchase and will finish with one of the appropriate `RCPurchasesDelegate` methods. If the app is not in a state to make a purchase: cache the defermentBlock, return no, then call the defermentBlock when the app is ready to make the promotional purchase. If the purchase should never be made, do not cache the defermentBlock and return `NO`. The default return value is `NO`, if you don't override this delegate method, `RCPurchases` will not proceed with promotional purchases.
+ Called when a user initiates a promotional in-app purchase from the App Store. If your app is able to handle a purchase at the current time, run the deferment block in this method. If the app is not in a state to make a purchase: cache the defermentBlock, then call the defermentBlock when the app is ready to make the promotional purchase. If the purchase should never be made, you don't need to ever call the defermentBlock and `RCPurchases` will not proceed with promotional purchases.
  
  @param product `SKProduct` the product that was selected from the app store
  */
-- (BOOL)purchases:(RCPurchases *)purchases shouldPurchasePromoProduct:(SKProduct *)product defermentBlock:(RCDeferredPromotionalPurchaseBlock)makeDeferredPurchase;
+- (void)purchases:(RCPurchases *)purchases shouldPurchasePromoProduct:(SKProduct *)product defermentBlock:(RCDeferredPromotionalPurchaseBlock)makeDeferredPurchase;
 
 @end
 

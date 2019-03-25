@@ -33,7 +33,7 @@
             return @"Not eligible for trial or introductory price.";
         case RCIntroEligibilityStatusUnknown:
         default:
-            return @"Status indeterminate. You may need to assign the subscription group in the RevenueCat web interface.";
+            return @"Status indeterminate.";
     }
 }
 

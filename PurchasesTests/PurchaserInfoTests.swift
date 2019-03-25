@@ -126,7 +126,6 @@ class BasicPurchaserInfoTests: XCTestCase {
         expect(newInfo).toNot(beNil())
     }
 
-
     func testTwoProductJson() {
         let json = try! JSONSerialization.jsonObject(with: validTwoProductsJSON.data(using: String.Encoding.utf8)!, options: [])
         let info = PurchaserInfo(data: json as! [AnyHashable : Any])

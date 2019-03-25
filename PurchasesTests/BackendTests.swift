@@ -72,6 +72,7 @@ class BackendTests: XCTestCase {
     ]
 
     let serverErrorResponse = [
+        "code": "7225",
         "message": "something is bad up in the cloud"
     ]
 
@@ -342,21 +343,25 @@ class BackendTests: XCTestCase {
         checkCall(expectedValue: 2)
     }
 
-    func testForwards500ErrorsCorrectly() {
+    func testForwards500ErrorsCorrectlyForPurchaserInfoCalls() {
         let response = HTTPResponse(statusCode: 501, response: serverErrorResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
-        var error: Error?
-
+        var error: NSError?
+        var underlyingError: NSError?
         backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil,
                                  price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil,
                                  completion: { (purchaserInfo, newError) in
-            error = newError
+            error = newError as NSError?
+            underlyingError = error?.userInfo[NSUnderlyingErrorKey] as! NSError?
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect(error?.localizedDescription).to(equal(serverErrorResponse["message"]))
-        expect((error as NSError?)?.code).to(equal(RCUnfinishableError))
+        expect(error?.code).toEventually(be(PurchasesErrorCode.invalidCredentialsError.rawValue))
+        expect(error?.userInfo["finishable"]).to(be(false))
+
+        expect(underlyingError).toEventuallyNot(beNil())
+        expect(underlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
     }
 
     func testForwards400ErrorsCorrectly() {
@@ -364,6 +369,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
 
         var error: Error?
+        var underlyingError: Error?
 
         backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil,
                                  price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, completion: { (purchaserInfo, newError) in
@@ -371,8 +377,12 @@ class BackendTests: XCTestCase {
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect(error?.localizedDescription).to(equal(serverErrorResponse["message"]))
-        expect((error as NSError?)?.code).to(equal(RCFinishableError))
+        expect((error as NSError?)?.code).toEventually(be(PurchasesErrorCode.invalidCredentialsError.rawValue))
+        expect((error as NSError?)?.userInfo["finishable"]).to(be(true))
+
+        underlyingError = (error as NSError?)?.userInfo[NSUnderlyingErrorKey] as? Error
+        expect(underlyingError).toEventuallyNot(beNil())
+        expect(underlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
     }
 
     func testPostingReceiptCreatesASubscriberInfoObject() {
@@ -447,33 +457,36 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 404, response: nil, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
 
-        var error: Error?
+        var error: NSError?
 
         backend?.getSubscriberData(withAppUserID: userID, completion: { (newSubscriberInfo, newError) in
-            error = newError
+            error = newError as NSError?
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect((error as NSError?)?.domain).to(equal(RCBackendErrorDomain))
-        expect((error as NSError?)?.code).to(equal(RCFinishableError))
+        expect(error?.domain).to(equal(PurchasesErrorDomain))
+        let underlyingError = (error?.userInfo[NSUnderlyingErrorKey]) as! NSError
+        expect(underlyingError).toEventuallyNot(beNil())
+        expect(underlyingError.domain).to(equal(RevenueCatBackendErrorDomain))
+        expect(error?.userInfo["finishable"]).to(be(true))
     }
 
     func testHandlesInvalidJSON() {
         let response = HTTPResponse(statusCode: 200, response: ["sjkaljdklsjadkjs": ""], error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
 
-        var error: Error?
+        var error: NSError?
 
         backend?.getSubscriberData(withAppUserID: userID, completion: { (newSubscriberInfo, newError) in
-            error = newError
+            error = newError as NSError?
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect((error as NSError?)?.domain).to(equal(RCBackendErrorDomain))
-        expect((error as NSError?)?.code).to(equal(RCUnexpectedBackendResponse))
+        expect(error?.domain).to(equal(PurchasesErrorDomain))
+        expect(error?.code).to(be(PurchasesErrorCode.unexpectedBackendResponseError.rawValue))
     }
 
-    func testEmptyEligibiltyCheckDoesNothing() {
+    func testEmptyEligibilityCheckDoesNothing() {
         backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: [], completion: { (eligibilities) in
 
         })
@@ -488,7 +501,7 @@ class BackendTests: XCTestCase {
         var eligibility: [String: RCIntroEligibility]?
 
         let products = ["producta", "productb", "productc", "productd"]
-        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligibility) in
+        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(1...3), productIdentifiers: products, completion: {(productEligibility) in
             eligibility = productEligibility
         })
 
@@ -514,7 +527,7 @@ class BackendTests: XCTestCase {
         expect(eligibility!["productd"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
     }
 
-    func testEligbilityUnknownIfError() {
+    func testEligibilityUnknownIfError() {
         let response = HTTPResponse(statusCode: 499, response: serverErrorResponse, error: nil)
         let path = "/subscribers/" + userID + "/intro_eligibility"
         httpClient.mock(requestPath: path, response: response)
@@ -522,8 +535,8 @@ class BackendTests: XCTestCase {
         var eligibility: [String: RCIntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
-            eligibility = productEligbility
+        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligibility) in
+            eligibility = productEligibility
         })
 
         expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
@@ -531,7 +544,7 @@ class BackendTests: XCTestCase {
         expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
     }
 
-    func testEligbilityUnknownIfUnknownError() {
+    func testEligibilityUnknownIfUnknownError() {
         let error = NSError(domain: "myhouse", code: 12, userInfo: nil) as Error
         let response = HTTPResponse(statusCode: 200, response: serverErrorResponse, error: error)
         let path = "/subscribers/" + userID + "/intro_eligibility"
@@ -540,7 +553,7 @@ class BackendTests: XCTestCase {
         var eligibility: [String: RCIntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligbility) in
+        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligbility) in
             eligibility = productEligbility
         })
 
@@ -686,4 +699,115 @@ class BackendTests: XCTestCase {
         XCTAssertEqual(postedData, "new_alias")
         expect(completionCalled).toEventually(beTrue())
     }
+
+    func testNetworkErrorIsForwardedForPurchaserInfoCalls() {
+        let response = HTTPResponse(statusCode: 200, response: nil, error: NSError(domain: NSURLErrorDomain, code: -1009))
+        httpClient.mock(requestPath: "/receipts", response: response)
+        var receivedError : NSError?
+        var receivedUnderlyingError : NSError?
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: true, productIdentifier: nil, price: nil,
+                paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil,
+                completion: { (purchaserInfo, error) in
+                    receivedError = error as NSError?
+                    receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
+                })
+
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError?.domain).toEventually(equal(PurchasesErrorDomain))
+        expect(receivedError?.code).toEventually(equal(PurchasesErrorCode.networkError.rawValue))
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
+        expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
+    }
+
+    func testNetworkErrorIsForwarded() {
+        let response = HTTPResponse(statusCode: 200, response: nil, error: NSError(domain: NSURLErrorDomain, code: -1009))
+        httpClient.mock(requestPath: "/subscribers/"+userID+"/alias", response: response)
+        var receivedError : NSError?
+        var receivedUnderlyingError : NSError?
+        backend?.createAlias(forAppUserID: userID, withNewAppUserID: "new", completion: { error in
+            receivedError = error as NSError?
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
+        })
+
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError?.domain).toEventually(equal(PurchasesErrorDomain))
+        expect(receivedError?.code).toEventually(equal(PurchasesErrorCode.networkError.rawValue))
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
+        expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
+    }
+
+    func testForwards500ErrorsCorrectly() {
+        let response = HTTPResponse(statusCode: 501, response: serverErrorResponse, error: nil)
+        httpClient.mock(requestPath: "/subscribers/"+userID+"/alias", response: response)
+
+        var receivedError: NSError?
+        var receivedUnderlyingError: NSError?
+
+        backend?.createAlias(forAppUserID: userID, withNewAppUserID: "new", completion: { error in
+            receivedError = error as NSError?
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
+        })
+
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError?.code).toEventually(be(PurchasesErrorCode.invalidCredentialsError.rawValue))
+
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
+    }
+
+    func testEligibilityUnknownIfNoReceipt() {
+        var eligibility: [String: RCIntroEligibility]?
+
+        let products = ["producta", "productb", "productc"]
+        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligibility) in
+            eligibility = productEligibility
+        })
+
+        expect(eligibility).toEventuallyNot(beNil())
+        expect(eligibility?["producta"]?.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
+        expect(eligibility?["productb"]?.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
+        expect(eligibility?["productc"]?.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
+    }
+
+    func testGetEntitlementsNetworkErrorSendsNilAndError() {
+        let response = HTTPResponse(statusCode: 200, response: nil, error: NSError(domain: NSURLErrorDomain, code: -1009))
+        let path = "/subscribers/" + userID + "/products"
+        httpClient.mock(requestPath: path, response: response)
+
+        var receivedError : NSError?
+        var receivedUnderlyingError : NSError?
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
+            receivedError = error as NSError?
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
+        })
+
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError?.domain).toEventually(equal(PurchasesErrorDomain))
+        expect(receivedError?.code).toEventually(equal(PurchasesErrorCode.networkError.rawValue))
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
+        expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
+    }
+
+    func test500GetEntitlementsUnexpectedResponse() {
+        let response = HTTPResponse(statusCode: 501, response: serverErrorResponse, error: nil)
+        let path = "/subscribers/" + userID + "/products"
+        httpClient.mock(requestPath: path, response: response)
+
+        var receivedError: NSError?
+        var receivedUnderlyingError: NSError?
+        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
+            receivedError = error as NSError?
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
+        })
+
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError?.code).toEventually(be(PurchasesErrorCode.invalidCredentialsError.rawValue))
+
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
+    }
+
 }

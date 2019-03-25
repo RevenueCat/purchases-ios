@@ -24,11 +24,11 @@ NS_SWIFT_NAME(Offering)
 /**
  @return A String containing the localized price
  */
-- (NSString *)localizedPriceString;
+- (NSString * _Nonnull)localizedPriceString;
 
 /**
  @return A String containing the localized introductory price
  */
-- (NSString *)localizedIntroductoryPriceString;
+- (NSString * _Nonnull)localizedIntroductoryPriceString;
 
 @end

@@ -1,3 +1,7 @@
+## 2.1.0
+- Adds userCancelled as a parameter to the completion block of the makePurchase function.
+- Better error codes.
+
 ## 2.0.0
 - Refactor to all block based methods
 - Optional delegate method to receive changes in Purchaser Info

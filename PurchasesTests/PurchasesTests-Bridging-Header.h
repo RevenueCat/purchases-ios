@@ -5,6 +5,7 @@
 #include <Purchases/RCHTTPClient.h>
 #include <Purchases/RCPurchases+Protected.h>
 #include <Purchases/RCStoreKitRequestFetcher.h>
+#include <Purchases/RCReceiptFetcher.h>
 #include <Purchases/RCStoreKitWrapper.h>
 #include <Purchases/RCBackend.h>
 #include <Purchases/RCPurchaserInfo.h>

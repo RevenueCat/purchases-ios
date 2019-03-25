@@ -30,7 +30,7 @@
 
 ### CocoaPods
 ```
-pod "Purchases"
+pod "Purchases", "2.1.0-rc1"
 ```
 
 And then run:
@@ -41,7 +41,7 @@ pod install
 
 ### Carthage
 ```
-github "revenuecat/purchases-ios"
+github "revenuecat/purchases-ios" "2.1.0-rc1"
 ```
 
 And then run:
@@ -108,10 +108,8 @@ When it comes time to make a purchase, *Purchases* has a simple method, `makePur
 
 Swift:
 ```swift
-Purchases.shared.makePurchase(product, { (transaction, purchaserInfo, error) in
-    if let error = error {
-        // Error making purchase
-    } else if let purchaserInfo = purchaserInfo {
+Purchases.shared.makePurchase(product, { (transaction, purchaserInfo, error, cancelled) in
+    if let purchaserInfo = purchaserInfo {
     
         if purchaserInfo.activeEntitlements.contains("my_entitlement_identifier") {
             // Unlock that great "pro" content
@@ -123,11 +121,12 @@ Purchases.shared.makePurchase(product, { (transaction, purchaserInfo, error) in
 
 Obj-C:
 ```obj-c
-[[RCPurchases sharedPurchases] makePurchase:product withCompletionBlock:^(SKPaymentTransaction *transaction, RCPurchaserInfo * purchaserInfo, NSError * error) {
+[[RCPurchases sharedPurchases] makePurchase:product withCompletionBlock:^(SKPaymentTransaction *transaction, RCPurchaserInfo *purchaserInfo, NSError *error, BOOL cancelled) {
 
     if ([purchaserInfo.activeEntitlements containsObject:@"my_entitlement_identifier"]) {
         // Unlock that great "pro" content.
     }
+
 }];
 ```
 >`makePurchase` handles the underlying framework interaction and automatically validates purchases with Apple through our secure servers. This helps reduce in-app purchase fraud and decreases the complexity of your app. Receipt tokens are stored remotely and always kept up-to-date.
@@ -141,9 +140,7 @@ Obj-C:
 Swift:
 ```swift
 Purchases.shared.purchaserInfo { (purchaserInfo, error) in
-    if let error = error {
-        // Error fetching entitlements
-    } else if let purchaserInfo = purchaserInfo {
+    if let purchaserInfo = purchaserInfo {
 
         // Option 1: Check if user has access to entitlement (from RevenueCat dashboard)
         if purchaserInfo.activeEntitlements.contains("my_entitlement_identifier") {
@@ -204,6 +201,110 @@ Obj-C:
 
 >By default allowSharingAppStoreAccount is True for RevenueCat random App User IDs but must be enabled manually if you want to allow permissive sharing for your own App User IDs.
 
+## Handle purchases started on the App Store
+The Purchases SDK supports purchases initiated from the App Store (iOS 11+) through the optional delegate method `purchases(purchases:shouldPurchasePromoProduct:makeDeferredPurchase:)`.
+
+Swift:
+```swift
+func purchases(_ purchases: Purchases, shouldPurchasePromoProduct product: SKProduct, defermentBlock makeDeferredPurchase: @escaping RCDeferredPromotionalPurchaseBlock) {
+
+    // Save the deferment block and call it later...
+    let defermentBlock = makeDeferredPurchase
+
+    // ...or call it right away to proceed with the purchase
+    defermentBlock { (transaction, info, error, cancelled) in
+        if let purchaserInfo = info {
+
+            if purchaserInfo.activeEntitlements.contains("my_entitlement_identifier") {
+                // Unlock that great "pro" content
+            }
+
+        }
+    }
+}
+```
+
+To test this in sandbox mode, open this URL on a physical device in Safari:
+```
+itms-services://?action=puhaseIntent&bundleId=<YOUR_BUNDLE_ID>&productIdentifier=<YOUR_SKPRODUCT_ID>
+```
+
+## Listening for subscription status updates
+Since *Purchases* SDK works across different platforms, a user's subscription status may change from a variety of sources. You can respond to any changes in purchaser info by conforming to an optional delegate method, `didReceivePurchaserInfo:`. This will fire whenever we receive a *change* in purchaser info and you should expect it to be called at launch and throughout the life of the app.
+
+Depending on your app, it may be sufficient to ignore the delegate and simply handle changes to purchaser information the next time your app is launched.
+
+Swift:
+```swift
+func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) {
+    // handle any changes to purchaserInfo
+}
+```
+
+Obj-C:
+```obj-c
+- (void)purchases:(nonnull RCPurchases *)purchases didReceiveUpdatedPurchaserInfo:(nonnull RCPurchaserInfo *)purchaserInfo {
+    // handle any changes to purchaserInfo
+}
+```
+
+## Error Handling
+When an error has occurred, the completion callback will receive an `NSError` object. For a complete list of errors, see our online error handling documentation: https://docs.revenuecat.com/v2.1/docs/errors
+
+When investigating or logging errors, review the `userInfo` dictionary, paying attention to the following keys:
+
+- `RCReadableErrorCodeKey` contains a cross-platform error name string that can be used for identifying the error.
+- `NSLocalizedDescriptionKey` contains a description of the error. This description is meant for the developer.
+- `NSUnderlyingErrorKey` contains the underlying error that caused the error in question, if an underlying error is present.
+
+To handle specific errors, you can iterate through 
+
+Swift:
+```swift
+if let err = error as NSError? {
+                
+    // log error details
+    print("Error: \(err.userInfo[ReadableErrorCodeKey])")
+    print("Message: \(err.localizedDescription)")
+    print("Underlying Error: \(err.userInfo[NSUnderlyingErrorKey])")
+
+    // handle specific errors
+    switch PurchasesErrorCode(_nsError: err).code {
+    case .networkError:
+        showAlert("Network error, check your connection and try again.")
+    case .purchaseNotAllowedError:
+        showAlert("Purchases not allowed on this device.")
+    case .purchaseInvalidError:
+        showAlert("Purchase invalid, check payment source.")
+    default:
+        break
+    }
+}
+```
+Obj-C:
+```obj-c
+if (error) {
+
+    // log error details
+    NSLog(@"RCError: %@", [error.userInfo objectForKey:RCReadableErrorCodeKey]);
+    NSLog(@"Message: %@", error.localizedDescription);
+    NSLog(@"Underlying Error: %@", [error.userInfo objectForKey:NSUnderlyingErrorKey]);
+
+    switch ([error code]) {
+        case RCNetworkError:
+            showError(@"Network error, check your connection and try again.");
+        case RCPurchaseNotAllowedError:
+            showError(@"Purchases not allowed on this device.");
+        case RCPurchaseInvalidError:
+            showError(@"Purchase invalid, check payment source.");
+        default:
+            break;
+    }
+
+}
+```
+
+
 ## Debugging
 You can enabled detailed debug logs by setting `debugLogsEnabled = true`. You can set this **before** you configure Purchases.
 
@@ -224,7 +325,7 @@ RCPurchases.debugLogsEnabled = YES;
 Example output:
 ```
 [Purchases] - DEBUG: Debug logging enabled.
-[Purchases] - DEBUG: SDK Version - 2.0.0
+[Purchases] - DEBUG: SDK Version - 2.1.0
 [Purchases] - DEBUG: Initial App User ID - (null)
 [Purchases] - DEBUG: GET /v1/subscribers/<APP_USER_ID>
 [Purchases] - DEBUG: GET /v1/subscribers/<APP_USER_ID>/products
@@ -257,7 +358,7 @@ You can use Github Issues to report any bugs and issues with *Purchases*. Here i
 ​
 
 ## Technical Support or Questions
-If you have questions or need help integrating *Purchases* please [contact us](https://www.revenuecat.com/contact) or email *support@revenuecat.com* instead of opening an issue.
+If you have questions or need help integrating *Purchases* please start by heading to our [online documentation](https://docs.revenuecat.com/v2.1/docs/welcome) and checking out the guides and support resources we have there.
 
 
 ## Feature Requests
