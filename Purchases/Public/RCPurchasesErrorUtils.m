@@ -107,11 +107,14 @@ static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
     return @"UNRECOGNIZED_ERROR";
 }
 
-static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(NSInteger code) {
+static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(RCBackendErrorCode code) {
     switch (code) {
         case RCBackendInvalidPlatform:
             return RCUnknownError;
         case RCBackendStoreProblem:
+        case RCBackendPlayStoreQuotaExceeded:
+        case RCBackendPlayStoreInvalidPackageName:
+        case RCBackendPlayStoreGenericError:
             return RCStoreProblemError;
         case RCBackendCannotTransferPurchase:
             return RCReceiptAlreadyInUseError;
@@ -127,9 +130,8 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(NSInteger
             return RCPurchaseInvalidError;
         case RCBackendEmptyAppUserId:
             return RCInvalidAppUserIdError;
-        default:
-            return RCUnknownError;
     }
+    return RCUnknownError;
 }
 
 static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
@@ -249,7 +251,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
 {
     RCPurchasesErrorCode errorCode;
     if (backendCode != nil) {
-        errorCode = RCPurchasesErrorCodeFromRCBackendErrorCode([backendCode integerValue]);
+        errorCode = RCPurchasesErrorCodeFromRCBackendErrorCode((RCBackendErrorCode) [backendCode integerValue]);
     } else {
         errorCode = RCUnknownBackendError;
     }

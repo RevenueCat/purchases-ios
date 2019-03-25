@@ -59,6 +59,9 @@ typedef NS_ENUM(NSInteger, RCBackendErrorCode) {
     RCBackendEmptyAppUserId = 7220,
     RCBackendInvalidAuthToken = 7224,
     RCBackendInvalidAPIKey = 7225,
+    RCBackendPlayStoreQuotaExceeded = 7229,
+    RCBackendPlayStoreInvalidPackageName = 7230,
+    RCBackendPlayStoreGenericError = 7231,
 } NS_SWIFT_NAME(RevenueCatBackendErrorCode);
 
 @end
