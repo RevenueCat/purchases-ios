@@ -60,6 +60,8 @@ static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
             return @"The operation is already in progress.";
         case RCUnknownBackendError:
             return @"There was an unknown backend error.";
+        case RCReceiptInUseByOtherSubscriberError:
+            return @"The receipt is in use by other subscriber.";
     }
     return @"Something went wrong.";
 }
@@ -103,6 +105,8 @@ static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
             return @"OPERATION_ALREADY_IN_PROGRESS";
         case RCUnknownBackendError:
             return @"UNKNOWN_BACKEND_ERROR";
+        case RCReceiptInUseByOtherSubscriberError:
+            return @"RECEIPT_IN_USE_BY_OTHER_SUBSCRIBER";
     }
     return @"UNRECOGNIZED_ERROR";
 }
@@ -144,23 +148,25 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
     if ([[skError domain] isEqualToString:SKErrorDomain]) {
         switch ((SKErrorCode) skError.code) {
             case SKErrorUnknown:
+            case CODE_IF_TARGET_IPHONE(SKErrorCloudServiceNetworkConnectionFailed, 7): // Available on iOS 9.3
+            case CODE_IF_TARGET_IPHONE(SKErrorCloudServiceRevoked, 8): // Available on iOS 10.3
                 return RCStoreProblemError;
             case SKErrorClientInvalid:
+            case SKErrorPaymentNotAllowed:
+            case CODE_IF_TARGET_IPHONE(SKErrorCloudServicePermissionDenied, 6): // Available on iOS 9.3
+            case SKErrorPrivacyAcknowledgementRequired:
                 return RCPurchaseNotAllowedError;
             case SKErrorPaymentCancelled:
                 return RCPurchaseCancelledError;
             case SKErrorPaymentInvalid:
+            case SKErrorUnauthorizedRequestData:
+            case SKErrorMissingOfferParams:
+            case SKErrorInvalidOfferPrice:
+            case SKErrorInvalidSignature:
+            case SKErrorInvalidOfferIdentifier:
                 return RCPurchaseInvalidError;
-            case SKErrorPaymentNotAllowed:
-                return RCPurchaseNotAllowedError;
             case CODE_IF_TARGET_IPHONE(SKErrorStoreProductNotAvailable, 5):
                 return RCProductNotAvailableForPurchaseError;
-            case CODE_IF_TARGET_IPHONE(SKErrorCloudServicePermissionDenied, 6): // Available on iOS 9.3
-                return RCPurchaseNotAllowedError;
-            case CODE_IF_TARGET_IPHONE(SKErrorCloudServiceNetworkConnectionFailed, 7): // Available on iOS 9.3
-                return RCStoreProblemError;
-            case CODE_IF_TARGET_IPHONE(SKErrorCloudServiceRevoked, 8): // Available on iOS 10.3
-                return RCStoreProblemError;
         }
     }
     return RCUnknownError;
