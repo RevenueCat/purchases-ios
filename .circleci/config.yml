@@ -2,7 +2,7 @@ version: 2
 jobs:
   runtest:
     macos:
-      xcode: "10.0.0"
+      xcode: "10.2.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
