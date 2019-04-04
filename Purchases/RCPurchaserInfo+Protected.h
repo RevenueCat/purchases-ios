@@ -7,7 +7,7 @@
 //
 
 #import "RCPurchaserInfo.h"
-
+NS_ASSUME_NONNULL_BEGIN
 @interface RCPurchaserInfo (Protected)
 
 - (instancetype _Nullable)initWithData:(NSDictionary * _Nonnull)data;
@@ -17,8 +17,9 @@
 @property (nonatomic, readonly) NSDictionary<NSString *, NSObject *> *expirationDateByEntitlement;
 @property (nonatomic, readonly) NSDictionary<NSString *, NSObject *> *purchaseDateByEntitlement;
 @property (nonatomic, readonly) NSSet<NSString *> *nonConsumablePurchases;
-@property (nonatomic, readonly) NSString *originalApplicationVersion;
+@property (nonatomic, readonly) NSString  * _Nullable originalApplicationVersion;
 
 - (NSDictionary * _Nonnull)JSONObject;
 
 @end
+NS_ASSUME_NONNULL_END
