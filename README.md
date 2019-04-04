@@ -30,7 +30,7 @@
 
 ### CocoaPods
 ```
-pod "Purchases", "2.1.0-rc1"
+pod "Purchases", "2.1.0"
 ```
 
 And then run:
@@ -41,7 +41,7 @@ pod install
 
 ### Carthage
 ```
-github "revenuecat/purchases-ios" "2.1.0-rc1"
+github "revenuecat/purchases-ios" "2.1.0"
 ```
 
 And then run:
