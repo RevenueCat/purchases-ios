@@ -10,7 +10,7 @@
 
 #import "RCEntitlement.h"
 
-@class SKProduct, SKPayment, SKPaymentTransaction, RCPurchaserInfo, RCIntroEligibility, RCEntitlement;
+@class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility, RCEntitlement;
 @protocol RCPurchasesDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -264,6 +264,16 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 */
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
                                  completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility;
+
+
+
+API_AVAILABLE(ios(12.2), macosx(10.14.4))
+typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PaymentDiscountBlock);
+- (void)paymentDiscountForProductDiscount:(SKProductDiscount *)discount product:(SKProduct *)product completion:(RCPaymentDiscountBlock)completion API_AVAILABLE(ios(12.2), macosx(10.14.4));
+
+- (void)makePurchase:(SKProduct *)product
+        withDiscount:(SKPaymentDiscount * _Nullable)discount
+     completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
     
 @end
 

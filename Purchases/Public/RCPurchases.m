@@ -323,18 +323,33 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)makePurchase:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
 {
+    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
+    payment.applicationUsername = self.appUserID;
+    [self purchaseProduct:product withPayment:payment completion:completion];
+}
+
+- (void)makePurchase:(SKProduct *)product
+        withDiscount:(SKPaymentDiscount *)discount
+     completionBlock:(RCPurchaseCompletedBlock)completion
+{
+    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
+    NSLog(@"self.appUserID = %@", self.appUserID);
+    payment.applicationUsername = self.appUserID;
+    payment.paymentDiscount = discount;
+    [self purchaseProduct:product withPayment:payment completion:completion];
+}
+
+- (void)purchaseProduct:(SKProduct *)product withPayment:(SKPayment *)payment completion:(RCPurchaseCompletedBlock)completion
+{
     // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
     // from triggering a refresh.
     self.cachesLastUpdated = [NSDate date];
     
-    RCDebugLog(@"makePurchase - %@", product.productIdentifier);
+    RCDebugLog(@"makePurchase - %@", payment.productIdentifier);
     
     @synchronized (self) {
-        self.productsByIdentifier[product.productIdentifier] = product;
+        self.productsByIdentifier[payment.productIdentifier] = product;
     }
-    
-    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-    payment.applicationUsername = self.appUserID;
     
     @synchronized (self) {
         if (self.purchaseCompleteCallbacks[product.productIdentifier]) {
@@ -345,11 +360,12 @@ static RCPurchases *_sharedPurchases = nil;
                                                             }], false);
             return;
         }
-        self.purchaseCompleteCallbacks[product.productIdentifier] = [completion copy];
+        self.purchaseCompleteCallbacks[payment.productIdentifier] = [completion copy];
     }
     
     [self.storeKitWrapper addPayment:payment];
 }
+
 
 - (void)restoreTransactionsWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
@@ -398,6 +414,27 @@ static RCPurchases *_sharedPurchases = nil;
                                                CALL_AND_DISPATCH_IF_SET(receiveEligibility, result);
                                            }];
     }];
+}
+
+- (void)paymentDiscountForProductDiscount:(SKProductDiscount *)discount product:(SKProduct *)product completion:(RCPaymentDiscountBlock)completion
+{
+    [self.backend postOfferForSigning:discount.identifier
+                withProductIdentifier:product.productIdentifier
+                  applicationUsername:self.appUserID
+                           completion:^(
+                                        NSString * _Nullable signature,
+                                        NSString * _Nullable keyIdentifier,
+                                        NSUUID * _Nullable nonce,
+                                        NSNumber * _Nullable timestamp,
+                                        NSError * _Nullable error) {
+                               
+                               SKPaymentDiscount *paymentDiscount = [[SKPaymentDiscount alloc] initWithIdentifier:discount.identifier
+                                                                                                    keyIdentifier:keyIdentifier
+                                                                                                            nonce:nonce
+                                                                                                        signature:signature
+                                                                                                        timestamp:timestamp];
+                               completion(paymentDiscount, nil);
+                           }];
 }
 
 #pragma mark - Private Methods

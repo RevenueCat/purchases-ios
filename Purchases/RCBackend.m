@@ -18,6 +18,8 @@
 #import "RCPurchasesErrorUtils.h"
 #import "RCUtils.h"
 
+void RCOverrideServerHost(NSString *hostname);
+
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
 {
@@ -396,6 +398,34 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
                       [self handle:status withResponse:response error:error errorHandler:completion];
                   }];
+}
+
+
+- (void)postOfferForSigning:(NSString *)offerIdentifier
+      withProductIdentifier:(NSString *)productIdentifier
+        applicationUsername:(NSString *)applicationUsername
+                 completion:(RCOfferSigningResponseHandler)completion
+{
+    RCOverrideServerHost(@"http://192.168.7.159:5000");
+    
+    [self.httpClient performRequest:@"POST" path:@"/sign"
+                               body:@{
+                                      @"offer": offerIdentifier,
+                                      @"product": productIdentifier,
+                                      @"application_username": applicationUsername
+                                      }
+                            headers:self.headers
+                  completionHandler:^(NSInteger statusCode,
+                                      NSDictionary * _Nullable response,
+                                      NSError * _Nullable error) {
+                      NSString *signature = response[@"signature"];
+                      NSString *keyIdentifier = response[@"key_id"];
+                      NSUUID *nonce = [[NSUUID alloc] initWithUUIDString:response[@"nonce"]];
+                      NSNumber *timestamp = response[@"timestamp"];
+                      completion(signature, keyIdentifier, nonce, timestamp, nil);
+                  }];
+    
+    RCOverrideServerHost(@"https://api.revenuecat.com");
 }
 
 @end
