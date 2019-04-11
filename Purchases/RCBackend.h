@@ -42,6 +42,12 @@ typedef void(^RCIntroEligibilityResponseHandler)(NSDictionary<NSString *,
 
 typedef void(^RCEntitlementResponseHandler)(RCEntitlements * _Nullable, NSError * _Nullable);
 
+typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
+                                             NSString * _Nullable keyIdentifier,
+                                             NSUUID * _Nullable nonce,
+                                             NSNumber * _Nullable timestamp,
+                                             NSError * _Nullable error);
+
 @interface RCBackend : NSObject
 
 - (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey;
@@ -78,6 +84,11 @@ typedef void(^RCEntitlementResponseHandler)(RCEntitlements * _Nullable, NSError 
 - (void)createAliasForAppUserID:(NSString *)appUserID
                withNewAppUserID:(NSString *)newAppUserID
                      completion:(void (^ _Nullable)(NSError * _Nullable error))completion;
+
+- (void)postOfferForSigning:(NSString *)offerIdentifier
+      withProductIdentifier:(NSString *)productIdentifier
+        applicationUsername:(NSString *)applicationUsername
+                 completion:(RCOfferSigningResponseHandler)completion;
 
 @end
 
