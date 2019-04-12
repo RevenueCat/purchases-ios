@@ -23,7 +23,7 @@ NS_SWIFT_NAME(PurchaserInfo)
 /// All *subscription* product identifiers with expiration dates in the future.
 @property (readonly) NSSet<NSString *> *activeSubscriptions;
 
-/// All product identifiers purchases by the user regardless of expriration.
+/// All product identifiers purchases by the user regardless of expiration.
 @property (readonly) NSSet<NSString *> *allPurchasedProductIdentifiers;
 
 /// Returns the latest expiration date of all products, nil if there are none

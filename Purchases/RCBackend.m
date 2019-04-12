@@ -14,11 +14,8 @@
 #import "RCIntroEligibility+Protected.h"
 #import "RCEntitlement+Protected.h"
 #import "RCOffering+Protected.h"
-#import "RCPurchasesErrors.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCUtils.h"
-
-void RCOverrideServerHost(NSString *hostname);
 
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
@@ -167,6 +164,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
       introductoryPrice:(NSDecimalNumber *)introductoryPrice
            currencyCode:(NSString *)currencyCode
       subscriptionGroup:(NSString *)subscriptionGroup
+              discounts:(NSArray * _Nullable)discounts
              completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
@@ -214,6 +212,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     
     if (subscriptionGroup) {
         body[@"subscription_group_id"] = subscriptionGroup;
+    }
+
+    if (discounts) {
+        body[@"offers"] = discounts;
     }
 
     [self.httpClient performRequest:@"POST"
@@ -395,7 +397,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                        @"new_app_user_id": newAppUserID
                                }
                             headers:self.headers
-                  completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
+                  completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
                       [self handle:status withResponse:response error:error errorHandler:completion];
                   }];
 }
@@ -403,29 +405,60 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
 - (void)postOfferForSigning:(NSString *)offerIdentifier
       withProductIdentifier:(NSString *)productIdentifier
-        applicationUsername:(NSString *)applicationUsername
+          subscriptionGroup:(NSString *)subscriptionGroup
+                       data:(NSData *)data
+                  appUserID:(NSString *)appUserID
                  completion:(RCOfferSigningResponseHandler)completion
 {
-    RCOverrideServerHost(@"http://192.168.7.159:5000");
-    
-    [self.httpClient performRequest:@"POST" path:@"/sign"
+    NSString *fetchToken = [data base64EncodedStringWithOptions:0];
+    [self.httpClient performRequest:@"POST" path:@"/offers"
                                body:@{
-                                      @"offer": offerIdentifier,
-                                      @"product": productIdentifier,
-                                      @"application_username": applicationUsername
-                                      }
+                                       @"app_user_id": appUserID,
+                                       @"fetch_token": fetchToken,
+                                       @"generate_offers": @[@{
+                                               @"offer_id": offerIdentifier,
+                                               @"product_id": productIdentifier,
+                                               @"subscription_group": subscriptionGroup
+                                       }],
+                               }
                             headers:self.headers
-                  completionHandler:^(NSInteger statusCode,
-                                      NSDictionary * _Nullable response,
-                                      NSError * _Nullable error) {
-                      NSString *signature = response[@"signature"];
-                      NSString *keyIdentifier = response[@"key_id"];
-                      NSUUID *nonce = [[NSUUID alloc] initWithUUIDString:response[@"nonce"]];
-                      NSNumber *timestamp = response[@"timestamp"];
-                      completion(signature, keyIdentifier, nonce, timestamp, nil);
+                  completionHandler:^(NSInteger statusCode, NSDictionary *_Nullable response, NSError *_Nullable error) {
+                      if (error != nil) {
+                          completion(nil, nil, nil, nil, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
+                          return;
+                      }
+
+                      NSArray *offers = nil;
+
+                      if (statusCode < 300) {
+                          offers = response[@"offers"];
+                          if (offers == nil || offers.count == 0) {
+                              error = [RCPurchasesErrorUtils unexpectedBackendResponseError];
+                          } else {
+                            NSDictionary *offer = offers[0];
+                            if (offer[@"signature_error"] != nil) {
+                                error = [RCPurchasesErrorUtils backendErrorWithBackendCode:offer[@"signature_error"][@"code"]
+                                                                                    backendMessage:offer[@"signature_error"][@"message"]
+                                ];
+                            } else if (offer[@"signature_data"] != nil) {
+                                NSDictionary *signatureData = offer[@"signature_data"];
+                                NSString *signature = signatureData[@"signature"];
+                                NSString *keyIdentifier = signatureData[@"key_id"];
+                                NSUUID *nonce = [[NSUUID alloc] initWithUUIDString:signatureData[@"nonce"]];
+                                NSNumber *timestamp = signatureData[@"timestamp"];
+                                completion(signature, keyIdentifier, nonce, timestamp, nil);
+                            } else {
+                                error = [RCPurchasesErrorUtils unexpectedBackendResponseError];
+                            }
+                          }
+                      } else {
+                          error = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
+                                                                              backendMessage:response[@"message"]
+                          ];
+                      }
+
+                      completion(nil, nil, nil, nil, error);
                   }];
-    
-    RCOverrideServerHost(@"https://api.revenuecat.com");
 }
 
 @end

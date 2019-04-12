@@ -56,7 +56,6 @@ void RCOverrideServerHost(NSString *hostname)
     NSParameterAssert(([HTTPMethod isEqualToString:@"GET"] || [HTTPMethod isEqualToString:@"POST"]));
 
     NSString *urlString = [NSString stringWithFormat:@"%@/v1%@", self.class.serverHostName, path];
-    NSLog(@"urlString %@", urlString);
 
     NSMutableDictionary *defaultHeaders = [NSMutableDictionary
                                            dictionaryWithDictionary:@{@"content-type": @"application/json",

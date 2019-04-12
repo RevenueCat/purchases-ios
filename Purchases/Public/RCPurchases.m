@@ -321,7 +321,8 @@ static RCPurchases *_sharedPurchases = nil;
     }
 }
 
-- (void)makePurchase:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
+- (void)makePurchase:(SKProduct *)product
+ withCompletionBlock:(RCPurchaseCompletedBlock)completion
 {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
     payment.applicationUsername = self.appUserID;
@@ -333,13 +334,14 @@ static RCPurchases *_sharedPurchases = nil;
      completionBlock:(RCPurchaseCompletedBlock)completion
 {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-    NSLog(@"self.appUserID = %@", self.appUserID);
     payment.applicationUsername = self.appUserID;
     payment.paymentDiscount = discount;
     [self purchaseProduct:product withPayment:payment completion:completion];
 }
 
-- (void)purchaseProduct:(SKProduct *)product withPayment:(SKPayment *)payment completion:(RCPurchaseCompletedBlock)completion
+- (void)purchaseProduct:(SKProduct *)product
+            withPayment:(SKPayment *)payment
+             completion:(RCPurchaseCompletedBlock)completion
 {
     // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
     // from triggering a refresh.
@@ -388,6 +390,7 @@ static RCPurchases *_sharedPurchases = nil;
                     introductoryPrice:nil
                          currencyCode:nil
                     subscriptionGroup:nil
+                            discounts:nil
                            completion:^(RCPurchaserInfo * _Nullable info,
                                    NSError * _Nullable error) {
                                [self dispatch:^{
@@ -416,25 +419,29 @@ static RCPurchases *_sharedPurchases = nil;
     }];
 }
 
-- (void)paymentDiscountForProductDiscount:(SKProductDiscount *)discount product:(SKProduct *)product completion:(RCPaymentDiscountBlock)completion
+- (void)paymentDiscountForProductDiscount:(SKProductDiscount *)discount
+                                  product:(SKProduct *)product
+                               completion:(RCPaymentDiscountBlock)completion
 {
-    [self.backend postOfferForSigning:discount.identifier
-                withProductIdentifier:product.productIdentifier
-                  applicationUsername:self.appUserID
-                           completion:^(
-                                        NSString * _Nullable signature,
-                                        NSString * _Nullable keyIdentifier,
-                                        NSUUID * _Nullable nonce,
-                                        NSNumber * _Nullable timestamp,
-                                        NSError * _Nullable error) {
-                               
-                               SKPaymentDiscount *paymentDiscount = [[SKPaymentDiscount alloc] initWithIdentifier:discount.identifier
-                                                                                                    keyIdentifier:keyIdentifier
-                                                                                                            nonce:nonce
-                                                                                                        signature:signature
-                                                                                                        timestamp:timestamp];
-                               completion(paymentDiscount, nil);
-                           }];
+    [self receiptData:^(NSData *data) {
+        [self.backend postOfferForSigning:discount.identifier
+                    withProductIdentifier:product.productIdentifier
+                        subscriptionGroup:product.subscriptionGroupIdentifier
+                                     data:data
+                                appUserID:self.appUserID
+                               completion:^(NSString *_Nullable signature,
+                                       NSString *_Nullable keyIdentifier,
+                                       NSUUID *_Nullable nonce,
+                                       NSNumber *_Nullable timestamp,
+                                       NSError *_Nullable error) {
+                                   SKPaymentDiscount *paymentDiscount = [[SKPaymentDiscount alloc] initWithIdentifier:discount.identifier
+                                                                                                        keyIdentifier:keyIdentifier
+                                                                                                                nonce:nonce
+                                                                                                            signature:signature
+                                                                                                            timestamp:timestamp];
+                                   completion(paymentDiscount, nil);
+                               }];
+    }];
 }
 
 #pragma mark - Private Methods
@@ -773,6 +780,17 @@ static RCPurchases *_sharedPurchases = nil;
                               if (@available(iOS 12.0, macOS 10.14.0, *)) {
                                   subscriptionGroup = product.subscriptionGroupIdentifier;
                               }
+                              NSMutableArray *discounts = nil;
+                              if (@available(iOS 12.2, macOS 10.14.4, *)) {
+                                  discounts = [NSMutableArray new];
+                                  for(SKProductDiscount *discount in product.discounts) {
+                                      [discounts addObject:@{
+                                              @"offer_identifier": discount.identifier,
+                                              @"price": discount.price,
+                                              @"payment_mode": @((NSUInteger)RCPaymentModeFromSKProductDiscountPaymentMode(discount.paymentMode))
+                                      }];
+                                  }
+                              }
 
                               NSString *currencyCode = product.priceLocale.rc_currencyCode;
 
@@ -785,6 +803,7 @@ static RCPurchases *_sharedPurchases = nil;
                                           introductoryPrice:introPrice
                                                currencyCode:currencyCode
                                           subscriptionGroup:subscriptionGroup
+                                                  discounts:discounts
                                                  completion:^(RCPurchaserInfo * _Nullable info,
                                                              NSError * _Nullable error) {
                                                      [self handleReceiptPostWithTransaction:transaction

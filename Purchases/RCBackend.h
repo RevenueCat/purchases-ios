@@ -56,6 +56,7 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
       introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice
            currencyCode:(NSString * _Nullable)currencyCode
       subscriptionGroup:(NSString * _Nullable)subscriptionGroup
+              discounts:(NSArray<SKProductDiscount *> * _Nullable)discounts
              completion:(RCBackendPurchaserInfoResponseHandler)completion;
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
@@ -79,7 +80,9 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
 
 - (void)postOfferForSigning:(NSString *)offerIdentifier
       withProductIdentifier:(NSString *)productIdentifier
-        applicationUsername:(NSString *)applicationUsername
+          subscriptionGroup:(NSString *)subscriptionGroup
+                       data:(NSData *)data
+                  appUserID:(NSString *)applicationUsername
                  completion:(RCOfferSigningResponseHandler)completion;
 
 @end
