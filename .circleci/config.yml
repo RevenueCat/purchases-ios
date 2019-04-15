@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 jobs:
   runtest:
     macos:
@@ -15,12 +15,12 @@ jobs:
           name: Run tests
           command: fastlane scan
           environment:
-            SCAN_DEVICE: iPhone XS
             SCAN_SCHEME: Purchases
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
-          path: fastlane/test_output
+          path: fastlane/test_output/report.html
+          destination: test_report.html
 workflows:
   version: 2
   build-test:
