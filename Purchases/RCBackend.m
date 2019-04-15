@@ -436,17 +436,18 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                               error = [RCPurchasesErrorUtils unexpectedBackendResponseError];
                           } else {
                             NSDictionary *offer = offers[0];
-                            if (offer[@"signature_error"] != nil) {
+                            if (offer[@"signature_error"] != [NSNull null]) {
                                 error = [RCPurchasesErrorUtils backendErrorWithBackendCode:offer[@"signature_error"][@"code"]
                                                                                     backendMessage:offer[@"signature_error"][@"message"]
                                 ];
-                            } else if (offer[@"signature_data"] != nil) {
+                            } else if (offer[@"signature_data"] != [NSNull null]) {
                                 NSDictionary *signatureData = offer[@"signature_data"];
                                 NSString *signature = signatureData[@"signature"];
-                                NSString *keyIdentifier = signatureData[@"key_id"];
+                                NSString *keyIdentifier = offer[@"key_id"];
                                 NSUUID *nonce = [[NSUUID alloc] initWithUUIDString:signatureData[@"nonce"]];
                                 NSNumber *timestamp = signatureData[@"timestamp"];
                                 completion(signature, keyIdentifier, nonce, timestamp, nil);
+                                return;
                             } else {
                                 error = [RCPurchasesErrorUtils unexpectedBackendResponseError];
                             }

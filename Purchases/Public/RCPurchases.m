@@ -439,7 +439,7 @@ static RCPurchases *_sharedPurchases = nil;
                                                                                                                 nonce:nonce
                                                                                                             signature:signature
                                                                                                             timestamp:timestamp];
-                                   completion(paymentDiscount, nil);
+                                   completion(paymentDiscount, error);
                                }];
     }];
 }
