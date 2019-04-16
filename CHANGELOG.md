@@ -1,3 +1,6 @@
+## 2.1.1
+- Avoid refreshing receipt everytime restore is called
+
 ## 2.1.0
 - Adds userCancelled as a parameter to the completion block of the makePurchase function.
 - Better error codes.
