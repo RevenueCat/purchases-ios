@@ -895,7 +895,7 @@ class PurchasesTests: XCTestCase {
         purchases!.restoreTransactions()
 
         expect(self.receiptFetcher.receiptDataTimesCalled).to(equal(1))
-        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
+        expect(self.requestFetcher.refreshReceiptCalled).to(beFalse())
     }
 
     func testRestoringPurchasesSetsIsRestore() {
