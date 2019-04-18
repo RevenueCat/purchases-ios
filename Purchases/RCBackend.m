@@ -186,6 +186,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                           introductoryPrice,
                           subscriptionGroup];
     
+    for (NSDictionary * discount in discounts) {
+        cacheKey = [NSString stringWithFormat:@"%@-%@", cacheKey, discount[@"offer_identifier"]];
+    }
+    
     if ([self addCallback:completion forKey:cacheKey]) {
         return;
     }
