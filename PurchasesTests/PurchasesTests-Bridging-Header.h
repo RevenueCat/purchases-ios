@@ -15,4 +15,4 @@
 #include <Purchases/RCOffering.h>
 #include <Purchases/RCOffering+Protected.h>
 #include <Purchases/RCIntroEligibility+Protected.h>
-#include <Purchases/RCPromotionalOffer.h>
+#include <Purchases/RCPromotionalOffer+Protected.h>

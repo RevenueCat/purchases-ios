@@ -223,9 +223,9 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
         if (discounts) {
-            body[@"offers"] = [NSMutableArray init];
+            body[@"offers"] = [NSMutableArray array];
             for (RCPromotionalOffer * discount in discounts) {
-                [body[@"offers"]  addObject:@{
+                [body[@"offers"] addObject:@{
                         @"offer_identifier": discount.offerIdentifier,
                         @"price": discount.price,
                         @"payment_mode": @((NSUInteger) discount.paymentMode)
