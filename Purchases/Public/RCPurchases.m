@@ -20,6 +20,7 @@
 #import "RCPurchasesErrors.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCReceiptFetcher.h"
+#import "RCPromotionalOffer.h"
 
 #define CALL_AND_DISPATCH_IF_SET(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -780,15 +781,12 @@ static RCPurchases *_sharedPurchases = nil;
                               if (@available(iOS 12.0, macOS 10.14.0, *)) {
                                   subscriptionGroup = product.subscriptionGroupIdentifier;
                               }
+                              
                               NSMutableArray *discounts = nil;
                               if (@available(iOS 12.2, macOS 10.14.4, *)) {
                                   discounts = [NSMutableArray new];
                                   for(SKProductDiscount *discount in product.discounts) {
-                                      [discounts addObject:@{
-                                              @"offer_identifier": discount.identifier,
-                                              @"price": discount.price,
-                                              @"payment_mode": @((NSUInteger)RCPaymentModeFromSKProductDiscountPaymentMode(discount.paymentMode))
-                                      }];
+                                      [discounts addObject:[[RCPromotionalOffer alloc] initWithSKProductDiscount:discount]];
                                   }
                               }
 

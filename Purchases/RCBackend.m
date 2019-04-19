@@ -16,6 +16,7 @@
 #import "RCOffering+Protected.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCUtils.h"
+#import "RCPromotionalOffer.h"
 
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
@@ -164,7 +165,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
       introductoryPrice:(NSDecimalNumber *)introductoryPrice
            currencyCode:(NSString *)currencyCode
       subscriptionGroup:(NSString *)subscriptionGroup
-              discounts:(NSArray * _Nullable)discounts
+              discounts:(NSArray<RCPromotionalOffer *> * _Nullable)discounts
              completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
@@ -185,9 +186,11 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                           @((NSUInteger)paymentMode),
                           introductoryPrice,
                           subscriptionGroup];
-    
-    for (NSDictionary * discount in discounts) {
-        cacheKey = [NSString stringWithFormat:@"%@-%@", cacheKey, discount[@"offer_identifier"]];
+
+    if (@available(iOS 12.2, macOS 10.14.4, *)) {
+        for (RCPromotionalOffer * discount in discounts) {
+            cacheKey = [NSString stringWithFormat:@"%@-%@", cacheKey, discount.offerIdentifier];
+        }
     }
     
     if ([self addCallback:completion forKey:cacheKey]) {
@@ -218,8 +221,17 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
         body[@"subscription_group_id"] = subscriptionGroup;
     }
 
-    if (discounts) {
-        body[@"offers"] = discounts;
+    if (@available(iOS 12.2, macOS 10.14.4, *)) {
+        if (discounts) {
+            body[@"offers"] = [NSMutableArray init];
+            for (RCPromotionalOffer * discount in discounts) {
+                [body[@"offers"]  addObject:@{
+                        @"offer_identifier": discount.offerIdentifier,
+                        @"price": discount.price,
+                        @"payment_mode": @((NSUInteger) discount.paymentMode)
+                }];
+            }
+        }
     }
 
     [self.httpClient performRequest:@"POST"

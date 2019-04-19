@@ -28,7 +28,7 @@ void RCOverrideServerHost(NSString *hostname)
 
 + (NSString *)serverHostName
 {
-    return  (overrideHostName) ? overrideHostName : @"https://api.revenuecat.com";
+    return  (overrideHostName) ? overrideHostName : @"api.revenuecat.com";
 }
 
 - (instancetype)init
@@ -55,7 +55,7 @@ void RCOverrideServerHost(NSString *hostname)
     NSParameterAssert(!([HTTPMethod isEqualToString:@"GET"] && requestBody));
     NSParameterAssert(([HTTPMethod isEqualToString:@"GET"] || [HTTPMethod isEqualToString:@"POST"]));
 
-    NSString *urlString = [NSString stringWithFormat:@"%@/v1%@", self.class.serverHostName, path];
+    NSString *urlString = [NSString stringWithFormat:@"https://%@/v1%@", self.class.serverHostName, path];
 
     NSMutableDictionary *defaultHeaders = [NSMutableDictionary
                                            dictionaryWithDictionary:@{@"content-type": @"application/json",

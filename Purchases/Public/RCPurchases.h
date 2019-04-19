@@ -267,7 +267,7 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 
 
 
-API_AVAILABLE(ios(12.2), macosx(10.14.4))
+API_AVAILABLE(ios(12.2), macos(10.14.4))
 typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PaymentDiscountBlock);
 
 - (void)paymentDiscountForProductDiscount:(SKProductDiscount *)discount

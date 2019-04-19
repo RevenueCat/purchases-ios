@@ -14,7 +14,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCEntitlement;
+@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCEntitlement, RCPromotionalOffer;
 
 typedef NS_ENUM(NSInteger, RCPaymentMode) {
     RCPaymentModeNone = -1,
@@ -56,7 +56,7 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
       introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice
            currencyCode:(NSString * _Nullable)currencyCode
       subscriptionGroup:(NSString * _Nullable)subscriptionGroup
-              discounts:(NSArray<SKProductDiscount *> * _Nullable)discounts
+              discounts:(NSArray<RCPromotionalOffer *> * _Nullable)discounts
              completion:(RCBackendPurchaserInfoResponseHandler)completion;
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
