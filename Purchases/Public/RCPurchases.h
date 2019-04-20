@@ -274,9 +274,23 @@ typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * 
                                   product:(SKProduct *)product
                                completion:(RCPaymentDiscountBlock)completion API_AVAILABLE(ios(12.2), macosx(10.14.4));
 
+
+/**
+ Purchase the passed `SKProduct`.
+ 
+ Call this method when a user has decided to purchase a product with an applied discount. Only call this in direct response to user input.
+ 
+ From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+ 
+ @note You do not need to finish the transaction yourself in the completion callback, Purchases will handle this for you.
+ 
+ @param product The `SKProduct` the user intends to purchase
+ 
+ @param discount The `SKPatmentDiscount` to apply to the purchase
+ */
 - (void)makePurchase:(SKProduct *)product
         withDiscount:(SKPaymentDiscount * _Nullable)discount
-     completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
+     completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:_:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
     
 @end
 

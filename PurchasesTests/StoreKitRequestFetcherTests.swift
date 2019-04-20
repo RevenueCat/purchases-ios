@@ -54,6 +54,16 @@ class MockProduct: SKProduct {
     override var introductoryPrice: SKProductDiscount? {
         return MockDiscount()
     }
+    
+    var mockDiscountIdentifier: String?
+    @available(iOS 12.2, *)
+    override var discounts: [SKProductDiscount] {
+        if (mockDiscountIdentifier != nil) {
+            return [MockProductDiscount(mockIdentifier: mockDiscountIdentifier!)];
+        } else {
+            return []
+        }
+    }
 }
 
 class StoreKitRequestFetcher: XCTestCase {
