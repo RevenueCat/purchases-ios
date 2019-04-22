@@ -14,7 +14,8 @@
 |   | RevenueCat |
 | --- | --- |
 ✅ | Server-side receipt validation
-➡️ | [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more   
+➡️ | [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more  
+🖥 | macOS support  
 🎯 | Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web  
 📊 | Analytics - automatic calculation of metrics like conversion, mrr, and churn  
 📝 | [Online documentation](https://docs.revenuecat.com/docs) up to date  
@@ -49,6 +50,9 @@ And then run:
 ```
 carthage update --no-use-binaries
 ```
+
+### Requirements
+*Purchases* requires iOS 9.0+ and macOS 10.12+
 
 ## Getting Started
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
