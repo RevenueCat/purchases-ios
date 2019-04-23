@@ -43,6 +43,8 @@ typedef NS_ERROR_ENUM(RCPurchasesErrorDomain, RCPurchasesErrorCode) {
     RCInvalidAppUserIdError,
     RCOperationAlreadyInProgressError,
     RCUnknownBackendError,
+    RCInvalidAppleSubscriptionKeyError,
+    RCIneligibleError,
 } NS_SWIFT_NAME(PurchasesErrorCode);
 
 /**
@@ -63,6 +65,8 @@ typedef NS_ENUM(NSInteger, RCBackendErrorCode) {
     RCBackendPlayStoreQuotaExceeded = 7229,
     RCBackendPlayStoreInvalidPackageName = 7230,
     RCBackendPlayStoreGenericError = 7231,
+    RCBackendUserIneligibleForPromoOffer = 7232,
+    RCBackendInvalidAppleSubscriptionKey = 7234
 } NS_SWIFT_NAME(RevenueCatBackendErrorCode);
 
 @end

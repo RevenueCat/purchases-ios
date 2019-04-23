@@ -14,7 +14,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCEntitlement;
+@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCEntitlement, RCPromotionalOffer;
 
 typedef NS_ENUM(NSInteger, RCPaymentMode) {
     RCPaymentModeNone = -1,
@@ -34,6 +34,12 @@ typedef void(^RCIntroEligibilityResponseHandler)(NSDictionary<NSString *,
 
 typedef void(^RCEntitlementResponseHandler)(RCEntitlements * _Nullable, NSError * _Nullable);
 
+typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
+                                             NSString * _Nullable keyIdentifier,
+                                             NSUUID * _Nullable nonce,
+                                             NSNumber * _Nullable timestamp,
+                                             NSError * _Nullable error);
+
 @interface RCBackend : NSObject
 
 - (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey;
@@ -50,6 +56,7 @@ typedef void(^RCEntitlementResponseHandler)(RCEntitlements * _Nullable, NSError 
       introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice
            currencyCode:(NSString * _Nullable)currencyCode
       subscriptionGroup:(NSString * _Nullable)subscriptionGroup
+              discounts:(NSArray<RCPromotionalOffer *> * _Nullable)discounts
              completion:(RCBackendPurchaserInfoResponseHandler)completion;
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
@@ -70,6 +77,13 @@ typedef void(^RCEntitlementResponseHandler)(RCEntitlements * _Nullable, NSError 
 - (void)createAliasForAppUserID:(NSString *)appUserID
                withNewAppUserID:(NSString *)newAppUserID
                      completion:(void (^ _Nullable)(NSError * _Nullable error))completion;
+
+- (void)postOfferForSigning:(NSString *)offerIdentifier
+      withProductIdentifier:(NSString *)productIdentifier
+          subscriptionGroup:(NSString *)subscriptionGroup
+                receiptData:(NSData *)data
+                  appUserID:(NSString *)applicationUsername
+                 completion:(RCOfferSigningResponseHandler)completion;
 
 @end
 

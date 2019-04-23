@@ -35,6 +35,42 @@ class MockTransaction: SKPaymentTransaction {
     }
 }
 
+@available(iOS 12.2, *)
+class MockProductDiscount: SKProductDiscount {
+    
+    var mockIdentifier: String
+    
+    init(mockIdentifier: String) {
+        self.mockIdentifier = mockIdentifier
+        super.init()
+    }
+    
+    override var price: NSDecimalNumber {
+        return 2.99 as NSDecimalNumber
+    }
+    
+    override var priceLocale: Locale {
+        return Locale.current
+    }
+    
+    override var identifier: String {
+        return self.mockIdentifier
+    }
+    
+    override var subscriptionPeriod: SKProductSubscriptionPeriod {
+        return SKProductSubscriptionPeriod()
+    }
+    
+    override var numberOfPeriods: Int {
+        return 2
+    }
+    
+    override var paymentMode: SKProductDiscount.PaymentMode {
+        return SKProductDiscount.PaymentMode.freeTrial;
+    }
+
+}
+
 class PurchasesTests: XCTestCase {
 
     class MockReceiptFetcher: RCReceiptFetcher {
@@ -67,6 +103,7 @@ class PurchasesTests: XCTestCase {
             let products = identifiers.map { (identifier) -> MockProduct in
                 let p = MockProduct(mockProductIdentifier: identifier)
                 p.mockSubscriptionGroupIdentifier = "1234567"
+                p.mockDiscountIdentifier = "discount_id"
                 return p
             }
             completion(products)
@@ -109,13 +146,14 @@ class PurchasesTests: XCTestCase {
         var postedIntroPrice: NSDecimalNumber?
         var postedCurrencyCode: String?
         var postedSubscriptionGroup: String?
+        var postedDiscounts: Array<RCPromotionalOffer>?
         
         var postReceiptPurchaserInfo: PurchaserInfo?
         var postReceiptError: Error?
         var aliasError: Error?
         var aliasCalled = false
-
-        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, subscriptionGroup: String?, completion: @escaping RCBackendPurchaserInfoResponseHandler) {
+        
+        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, subscriptionGroup: String?, discounts: Array<RCPromotionalOffer>?, completion: @escaping RCBackendPurchaserInfoResponseHandler) {
             postReceiptDataCalled = true
             postedIsRestore = isRestore
 
@@ -127,6 +165,7 @@ class PurchasesTests: XCTestCase {
             postedSubscriptionGroup = subscriptionGroup
 
             postedCurrencyCode = currencyCode
+            postedDiscounts = discounts
 
             completion(postReceiptPurchaserInfo, postReceiptError)
         }
@@ -177,6 +216,13 @@ class PurchasesTests: XCTestCase {
             postedAttributionFromNetwork = network
         }
 
+        var postOfferForSigningCalled = false
+        var postOfferForSigningPaymentDiscountResponse: [String: Any] = [:]
+        var postOfferForSigningError: Error?
+        override func postOffer(forSigning offerIdentifier: String, withProductIdentifier productIdentifier: String, subscriptionGroup: String, receiptData: Data, appUserID applicationUsername: String, completion: @escaping RCOfferSigningResponseHandler) {
+            postOfferForSigningCalled = true
+            completion(postOfferForSigningPaymentDiscountResponse["signature"] as? String, postOfferForSigningPaymentDiscountResponse["keyIdentifier"] as? String, postOfferForSigningPaymentDiscountResponse["nonce"] as? UUID,  postOfferForSigningPaymentDiscountResponse["timestamp"] as? NSNumber, postOfferForSigningError)
+        }
     }
 
     class MockStoreKitWrapper: RCStoreKitWrapper {
@@ -607,6 +653,13 @@ class PurchasesTests: XCTestCase {
             
             if #available(iOS 12.0, *) {
                 expect(self.backend.postedSubscriptionGroup).to(equal(product.subscriptionGroupIdentifier))
+            }
+
+            if #available(iOS 12.2, *) {
+                expect(self.backend.postedDiscounts?.count).to(equal(1))
+                expect(self.backend.postedDiscounts?[0].offerIdentifier).to(equal("discount_id"))
+                expect(self.backend.postedDiscounts?[0].price).to(equal(2.99))
+                expect(self.backend.postedDiscounts?[0].paymentMode).to(equal(RCPaymentMode.freeTrial))
             }
             
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
@@ -1492,12 +1545,10 @@ class PurchasesTests: XCTestCase {
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
         var receivedUserCancelled: Bool?
         var receivedError: NSError?
-        var receivedUnderlyingError: NSError?
 
         self.purchases?.makePurchase(product) { (tx, info, error, userCancelled) in
             receivedError = error as NSError?
             receivedUserCancelled = userCancelled
-            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         }
 
         let transaction = MockTransaction()
@@ -1534,11 +1585,61 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.payment).to(be(payment))
         expect(completionCalled).toEventually(beTrue())
     }
+    
+    func testAddsDiscountToWrapper() {
+        if #available(iOS 12.2, *) {
+            setupPurchases()
+            let product = MockProduct(mockProductIdentifier: "com.product.id1")
+            let discount = SKPaymentDiscount.init(identifier: "discount", keyIdentifier: "TIKAMASALA1", nonce: UUID(), signature: "Base64 encoded signature", timestamp: 123413232131)
+            
+            self.purchases?.makePurchase(product, discount: discount) { (tx, info, error, userCancelled) in
+                
+            }
+            
+            expect(self.storeKitWrapper.payment).toNot(beNil())
+            expect(self.storeKitWrapper.payment?.productIdentifier).to(equal(product.productIdentifier))
+            expect(self.storeKitWrapper.payment?.paymentDiscount).to(equal(discount))
+        }
+    }
+
+    func testPaymentDiscountForProductDiscountCreatesDiscount() {
+        if #available(iOS 12.2, *) {
+            setupPurchases()
+            let product = MockProduct(mockProductIdentifier: "com.product.id1")
+            
+            let discountIdentifier = "id"
+            let signature = "firma"
+            let keyIdentifier = "key_id"
+            let nonce = UUID()
+            let timestamp = 1234
+            let productDiscount = MockProductDiscount(mockIdentifier: discountIdentifier)
+            self.backend.postOfferForSigningPaymentDiscountResponse["signature"] = signature
+            self.backend.postOfferForSigningPaymentDiscountResponse["keyIdentifier"] = keyIdentifier
+            self.backend.postOfferForSigningPaymentDiscountResponse["nonce"] = nonce
+            self.backend.postOfferForSigningPaymentDiscountResponse["timestamp"] = timestamp
+            
+            var completionCalled = false
+            var receivedPaymentDiscount: SKPaymentDiscount?
+            self.purchases?.paymentDiscount(for: productDiscount, product: product, completion: { (paymentDiscount, error) in
+                receivedPaymentDiscount = paymentDiscount
+                completionCalled = true
+            })
+            
+            expect(self.receiptFetcher.receiptDataTimesCalled).toEventually(equal(1))
+            expect(self.backend.postOfferForSigningCalled).toEventually(beTrue())
+            expect(completionCalled).toEventually(beTrue())
+            expect(receivedPaymentDiscount?.identifier).toEventually(equal(discountIdentifier))
+            expect(receivedPaymentDiscount?.signature).toEventually(equal(signature))
+            expect(receivedPaymentDiscount?.keyIdentifier).toEventually(equal(keyIdentifier))
+            expect(receivedPaymentDiscount?.nonce).toEventually(equal(nonce))
+            expect(receivedPaymentDiscount?.timestamp).toEventually(be(timestamp))
+
+        }
+    }
 
     private func identifiedSuccessfully(appUserID: String) {
         expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
         expect(self.purchases?.appUserID).to(equal(appUserID))
         expect(self.purchases?.allowSharingAppStoreAccount).to(beFalse())
     }
-    
 }

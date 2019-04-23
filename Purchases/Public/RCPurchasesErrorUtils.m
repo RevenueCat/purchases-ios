@@ -62,6 +62,10 @@ static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
             return @"There was an unknown backend error.";
         case RCReceiptInUseByOtherSubscriberError:
             return @"The receipt is in use by other subscriber.";
+        case RCInvalidAppleSubscriptionKeyError:
+            return @"Apple Subscription Key is invalid or not present. In order to provide subscription offers, you must first generate a subscription key. Please see https://docs.revenuecat.com/docs for more info.";
+        case RCIneligibleError:
+            return @"The User is ineligible for that action.";
     }
     return @"Something went wrong.";
 }
@@ -107,6 +111,10 @@ static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
             return @"UNKNOWN_BACKEND_ERROR";
         case RCReceiptInUseByOtherSubscriberError:
             return @"RECEIPT_IN_USE_BY_OTHER_SUBSCRIBER";
+        case RCInvalidAppleSubscriptionKeyError:
+            return @"INVALID_APPLE_SUBSCRIPTION_KEY";
+        case RCIneligibleError:
+            return @"INVALID_OFFER";
     }
     return @"UNRECOGNIZED_ERROR";
 }
@@ -134,6 +142,10 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(RCBackend
             return RCPurchaseInvalidError;
         case RCBackendEmptyAppUserId:
             return RCInvalidAppUserIdError;
+        case RCBackendInvalidAppleSubscriptionKey:
+            return RCInvalidAppleSubscriptionKeyError;
+        case RCBackendUserIneligibleForPromoOffer:
+            return RCIneligibleError;
     }
     return RCUnknownError;
 }
