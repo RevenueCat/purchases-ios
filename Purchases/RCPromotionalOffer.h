@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, readonly) enum RCPaymentMode paymentMode;
 
-- (instancetype)initWithSKProductDiscount:(SKProductDiscount *)skProductDiscount API_AVAILABLE(ios(12.2), macos(10.14.4));
+- (instancetype)initWithProductDiscount:(SKProductDiscount *)productDiscount API_AVAILABLE(ios(12.2), macos(10.14.4));
 
 @end
 NS_ASSUME_NONNULL_END

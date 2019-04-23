@@ -15,12 +15,12 @@
 
 @implementation RCPromotionalOffer
 
-- (instancetype)initWithSKProductDiscount:(SKProductDiscount *)skProductDiscount
+- (instancetype)initWithProductDiscount:(SKProductDiscount *)productDiscount
 API_AVAILABLE(ios(12.2), macos(10.14.4)) {
     if (self = [super init]) {
-        self.offerIdentifier = skProductDiscount.identifier;
-        self.price = skProductDiscount.price;
-        self.paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(skProductDiscount.paymentMode);
+        self.offerIdentifier = productDiscount.identifier;
+        self.price = productDiscount.price;
+        self.paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(productDiscount.paymentMode);
     }
     return self;
 }

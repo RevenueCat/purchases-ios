@@ -326,7 +326,6 @@ static RCPurchases *_sharedPurchases = nil;
  withCompletionBlock:(RCPurchaseCompletedBlock)completion
 {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-    payment.applicationUsername = self.appUserID;
     [self purchaseProduct:product withPayment:payment completion:completion];
 }
 
@@ -335,15 +334,16 @@ static RCPurchases *_sharedPurchases = nil;
      completionBlock:(RCPurchaseCompletedBlock)completion
 {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-    payment.applicationUsername = self.appUserID;
     payment.paymentDiscount = discount;
     [self purchaseProduct:product withPayment:payment completion:completion];
 }
 
 - (void)purchaseProduct:(SKProduct *)product
-            withPayment:(SKPayment *)payment
+            withPayment:(SKMutablePayment *)payment
              completion:(RCPurchaseCompletedBlock)completion
 {
+    payment.applicationUsername = self.appUserID;
+
     // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
     // from triggering a refresh.
     self.cachesLastUpdated = [NSDate date];
@@ -428,7 +428,7 @@ static RCPurchases *_sharedPurchases = nil;
         [self.backend postOfferForSigning:discount.identifier
                     withProductIdentifier:product.productIdentifier
                         subscriptionGroup:product.subscriptionGroupIdentifier
-                                     data:data
+                              receiptData:data
                                 appUserID:self.appUserID
                                completion:^(NSString *_Nullable signature,
                                        NSString *_Nullable keyIdentifier,
@@ -785,8 +785,8 @@ static RCPurchases *_sharedPurchases = nil;
                               NSMutableArray *discounts = nil;
                               if (@available(iOS 12.2, macOS 10.14.4, *)) {
                                   discounts = [NSMutableArray new];
-                                  for(SKProductDiscount *discount in product.discounts) {
-                                      [discounts addObject:[[RCPromotionalOffer alloc] initWithSKProductDiscount:discount]];
+                                  for (SKProductDiscount *discount in product.discounts) {
+                                      [discounts addObject:[[RCPromotionalOffer alloc] initWithProductDiscount:discount]];
                                   }
                               }
 

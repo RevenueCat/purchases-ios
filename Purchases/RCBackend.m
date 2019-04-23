@@ -18,6 +18,8 @@
 #import "RCUtils.h"
 #import "RCPromotionalOffer.h"
 
+#define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
+
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
 {
@@ -159,12 +161,12 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 - (void)postReceiptData:(NSData *)data
               appUserID:(NSString *)appUserID
               isRestore:(BOOL)isRestore
-      productIdentifier:(NSString *)productIdentifier
-                  price:(NSDecimalNumber *)price
+      productIdentifier:(NSString * _Nullable)productIdentifier
+                  price:(NSDecimalNumber * _Nullable)price
             paymentMode:(RCPaymentMode)paymentMode
-      introductoryPrice:(NSDecimalNumber *)introductoryPrice
-           currencyCode:(NSString *)currencyCode
-      subscriptionGroup:(NSString *)subscriptionGroup
+      introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice
+           currencyCode:(NSString * _Nullable)currencyCode
+      subscriptionGroup:(NSString * _Nullable)subscriptionGroup
               discounts:(NSArray<RCPromotionalOffer *> * _Nullable)discounts
              completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
@@ -177,18 +179,18 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                    }];
 
     NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@",
-                          appUserID,
-                          @(isRestore),
-                          fetchToken,
-                          productIdentifier,
-                          price,
-                          currencyCode,
-                          @((NSUInteger)paymentMode),
-                          introductoryPrice,
-                          subscriptionGroup];
+                                                    appUserID,
+                                                    @(isRestore),
+                                                    fetchToken,
+                                                    productIdentifier,
+                                                    price,
+                                                    currencyCode,
+                                                    @((NSUInteger)paymentMode),
+                                                    introductoryPrice,
+                                                    subscriptionGroup];
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
-        for (RCPromotionalOffer * discount in discounts) {
+        for (RCPromotionalOffer *discount in discounts) {
             cacheKey = [NSString stringWithFormat:@"%@-%@", cacheKey, discount.offerIdentifier];
         }
     }
@@ -223,14 +225,15 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
         if (discounts) {
-            body[@"offers"] = [NSMutableArray array];
-            for (RCPromotionalOffer * discount in discounts) {
-                [body[@"offers"] addObject:@{
+            NSMutableArray *offers = [NSMutableArray array];
+            for (RCPromotionalOffer *discount in discounts) {
+                [offers addObject:@{
                         @"offer_identifier": discount.offerIdentifier,
                         @"price": discount.price,
                         @"payment_mode": @((NSUInteger) discount.paymentMode)
                 }];
             }
+            body[@"offers"] = offers;
         }
     }
 
@@ -250,7 +253,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@", escapedAppUserID];
-    
+
     if ([self addCallback:completion forKey:path]) {
         return;
     }
@@ -354,7 +357,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/products", escapedAppUserID];
-    
+
     if ([self addCallback:completion forKey:path]) {
         return;
     }
@@ -422,11 +425,11 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 - (void)postOfferForSigning:(NSString *)offerIdentifier
       withProductIdentifier:(NSString *)productIdentifier
           subscriptionGroup:(NSString *)subscriptionGroup
-                       data:(NSData *)data
+                receiptData:(NSData *)receiptData
                   appUserID:(NSString *)appUserID
                  completion:(RCOfferSigningResponseHandler)completion
 {
-    NSString *fetchToken = [data base64EncodedStringWithOptions:0];
+    NSString *fetchToken = [receiptData base64EncodedStringWithOptions:0];
     [self.httpClient performRequest:@"POST" path:@"/offers"
                                body:@{
                                        @"app_user_id": appUserID,
@@ -452,11 +455,9 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                               error = [RCPurchasesErrorUtils unexpectedBackendResponseError];
                           } else {
                             NSDictionary *offer = offers[0];
-                            if (offer[@"signature_error"] != [NSNull null]) {
-                                error = [RCPurchasesErrorUtils backendErrorWithBackendCode:offer[@"signature_error"][@"code"]
-                                                                                    backendMessage:offer[@"signature_error"][@"message"]
-                                ];
-                            } else if (offer[@"signature_data"] != [NSNull null]) {
+                            if (RC_HAS_KEY(offer, @"signature_error")) {
+                                error = [RCPurchasesErrorUtils backendErrorWithBackendCode:offer[@"signature_error"][@"code"] backendMessage:offer[@"signature_error"][@"message"]];
+                            } else if (RC_HAS_KEY(offer, @"signature_data")) {
                                 NSDictionary *signatureData = offer[@"signature_data"];
                                 NSString *signature = signatureData[@"signature"];
                                 NSString *keyIdentifier = offer[@"key_id"];
@@ -469,9 +470,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                             }
                           }
                       } else {
-                          error = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
-                                                                              backendMessage:response[@"message"]
-                          ];
+                          error = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"] backendMessage:response[@"message"]];
                       }
 
                       completion(nil, nil, nil, nil, error);

@@ -219,7 +219,7 @@ class PurchasesTests: XCTestCase {
         var postOfferForSigningCalled = false
         var postOfferForSigningPaymentDiscountResponse: [String: Any] = [:]
         var postOfferForSigningError: Error?
-        override func postOffer(forSigning offerIdentifier: String, withProductIdentifier productIdentifier: String, subscriptionGroup: String, data: Data, appUserID applicationUsername: String, completion: @escaping RCOfferSigningResponseHandler) {
+        override func postOffer(forSigning offerIdentifier: String, withProductIdentifier productIdentifier: String, subscriptionGroup: String, receiptData: Data, appUserID applicationUsername: String, completion: @escaping RCOfferSigningResponseHandler) {
             postOfferForSigningCalled = true
             completion(postOfferForSigningPaymentDiscountResponse["signature"] as? String, postOfferForSigningPaymentDiscountResponse["keyIdentifier"] as? String, postOfferForSigningPaymentDiscountResponse["nonce"] as? UUID,  postOfferForSigningPaymentDiscountResponse["timestamp"] as? NSNumber, postOfferForSigningError)
         }
@@ -1545,12 +1545,10 @@ class PurchasesTests: XCTestCase {
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
         var receivedUserCancelled: Bool?
         var receivedError: NSError?
-        var receivedUnderlyingError: NSError?
 
         self.purchases?.makePurchase(product) { (tx, info, error, userCancelled) in
             receivedError = error as NSError?
             receivedUserCancelled = userCancelled
-            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         }
 
         let transaction = MockTransaction()
@@ -1594,7 +1592,7 @@ class PurchasesTests: XCTestCase {
             let product = MockProduct(mockProductIdentifier: "com.product.id1")
             let discount = SKPaymentDiscount.init(identifier: "discount", keyIdentifier: "TIKAMASALA1", nonce: UUID(), signature: "Base64 encoded signature", timestamp: 123413232131)
             
-            self.purchases?.makePurchase(product, discount) { (tx, info, error, userCancelled) in
+            self.purchases?.makePurchase(product, discount: discount) { (tx, info, error, userCancelled) in
                 
             }
             

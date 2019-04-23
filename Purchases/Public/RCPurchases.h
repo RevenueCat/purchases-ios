@@ -290,7 +290,7 @@ typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * 
  */
 - (void)makePurchase:(SKProduct *)product
         withDiscount:(SKPaymentDiscount * _Nullable)discount
-     completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:_:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
+     completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
     
 @end
 

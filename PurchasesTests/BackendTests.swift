@@ -931,7 +931,7 @@ class BackendTests: XCTestCase {
                 forSigning: offerIdentifier,
                 withProductIdentifier: productIdentifier,
                 subscriptionGroup: group,
-                data: discountData,
+                receiptData: discountData,
                 appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
                     completionCalled = true
                 }
@@ -980,7 +980,7 @@ class BackendTests: XCTestCase {
                 forSigning: offerIdentifier,
                 withProductIdentifier: productIdentifier,
                 subscriptionGroup: group,
-                data: discountData,
+                receiptData: discountData,
                 appUserID: userID) { _, _, _, _, error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
@@ -1014,7 +1014,7 @@ class BackendTests: XCTestCase {
                 forSigning: offerIdentifier,
                 withProductIdentifier: productIdentifier,
                 subscriptionGroup: group,
-                data: discountData,
+                receiptData: discountData,
                 appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
@@ -1057,7 +1057,7 @@ class BackendTests: XCTestCase {
             forSigning: offerIdentifier,
             withProductIdentifier: productIdentifier,
             subscriptionGroup: group,
-            data: discountData,
+            receiptData: discountData,
             appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
                 receivedError = error as NSError?
                 receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
@@ -1100,7 +1100,7 @@ class BackendTests: XCTestCase {
                 forSigning: offerIdentifier,
                 withProductIdentifier: productIdentifier,
                 subscriptionGroup: group,
-                data: discountData,
+                receiptData: discountData,
                 appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
@@ -1127,7 +1127,7 @@ class BackendTests: XCTestCase {
                 forSigning: offerIdentifier,
                 withProductIdentifier: productIdentifier,
                 subscriptionGroup: group,
-                data: discountData,
+                receiptData: discountData,
                 appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
                     receivedError = error as NSError?
                     receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?

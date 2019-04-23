@@ -81,7 +81,7 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
 - (void)postOfferForSigning:(NSString *)offerIdentifier
       withProductIdentifier:(NSString *)productIdentifier
           subscriptionGroup:(NSString *)subscriptionGroup
-                       data:(NSData *)data
+                receiptData:(NSData *)data
                   appUserID:(NSString *)applicationUsername
                  completion:(RCOfferSigningResponseHandler)completion;
 
