@@ -63,7 +63,7 @@ static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
         case RCReceiptInUseByOtherSubscriberError:
             return @"The receipt is in use by other subscriber.";
         case RCInvalidAppleSubscriptionKeyError:
-            return @"Apple Subscription Key is invalid or not present. In order to provide subscription offers, you must first generate a subscription key. Please see https://docs.revenuecat.com/docs for more info.";
+            return @"Apple Subscription Key is invalid or not present. In order to provide subscription offers, you must first generate a subscription key. Please see https://docs.revenuecat.com/docs/ios-subscription-offers for more info.";
         case RCIneligibleError:
             return @"The User is ineligible for that action.";
     }

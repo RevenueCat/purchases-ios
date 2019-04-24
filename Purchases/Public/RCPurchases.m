@@ -366,7 +366,7 @@ static RCPurchases *_sharedPurchases = nil;
         self.purchaseCompleteCallbacks[payment.productIdentifier] = [completion copy];
     }
     
-    [self.storeKitWrapper addPayment:payment];
+    [self.storeKitWrapper addPayment:[payment copy]];
 }
 
 
