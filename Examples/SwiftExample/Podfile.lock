@@ -1,5 +1,5 @@
 PODS:
-  - Purchases (2.2.0-SNAPSHOT)
+  - Purchases (2.2.0)
 
 DEPENDENCIES:
   - Purchases (from `../../`)

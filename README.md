@@ -31,7 +31,7 @@
 
 ### CocoaPods
 ```
-pod "Purchases", "2.1.0"
+pod "Purchases", "2.2.0"
 ```
 
 And then run:
@@ -42,7 +42,7 @@ pod install
 
 ### Carthage
 ```
-github "revenuecat/purchases-ios" "2.1.0"
+github "revenuecat/purchases-ios" "2.2.0"
 ```
 
 And then run:
@@ -253,7 +253,7 @@ Obj-C:
 ```
 
 ## Error Handling
-When an error has occurred, the completion callback will receive an `NSError` object. For a complete list of errors, see our online error handling documentation: https://docs.revenuecat.com/v2.1/docs/errors
+When an error has occurred, the completion callback will receive an `NSError` object. For a complete list of errors, see our online error handling documentation: https://docs.revenuecat.com/docs/errors
 
 When investigating or logging errors, review the `userInfo` dictionary, paying attention to the following keys:
 
@@ -329,7 +329,7 @@ RCPurchases.debugLogsEnabled = YES;
 Example output:
 ```
 [Purchases] - DEBUG: Debug logging enabled.
-[Purchases] - DEBUG: SDK Version - 2.1.0
+[Purchases] - DEBUG: SDK Version - 2.2.0
 [Purchases] - DEBUG: Initial App User ID - (null)
 [Purchases] - DEBUG: GET /v1/subscribers/<APP_USER_ID>
 [Purchases] - DEBUG: GET /v1/subscribers/<APP_USER_ID>/products
@@ -362,7 +362,7 @@ You can use Github Issues to report any bugs and issues with *Purchases*. Here i
 ​
 
 ## Technical Support or Questions
-If you have questions or need help integrating *Purchases* please start by heading to our [online documentation](https://docs.revenuecat.com/v2.1/docs/welcome) and checking out the guides and support resources we have there.
+If you have questions or need help integrating *Purchases* please start by heading to our [online documentation](https://docs.revenuecat.com/docs/welcome) and checking out the guides and support resources we have there.
 
 
 ## Feature Requests

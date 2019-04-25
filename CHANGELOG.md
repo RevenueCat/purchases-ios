@@ -1,3 +1,6 @@
+## 2.2.0
+- Adds subscription offers
+
 ## 2.1.1
 - Avoid refreshing receipt everytime restore is called
 
