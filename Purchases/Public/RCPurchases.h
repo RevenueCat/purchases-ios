@@ -85,6 +85,9 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
 NS_SWIFT_NAME(Purchases)
 @interface RCPurchases : NSObject
 
+/**
+ Enable automatic collection of Apple Search Ad attribution. Enabled by default
+ */
 @property (class, nonatomic, assign) BOOL automaticAttributionCollection;
 
 /**
