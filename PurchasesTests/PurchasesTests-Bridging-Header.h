@@ -15,4 +15,6 @@
 #include <Purchases/RCOffering.h>
 #include <Purchases/RCOffering+Protected.h>
 #include <Purchases/RCIntroEligibility+Protected.h>
+#include <Purchases/RCAttributionFetcher.h>
+#include <Purchases/RCAttributionData.h>
 #include <Purchases/RCPromotionalOffer+Protected.h>

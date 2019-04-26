@@ -20,6 +20,9 @@
 #import "RCPurchasesErrors.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCReceiptFetcher.h"
+#import "RCAttributionFetcher.h"
+#import "RCAttributionData.h"
+#import <AdSupport/AdSupport.h>
 #import "RCPromotionalOffer.h"
 
 #define CALL_AND_DISPATCH_IF_SET(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
@@ -41,16 +44,26 @@
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
 @property (nonatomic) NSMutableDictionary<NSString *, RCPurchaseCompletedBlock> *purchaseCompleteCallbacks;
 @property (nonatomic) RCPurchaserInfo *lastSentPurchaserInfo;
+@property (nonatomic) RCAttributionFetcher *attributionFetcher;
 
 @end
 
 NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
 NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults.purchaserInfo.";
 
+RCAttributionData * _Nullable postponedAttributionData;
+
 @implementation RCPurchases
 
 #pragma mark - Configuration
 static RCPurchases *_sharedPurchases = nil;
+
+static BOOL _automaticAttributionCollection = YES;
+
++ (void)setAutomaticAttributionCollection:(BOOL)automaticAttributionCollection
+{
+    _automaticAttributionCollection = automaticAttributionCollection;
+}
 
 + (void)setDebugLogsEnabled:(BOOL)enabled
 {
@@ -126,6 +139,7 @@ static RCPurchases *_sharedPurchases = nil;
 {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
+    RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] init];
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
 
@@ -136,6 +150,7 @@ static RCPurchases *_sharedPurchases = nil;
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher
+                attributionFetcher:attributionFetcher
                            backend:backend
                    storeKitWrapper:storeKitWrapper
                 notificationCenter:[NSNotificationCenter defaultCenter]
@@ -145,6 +160,7 @@ static RCPurchases *_sharedPurchases = nil;
 - (instancetype)initWithAppUserID:(NSString *)appUserID
                    requestFetcher:(RCStoreKitRequestFetcher *)requestFetcher
                    receiptFetcher:(RCReceiptFetcher *)receiptFetcher
+               attributionFetcher:(RCAttributionFetcher *)attributionFetcher
                           backend:(RCBackend *)backend
                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                notificationCenter:(NSNotificationCenter *)notificationCenter
@@ -157,6 +173,7 @@ static RCPurchases *_sharedPurchases = nil;
         
         self.requestFetcher = requestFetcher;
         self.receiptFetcher = receiptFetcher;
+        self.attributionFetcher = attributionFetcher;
         self.backend = backend;
         self.storeKitWrapper = storeKitWrapper;
 
@@ -193,6 +210,19 @@ static RCPurchases *_sharedPurchases = nil;
         [self.notificationCenter addObserver:self
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
+
+        if (postponedAttributionData != nil) {
+            [self addAttributionData:postponedAttributionData.data fromNetwork:postponedAttributionData.network forNetworkUserId:postponedAttributionData.networkUserId];
+            postponedAttributionData = nil;
+        }
+        
+        if (_automaticAttributionCollection == YES) {
+            [attributionFetcher adClientAttributionDetailsWithBlock:^(NSDictionary<NSString *,NSObject *> * _Nullable attributionDetails, NSError * _Nullable error) {
+                if (attributionDetails != nil) {
+                    [self addAttributionData:attributionDetails fromNetwork:RCAttributionNetworkAppleSearchAds forNetworkUserId:nil];
+                }
+            }];
+        }
     }
 
     return self;
@@ -223,13 +253,45 @@ static RCPurchases *_sharedPurchases = nil;
 #pragma mark - Public Methods
 
 #pragma mark Attribution
+
 - (void)addAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
 {
-    if (data.count > 0) {
-        [self.backend postAttributionData:data
+    [self addAttributionData:data fromNetwork:network forNetworkUserId:nil];
+}
+
+- (void)addAttributionData:(NSDictionary *)data
+               fromNetwork:(RCAttributionNetwork)network
+          forNetworkUserId:(NSString * _Nullable)networkUserId
+{
+    NSMutableDictionary *newData = [NSMutableDictionary dictionaryWithDictionary:data];
+
+    newData[@"rc_idfa"] = [self.attributionFetcher advertisingIdentifier];
+    newData[@"rc_idfv"] = [self.attributionFetcher identifierForVendor];
+
+    if (newData.count > 0) {
+        [self.backend postAttributionData:newData
                               fromNetwork:network
-                             forAppUserID:self.appUserID];
+                             forAppUserID: (networkUserId != nil) ? networkUserId : self.appUserID];
+    }
+}
+
++ (void)addAttributionData:(NSDictionary *)data
+               fromNetwork:(RCAttributionNetwork)network
+{
+    [RCPurchases addAttributionData:data fromNetwork:network forNetworkUserId:nil];
+}
+
++ (void)addAttributionData:(NSDictionary *)data
+               fromNetwork:(RCAttributionNetwork)network
+          forNetworkUserId:(NSString * _Nullable)networkUserId
+{
+    if ([RCPurchases sharedPurchases] != nil) {
+        RCLog(@"There is instance");
+        [[RCPurchases sharedPurchases] addAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
+    } else {
+        RCLog(@"There is no instance");
+        postponedAttributionData = [[RCAttributionData alloc] initWithData:data fromNetwork:network forNetworkUserId:networkUserId];
     }
 }
 
@@ -829,3 +891,4 @@ static RCPurchases *_sharedPurchases = nil;
 }
 
 @end
+
