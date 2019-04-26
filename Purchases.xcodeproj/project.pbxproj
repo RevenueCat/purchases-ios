@@ -39,6 +39,7 @@
 		353AB5E92230A239003754E6 /* RCReceiptFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 353AB5E82230A239003754E6 /* RCReceiptFetcher.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		353AB5F92230AAE2003754E6 /* RCReceiptFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 353AB5F82230AAE2003754E6 /* RCReceiptFetcher.m */; };
 		356D65F620B873AF00576D45 /* Purchases.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		357C9BC22273AD1E006BC624 /* iAd.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 357C9BC022725CFA006BC624 /* iAd.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		35846AF92267FDD600CC9E56 /* RCAttributionFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 35846AF82267FDD600CC9E56 /* RCAttributionFetcher.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35846AFB2267FE7F00CC9E56 /* RCAttributionFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 35846AFA2267FE7F00CC9E56 /* RCAttributionFetcher.m */; };
 		35846AFC226940F000CC9E56 /* RCPromotionalOffer.m in Sources */ = {isa = PBXBuildFile; fileRef = EF6FB839CFA4B4A3A3687D61 /* RCPromotionalOffer.m */; };
@@ -150,6 +151,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				357C9BC22273AD1E006BC624 /* iAd.framework in Frameworks */,
 				3530C18922653E8F00D6DF52 /* AdSupport.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
