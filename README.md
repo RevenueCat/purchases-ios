@@ -52,7 +52,7 @@ carthage update --no-use-binaries
 ```
 
 ### Requirements
-*Purchases* requires iOS 9.0+ and macOS 10.12+
+*Purchases* requires XCode 10.2+ and minimum targets iOS 9.0+ and macOS 10.12+
 
 ## Getting Started
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
