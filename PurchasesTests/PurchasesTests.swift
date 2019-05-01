@@ -318,7 +318,7 @@ class PurchasesTests: XCTestCase {
         }
         
         override func adClientAttributionDetails(_ completionHandler: @escaping ([String : NSObject]?, Error?) -> Void) {
-            completionHandler(["iad-campaign-id": 1234567890 as NSObject], nil)
+            completionHandler(["Version3.1": ["iad-campaign-id": 15292426, "iad-attribution": true] as NSObject], nil)
         }
     
     }
@@ -1302,7 +1302,7 @@ class PurchasesTests: XCTestCase {
 
         Purchases.addAttributionData([:], from: RCAttributionNetwork.adjust)
 
-        expect(self.backend.postedAttributionData?[0].data.count).toEventually(equal(2))
+        expect(self.backend.postedAttributionData?[0].data.count).toEventually(equal(3))
         expect(self.backend.postedAttributionData?[0].data["rc_idfa"] as? String).toEventually(equal("rc_idfa"))
         expect(self.backend.postedAttributionData?[0].data["rc_idfv"] as? String).toEventually(equal("rc_idfv"))
     }
@@ -1716,15 +1716,17 @@ class PurchasesTests: XCTestCase {
         
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfa")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfv")).toEventually(beTrue())
+        expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_attribution_network_id")).toEventually(beTrue())
+        expect(self.backend.postedAttributionData?[0].data["rc_attribution_network_id"] as? String).toEventually(equal("newuser"))
         expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
-        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal("newuser"))
+        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.appUserID))
     }
     
     func testAdClientAttributionDataIsAutomaticallyCollected() {
         setupPurchases(automaticCollection: true)
         expect(self.backend.postedAttributionData).toEventuallyNot(beNil())
         expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
-        expect(self.backend.postedAttributionData?[0].data.keys.contains("iad-campaign-id")).toEventually(beTrue())
+        expect((self.backend.postedAttributionData?[0].data["Version3.1"] as! NSDictionary)["iad-campaign-id"]).toEventuallyNot(beNil())
     }
 
     func testAdClientAttributionDataIsNotAutomaticallyCollectedIfDisabled() {

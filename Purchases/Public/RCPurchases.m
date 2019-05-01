@@ -226,7 +226,8 @@ static BOOL _automaticAttributionCollection = YES;
         
         if (_automaticAttributionCollection == YES) {
             [attributionFetcher adClientAttributionDetailsWithBlock:^(NSDictionary<NSString *,NSObject *> * _Nullable attributionDetails, NSError * _Nullable error) {
-                if (attributionDetails != nil) {
+                NSArray *values = [attributionDetails allValues];
+                if (values.count != 0 && [values objectAtIndex:0][@"iad-attribution"]) {
                     [self addAttributionData:attributionDetails fromNetwork:RCAttributionNetworkAppleSearchAds forNetworkUserId:nil];
                 }
             }];
@@ -276,11 +277,12 @@ static BOOL _automaticAttributionCollection = YES;
 
     newData[@"rc_idfa"] = [self.attributionFetcher advertisingIdentifier];
     newData[@"rc_idfv"] = [self.attributionFetcher identifierForVendor];
-
+    newData[@"rc_attribution_network_id"] = (networkUserId != nil) ? networkUserId : self.appUserID;
+    
     if (newData.count > 0) {
         [self.backend postAttributionData:newData
                               fromNetwork:network
-                             forAppUserID: (networkUserId != nil) ? networkUserId : self.appUserID];
+                             forAppUserID:self.appUserID];
     }
 }
 
