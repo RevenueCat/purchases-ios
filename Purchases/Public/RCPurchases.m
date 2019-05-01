@@ -51,7 +51,7 @@
 NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
 NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults.purchaserInfo.";
 
-RCAttributionData * _Nullable postponedAttributionData;
+NSMutableArray<RCAttributionData*> * _Nullable postponedAttributionData;
 
 @implementation RCPurchases
 
@@ -63,6 +63,11 @@ static BOOL _automaticAttributionCollection = YES;
 + (void)setAutomaticAttributionCollection:(BOOL)automaticAttributionCollection
 {
     _automaticAttributionCollection = automaticAttributionCollection;
+}
+
++ (BOOL)automaticAttributionCollection
+{
+    return _automaticAttributionCollection;
 }
 
 + (void)setDebugLogsEnabled:(BOOL)enabled
@@ -211,9 +216,12 @@ static BOOL _automaticAttributionCollection = YES;
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
 
-        if (postponedAttributionData != nil) {
-            [self addAttributionData:postponedAttributionData.data fromNetwork:postponedAttributionData.network forNetworkUserId:postponedAttributionData.networkUserId];
-            postponedAttributionData = nil;
+        if (postponedAttributionData != nil && postponedAttributionData.count != 0) {
+            for (RCAttributionData *attributionData in postponedAttributionData) {
+                [self addAttributionData:attributionData.data fromNetwork:attributionData.network forNetworkUserId:attributionData.networkUserId];
+            }
+            
+            postponedAttributionData = [NSMutableArray new];
         }
         
         if (_automaticAttributionCollection == YES) {
@@ -291,7 +299,10 @@ static BOOL _automaticAttributionCollection = YES;
         [[RCPurchases sharedPurchases] addAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
     } else {
         RCLog(@"There is no instance");
-        postponedAttributionData = [[RCAttributionData alloc] initWithData:data fromNetwork:network forNetworkUserId:networkUserId];
+        if (postponedAttributionData == nil) {
+            postponedAttributionData = [NSMutableArray new];
+        }
+        [postponedAttributionData addObject:[[RCAttributionData alloc] initWithData:data fromNetwork:network forNetworkUserId:networkUserId]];
     }
 }
 
