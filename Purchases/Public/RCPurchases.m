@@ -51,7 +51,7 @@
 NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
 NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults.purchaserInfo.";
 
-NSMutableArray<RCAttributionData*> * _Nullable postponedAttributionData;
+NSMutableArray<RCAttributionData *> * _Nullable postponedAttributionData;
 
 @implementation RCPurchases
 
@@ -216,13 +216,14 @@ static BOOL _automaticAttributionCollection = YES;
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
 
-        if (postponedAttributionData != nil && postponedAttributionData.count != 0) {
+        if (postponedAttributionData != nil) {
             for (RCAttributionData *attributionData in postponedAttributionData) {
                 [self addAttributionData:attributionData.data fromNetwork:attributionData.network forNetworkUserId:attributionData.networkUserId];
             }
             
-            postponedAttributionData = [NSMutableArray new];
         }
+        
+        postponedAttributionData = nil;
         
         if (_automaticAttributionCollection == YES) {
             [attributionFetcher adClientAttributionDetailsWithBlock:^(NSDictionary<NSString *,NSObject *> * _Nullable attributionDetails, NSError * _Nullable error) {
@@ -302,7 +303,7 @@ static BOOL _automaticAttributionCollection = YES;
     } else {
         RCLog(@"There is no instance configured, caching attribution.");
         if (postponedAttributionData == nil) {
-            postponedAttributionData = [NSMutableArray new];
+            postponedAttributionData = [NSMutableArray array];
         }
         [postponedAttributionData addObject:[[RCAttributionData alloc] initWithData:data fromNetwork:network forNetworkUserId:networkUserId]];
     }
