@@ -295,10 +295,10 @@ static BOOL _automaticAttributionCollection = YES;
           forNetworkUserId:(NSString * _Nullable)networkUserId
 {
     if ([RCPurchases sharedPurchases] != nil) {
-        RCLog(@"There is instance");
+        RCLog(@"There is an instance configured, posting attribution.");
         [[RCPurchases sharedPurchases] addAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
     } else {
-        RCLog(@"There is no instance");
+        RCLog(@"There is no instance configured, caching attribution.");
         if (postponedAttributionData == nil) {
             postponedAttributionData = [NSMutableArray new];
         }
