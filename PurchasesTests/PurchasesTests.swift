@@ -335,7 +335,8 @@ class PurchasesTests: XCTestCase {
                                 backend:backend,
                                 storeKitWrapper: storeKitWrapper,
                                 notificationCenter:notificationCenter,
-                                userDefaults:userDefaults)
+                                userDefaults:userDefaults,
+                                observerMode:false)
 
         purchases!.delegate = purchasesDelegate
     }
@@ -347,8 +348,22 @@ class PurchasesTests: XCTestCase {
                                 backend:backend,
                                 storeKitWrapper: storeKitWrapper,
                                 notificationCenter:notificationCenter,
-                                userDefaults:userDefaults)
+                                userDefaults:userDefaults,
+                                observerMode: false)
 
+        purchases!.delegate = purchasesDelegate
+    }
+    
+    func setupPurchasesObserverModeOn() {
+        purchases = Purchases(appUserID: nil,
+                              requestFetcher: requestFetcher,
+                              receiptFetcher: receiptFetcher,
+                              backend:backend,
+                              storeKitWrapper: storeKitWrapper,
+                              notificationCenter:notificationCenter,
+                              userDefaults:userDefaults,
+                              observerMode: true)
+        
         purchases!.delegate = purchasesDelegate
     }
     
@@ -1637,6 +1652,50 @@ class PurchasesTests: XCTestCase {
         }
     }
 
+    func testObserverModeSetToFalseSetFinishTransactions() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.makePurchase(product) { (tx, info, error, userCancelled) in
+            
+        }
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
+    }
+    
+    func testDoesntFinishTransactionsIfObserverModeIsSet() {
+        setupPurchasesObserverModeOn()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.makePurchase(product) { (tx, info, error, userCancelled) in
+            
+        }
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo()
+        
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
+    }
+    
     private func identifiedSuccessfully(appUserID: String) {
         expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
         expect(self.purchases?.appUserID).to(equal(appUserID))
