@@ -344,6 +344,9 @@ static RCPurchases *_sharedPurchases = nil;
             withPayment:(SKMutablePayment *)payment
              completion:(RCPurchaseCompletedBlock)completion
 {
+    if (!self.finishTransactions) {
+        RCDebugLog(@"Observer mode is active (finishTransactions is set to false) and makePurchase has been called. Are you sure you want to do this?");
+    }
     payment.applicationUsername = self.appUserID;
 
     // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
@@ -374,6 +377,9 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)restoreTransactionsWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
+    if (!self.allowSharingAppStoreAccount) {
+        RCDebugLog(@"allowSharingAppStoreAccount is set to false and restoreTransactions has been called. Are you sure you want to do this?");
+    }
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
     [self receiptData:^(NSData * _Nonnull data) {
