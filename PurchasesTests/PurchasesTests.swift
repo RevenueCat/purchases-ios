@@ -1731,4 +1731,15 @@ class PurchasesTests: XCTestCase {
         setupPurchases(automaticCollection: false)
         expect(self.backend.postedAttributionData).toEventually(beNil())
     }
+    
+    func testAttributionDataPostponesMultiple() {
+        let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
+        
+        Purchases.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds, for: "newuser")
+
+        setupPurchases(automaticCollection: true)
+        expect(self.backend.postedAttributionData).toEventuallyNot(beNil())
+        expect(self.backend.postedAttributionData?.count).toEventually(equal(2))
+    }
+
 }
