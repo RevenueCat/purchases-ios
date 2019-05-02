@@ -1696,6 +1696,23 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
     }
     
+    func testRestoredPurchasesArePosted() {
+        setupPurchasesObserverModeOn()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.makePurchase(product) { (tx, info, error, userCancelled) in
+            
+        }
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        
+        transaction.mockState = SKPaymentTransactionState.restored
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
+    }
+    
     private func identifiedSuccessfully(appUserID: String) {
         expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
         expect(self.purchases?.appUserID).to(equal(appUserID))
