@@ -693,6 +693,7 @@ static RCPurchases *_sharedPurchases = nil;
      updatedTransaction:(SKPaymentTransaction *)transaction
 {
     switch (transaction.transactionState) {
+        case SKPaymentTransactionStateRestored: // For observer mode
         case SKPaymentTransactionStatePurchased: {
             [self handlePurchasedTransaction:transaction];
             break;
@@ -721,7 +722,6 @@ static RCPurchases *_sharedPurchases = nil;
         }
         case SKPaymentTransactionStateDeferred:
         case SKPaymentTransactionStatePurchasing:
-        case SKPaymentTransactionStateRestored:
             break;
     }
 }
