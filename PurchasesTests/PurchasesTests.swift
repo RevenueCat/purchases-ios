@@ -1299,6 +1299,13 @@ class PurchasesTests: XCTestCase {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "", userDefaults: nil)
         expect(Purchases.shared).toEventually(equal(purchases))
     }
+
+    func testRemoveInstance() {
+        Purchases.configure(withAPIKey: "")
+        Purchases.removeInstance()
+
+        expect(Purchases.isConfigured()).toEventually(equal(false))
+    }
     
     func testCreateAliasWithCompletionCallsBackend() {
         setupPurchases()
