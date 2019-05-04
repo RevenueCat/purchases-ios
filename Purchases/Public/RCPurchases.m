@@ -82,9 +82,25 @@ static RCPurchases *_sharedPurchases = nil;
     }
 }
 
++ (void)removeInstance
+{
+    @synchronized([RCPurchases class]) {
+        if (!_sharedPurchases) {
+            RCLog(@"There is no configured instance to remove.");
+        }
+
+        _sharedPurchases = nil;
+    }
+}
+
 + (BOOL)canMakePayments
 {
     return [SKPaymentQueue canMakePayments];
+}
+
++ (BOOL)isConfigured
+{
+    return _sharedPurchases != nil;
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey

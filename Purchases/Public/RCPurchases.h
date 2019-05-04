@@ -130,10 +130,21 @@ NS_SWIFT_NAME(Purchases)
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
                           appUserID:(NSString * _Nullable)appUserID
                        userDefaults:(NSUserDefaults * _Nullable)userDefaults;
+
+/**
+ Removes the current configured instance.
+ */
++ (void)removeInstance;
+
 /**
  Indicates whether the user is allowed to make payments.
  */
 + (BOOL)canMakePayments;
+
+/**
+ Indicates if the default instance is configured.
+ */
++ (BOOL)isConfigured;
 
 /**
  @return A singleton `RCPurchases` object. Call this after a configure method to access the singleton.
