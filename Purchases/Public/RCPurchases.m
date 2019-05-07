@@ -22,7 +22,6 @@
 #import "RCReceiptFetcher.h"
 #import "RCAttributionFetcher.h"
 #import "RCAttributionData.h"
-#import <AdSupport/AdSupport.h>
 #import "RCPromotionalOffer.h"
 
 #define CALL_AND_DISPATCH_IF_SET(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
@@ -229,7 +228,7 @@ static BOOL _automaticAttributionCollection = YES;
         if (_automaticAttributionCollection == YES) {
             [attributionFetcher adClientAttributionDetailsWithBlock:^(NSDictionary<NSString *,NSObject *> * _Nullable attributionDetails, NSError * _Nullable error) {
                 NSArray *values = [attributionDetails allValues];
-                if (values.count != 0 && [values objectAtIndex:0][@"iad-attribution"]) {
+                if (values.count != 0 && values[0][@"iad-attribution"]) {
                     [self addAttributionData:attributionDetails fromNetwork:RCAttributionNetworkAppleSearchAds forNetworkUserId:nil];
                 }
             }];

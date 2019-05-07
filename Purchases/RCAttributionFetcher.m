@@ -7,10 +7,10 @@
 //
 
 #import "RCAttributionFetcher.h"
-#import <AdSupport/AdSupport.h>
+#import "RCUtils.h"
+
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
-//#import <iAd/iAd.h>
 #endif
 
 @protocol FakeAdClient <NSObject>
@@ -36,11 +36,9 @@
         id<FakeASIdentifierManager> asIdentifierManagerClass = (id<FakeASIdentifierManager>)NSClassFromString(@"ASIdentifierManager");
         if (asIdentifierManagerClass) {
             return asIdentifierManagerClass.sharedManager.advertisingIdentifier.UUIDString;
+        } else {
+            RCDebugLog(@"AdSupport framework not imported. Attribution data incomplete.");
         }
-        
-//        if ([ASIdentifierManager class]) {
-//            return ASIdentifierManager.sharedManager.advertisingIdentifier.UUIDString;
-//        }
     }
     return nil;
 }
@@ -59,9 +57,6 @@
 - (void)adClientAttributionDetailsWithBlock:(void (^)(NSDictionary<NSString *, NSObject *> * _Nullable attributionDetails, NSError * _Nullable error))completionHandler
 {
 #if TARGET_OS_IPHONE
-//    if ([ADClient class]) {
-//        [ADClient.sharedClient requestAttributionDetailsWithBlock:completionHandler];
-//    }
     id<FakeAdClient> adClientClass = (id<FakeAdClient>)NSClassFromString(@"ADClient");
     
     if (adClientClass) {
