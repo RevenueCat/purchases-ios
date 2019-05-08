@@ -46,6 +46,10 @@ void RCOverrideServerHost(NSString *hostname)
     return info.operatingSystemVersionString;
 }
 
++ (NSString *)appVersion {
+    return [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+}
+
 - (void)performRequest:(NSString * _Nonnull)HTTPMethod
                   path:(NSString * _Nonnull)path
                   body:(NSDictionary * _Nullable)requestBody
@@ -61,8 +65,8 @@ void RCOverrideServerHost(NSString *hostname)
                                            dictionaryWithDictionary:@{@"content-type": @"application/json",
                                                                       @"X-Version": [RCPurchases frameworkVersion],
                                                                       @"X-Platform": PLATFORM_HEADER,
-                                                                      @"X-Platform-Version": [self.class systemVersion]
-                                                                      }];
+                                                                      @"X-Platform-Version": [self.class systemVersion],
+                                                                      @"X-Client-Version": [self.class appVersion]}];
     [defaultHeaders addEntriesFromDictionary:headers];
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
