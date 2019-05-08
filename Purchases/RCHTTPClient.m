@@ -47,7 +47,12 @@ void RCOverrideServerHost(NSString *hostname)
 }
 
 + (NSString *)appVersion {
-    return [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+    NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+    if (version) {
+        return version;
+    } else {
+        return @"";
+    }
 }
 
 - (void)performRequest:(NSString * _Nonnull)HTTPMethod

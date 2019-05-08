@@ -287,5 +287,22 @@ class HTTPClientTests: XCTestCase {
         expect(message).toEventually(equal("something is great up in the cloud"), timeout: 1.0)
         expect(successIsTrue).toEventually(beTrue(), timeout: 1.0)
     }
+    
+    func testAlwaysPassesClientVersion() {
+        let path = "/a_random_path"
+        var headerPresent = false
+        
+        let version = "" // for unit tests the version will empty
+
+        stub(condition: hasHeaderNamed("X-Client-Version", value: version )) { request in
+            headerPresent = true
+            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+        }
+        
+        self.client.performRequest("POST", path: path, body: Dictionary.init(),
+                                   headers: ["test_header": "value"], completionHandler:nil)
+        
+        expect(headerPresent).toEventually(equal(true))
+    }
 }
 
