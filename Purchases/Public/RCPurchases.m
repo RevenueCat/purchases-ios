@@ -226,12 +226,15 @@ static BOOL _automaticAttributionCollection = YES;
         postponedAttributionData = nil;
         
         if (_automaticAttributionCollection == YES) {
-            [attributionFetcher adClientAttributionDetailsWithBlock:^(NSDictionary<NSString *,NSObject *> * _Nullable attributionDetails, NSError * _Nullable error) {
-                NSArray *values = [attributionDetails allValues];
-                if (values.count != 0 && values[0][@"iad-attribution"]) {
-                    [self addAttributionData:attributionDetails fromNetwork:RCAttributionNetworkAppleSearchAds forNetworkUserId:nil];
-                }
-            }];
+            NSString *latestSentToAppleSearchAds = [self latestSentForNetwork:RCAttributionNetworkAppleSearchAds];
+            if (!latestSentToAppleSearchAds) {
+                [attributionFetcher adClientAttributionDetailsWithBlock:^(NSDictionary<NSString *,NSObject *> * _Nullable attributionDetails, NSError * _Nullable error) {
+                    NSArray *values = [attributionDetails allValues];
+                    if (values.count != 0 && values[0][@"iad-attribution"]) {
+                        [self addAttributionData:attributionDetails fromNetwork:RCAttributionNetworkAppleSearchAds forNetworkUserId:nil];
+                    }
+                }];
+            }
         }
     }
 
@@ -274,14 +277,20 @@ static BOOL _automaticAttributionCollection = YES;
                fromNetwork:(RCAttributionNetwork)network
           forNetworkUserId:(NSString * _Nullable)networkUserId
 {
+    NSString *networkKey = [NSString stringWithFormat:@"%ld",(long)network];
     NSString *advertisingIdentifier = [self.attributionFetcher advertisingIdentifier];
-    NSString *newCacheValue = [NSString stringWithFormat:@"%@_%@", advertisingIdentifier, networkUserId];
-    NSString *cacheKey = [self attributionDataUserDefaultCacheKeyForNetwork:network];
-    NSString *currentCacheValue = [self.userDefaults stringForKey:cacheKey];
+    NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", advertisingIdentifier, networkUserId];
+    NSString *cacheKey = [self attributionDataUserDefaultCacheKeyForAppUserID:self.appUserID];
+    NSDictionary *dictOfLatestSentToNetworks = [self.userDefaults objectForKey:cacheKey];
     
-    if (currentCacheValue && [currentCacheValue isEqualToString:newCacheValue]) {
+    NSString *latestSentToNetwork = dictOfLatestSentToNetworks[networkKey];
+    
+    if (latestSentToNetwork && [latestSentToNetwork isEqualToString:newValueForNetwork]) {
         RCDebugLog(@"Attribution data is the same as latest. Skipping.");
     } else {
+        NSMutableDictionary<NSString *, NSString *> *newDictToCache = [NSMutableDictionary dictionaryWithDictionary:dictOfLatestSentToNetworks];
+        newDictToCache[networkKey] = newValueForNetwork;
+
         NSMutableDictionary *newData = [NSMutableDictionary dictionaryWithDictionary:data];
         newData[@"rc_idfa"] = advertisingIdentifier;
         newData[@"rc_idfv"] = [self.attributionFetcher identifierForVendor];
@@ -290,9 +299,14 @@ static BOOL _automaticAttributionCollection = YES;
         if (newData.count > 0) {
             [self.backend postAttributionData:newData
                                   fromNetwork:network
-                                 forAppUserID:self.appUserID];
-            [self.userDefaults setObject:newCacheValue
-                                  forKey:cacheKey];
+                                 forAppUserID:self.appUserID
+                                   completion:^(NSError * _Nullable error) {
+                                       if (error == nil) {
+                                           [self.userDefaults setObject:newDictToCache
+                                                                 forKey:cacheKey];
+                                       }
+                                   }];
+            
         }
         
     }
@@ -308,7 +322,7 @@ static BOOL _automaticAttributionCollection = YES;
                fromNetwork:(RCAttributionNetwork)network
           forNetworkUserId:(NSString * _Nullable)networkUserId
 {
-    if ([RCPurchases sharedPurchases] != nil) {
+    if (_sharedPurchases) {
         RCLog(@"There is an instance configured, posting attribution.");
         [[RCPurchases sharedPurchases] addAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
     } else {
@@ -354,6 +368,7 @@ static BOOL _automaticAttributionCollection = YES;
 - (void)resetWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
     [self clearCaches];
+    [self.userDefaults removeObjectForKey:[self attributionDataUserDefaultCacheKeyForAppUserID:self.appUserID]];
     self.appUserID = [self generateAndCacheID];
     [self updateCachesWithCompletionBlock:completion];
 }
@@ -826,8 +841,15 @@ static BOOL _automaticAttributionCollection = YES;
     return NO;
 }
 
-- (NSString *)attributionDataUserDefaultCacheKeyForNetwork:(RCAttributionNetwork)network {
-    return [NSString stringWithFormat:@"%@%ld", RCAttributionDataDefaultsKeyBase, (long)network];
+- (NSString *)latestSentForNetwork:(RCAttributionNetwork)network
+{
+    NSString *cacheKey = [NSString stringWithFormat:@"%ld", (long)network];
+    NSDictionary *cachedDict = [self.userDefaults objectForKey:[self attributionDataUserDefaultCacheKeyForAppUserID:self.appUserID]];
+    return cachedDict[cacheKey];
+}
+
+- (NSString *)attributionDataUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {
+    return [RCAttributionDataDefaultsKeyBase stringByAppendingString:appUserID];
 }
 
 - (NSString *)purchaserInfoUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {

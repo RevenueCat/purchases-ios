@@ -390,6 +390,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
                forAppUserID:(NSString *)appUserID
+                 completion:(void (^ _Nullable)(NSError * _Nullable error))completion
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attribution", escapedAppUserID];
@@ -401,7 +402,9 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                       @"data": data
                                       }
                             headers:self.headers
-                  completionHandler:nil];
+                  completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
+                      [self handle:status withResponse:response error:error errorHandler:completion];
+                  }];
 }
 
 - (void)createAliasForAppUserID:(NSString *)appUserID
