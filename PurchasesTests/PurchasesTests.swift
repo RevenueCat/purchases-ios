@@ -330,44 +330,44 @@ class PurchasesTests: XCTestCase {
 
     func setupPurchases() {
         purchases = Purchases(appUserID: appUserID,
-                                requestFetcher: requestFetcher,
-                                receiptFetcher: receiptFetcher,
-                                backend:backend,
-                                storeKitWrapper: storeKitWrapper,
-                                notificationCenter:notificationCenter,
-                                userDefaults:userDefaults,
-                                observerMode:false)
+                requestFetcher: requestFetcher,
+                receiptFetcher: receiptFetcher,
+                backend: backend,
+                storeKitWrapper: storeKitWrapper,
+                notificationCenter: notificationCenter,
+                userDefaults: userDefaults,
+                observerMode: false)
 
         purchases!.delegate = purchasesDelegate
     }
 
     func setupAnonPurchases() {
         purchases = Purchases(appUserID: nil,
-                                requestFetcher: requestFetcher,
-                                receiptFetcher: receiptFetcher,
-                                backend:backend,
-                                storeKitWrapper: storeKitWrapper,
-                                notificationCenter:notificationCenter,
-                                userDefaults:userDefaults,
-                                observerMode: false)
+                requestFetcher: requestFetcher,
+                receiptFetcher: receiptFetcher,
+                backend: backend,
+                storeKitWrapper: storeKitWrapper,
+                notificationCenter: notificationCenter,
+                userDefaults: userDefaults,
+                observerMode: false)
+
+        purchases!.delegate = purchasesDelegate
+    }
+
+    func setupPurchasesObserverModeOn() {
+        purchases = Purchases(appUserID: nil,
+                requestFetcher: requestFetcher,
+                receiptFetcher: receiptFetcher,
+                backend: backend,
+                storeKitWrapper: storeKitWrapper,
+                notificationCenter: notificationCenter,
+                userDefaults: userDefaults,
+                observerMode: true)
 
         purchases!.delegate = purchasesDelegate
     }
     
-    func setupPurchasesObserverModeOn() {
-        purchases = Purchases(appUserID: nil,
-                              requestFetcher: requestFetcher,
-                              receiptFetcher: receiptFetcher,
-                              backend:backend,
-                              storeKitWrapper: storeKitWrapper,
-                              notificationCenter:notificationCenter,
-                              userDefaults:userDefaults,
-                              observerMode: true)
-        
-        purchases!.delegate = purchasesDelegate
-    }
-    
-    func testIsAbleToBeIntialized() {
+    func testIsAbleToBeInitialized() {
         setupPurchases()
         expect(self.purchases).toNot(beNil())
     }
