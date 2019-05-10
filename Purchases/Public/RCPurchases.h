@@ -133,7 +133,7 @@ NS_SWIFT_NAME(Purchases)
 
 
 /**
- Configures an instance of the Purchases SDK with object with a custom userDefaults. Use this constructor if you want to sync status across a shared container, such as between a host app and an extension. The instance of the Purchases SDK will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
+ Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to sync status across a shared container, such as between a host app and an extension. The instance of the Purchases SDK will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
  
  @param APIKey The API Key generated for your app from https://app.revenuecat.com/
  
@@ -141,7 +141,7 @@ NS_SWIFT_NAME(Purchases)
  
  @param userDefaults Custom userDefaults to use
  
- @param observerMode Set this to TRUE if you have your own subscription system and want to use only RevenueCat's backend. Default is FALSE.
+ @param observerMode Set this to TRUE if you have your own IAP implementation and want to use only RevenueCat's backend. Default is FALSE.
  
  @return An instantiated `RCPurchases` object that has been set as a singleton.
  */
