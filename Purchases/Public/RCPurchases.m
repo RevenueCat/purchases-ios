@@ -89,19 +89,19 @@ static RCPurchases *_sharedPurchases = nil;
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
 {
-    return [RCPurchases configureWithAPIKey:APIKey appUserID:nil];
+    return [self configureWithAPIKey:APIKey appUserID:nil];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
 {
-    return [RCPurchases configureWithAPIKey:APIKey appUserID:appUserID userDefaults:nil];
+    return [self configureWithAPIKey:APIKey appUserID:appUserID userDefaults:nil];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
                           appUserID:(NSString * _Nullable)appUserID
                        userDefaults:(NSUserDefaults * _Nullable)userDefaults
 {
-    return [RCPurchases configureWithAPIKey:APIKey appUserID:appUserID userDefaults:nil observerMode:false];
+    return [self configureWithAPIKey:APIKey appUserID:appUserID userDefaults:nil observerMode:false];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
@@ -109,8 +109,8 @@ static RCPurchases *_sharedPurchases = nil;
                        userDefaults:(NSUserDefaults * _Nullable)userDefaults
                        observerMode:(BOOL)observerMode
 {
-    RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults observerMode:observerMode];
-    [RCPurchases setDefaultInstance:purchases];
+    RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults observerMode:observerMode];
+    [self setDefaultInstance:purchases];
     return purchases;
 }
 
