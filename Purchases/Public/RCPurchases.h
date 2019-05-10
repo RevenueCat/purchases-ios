@@ -148,7 +148,7 @@ NS_SWIFT_NAME(Purchases)
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
                           appUserID:(NSString * _Nullable)appUserID
                        userDefaults:(NSUserDefaults * _Nullable)userDefaults
-                       observerMode:(Boolean)observerMode;
+                       observerMode:(BOOL)observerMode;
 
 /**
  Indicates whether the user is allowed to make payments.

@@ -107,7 +107,7 @@ static RCPurchases *_sharedPurchases = nil;
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
                           appUserID:(NSString *)appUserID
                        userDefaults:(NSUserDefaults * _Nullable)userDefaults
-                       observerMode:(Boolean)observerMode
+                       observerMode:(BOOL)observerMode
 {
     RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults observerMode:observerMode];
     [RCPurchases setDefaultInstance:purchases];
@@ -122,7 +122,7 @@ static RCPurchases *_sharedPurchases = nil;
 - (instancetype)initWithAPIKey:(NSString *)APIKey
                      appUserID:(NSString * _Nullable)appUserID
                   userDefaults:(NSUserDefaults * _Nullable)userDefaults
-                  observerMode:(Boolean)observerMode
+                  observerMode:(BOOL)observerMode
 {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
@@ -150,7 +150,7 @@ static RCPurchases *_sharedPurchases = nil;
                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                notificationCenter:(NSNotificationCenter *)notificationCenter
                      userDefaults:(NSUserDefaults *)userDefaults
-                     observerMode:(Boolean)observerMode
+                     observerMode:(BOOL)observerMode
 {
     if (self = [super init]) {
         RCDebugLog(@"Debug logging enabled.");
