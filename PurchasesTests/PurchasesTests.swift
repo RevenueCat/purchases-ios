@@ -214,11 +214,12 @@ class PurchasesTests: XCTestCase {
         }
 
         var postedAttributionData: [RCAttributionData]?
-        override func postAttributionData(_ data: [AnyHashable : Any], from network: RCAttributionNetwork, forAppUserID appUserID: String) {
+        override func postAttributionData(_ data: [AnyHashable : Any], from network: RCAttributionNetwork, forAppUserID appUserID: String, completion: ((Error?) -> Void)? = nil) {
             if (postedAttributionData == nil) {
                 postedAttributionData = []
             }
             postedAttributionData?.append(RCAttributionData(data: data, from: network, forNetworkUserId: appUserID)!)
+            completion!(nil)
         }
 
         var postOfferForSigningCalled = false
