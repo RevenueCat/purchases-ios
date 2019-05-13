@@ -230,7 +230,7 @@ func purchases(_ purchases: Purchases, shouldPurchasePromoProduct product: SKPro
 
 To test this in sandbox mode, open this URL on a physical device in Safari:
 ```
-itms-services://?action=puhaseIntent&bundleId=<YOUR_BUNDLE_ID>&productIdentifier=<YOUR_SKPRODUCT_ID>
+itms-services://?action=purchaseIntent&bundleId=<YOUR_BUNDLE_ID>&productIdentifier=<YOUR_SKPRODUCT_ID>
 ```
 
 ## Listening for subscription status updates

@@ -1,5 +1,5 @@
 PODS:
-  - Purchases (2.2.0)
+  - Purchases (2.3.0-SNAPSHOT)
 
 DEPENDENCIES:
   - Purchases (from `../../`)
@@ -9,7 +9,7 @@ EXTERNAL SOURCES:
     :path: "../../"
 
 SPEC CHECKSUMS:
-  Purchases: df27c0ef12e092bdf5e02841fa8ccc23e8d15930
+  Purchases: 037b03ff6e56af8b7e2ac35ac7c660c5238db804
 
 PODFILE CHECKSUM: b6ad00ca1e6fc400e0898ad2ac4a293958616d2e
 

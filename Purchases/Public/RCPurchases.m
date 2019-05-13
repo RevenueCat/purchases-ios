@@ -105,40 +105,40 @@ static RCPurchases *_sharedPurchases = nil;
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
 {
-    RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:APIKey];
-    [RCPurchases setDefaultInstance:purchases];
-    return purchases;
-}
-
-- (instancetype)initWithAPIKey:(NSString *)APIKey
-{
-    return [self initWithAPIKey:APIKey appUserID:nil];
+    return [self configureWithAPIKey:APIKey appUserID:nil];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
 {
-    RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:APIKey appUserID:appUserID];
-    [RCPurchases setDefaultInstance:purchases];
-    return purchases;
-}
-
-- (instancetype)initWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
-{
-    return [self initWithAPIKey:APIKey appUserID:appUserID userDefaults:nil];
+    return [self configureWithAPIKey:APIKey appUserID:appUserID userDefaults:nil];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
                           appUserID:(NSString * _Nullable)appUserID
                        userDefaults:(NSUserDefaults * _Nullable)userDefaults
 {
-    RCPurchases *purchases = [[RCPurchases alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults];
-    [RCPurchases setDefaultInstance:purchases];
+    return [self configureWithAPIKey:APIKey appUserID:appUserID userDefaults:nil observerMode:false];
+}
+
++ (instancetype)configureWithAPIKey:(NSString *)APIKey
+                          appUserID:(NSString *)appUserID
+                       userDefaults:(NSUserDefaults * _Nullable)userDefaults
+                       observerMode:(BOOL)observerMode
+{
+    RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults observerMode:observerMode];
+    [self setDefaultInstance:purchases];
     return purchases;
+}
+
+- (instancetype)initWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
+{
+    return [self initWithAPIKey:APIKey appUserID:appUserID userDefaults:nil observerMode:false];
 }
 
 - (instancetype)initWithAPIKey:(NSString *)APIKey
                      appUserID:(NSString * _Nullable)appUserID
                   userDefaults:(NSUserDefaults * _Nullable)userDefaults
+                  observerMode:(BOOL)observerMode
 {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
@@ -155,7 +155,8 @@ static RCPurchases *_sharedPurchases = nil;
                            backend:backend
                    storeKitWrapper:storeKitWrapper
                 notificationCenter:[NSNotificationCenter defaultCenter]
-                      userDefaults:userDefaults];
+                      userDefaults:userDefaults
+                      observerMode:observerMode];
 }
 
 - (instancetype)initWithAppUserID:(NSString *)appUserID
@@ -165,6 +166,7 @@ static RCPurchases *_sharedPurchases = nil;
                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                notificationCenter:(NSNotificationCenter *)notificationCenter
                      userDefaults:(NSUserDefaults *)userDefaults
+                     observerMode:(BOOL)observerMode
 {
     if (self = [super init]) {
         RCDebugLog(@"Debug logging enabled.");
@@ -182,7 +184,7 @@ static RCPurchases *_sharedPurchases = nil;
         self.productsByIdentifier = [NSMutableDictionary new];
         self.purchaseCompleteCallbacks = [NSMutableDictionary new];
 
-        self.finishTransactions = YES;
+        self.finishTransactions = !observerMode;
         
         RCReceivePurchaserInfoBlock callDelegate = ^void(RCPurchaserInfo *info, NSError *error) {
             if (info) {
@@ -358,6 +360,9 @@ static RCPurchases *_sharedPurchases = nil;
             withPayment:(SKMutablePayment *)payment
              completion:(RCPurchaseCompletedBlock)completion
 {
+    if (!self.finishTransactions) {
+        RCDebugLog(@"Observer mode is active (finishTransactions is set to false) and makePurchase has been called. Are you sure you want to do this?");
+    }
     payment.applicationUsername = self.appUserID;
 
     // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
@@ -388,6 +393,9 @@ static RCPurchases *_sharedPurchases = nil;
 
 - (void)restoreTransactionsWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 {
+    if (!self.allowSharingAppStoreAccount) {
+        RCDebugLog(@"allowSharingAppStoreAccount is set to false and restoreTransactions has been called. Are you sure you want to do this?");
+    }
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
     [self receiptData:^(NSData * _Nonnull data) {
@@ -701,6 +709,7 @@ static RCPurchases *_sharedPurchases = nil;
      updatedTransaction:(SKPaymentTransaction *)transaction
 {
     switch (transaction.transactionState) {
+        case SKPaymentTransactionStateRestored: // For observer mode
         case SKPaymentTransactionStatePurchased: {
             [self handlePurchasedTransaction:transaction];
             break;
@@ -729,7 +738,6 @@ static RCPurchases *_sharedPurchases = nil;
         }
         case SKPaymentTransactionStateDeferred:
         case SKPaymentTransactionStatePurchasing:
-        case SKPaymentTransactionStateRestored:
             break;
     }
 }
