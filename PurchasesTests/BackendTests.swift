@@ -99,7 +99,7 @@ class BackendTests: XCTestCase {
             "app_user_id": userID,
             "fetch_token": receiptData.base64EncodedString(),
             "is_restore": isRestore
-            ], headers: ["Authorization": "Basic " + apiKey])
+            ], headers: ["Authorization": "Bearer " + apiKey])
 
         expect(self.httpClient.calls.count).to(equal(1))
         if self.httpClient.calls.count > 0 {
@@ -261,7 +261,7 @@ class BackendTests: XCTestCase {
         ]
 
         let expectedCall = HTTPRequest(HTTPMethod: "POST", path: "/receipts",
-                                       body: body , headers: ["Authorization": "Basic " + apiKey])
+                                       body: body , headers: ["Authorization": "Bearer " + apiKey])
 
         expect(self.httpClient.calls.count).to(equal(1))
 
@@ -421,7 +421,7 @@ class BackendTests: XCTestCase {
             XCTAssertEqual(call.HTTPMethod, "GET")
             XCTAssertNil(call.body)
             XCTAssertNotNil(call.headers?["Authorization"])
-            XCTAssertEqual(call.headers?["Authorization"], "Basic " + apiKey)
+            XCTAssertEqual(call.headers?["Authorization"], "Bearer " + apiKey)
         }
     }
 
@@ -513,7 +513,7 @@ class BackendTests: XCTestCase {
             expect(path).to(equal("/subscribers/" + userID + "/intro_eligibility"))
             expect(call.HTTPMethod).to(equal("POST"))
             expect(call.headers!["Authorization"]).toNot(beNil())
-            expect(call.headers!["Authorization"]).to(equal("Basic " + apiKey))
+            expect(call.headers!["Authorization"]).to(equal("Bearer " + apiKey))
 
             expect(call.body).toNot(beNil())
             expect(call.body!["product_identifiers"] as? [String]).to(equal(products))
@@ -692,7 +692,7 @@ class BackendTests: XCTestCase {
         XCTAssertEqual(call.path, "/subscribers/" + userID + "/alias")
         XCTAssertEqual(call.HTTPMethod, "POST")
         XCTAssertNotNil(call.headers?["Authorization"])
-        XCTAssertEqual(call.headers?["Authorization"], "Basic " + apiKey)
+        XCTAssertEqual(call.headers?["Authorization"], "Bearer " + apiKey)
         
         expect(call.body?.keys).to(contain("new_app_user_id"))
 
@@ -883,7 +883,7 @@ class BackendTests: XCTestCase {
         ]
         
         let expectedCall = HTTPRequest(HTTPMethod: "POST", path: "/receipts",
-                                       body: body , headers: ["Authorization": "Basic " + apiKey])
+                                       body: body , headers: ["Authorization": "Bearer " + apiKey])
         
         expect(self.httpClient.calls.count).to(equal(1))
         
@@ -947,7 +947,7 @@ class BackendTests: XCTestCase {
         ]
 
         let expectedCall = HTTPRequest(HTTPMethod: "POST", path: "/offers",
-                body: body, headers: ["Authorization": "Basic " + apiKey])
+                body: body, headers: ["Authorization": "Bearer " + apiKey])
 
         expect(self.httpClient.calls.count).to(equal(1))
 
