@@ -58,7 +58,7 @@ NSMutableArray<RCAttributionData *> * _Nullable postponedAttributionData;
 #pragma mark - Configuration
 static RCPurchases *_sharedPurchases = nil;
 
-static BOOL _automaticAttributionCollection = YES;
+static BOOL _automaticAttributionCollection = NO;
 
 + (void)setAutomaticAttributionCollection:(BOOL)automaticAttributionCollection
 {

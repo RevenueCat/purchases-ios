@@ -86,7 +86,7 @@ NS_SWIFT_NAME(Purchases)
 @interface RCPurchases : NSObject
 
 /**
- Enable automatic collection of Apple Search Ad attribution. Enabled by default
+ Enable automatic collection of Apple Search Ad attribution. Disabled by default
  */
 @property (class, nonatomic, assign) BOOL automaticAttributionCollection;
 
