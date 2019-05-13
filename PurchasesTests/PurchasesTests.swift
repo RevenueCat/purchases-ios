@@ -364,7 +364,7 @@ class PurchasesTests: XCTestCase {
                                 storeKitWrapper: storeKitWrapper,
                                 notificationCenter:notificationCenter,
                                 userDefaults:userDefaults,
-								observerMode: false)
+                                observerMode: false)
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
@@ -375,7 +375,7 @@ class PurchasesTests: XCTestCase {
         purchases = Purchases(appUserID: nil,
                 requestFetcher: requestFetcher,
                 receiptFetcher: receiptFetcher,
-				attributionFetcher: attributionFetcher,
+                attributionFetcher: attributionFetcher,
                 backend: backend,
                 storeKitWrapper: storeKitWrapper,
                 notificationCenter: notificationCenter,
@@ -389,6 +389,7 @@ class PurchasesTests: XCTestCase {
         purchases = Purchases(appUserID: nil,
                 requestFetcher: requestFetcher,
                 receiptFetcher: receiptFetcher,
+                attributionFetcher: attributionFetcher,
                 backend: backend,
                 storeKitWrapper: storeKitWrapper,
                 notificationCenter: notificationCenter,
@@ -1759,8 +1760,8 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedAttributionData).toEventuallyNot(beNil())
         expect(self.backend.postedAttributionData?.count).toEventually(equal(2))
     }
-
-	func testObserverModeSetToFalseSetFinishTransactions() {
+    
+    func testObserverModeSetToFalseSetFinishTransactions() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.makePurchase(product) { (tx, info, error, userCancelled) in
@@ -1824,7 +1825,7 @@ class PurchasesTests: XCTestCase {
     private func identifiedSuccessfully(appUserID: String) {
         expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
         expect(self.purchases?.appUserID).to(equal(appUserID))
-        expect(self.purchases?.allowSharingAppStoreAccount).to(beFalse())
-	}
+        expect(self.purchases?.allowSharingAppStoreAccount).to(beFalse())        
+    }
 
 }
