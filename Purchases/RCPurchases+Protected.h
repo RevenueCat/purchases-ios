@@ -19,7 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
                                     backend:(RCBackend *)backend
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                          notificationCenter:(NSNotificationCenter *)notificationCenter
-                               userDefaults:(NSUserDefaults *)userDefaults;
+                               userDefaults:(NSUserDefaults *)userDefaults
+                               observerMode:(BOOL)observerMode;
 
 @end
 
