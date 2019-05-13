@@ -69,7 +69,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 {
     return @{
             @"Authorization":
-                [NSString stringWithFormat:@"Basic %@", self.APIKey]
+                [NSString stringWithFormat:@"Bearer %@", self.APIKey]
             };
 }
 
