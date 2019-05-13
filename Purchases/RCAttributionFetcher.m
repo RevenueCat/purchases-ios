@@ -15,7 +15,7 @@
 
 @protocol FakeAdClient <NSObject>
 
-- (instancetype)sharedClient;
++ (instancetype)sharedClient;
 - (void)requestAttributionDetailsWithBlock:(void (^)(NSDictionary<NSString *, NSObject *> * _Nullable attributionDetails, NSError * _Nullable error))completionHandler;
 
 @end
@@ -24,7 +24,7 @@
 
 @property (nonnull, nonatomic, readonly) NSUUID *advertisingIdentifier;
 
-- (instancetype)sharedManager;
++ (instancetype)sharedManager;
 
 @end
 
@@ -35,7 +35,7 @@
     if (@available(iOS 6.0, macOS 10.14, *)) {
         id<FakeASIdentifierManager> asIdentifierManagerClass = (id<FakeASIdentifierManager>)NSClassFromString(@"ASIdentifierManager");
         if (asIdentifierManagerClass) {
-            return asIdentifierManagerClass.sharedManager.advertisingIdentifier.UUIDString;
+            return [asIdentifierManagerClass sharedManager].advertisingIdentifier.UUIDString;
         } else {
             RCDebugLog(@"AdSupport framework not imported. Attribution data incomplete.");
         }
@@ -54,7 +54,7 @@
     return nil;
 }
 
-- (void)adClientAttributionDetailsWithBlock:(void (^)(NSDictionary<NSString *, NSObject *> * _Nullable attributionDetails, NSError * _Nullable error))completionHandler
+- (void)adClientAttributionDetailsWithCompletionBlock:(void (^)(NSDictionary<NSString *, NSObject *> * _Nullable attributionDetails, NSError * _Nullable error))completionHandler
 {
 #if TARGET_OS_IPHONE
     id<FakeAdClient> adClientClass = (id<FakeAdClient>)NSClassFromString(@"ADClient");

@@ -318,7 +318,7 @@ class PurchasesTests: XCTestCase {
             return "rc_idfv"
         }
         
-        override func adClientAttributionDetails(_ completionHandler: @escaping ([String : NSObject]?, Error?) -> Void) {
+        override func adClientAttributionDetails(completionBlock completionHandler: @escaping ([String : NSObject]?, Error?) -> Void) {
             completionHandler(["Version3.1": ["iad-campaign-id": 15292426, "iad-attribution": true] as NSObject], nil)
         }
     
