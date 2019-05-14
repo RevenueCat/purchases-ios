@@ -220,7 +220,7 @@ static BOOL _automaticAttributionCollection = NO;
 
         if (postponedAttributionData) {
             for (RCAttributionData *attributionData in postponedAttributionData) {
-                [self addAttributionData:attributionData.data fromNetwork:attributionData.network forNetworkUserId:attributionData.networkUserId];
+                [self postAttributionData:attributionData.data fromNetwork:attributionData.network forNetworkUserId:attributionData.networkUserId];
             }
         }
         
@@ -232,7 +232,7 @@ static BOOL _automaticAttributionCollection = NO;
                 [attributionFetcher adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> * _Nullable attributionDetails, NSError * _Nullable error) {
                     NSArray *values = [attributionDetails allValues];
                     if (values.count != 0 && values[0][@"iad-attribution"]) {
-                        [self addAttributionData:attributionDetails fromNetwork:RCAttributionNetworkAppleSearchAds];
+                        [self postAttributionData:attributionDetails fromNetwork:RCAttributionNetworkAppleSearchAds forNetworkUserId:nil];
                     }
                 }];
             }
@@ -275,6 +275,13 @@ static BOOL _automaticAttributionCollection = NO;
 }
 
 - (void)addAttributionData:(NSDictionary *)data
+               fromNetwork:(RCAttributionNetwork)network
+          forNetworkUserId:(NSString * _Nullable)networkUserId
+{
+    [self postAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
+}
+
+- (void)postAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
           forNetworkUserId:(NSString * _Nullable)networkUserId
 {
