@@ -81,7 +81,7 @@ static BOOL _automaticAttributionCollection = NO;
 }
 
 + (NSString *)frameworkVersion {
-    return @"2.3.0-SNAPSHOT";
+    return @"2.3.0";
 }
 
 + (instancetype)sharedPurchases {

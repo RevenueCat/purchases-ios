@@ -1,3 +1,11 @@
+## 2.3.0
+- `addAttribution` is now a class method that can be called before the SDK is configured.
+- `addAttribution` will automatically add the `rc_idfa` and `rc_idfv` parameters if the `AdSupport` and `UIKit` frameworks are included, respectively.
+- A network user identifier can be send to the `addAttribution` function, replacing the previous `rc_appsflyer_id` parameter.
+- Apple Search Ad attribution can be automatically collected by setting the `automaticAttributionCollection` boolean to `true` before the SDK is configured.
+- Adds an optional configuration boolean `observerMode`. This will set the value of `finishTransactions` at configuration time.
+- Header updates to include client version which will be used for debugging and reporting in the future.
+
 ## 2.2.0
 - Adds subscription offers
 
