@@ -73,6 +73,12 @@ class MockProductDiscount: SKProductDiscount {
 
 class PurchasesTests: XCTestCase {
 
+    override func tearDown() {
+        purchases?.delegate = nil
+        purchases = nil
+        Purchases.setDefaultInstance(nil)
+    }
+    
     class MockReceiptFetcher: RCReceiptFetcher {
         var receiptDataCalled = false
         var shouldReturnReceipt = true
@@ -207,13 +213,13 @@ class PurchasesTests: XCTestCase {
             }
         }
 
-        var postedAttributionData: [AnyHashable : Any]?
-        var postedAttributionFromNetwork: RCAttributionNetwork?
-        var postedAttributionAppUserId: String?
-        override func postAttributionData(_ data: [AnyHashable : Any], from network: RCAttributionNetwork, forAppUserID appUserID: String) {
-            postedAttributionData = data
-            postedAttributionAppUserId = appUserID
-            postedAttributionFromNetwork = network
+        var postedAttributionData: [RCAttributionData]?
+        override func postAttributionData(_ data: [AnyHashable : Any], from network: RCAttributionNetwork, forAppUserID appUserID: String, completion: ((Error?) -> Void)? = nil) {
+            if (postedAttributionData == nil) {
+                postedAttributionData = []
+            }
+            postedAttributionData?.append(RCAttributionData(data: data, from: network, forNetworkUserId: appUserID)!)
+            completion!(nil)
         }
 
         var postOfferForSigningCalled = false
@@ -298,6 +304,25 @@ class PurchasesTests: XCTestCase {
             appUserID = nil
         }
     }
+    
+    class MockAttributionFetcher: RCAttributionFetcher {
+        var receiptDataCalled = false
+        var shouldReturnReceipt = true
+        var receiptDataTimesCalled = 0
+        
+        override func advertisingIdentifier() -> String? {
+            return "rc_idfa"
+        }
+        
+        override func identifierForVendor() -> String? {
+            return "rc_idfv"
+        }
+        
+        override func adClientAttributionDetails(completionBlock completionHandler: @escaping ([String : NSObject]?, Error?) -> Void) {
+            completionHandler(["Version3.1": ["iad-campaign-id": 15292426, "iad-attribution": true] as NSObject], nil)
+        }
+    
+    }
 
     class Delegate: NSObject, PurchasesDelegate {
         var purchaserInfo: PurchaserInfo?
@@ -321,30 +346,36 @@ class PurchasesTests: XCTestCase {
     let storeKitWrapper = MockStoreKitWrapper()
     let notificationCenter = MockNotificationCenter();
     let userDefaults = MockUserDefaults();
+    let attributionFetcher = MockAttributionFetcher();
 
     let purchasesDelegate = Delegate()
     
     let appUserID = "app_user"
 
     var purchases: Purchases?
-
-    func setupPurchases() {
+    
+    func setupPurchases(automaticCollection: Bool = false) {
+        Purchases.automaticAttributionCollection = automaticCollection
         purchases = Purchases(appUserID: appUserID,
-                requestFetcher: requestFetcher,
-                receiptFetcher: receiptFetcher,
-                backend: backend,
-                storeKitWrapper: storeKitWrapper,
-                notificationCenter: notificationCenter,
-                userDefaults: userDefaults,
-                observerMode: false)
-
+                                requestFetcher: requestFetcher,
+                                receiptFetcher: receiptFetcher,
+                                attributionFetcher: attributionFetcher,
+                                backend:backend,
+                                storeKitWrapper: storeKitWrapper,
+                                notificationCenter:notificationCenter,
+                                userDefaults:userDefaults,
+                                observerMode: false)
         purchases!.delegate = purchasesDelegate
+        Purchases.setDefaultInstance(purchases!)
     }
 
     func setupAnonPurchases() {
+        Purchases.automaticAttributionCollection = false
+
         purchases = Purchases(appUserID: nil,
                 requestFetcher: requestFetcher,
                 receiptFetcher: receiptFetcher,
+                attributionFetcher: attributionFetcher,
                 backend: backend,
                 storeKitWrapper: storeKitWrapper,
                 notificationCenter: notificationCenter,
@@ -358,6 +389,7 @@ class PurchasesTests: XCTestCase {
         purchases = Purchases(appUserID: nil,
                 requestFetcher: requestFetcher,
                 receiptFetcher: receiptFetcher,
+                attributionFetcher: attributionFetcher,
                 backend: backend,
                 storeKitWrapper: storeKitWrapper,
                 notificationCenter: notificationCenter,
@@ -365,6 +397,7 @@ class PurchasesTests: XCTestCase {
                 observerMode: true)
 
         purchases!.delegate = purchasesDelegate
+        Purchases.setDefaultInstance(purchases!)
     }
     
     func testIsAbleToBeInitialized() {
@@ -1281,23 +1314,29 @@ class PurchasesTests: XCTestCase {
         expect(entitlements).toEventually(haveCount(1))
     }
 
-    func testAddAttributionDoesntCallEmptyDict() {
+    func testAddAttributionAlwaysAddsAdIdsEmptyDict() {
         setupPurchases()
 
-        self.purchases?.addAttributionData([:], from: RCAttributionNetwork.adjust)
+        Purchases.addAttributionData([:], from: RCAttributionNetwork.adjust)
 
-        expect(self.backend.postedAttributionData).toEventually(beNil())
+        expect(self.backend.postedAttributionData?[0].data.count).toEventually(equal(3))
+        expect(self.backend.postedAttributionData?[0].data["rc_idfa"] as? String).toEventually(equal("rc_idfa"))
+        expect(self.backend.postedAttributionData?[0].data["rc_idfv"] as? String).toEventually(equal("rc_idfv"))
     }
 
     func testPassesTheArrayForAllNetworks() {
         setupPurchases()
         let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
 
-        self.purchases?.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds)
+        Purchases.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds)
 
-        expect(self.backend.postedAttributionData?.keys).toEventually(equal(data.keys))
-        expect(self.backend.postedAttributionFromNetwork).toEventually(equal(RCAttributionNetwork.appleSearchAds))
-        expect(self.backend.postedAttributionAppUserId).toEventually(equal(self.purchases?.appUserID))
+        for key in data.keys {
+            expect(self.backend.postedAttributionData?[0].data.keys.contains(key)).toEventually(beTrue())
+        }
+        expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfa")).toEventually(beTrue())
+        expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfv")).toEventually(beTrue())
+        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
+        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.purchases?.appUserID))
     }
 
     func testSharedInstanceIsSetWhenConfiguring() {
@@ -1356,7 +1395,9 @@ class PurchasesTests: XCTestCase {
         let newAppUserID = "cesarPedro"
         
         self.purchases?.identify(newAppUserID)
-        identifiedSuccessfully(appUserID: newAppUserID)
+        expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
+        expect(self.purchases?.appUserID).to(equal(newAppUserID))
+        expect(self.purchases?.allowSharingAppStoreAccount).to(beFalse())
         expect(self.userDefaults.cachedUserInfo.count).toEventually(equal(2))
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
     }
@@ -1366,14 +1407,22 @@ class PurchasesTests: XCTestCase {
         self.backend.aliasError = nil
         
         let newAppUserID = "cesarPedro"
+        
+        var receivedInfo: PurchaserInfo?
         self.purchases?.createAlias(newAppUserID) { (info, error) in
-            self.identifiedSuccessfully(appUserID: newAppUserID)
+            receivedInfo = info
         }
+        expect(receivedInfo).toEventuallyNot(beNil())
+        expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
+        expect(self.purchases?.appUserID).to(equal(newAppUserID))
+        expect(self.purchases?.allowSharingAppStoreAccount).to(beFalse())
     }
     
     func testInitCallsIdentifies() {
         setupPurchases()
-        self.identifiedSuccessfully(appUserID: appUserID)
+        expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
+        expect(self.purchases?.appUserID).to(equal(self.appUserID))
+        expect(self.purchases?.allowSharingAppStoreAccount).to(beFalse())
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
     }
     
@@ -1652,6 +1701,66 @@ class PurchasesTests: XCTestCase {
         }
     }
 
+	func testAttributionDataIsPostponedIfThereIsNoInstance() {
+        let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
+        
+        Purchases.addAttributionData(data, from: RCAttributionNetwork.appsFlyer)
+        
+        setupPurchases()
+
+        expect(self.backend.postedAttributionData).toEventuallyNot(beNil())
+
+        for key in data.keys {
+            expect(self.backend.postedAttributionData?[0].data.keys.contains(key)).toEventually(beTrue())
+        }
+        
+        expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfa")).toEventually(beTrue())
+        expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfv")).toEventually(beTrue())
+        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appsFlyer))
+        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.purchases?.appUserID))
+    }
+    
+    func testAttributionDataSendsNetworkAppUserId() {
+        let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
+        
+        Purchases.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds, forNeworkUserId: "newuser")
+
+        setupPurchases()
+        
+        for key in data.keys {
+            expect(self.backend.postedAttributionData?[0].data.keys.contains(key)).toEventually(beTrue())
+        }
+        
+        expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfa")).toEventually(beTrue())
+        expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfv")).toEventually(beTrue())
+        expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_attribution_network_id")).toEventually(beTrue())
+        expect(self.backend.postedAttributionData?[0].data["rc_attribution_network_id"] as? String).toEventually(equal("newuser"))
+        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
+        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.appUserID))
+    }
+    
+    func testAdClientAttributionDataIsAutomaticallyCollected() {
+        setupPurchases(automaticCollection: true)
+        expect(self.backend.postedAttributionData).toEventuallyNot(beNil())
+        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
+        expect((self.backend.postedAttributionData?[0].data["Version3.1"] as! NSDictionary)["iad-campaign-id"]).toEventuallyNot(beNil())
+    }
+
+    func testAdClientAttributionDataIsNotAutomaticallyCollectedIfDisabled() {
+        setupPurchases(automaticCollection: false)
+        expect(self.backend.postedAttributionData).toEventually(beNil())
+    }
+    
+    func testAttributionDataPostponesMultiple() {
+        let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
+        
+        Purchases.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds, forNeworkUserId: "newuser")
+
+        setupPurchases(automaticCollection: true)
+        expect(self.backend.postedAttributionData).toEventuallyNot(beNil())
+        expect(self.backend.postedAttributionData?.count).toEventually(equal(2))
+    }
+    
     func testObserverModeSetToFalseSetFinishTransactions() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
@@ -1716,6 +1825,7 @@ class PurchasesTests: XCTestCase {
     private func identifiedSuccessfully(appUserID: String) {
         expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
         expect(self.purchases?.appUserID).to(equal(appUserID))
-        expect(self.purchases?.allowSharingAppStoreAccount).to(beFalse())
+        expect(self.purchases?.allowSharingAppStoreAccount).to(beFalse())        
     }
+
 }

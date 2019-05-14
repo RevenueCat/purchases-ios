@@ -72,7 +72,8 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
 
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
-               forAppUserID:(NSString *)appUserID;
+               forAppUserID:(NSString *)appUserID
+                 completion:(void (^ _Nullable)(NSError * _Nullable error))completion;
 
 - (void)createAliasForAppUserID:(NSString *)appUserID
                withNewAppUserID:(NSString *)newAppUserID
