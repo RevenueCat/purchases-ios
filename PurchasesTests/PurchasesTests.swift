@@ -1349,9 +1349,17 @@ class PurchasesTests: XCTestCase {
         expect(Purchases.shared).toEventually(equal(purchases))
     }
     
-    func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaults() {
-        let purchases = Purchases.configure(withAPIKey: "", appUserID: "", userDefaults: nil)
+    func testSharedInstanceIsSetWhenConfiguringWithObserverMode() {
+        let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true)
         expect(Purchases.shared).toEventually(equal(purchases))
+        expect(Purchases.shared.finishTransactions).toEventually(beFalse())
+    }
+    
+    
+    func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaults() {
+        let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false, userDefaults: nil)
+        expect(Purchases.shared).toEventually(equal(purchases))
+        expect(Purchases.shared.finishTransactions).toEventually(beTrue())
     }
     
     func testCreateAliasWithCompletionCallsBackend() {
