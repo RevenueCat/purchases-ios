@@ -128,14 +128,13 @@ NS_SWIFT_NAME(Purchases)
 
  @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
 
- @param userDefaults Custom userDefaults to use
+ @param observerMode Set this to TRUE if you have your own IAP implementation and want to use only RevenueCat's backend. Default is FALSE.
 
  @return An instantiated `RCPurchases` object that has been set as a singleton.
  */
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
                           appUserID:(NSString * _Nullable)appUserID
-                       userDefaults:(NSUserDefaults * _Nullable)userDefaults;
-
+                       observerMode:(BOOL)observerMode;
 
 /**
  Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to sync status across a shared container, such as between a host app and an extension. The instance of the Purchases SDK will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
@@ -144,16 +143,16 @@ NS_SWIFT_NAME(Purchases)
  
  @param appUserID The unique app user id for this user. This user id will allow users to share their purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
  
- @param userDefaults Custom userDefaults to use
- 
  @param observerMode Set this to TRUE if you have your own IAP implementation and want to use only RevenueCat's backend. Default is FALSE.
+
+ @param userDefaults Custom userDefaults to use
  
  @return An instantiated `RCPurchases` object that has been set as a singleton.
  */
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
                           appUserID:(NSString * _Nullable)appUserID
-                       userDefaults:(NSUserDefaults * _Nullable)userDefaults
-                       observerMode:(BOOL)observerMode;
+                       observerMode:(BOOL)observerMode
+                       userDefaults:(NSUserDefaults * _Nullable)userDefaults;
 
 /**
  Indicates whether the user is allowed to make payments.

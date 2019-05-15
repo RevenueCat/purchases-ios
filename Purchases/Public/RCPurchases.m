@@ -112,20 +112,20 @@ static BOOL _automaticAttributionCollection = NO;
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
 {
-    return [self configureWithAPIKey:APIKey appUserID:appUserID userDefaults:nil];
+    return [self configureWithAPIKey:APIKey appUserID:appUserID observerMode:false];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
                           appUserID:(NSString * _Nullable)appUserID
-                       userDefaults:(NSUserDefaults * _Nullable)userDefaults
+                       observerMode:(BOOL)observerMode
 {
-    return [self configureWithAPIKey:APIKey appUserID:appUserID userDefaults:nil observerMode:false];
+    return [self configureWithAPIKey:APIKey appUserID:appUserID observerMode:observerMode userDefaults:nil];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
                           appUserID:(NSString *)appUserID
-                       userDefaults:(NSUserDefaults * _Nullable)userDefaults
                        observerMode:(BOOL)observerMode
+                       userDefaults:(NSUserDefaults * _Nullable)userDefaults
 {
     RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults observerMode:observerMode];
     [self setDefaultInstance:purchases];
