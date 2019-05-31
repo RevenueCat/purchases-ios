@@ -8,7 +8,7 @@
 
 
 #import <Foundation/Foundation.h>
-#import <Purchases/Purchases.h>
+#import "Purchases.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
