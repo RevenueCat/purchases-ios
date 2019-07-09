@@ -198,7 +198,7 @@ NS_SWIFT_NAME(createAlias(_:_:));
  This function will identify the current user with an appUserID. Typically this would be used after a logout to identify a new user without calling configure
  @param appUserID The appUserID that should be linked to the currently user
  */
-- (void)identify:(NSString * _Nullable)appUserID completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+- (void)identify:(NSString *)appUserID completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
 NS_SWIFT_NAME(identify(_:_:));
 
 /**
