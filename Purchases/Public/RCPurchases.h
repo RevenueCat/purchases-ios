@@ -74,7 +74,11 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
     /**
      Tenjin https://www.tenjin.io/
      */
-    RCAttributionNetworkTenjin
+    RCAttributionNetworkTenjin,
+    /**
+     Facebook https://developers.facebook.com/
+     */
+    RCAttributionNetworkFacebook
 };
 
 /**
