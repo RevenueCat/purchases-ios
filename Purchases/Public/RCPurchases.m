@@ -58,26 +58,26 @@ NSMutableArray<RCAttributionData *> * _Nullable postponedAttributionData;
 #pragma mark - Configuration
 static RCPurchases *_sharedPurchases = nil;
 
-static BOOL _automaticAppleSearchAdAttributionCollection = NO;
+static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 + (void)setAutomaticAttributionCollection:(BOOL)automaticAttributionCollection
 {
-    _automaticAppleSearchAdAttributionCollection = automaticAttributionCollection;
+    _automaticAppleSearchAdsAttributionCollection = automaticAttributionCollection;
 }
 
 + (void)setAutomaticAppleSearchAdsAttributionCollection:(BOOL)automaticAppleSearchAdsAttributionCollection
 {
-    _automaticAppleSearchAdAttributionCollection = automaticAppleSearchAdsAttributionCollection;
+    _automaticAppleSearchAdsAttributionCollection = automaticAppleSearchAdsAttributionCollection;
 }
 
 + (BOOL)automaticAttributionCollection
 {
-    return _automaticAppleSearchAdAttributionCollection;
+    return _automaticAppleSearchAdsAttributionCollection;
 }
 
 + (BOOL)automaticAppleSearchAdsAttributionCollection
 {
-    return _automaticAppleSearchAdAttributionCollection;
+    return _automaticAppleSearchAdsAttributionCollection;
 }
 
 + (void)setDebugLogsEnabled:(BOOL)enabled
@@ -236,7 +236,7 @@ static BOOL _automaticAppleSearchAdAttributionCollection = NO;
         
         postponedAttributionData = nil;
         
-        if (_automaticAppleSearchAdAttributionCollection) {
+        if (_automaticAppleSearchAdsAttributionCollection) {
             NSString *latestNetworkIdAndAdvertisingIdSentToAppleSearchAds = [self latestNetworkIdAndAdvertisingIdentifierSentForNetwork:RCAttributionNetworkAppleSearchAds];
             if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds == nil) {
                 [attributionFetcher adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> * _Nullable attributionDetails, NSError * _Nullable error) {
