@@ -355,7 +355,7 @@ class PurchasesTests: XCTestCase {
     var purchases: Purchases?
     
     func setupPurchases(automaticCollection: Bool = false) {
-        Purchases.automaticAttributionCollection = automaticCollection
+        Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
         purchases = Purchases(appUserID: appUserID,
                                 requestFetcher: requestFetcher,
                                 receiptFetcher: receiptFetcher,
@@ -370,7 +370,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func setupAnonPurchases() {
-        Purchases.automaticAttributionCollection = false
+        Purchases.automaticAppleSearchAdsAttributionCollection = false
 
         purchases = Purchases(appUserID: nil,
                 requestFetcher: requestFetcher,
