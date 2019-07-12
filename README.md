@@ -31,7 +31,7 @@
 
 ### CocoaPods
 ```
-pod "Purchases", "2.3.0"
+pod "Purchases", "2.4.0"
 ```
 
 And then run:
@@ -42,7 +42,7 @@ pod install
 
 ### Carthage
 ```
-github "revenuecat/purchases-ios" "2.3.0"
+github "revenuecat/purchases-ios" "2.4.0"
 ```
 
 And then run:
@@ -329,7 +329,7 @@ RCPurchases.debugLogsEnabled = YES;
 Example output:
 ```
 [Purchases] - DEBUG: Debug logging enabled.
-[Purchases] - DEBUG: SDK Version - 2.3.0
+[Purchases] - DEBUG: SDK Version - 2.4.0
 [Purchases] - DEBUG: Initial App User ID - (null)
 [Purchases] - DEBUG: GET /v1/subscribers/<APP_USER_ID>
 [Purchases] - DEBUG: GET /v1/subscribers/<APP_USER_ID>/products
