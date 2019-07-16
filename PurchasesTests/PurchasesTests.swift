@@ -1319,7 +1319,7 @@ class PurchasesTests: XCTestCase {
 
         Purchases.addAttributionData([:], from: RCAttributionNetwork.adjust)
 
-        expect(self.backend.postedAttributionData?[0].data.count).toEventually(equal(3))
+        expect(self.backend.postedAttributionData?[0].data.count).toEventually(equal(2))
         expect(self.backend.postedAttributionData?[0].data["rc_idfa"] as? String).toEventually(equal("rc_idfa"))
         expect(self.backend.postedAttributionData?[0].data["rc_idfv"] as? String).toEventually(equal("rc_idfv"))
     }
@@ -1743,6 +1743,24 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfv")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_attribution_network_id")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data["rc_attribution_network_id"] as? String).toEventually(equal("newuser"))
+        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
+        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.appUserID))
+    }
+    
+    func testAttributionDataDontSendNetworkAppUserIdIfNotProvided() {
+        let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
+        
+        Purchases.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds)
+        
+        setupPurchases()
+        
+        for key in data.keys {
+            expect(self.backend.postedAttributionData?[0].data.keys.contains(key)).toEventually(beTrue())
+        }
+        
+        expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfa")).toEventually(beTrue())
+        expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfv")).toEventually(beTrue())
+        expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_attribution_network_id")).toEventually(beFalse())
         expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
         expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.appUserID))
     }

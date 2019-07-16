@@ -311,7 +311,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         NSMutableDictionary *newData = [NSMutableDictionary dictionaryWithDictionary:data];
         newData[@"rc_idfa"] = advertisingIdentifier;
         newData[@"rc_idfv"] = [self.attributionFetcher identifierForVendor];
-        newData[@"rc_attribution_network_id"] = networkUserId ?: self.appUserID;
+        newData[@"rc_attribution_network_id"] = networkUserId;
         
         if (newData.count > 0) {
             [self.backend postAttributionData:newData
