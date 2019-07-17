@@ -1731,7 +1731,7 @@ class PurchasesTests: XCTestCase {
     func testAttributionDataSendsNetworkAppUserId() {
         let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
         
-        Purchases.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds, forNeworkUserId: "newuser")
+        Purchases.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds, forNetworkUserId: "newuser")
 
         setupPurchases()
         
@@ -1780,7 +1780,7 @@ class PurchasesTests: XCTestCase {
     func testAttributionDataPostponesMultiple() {
         let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
         
-        Purchases.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds, forNeworkUserId: "newuser")
+        Purchases.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds, forNetworkUserId: "newuser")
 
         setupPurchases(automaticCollection: true)
         expect(self.backend.postedAttributionData).toEventuallyNot(beNil())
