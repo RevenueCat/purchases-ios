@@ -295,6 +295,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                fromNetwork:(RCAttributionNetwork)network
           forNetworkUserId:(NSString * _Nullable)networkUserId
 {
+    if (network == RCAttributionNetworkAppsFlyer && networkUserId == nil) {
+        if (data[@"rc_appsflyer_id"]) {
+            RCErrorLog(@"⚠️ The parameter key rc_appsflyer_id is deprecated. Pass networkUserId to addAttribution instead. ⚠️");
+        } else {
+            RCErrorLog(@"⚠️ The parameter networkUserId is REQUIRED for AppsFlyer. ⚠️");
+        }
+    }
     NSString *networkKey = [NSString stringWithFormat:@"%ld",(long)network];
     NSString *advertisingIdentifier = [self.attributionFetcher advertisingIdentifier];
     NSString *cacheKey = [self attributionDataUserDefaultCacheKeyForAppUserID:self.appUserID];
