@@ -1,8 +1,13 @@
+## 2.5.0
+- **BREAKING CHANGE**: fixed a typo in `addAttributionData` Swift's name.
+- Error logs for AppsFlyer if using deprecated `rc_appsflyer_id`
+- Error logs for AppsFlyer if missing networkUserID
+
 ## 2.4.0
-- *BUGFIX*: `userId` parameter in identify is not nullable anymore.
-- *DEPRECATION*: `automaticAttributionCollection` is now deprecated in favor of `automaticAppleSearchAdsAttributionCollection` since it's a more clear name.
-- *NEW FEATURE*: UIKitForMac support.
-- *NEW FEATURE*: Facebook Ads Attribution support https://docs.revenuecat.com/docs/facebook-ads.
+- **BUGFIX**: `userId` parameter in identify is not nullable anymore.
+- **DEPRECATION**: `automaticAttributionCollection` is now deprecated in favor of `automaticAppleSearchAdsAttributionCollection` since it's a more clear name.
+- **NEW FEATURE**: UIKitForMac support.
+- **NEW FEATURE**: Facebook Ads Attribution support https://docs.revenuecat.com/docs/facebook-ads.
 
 ## 2.3.0
 - `addAttribution` is now a class method that can be called before the SDK is configured.
