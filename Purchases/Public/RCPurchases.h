@@ -245,7 +245,7 @@ NS_SWIFT_NAME(reset(_:));
  */
 + (void)addAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
-          forNetworkUserId:(NSString * _Nullable)networkUserId NS_SWIFT_NAME(addAttributionData(_:from:forNeworkUserId:));
+          forNetworkUserId:(NSString * _Nullable)networkUserId NS_SWIFT_NAME(addAttributionData(_:from:forNetworkUserId:));
 
 #pragma mark Purchases
 
