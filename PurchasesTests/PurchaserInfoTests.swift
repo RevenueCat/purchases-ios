@@ -23,7 +23,11 @@ class EmptyPurchaserInfoTests: XCTestCase {
 class BasicPurchaserInfoTests: XCTestCase {
     let validSubscriberResponse = [
         "request_date": "2018-10-19T02:40:36Z",
+        "request_date_ms": 1563379533946,
         "subscriber": [
+            "original_app_user_id": "CD5378C6-4342-451E-B89F-01CE553D52C0",
+            "original_application_version": "2083",
+            "first_seen": "2019-06-17T16:05:33Z",
             "other_purchases": [
                 "onetime_purchase": [
                     "purchase_date": "1990-08-30T02:40:36Z"
@@ -32,10 +36,27 @@ class BasicPurchaserInfoTests: XCTestCase {
             "subscriptions": [
                 "onemonth_freetrial": [
                     "expires_date": "2100-08-30T02:40:36Z",
-                    "period_type": "normal"
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-09T20:10:15Z",
+                    "original_purchase_date": "2019-06-09T20:10:15Z",
+                    "store": "app_store",
+                    "is_sandbox": false,
+                    "unsubscribe_detected_at": "2019-07-09T25:10:15Z",
+                    "billing_issues_detected_at": "2019-07-09T23:10:15Z"
                 ],
                 "threemonth_freetrial": [
-                    "expires_date": "1990-08-30T02:40:36Z"
+                    "expires_date": "1990-08-30T02:40:36Z",
+                    "period_type": "trial",
+                    "purchase_date": "2019-07-16T15:02:17Z",
+                    "original_purchase_date": "2019-06-09T20:10:15Z",
+                    "is_sandbox": false
+                ],
+                "rc_promo_plus_lifetime": [
+                    "expires_date": nil,
+                    "period_type": "promotional",
+                    "purchase_date": "2019-07-16T15:02:17Z",
+                    "original_purchase_date": "2019-06-09T20:10:15Z",
+                    "is_sandbox": false
                 ]
             ],
             "entitlements": [
@@ -82,13 +103,13 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
 
     func testListActiveSubscriptions() {
-        XCTAssertEqual(Set(["onemonth_freetrial"]), purchaserInfo!.activeSubscriptions)
+        XCTAssertEqual(Set(["onemonth_freetrial", "rc_promo_plus_lifetime"]), purchaserInfo!.activeSubscriptions)
     }
 
     func testAllPurchasedProductIdentifier() {
         let allPurchased = purchaserInfo!.allPurchasedProductIdentifiers
 
-        expect(allPurchased).to(equal(Set(["onemonth_freetrial", "threemonth_freetrial", "onetime_purchase"])))
+        expect(allPurchased).to(equal(Set(["onemonth_freetrial", "threemonth_freetrial", "onetime_purchase", "rc_promo_plus_lifetime"])))
     }
 
     func testLatestExpirationDateHelper() {

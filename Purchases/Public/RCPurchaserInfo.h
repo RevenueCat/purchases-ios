@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
+@class RCEntitlementInfos;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,8 +18,11 @@ NS_ASSUME_NONNULL_BEGIN
 NS_SWIFT_NAME(PurchaserInfo)
 @interface RCPurchaserInfo : NSObject
 
+/// Entitlements attached to this purchaser info
+@property (nonatomic, readonly) RCEntitlementInfos *entitlements;
+
 /// All active *entitlements*.
-@property (readonly) NSSet<NSString *> *activeEntitlements;
+@property (readonly) NSSet<NSString *> *activeEntitlements DEPRECATED_MSG_ATTRIBUTE("Check the .isActive property on the EntitlmentInfo object in entitlements instead.");
 
 /// All *subscription* product identifiers with expiration dates in the future.
 @property (readonly) NSSet<NSString *> *activeSubscriptions;
@@ -41,6 +45,18 @@ NS_SWIFT_NAME(PurchaserInfo)
 @property (readonly) NSString * _Nullable originalApplicationVersion;
 
 /**
+ Returns the fetch date of this Purchaser info.
+ @note Can be nil if was cached before we added this
+ */
+@property (readonly) NSDate * _Nullable requestDate;
+
+/// The date this user was first seen in RevenueCat.
+@property (readonly) NSDate *firstSeen;
+
+/// The original App User Id recorded for this user.
+@property (readonly) NSDate *originalAppUserId;
+
+/**
  Get the expiration date for a given product identifier. You should use Entitlements though!
  
  @param productIdentifier Product identifier for product
@@ -50,7 +66,7 @@ NS_SWIFT_NAME(PurchaserInfo)
 - (NSDate * _Nullable)expirationDateForProductIdentifier:(NSString *)productIdentifier;
 
 /**
- Get the purchase date for a given product identifier. You should use Entitlements though!
+ Get the latest purchase or renewal date for a given product identifier. You should use Entitlements though!
  
  @param productIdentifier Product identifier for subscription product
  
@@ -67,19 +83,13 @@ NS_SWIFT_NAME(PurchaserInfo)
 - (NSDate * _Nullable)expirationDateForEntitlement:(NSString *)entitlementId;
 
 /**
- Get the purchase date for a given entitlement identifier.
+ Get the latest purchase or renewal date for a given entitlement identifier.
  
  @param entitlementId Entitlement identifier for entitlement
  
  @return The purchase date for `entitlementId`, `nil` if product never purchased
  */
 - (NSDate * _Nullable)purchaseDateForEntitlement:(NSString *)entitlementId;
-
-/**
- Returns the fetch date of this Purchaser info.
- @note Can be nil if was cached before we added this
- */
-@property (readonly) NSDate * _Nullable requestDate;
 
 @end
 
