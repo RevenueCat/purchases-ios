@@ -18,6 +18,7 @@
 		350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDEF1F7EFC410065833D /* StoreKitRequestFetcherTests.swift */; };
 		350FBDF31F7FFD350065833D /* RCStoreKitWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDF11F7FFD340065833D /* RCStoreKitWrapper.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		350FBDF41F7FFD350065833D /* RCStoreKitWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDF21F7FFD340065833D /* RCStoreKitWrapper.m */; };
+		350FD38422E90EDB00B803AD /* RCOfferings.m in Sources */ = {isa = PBXBuildFile; fileRef = 354D50DE22E7D014009B870C /* RCOfferings.m */; };
 		351703CD1F805E5D00EEE27A /* PurchaserInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351703CC1F805E5D00EEE27A /* PurchaserInfoTests.swift */; };
 		351F4FAB1F80190700F245F4 /* RCBackend.h in Headers */ = {isa = PBXBuildFile; fileRef = 351F4FA91F80190700F245F4 /* RCBackend.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		351F4FAC1F80190700F245F4 /* RCBackend.m in Sources */ = {isa = PBXBuildFile; fileRef = 351F4FAA1F80190700F245F4 /* RCBackend.m */; };
@@ -37,12 +38,17 @@
 		353AB5E6222F633D003754E6 /* RCPurchasesErrorUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 353AB5E5222F633D003754E6 /* RCPurchasesErrorUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		353AB5E92230A239003754E6 /* RCReceiptFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 353AB5E82230A239003754E6 /* RCReceiptFetcher.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		353AB5F92230AAE2003754E6 /* RCReceiptFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 353AB5F82230AAE2003754E6 /* RCReceiptFetcher.m */; };
+		354D50DF22E7D014009B870C /* RCOfferings.h in Headers */ = {isa = PBXBuildFile; fileRef = 354D50DD22E7D014009B870C /* RCOfferings.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		354D50E022E7D014009B870C /* RCOfferings.m in Sources */ = {isa = PBXBuildFile; fileRef = 354D50DE22E7D014009B870C /* RCOfferings.m */; };
 		356D65F620B873AF00576D45 /* Purchases.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		35846AF92267FDD600CC9E56 /* RCAttributionFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 35846AF82267FDD600CC9E56 /* RCAttributionFetcher.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35846AFB2267FE7F00CC9E56 /* RCAttributionFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 35846AFA2267FE7F00CC9E56 /* RCAttributionFetcher.m */; };
 		35846AFC226940F000CC9E56 /* RCPromotionalOffer.m in Sources */ = {isa = PBXBuildFile; fileRef = EF6FB839CFA4B4A3A3687D61 /* RCPromotionalOffer.m */; };
 		35846AFD226940F600CC9E56 /* RCPromotionalOffer.h in Headers */ = {isa = PBXBuildFile; fileRef = EF6FBD2FBB7BD43897C26768 /* RCPromotionalOffer.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35846AFF226A56AE00CC9E56 /* RCPromotionalOffer+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35846AFE226A554300CC9E56 /* RCPromotionalOffer+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		3585D6A322E680E30079E2C5 /* RCPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3585D6A122E680E30079E2C5 /* RCPackage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3585D6A422E680E30079E2C5 /* RCPackage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3585D6A222E680E30079E2C5 /* RCPackage.m */; };
+		3585D6A522E680E30079E2C5 /* RCPackage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3585D6A222E680E30079E2C5 /* RCPackage.m */; };
 		359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */; };
 		359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */; };
 		35A60EAA1F82993E00D2FAE8 /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -123,10 +129,14 @@
 		353AB5E5222F633D003754E6 /* RCPurchasesErrorUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrorUtils.h; sourceTree = "<group>"; };
 		353AB5E82230A239003754E6 /* RCReceiptFetcher.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCReceiptFetcher.h; sourceTree = "<group>"; };
 		353AB5F82230AAE2003754E6 /* RCReceiptFetcher.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCReceiptFetcher.m; sourceTree = "<group>"; };
+		354D50DD22E7D014009B870C /* RCOfferings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOfferings.h; sourceTree = "<group>"; };
+		354D50DE22E7D014009B870C /* RCOfferings.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCOfferings.m; sourceTree = "<group>"; };
 		357C9BC022725CFA006BC624 /* iAd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = iAd.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/iAd.framework; sourceTree = DEVELOPER_DIR; };
 		35846AF82267FDD600CC9E56 /* RCAttributionFetcher.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCAttributionFetcher.h; sourceTree = "<group>"; };
 		35846AFA2267FE7F00CC9E56 /* RCAttributionFetcher.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCAttributionFetcher.m; sourceTree = "<group>"; };
 		35846AFE226A554300CC9E56 /* RCPromotionalOffer+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCPromotionalOffer+Protected.h"; sourceTree = "<group>"; };
+		3585D6A122E680E30079E2C5 /* RCPackage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPackage.h; sourceTree = "<group>"; };
+		3585D6A222E680E30079E2C5 /* RCPackage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPackage.m; sourceTree = "<group>"; };
 		359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSLocale+RCExtensions.h"; sourceTree = "<group>"; };
 		359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSLocale+RCExtensions.m"; sourceTree = "<group>"; };
 		35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCPurchases+Protected.h"; sourceTree = "<group>"; };
@@ -189,8 +199,12 @@
 				35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */,
 				35CE74F220C389E000CE09D8 /* RCEntitlement.h */,
 				35CE74F320C389E000CE09D8 /* RCEntitlement.m */,
+				354D50DD22E7D014009B870C /* RCOfferings.h */,
+				354D50DE22E7D014009B870C /* RCOfferings.m */,
 				35CE74F920C38A7100CE09D8 /* RCOffering.h */,
 				35CE74FA20C38A7100CE09D8 /* RCOffering.m */,
+				3585D6A122E680E30079E2C5 /* RCPackage.h */,
+				3585D6A222E680E30079E2C5 /* RCPackage.m */,
 			);
 			path = Public;
 			sourceTree = "<group>";
@@ -293,6 +307,7 @@
 				35CE74FB20C38A7100CE09D8 /* RCOffering.h in Headers */,
 				353AB5E4222F624E003754E6 /* RCPurchasesErrors.h in Headers */,
 				35846AFF226A56AE00CC9E56 /* RCPromotionalOffer+Protected.h in Headers */,
+				3585D6A322E680E30079E2C5 /* RCPackage.h in Headers */,
 				353AB5E6222F633D003754E6 /* RCPurchasesErrorUtils.h in Headers */,
 				359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */,
 				351F4FAB1F80190700F245F4 /* RCBackend.h in Headers */,
@@ -301,6 +316,7 @@
 				35395CB421B9F59E00286D13 /* RCIntroEligibility+Protected.h in Headers */,
 				350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */,
 				35A60EAA1F82993E00D2FAE8 /* RCPurchases+Protected.h in Headers */,
+				354D50DF22E7D014009B870C /* RCOfferings.h in Headers */,
 				351F4FAF1F803D0700F245F4 /* RCPurchaserInfo.h in Headers */,
 				35CE750120C3932900CE09D8 /* RCOffering+Protected.h in Headers */,
 				35CE750420C39A0F00CE09D8 /* RCEntitlement+Protected.h in Headers */,
@@ -436,6 +452,7 @@
 				350FBDEE1F7EFB950065833D /* RCStoreKitRequestFetcher.m in Sources */,
 				351F4FAC1F80190700F245F4 /* RCBackend.m in Sources */,
 				353AB5F92230AAE2003754E6 /* RCReceiptFetcher.m in Sources */,
+				3585D6A422E680E30079E2C5 /* RCPackage.m in Sources */,
 				350FBDE01F7EE8F20065833D /* RCUtils.m in Sources */,
 				35D3AB442030B4C600DE42C5 /* RCIntroEligibility.m in Sources */,
 				350A1B89226F93C800CCA10F /* RCAttributionData.m in Sources */,
@@ -447,6 +464,7 @@
 				35262A2D1F7D783F00C04F2C /* RCHTTPClient.m in Sources */,
 				350FBDF41F7FFD350065833D /* RCStoreKitWrapper.m in Sources */,
 				35846AFB2267FE7F00CC9E56 /* RCAttributionFetcher.m in Sources */,
+				354D50E022E7D014009B870C /* RCOfferings.m in Sources */,
 				35CE74FD20C38A7100CE09D8 /* RCOffering.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -455,12 +473,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				350FD38422E90EDB00B803AD /* RCOfferings.m in Sources */,
 				35262A211F7D77E600C04F2C /* PurchasesTests.swift in Sources */,
 				351F4FB21F803D9C00F245F4 /* BackendTests.swift in Sources */,
 				35262A301F7D78C600C04F2C /* HTTPClientTests.swift in Sources */,
 				35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */,
 				350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */,
 				351703CD1F805E5D00EEE27A /* PurchaserInfoTests.swift in Sources */,
+				3585D6A522E680E30079E2C5 /* RCPackage.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

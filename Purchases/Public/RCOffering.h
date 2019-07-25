@@ -8,27 +8,32 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class SKProduct;
+@class RCPackage, RCOffering;
 
 /**
- Most well monetized subscription apps provide many different offerings to purchase an entitlement. These are usually associated with different durations i.e. an annual plan and a monthly plan. See [this link](https://docs.revenuecat.com/docs/entitlements) for more info
+ An offering is collection of different Packages that lets the user purchase access in different ways.
  */
 NS_SWIFT_NAME(Offering)
 @interface RCOffering : NSObject
 
-/**
- The active product, this will be null if the product is not available, usually because it has not been approved for sale
- */
-@property (readonly) SKProduct * _Nullable activeProduct;
+@property NSString *identifier;
+@property NSString *serverDescription;
 
-/**
- @return A String containing the localized price
- */
-- (NSString * _Nonnull)localizedPriceString;
+@property NSArray<RCPackage *> *availablePackages;
 
-/**
- @return A String containing the localized introductory price
- */
-- (NSString * _Nonnull)localizedIntroductoryPriceString;
+@property RCPackage * _Nullable lifetime;
+@property RCPackage * _Nullable annual;
+@property RCPackage * _Nullable sixMonth;
+@property RCPackage * _Nullable threeMonth;
+@property RCPackage * _Nullable twoMonth;
+@property RCPackage * _Nullable monthly;
+@property RCPackage * _Nullable weekly;
+
+- (RCPackage * _Nullable)packageWithIdentifier:(NSString * _Nullable)identifier NS_SWIFT_NAME(package(identifier:));
 
 @end
+
+NS_ASSUME_NONNULL_END

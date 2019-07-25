@@ -678,6 +678,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
+- (void)offeringsWithCompletionBlock:(RCReceiveOfferingsBlock)completion
+{
+    
+}
+
 - (void)updateEntitlementsCache:(RCReceiveEntitlementsBlock _Nullable)completion
 {
     [self.backend getEntitlementsForAppUserID:self.appUserID

@@ -7,6 +7,7 @@
 //
 
 #import "RCOffering.h"
+#import "RCPackage.h"
 #import <StoreKit/StoreKit.h>
 
 @interface RCOffering ()
@@ -17,6 +18,11 @@
 @end
 
 @implementation RCOffering
+
+- (RCPackage * _Nullable)packageWithIdentifier:(NSString * _Nullable)identifier
+{
+    return nil;
+}
 
 - (NSString *)localizedPriceString {
     if (!self.activeProduct) return @"";
