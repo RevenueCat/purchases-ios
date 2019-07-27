@@ -19,13 +19,12 @@
 @property (nonatomic) NSDictionary<NSString *, NSObject *> *purchaseDateByEntitlement;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic) NSString *originalApplicationVersion;
-
 @property (nonatomic) NSDictionary *originalData;
 @property (nonatomic) NSDate * _Nullable requestDate;
-
 @property (nonatomic) NSDate *firstSeen;
+@property (nonatomic) RCEntitlementInfos *entitlements;
+@property (nonatomic) NSString *originalAppUserId;
 
-@property (nonatomic, readwrite) RCEntitlementInfos *entitlements;
 @end
 
 static NSDateFormatter *dateFormatter;
@@ -84,6 +83,7 @@ static dispatch_once_t onceToken;
 
         self.firstSeen = [self parseDate:subscriberData[@"first_seen"] withDateFormatter:dateFormatter];
         self.entitlements = [[RCEntitlementInfos alloc] initWithEntitlements:entitlements forPurchases:allPurchases withDateFormatter:dateFormatter withRequestDate:self.requestDate];
+        self.originalAppUserId = subscriberData[@"original_app_user_id"];
     }
     return self;
 }

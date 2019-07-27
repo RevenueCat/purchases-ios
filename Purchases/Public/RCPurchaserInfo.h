@@ -54,7 +54,7 @@ NS_SWIFT_NAME(PurchaserInfo)
 @property (readonly) NSDate *firstSeen;
 
 /// The original App User Id recorded for this user.
-@property (readonly) NSDate *originalAppUserId;
+@property (readonly) NSString *originalAppUserId;
 
 /**
  Get the expiration date for a given product identifier. You should use Entitlements though!

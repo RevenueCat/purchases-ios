@@ -97,18 +97,18 @@
 - (NSString *)description
 {
     NSMutableString *description = [NSMutableString stringWithFormat:@"<%@: ", NSStringFromClass([self class])];
-    [description appendFormat:@"self.identifier=%@", self.identifier];
-    [description appendFormat:@", self.isActive=%d", self.isActive];
-    [description appendFormat:@", self.willRenew=%d", self.willRenew];
-    [description appendFormat:@", self.periodType=%li", (long) self.periodType];
-    [description appendFormat:@", self.latestPurchaseDate=%@", self.latestPurchaseDate];
-    [description appendFormat:@", self.originalPurchaseDate=%@", self.originalPurchaseDate];
-    [description appendFormat:@", self.expirationDate=%@", self.expirationDate];
-    [description appendFormat:@", self.store=%li", (long) self.store];
-    [description appendFormat:@", self.productIdentifier=%@", self.productIdentifier];
-    [description appendFormat:@", self.isSandbox=%d", self.isSandbox];
-    [description appendFormat:@", self.unsubscribeDetectedAt=%@", self.unsubscribeDetectedAt];
-    [description appendFormat:@", self.billingIssueDetectedAt=%@", self.billingIssueDetectedAt];
+    [description appendFormat:@"identifier=%@,\n", self.identifier];
+    [description appendFormat:@"isActive=%d,\n", self.isActive];
+    [description appendFormat:@"willRenew=%d,\n", self.willRenew];
+    [description appendFormat:@"periodType=%li,\n", (long) self.periodType];
+    [description appendFormat:@"latestPurchaseDate=%@,\n", self.latestPurchaseDate];
+    [description appendFormat:@"originalPurchaseDate=%@,\n", self.originalPurchaseDate];
+    [description appendFormat:@"expirationDate=%@,\n", self.expirationDate];
+    [description appendFormat:@"store=%li,\n", (long) self.store];
+    [description appendFormat:@"productIdentifier=%@,\n", self.productIdentifier];
+    [description appendFormat:@"isSandbox=%d,\n", self.isSandbox];
+    [description appendFormat:@"unsubscribeDetectedAt=%@,\n", self.unsubscribeDetectedAt];
+    [description appendFormat:@"billingIssueDetectedAt=%@,\n", self.billingIssueDetectedAt];
     [description appendString:@">"];
     return description;
 }
