@@ -23,7 +23,7 @@ typedef NS_ENUM(NSInteger, RCStore) {
     RCStripe,
     RCPromotional,
     RCUnknownStore,
-};
+} NS_SWIFT_NAME(Store);
 
 /**
  @typedef RCPeriodType
@@ -36,7 +36,7 @@ typedef NS_ENUM(NSInteger, RCPeriodType) {
     RCNormal = 0,
     RCIntro,
     RCTrial,
-};
+} NS_SWIFT_NAME(PeriodType);
 
 NS_SWIFT_NAME(EntitlementInfo)
 @interface RCEntitlementInfo : NSObject
@@ -118,14 +118,6 @@ NS_SWIFT_NAME(EntitlementInfo)
 @property (readonly) NSDate * _Nullable billingIssueDetectedAt;
 
 - (instancetype)initWithEntitlementId:(NSString *)entitlementId withEntitlementData:(NSDictionary<NSString *, id> *)entitlementData withProductData:(NSDictionary<NSString *, id> *)productData withDateFormatter:(NSDateFormatter *)dateFormatter withRequestDate:(NSDate *)date;
-
-- (NSString *)description;
-
-- (BOOL)isEqual:(id)other;
-
-- (BOOL)isEqualToInfo:(RCEntitlementInfo *)info;
-
-- (NSUInteger)hash;
 
 @end
 

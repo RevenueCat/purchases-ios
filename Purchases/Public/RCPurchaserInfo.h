@@ -19,7 +19,7 @@ NS_SWIFT_NAME(PurchaserInfo)
 @interface RCPurchaserInfo : NSObject
 
 /// Entitlements attached to this purchaser info
-@property (nonatomic, readonly) RCEntitlementInfos *entitlements;
+@property (readonly) RCEntitlementInfos *entitlements;
 
 /// All active *entitlements*.
 @property (readonly) NSSet<NSString *> *activeEntitlements DEPRECATED_MSG_ATTRIBUTE("Check the .isActive property on the EntitlmentInfo object in entitlements instead.");

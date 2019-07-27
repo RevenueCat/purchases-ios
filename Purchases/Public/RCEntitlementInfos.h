@@ -18,14 +18,6 @@ NS_SWIFT_NAME(RCEntitlementInfos)
 
 - (RCEntitlementInfo *_Nullable)objectForKeyedSubscript:(id)key;
 
-- (NSString *)description;
-
-- (BOOL)isEqual:(id)other;
-
-- (BOOL)isEqualToInfos:(RCEntitlementInfos *)infos;
-
-- (NSUInteger)hash;
-
 @end
 
 NS_ASSUME_NONNULL_END
