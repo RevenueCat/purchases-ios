@@ -50,6 +50,7 @@
 		35B54E4822EA6F4E005918B1 /* RCEntitlementInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4722EA6F4E005918B1 /* RCEntitlementInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35B54E4A22EA6FBD005918B1 /* RCEntitlementInfos.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35B54E4C22EA6FD3005918B1 /* RCEntitlementInfos.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B54E4B22EA6FD3005918B1 /* RCEntitlementInfos.m */; };
+		35B54E4E22ED1FA9005918B1 /* EntitlementInfosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35B54E4D22ED1FA9005918B1 /* EntitlementInfosTests.swift */; };
 		35C98D9520B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 35C98D9420B7306A006DCBB5 /* RCCrossPlatformSupport.h */; };
 		35CE74F420C389E000CE09D8 /* RCEntitlement.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE74F220C389E000CE09D8 /* RCEntitlement.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35CE74F620C389E000CE09D8 /* RCEntitlement.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74F320C389E000CE09D8 /* RCEntitlement.m */; };
@@ -138,6 +139,7 @@
 		35B54E4722EA6F4E005918B1 /* RCEntitlementInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfo.h; sourceTree = "<group>"; };
 		35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfos.h; sourceTree = "<group>"; };
 		35B54E4B22EA6FD3005918B1 /* RCEntitlementInfos.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfos.m; sourceTree = "<group>"; };
+		35B54E4D22ED1FA9005918B1 /* EntitlementInfosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementInfosTests.swift; sourceTree = "<group>"; };
 		35C98D9420B7306A006DCBB5 /* RCCrossPlatformSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCCrossPlatformSupport.h; sourceTree = "<group>"; };
 		35CE74F220C389E000CE09D8 /* RCEntitlement.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCEntitlement.h; sourceTree = "<group>"; };
 		35CE74F320C389E000CE09D8 /* RCEntitlement.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCEntitlement.m; sourceTree = "<group>"; };
@@ -272,6 +274,7 @@
 				35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */,
 				351F4FB11F803D9C00F245F4 /* BackendTests.swift */,
 				351703CC1F805E5D00EEE27A /* PurchaserInfoTests.swift */,
+				35B54E4D22ED1FA9005918B1 /* EntitlementInfosTests.swift */,
 				35262A221F7D77E600C04F2C /* Info.plist */,
 				350FBDD61F7DF1640065833D /* Frameworks */,
 			);
@@ -475,6 +478,7 @@
 				351F4FB21F803D9C00F245F4 /* BackendTests.swift in Sources */,
 				35262A301F7D78C600C04F2C /* HTTPClientTests.swift in Sources */,
 				35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */,
+				35B54E4E22ED1FA9005918B1 /* EntitlementInfosTests.swift in Sources */,
 				350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */,
 				351703CD1F805E5D00EEE27A /* PurchaserInfoTests.swift in Sources */,
 			);

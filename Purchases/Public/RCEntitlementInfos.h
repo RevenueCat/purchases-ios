@@ -8,7 +8,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-NS_SWIFT_NAME(RCEntitlementInfos)
+NS_SWIFT_NAME(EntitlementInfos)
 @interface RCEntitlementInfos : NSObject
 
 @property (readonly) NSDictionary<NSString *, RCEntitlementInfo *> *all;
