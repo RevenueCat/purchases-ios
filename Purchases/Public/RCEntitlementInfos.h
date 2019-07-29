@@ -14,9 +14,7 @@ NS_SWIFT_NAME(EntitlementInfos)
 @property (readonly) NSDictionary<NSString *, RCEntitlementInfo *> *all;
 @property (readonly) NSDictionary<NSString *, RCEntitlementInfo *> *active;
 
-- (instancetype)initWithEntitlements:(NSDictionary<NSString *, NSDictionary *> *)entitlements forPurchases:(NSDictionary<NSString *, id> *)purchases withDateFormatter:(NSDateFormatter *)dateFormatter withRequestDate:(NSDate *)requestDate;
-
-- (RCEntitlementInfo *_Nullable)objectForKeyedSubscript:(id)key;
+- (RCEntitlementInfo * _Nullable)objectForKeyedSubscript:(id)key;
 
 @end
 

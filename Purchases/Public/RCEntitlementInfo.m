@@ -4,17 +4,18 @@
 //
 
 #import "RCEntitlementInfo.h"
+#import "RCEntitlementInfo+Protected.h"
 
 @interface RCEntitlementInfo ()
 
-@property (readwrite) NSString * identifier;
+@property (readwrite) NSString *identifier;
 @property (readwrite) BOOL isActive;
 @property (readwrite) RCPeriodType periodType;
-@property (readwrite) NSDate * latestPurchaseDate;
+@property (readwrite) NSDate *latestPurchaseDate;
 @property (readwrite) NSDate * _Nullable originalPurchaseDate;
 @property (readwrite) NSDate * _Nullable expirationDate;
 @property (readwrite) RCStore store;
-@property (readwrite) NSString * productIdentifier;
+@property (readwrite) NSString *productIdentifier;
 @property (readwrite) BOOL isSandbox;
 @property (readwrite) NSDate * _Nullable unsubscribeDetectedAt;
 @property (readwrite) NSDate * _Nullable billingIssueDetectedAt;
@@ -24,12 +25,11 @@
 
 @implementation RCEntitlementInfo
 
-
-- (instancetype)initWithEntitlementId:(NSString *)entitlementId withEntitlementData:(NSDictionary<NSString *, id> *)entitlementData withProductData:(NSDictionary<NSString *, id> *)productData withDateFormatter:(NSDateFormatter *)dateFormatter withRequestDate:(NSDate *)requestDate
+- (instancetype)initWithEntitlementId:(NSString *)entitlementId entitlementData:(NSDictionary *)entitlementData productData:(NSDictionary *)productData dateFormatter:(NSDateFormatter *)dateFormatter requestDate:(NSDate *)requestDate
 {
     if (self = [super init]) {
         self.identifier = entitlementId;
-        self.isActive = [self checkIsActive:[self parseDate:entitlementData[@"expires_date"] withDateFormatter:dateFormatter] withRequestDate:requestDate];
+        self.isActive = [self isDateActive:[self parseDate:entitlementData[@"expires_date"] withDateFormatter:dateFormatter] forRequestDate:requestDate];
         self.periodType = [self parsePeriodType:productData[@"period_type"]];
         self.latestPurchaseDate = [self parseDate:entitlementData[@"purchase_date"] withDateFormatter:dateFormatter];
         self.originalPurchaseDate = [self parseDate:productData[@"original_purchase_date"] withDateFormatter:dateFormatter];
@@ -48,14 +48,10 @@
     return self;
 }
 
-- (BOOL)checkIsActive:(NSDate * _Nullable)expirationDate withRequestDate:(NSDate *)requestDate
+- (BOOL)isDateActive:(NSDate * _Nullable)expirationDate forRequestDate:(NSDate *)requestDate
 {
-    return ((expirationDate == nil) || [self isAfterReferenceDate:expirationDate withRequestDate:requestDate]);
-}
-
-- (BOOL)isAfterReferenceDate:(NSDate *)date withRequestDate:requestDate {
     NSDate *referenceDate = requestDate ?: [NSDate date];
-    return [date timeIntervalSinceDate:referenceDate] > 0;
+    return ((expirationDate == nil) || [expirationDate timeIntervalSinceDate:referenceDate] > 0);
 }
 
 - (NSDate * _Nullable)parseDate:(id)dateString withDateFormatter:(NSDateFormatter *)dateFormatter

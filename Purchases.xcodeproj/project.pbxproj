@@ -51,6 +51,8 @@
 		35B54E4A22EA6FBD005918B1 /* RCEntitlementInfos.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35B54E4C22EA6FD3005918B1 /* RCEntitlementInfos.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B54E4B22EA6FD3005918B1 /* RCEntitlementInfos.m */; };
 		35B54E4E22ED1FA9005918B1 /* EntitlementInfosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35B54E4D22ED1FA9005918B1 /* EntitlementInfosTests.swift */; };
+		35B54E5022EF7F3A005918B1 /* RCEntitlementInfo+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4F22EF7F3A005918B1 /* RCEntitlementInfo+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		35B54E5222EF88CE005918B1 /* RCEntitlementInfos+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E5122EF88CE005918B1 /* RCEntitlementInfos+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35C98D9520B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 35C98D9420B7306A006DCBB5 /* RCCrossPlatformSupport.h */; };
 		35CE74F420C389E000CE09D8 /* RCEntitlement.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE74F220C389E000CE09D8 /* RCEntitlement.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35CE74F620C389E000CE09D8 /* RCEntitlement.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74F320C389E000CE09D8 /* RCEntitlement.m */; };
@@ -140,6 +142,8 @@
 		35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfos.h; sourceTree = "<group>"; };
 		35B54E4B22EA6FD3005918B1 /* RCEntitlementInfos.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfos.m; sourceTree = "<group>"; };
 		35B54E4D22ED1FA9005918B1 /* EntitlementInfosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementInfosTests.swift; sourceTree = "<group>"; };
+		35B54E4F22EF7F3A005918B1 /* RCEntitlementInfo+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCEntitlementInfo+Protected.h"; sourceTree = "<group>"; };
+		35B54E5122EF88CE005918B1 /* RCEntitlementInfos+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCEntitlementInfos+Protected.h"; sourceTree = "<group>"; };
 		35C98D9420B7306A006DCBB5 /* RCCrossPlatformSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCCrossPlatformSupport.h; sourceTree = "<group>"; };
 		35CE74F220C389E000CE09D8 /* RCEntitlement.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCEntitlement.h; sourceTree = "<group>"; };
 		35CE74F320C389E000CE09D8 /* RCEntitlement.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCEntitlement.m; sourceTree = "<group>"; };
@@ -260,6 +264,8 @@
 				EF6FBD2FBB7BD43897C26768 /* RCPromotionalOffer.h */,
 				EF6FB839CFA4B4A3A3687D61 /* RCPromotionalOffer.m */,
 				35846AFE226A554300CC9E56 /* RCPromotionalOffer+Protected.h */,
+				35B54E4F22EF7F3A005918B1 /* RCEntitlementInfo+Protected.h */,
+				35B54E5122EF88CE005918B1 /* RCEntitlementInfos+Protected.h */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -322,6 +328,8 @@
 				35CE750120C3932900CE09D8 /* RCOffering+Protected.h in Headers */,
 				35CE750420C39A0F00CE09D8 /* RCEntitlement+Protected.h in Headers */,
 				350FBDF31F7FFD350065833D /* RCStoreKitWrapper.h in Headers */,
+				35B54E5022EF7F3A005918B1 /* RCEntitlementInfo+Protected.h in Headers */,
+				35B54E5222EF88CE005918B1 /* RCEntitlementInfos+Protected.h in Headers */,
 				35C98D9520B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */,
 				35262A0F1F7C4B9100C04F2C /* Purchases.h in Headers */,
 				35846AFD226940F600CC9E56 /* RCPromotionalOffer.h in Headers */,

@@ -9,6 +9,7 @@
 #import "RCPurchaserInfo.h"
 #import "RCPurchaserInfo+Protected.h"
 #import "RCEntitlementInfos.h"
+#import "RCEntitlementInfos+Protected.h"
 #import "RCEntitlementInfo.h"
 
 @interface RCPurchaserInfo ()
@@ -84,7 +85,7 @@ static dispatch_once_t onceToken;
         self.originalApplicationVersion = [originalApplicationVersion isKindOfClass:[NSNull class]] ? nil : originalApplicationVersion;
 
         self.firstSeen = [self parseDate:subscriberData[@"first_seen"] withDateFormatter:dateFormatter];
-        self.entitlements = [[RCEntitlementInfos alloc] initWithEntitlements:entitlements forPurchases:allPurchases withDateFormatter:dateFormatter withRequestDate:self.requestDate];
+        self.entitlements = [[RCEntitlementInfos alloc] initWithEntitlementsData:entitlements purchasesData:allPurchases dateFormatter:dateFormatter requestDate:self.requestDate];
         self.originalAppUserId = subscriberData[@"original_app_user_id"];
     }
     return self;
@@ -202,11 +203,11 @@ static dispatch_once_t onceToken;
 
 - (NSDictionary * _Nonnull)JSONObject {
     NSMutableDictionary *dictionary = [self.originalData mutableCopy];
-    dictionary[@"schema_version"] = [RCPurchaserInfo schemaVersion];
+    dictionary[@"schema_version"] = [RCPurchaserInfo currentSchemaVersion];
     return dictionary;
 }
 
-+ (NSString *)schemaVersion {
++ (NSString *)currentSchemaVersion {
     return @"2";
 }
 

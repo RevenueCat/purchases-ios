@@ -4,6 +4,7 @@
 
 #import "RCEntitlementInfos.h"
 #import "RCEntitlementInfo.h"
+#import "RCEntitlementInfo+Protected.h"
 
 
 @interface RCEntitlementInfos ()
@@ -12,19 +13,18 @@
 
 @implementation RCEntitlementInfos
 
-- (instancetype)initWithEntitlements:(NSDictionary<NSString *, NSDictionary *> *)entitlements forPurchases:(NSDictionary<NSString *, id> *)purchases withDateFormatter:(NSDateFormatter *)dateFormatter withRequestDate:(NSDate *)requestDate
+- (instancetype)initWithEntitlementsData:(NSDictionary *)entitlementsData purchasesData:(NSDictionary *)purchasesData dateFormatter:(NSDateFormatter *)dateFormatter requestDate:(NSDate *)requestDate
 {
     if (self = [super init]) {
         NSMutableDictionary<NSString *, RCEntitlementInfo *> *entitlementInfos = [[NSMutableDictionary alloc] init];
-        for (NSString *identifier in entitlements) {
-            id entitlement = entitlements[identifier];
-            
+        for (NSString *identifier in entitlementsData) {
+            id entitlement = entitlementsData[identifier];
             if ([entitlement isKindOfClass:NSDictionary.class]) {
                 id productIdentifier = entitlement[@"product_identifier"];
                 if ([productIdentifier isKindOfClass:NSString.class]) {
-                    id productData = purchases[productIdentifier];
+                    id productData = purchasesData[productIdentifier];
                     if ([productData isKindOfClass:NSDictionary.class]) {
-                        RCEntitlementInfo *entitlementInfo = [[RCEntitlementInfo alloc] initWithEntitlementId:identifier withEntitlementData:entitlement withProductData:productData withDateFormatter:dateFormatter withRequestDate:requestDate];
+                        RCEntitlementInfo *entitlementInfo = [[RCEntitlementInfo alloc] initWithEntitlementId:identifier entitlementData:entitlement productData:productData dateFormatter:dateFormatter requestDate:requestDate];
                         entitlementInfos[identifier] = entitlementInfo;
                     }
                 }
@@ -81,11 +81,5 @@
         return NO;
     return YES;
 }
-
-- (NSUInteger)hash
-{
-    return [self.all hash];
-}
-
 
 @end

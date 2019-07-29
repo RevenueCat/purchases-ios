@@ -60,9 +60,9 @@ NS_SWIFT_NAME(EntitlementInfo)
 
 /**
  The last period type this entitlement was in
- Either: normal, intro, trial, or promotional
+ Either: RCNormal, RCIntro, RCTrial
  
- If the entitlement is unlocked by multiple sources, the first period type in
+ If the entitlement is unlocked by multiple products, the first period type in
  the order above will be returned.
  */
 @property (readonly) RCPeriodType periodType;
@@ -85,13 +85,12 @@ NS_SWIFT_NAME(EntitlementInfo)
 
 /**
  The store where this entitlement was unlocked from
- Either: ios, macos, google, stripe, promotional
+ Either: RCAppStore, RCMacAppStore, RCPlayStore, RCStripe, RCPromotional, RCUnknownStore
  */
 @property (readonly) RCStore store;
 
 /**
  The product identifier that unlocked this entitlement
- Will have "rc_promo" prefix for promotionals
  */
 @property (readonly) NSString *productIdentifier;
 
@@ -103,8 +102,7 @@ NS_SWIFT_NAME(EntitlementInfo)
 /**
  The date an unsubscribe was detected. Can be `nil`.
  
- Note: Entitlement may still be active even if user unsubscribed. Check
- the `isActive` property.
+ Note: Entitlement may still be active even if user has unsubscribed. Check the `isActive` property.
  */
 @property (readonly) NSDate * _Nullable unsubscribeDetectedAt;
 
@@ -116,8 +114,6 @@ NS_SWIFT_NAME(EntitlementInfo)
  Check the `isActive` property.
  */
 @property (readonly) NSDate * _Nullable billingIssueDetectedAt;
-
-- (instancetype)initWithEntitlementId:(NSString *)entitlementId withEntitlementData:(NSDictionary<NSString *, id> *)entitlementData withProductData:(NSDictionary<NSString *, id> *)productData withDateFormatter:(NSDateFormatter *)dateFormatter withRequestDate:(NSDate *)date;
 
 @end
 
