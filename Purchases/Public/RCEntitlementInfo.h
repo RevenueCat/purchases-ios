@@ -44,7 +44,7 @@ NS_SWIFT_NAME(EntitlementInfo)
 /**
  The entitlement identifier configured in the RevenueCat dashboard
  */
-@property (readonly) NSString * identifier;
+@property (readonly) NSString *identifier;
 
 /**
  True if the user has access to this entitlement
@@ -70,7 +70,7 @@ NS_SWIFT_NAME(EntitlementInfo)
 /**
  The latest purchase or renewal date for the entitlement.
  */
-@property (readonly) NSDate * latestPurchaseDate;
+@property (readonly) NSDate *latestPurchaseDate;
 
 /**
  The first date this entitlement was purchased
@@ -93,7 +93,7 @@ NS_SWIFT_NAME(EntitlementInfo)
  The product identifier that unlocked this entitlement
  Will have "rc_promo" prefix for promotionals
  */
-@property (readonly) NSString * productIdentifier;
+@property (readonly) NSString *productIdentifier;
 
 /**
  False if this entitlement is unlocked via a production purchase
