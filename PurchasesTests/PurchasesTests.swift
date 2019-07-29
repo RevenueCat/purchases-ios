@@ -1203,6 +1203,29 @@ class PurchasesTests: XCTestCase {
         expect(self.userDefaults.cachedUserInfoCount).toEventually(equal(2))
     }
 
+    func testCachedPurchaserInfoHasSchemaVersion() {
+        let info = PurchaserInfo(data: [
+            "schema_version": 1,
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]]);
+        let object = try! JSONSerialization.data(withJSONObject: info!.jsonObject(), options:[]);
+        self.userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + appUserID] = object
+        self.backend.timeout = true
+        
+        setupPurchases()
+        
+        var receivedInfo: PurchaserInfo?
+        
+        purchases!.purchaserInfo { (info, error) in
+            receivedInfo = info
+        }
+        
+        expect(receivedInfo).toNot(beNil())
+        expect(receivedInfo?.schemaVersion).toNot(beNil())
+    }
+
     func testSendsCachedPurchaserInfoToGetter() {
         let info = PurchaserInfo(data: [
             "subscriber": [
@@ -1222,6 +1245,54 @@ class PurchasesTests: XCTestCase {
         }
         
         expect(receivedInfo).toNot(beNil())
+    }
+    
+    func testDoesntSendsCachedPurchaserInfoToGetterIfSchemaVersionDiffers() {
+        let info = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]]);
+        var jsonObject = info!.jsonObject()
+        jsonObject["schema_version"] = "bad_version"
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options:[]);
+        
+        self.userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + appUserID] = object
+        self.backend.timeout = true
+        
+        setupPurchases()
+        
+        var receivedInfo: PurchaserInfo?
+        
+        purchases!.purchaserInfo { (info, error) in
+            receivedInfo = info
+        }
+        
+        expect(receivedInfo).to(beNil())
+    }
+    
+    func testDoesntSendsCachedPurchaserInfoToGetterIfNoSchemaVersionInCached() {
+        let info = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]]);
+        var jsonObject = info!.jsonObject()
+        jsonObject.removeValue(forKey: "schema_version")
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options:[]);
+        
+        self.userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + appUserID] = object
+        self.backend.timeout = true
+        
+        setupPurchases()
+        
+        var receivedInfo: PurchaserInfo?
+        
+        purchases!.purchaserInfo { (info, error) in
+            receivedInfo = info
+        }
+        
+        expect(receivedInfo).to(beNil())
     }
     
     func testDoesntSendCacheIfNoCacheAndCallsBackendAgain() {

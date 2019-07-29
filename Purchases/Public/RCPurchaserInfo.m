@@ -24,6 +24,7 @@
 @property (nonatomic) NSDate *firstSeen;
 @property (nonatomic) RCEntitlementInfos *entitlements;
 @property (nonatomic) NSString *originalAppUserId;
+@property (nonatomic) NSString * _Nullable schemaVersion;
 
 @end
 
@@ -40,6 +41,7 @@ static dispatch_once_t onceToken;
         }
         
         self.originalData = data;
+        self.schemaVersion = data[@"schema_version"];
         
         NSDictionary *subscriberData = data[@"subscriber"];
         
@@ -199,7 +201,13 @@ static dispatch_once_t onceToken;
 }
 
 - (NSDictionary * _Nonnull)JSONObject {
-    return self.originalData;
+    NSMutableDictionary *dictionary = [self.originalData mutableCopy];
+    dictionary[@"schema_version"] = [RCPurchaserInfo schemaVersion];
+    return dictionary;
+}
+
++ (NSString *)schemaVersion {
+    return @"2";
 }
 
 - (BOOL)isEqual:(RCPurchaserInfo *)other

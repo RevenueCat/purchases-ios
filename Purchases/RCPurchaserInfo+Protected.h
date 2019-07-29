@@ -18,8 +18,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSDictionary<NSString *, NSObject *> *purchaseDateByEntitlement;
 @property (nonatomic, readonly) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic, readonly) NSString  * _Nullable originalApplicationVersion;
+@property(readonly) NSString * _Nullable schemaVersion;
 
 - (NSDictionary * _Nonnull)JSONObject;
++ (NSString *)schemaVersion;
 
 @end
 NS_ASSUME_NONNULL_END
