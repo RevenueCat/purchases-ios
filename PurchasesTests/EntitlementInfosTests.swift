@@ -38,8 +38,76 @@ class EntitlementInfosTests: XCTestCase {
             ]
         ]
     }
+    
+    func testMultipleEntitlements() {
+        stubResponse(
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ],
+                "lifetime_cat": [
+                    "expires_date": nil,
+                    "product_identifier": "lifetime",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            nonSubscriptions: [
+                "lifetime": [
+                    [
+                        "id": "5b9ba226bc",
+                        "is_sandbox": false,
+                        "purchase_date": "2019-07-26T22:10:27Z",
+                        "store": "app_store"
+                    ],
+                    [
+                        "id": "ea820afcc4",
+                        "is_sandbox": false,
+                        "purchase_date": "2019-07-26T23:45:40Z",
+                        "store": "app_store"
+                    ],
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ]
+            ]
+        )
+        
+        let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
+        expect(subscriberInfo.entitlements.all.count).to(equal(2))
 
-    func testActiveSubscription(){
+        verifySubscriberInfo()
+        verifyEntitlementActive()
+        verifyRenewal()
+        verifyPeriodType()
+        verifyStore()
+        verifySandbox()
+        verifyProduct()
+        
+        verifyEntitlementActive(beTrue(), entitlement: "lifetime_cat")
+        verifyRenewal(beTrue(), unsubscribeDetectedAt: beNil(), billingIssueDetectedAt: beNil(), entitlement: "lifetime_cat")
+        verifyPeriodType(equal(PeriodType.normal.rawValue), entitlement: "lifetime_cat")
+        verifyStore(equal(Store.appStore.rawValue), entitlement: "lifetime_cat")
+        verifySandbox(beFalse(), entitlement: "lifetime_cat")
+        verifyProduct(identifier: equal("lifetime"),
+                      latestPurchaseDate: equal(formatter.date(from: "2019-07-26T23:45:40Z")),
+                      originalPurchaseDate: beNil(),
+                      expirationDate: beNil(),
+                      entitlement: "lifetime_cat"
+        )
+    }
+
+    func testActiveSubscription() {
         stubResponse(
                 entitlements: [
                     "pro_cat": [
@@ -807,63 +875,65 @@ class EntitlementInfosTests: XCTestCase {
         expect(subscriberInfo.originalAppUserId).to(equal("cesarsandbox1"))
     }
 
-    func verifyEntitlementActive(_ matcher: Predicate<Bool> = beTrue()) {
+    func verifyEntitlementActive(_ matcher: Predicate<Bool> = beTrue(), entitlement: String = "pro_cat") {
         let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
-        let proCat: EntitlementInfo = subscriberInfo.entitlements["pro_cat"]!
+        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
-        expect(proCat.identifier).to(equal("pro_cat"))
-        expect(subscriberInfo.entitlements.all.count).to(be(1))
-        expect(subscriberInfo.entitlements.all.keys.contains("pro_cat")).to(beTrue())
-        expect(subscriberInfo.entitlements.active.keys.contains("pro_cat")).to(matcher)
+        expect(proCat.identifier).to(equal(entitlement))
+        expect(subscriberInfo.entitlements.all.keys.contains(entitlement)).to(beTrue())
+        expect(subscriberInfo.entitlements.active.keys.contains(entitlement)).to(matcher)
         expect(proCat.isActive).to(matcher)
     }
 
     func verifyRenewal(_ matcher: Predicate<Bool> = beTrue(),
                 unsubscribeDetectedAt: Predicate<Date> = beNil(),
-                billingIssueDetectedAt: Predicate<Date> = beNil()) {
+                billingIssueDetectedAt: Predicate<Date> = beNil(),
+                entitlement: String = "pro_cat") {
         let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
-        let proCat: EntitlementInfo = subscriberInfo.entitlements["pro_cat"]!
+        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.willRenew).to(matcher)
         expect(proCat.unsubscribeDetectedAt).to(unsubscribeDetectedAt)
         expect(proCat.billingIssueDetectedAt).to(billingIssueDetectedAt)
     }
 
-    func verifyPeriodType(_ matcher: Predicate<Int> = equal(PeriodType.normal.rawValue)) {
+    func verifyPeriodType(_ matcher: Predicate<Int> = equal(PeriodType.normal.rawValue), entitlement: String = "pro_cat") {
         let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
-        let proCat: EntitlementInfo = subscriberInfo.entitlements["pro_cat"]!
+        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.periodType.rawValue).to(matcher)
     }
 
-    func verifyStore(_ matcher: Predicate<Int> = equal(Store.appStore.rawValue)) {
+    func verifyStore(_ matcher: Predicate<Int> = equal(Store.appStore.rawValue), entitlement: String = "pro_cat") {
         let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
-        let proCat: EntitlementInfo = subscriberInfo.entitlements["pro_cat"]!
+        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.store.rawValue).to(matcher)
     }
 
-    func verifySandbox(_ matcher: Predicate<Bool> = beFalse()) {
+    func verifySandbox(_ matcher: Predicate<Bool> = beFalse(), entitlement: String = "pro_cat") {
         let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
-        let proCat: EntitlementInfo = subscriberInfo.entitlements["pro_cat"]!
+        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.isSandbox).to(matcher)
     }
     
-    func verifyProduct(identifier: Predicate<String> = equal("monthly_freetrial")) {
+    func verifyProduct(identifier: Predicate<String> = equal("monthly_freetrial"), entitlement: String = "pro_cat") {
         verifyProduct(identifier: identifier,
                 latestPurchaseDate: equal(formatter.date(from: "2019-07-26T23:45:40Z")),
                 originalPurchaseDate: equal(formatter.date(from: "2019-07-26T23:30:41Z")),
-                expirationDate: equal(formatter.date(from: "2200-07-26T23:50:40Z"))
+                expirationDate: equal(formatter.date(from: "2200-07-26T23:50:40Z")),
+                entitlement: entitlement
         )
     }
 
     func verifyProduct(identifier: Predicate<String>,
                        latestPurchaseDate: Predicate<Date>,
                        originalPurchaseDate: Predicate<Date>,
-                       expirationDate: Predicate<Date>) {
+                       expirationDate: Predicate<Date>,
+                       entitlement: String = "pro_cat") {
         let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
-        let proCat: EntitlementInfo = subscriberInfo.entitlements["pro_cat"]!
+        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.latestPurchaseDate).to(latestPurchaseDate)
         expect(proCat.originalPurchaseDate).to(originalPurchaseDate)

@@ -210,6 +210,7 @@ static dispatch_once_t onceToken;
                     && [self.purchaseDateByEntitlement isEqual:other.purchaseDateByEntitlement]
                     && [self.nonConsumablePurchases isEqual:other.nonConsumablePurchases]);
     
+    isEqual &= ([self.activeEntitlements isEqual:other.activeEntitlements]);
     isEqual &= ([self.entitlements isEqual:other.entitlements]);
     
     
