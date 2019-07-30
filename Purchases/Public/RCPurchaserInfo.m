@@ -8,6 +8,9 @@
 
 #import "RCPurchaserInfo.h"
 #import "RCPurchaserInfo+Protected.h"
+#import "RCEntitlementInfos.h"
+#import "RCEntitlementInfos+Protected.h"
+#import "RCEntitlementInfo.h"
 
 @interface RCPurchaserInfo ()
 
@@ -17,9 +20,12 @@
 @property (nonatomic) NSDictionary<NSString *, NSObject *> *purchaseDateByEntitlement;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic) NSString *originalApplicationVersion;
-
 @property (nonatomic) NSDictionary *originalData;
 @property (nonatomic) NSDate * _Nullable requestDate;
+@property (nonatomic) NSDate *firstSeen;
+@property (nonatomic) RCEntitlementInfos *entitlements;
+@property (nonatomic) NSString *originalAppUserId;
+@property (nonatomic) NSString * _Nullable schemaVersion;
 
 @end
 
@@ -36,6 +42,7 @@ static dispatch_once_t onceToken;
         }
         
         self.originalData = data;
+        self.schemaVersion = data[@"schema_version"];
         
         NSDictionary *subscriberData = data[@"subscriber"];
         
@@ -55,12 +62,20 @@ static dispatch_once_t onceToken;
         NSDictionary *entitlements = subscriberData[@"entitlements"];
         self.expirationDateByEntitlement = [self parseExpirationDate:entitlements];
         self.purchaseDateByEntitlement = [self parsePurchaseDate:entitlements];
-        
-        NSDictionary<NSString *, id> *otherPurchases = subscriberData[@"other_purchases"];
-        self.nonConsumablePurchases = [NSSet setWithArray:[otherPurchases allKeys]];
+
+        NSDictionary<NSString *, NSArray *> *nonSubscriptions = subscriberData[@"non_subscriptions"];
+        self.nonConsumablePurchases = [NSSet setWithArray:[nonSubscriptions allKeys]];
+
+        NSMutableDictionary<NSString *, id> *nonSubscriptionsLatestPurchases = [[NSMutableDictionary alloc] init];
+        for (NSString* productId in nonSubscriptions) {
+            NSArray *arrayOfPurchases = nonSubscriptions[productId];
+            if (arrayOfPurchases.count > 0) {
+                nonSubscriptionsLatestPurchases[productId] = arrayOfPurchases[arrayOfPurchases.count - 1];
+            }
+        }
         
         NSMutableDictionary<NSString *, id> *allPurchases = [[NSMutableDictionary alloc] init];
-        [allPurchases addEntriesFromDictionary:otherPurchases];
+        [allPurchases addEntriesFromDictionary:nonSubscriptionsLatestPurchases];
         [allPurchases addEntriesFromDictionary:subscriptions];
         
         self.expirationDatesByProduct = [self parseExpirationDate:subscriptions];
@@ -68,9 +83,20 @@ static dispatch_once_t onceToken;
         
         NSString *originalApplicationVersion = subscriberData[@"original_application_version"];
         self.originalApplicationVersion = [originalApplicationVersion isKindOfClass:[NSNull class]] ? nil : originalApplicationVersion;
-        
+
+        self.firstSeen = [self parseDate:subscriberData[@"first_seen"] withDateFormatter:dateFormatter];
+        self.entitlements = [[RCEntitlementInfos alloc] initWithEntitlementsData:entitlements purchasesData:allPurchases dateFormatter:dateFormatter requestDate:self.requestDate];
+        self.originalAppUserId = subscriberData[@"original_app_user_id"];
     }
     return self;
+}
+
+- (NSDate * _Nullable)parseDate:(id)dateString withDateFormatter:(NSDateFormatter *)dateFormatter
+{
+    if ([dateString isKindOfClass:NSString.class]) {
+        return [dateFormatter dateFromString:(NSString *)dateString];
+    }
+    return nil;
 }
 
 - (NSDictionary<NSString *, NSDate *> *)parseExpirationDate:(NSDictionary<NSString *, NSDictionary *> *)expirationDates
@@ -176,7 +202,13 @@ static dispatch_once_t onceToken;
 }
 
 - (NSDictionary * _Nonnull)JSONObject {
-    return self.originalData;
+    NSMutableDictionary *dictionary = [self.originalData mutableCopy];
+    dictionary[@"schema_version"] = [RCPurchaserInfo currentSchemaVersion];
+    return dictionary;
+}
+
++ (NSString *)currentSchemaVersion {
+    return @"2";
 }
 
 - (BOOL)isEqual:(RCPurchaserInfo *)other
@@ -188,6 +220,7 @@ static dispatch_once_t onceToken;
                     && [self.nonConsumablePurchases isEqual:other.nonConsumablePurchases]);
     
     isEqual &= ([self.activeEntitlements isEqual:other.activeEntitlements]);
+    isEqual &= ([self.entitlements isEqual:other.entitlements]);
     
     
     if (self.originalApplicationVersion != nil || other.originalApplicationVersion != nil) {
@@ -205,15 +238,23 @@ static dispatch_once_t onceToken;
                                         @"expiresDate": [self expirationDateForProductIdentifier:active] ?: @"null"
                                         };
     }
-    
+
     NSMutableDictionary *activeEntitlements = [NSMutableDictionary dictionary];
-    for (NSString *active in self.activeEntitlements) {
+    for (NSString *active in self.entitlements.active) {
         activeEntitlements[active] = @{
                                         @"expiresDate": [self expirationDateForEntitlement:active] ?: @"null"
                                         };
     }
-    
-    return [NSString stringWithFormat:@"<PurchaserInfo\n originalApplicationVersion: %@,\n latestExpirationDate: %@\n activeEntitlements: %@,\n activeSubscriptions: %@,\n nonConsumablePurchases: %@,\n requestDate: %@\n>", self.originalApplicationVersion, self.latestExpirationDate, activeEntitlements, activeSubscriptions, self.nonConsumablePurchases, self.requestDate];
+
+    NSMutableDictionary *entitlements = [NSMutableDictionary dictionary];
+    for (NSString *entitlement in self.entitlements.all) {
+        RCEntitlementInfo *entitlementInfo = self.entitlements[entitlement];
+            entitlements[entitlement] = @{
+                                          @"expiresDate": entitlementInfo.expirationDate ?: @"null"
+                                        };
+    }
+
+    return [NSString stringWithFormat:@"<PurchaserInfo\n originalApplicationVersion: %@,\n latestExpirationDate: %@\n activeEntitlements: %@,\n activeSubscriptions: %@,\n nonConsumablePurchases: %@,\n requestDate: %@\nfirstSeen: %@,\noriginalAppUserId: %@,\nentitlements: %@,\n>", self.originalApplicationVersion, self.latestExpirationDate, activeEntitlements, activeSubscriptions, self.nonConsumablePurchases, self.requestDate, self.firstSeen, self.originalAppUserId, entitlements];
 }
 
 @end

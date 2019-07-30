@@ -1138,7 +1138,6 @@ class BackendTests: XCTestCase {
 
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
-
     }
 
 }

@@ -31,7 +31,7 @@ class InitialViewController: UIViewController {
                 var controller : UIViewController!
 
                 
-                if purchaserInfo.activeEntitlements.contains("pro_cat") {
+                if purchaserInfo.entitlements["pro_cat"]?.isActive == true {
                     
                     // if we have a pro_cat subscriber, send them to the cat screen
                     controller = storyboard.instantiateViewController(withIdentifier: "cats")

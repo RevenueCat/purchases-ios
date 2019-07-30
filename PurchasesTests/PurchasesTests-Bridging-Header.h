@@ -18,3 +18,5 @@
 #include <Purchases/RCAttributionFetcher.h>
 #include <Purchases/RCAttributionData.h>
 #include <Purchases/RCPromotionalOffer+Protected.h>
+#include <Purchases/RCEntitlementInfo.h>
+#include <Purchases/RCEntitlementInfos.h>
