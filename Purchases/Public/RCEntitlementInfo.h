@@ -61,9 +61,6 @@ NS_SWIFT_NAME(EntitlementInfo)
 /**
  The last period type this entitlement was in
  Either: RCNormal, RCIntro, RCTrial
- 
- If the entitlement is unlocked by multiple products, the first period type in
- the order above will be returned.
  */
 @property (readonly) RCPeriodType periodType;
 
@@ -75,7 +72,7 @@ NS_SWIFT_NAME(EntitlementInfo)
 /**
  The first date this entitlement was purchased
  */
-@property (readonly) NSDate * _Nullable originalPurchaseDate;
+@property (readonly) NSDate *originalPurchaseDate;
 
 /**
  The expiration date for the entitlement, can be `nil` for lifetime access.

@@ -30,7 +30,10 @@ class BasicPurchaserInfoTests: XCTestCase {
             "first_seen": "2019-06-17T16:05:33Z",
             "non_subscriptions": [
                 "onetime_purchase": [
-                    ["purchase_date": "1990-08-30T02:40:36Z"]
+                    [
+                        "original_purchase_date": "1990-08-30T02:40:36Z",
+                        "purchase_date": "1990-08-30T02:40:36Z"
+                    ]
                 ]
             ],
             "subscriptions": [
