@@ -58,12 +58,14 @@ class EntitlementInfosTests: XCTestCase {
                     [
                         "id": "5b9ba226bc",
                         "is_sandbox": false,
+                        "original_purchase_date": "2019-07-26T22:10:27Z",
                         "purchase_date": "2019-07-26T22:10:27Z",
                         "store": "app_store"
                     ],
                     [
                         "id": "ea820afcc4",
                         "is_sandbox": false,
+                        "original_purchase_date": "2019-07-26T23:45:40Z",
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store"
                     ],
@@ -213,12 +215,14 @@ class EntitlementInfosTests: XCTestCase {
                         [
                             "id": "5b9ba226bc",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
                         ],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "app_store"
                         ],
@@ -417,12 +421,14 @@ class EntitlementInfosTests: XCTestCase {
                         [
                             "id": "5b9ba226bc",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
                         ],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "app_store"
                         ],
@@ -590,12 +596,14 @@ class EntitlementInfosTests: XCTestCase {
                         [
                             "id": "5b9ba226bc",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
                         ],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "app_store"
                         ],
@@ -618,12 +626,14 @@ class EntitlementInfosTests: XCTestCase {
                         [
                             "id": "5b9ba226bc",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
                         ],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "mac_app_store"
                         ],
@@ -646,12 +656,14 @@ class EntitlementInfosTests: XCTestCase {
                         [
                             "id": "5b9ba226bc",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
                         ],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "play_store"
                         ],
@@ -674,12 +686,14 @@ class EntitlementInfosTests: XCTestCase {
                         [
                             "id": "5b9ba226bc",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
                         ],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "promotional"
                         ],
@@ -702,12 +716,14 @@ class EntitlementInfosTests: XCTestCase {
                         [
                             "id": "5b9ba226bc",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
                         ],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "stripe"
                         ],
@@ -730,12 +746,14 @@ class EntitlementInfosTests: XCTestCase {
                         [
                             "id": "5b9ba226bc",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T22:10:27Z",
                             "purchase_date": "2019-07-26T22:10:27Z",
                             "store": "app_store"
                         ],
                         [
                             "id": "ea820afcc4",
                             "is_sandbox": false,
+                            "original_purchase_date": "2019-07-26T23:45:40Z",
                             "purchase_date": "2019-07-26T23:45:40Z",
                             "store": "tienda"
                         ],
@@ -851,12 +869,14 @@ class EntitlementInfosTests: XCTestCase {
                     [
                         "id": "5b9ba226bc",
                         "is_sandbox": false,
+                        "original_purchase_date": "2019-07-26T22:10:27Z",
                         "purchase_date": "2019-07-26T22:10:27Z",
                         "store": "app_store"
                     ],
                     [
                         "id": "ea820afcc4",
                         "is_sandbox": false,
+                        "original_purchase_date": "2019-07-26T23:45:40Z",
                         "purchase_date": "2019-07-26T23:45:40Z",
                         "store": "app_store"
                     ],

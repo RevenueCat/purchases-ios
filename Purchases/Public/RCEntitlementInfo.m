@@ -12,7 +12,7 @@
 @property (readwrite) BOOL isActive;
 @property (readwrite) RCPeriodType periodType;
 @property (readwrite) NSDate *latestPurchaseDate;
-@property (readwrite) NSDate * _Nullable originalPurchaseDate;
+@property (readwrite) NSDate *originalPurchaseDate;
 @property (readwrite) NSDate * _Nullable expirationDate;
 @property (readwrite) RCStore store;
 @property (readwrite) NSString *productIdentifier;
