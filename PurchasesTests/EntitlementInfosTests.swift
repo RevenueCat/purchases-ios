@@ -103,7 +103,7 @@ class EntitlementInfosTests: XCTestCase {
         verifySandbox(beFalse(), entitlement: "lifetime_cat")
         verifyProduct(identifier: equal("lifetime"),
                       latestPurchaseDate: equal(formatter.date(from: "2019-07-26T23:45:40Z")),
-                      originalPurchaseDate: beNil(),
+                      originalPurchaseDate: equal(formatter.date(from: "2019-07-26T23:45:40Z")),
                       expirationDate: beNil(),
                       entitlement: "lifetime_cat"
         )
@@ -248,7 +248,10 @@ class EntitlementInfosTests: XCTestCase {
         verifyPeriodType()
         verifyStore()
         verifySandbox()
-        verifyProduct(identifier: equal("lifetime"), latestPurchaseDate: equal(formatter.date(from: "2019-07-26T23:45:40Z")), originalPurchaseDate: beNil(), expirationDate: beNil())
+        verifyProduct(identifier: equal("lifetime"),
+                      latestPurchaseDate: equal(formatter.date(from: "2019-07-26T23:45:40Z")),
+                      originalPurchaseDate: equal(formatter.date(from: "2019-07-26T23:45:40Z")),
+                      expirationDate: beNil())
     }
 
 
@@ -443,7 +446,10 @@ class EntitlementInfosTests: XCTestCase {
         verifyPeriodType()
         verifyStore()
         verifySandbox()
-        verifyProduct(identifier: equal("lifetime"), latestPurchaseDate: equal(formatter.date(from: "2019-07-26T23:45:40Z")), originalPurchaseDate: beNil(), expirationDate: beNil())
+        verifyProduct(identifier: equal("lifetime"),
+                      latestPurchaseDate: equal(formatter.date(from: "2019-07-26T23:45:40Z")),
+                      originalPurchaseDate: equal(formatter.date(from: "2019-07-26T23:45:40Z")),
+                      expirationDate: beNil())
 
     }
 
