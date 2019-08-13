@@ -230,28 +230,41 @@ static dispatch_once_t onceToken;
     return isEqual;
 }
 
+- (NSDictionary *)descriptionDictionaryForEntitlementInfo:(RCEntitlementInfo *)info
+{
+    return @{
+             @"expiresDate": info.expirationDate ?: @"null",
+             @"latestPurchaseDate": info.latestPurchaseDate ?: @"null",
+             @"originalPurchaseDate": info.originalPurchaseDate ?: @"null",
+             @"periodType": info.periodType ? @(info.periodType) : @"null",
+             @"isActive": info.isActive ? @"Yes" : @"No",
+             @"willRenew": info.willRenew ? @"Yes" : @"No",
+             @"store": @(info.store),
+             @"productIdentifier": info.productIdentifier ?: @"null",
+             @"isSandbox": @(info.isSandbox),
+             @"unsubscribeDetectedAt": info.unsubscribeDetectedAt ?: @"null",
+             @"billingIssueDetectedAt": info.billingIssueDetectedAt ?: @"null"
+             };
+}
+
 - (NSString *)description
 {
     NSMutableDictionary *activeSubscriptions = [NSMutableDictionary dictionary];
     for (NSString *active in self.activeSubscriptions) {
         activeSubscriptions[active] = @{
-                                        @"expiresDate": [self expirationDateForProductIdentifier:active] ?: @"null"
+                                        @"expiresDate": [self expirationDateForProductIdentifier:active] ?: @"null",
                                         };
     }
 
     NSMutableDictionary *activeEntitlements = [NSMutableDictionary dictionary];
     for (NSString *active in self.entitlements.active) {
-        activeEntitlements[active] = @{
-                                        @"expiresDate": [self expirationDateForEntitlement:active] ?: @"null"
-                                        };
+        activeEntitlements[active] = [self descriptionDictionaryForEntitlementInfo:self.entitlements.active[active]];
     }
 
     NSMutableDictionary *entitlements = [NSMutableDictionary dictionary];
     for (NSString *entitlement in self.entitlements.all) {
         RCEntitlementInfo *entitlementInfo = self.entitlements[entitlement];
-            entitlements[entitlement] = @{
-                                          @"expiresDate": entitlementInfo.expirationDate ?: @"null"
-                                        };
+        entitlements[entitlement] = [self descriptionDictionaryForEntitlementInfo:entitlementInfo];
     }
 
     return [NSString stringWithFormat:@"<PurchaserInfo\n originalApplicationVersion: %@,\n latestExpirationDate: %@\n activeEntitlements: %@,\n activeSubscriptions: %@,\n nonConsumablePurchases: %@,\n requestDate: %@\nfirstSeen: %@,\noriginalAppUserId: %@,\nentitlements: %@,\n>", self.originalApplicationVersion, self.latestExpirationDate, activeEntitlements, activeSubscriptions, self.nonConsumablePurchases, self.requestDate, self.firstSeen, self.originalAppUserId, entitlements];
