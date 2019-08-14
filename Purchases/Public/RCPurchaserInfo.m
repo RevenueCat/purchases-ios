@@ -241,7 +241,7 @@ static dispatch_once_t onceToken;
              @"willRenew": info.willRenew ? @"Yes" : @"No",
              @"store": @(info.store),
              @"productIdentifier": info.productIdentifier ?: @"null",
-             @"isSandbox": @(info.isSandbox),
+             @"isSandbox": info.isSandbox ? @"Yes" : @"No",
              @"unsubscribeDetectedAt": info.unsubscribeDetectedAt ?: @"null",
              @"billingIssueDetectedAt": info.billingIssueDetectedAt ?: @"null"
              };
