@@ -195,6 +195,9 @@ class BasicPurchaserInfoTests: XCTestCase {
                 "other_purchases": [
                     "onetime_purchase": [
                         "purchase_date": "1990-08-30T02:40:36Z"
+                    ],
+                    "pro.3": [
+                        "purchase_date": "1990-08-30T02:40:36Z"
                     ]
                 ],
                 "subscriptions": [
@@ -203,17 +206,26 @@ class BasicPurchaserInfoTests: XCTestCase {
                     ],
                     "threemonth_freetrial": [
                         "expires_date": "1990-08-30T02:40:36Z"
+                    ],
+                    "pro.1": [
+                        "expires_date" : "2100-08-30T02:40:36Z"
+                    ],
+                    "pro.2": [
+                        "expires_date" : "1990-08-30T02:40:36Z"
                     ]
                 ],
                 "entitlements": [
                     "pro" : [
-                        "expires_date" : "2100-08-30T02:40:36Z"
+                        "expires_date" : "2100-08-30T02:40:36Z",
+                        "product_identifier": "pro.1"
                     ],
                     "old_pro" : [
-                        "expires_date" : "1990-08-30T02:40:36Z"
+                        "expires_date" : "1990-08-30T02:40:36Z",
+                        "product_identifier": "pro.2"
                     ],
                     "forever_pro" : [
-                        "expires_date" : nil
+                        "expires_date" : nil,
+                        "product_identifier": "pro.3"
                     ],
                 ]
             ]
@@ -298,22 +310,31 @@ class BasicPurchaserInfoTests: XCTestCase {
         let info1 = PurchaserInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
-                "subscriptions": [:],
+                "subscriptions": [
+                    "pro.1": [
+                        "expires_date": "2018-12-19T02:40:36Z"
+                    ]],
                 "other_purchases": [:],
                 "entitlements": [
                     "pro" : [
-                        "expires_date" : "2018-12-19T02:40:36Z"
+                        "expires_date": "2018-12-19T02:40:36Z",
+                        "product_identifier": "pro.1"
                     ]
                 ]
             ]])
         let info2 = PurchaserInfo(data: [
             "request_date": "2018-11-19T02:40:36Z",
             "subscriber": [
-                "subscriptions": [:],
+                "subscriptions": [
+                    "pro.1": [
+                        "expires_date": "2018-12-19T02:40:36Z"
+                    ]
+                ],
                 "other_purchases": [:],
                 "entitlements": [
                     "pro" : [
-                        "expires_date" : "2018-12-19T02:40:36Z"
+                        "expires_date" : "2018-12-29T02:40:36Z",
+                        "product_identifier": "pro.1"
                     ]
                 ]
             ]])
