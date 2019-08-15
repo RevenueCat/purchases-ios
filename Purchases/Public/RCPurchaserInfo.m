@@ -244,21 +244,20 @@ static dispatch_once_t onceToken;
 - (NSString *)description
 {
     NSMutableDictionary *activeSubscriptions = [NSMutableDictionary dictionary];
-    for (NSString *active in self.activeSubscriptions) {
-        activeSubscriptions[active] = @{
-                                        @"expiresDate": [self expirationDateForProductIdentifier:active] ?: @"null",
-                                        };
+    for (NSString *activeSubscriptionId in self.activeSubscriptions) {
+        activeSubscriptions[activeSubscriptionId] = @{
+                                                      @"expiresDate": [self expirationDateForProductIdentifier:activeSubscriptionId] ?: @"null",
+                                                      };
     }
 
     NSMutableDictionary *activeEntitlements = [NSMutableDictionary dictionary];
-    for (NSString *active in self.entitlements.active) {
-        activeEntitlements[active] = [self descriptionDictionaryForEntitlementInfo:self.entitlements.active[active]];
+    for (NSString *entitlementId in self.entitlements.active) {
+        activeEntitlements[entitlementId] = [self descriptionDictionaryForEntitlementInfo:self.entitlements.active[entitlementId]];
     }
 
     NSMutableDictionary *entitlements = [NSMutableDictionary dictionary];
-    for (NSString *entitlement in self.entitlements.all) {
-        RCEntitlementInfo *entitlementInfo = self.entitlements[entitlement];
-        entitlements[entitlement] = [self descriptionDictionaryForEntitlementInfo:entitlementInfo];
+    for (NSString *entitlementId in self.entitlements.all) {
+        entitlements[entitlementId] = [self descriptionDictionaryForEntitlementInfo:self.entitlements[entitlementId]];
     }
 
     return [NSString stringWithFormat:@"<PurchaserInfo\n originalApplicationVersion: %@,\n latestExpirationDate: %@\n activeEntitlements: %@,\n activeSubscriptions: %@,\n nonConsumablePurchases: %@,\n requestDate: %@\nfirstSeen: %@,\noriginalAppUserId: %@,\nentitlements: %@,\n>", self.originalApplicationVersion, self.latestExpirationDate, activeEntitlements, activeSubscriptions, self.nonConsumablePurchases, self.requestDate, self.firstSeen, self.originalAppUserId, entitlements];
