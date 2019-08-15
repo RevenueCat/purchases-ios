@@ -596,7 +596,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         NSDictionary *infoDict = [NSJSONSerialization JSONObjectWithData:purchaserInfoData options:0 error:&jsonError];
         if (jsonError == nil && infoDict != nil) {
             RCPurchaserInfo *info = [[RCPurchaserInfo alloc] initWithData:infoDict];
-            if (info.schemaVersion != nil && [info.schemaVersion isEqualToString:[RCPurchaserInfo currentSchemaVersion]]) {
+            if (info.schemaVersion != nil && [info.schemaVersion isEqual:[RCPurchaserInfo currentSchemaVersion]]) {
                 return info;
             }
         }

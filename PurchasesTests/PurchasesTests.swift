@@ -1250,8 +1250,7 @@ class PurchasesTests: XCTestCase {
             receivedInfo = info
         }
         
-        expect(receivedInfo).toNot(beNil())
-        expect(receivedInfo?.schemaVersion).toNot(beNil())
+        expect(receivedInfo).to(beNil())
     }
 
     func testSendsCachedPurchaserInfoToGetter() {
