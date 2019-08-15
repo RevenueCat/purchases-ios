@@ -1205,12 +1205,40 @@ class PurchasesTests: XCTestCase {
 
     func testCachedPurchaserInfoHasSchemaVersion() {
         let info = PurchaserInfo(data: [
-            "schema_version": 1,
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
-        let object = try! JSONSerialization.data(withJSONObject: info!.jsonObject(), options:[]);
+        let jsonObject = info!.jsonObject()
+        
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject , options:[]);
+        self.userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + appUserID] = object
+        self.backend.timeout = true
+        
+        setupPurchases()
+        
+        var receivedInfo: PurchaserInfo?
+        
+        purchases!.purchaserInfo { (info, error) in
+            receivedInfo = info
+        }
+        
+        expect(receivedInfo).toNot(beNil())
+        expect(receivedInfo?.schemaVersion).toNot(beNil())
+    }
+    
+    func testCachedPurchaserInfoHandlesNullSchema() {
+        let info = PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]]);
+        
+        var jsonObject = info!.jsonObject()
+        
+        jsonObject["schema_version"] = NSNull()
+        
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options:[]);
         self.userDefaults.cachedUserInfo["com.revenuecat.userdefaults.purchaserInfo." + appUserID] = object
         self.backend.timeout = true
         
