@@ -16,8 +16,6 @@
 
 @property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDatesByProduct;
 @property (nonatomic) NSDictionary<NSString *, NSDate *> *purchaseDatesByProduct;
-@property (nonatomic) NSDictionary<NSString *, NSObject *> *expirationDateByEntitlement;
-@property (nonatomic) NSDictionary<NSString *, NSObject *> *purchaseDateByEntitlement;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic) NSString *originalApplicationVersion;
 @property (nonatomic) NSDictionary *originalData;
@@ -59,9 +57,6 @@ static dispatch_once_t onceToken;
             return nil;
         }
         
-        NSDictionary *entitlements = subscriberData[@"entitlements"];
-        self.expirationDateByEntitlement = [self parseExpirationDate:entitlements];
-        self.purchaseDateByEntitlement = [self parsePurchaseDate:entitlements];
 
         NSDictionary<NSString *, NSArray *> *nonSubscriptions = subscriberData[@"non_subscriptions"];
         self.nonConsumablePurchases = [NSSet setWithArray:[nonSubscriptions allKeys]];
@@ -85,6 +80,9 @@ static dispatch_once_t onceToken;
         self.originalApplicationVersion = [originalApplicationVersion isKindOfClass:[NSNull class]] ? nil : originalApplicationVersion;
 
         self.firstSeen = [self parseDate:subscriberData[@"first_seen"] withDateFormatter:dateFormatter];
+        
+        NSDictionary *entitlements = subscriberData[@"entitlements"];
+        
         self.entitlements = [[RCEntitlementInfos alloc] initWithEntitlementsData:entitlements purchasesData:allPurchases dateFormatter:dateFormatter requestDate:self.requestDate];
         self.originalAppUserId = subscriberData[@"original_app_user_id"];
     }
@@ -175,7 +173,7 @@ static dispatch_once_t onceToken;
 
 - (NSSet<NSString *> *)activeEntitlements
 {
-    return [self activeKeys:self.expirationDateByEntitlement];
+    return [NSSet setWithArray:self.entitlements.active.allKeys];
 }
 
 - (NSDate *)expirationDateForProductIdentifier:(NSString *)productIdentifier
@@ -191,14 +189,12 @@ static dispatch_once_t onceToken;
 
 - (NSDate * _Nullable)expirationDateForEntitlement:(NSString *)entitlementId
 {
-    NSObject *dateOrNull = self.expirationDateByEntitlement[entitlementId];
-    return [dateOrNull isKindOfClass:NSNull.class] ? nil : (NSDate *)dateOrNull;
+    return self.entitlements[entitlementId].expirationDate;
 }
 
 - (NSDate * _Nullable)purchaseDateForEntitlement:(NSString *)entitlementId
 {
-    NSObject *dateOrNull = self.purchaseDateByEntitlement[entitlementId];
-    return [dateOrNull isKindOfClass:NSNull.class] ? nil : (NSDate *)dateOrNull;
+    return self.entitlements[entitlementId].latestPurchaseDate;
 }
 
 - (NSDictionary * _Nonnull)JSONObject {
@@ -215,8 +211,6 @@ static dispatch_once_t onceToken;
 {
     BOOL isEqual = ([self.expirationDatesByProduct isEqual:other.expirationDatesByProduct]
                     && [self.purchaseDatesByProduct isEqual:other.purchaseDatesByProduct]
-                    && [self.expirationDateByEntitlement isEqual:other.expirationDateByEntitlement]
-                    && [self.purchaseDateByEntitlement isEqual:other.purchaseDateByEntitlement]
                     && [self.nonConsumablePurchases isEqual:other.nonConsumablePurchases]);
     
     isEqual &= ([self.activeEntitlements isEqual:other.activeEntitlements]);
@@ -230,28 +224,40 @@ static dispatch_once_t onceToken;
     return isEqual;
 }
 
+- (NSDictionary *)descriptionDictionaryForEntitlementInfo:(RCEntitlementInfo *)info
+{
+    return @{
+             @"expiresDate": info.expirationDate ?: @"null",
+             @"latestPurchaseDate": info.latestPurchaseDate ?: @"null",
+             @"originalPurchaseDate": info.originalPurchaseDate ?: @"null",
+             @"periodType": info.periodType ? @(info.periodType) : @"null",
+             @"isActive": info.isActive ? @"Yes" : @"No",
+             @"willRenew": info.willRenew ? @"Yes" : @"No",
+             @"store": @(info.store),
+             @"productIdentifier": info.productIdentifier ?: @"null",
+             @"isSandbox": info.isSandbox ? @"Yes" : @"No",
+             @"unsubscribeDetectedAt": info.unsubscribeDetectedAt ?: @"null",
+             @"billingIssueDetectedAt": info.billingIssueDetectedAt ?: @"null"
+             };
+}
+
 - (NSString *)description
 {
     NSMutableDictionary *activeSubscriptions = [NSMutableDictionary dictionary];
-    for (NSString *active in self.activeSubscriptions) {
-        activeSubscriptions[active] = @{
-                                        @"expiresDate": [self expirationDateForProductIdentifier:active] ?: @"null"
-                                        };
+    for (NSString *activeSubscriptionId in self.activeSubscriptions) {
+        activeSubscriptions[activeSubscriptionId] = @{
+                                                      @"expiresDate": [self expirationDateForProductIdentifier:activeSubscriptionId] ?: @"null",
+                                                      };
     }
 
     NSMutableDictionary *activeEntitlements = [NSMutableDictionary dictionary];
-    for (NSString *active in self.entitlements.active) {
-        activeEntitlements[active] = @{
-                                        @"expiresDate": [self expirationDateForEntitlement:active] ?: @"null"
-                                        };
+    for (NSString *entitlementId in self.entitlements.active) {
+        activeEntitlements[entitlementId] = [self descriptionDictionaryForEntitlementInfo:self.entitlements.active[entitlementId]];
     }
 
     NSMutableDictionary *entitlements = [NSMutableDictionary dictionary];
-    for (NSString *entitlement in self.entitlements.all) {
-        RCEntitlementInfo *entitlementInfo = self.entitlements[entitlement];
-            entitlements[entitlement] = @{
-                                          @"expiresDate": entitlementInfo.expirationDate ?: @"null"
-                                        };
+    for (NSString *entitlementId in self.entitlements.all) {
+        entitlements[entitlementId] = [self descriptionDictionaryForEntitlementInfo:self.entitlements[entitlementId]];
     }
 
     return [NSString stringWithFormat:@"<PurchaserInfo\n originalApplicationVersion: %@,\n latestExpirationDate: %@\n activeEntitlements: %@,\n activeSubscriptions: %@,\n nonConsumablePurchases: %@,\n requestDate: %@\nfirstSeen: %@,\noriginalAppUserId: %@,\nentitlements: %@,\n>", self.originalApplicationVersion, self.latestExpirationDate, activeEntitlements, activeSubscriptions, self.nonConsumablePurchases, self.requestDate, self.firstSeen, self.originalAppUserId, entitlements];

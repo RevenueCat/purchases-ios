@@ -108,6 +108,35 @@ class EntitlementInfosTests: XCTestCase {
                       entitlement: "lifetime_cat"
         )
     }
+    
+    func testStringAccessor() {
+        stubResponse(
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "monthly_freetrial",
+                    "purchase_date": "1999-07-26T23:30:41Z"
+                ]
+            ],
+            subscriptions: [
+                "monthly_freetrial": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2000-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "original_purchase_date": "1999-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "1999-07-26T23:30:41Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ]
+            ]
+        )
+        
+        let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
+        
+        expect(subscriberInfo.entitlements["pro_cat"]).toNot(beNil())
+        expect(subscriberInfo.entitlements.active["pro_cat"]).toNot(beNil())
+    }
 
     func testActiveSubscription() {
         stubResponse(

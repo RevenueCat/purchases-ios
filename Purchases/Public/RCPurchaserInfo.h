@@ -22,7 +22,7 @@ NS_SWIFT_NAME(PurchaserInfo)
 @property (readonly) RCEntitlementInfos *entitlements;
 
 /// All active *entitlements*.
-@property (readonly) NSSet<NSString *> *activeEntitlements DEPRECATED_MSG_ATTRIBUTE("Check the .isActive property on the EntitlmentInfo object in entitlements instead.");
+@property (readonly) NSSet<NSString *> *activeEntitlements DEPRECATED_MSG_ATTRIBUTE("Use PurchaserInfo.entitlements.active instead.");
 
 /// All *subscription* product identifiers with expiration dates in the future.
 @property (readonly) NSSet<NSString *> *activeSubscriptions;
