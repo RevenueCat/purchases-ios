@@ -392,5 +392,57 @@ class BasicPurchaserInfoTests: XCTestCase {
             ]])
         expect(info1).toNot(equal(info2))
     }
+    
+    func testSameEntitlementsDifferentRequestDateEqual() {
+        let info1 = PurchaserInfo(data: [
+            "request_date": "2018-12-21T02:40:36Z",
+            "subscriber": [
+                "subscriptions": [
+                    "monthly_freetrial": [
+                        "billing_issues_detected_at": nil,
+                        "expires_date": "2019-07-26T23:50:40Z",
+                        "is_sandbox": true,
+                        "original_purchase_date": "2019-07-26T23:30:41Z",
+                        "period_type": "normal",
+                        "purchase_date": "2019-07-26T23:45:40Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": nil
+                    ]
+                ],
+                "non_subscriptions": [:],
+                "entitlements": [
+                    "pro" : [
+                        "product_identifier": "monthly_freetrial",
+                        "expires_date" : "2018-12-19T02:40:36Z",
+                        "purchase_date": "2018-07-26T23:30:41Z"
+                    ]
+                ]
+            ]])
+        let info2 = PurchaserInfo(data: [
+            "request_date": "2018-12-20T02:40:36Z",
+            "subscriber": [
+                "subscriptions": [
+                    "monthly_freetrial": [
+                        "billing_issues_detected_at": nil,
+                        "expires_date": "2019-07-26T23:50:40Z",
+                        "is_sandbox": true,
+                        "original_purchase_date": "2019-07-26T23:30:41Z",
+                        "period_type": "normal",
+                        "purchase_date": "2019-07-26T23:45:40Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": nil
+                    ]
+                ],
+                "non_subscriptions": [:],
+                "entitlements": [
+                    "pro" : [
+                        "product_identifier": "monthly_freetrial",
+                        "expires_date" : "2018-12-19T02:40:36Z",
+                        "purchase_date": "2018-07-26T23:30:41Z"
+                    ]
+                ]
+            ]])
+        expect(info1).to(equal(info2))
+    }
 
 }
