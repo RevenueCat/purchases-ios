@@ -564,7 +564,7 @@ class BackendTests: XCTestCase {
     }
 
     let noEntitlementsResponse = Dictionary<String, String>()
-    
+
     func testGetOfferingsCallsHTTPMethod() {
         let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
         let path = "/subscribers/" + userID + "/offerings"
@@ -580,7 +580,7 @@ class BackendTests: XCTestCase {
         expect(offeringsData).toEventuallyNot(beNil())
         expect(offeringsData?.count).toEventually(equal(0))
     }
-    
+
 //    func testGetEntitlementsCachesForSameUserID() {
 //        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
 //        let path = "/subscribers/" + userID + "/products"
@@ -603,6 +603,7 @@ class BackendTests: XCTestCase {
 //
 //        expect(self.httpClient.calls.count).to(equal(2))
 //    }
+
 
     let oneEntitlementResponse = [
         "entitlements" : [

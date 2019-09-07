@@ -210,7 +210,7 @@ class PurchasesTests: XCTestCase {
                 ],
                 "current_offering_id": "offering_a"
             ] as [String : Any]
-            
+
             completion(offeringsData, nil)
         }
 
