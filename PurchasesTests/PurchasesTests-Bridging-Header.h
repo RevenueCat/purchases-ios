@@ -19,3 +19,4 @@
 #include <Purchases/RCAttributionFetcher.h>
 #include <Purchases/RCAttributionData.h>
 #include <Purchases/RCPromotionalOffer+Protected.h>
+#include <Purchases/RCOfferingsFactory.h>

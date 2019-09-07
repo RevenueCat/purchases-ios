@@ -2,27 +2,58 @@
 //  RCOfferings.m
 //  Purchases
 //
-//  Created by Jacob Eiting on 7/23/19.
+//  Created by RevenueCat.
 //  Copyright © 2019 Purchases. All rights reserved.
 //
 
 #import "RCOfferings.h"
+#import "RCOfferings+Protected.h"
+#import "RCOffering+Protected.h"
+
+@interface RCOfferings ()
+@property(readwrite) NSString *currentOfferingID;
+@property(readwrite) NSDictionary<NSString *, RCOffering *> *offerings;
+@end
 
 @implementation RCOfferings
-
-- (RCOffering *)currentOffering
+- (instancetype)initWithOfferings:(NSDictionary<NSString *, RCOffering *> *)offerings currentOfferingID:(NSString *)currentOfferingID
 {
-    return nil;
+    self = [super init];
+    if (self) {
+        self.offerings = offerings;
+        self.currentOfferingID = currentOfferingID;
+    }
+
+    return self;
+}
+
+- (RCOffering * _Nullable)offeringWithIdentifier:(NSString *_Nullable)identifier
+{
+    return self.offerings[identifier];
 }
 
 - (RCOffering * _Nullable)objectForKeyedSubscript:(NSString *)key
 {
-    return nil;
+    return [self offeringWithIdentifier:key];
 }
 
-- (void)setObject:(RCOffering *)obj forKeyedSubscript:(NSString *)key
+- (RCOffering *)currentOffering
 {
-    
+    return self.offerings[self.currentOfferingID];
+}
+
+- (NSString *)description
+{
+    NSMutableString *description = [NSMutableString stringWithFormat:@"<Offerings {\n"];
+    for (NSString *offeringName in self.offerings)
+    {
+        RCOffering *offering = self.offerings[offeringName];
+        NSString *offeringDesc = [NSMutableString stringWithFormat:@"\t%@\n", offering];
+        [description appendString:offeringDesc];
+    }
+    [description appendFormat:@"\tcurrentOffering=%@", self.currentOffering];
+    [description appendString:@">"];
+    return description;
 }
 
 @end
