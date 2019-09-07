@@ -2,7 +2,7 @@
 //  RCOffering.m
 //  Purchases
 //
-//  Created by Jacob Eiting on 6/2/18.
+//  Created by RevenueCat.
 //  Copyright © 2019 Purchases. All rights reserved.
 //
 
@@ -11,8 +11,6 @@
 
 @interface RCOffering ()
 
-@property (readwrite, nonatomic) NSString *activeProductIdentifier;
-@property (readwrite, nonatomic) SKProduct *activeProduct;
 @property (readwrite) NSString *identifier;
 @property (readwrite) NSString *serverDescription;
 @property (readwrite) NSArray<RCPackage *> *availablePackages;

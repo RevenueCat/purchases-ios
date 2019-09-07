@@ -20,7 +20,7 @@ FOUNDATION_EXPORT const unsigned char PurchasesVersionString[];
 #import "RCPurchases.h"
 #import "RCPurchaserInfo.h"
 #import "RCIntroEligibility.h"
-#import "RCEntitlement.h"
+#import "RCOfferings.h"
 #import "RCOffering.h"
 #import "RCPackage.h"
 #import "RCPurchasesErrorUtils.h"

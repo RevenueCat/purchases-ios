@@ -10,11 +10,10 @@
 #import <StoreKit/StoreKit.h>
 
 #import "RCPurchases.h"
-#import "RCEntitlement.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCEntitlement, RCPromotionalOffer;
+@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCPromotionalOffer;
 
 typedef NS_ENUM(NSInteger, RCPaymentMode) {
     RCPaymentModeNone = -1,
@@ -32,7 +31,7 @@ typedef void(^RCBackendPurchaserInfoResponseHandler)(RCPurchaserInfo * _Nullable
 typedef void(^RCIntroEligibilityResponseHandler)(NSDictionary<NSString *,
                                                  RCIntroEligibility *> *);
 
-typedef void(^RCEntitlementResponseHandler)(RCEntitlements * _Nullable, NSError * _Nullable);
+typedef void(^RCOfferingsResponseHandler)(NSDictionary * _Nullable, NSError * _Nullable);
 
 typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
                                              NSString * _Nullable keyIdentifier,
@@ -67,8 +66,8 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
                      productIdentifiers:(NSArray<NSString *> *)productIdentifiers
                              completion:(RCIntroEligibilityResponseHandler)completion;
 
-- (void)getEntitlementsForAppUserID:(NSString *)appUserID
-                         completion:(RCEntitlementResponseHandler)completion;
+- (void)getOfferingsForAppUserID:(NSString *)appUserID
+                      completion:(RCOfferingsResponseHandler)completion;
 
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network

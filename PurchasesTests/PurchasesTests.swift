@@ -190,18 +190,18 @@ class PurchasesTests: XCTestCase {
 
         var failEntitlements = false
         var gotEntitlements = 0
-        override func getEntitlementsForAppUserID(_ appUserID: String, completion: @escaping RCEntitlementResponseHandler) {
-            gotEntitlements += 1
-            if (failEntitlements) {
-                completion(nil, PurchasesErrorUtils.unexpectedBackendResponseError())
-                return
-            }
-
-            let offering = Offering()
-            offering.activeProductIdentifier = "monthly_freetrial"
-            let entitlement = Entitlement(offerings: ["monthly" : offering])
-            completion(["pro" : entitlement!], nil)
-        }
+//        override func getEntitlementsForAppUserID(_ appUserID: String, completion: @escaping RCEntitlementResponseHandler) {
+//            gotEntitlements += 1
+//            if (failEntitlements) {
+//                completion(nil, PurchasesErrorUtils.unexpectedBackendResponseError())
+//                return
+//            }
+//
+//            let offering = Offering()
+//            offering.activeProductIdentifier = "monthly_freetrial"
+//            let entitlement = Entitlement(offerings: ["monthly" : offering])
+//            completion(["pro" : entitlement!], nil)
+//        }
         
         override func createAlias(forAppUserID appUserID: String, withNewAppUserID newAppUserID: String, completion: ((Error?) -> Void)? = nil) {
             aliasCalled = true
@@ -1237,82 +1237,82 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.getSubscriberCallCount).to(equal(2))
     }
 
-    func testGetsProductInfoFromEntitlements() {
-        setupPurchases()
-        expect(self.backend.gotEntitlements).toEventually(equal(1))
+//    func testGetsProductInfoFromEntitlements() {
+//        setupPurchases()
+//        expect(self.backend.gotEntitlements).toEventually(equal(1))
+//
+//        var entitlements: [String : Entitlement]?
+//
+//        self.purchases?.entitlements { (newEntitlements, _)  in
+//            entitlements = newEntitlements
+//        }
+//
+//        expect(entitlements).toEventuallyNot(beNil());
+//
+//        guard let e = entitlements else { return }
+//
+//        expect(e.count).toEventually(equal(1))
+//        let pro = e["pro"]!;
+//        expect(pro.offerings["monthly"]).toNot(beNil())
+//        expect(pro.offerings["monthly"]?.activeProduct).toNot(beNil())
+//    }
 
-        var entitlements: [String : Entitlement]?
-        
-        self.purchases?.entitlements { (newEntitlements, _)  in
-            entitlements = newEntitlements
-        }
+//    func testProductInfoIsCachedForEntitlements() {
+//        setupPurchases()
+//        expect(self.backend.gotEntitlements).toEventually(equal(1))
+//        self.purchases?.entitlements { (newEntitlements, _) in
+//            let product = (newEntitlements?["pro"]?.offerings["monthly"]?.activeProduct)!;
+//            self.purchases?.makePurchase(product) { (tx, info, error, userCancelled) in
+//
+//            }
+//
+//            let transaction = MockTransaction()
+//            transaction.mockPayment = self.storeKitWrapper.payment!
+//
+//            transaction.mockState = SKPaymentTransactionState.purchasing
+//            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+//
+//            self.backend.postReceiptPurchaserInfo = PurchaserInfo()
+//
+//            transaction.mockState = SKPaymentTransactionState.purchased
+//            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+//
+//            expect(self.backend.postReceiptDataCalled).to(beTrue())
+//            expect(self.backend.postReceiptData).toNot(beNil())
+//
+//            expect(self.backend.postedProductID).to(equal(product.productIdentifier))
+//            expect(self.backend.postedPrice).to(equal(product.price))
+//            expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
+//
+//            expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
+//        }
+//    }
 
-        expect(entitlements).toEventuallyNot(beNil());
-
-        guard let e = entitlements else { return }
-
-        expect(e.count).toEventually(equal(1))
-        let pro = e["pro"]!;
-        expect(pro.offerings["monthly"]).toNot(beNil())
-        expect(pro.offerings["monthly"]?.activeProduct).toNot(beNil())
-    }
-
-    func testProductInfoIsCachedForEntitlements() {
-        setupPurchases()
-        expect(self.backend.gotEntitlements).toEventually(equal(1))
-        self.purchases?.entitlements { (newEntitlements, _) in
-            let product = (newEntitlements?["pro"]?.offerings["monthly"]?.activeProduct)!;
-            self.purchases?.makePurchase(product) { (tx, info, error, userCancelled) in
-                
-            }
-            
-            let transaction = MockTransaction()
-            transaction.mockPayment = self.storeKitWrapper.payment!
-            
-            transaction.mockState = SKPaymentTransactionState.purchasing
-            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-            
-            self.backend.postReceiptPurchaserInfo = PurchaserInfo()
-            
-            transaction.mockState = SKPaymentTransactionState.purchased
-            self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-            
-            expect(self.backend.postReceiptDataCalled).to(beTrue())
-            expect(self.backend.postReceiptData).toNot(beNil())
-            
-            expect(self.backend.postedProductID).to(equal(product.productIdentifier))
-            expect(self.backend.postedPrice).to(equal(product.price))
-            expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
-            
-            expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
-        }
-    }
-
-    func testFailBackendEntitlementsReturnsNil() {
-        self.backend.failEntitlements = true
-        setupPurchases()
-
-        var entitlements: [String : Entitlement]?
-        self.purchases?.entitlements({ (newEntitlements, _) in
-            entitlements = newEntitlements
-        })
-
-        expect(entitlements).toEventually(beNil());
-
-    }
-
-    func testMissingProductDetailsReturnsNil() {
-        requestFetcher.failProducts = true
-        setupPurchases()
-
-        var entitlements: [String : Entitlement]?
-        self.purchases?.entitlements({ (newEntitlements, _) in
-            entitlements = newEntitlements
-        })
-
-        expect(entitlements).toEventuallyNot(beNil());
-        expect(entitlements).toEventually(haveCount(1))
-    }
+//    func testFailBackendEntitlementsReturnsNil() {
+//        self.backend.failEntitlements = true
+//        setupPurchases()
+//
+//        var entitlements: [String : Entitlement]?
+//        self.purchases?.entitlements({ (newEntitlements, _) in
+//            entitlements = newEntitlements
+//        })
+//
+//        expect(entitlements).toEventually(beNil());
+//
+//    }
+//
+//    func testMissingProductDetailsReturnsNil() {
+//        requestFetcher.failProducts = true
+//        setupPurchases()
+//
+//        var entitlements: [String : Entitlement]?
+//        self.purchases?.entitlements({ (newEntitlements, _) in
+//            entitlements = newEntitlements
+//        })
+//
+//        expect(entitlements).toEventuallyNot(beNil());
+//        expect(entitlements).toEventually(haveCount(1))
+//    }
 
     func testAddAttributionAlwaysAddsAdIdsEmptyDict() {
         setupPurchases()
