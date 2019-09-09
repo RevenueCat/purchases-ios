@@ -564,22 +564,22 @@ class BackendTests: XCTestCase {
     }
 
     let noEntitlementsResponse = Dictionary<String, String>()
+    
+    func testGetOfferingsCallsHTTPMethod() {
+        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
+        let path = "/subscribers/" + userID + "/offerings"
+        httpClient.mock(requestPath: path, response: response)
 
-//    func testGetEntitlementsCallsHTTPMethod() {
-//        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
-//        let path = "/subscribers/" + userID + "/products"
-//        httpClient.mock(requestPath: path, response: response)
-//
-//        var entitlements: [String : Entitlement]?
-//
-//        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
-//            entitlements = newEntitlements
-//        })
-//
-//        expect(self.httpClient.calls.count).toNot(equal(0))
-//        expect(entitlements).toEventuallyNot(beNil())
-//        expect(entitlements?.count).toEventually(equal(0))
-//    }
+        var offeringsData: [String : Any]?
+
+        backend?.getOfferingsForAppUserID(userID, completion: { (responseFromBackend, error) in
+            offeringsData = (responseFromBackend as! [String : Any])
+        })
+
+        expect(self.httpClient.calls.count).toNot(equal(0))
+        expect(offeringsData).toEventuallyNot(beNil())
+        expect(offeringsData?.count).toEventually(equal(0))
+    }
     
 //    func testGetEntitlementsCachesForSameUserID() {
 //        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
@@ -591,7 +591,7 @@ class BackendTests: XCTestCase {
 //
 //        expect(self.httpClient.calls.count).to(equal(1))
 //    }
-    
+//
 //    func testGetEntitlementsDoesntCacheForMultipleUserID() {
 //        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
 //        let userID2 = "user_id_2"
@@ -772,44 +772,44 @@ class BackendTests: XCTestCase {
         expect(eligibility?["productc"]?.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
     }
 
-//    func testGetEntitlementsNetworkErrorSendsNilAndError() {
-//        let response = HTTPResponse(statusCode: 200, response: nil, error: NSError(domain: NSURLErrorDomain, code: -1009))
-//        let path = "/subscribers/" + userID + "/products"
-//        httpClient.mock(requestPath: path, response: response)
-//
-//        var receivedError : NSError?
-//        var receivedUnderlyingError : NSError?
-//        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
-//            receivedError = error as NSError?
-//            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
-//        })
-//
-//        expect(receivedError).toEventuallyNot(beNil())
-//        expect(receivedError?.domain).toEventually(equal(PurchasesErrorDomain))
-//        expect(receivedError?.code).toEventually(equal(PurchasesErrorCode.networkError.rawValue))
-//        expect(receivedUnderlyingError).toEventuallyNot(beNil())
-//        expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
-//        expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
-//    }
-//
-//    func test500GetEntitlementsUnexpectedResponse() {
-//        let response = HTTPResponse(statusCode: 501, response: serverErrorResponse, error: nil)
-//        let path = "/subscribers/" + userID + "/products"
-//        httpClient.mock(requestPath: path, response: response)
-//
-//        var receivedError: NSError?
-//        var receivedUnderlyingError: NSError?
-//        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
-//            receivedError = error as NSError?
-//            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
-//        })
-//
-//        expect(receivedError).toEventuallyNot(beNil())
-//        expect(receivedError?.code).toEventually(be(PurchasesErrorCode.invalidCredentialsError.rawValue))
-//
-//        expect(receivedUnderlyingError).toEventuallyNot(beNil())
-//        expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
-//    }
+    func testGetOfferingsNetworkErrorSendsNilAndError() {
+        let response = HTTPResponse(statusCode: 200, response: nil, error: NSError(domain: NSURLErrorDomain, code: -1009))
+        let path = "/subscribers/" + userID + "/offerings"
+        httpClient.mock(requestPath: path, response: response)
+
+        var receivedError : NSError?
+        var receivedUnderlyingError : NSError?
+        backend?.getOfferingsForAppUserID(userID, completion: { (offeringsData, error) in
+            receivedError = error as NSError?
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
+        })
+
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError?.domain).toEventually(equal(PurchasesErrorDomain))
+        expect(receivedError?.code).toEventually(equal(PurchasesErrorCode.networkError.rawValue))
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
+        expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
+    }
+
+    func test500GetOfferingsUnexpectedResponse() {
+        let response = HTTPResponse(statusCode: 501, response: serverErrorResponse, error: nil)
+        let path = "/subscribers/" + userID + "/offerings"
+        httpClient.mock(requestPath: path, response: response)
+
+        var receivedError: NSError?
+        var receivedUnderlyingError: NSError?
+        backend?.getOfferingsForAppUserID(userID, completion: { (offeringsData, error) in
+            receivedError = error as NSError?
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
+        })
+
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError?.code).toEventually(be(PurchasesErrorCode.invalidCredentialsError.rawValue))
+
+        expect(receivedUnderlyingError).toEventuallyNot(beNil())
+        expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
+    }
     
     func testDoesntCacheForDifferentDiscounts() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
