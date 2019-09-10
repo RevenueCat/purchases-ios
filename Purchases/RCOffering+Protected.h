@@ -12,9 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCOffering (Protected)
 
-@property (readwrite, nonatomic) NSString *activeProductIdentifier;
-@property (readwrite, nonatomic) SKProduct *activeProduct;
-
 - (instancetype)initWithIdentifier:(NSString *)identifier serverDescription:(NSString *)serverDescription availablePackages:(NSArray<RCPackage *> *)availablePackages;
 
 @end

@@ -8,11 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
-#import "RCEntitlement.h"
 #import "RCOffering.h"
 #import "RCOfferings.h"
 
-@class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility, RCEntitlement;
+@class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility;
 @protocol RCPurchasesDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -26,11 +25,6 @@ typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError
  Completion block for `checkTrialOrIntroductoryPriceEligibility:completionBlock:`
  */
 typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *) NS_SWIFT_NAME(Purchases.ReceiveIntroEligibilityBlock);
-
-/**
- Completion block for `entitlementsWithCompletionBlock:`
- */
-typedef void (^RCReceiveEntitlementsBlock)(RCEntitlements * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceiveEntitlementsBlock);
 
 /**
  Completion block for `entitlementsWithCompletionBlock:`
@@ -263,18 +257,6 @@ NS_SWIFT_NAME(reset(_:));
  */
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(purchaserInfo(_:));
-
-/**
- Fetch the configured entitlements for this user. Entitlements allows you to configure your in-app products via RevenueCat
- and greatly simplifies management. See the guide (https://docs.revenuecat.com/docs/entitlements) for more info.
-
- Entitlements will be fetched and cached on instantiation so that, by the time they are needed, your prices are
- loaded for your purchase flow. Time is money.
-
- @param completion A completion block called when entitlements is available. Called immediately if entitlements are cached. Entitlements can be nil if an error occurred.
- */
-- (void)entitlementsWithCompletionBlock:(RCReceiveEntitlementsBlock)completion
-NS_SWIFT_NAME(entitlements(_:));
 
 /**
  Fetch the configured offerings for this users. Offerings allows you to configure your in-app products vis RevenueCat and greatly simplifies management. See the guide (https://docs.revenuecat.com/offerings) for more info.
