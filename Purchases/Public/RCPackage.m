@@ -6,7 +6,6 @@
 //  Copyright © 2019 Purchases. All rights reserved.
 //
 
-#import "RCPackage.h"
 #import "RCPackage+Protected.h"
 #import <StoreKit/StoreKit.h>
 
@@ -43,8 +42,6 @@
 }
 
 - (NSString *)localizedIntroductoryPriceString {
-    if (!self.product) return @"";
-
     if (@available(iOS 11.2, macOS 10.13.2, *)) {
         NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
         formatter.numberStyle = NSNumberFormatterCurrencyStyle;

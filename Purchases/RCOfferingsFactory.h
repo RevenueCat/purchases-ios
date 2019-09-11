@@ -13,7 +13,7 @@
 @class RCPackage;
 
 NS_ASSUME_NONNULL_BEGIN
-NS_SWIFT_NAME(OfferingsFactory)
+
 @interface RCOfferingsFactory : NSObject
 
 + (RCOfferings *)createOfferingsWithProducts:(NSDictionary<NSString *, SKProduct *> *)products data:(NSDictionary *)data;

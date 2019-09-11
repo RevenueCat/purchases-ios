@@ -17,11 +17,9 @@ NS_SWIFT_NAME(Offerings)
 
 @property (readonly) RCOffering *currentOffering NS_SWIFT_NAME(current);
 
-- (RCOffering * _Nullable)offeringWithIdentifier:(NSString * _Nullable)identifier NS_SWIFT_NAME(offering(identifier:));
+- (nullable RCOffering *)offeringWithIdentifier:(nullable NSString *)identifier NS_SWIFT_NAME(offering(identifier:));
 
-- (RCOffering * _Nullable)objectForKeyedSubscript:(NSString *)key;
-
-- (NSString *)description;
+- (nullable RCOffering *)objectForKeyedSubscript:(NSString *)key;
 
 @end
 

@@ -22,7 +22,7 @@
 
 @implementation RCOfferingsFactory
 
-+ (RCOfferings *)createOfferingsWithProducts:(NSDictionary<NSString *, SKProduct *> *)products data:(NSDictionary *)data;
++ (RCOfferings *)createOfferingsWithProducts:(NSDictionary<NSString *, SKProduct *> *)products data:(NSDictionary *)data
 {
     NSArray *offeringsData = data[@"offerings"];
     NSMutableDictionary *offerings = [NSMutableDictionary dictionary];

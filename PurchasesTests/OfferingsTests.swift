@@ -31,7 +31,7 @@ class MockSKProduct: SKProduct {
 class OfferingsTests: XCTestCase {
 
     func testPackageIsNotCreatedIfNoValidProducts() {
-        let package = OfferingsFactory.createPackage(withData: [
+        let package = RCOfferingsFactory.createPackage(withData: [
             "identifier": "$rc_monthly",
             "platform_product_identifier": "com.myproduct.monthly"
         ], products: [
@@ -45,7 +45,7 @@ class OfferingsTests: XCTestCase {
         let productIdentifier = "com.myproduct.monthly"
         let product = MockSKProduct(mockIdentifier: productIdentifier)
         let packageIdentifier = "$rc_monthly"
-        let package = OfferingsFactory.createPackage(withData: [
+        let package = RCOfferingsFactory.createPackage(withData: [
             "identifier": packageIdentifier,
             "platform_product_identifier": productIdentifier
         ], products: [
@@ -60,7 +60,7 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingIsNotCreatedIfNoValidPackage() {
         let products = ["com.myproduct.bad": SKProduct()]
-        let offering = OfferingsFactory.createOffering(withProducts: products, offeringData: [
+        let offering = RCOfferingsFactory.createOffering(withProducts: products, offeringData: [
             "identifier": "offering_a",
             "description": "This is the base offering",
             "packages": [
@@ -81,7 +81,7 @@ class OfferingsTests: XCTestCase {
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
-        let offering = OfferingsFactory.createOffering(withProducts: products, offeringData: [
+        let offering = RCOfferingsFactory.createOffering(withProducts: products, offeringData: [
             "identifier": offeringIdentifier,
             "description": serverDescription,
             "packages": [
@@ -103,7 +103,7 @@ class OfferingsTests: XCTestCase {
     }
 
     func testListOfOfferingsIsEmptyIfNoValidOffering() {
-        let offerings = OfferingsFactory.createOfferings(withProducts: [:], data: [
+        let offerings = RCOfferingsFactory.createOfferings(withProducts: [:], data: [
             "offerings": [
                 [
                     "identifier": "offering_a",
@@ -136,7 +136,7 @@ class OfferingsTests: XCTestCase {
             "com.myproduct.annual": MockSKProduct(mockIdentifier: "com.myproduct.annual"),
             "com.myproduct.monthly": MockSKProduct(mockIdentifier: "com.myproduct.monthly")
         ]
-        let offerings = OfferingsFactory.createOfferings(withProducts: products, data: [
+        let offerings = RCOfferingsFactory.createOfferings(withProducts: products, data: [
             "offerings": [
                 [
                     "identifier": "offering_a",
@@ -221,7 +221,7 @@ class OfferingsTests: XCTestCase {
         let products = [
             productIdentifier: MockSKProduct(mockIdentifier: productIdentifier)
         ]
-        let offerings = OfferingsFactory.createOfferings(withProducts: products, data: [
+        let offerings = RCOfferingsFactory.createOfferings(withProducts: products, data: [
             "offerings": [
                 [
                     "identifier": "offering_a",
