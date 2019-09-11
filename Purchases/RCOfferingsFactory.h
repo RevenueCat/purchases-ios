@@ -17,8 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCOfferingsFactory : NSObject
 
 + (RCOfferings *)createOfferingsWithProducts:(NSDictionary<NSString *, SKProduct *> *)products data:(NSDictionary *)data;
-+ (RCOffering * _Nullable)createOfferingWithProducts:(NSDictionary<NSString *, SKProduct *> *)products offeringData:(NSDictionary *)offeringData;
-+ (RCPackage *_Nullable)createPackageWithData:(NSDictionary *)data products:(NSDictionary<NSString *, SKProduct *> *)products;
++ (nullable RCOffering *)createOfferingWithProducts:(NSDictionary<NSString *, SKProduct *> *)products offeringData:(NSDictionary *)offeringData;
++ (nullable RCPackage *)createPackageWithData:(NSDictionary *)data products:(NSDictionary<NSString *, SKProduct *> *)products;
 
 @end
 
