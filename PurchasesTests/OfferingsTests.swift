@@ -36,7 +36,7 @@ class OfferingsTests: XCTestCase {
             "platform_product_identifier": "com.myproduct.monthly"
         ], products: [
             "com.myproduct.annual": SKProduct()
-        ])
+        ], offeringIdentifier: "offering")
 
         expect(package).to(beNil())
     }
@@ -50,7 +50,7 @@ class OfferingsTests: XCTestCase {
             "platform_product_identifier": productIdentifier
         ], products: [
             productIdentifier: product
-        ])
+        ], offeringIdentifier: "offering")
 
         expect(package).toNot(beNil())
         expect(package?.product).to(equal(product))

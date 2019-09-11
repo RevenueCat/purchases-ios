@@ -23,6 +23,7 @@
 #import "RCAttributionData.h"
 #import "RCPromotionalOffer.h"
 #import "RCOfferingsFactory.h"
+#import "RCPackage+Protected.h"
 
 #define CALL_AND_DISPATCH_IF_SET(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -41,6 +42,7 @@
 @property (nonatomic) NSDate *cachesLastUpdated;
 @property (nonatomic) RCOfferings *cachedOfferings;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
+@property (nonatomic) NSMutableDictionary<NSString *, NSString *> *offeringsByProductIdentifier;
 @property (nonatomic) NSMutableDictionary<NSString *, RCPurchaseCompletedBlock> *purchaseCompleteCallbacks;
 @property (nonatomic) RCPurchaserInfo *lastSentPurchaserInfo;
 @property (nonatomic) RCAttributionFetcher *attributionFetcher;
@@ -198,6 +200,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.userDefaults = userDefaults;
 
         self.productsByIdentifier = [NSMutableDictionary new];
+        self.offeringsByProductIdentifier = [NSMutableDictionary new];
         self.purchaseCompleteCallbacks = [NSMutableDictionary new];
 
         self.finishTransactions = !observerMode;
@@ -445,25 +448,39 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)makePurchase:(SKProduct *)product
- withCompletionBlock:(RCPurchaseCompletedBlock)completion
+- (void)purchaseProduct:(SKProduct *)product
+    withCompletionBlock:(RCPurchaseCompletedBlock)completion
 {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-    [self purchaseProduct:product withPayment:payment completion:completion];
+    [self purchaseProduct:product withPayment:payment withPresentedOfferingIdentifier:nil completion:completion];
 }
 
-- (void)makePurchase:(SKProduct *)product
-        withDiscount:(SKPaymentDiscount *)discount
-     completionBlock:(RCPurchaseCompletedBlock)completion
+- (void)purchasePackage:(RCPackage *)package
+    withCompletionBlock:(RCPurchaseCompletedBlock)completion
 {
-    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-    payment.paymentDiscount = discount;
-    [self purchaseProduct:product withPayment:payment completion:completion];
+    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:package.product];
+    [self purchaseProduct:package.product withPayment:payment withPresentedOfferingIdentifier:package.offeringIdentifier completion:completion];
 }
 
 - (void)purchaseProduct:(SKProduct *)product
-            withPayment:(SKMutablePayment *)payment
-             completion:(RCPurchaseCompletedBlock)completion
+           withDiscount:(SKPaymentDiscount *)discount
+        completionBlock:(RCPurchaseCompletedBlock)completion
+{
+    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
+    payment.paymentDiscount = discount;
+    [self purchaseProduct:product withPayment:payment withPresentedOfferingIdentifier:nil completion:completion];
+}
+
+- (void)purchasePackage:(RCPackage *)package
+           withDiscount:(SKPaymentDiscount *)discount
+        completionBlock:(RCPurchaseCompletedBlock)completion
+{
+    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:package.product];
+    payment.paymentDiscount = discount;
+    [self purchaseProduct:package.product withPayment:payment withPresentedOfferingIdentifier:package.offeringIdentifier completion:completion];
+}
+
+- (void)purchaseProduct:(SKProduct *)product withPayment:(SKMutablePayment *)payment withPresentedOfferingIdentifier:(NSString * _Nullable)presentedOfferingIdentifier completion:(RCPurchaseCompletedBlock)completion
 {
     if (!self.finishTransactions) {
         RCDebugLog(@"Observer mode is active (finishTransactions is set to false) and makePurchase has been called. Are you sure you want to do this?");
@@ -473,13 +490,21 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
     // from triggering a refresh.
     self.cachesLastUpdated = [NSDate date];
-    
-    RCDebugLog(@"makePurchase - %@", payment.productIdentifier);
-    
+
+    if (presentedOfferingIdentifier) {
+        RCDebugLog(@"makePurchase - %@ - Offering: %@", payment.productIdentifier, presentedOfferingIdentifier);
+    } else {
+        RCDebugLog(@"makePurchase - %@", payment.productIdentifier);
+    }
+
     @synchronized (self) {
         self.productsByIdentifier[payment.productIdentifier] = product;
     }
-    
+
+    @synchronized (self) {
+        self.offeringsByProductIdentifier[payment.productIdentifier] = presentedOfferingIdentifier;
+    }
+
     @synchronized (self) {
         if (self.purchaseCompleteCallbacks[product.productIdentifier]) {
             completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
@@ -521,8 +546,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                          currencyCode:nil
                     subscriptionGroup:nil
                             discounts:nil
-                           completion:^(RCPurchaserInfo * _Nullable info,
-                                   NSError * _Nullable error) {
+                   offeringIdentifier:nil
+                           completion:^(RCPurchaserInfo *_Nullable info,
+                                   NSError *_Nullable error) {
                                [self dispatch:^{
                                    if (error) {
                                        CALL_AND_DISPATCH_IF_SET(completion, nil, error);
@@ -928,6 +954,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
                               NSString *currencyCode = product.priceLocale.rc_currencyCode;
 
+                              NSString *presentedOffering = nil;
+                              @synchronized (self) {
+                                  presentedOffering = self.offeringsByProductIdentifier[productIdentifier];
+                                  [self.offeringsByProductIdentifier removeObjectForKey:productIdentifier];
+                              }
+
                               [self.backend postReceiptData:data
                                                   appUserID:self.appUserID
                                                   isRestore:self.allowSharingAppStoreAccount
@@ -938,8 +970,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                currencyCode:currencyCode
                                           subscriptionGroup:subscriptionGroup
                                                   discounts:discounts
-                                                 completion:^(RCPurchaserInfo * _Nullable info,
-                                                             NSError * _Nullable error) {
+                                         offeringIdentifier:presentedOffering
+                                                 completion:^(RCPurchaserInfo *_Nullable info,
+                                                         NSError *_Nullable error) {
                                                      [self handleReceiptPostWithTransaction:transaction
                                                                               purchaserInfo:info
                                                                                       error:error];

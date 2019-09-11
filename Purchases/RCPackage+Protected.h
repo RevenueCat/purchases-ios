@@ -13,7 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCPackage (Protected)
 
-- (instancetype)initWithIdentifier:(NSString *)identifier packageType:(RCPackageType)packageType product:(SKProduct *)product;
+@property(readonly) NSString *offeringIdentifier;
+
+- (instancetype)initWithIdentifier:(NSString *)identifier packageType:(RCPackageType)packageType product:(SKProduct *)product offeringIdentifier:(NSString *)offeringIdentifier;
 
 @end
 
