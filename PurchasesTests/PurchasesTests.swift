@@ -351,7 +351,7 @@ class PurchasesTests: XCTestCase {
                         identifier: "base",
                         serverDescription: "This is the base offering",
                         availablePackages: [
-                            Package(identifier: "$rc_monthly", packageType: PackageType.monthly, product: MockProduct(mockProductIdentifier: "monthly_freetrial"))
+                            Package(identifier: "$rc_monthly", packageType: PackageType.monthly, product: MockProduct(mockProductIdentifier: "monthly_freetrial"), offeringIdentifier: "base")
                         ]
                     )],
                 currentOfferingID: "base")
