@@ -36,8 +36,6 @@ NS_SWIFT_NAME(Offering)
 
 - (nullable RCPackage *)objectForKeyedSubscript:(NSString *)key;
 
-- (NSString *)description;
-
 @end
 
 NS_ASSUME_NONNULL_END
