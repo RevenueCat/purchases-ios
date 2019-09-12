@@ -10,7 +10,7 @@
 #import "RCOffering+Protected.h"
 
 @interface RCOfferings ()
-@property (readwrite) NSString *currentOfferingID;
+@property (readwrite, nullable) NSString *currentOfferingID;
 @property (readwrite) NSDictionary<NSString *, RCOffering *> *offerings;
 @end
 
@@ -36,9 +36,12 @@
     return [self offeringWithIdentifier:key];
 }
 
-- (RCOffering *)currentOffering
+- (nullable RCOffering *)currentOffering
 {
-    return self.offerings[self.currentOfferingID];
+    if (self.currentOfferingID) {
+        return self.offerings[self.currentOfferingID];
+    }
+    return nil;
 }
 
 - (NSString *)description

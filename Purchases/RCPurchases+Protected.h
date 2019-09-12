@@ -21,7 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
                             storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                          notificationCenter:(NSNotificationCenter *)notificationCenter
                                userDefaults:(NSUserDefaults *)userDefaults
-                               observerMode:(BOOL)observerMode;
+                               observerMode:(BOOL)observerMode
+                           offeringsFactory:(RCOfferingsFactory *)offeringsFactory;
 
 + (void)setDefaultInstance:(RCPurchases * _Nullable)instance;
 

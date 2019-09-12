@@ -210,7 +210,7 @@ class PurchasesTests: XCTestCase {
                         ]
                     ]
                 ],
-                "current_offering_id": "offering_a"
+                "current_offering_id": "base"
             ] as [String : Any]
 
             completion(offeringsData, nil)
@@ -336,6 +336,28 @@ class PurchasesTests: XCTestCase {
         }
     
     }
+    
+    class MockOfferingsFactory: RCOfferingsFactory {
+        
+        var emptyOfferings = false
+        
+        override func createOfferings(withProducts products: [String : SKProduct], data: [AnyHashable : Any]) -> Offerings {
+            if (emptyOfferings) {
+                return Offerings(offerings: [:], currentOfferingID: "base")
+            }
+            return Offerings(
+                offerings: [
+                    "base": Offering(
+                        identifier: "base",
+                        serverDescription: "This is the base offering",
+                        availablePackages: [
+                            Package(identifier: "$rc_monthly", packageType: PackageType.monthly, product: MockProduct(mockProductIdentifier: "monthly_freetrial"))
+                        ]
+                    )],
+                currentOfferingID: "base")
+        }
+        
+    }
 
     class Delegate: NSObject, PurchasesDelegate {
         var purchaserInfo: PurchaserInfo?
@@ -360,6 +382,7 @@ class PurchasesTests: XCTestCase {
     let notificationCenter = MockNotificationCenter();
     let userDefaults = MockUserDefaults();
     let attributionFetcher = MockAttributionFetcher();
+    let offeringsFactory = MockOfferingsFactory();
 
     let purchasesDelegate = Delegate()
     
@@ -370,14 +393,15 @@ class PurchasesTests: XCTestCase {
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
         purchases = Purchases(appUserID: appUserID,
-                                requestFetcher: requestFetcher,
-                                receiptFetcher: receiptFetcher,
-                                attributionFetcher: attributionFetcher,
-                                backend:backend,
-                                storeKitWrapper: storeKitWrapper,
-                                notificationCenter:notificationCenter,
-                                userDefaults:userDefaults,
-                                observerMode: false)
+                              requestFetcher: requestFetcher,
+                              receiptFetcher: receiptFetcher,
+                              attributionFetcher: attributionFetcher,
+                              backend: backend,
+                              storeKitWrapper: storeKitWrapper,
+                              notificationCenter: notificationCenter,
+                              userDefaults: userDefaults,
+                              observerMode: false,
+                              offeringsFactory: offeringsFactory)
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
@@ -386,28 +410,30 @@ class PurchasesTests: XCTestCase {
         Purchases.automaticAppleSearchAdsAttributionCollection = false
 
         purchases = Purchases(appUserID: nil,
-                requestFetcher: requestFetcher,
-                receiptFetcher: receiptFetcher,
-                attributionFetcher: attributionFetcher,
-                backend: backend,
-                storeKitWrapper: storeKitWrapper,
-                notificationCenter: notificationCenter,
-                userDefaults: userDefaults,
-                observerMode: false)
+                              requestFetcher: requestFetcher,
+                              receiptFetcher: receiptFetcher,
+                              attributionFetcher: attributionFetcher,
+                              backend: backend,
+                              storeKitWrapper: storeKitWrapper,
+                              notificationCenter: notificationCenter,
+                              userDefaults: userDefaults,
+                              observerMode: false,
+                              offeringsFactory: offeringsFactory)
 
         purchases!.delegate = purchasesDelegate
     }
 
     func setupPurchasesObserverModeOn() {
         purchases = Purchases(appUserID: nil,
-                requestFetcher: requestFetcher,
-                receiptFetcher: receiptFetcher,
-                attributionFetcher: attributionFetcher,
-                backend: backend,
-                storeKitWrapper: storeKitWrapper,
-                notificationCenter: notificationCenter,
-                userDefaults: userDefaults,
-                observerMode: true)
+                              requestFetcher: requestFetcher,
+                              receiptFetcher: receiptFetcher,
+                              attributionFetcher: attributionFetcher,
+                              backend: backend,
+                              storeKitWrapper: storeKitWrapper,
+                              notificationCenter: notificationCenter,
+                              userDefaults: userDefaults,
+                              observerMode: true,
+                              offeringsFactory: offeringsFactory)
 
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -1309,6 +1335,7 @@ class PurchasesTests: XCTestCase {
 
     func testMissingProductDetailsReturnsNil() {
         requestFetcher.failProducts = true
+        offeringsFactory.emptyOfferings = true
         setupPurchases()
 
         var offerings: Offerings?
