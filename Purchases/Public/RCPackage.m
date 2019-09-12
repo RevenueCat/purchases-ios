@@ -19,19 +19,18 @@
 
 @implementation RCPackage
 
-+ (nullable NSString *)getStringFromPackageType:(RCPackageType)packageType
++ (nullable NSString *)stringFromPackageType:(RCPackageType)packageType
 {
-    NSArray *arrayOfStrings = @[@"$rc_lifetime", @"$rc_annual", @"$rc_six_month", @"$rc_three_month", @"$rc_two_month", @"$rc_monthly", @"$rc_weekly"];
-    if (packageType > arrayOfStrings.count) {
+    if (packageType > PACKAGE_TYPE_STRINGS.count) {
         return nil;
     }
-    return arrayOfStrings[packageType];
+    return PACKAGE_TYPE_STRINGS[packageType];
 }
 
-+ (RCPackageType)getPackageTypeFromString:(NSString *)string
++ (RCPackageType)packageTypeFromString:(NSString *)string
 {
-    NSInteger index = [@[@"$rc_lifetime", @"$rc_annual", @"$rc_six_month", @"$rc_three_month", @"$rc_two_month", @"$rc_monthly", @"$rc_weekly"] indexOfObject:string];
-    if(NSNotFound == index) {
+    NSInteger index = [PACKAGE_TYPE_STRINGS indexOfObject:string];
+    if (NSNotFound == index) {
         return RCPackageTypeCustom;
     }
     return (RCPackageType)(index);

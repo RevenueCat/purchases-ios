@@ -57,7 +57,7 @@
     SKProduct *product = products[data[@"platform_product_identifier"]];
     if (product) {
         NSString *identifier = data[@"identifier"];
-        RCPackageType packageType = [RCPackage getPackageTypeFromString:identifier];
+        RCPackageType packageType = [RCPackage packageTypeFromString:identifier];
         return [[RCPackage alloc] initWithIdentifier:identifier packageType:packageType product:product];
     }
     return nil;

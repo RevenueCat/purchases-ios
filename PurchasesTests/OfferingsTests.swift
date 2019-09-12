@@ -199,7 +199,7 @@ class OfferingsTests: XCTestCase {
     }
 
     private func testPackageType(packageType: PackageType) {
-        var identifier = Package.getStringFrom(packageType)
+        var identifier = Package.string(from: packageType)
         if (identifier == nil) {
             identifier = "custom"
         }
