@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCPackage (Protected)
 
-@property(readonly) NSString *offeringIdentifier;
+@property (readonly) NSString *offeringIdentifier;
 
 + (nullable NSString *)stringFromPackageType:(RCPackageType)packageType;
 

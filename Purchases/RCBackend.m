@@ -159,14 +159,14 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 - (void)postReceiptData:(NSData *)data
               appUserID:(NSString *)appUserID
               isRestore:(BOOL)isRestore
-      productIdentifier:(NSString *_Nullable)productIdentifier
-                  price:(NSDecimalNumber *_Nullable)price
+      productIdentifier:(NSString * _Nullable)productIdentifier
+                  price:(NSDecimalNumber * _Nullable)price
             paymentMode:(RCPaymentMode)paymentMode
-      introductoryPrice:(NSDecimalNumber *_Nullable)introductoryPrice
-           currencyCode:(NSString *_Nullable)currencyCode
-      subscriptionGroup:(NSString *_Nullable)subscriptionGroup
-              discounts:(NSArray<RCPromotionalOffer *> *_Nullable)discounts
-     offeringIdentifier:(NSString *_Nullable)offeringIdentifier
+      introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice
+           currencyCode:(NSString * _Nullable)currencyCode
+      subscriptionGroup:(NSString * _Nullable)subscriptionGroup
+              discounts:(NSArray<RCPromotionalOffer *> * _Nullable)discounts
+     offeringIdentifier:(NSString * _Nullable)offeringIdentifier
              completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
