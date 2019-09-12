@@ -295,7 +295,7 @@ NS_SWIFT_NAME(products(_:_:));
 NS_SWIFT_NAME(purchaseProduct(_:_:));
 
 /**
- Purchase the passed `SKProduct`.
+ Purchase the passed `RCPackage`.
 
  Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
 
@@ -351,14 +351,14 @@ typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * 
  
  @param product The `SKProduct` the user intends to purchase
  
- @param discount The `SKPatmentDiscount` to apply to the purchase
+ @param discount The `SKPaymentDiscount` to apply to the purchase
  */
 - (void)purchaseProduct:(SKProduct *)product
            withDiscount:(SKPaymentDiscount *)discount
         completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(purchaseProduct(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
 
 /**
- Purchase the passed `SKProduct`.
+ Purchase the passed `RCPackage`.
 
  Call this method when a user has decided to purchase a product with an applied discount. Only call this in direct response to user input.
 
