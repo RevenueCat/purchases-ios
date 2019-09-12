@@ -196,6 +196,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.attributionFetcher = attributionFetcher;
         self.backend = backend;
         self.storeKitWrapper = storeKitWrapper;
+        self.offeringsFactory = offeringsFactory;
 
         self.notificationCenter = notificationCenter;
         self.userDefaults = userDefaults;
@@ -250,8 +251,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                 }];
             }
         }
-
-        self.offeringsFactory = offeringsFactory;
     }
 
     return self;
