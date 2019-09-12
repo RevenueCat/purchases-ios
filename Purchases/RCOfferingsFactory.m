@@ -59,7 +59,7 @@
     if (product) {
         NSString *identifier = data[@"identifier"];
         RCPackageType packageType = [RCPackage getPackageTypeFromString:identifier];
-        return [[RCPackage alloc] initWithIdentifier:identifier packageType:packageType product:product];
+        return [[RCPackage alloc] initWithIdentifier:identifier packageType:packageType product:product offeringIdentifier:offeringIdentifier];
     }
     return nil;
 }
