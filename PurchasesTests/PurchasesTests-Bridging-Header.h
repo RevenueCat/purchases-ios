@@ -12,10 +12,11 @@
 #include <Purchases/RCPurchaserInfo+Protected.h>
 #include <Purchases/RCOffering.h>
 #include <Purchases/RCOffering+Protected.h>
+#include <Purchases/RCOfferings+Protected.h>
+#include <Purchases/RCPackage+Protected.h>
 #include <Purchases/RCPackage.h>
 #include <Purchases/RCIntroEligibility+Protected.h>
 #include <Purchases/RCAttributionFetcher.h>
 #include <Purchases/RCAttributionData.h>
 #include <Purchases/RCPromotionalOffer+Protected.h>
 #include <Purchases/RCOfferingsFactory.h>
-#include <Purchases/RCPackage+Protected.h>

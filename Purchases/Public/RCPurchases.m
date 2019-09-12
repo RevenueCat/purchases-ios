@@ -171,7 +171,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                    storeKitWrapper:storeKitWrapper
                 notificationCenter:[NSNotificationCenter defaultCenter]
                       userDefaults:userDefaults
-                      observerMode:observerMode];
+                      observerMode:observerMode
+                  offeringsFactory:[[RCOfferingsFactory alloc] init]];
 }
 
 - (instancetype)initWithAppUserID:(NSString *)appUserID
@@ -183,6 +184,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                notificationCenter:(NSNotificationCenter *)notificationCenter
                      userDefaults:(NSUserDefaults *)userDefaults
                      observerMode:(BOOL)observerMode
+                 offeringsFactory:(RCOfferingsFactory *)offeringsFactory
 {
     if (self = [super init]) {
         RCDebugLog(@"Debug logging enabled.");
@@ -248,7 +250,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                 }];
             }
         }
-        self.offeringsFactory = [[RCOfferingsFactory alloc] init];
+
+        self.offeringsFactory = offeringsFactory;
     }
 
     return self;
