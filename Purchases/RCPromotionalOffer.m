@@ -8,9 +8,9 @@
 
 
 @interface RCPromotionalOffer ()
-@property(nonatomic, readwrite) NSString *offerIdentifier;
-@property(readwrite) NSDecimalNumber *price;
-@property(readwrite) RCPaymentMode paymentMode;
+@property (nonatomic, readwrite) NSString *offerIdentifier;
+@property (readwrite) NSDecimalNumber *price;
+@property (readwrite) RCPaymentMode paymentMode;
 @end
 
 @implementation RCPromotionalOffer

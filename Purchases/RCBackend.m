@@ -2,7 +2,7 @@
 //  RCBackend.m
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/30/17.
+//  Created by RevenueCat.
 //  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
@@ -12,8 +12,6 @@
 #import "RCPurchaserInfo+Protected.h"
 #import "RCIntroEligibility.h"
 #import "RCIntroEligibility+Protected.h"
-#import "RCEntitlement+Protected.h"
-#import "RCOffering+Protected.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCUtils.h"
 #import "RCPromotionalOffer.h"
@@ -325,66 +323,38 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     }];
 }
 
-- (RCEntitlements *)parseEntitlementResponse:(NSDictionary *)response
-{
-    NSMutableDictionary *entitlements = [NSMutableDictionary new];
-
-    NSDictionary *entitlementsResponse = response[@"entitlements"];
-
-    for (NSString *proID in entitlementsResponse) {
-        NSDictionary *entDict = entitlementsResponse[proID];
-
-        NSMutableDictionary *offerings = [NSMutableDictionary new];
-        NSDictionary *offeringsResponse = entDict[@"offerings"];
-
-        for (NSString *offeringID in offeringsResponse) {
-            NSDictionary *offDict = offeringsResponse[offeringID];
-
-            RCOffering *offering = [[RCOffering alloc] init];
-            offering.activeProductIdentifier = offDict[@"active_product_identifier"];
-
-            offerings[offeringID] = offering;
-
-        }
-        entitlements[proID] = [[RCEntitlement alloc] initWithOfferings:offerings];
-    }
-
-    return [NSDictionary dictionaryWithDictionary:entitlements];
-}
-
-- (void)getEntitlementsForAppUserID:(NSString *)appUserID
-                         completion:(RCEntitlementResponseHandler)completion
+- (void)getOfferingsForAppUserID:(NSString *)appUserID
+                      completion:(RCOfferingsResponseHandler)completion
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
-    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/products", escapedAppUserID];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/offerings", escapedAppUserID];
 
     if ([self addCallback:completion forKey:path]) {
         return;
     }
-    
+
     [self.httpClient performRequest:@"GET"
                                path:path
                                body:nil
                             headers:self.headers
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
-                      if (error != nil) {
-                          for (RCEntitlementResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
-                              completion(nil, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
+                      if (error == nil && statusCode < 300) {
+                          for (RCOfferingsResponseHandler callback in [self getCallbacksAndClearForKey:path]) {
+                              callback(response, nil);
                           }
                           return;
                       }
-                      NSDictionary *entitlements = nil;
-                      if (statusCode < 300) {
-                           entitlements = [self parseEntitlementResponse:response];
-                      } else {
+
+                      if (error != nil) {
+                          error = [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error];
+                      } else if (statusCode > 300) {
                           error = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
                                                                       backendMessage:response[@"message"]];
                       }
-
-                      for (RCEntitlementResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
-                          completion(entitlements, error);
+                      for (RCOfferingsResponseHandler callback in [self getCallbacksAndClearForKey:path]) {
+                          callback(nil, error);
                       }
-    }];
+                  }];
 }
 
 - (void)postAttributionData:(NSDictionary *)data

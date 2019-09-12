@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, RCPackageType) {
     RCPackageTypeCustom = -1,
+    RCPackageTypeLifetime,
     RCPackageTypeAnnual,
     RCPackageTypeSixMonth,
     RCPackageTypeThreeMonth,
@@ -25,9 +26,19 @@ typedef NS_ENUM(NSInteger, RCPackageType) {
 NS_SWIFT_NAME(Package)
 @interface RCPackage : NSObject
 
-@property NSString * _Nonnull identifier;
-@property RCPackageType packageType;
-@property SKProduct *product;
+@property (readonly) NSString *identifier;
+@property (readonly) RCPackageType packageType;
+@property (readonly) SKProduct *product;
+
+/**
+ @return A String containing the localized price
+ */
+- (NSString *)localizedPriceString;
+
+/**
+ @return A String containing the localized introductory price
+ */
+- (NSString *)localizedIntroductoryPriceString;
 
 @end
 

@@ -19,20 +19,24 @@ NS_ASSUME_NONNULL_BEGIN
 NS_SWIFT_NAME(Offering)
 @interface RCOffering : NSObject
 
-@property NSString *identifier;
-@property NSString *serverDescription;
+@property (readonly) NSString *identifier;
+@property (readonly) NSString *serverDescription;
 
-@property NSArray<RCPackage *> *availablePackages;
+@property (readonly) NSArray<RCPackage *> *availablePackages;
 
-@property RCPackage * _Nullable lifetime;
-@property RCPackage * _Nullable annual;
-@property RCPackage * _Nullable sixMonth;
-@property RCPackage * _Nullable threeMonth;
-@property RCPackage * _Nullable twoMonth;
-@property RCPackage * _Nullable monthly;
-@property RCPackage * _Nullable weekly;
+@property (readonly, nullable) RCPackage *lifetime;
+@property (readonly, nullable) RCPackage *annual;
+@property (readonly, nullable) RCPackage *sixMonth;
+@property (readonly, nullable) RCPackage *threeMonth;
+@property (readonly, nullable) RCPackage *twoMonth;
+@property (readonly, nullable) RCPackage *monthly;
+@property (readonly, nullable) RCPackage *weekly;
 
-- (RCPackage * _Nullable)packageWithIdentifier:(NSString * _Nullable)identifier NS_SWIFT_NAME(package(identifier:));
+- (nullable RCPackage *)packageWithIdentifier:(nullable NSString *)identifier NS_SWIFT_NAME(package(identifier:));
+
+- (nullable RCPackage *)objectForKeyedSubscript:(NSString *)key;
+
+- (NSString *)description;
 
 @end
 

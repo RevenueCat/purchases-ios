@@ -2,15 +2,18 @@
 //  RCOffering+Protected.h
 //  Purchases
 //
-//  Created by Jacob Eiting on 6/2/18.
+//  Created by RevenueCat.
 //  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
 #import "RCOffering.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface RCOffering (Protected)
 
-@property (readwrite, nonatomic) NSString *activeProductIdentifier;
-@property (readwrite, nonatomic) SKProduct *activeProduct;
+- (instancetype)initWithIdentifier:(NSString *)identifier serverDescription:(NSString *)serverDescription availablePackages:(NSArray<RCPackage *> *)availablePackages;
 
 @end
+
+NS_ASSUME_NONNULL_END
