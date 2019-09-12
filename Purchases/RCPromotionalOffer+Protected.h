@@ -9,11 +9,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCPromotionalOffer (Protected)
 
-@property(nonatomic, readwrite) NSString *offerIdentifier;
+@property (nonatomic, readwrite) NSString *offerIdentifier;
 
-@property(nonatomic, readwrite) NSDecimalNumber *price;
+@property (nonatomic, readwrite) NSDecimalNumber *price;
 
-@property(nonatomic, readwrite) enum RCPaymentMode paymentMode;
+@property (nonatomic, readwrite) enum RCPaymentMode paymentMode;
 
 @end
+
 NS_ASSUME_NONNULL_END
