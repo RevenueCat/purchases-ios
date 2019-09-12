@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable RCOffering *)createOfferingWithProducts:(NSDictionary<NSString *, SKProduct *> *)products offeringData:(NSDictionary *)offeringData;
 
 - (nullable RCPackage *)createPackageWithData:(NSDictionary *)data products:(NSDictionary<NSString *, SKProduct *> *)products offeringIdentifier:(NSString *)offeringIdentifier;
-
 @end
 
 NS_ASSUME_NONNULL_END

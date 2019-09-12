@@ -154,7 +154,7 @@ class PurchasesTests: XCTestCase {
         var postedSubscriptionGroup: String?
         var postedDiscounts: Array<RCPromotionalOffer>?
         var postedOfferingIdentifier: String?
-        
+
         var postReceiptPurchaserInfo: PurchaserInfo?
         var postReceiptError: Error?
         var aliasError: Error?
@@ -336,11 +336,11 @@ class PurchasesTests: XCTestCase {
         }
     
     }
-    
+
     class MockOfferingsFactory: RCOfferingsFactory {
-        
+
         var emptyOfferings = false
-        
+
         override func createOfferings(withProducts products: [String : SKProduct], data: [AnyHashable : Any]) -> Offerings {
             if (emptyOfferings) {
                 return Offerings(offerings: [:], currentOfferingID: "base")
@@ -356,7 +356,7 @@ class PurchasesTests: XCTestCase {
                     )],
                 currentOfferingID: "base")
         }
-        
+
     }
 
     class Delegate: NSObject, PurchasesDelegate {
@@ -702,7 +702,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(beTrue())
         expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
     }
-    
+
     func testSendsProductInfoIfProductIsCached() {
         setupPurchases()
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
@@ -1882,20 +1882,20 @@ class PurchasesTests: XCTestCase {
     }
     
     class MockSKProduct: SKProduct {
-        
+
         var mockIdentifier: String?
         override var productIdentifier: String {
             get {
                 return mockIdentifier!
             }
         }
-        
+
         init(mockIdentifier: String?) {
             self.mockIdentifier = mockIdentifier
             super.init()
         }
     }
-    
+
     func testPostsOfferingIfPurchasingPackage() {
         setupPurchases()
 
@@ -1925,7 +1925,7 @@ class PurchasesTests: XCTestCase {
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }
     }
-    
+
     private func identifiedSuccessfully(appUserID: String) {
         expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
         expect(self.purchases?.appUserID).to(equal(appUserID))

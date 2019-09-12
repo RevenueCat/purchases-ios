@@ -566,7 +566,7 @@ purchaserInfo = newPurchaserInfo
     }
 
     let noOfferingsResponse = Dictionary<String, String>()
-    
+
     func testGetOfferingsCallsHTTPMethod() {
         let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse, error: nil)
         let path = "/subscribers/" + userID + "/offerings"

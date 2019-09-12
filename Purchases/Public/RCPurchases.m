@@ -198,6 +198,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.attributionFetcher = attributionFetcher;
         self.backend = backend;
         self.storeKitWrapper = storeKitWrapper;
+        self.offeringsFactory = offeringsFactory;
 
         self.notificationCenter = notificationCenter;
         self.userDefaults = userDefaults;
@@ -253,8 +254,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                 }];
             }
         }
-
-        self.offeringsFactory = offeringsFactory;
     }
 
     return self;
@@ -716,7 +715,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                         CALL_AND_DISPATCH_IF_SET(completion, nil, error);
                                         return;
                                     }
-                                    
+
                                     NSMutableSet *productIdentifiers = [NSMutableSet new];
                                     [self performOnEachProductIdentifierInOfferings:data block:^(NSString *productIdentifier) {
                                         [productIdentifiers addObject:productIdentifier];
