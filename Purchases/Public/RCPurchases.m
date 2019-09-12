@@ -44,6 +44,7 @@
 @property (nonatomic) NSMutableDictionary<NSString *, RCPurchaseCompletedBlock> *purchaseCompleteCallbacks;
 @property (nonatomic) RCPurchaserInfo *lastSentPurchaserInfo;
 @property (nonatomic) RCAttributionFetcher *attributionFetcher;
+@property (nonatomic) RCOfferingsFactory *offeringsFactory;
 
 @end
 
@@ -247,6 +248,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                 }];
             }
         }
+        self.offeringsFactory = [[RCOfferingsFactory alloc] init];
     }
 
     return self;
@@ -697,7 +699,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                         for (SKProduct *p in products) {
                                             productsById[p.productIdentifier] = p;
                                         }
-                                        RCOfferings *offerings = [RCOfferingsFactory createOfferingsWithProducts:productsById data:data];
+                                        RCOfferings *offerings = [self.offeringsFactory createOfferingsWithProducts:productsById data:data];
 
                                         NSMutableArray *missingProducts = [NSMutableArray new];
                                         [self performOnEachProductIdentifierInOfferings:data block:^(NSString *productIdentifier) {

@@ -13,6 +13,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCPackage (Protected)
 
++ (nullable NSString *)getStringFromPackageType:(RCPackageType)packageType;
+
++ (RCPackageType)getPackageTypeFromString:(NSString *)string;
+
 - (instancetype)initWithIdentifier:(NSString *)identifier packageType:(RCPackageType)packageType product:(SKProduct *)product;
 
 @end

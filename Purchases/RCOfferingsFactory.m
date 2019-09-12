@@ -22,7 +22,7 @@
 
 @implementation RCOfferingsFactory
 
-+ (RCOfferings *)createOfferingsWithProducts:(NSDictionary<NSString *, SKProduct *> *)products data:(NSDictionary *)data
+- (RCOfferings *)createOfferingsWithProducts:(NSDictionary<NSString *, SKProduct *> *)products data:(NSDictionary *)data
 {
     NSArray *offeringsData = data[@"offerings"];
     NSMutableDictionary *offerings = [NSMutableDictionary dictionary];
@@ -36,7 +36,7 @@
     return [[RCOfferings alloc] initWithOfferings:[NSDictionary dictionaryWithDictionary:offerings] currentOfferingID:data[@"current_offering_id"]];
 }
 
-+ (nullable RCOffering *)createOfferingWithProducts:(NSDictionary<NSString *, SKProduct *> *)products offeringData:(NSDictionary *)offeringData
+- (nullable RCOffering *)createOfferingWithProducts:(NSDictionary<NSString *, SKProduct *> *)products offeringData:(NSDictionary *)offeringData
 {
     NSMutableArray<RCPackage *> *availablePackages = [NSMutableArray array];
     for (NSDictionary *packageData in offeringData[@"packages"]) {
@@ -52,26 +52,12 @@
     return nil;
 }
 
-+ (nullable RCPackage *)createPackageWithData:(NSDictionary *)data products:(NSDictionary<NSString *, SKProduct *> *)products
+- (nullable RCPackage *)createPackageWithData:(NSDictionary *)data products:(NSDictionary<NSString *, SKProduct *> *)products
 {
     SKProduct *product = products[data[@"platform_product_identifier"]];
     if (product) {
         NSString *identifier = data[@"identifier"];
-        NSDictionary *mapOfPackageTypes = @{
-                @"$rc_lifetime": @(RCPackageTypeLifetime),
-                @"$rc_annual": @(RCPackageTypeAnnual),
-                @"$rc_six_month": @(RCPackageTypeSixMonth),
-                @"$rc_three_month": @(RCPackageTypeThreeMonth),
-                @"$rc_two_month": @(RCPackageTypeTwoMonth),
-                @"$rc_monthly": @(RCPackageTypeMonthly),
-                @"$rc_weekly": @(RCPackageTypeWeekly),
-        };
-        enum RCPackageType packageType;
-        if (mapOfPackageTypes[identifier]) {
-            packageType = (RCPackageType)(mapOfPackageTypes[identifier]);
-        } else {
-            packageType = RCPackageTypeCustom;
-        }
+        RCPackageType packageType = [RCPackage getPackageTypeFromString:identifier];
         return [[RCPackage alloc] initWithIdentifier:identifier packageType:packageType product:product];
     }
     return nil;

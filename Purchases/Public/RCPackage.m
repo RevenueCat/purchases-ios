@@ -19,6 +19,25 @@
 
 @implementation RCPackage
 
++ (nullable NSString *)getStringFromPackageType:(RCPackageType)packageType
+{
+    NSArray *arrayOfStrings = @[@"$rc_lifetime", @"$rc_annual", @"$rc_six_month", @"$rc_three_month", @"$rc_two_month", @"$rc_monthly", @"$rc_weekly"];
+    if (packageType > arrayOfStrings.count) {
+        return nil;
+    }
+    return arrayOfStrings[packageType];
+}
+
++ (RCPackageType)getPackageTypeFromString:(NSString *)string
+{
+    NSInteger index = [@[@"$rc_lifetime", @"$rc_annual", @"$rc_six_month", @"$rc_three_month", @"$rc_two_month", @"$rc_monthly", @"$rc_weekly"] indexOfObject:string];
+    if(NSNotFound == index) {
+        return RCPackageTypeCustom;
+    }
+    return (RCPackageType)(index);
+}
+
+
 - (instancetype)initWithIdentifier:(NSString *)identifier packageType:(RCPackageType)packageType product:(SKProduct *)product
 {
     self = [super init];
