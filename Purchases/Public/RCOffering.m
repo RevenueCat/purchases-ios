@@ -14,13 +14,13 @@
 @property (readwrite) NSString *identifier;
 @property (readwrite) NSString *serverDescription;
 @property (readwrite) NSArray<RCPackage *> *availablePackages;
-@property (readwrite) RCPackage * _Nullable lifetime;
-@property (readwrite) RCPackage * _Nullable annual;
-@property (readwrite) RCPackage * _Nullable sixMonth;
-@property (readwrite) RCPackage * _Nullable threeMonth;
-@property (readwrite) RCPackage * _Nullable twoMonth;
-@property (readwrite) RCPackage * _Nullable monthly;
-@property (readwrite) RCPackage * _Nullable weekly;
+@property (readwrite, nullable) RCPackage *lifetime;
+@property (readwrite, nullable) RCPackage *annual;
+@property (readwrite, nullable) RCPackage *sixMonth;
+@property (readwrite, nullable) RCPackage *threeMonth;
+@property (readwrite, nullable) RCPackage *twoMonth;
+@property (readwrite, nullable) RCPackage *monthly;
+@property (readwrite, nullable) RCPackage *weekly;
 
 @end
 
@@ -33,7 +33,7 @@
         self.identifier = identifier;
         self.serverDescription = serverDescription;
         self.availablePackages = availablePackages;
-        for(RCPackage *package in availablePackages) {
+        for (RCPackage *package in availablePackages) {
             switch (package.packageType) {
                 case RCPackageTypeCustom:
                     break;
@@ -65,9 +65,9 @@
     return self;
 }
 
-- (RCPackage * _Nullable)packageWithIdentifier:(NSString * _Nullable)identifier
+- (nullable RCPackage *)packageWithIdentifier:(nullable NSString *)identifier
 {
-    for(RCPackage *package in self.availablePackages) {
+    for (RCPackage *package in self.availablePackages) {
         if ([package.identifier isEqualToString:identifier]) {
             return package;
         }
@@ -75,7 +75,7 @@
     return nil;
 }
 
-- (RCPackage *_Nullable)objectForKeyedSubscript:(NSString *)key
+- (nullable RCPackage *)objectForKeyedSubscript:(NSString *)key
 {
     return [self packageWithIdentifier:key];
 }

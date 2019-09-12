@@ -195,13 +195,13 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count).to(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
-    
+
     func testDoesntCacheForDifferentOffering() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
-        
+
         var completionCalled = 0
-        
+
         let isRestore = arc4random_uniform(2) == 0
 
         backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: "offering_a", completion: { (purchaserInfo, error) in
@@ -211,7 +211,7 @@ class BackendTests: XCTestCase {
         backend?.postReceiptData(receiptData2, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: "offering_b", completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
-        
+
         expect(self.httpClient.calls.count).to(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
@@ -565,10 +565,10 @@ purchaserInfo = newPurchaserInfo
         expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
     }
 
-    let noEntitlementsResponse = Dictionary<String, String>()
-
+    let noOfferingsResponse = Dictionary<String, String>()
+    
     func testGetOfferingsCallsHTTPMethod() {
-        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
+        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse, error: nil)
         let path = "/subscribers/" + userID + "/offerings"
         httpClient.mock(requestPath: path, response: response)
 
@@ -582,79 +582,91 @@ purchaserInfo = newPurchaserInfo
         expect(offeringsData).toEventuallyNot(beNil())
         expect(offeringsData?.count).toEventually(equal(0))
     }
+    
+    func testGetOfferingsCachesForSameUserID() {
+        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse, error: nil)
+        let path = "/subscribers/" + userID + "/offerings"
+        httpClient.mock(requestPath: path, response: response)
 
-//    func testGetEntitlementsCachesForSameUserID() {
-//        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
-//        let path = "/subscribers/" + userID + "/products"
-//        httpClient.mock(requestPath: path, response: response)
-//
-//        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in })
-//        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in })
-//
-//        expect(self.httpClient.calls.count).to(equal(1))
-//    }
-//
-//    func testGetEntitlementsDoesntCacheForMultipleUserID() {
-//        let response = HTTPResponse(statusCode: 200, response: noEntitlementsResponse, error: nil)
-//        let userID2 = "user_id_2"
-//        httpClient.mock(requestPath: "/subscribers/" + userID + "/products", response: response)
-//        httpClient.mock(requestPath: "/subscribers/" + userID2 + "/products", response: response)
-//
-//        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in })
-//        backend?.getEntitlementsForAppUserID(userID2, completion: { (newEntitlements, error) in })
-//
-//        expect(self.httpClient.calls.count).to(equal(2))
-//    }
+        backend?.getOfferingsForAppUserID(userID, completion: { (newOfferings, error) in })
+        backend?.getOfferingsForAppUserID(userID, completion: { (newOfferings, error) in })
 
+        expect(self.httpClient.calls.count).to(equal(1))
+    }
 
-    let oneEntitlementResponse = [
-        "entitlements" : [
-            "pro" : [
-                "offerings" : [
-                    "monthly" : [
-                        "active_product_identifier" : "monthly_freetrial"
+    func testGetEntitlementsDoesntCacheForMultipleUserID() {
+        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse, error: nil)
+        let userID2 = "user_id_2"
+        httpClient.mock(requestPath: "/subscribers/" + userID + "/offerings", response: response)
+        httpClient.mock(requestPath: "/subscribers/" + userID2 + "/offerings", response: response)
+
+        backend?.getOfferingsForAppUserID(userID, completion: { (newOfferings, error) in })
+        backend?.getOfferingsForAppUserID(userID2, completion: { (newOfferings, error) in })
+
+        expect(self.httpClient.calls.count).to(equal(2))
+    }
+
+    let oneOfferingResponse = [
+        "offerings": [
+            [
+                "identifier": "offering_a",
+                "description": "This is the base offering",
+                "packages": [
+                    [
+                        "identifier": "$rc_monthly",
+                        "platform_product_identifier": "monthly_freetrial"
                     ],
-                    "annual" : [
-                        "active_product_identifier" : "annual_freetrial"
+                    [
+                        "identifier": "$rc_annual",
+                        "platform_product_identifier": "annual_freetrial"
                     ]
                 ]
             ]
-        ]
-    ]
+        ],
+        "current_offering_id": "offering_a"
+        ] as [String : Any]
 
-//    func testGetEntitlementsBasicEntitlement() {
-//        let response = HTTPResponse(statusCode: 200, response: oneEntitlementResponse, error: nil)
-//        let path = "/subscribers/" + userID + "/products"
-//        httpClient.mock(requestPath: path, response: response)
-//
-//        var entitlements: [String : Entitlement]?
-//
-//        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
-//            entitlements = newEntitlements
-//        })
-//
-//        expect(entitlements?.count).toEventually(equal(1))
-//        expect(entitlements?.keys).toEventually(contain("pro"))
-//        expect(entitlements!["pro"]?.offerings.count).toEventually(equal(2))
-//        expect(entitlements!["pro"]?.offerings["monthly"]).toEventuallyNot(beNil())
-//        expect(entitlements!["pro"]?.offerings["annual"]).toEventuallyNot(beNil())
-//        expect(entitlements!["pro"]?.offerings["annual"]?.activeProduct).toEventually(beNil())
-//        expect(entitlements!["pro"]?.offerings["annual"]?.activeProductIdentifier).toEventually(equal("annual_freetrial"))
-//    }
-//
-//    func testGetEntitlementsFailSendsNil() {
-//        let response = HTTPResponse(statusCode: 500, response: oneEntitlementResponse, error: nil)
-//        let path = "/subscribers/" + userID + "/products"
-//        httpClient.mock(requestPath: path, response: response)
-//
-//        var entitlements: [String : Entitlement]?
-//
-//        backend?.getEntitlementsForAppUserID(userID, completion: { (newEntitlements, error) in
-//            entitlements = newEntitlements
-//        })
-//
-//        expect(entitlements).toEventually(beNil());
-//    }
+    func testGetEntitlementsBasicEntitlement() {
+        let response = HTTPResponse(statusCode: 200, response: oneOfferingResponse, error: nil)
+        let path = "/subscribers/" + userID + "/offerings"
+        httpClient.mock(requestPath: path, response: response)
+        var responseReceived: [String: Any]?
+        var offerings: [[String: Any]]?
+        var offeringA: [String: Any]?
+        var packageA: [String: String]?
+        var packageB: [String: String]?
+        backend?.getOfferingsForAppUserID(userID, completion: { (response, error) in
+            responseReceived = response as? [String : Any]
+            offerings = responseReceived?["offerings"] as? [[String : Any]]
+            offeringA = offerings?[0]
+            let packages = offeringA?["packages"] as? [[String: String]]
+            packageA = packages?[0]
+            packageB = packages?[1]
+        })
+
+        expect(offerings?.count).toEventually(equal(1))
+        expect(offeringA?["identifier"] as? String).toEventually(equal("offering_a"))
+        expect(offeringA?["description"] as? String).toEventually(equal("This is the base offering"))
+        expect(packageA?["identifier"]).toEventually(equal("$rc_monthly"))
+        expect(packageA?["platform_product_identifier"]).toEventually(equal("monthly_freetrial"))
+        expect(packageB?["identifier"]).toEventually(equal("$rc_annual"))
+        expect(packageB?["platform_product_identifier"]).toEventually(equal("annual_freetrial"))
+        expect(responseReceived?["current_offering_id"] as? String).toEventually(equal("offering_a"))
+    }
+
+    func testGetOfferingsFailSendsNil() {
+        let response = HTTPResponse(statusCode: 500, response: oneOfferingResponse, error: nil)
+        let path = "/subscribers/" + userID + "/offerings"
+        httpClient.mock(requestPath: path, response: response)
+
+        var offerings: [String: Any]?
+
+        backend?.getOfferingsForAppUserID(userID, completion: { (newOfferings, error) in
+            offerings = newOfferings as? [String : Any]
+        })
+
+        expect(offerings).toEventually(beNil());
+    }
 
     func testPostAttributesPutsDataInDataKey() {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)

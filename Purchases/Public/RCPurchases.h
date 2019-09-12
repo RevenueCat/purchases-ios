@@ -27,7 +27,7 @@ typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError
 typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *) NS_SWIFT_NAME(Purchases.ReceiveIntroEligibilityBlock);
 
 /**
- Completion block for `entitlementsWithCompletionBlock:`
+ Completion block for `offeringsWithCompletionBlock:`
  */
 typedef void (^RCReceiveOfferingsBlock)(RCOfferings * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceiveOfferingsBlock);
 
@@ -268,8 +268,8 @@ NS_SWIFT_NAME(purchaserInfo(_:));
 - (void)offeringsWithCompletionBlock:(RCReceiveOfferingsBlock)completion NS_SWIFT_NAME(offerings(_:));
 
 /**
- Fetches the `SKProducts` for your IAPs for given `productIdentifiers`. Use this method if you aren't using `-entitlements:`.
- You should use entitlements though.
+ Fetches the `SKProducts` for your IAPs for given `productIdentifiers`. Use this method if you aren't using `-offeringsWithCompletionBlock:`.
+ You should use offerings though.
 
  @note `completion` may be called without `SKProduct`s that you are expecting. This is usually caused by iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect. Also ensure that you have an active developer program subscription and you have signed the latest paid application agreements. If you're having trouble see: https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard
 

@@ -6,7 +6,6 @@
 //  Copyright © 2019 Purchases. All rights reserved.
 //
 
-#import "RCPackage.h"
 #import "RCPackage+Protected.h"
 #import <StoreKit/StoreKit.h>
 
@@ -20,6 +19,25 @@
 @end
 
 @implementation RCPackage
+
++ (nullable NSString *)getStringFromPackageType:(RCPackageType)packageType
+{
+    NSArray *arrayOfStrings = @[@"$rc_lifetime", @"$rc_annual", @"$rc_six_month", @"$rc_three_month", @"$rc_two_month", @"$rc_monthly", @"$rc_weekly"];
+    if (packageType > arrayOfStrings.count) {
+        return nil;
+    }
+    return arrayOfStrings[packageType];
+}
+
++ (RCPackageType)getPackageTypeFromString:(NSString *)string
+{
+    NSInteger index = [@[@"$rc_lifetime", @"$rc_annual", @"$rc_six_month", @"$rc_three_month", @"$rc_two_month", @"$rc_monthly", @"$rc_weekly"] indexOfObject:string];
+    if(NSNotFound == index) {
+        return RCPackageTypeCustom;
+    }
+    return (RCPackageType)(index);
+}
+
 
 - (instancetype)initWithIdentifier:(NSString *)identifier packageType:(RCPackageType)packageType product:(SKProduct *)product offeringIdentifier:(NSString *)offeringIdentifier
 {
@@ -45,8 +63,6 @@
 }
 
 - (NSString *)localizedIntroductoryPriceString {
-    if (!self.product) return @"";
-
     if (@available(iOS 11.2, macOS 10.13.2, *)) {
         NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
         formatter.numberStyle = NSNumberFormatterCurrencyStyle;

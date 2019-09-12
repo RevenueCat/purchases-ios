@@ -18,3 +18,4 @@
 #include <Purchases/RCAttributionData.h>
 #include <Purchases/RCPromotionalOffer+Protected.h>
 #include <Purchases/RCOfferingsFactory.h>
+#include <Purchases/RCPackage+Protected.h>

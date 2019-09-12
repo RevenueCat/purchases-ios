@@ -6,13 +6,12 @@
 //  Copyright © 2019 Purchases. All rights reserved.
 //
 
-#import "RCOfferings.h"
 #import "RCOfferings+Protected.h"
 #import "RCOffering+Protected.h"
 
 @interface RCOfferings ()
-@property(readwrite) NSString *currentOfferingID;
-@property(readwrite) NSDictionary<NSString *, RCOffering *> *offerings;
+@property (readwrite) NSString *currentOfferingID;
+@property (readwrite) NSDictionary<NSString *, RCOffering *> *offerings;
 @end
 
 @implementation RCOfferings
@@ -27,12 +26,12 @@
     return self;
 }
 
-- (RCOffering * _Nullable)offeringWithIdentifier:(NSString *_Nullable)identifier
+- (nullable RCOffering *)offeringWithIdentifier:(nullable NSString *)identifier
 {
     return self.offerings[identifier];
 }
 
-- (RCOffering * _Nullable)objectForKeyedSubscript:(NSString *)key
+- (nullable RCOffering *)objectForKeyedSubscript:(NSString *)key
 {
     return [self offeringWithIdentifier:key];
 }
@@ -45,8 +44,7 @@
 - (NSString *)description
 {
     NSMutableString *description = [NSMutableString stringWithFormat:@"<Offerings {\n"];
-    for (NSString *offeringName in self.offerings)
-    {
+    for (NSString *offeringName in self.offerings) {
         RCOffering *offering = self.offerings[offeringName];
         NSString *offeringDesc = [NSMutableString stringWithFormat:@"\t%@\n", offering];
         [description appendString:offeringDesc];

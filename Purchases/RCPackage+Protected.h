@@ -15,6 +15,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(readonly) NSString *offeringIdentifier;
 
++ (nullable NSString *)getStringFromPackageType:(RCPackageType)packageType;
+
++ (RCPackageType)getPackageTypeFromString:(NSString *)string;
+
 - (instancetype)initWithIdentifier:(NSString *)identifier packageType:(RCPackageType)packageType product:(SKProduct *)product offeringIdentifier:(NSString *)offeringIdentifier;
 
 @end

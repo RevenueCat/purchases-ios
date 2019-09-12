@@ -24,17 +24,17 @@ NS_SWIFT_NAME(Offering)
 
 @property (readonly) NSArray<RCPackage *> *availablePackages;
 
-@property (readonly) RCPackage * _Nullable lifetime;
-@property (readonly) RCPackage * _Nullable annual;
-@property (readonly) RCPackage * _Nullable sixMonth;
-@property (readonly) RCPackage * _Nullable threeMonth;
-@property (readonly) RCPackage * _Nullable twoMonth;
-@property (readonly) RCPackage * _Nullable monthly;
-@property (readonly) RCPackage * _Nullable weekly;
+@property (readonly, nullable) RCPackage *lifetime;
+@property (readonly, nullable) RCPackage *annual;
+@property (readonly, nullable) RCPackage *sixMonth;
+@property (readonly, nullable) RCPackage *threeMonth;
+@property (readonly, nullable) RCPackage *twoMonth;
+@property (readonly, nullable) RCPackage *monthly;
+@property (readonly, nullable) RCPackage *weekly;
 
-- (RCPackage * _Nullable)packageWithIdentifier:(NSString * _Nullable)identifier NS_SWIFT_NAME(package(identifier:));
+- (nullable RCPackage *)packageWithIdentifier:(nullable NSString *)identifier NS_SWIFT_NAME(package(identifier:));
 
-- (RCPackage * _Nullable)objectForKeyedSubscript:(NSString *)key;
+- (nullable RCPackage *)objectForKeyedSubscript:(NSString *)key;
 
 - (NSString *)description;
 

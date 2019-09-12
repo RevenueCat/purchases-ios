@@ -22,7 +22,7 @@
 
 @implementation RCOfferingsFactory
 
-+ (RCOfferings *)createOfferingsWithProducts:(NSDictionary<NSString *, SKProduct *> *)products data:(NSDictionary *)data;
+- (RCOfferings *)createOfferingsWithProducts:(NSDictionary<NSString *, SKProduct *> *)products data:(NSDictionary *)data
 {
     NSArray *offeringsData = data[@"offerings"];
     NSMutableDictionary *offerings = [NSMutableDictionary dictionary];
@@ -36,7 +36,7 @@
     return [[RCOfferings alloc] initWithOfferings:[NSDictionary dictionaryWithDictionary:offerings] currentOfferingID:data[@"current_offering_id"]];
 }
 
-+ (RCOffering * _Nullable)createOfferingWithProducts:(NSDictionary<NSString *, SKProduct *> *)products offeringData:(NSDictionary *)offeringData
+- (nullable RCOffering *)createOfferingWithProducts:(NSDictionary<NSString *, SKProduct *> *)products offeringData:(NSDictionary *)offeringData
 {
     NSMutableArray<RCPackage *> *availablePackages = [NSMutableArray array];
     NSString *offeringIdentifier = offeringData[@"identifier"];
@@ -53,30 +53,13 @@
     return nil;
 }
 
-+ (RCPackage *_Nullable)createPackageWithData:(NSDictionary *)data products:(NSDictionary<NSString *, SKProduct *> *)products offeringIdentifier:(NSString *)offeringIdentifier
+- (nullable RCPackage *)createPackageWithData:(NSDictionary *)data products:(NSDictionary<NSString *, SKProduct *> *)products offeringIdentifier:(NSString *)offeringIdentifier
 {
     SKProduct *product = products[data[@"platform_product_identifier"]];
     if (product) {
         NSString *identifier = data[@"identifier"];
-        enum RCPackageType packageType;
-        if ([identifier isEqualToString:@"$rc_lifetime"]) {
-            packageType = RCPackageTypeLifetime;
-        } else if ([identifier isEqualToString:@"$rc_annual"]) {
-            packageType = RCPackageTypeAnnual;
-        } else if ([identifier isEqualToString:@"$rc_six_month"]) {
-            packageType = RCPackageTypeSixMonth;
-        } else if ([identifier isEqualToString:@"$rc_three_month"]) {
-            packageType = RCPackageTypeThreeMonth;
-        } else if ([identifier isEqualToString:@"$rc_two_month"]) {
-            packageType = RCPackageTypeTwoMonth;
-        } else if ([identifier isEqualToString:@"$rc_monthly"]) {
-            packageType = RCPackageTypeMonthly;
-        } else if ([identifier isEqualToString:@"$rc_weekly"]) {
-            packageType = RCPackageTypeWeekly;
-        } else {
-            packageType = RCPackageTypeCustom;
-        }
-        return [[RCPackage alloc] initWithIdentifier:identifier packageType:packageType product:product offeringIdentifier:offeringIdentifier];
+        RCPackageType packageType = [RCPackage getPackageTypeFromString:identifier];
+        return [[RCPackage alloc] initWithIdentifier:identifier packageType:packageType product:product];
     }
     return nil;
 }
