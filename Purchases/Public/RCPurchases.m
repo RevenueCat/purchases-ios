@@ -42,7 +42,7 @@
 @property (nonatomic) NSDate *cachesLastUpdated;
 @property (nonatomic) RCOfferings *cachedOfferings;
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
-@property (nonatomic) NSMutableDictionary<NSString *, NSString *> *offeringsByProductIdentifier;
+@property (nonatomic) NSMutableDictionary<NSString *, NSString *> *presentedOfferingsByProductIdentifier;
 @property (nonatomic) NSMutableDictionary<NSString *, RCPurchaseCompletedBlock> *purchaseCompleteCallbacks;
 @property (nonatomic) RCPurchaserInfo *lastSentPurchaserInfo;
 @property (nonatomic) RCAttributionFetcher *attributionFetcher;
@@ -204,7 +204,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.userDefaults = userDefaults;
 
         self.productsByIdentifier = [NSMutableDictionary new];
-        self.offeringsByProductIdentifier = [NSMutableDictionary new];
+        self.presentedOfferingsByProductIdentifier = [NSMutableDictionary new];
         self.purchaseCompleteCallbacks = [NSMutableDictionary new];
 
         self.finishTransactions = !observerMode;
@@ -506,7 +506,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 
     @synchronized (self) {
-        self.offeringsByProductIdentifier[payment.productIdentifier] = presentedOfferingIdentifier;
+        self.presentedOfferingsByProductIdentifier[payment.productIdentifier] = presentedOfferingIdentifier;
     }
 
     @synchronized (self) {
@@ -960,8 +960,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
                               NSString *presentedOffering = nil;
                               @synchronized (self) {
-                                  presentedOffering = self.offeringsByProductIdentifier[productIdentifier];
-                                  [self.offeringsByProductIdentifier removeObjectForKey:productIdentifier];
+                                  presentedOffering = self.presentedOfferingsByProductIdentifier[productIdentifier];
+                                  [self.presentedOfferingsByProductIdentifier removeObjectForKey:productIdentifier];
                               }
 
                               [self.backend postReceiptData:data
