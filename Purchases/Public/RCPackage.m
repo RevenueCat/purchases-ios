@@ -14,6 +14,7 @@
 @property (readwrite) NSString *identifier;
 @property (readwrite) RCPackageType packageType;
 @property (readwrite) SKProduct *product;
+@property (readwrite) NSString *offeringIdentifier;
 
 @end
 
@@ -37,13 +38,14 @@
 }
 
 
-- (instancetype)initWithIdentifier:(NSString *)identifier packageType:(RCPackageType)packageType product:(SKProduct *)product
+- (instancetype)initWithIdentifier:(NSString *)identifier packageType:(RCPackageType)packageType product:(SKProduct *)product offeringIdentifier:(NSString *)offeringIdentifier
 {
     self = [super init];
     if (self) {
         self.identifier = identifier;
         self.packageType = packageType;
         self.product = product;
+        self.offeringIdentifier = offeringIdentifier;
     }
 
     return self;

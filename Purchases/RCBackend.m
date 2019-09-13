@@ -166,6 +166,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
            currencyCode:(NSString * _Nullable)currencyCode
       subscriptionGroup:(NSString * _Nullable)subscriptionGroup
               discounts:(NSArray<RCPromotionalOffer *> * _Nullable)discounts
+     offeringIdentifier:(NSString * _Nullable)offeringIdentifier
              completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
@@ -233,6 +234,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
             }
             body[@"offers"] = offers;
         }
+    }
+
+    if (offeringIdentifier) {
+        body[@"presented_offering_identifier"] = offeringIdentifier;
     }
 
     [self.httpClient performRequest:@"POST"

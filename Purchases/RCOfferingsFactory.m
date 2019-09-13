@@ -39,26 +39,27 @@
 - (nullable RCOffering *)createOfferingWithProducts:(NSDictionary<NSString *, SKProduct *> *)products offeringData:(NSDictionary *)offeringData
 {
     NSMutableArray<RCPackage *> *availablePackages = [NSMutableArray array];
+    NSString *offeringIdentifier = offeringData[@"identifier"];
     for (NSDictionary *packageData in offeringData[@"packages"]) {
-        RCPackage *package = [self createPackageWithData:packageData products:products];
+        RCPackage *package = [self createPackageWithData:packageData products:products offeringIdentifier:offeringIdentifier];
         if (package) {
             [availablePackages addObject:package];
         }
     }
 
     if (availablePackages.count != 0) {
-        return [[RCOffering alloc] initWithIdentifier:offeringData[@"identifier"] serverDescription:offeringData[@"description"] availablePackages:[NSArray arrayWithArray:availablePackages]];
+        return [[RCOffering alloc] initWithIdentifier:offeringIdentifier serverDescription:offeringData[@"description"] availablePackages:[NSArray arrayWithArray:availablePackages]];
     }
     return nil;
 }
 
-- (nullable RCPackage *)createPackageWithData:(NSDictionary *)data products:(NSDictionary<NSString *, SKProduct *> *)products
+- (nullable RCPackage *)createPackageWithData:(NSDictionary *)data products:(NSDictionary<NSString *, SKProduct *> *)products offeringIdentifier:(NSString *)offeringIdentifier
 {
     SKProduct *product = products[data[@"platform_product_identifier"]];
     if (product) {
         NSString *identifier = data[@"identifier"];
         RCPackageType packageType = [RCPackage packageTypeFromString:identifier];
-        return [[RCPackage alloc] initWithIdentifier:identifier packageType:packageType product:product];
+        return [[RCPackage alloc] initWithIdentifier:identifier packageType:packageType product:product offeringIdentifier:offeringIdentifier];
     }
     return nil;
 }

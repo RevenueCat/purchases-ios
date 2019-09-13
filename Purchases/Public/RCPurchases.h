@@ -291,8 +291,22 @@ NS_SWIFT_NAME(products(_:_:));
  
  @param product The `SKProduct` the user intends to purchase
  */
-- (void)makePurchase:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
-NS_SWIFT_NAME(makePurchase(_:_:));
+- (void)purchaseProduct:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
+NS_SWIFT_NAME(purchaseProduct(_:_:));
+
+/**
+ Purchase the passed `RCPackage`.
+
+ Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+
+ From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+
+ @note You do not need to finish the transaction yourself in the completion callback, Purchases will handle this for you.
+
+ @param package The `RCPackage` the user intends to purchase
+ */
+- (void)purchasePackage:(RCPackage *)package withCompletionBlock:(RCPurchaseCompletedBlock)completion
+NS_SWIFT_NAME(purchasePackage(_:_:));
 
 /**
  This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user. Going forward, either `appUserID` will be able to reference the same user.
@@ -337,11 +351,28 @@ typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * 
  
  @param product The `SKProduct` the user intends to purchase
  
- @param discount The `SKPatmentDiscount` to apply to the purchase
+ @param discount The `SKPaymentDiscount` to apply to the purchase
  */
-- (void)makePurchase:(SKProduct *)product
-        withDiscount:(SKPaymentDiscount * _Nullable)discount
-     completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
+- (void)purchaseProduct:(SKProduct *)product
+           withDiscount:(SKPaymentDiscount *)discount
+        completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(purchaseProduct(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
+
+/**
+ Purchase the passed `RCPackage`.
+
+ Call this method when a user has decided to purchase a product with an applied discount. Only call this in direct response to user input.
+
+ From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+
+ @note You do not need to finish the transaction yourself in the completion callback, Purchases will handle this for you.
+
+ @param package The `RCPackage` the user intends to purchase
+
+ @param discount The `SKPaymentDiscount` to apply to the purchase
+ */
+- (void)purchasePackage:(RCPackage *)package
+           withDiscount:(SKPaymentDiscount *)discount
+        completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(purchasePackage(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
     
 @end
 
