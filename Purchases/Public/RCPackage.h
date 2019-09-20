@@ -33,12 +33,12 @@ NS_SWIFT_NAME(Package)
 /**
  @return A String containing the localized price
  */
-- (NSString *)localizedPriceString;
+@property (readonly) NSString *localizedPriceString;
 
 /**
  @return A String containing the localized introductory price
  */
-- (NSString *)localizedIntroductoryPriceString;
+@property (readonly) NSString *localizedIntroductoryPriceString;
 
 @end
 
