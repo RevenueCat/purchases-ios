@@ -37,7 +37,7 @@ typedef void (^RCReceiveOfferingsBlock)(RCOfferings * _Nullable, NSError * _Null
 typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *) NS_SWIFT_NAME(Purchases.ReceiveProductsBlock);
 
 /**
- Completion block for `makePurchase:withCompletionBlock:`
+ Completion block for `purchaseProduct:withCompletionBlock:`
  */
 typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable, BOOL userCancelled) NS_SWIFT_NAME(Purchases.PurchaseCompletedBlock);
 
@@ -373,6 +373,20 @@ typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * 
 - (void)purchasePackage:(RCPackage *)package
            withDiscount:(SKPaymentDiscount *)discount
         completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(purchasePackage(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
+
+#pragma mark Unavailable Methods
+
+typedef void (^RCReceiveEntitlementsBlock)(id _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceiveEntitlementsBlock);
+
+- (void)makePurchase:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)block
+NS_SWIFT_NAME(makePurchaseSwift(_:_:)) __attribute__((unavailable("makePurchase: has been replaced by purchaseProduct:")));
+
+- (void)entitlementsWithCompletionBlock:(RCReceiveEntitlementsBlock)completion
+NS_SWIFT_NAME(entitlements(_:)) __attribute__((unavailable("entitlements: has been replaced with offerings:. See https://docs.revenuecat.com/docs/offerings-migration")));
+
+- (void)makePurchase:(SKProduct *)product
+        withDiscount:(SKPaymentDiscount * _Nullable)discount
+     completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4)) __attribute__((unavailable("makePurchase:withDiscount: has been replaced by purchaseProduct:withDiscount:")));;
     
 @end
 
