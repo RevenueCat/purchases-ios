@@ -565,10 +565,13 @@ purchaserInfo = newPurchaserInfo
         expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
     }
 
-    let noOfferingsResponse = Dictionary<String, String>()
-
+    let noOfferingsResponse: [String: Any?] = [
+        "offerings": [],
+        "current_offering_id": nil
+    ]
+    
     func testGetOfferingsCallsHTTPMethod() {
-        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse, error: nil)
+        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [AnyHashable : Any], error: nil)
         let path = "/subscribers/" + userID + "/offerings"
         httpClient.mock(requestPath: path, response: response)
 
@@ -580,11 +583,10 @@ purchaserInfo = newPurchaserInfo
 
         expect(self.httpClient.calls.count).toNot(equal(0))
         expect(offeringsData).toEventuallyNot(beNil())
-        expect(offeringsData?.count).toEventually(equal(0))
     }
     
     func testGetOfferingsCachesForSameUserID() {
-        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse, error: nil)
+        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [AnyHashable : Any], error: nil)
         let path = "/subscribers/" + userID + "/offerings"
         httpClient.mock(requestPath: path, response: response)
 
@@ -595,7 +597,7 @@ purchaserInfo = newPurchaserInfo
     }
 
     func testGetEntitlementsDoesntCacheForMultipleUserID() {
-        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse, error: nil)
+        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [AnyHashable : Any], error: nil)
         let userID2 = "user_id_2"
         httpClient.mock(requestPath: "/subscribers/" + userID + "/offerings", response: response)
         httpClient.mock(requestPath: "/subscribers/" + userID2 + "/offerings", response: response)
