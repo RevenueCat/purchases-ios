@@ -191,11 +191,16 @@ class PurchasesTests: XCTestCase {
         }
 
         var failOfferings = false
+        var badOfferingsResponse = false
         var gotOfferings = 0
         override func getOfferingsForAppUserID(_ appUserID: String, completion: @escaping RCOfferingsResponseHandler) {
             gotOfferings += 1
             if (failOfferings) {
                 completion(nil, PurchasesErrorUtils.unexpectedBackendResponseError())
+                return
+            }
+            if (badOfferingsResponse) {
+                completion([:], nil)
                 return
             }
 
@@ -340,10 +345,14 @@ class PurchasesTests: XCTestCase {
     class MockOfferingsFactory: RCOfferingsFactory {
 
         var emptyOfferings = false
-
-        override func createOfferings(withProducts products: [String : SKProduct], data: [AnyHashable : Any]) -> Offerings {
+        var badOfferings = false
+        
+        override func createOfferings(withProducts products: [String : SKProduct], data: [AnyHashable : Any]) -> Offerings? {
             if (emptyOfferings) {
                 return Offerings(offerings: [:], currentOfferingID: "base")
+            }
+            if (badOfferings) {
+                return nil
             }
             return Offerings(
                 offerings: [
@@ -1331,6 +1340,21 @@ class PurchasesTests: XCTestCase {
         })
 
         expect(offerings).toEventually(beNil());
+    }
+
+    func testBadBackendResponseForOfferings() {
+        self.backend.badOfferingsResponse = true
+        self.offeringsFactory.badOfferings = true
+        setupPurchases()
+        
+        var receivedError: NSError?
+        self.purchases?.offerings({ (_, error) in
+            receivedError = error as NSError?
+        })
+
+        expect(receivedError).toEventuallyNot(beNil());
+        expect(receivedError?.domain).to(equal(PurchasesErrorDomain))
+        expect(receivedError?.code).to(be(PurchasesErrorCode.unexpectedBackendResponseError.rawValue))
     }
 
     func testMissingProductDetailsReturnsNil() {

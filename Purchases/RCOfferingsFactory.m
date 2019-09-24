@@ -25,15 +25,19 @@
 - (RCOfferings *)createOfferingsWithProducts:(NSDictionary<NSString *, SKProduct *> *)products data:(NSDictionary *)data
 {
     NSArray *offeringsData = data[@"offerings"];
-    NSMutableDictionary *offerings = [NSMutableDictionary dictionary];
-    for (NSDictionary *offeringData in offeringsData) {
-        RCOffering *offering = [self createOfferingWithProducts:products offeringData:offeringData];
-        if (offering) {
-            offerings[offering.identifier] = offering;
+    NSString *currentOfferingID = data[@"current_offering_id"];
+    if (offeringsData && currentOfferingID) {
+        NSMutableDictionary *offerings = [NSMutableDictionary dictionary];
+        for (NSDictionary *offeringData in offeringsData) {
+            RCOffering *offering = [self createOfferingWithProducts:products offeringData:offeringData];
+            if (offering) {
+                offerings[offering.identifier] = offering;
+            }
         }
+        
+        return [[RCOfferings alloc] initWithOfferings:[NSDictionary dictionaryWithDictionary:offerings] currentOfferingID:currentOfferingID];
     }
-
-    return [[RCOfferings alloc] initWithOfferings:[NSDictionary dictionaryWithDictionary:offerings] currentOfferingID:data[@"current_offering_id"]];
+    return nil;
 }
 
 - (nullable RCOffering *)createOfferingWithProducts:(NSDictionary<NSString *, SKProduct *> *)products offeringData:(NSDictionary *)offeringData

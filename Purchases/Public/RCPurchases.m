@@ -728,27 +728,29 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                             productsById[p.productIdentifier] = p;
                                         }
                                         RCOfferings *offerings = [self.offeringsFactory createOfferingsWithProducts:productsById data:data];
-
-                                        NSMutableArray *missingProducts = [NSMutableArray new];
-                                        [self performOnEachProductIdentifierInOfferings:data block:^(NSString *productIdentifier) {
-                                            SKProduct *product = productsById[productIdentifier];
-
-                                            if (product == nil) {
-                                                [missingProducts addObject:productIdentifier];
+                                        if (offerings) {
+                                            NSMutableArray *missingProducts = [NSMutableArray new];
+                                            [self performOnEachProductIdentifierInOfferings:data block:^(NSString *productIdentifier) {
+                                                SKProduct *product = productsById[productIdentifier];
+                                                
+                                                if (product == nil) {
+                                                    [missingProducts addObject:productIdentifier];
+                                                }
+                                            }];
+                                            
+                                            if (missingProducts.count > 0) {
+                                                RCLog(@"Could not find SKProduct for %@", missingProducts);
+                                                RCLog(@"Ensure your products are correctly configured in App Store Connect");
+                                                RCLog(@"See https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard");
                                             }
-                                        }];
-
-                                        if (missingProducts.count > 0) {
-                                            RCLog(@"Could not find SKProduct for %@", missingProducts);
-                                            RCLog(@"Ensure your products are correctly configured in App Store Connect");
-                                            RCLog(@"See https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard");
-                                        }
-
-                                        if (offerings != nil) {
+                                            
                                             self.cachedOfferings = offerings;
+                                            
+                                            CALL_AND_DISPATCH_IF_SET(completion, offerings, nil);
+                                        } else {
+                                            CALL_AND_DISPATCH_IF_SET(completion, nil, [RCPurchasesErrorUtils unexpectedBackendResponseError]);
                                         }
-
-                                        CALL_AND_DISPATCH_IF_SET(completion, offerings, nil);
+                                        
                                     }];
                                    }];
 }
