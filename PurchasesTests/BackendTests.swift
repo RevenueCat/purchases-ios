@@ -91,7 +91,7 @@ class BackendTests: XCTestCase {
 
         let isRestore = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             completionCalled = true
         })
 
@@ -124,11 +124,11 @@ class BackendTests: XCTestCase {
 
         let isRestore = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
@@ -144,11 +144,11 @@ class BackendTests: XCTestCase {
 
         let isRestore = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: !isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: !isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
@@ -164,11 +164,11 @@ class BackendTests: XCTestCase {
 
         let isRestore = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData2, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData2, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
@@ -184,11 +184,11 @@ class BackendTests: XCTestCase {
 
         let isRestore = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData2, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: "USD", subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData2, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: "USD", subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
@@ -204,11 +204,11 @@ class BackendTests: XCTestCase {
 
         let isRestore = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: "offering_a", completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: "offering_a", completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData2, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: "offering_b", completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData2, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: "offering_b", completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
@@ -259,7 +259,7 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: productIdentifier, price: price, paymentMode: paymentMode, introductoryPrice: nil, currencyCode: currencyCode, subscriptionGroup: group, discounts: nil, offeringIdentifier: offeringIdentifier, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: productIdentifier, price: price, paymentMode: paymentMode, introductoryPrice: nil, currencyCode: currencyCode, subscriptionGroup: group, discounts: nil, presentedOfferingIdentifier: offeringIdentifier, completion: { (purchaserInfo, error) in
 completionCalled = true
 })
 
@@ -299,7 +299,7 @@ completionCalled = true
 
         var completionCalled = false
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: "product_id", price: 9.99, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: "product_id", price: 9.99, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             completionCalled = true
         })
 
@@ -313,7 +313,7 @@ completionCalled = true
     func postPaymentMode(paymentMode: RCPaymentMode) {
         var completionCalled = false
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: "product", price: 2.99, paymentMode: paymentMode, introductoryPrice: 1.99, currencyCode: "USD", subscriptionGroup: "group", discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: "product", price: 2.99, paymentMode: paymentMode, introductoryPrice: 1.99, currencyCode: "USD", subscriptionGroup: "group", discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
            completionCalled = true
 })
 
@@ -357,7 +357,7 @@ completionCalled = true
 
         var error: NSError?
         var underlyingError: NSError?
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, newError) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, newError) in
 error = newError as NSError?
 underlyingError = error?.userInfo[NSUnderlyingErrorKey] as! NSError?
 })
@@ -377,7 +377,7 @@ underlyingError = error?.userInfo[NSUnderlyingErrorKey] as! NSError?
         var error: Error?
         var underlyingError: Error?
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, newError) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, newError) in
 error = newError
 })
 
@@ -396,7 +396,7 @@ error = newError
 
         var purchaserInfo: PurchaserInfo?
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (newPurchaserInfo, newError) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (newPurchaserInfo, newError) in
 purchaserInfo = newPurchaserInfo
 })
 
@@ -628,7 +628,7 @@ purchaserInfo = newPurchaserInfo
         "current_offering_id": "offering_a"
         ] as [String : Any]
 
-    func testGetEntitlementsBasicEntitlement() {
+    func testGetOfferingsOneOffering() {
         let response = HTTPResponse(statusCode: 200, response: oneOfferingResponse, error: nil)
         let path = "/subscribers/" + userID + "/offerings"
         httpClient.mock(requestPath: path, response: response)
@@ -723,7 +723,7 @@ purchaserInfo = newPurchaserInfo
         httpClient.mock(requestPath: "/receipts", response: response)
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: true, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: true, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         })
@@ -834,7 +834,7 @@ purchaserInfo = newPurchaserInfo
         
         let isRestore = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
         
@@ -843,7 +843,7 @@ purchaserInfo = newPurchaserInfo
         discount.paymentMode = RCPaymentMode.payAsYouGo
         discount.price = 12
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: [discount], offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: [discount], presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
         
@@ -870,7 +870,7 @@ purchaserInfo = newPurchaserInfo
         discount.paymentMode = RCPaymentMode.payAsYouGo
         discount.price = 12
 
-        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: productIdentifier, price: price, paymentMode: paymentMode, introductoryPrice: nil, currencyCode: currencyCode, subscriptionGroup: group, discounts: [discount], offeringIdentifier: nil, completion: { (purchaserInfo, error) in
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: productIdentifier, price: price, paymentMode: paymentMode, introductoryPrice: nil, currencyCode: currencyCode, subscriptionGroup: group, discounts: [discount], presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
            completionCalled = true
 })
         
@@ -1145,7 +1145,31 @@ purchaserInfo = newPurchaserInfo
 
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
-
+    }
+    
+    func testDoesntCacheForDifferentOfferings() {
+        let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
+        httpClient.mock(requestPath: "/receipts", response: response)
+        
+        var completionCalled = 0
+        
+        let isRestore = arc4random_uniform(2) == 0
+        
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
+            completionCalled += 1
+        })
+        
+        let discount = RCPromotionalOffer.init()
+        discount.offerIdentifier = "offerid"
+        discount.paymentMode = RCPaymentMode.payAsYouGo
+        discount.price = 12
+        
+        backend?.postReceiptData(receiptData, appUserID: userID, isRestore: isRestore, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: "offering_a", completion: { (purchaserInfo, error) in
+            completionCalled += 1
+        })
+        
+        expect(self.httpClient.calls.count).to(equal(2))
+        expect(completionCalled).toEventually(equal(2))
     }
 
 }

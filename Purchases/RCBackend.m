@@ -166,7 +166,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
            currencyCode:(NSString * _Nullable)currencyCode
       subscriptionGroup:(NSString * _Nullable)subscriptionGroup
               discounts:(NSArray<RCPromotionalOffer *> * _Nullable)discounts
-     offeringIdentifier:(NSString * _Nullable)offeringIdentifier
+presentedOfferingIdentifier:(NSString * _Nullable)presentedOfferingIdentifier
              completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
@@ -177,16 +177,17 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                    @"is_restore": @(isRestore)
                                    }];
 
-    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@",
-                                                    appUserID,
-                                                    @(isRestore),
-                                                    fetchToken,
-                                                    productIdentifier,
-                                                    price,
-                                                    currencyCode,
-                                                    @((NSUInteger)paymentMode),
-                                                    introductoryPrice,
-                                                    subscriptionGroup];
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@-%@",
+                          appUserID,
+                          @(isRestore),
+                          fetchToken,
+                          productIdentifier,
+                          price,
+                          currencyCode,
+                          @((NSUInteger)paymentMode),
+                          introductoryPrice,
+                          subscriptionGroup,
+                          presentedOfferingIdentifier];
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
         for (RCPromotionalOffer *discount in discounts) {
@@ -236,8 +237,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
         }
     }
 
-    if (offeringIdentifier) {
-        body[@"presented_offering_identifier"] = offeringIdentifier;
+    if (presentedOfferingIdentifier) {
+        body[@"presented_offering_identifier"] = presentedOfferingIdentifier;
     }
 
     [self.httpClient performRequest:@"POST"

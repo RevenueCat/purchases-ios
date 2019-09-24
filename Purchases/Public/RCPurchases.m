@@ -550,7 +550,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                          currencyCode:nil
                     subscriptionGroup:nil
                             discounts:nil
-                   offeringIdentifier:nil
+                   presentedOfferingIdentifier:nil
                            completion:^(RCPurchaserInfo *_Nullable info,
                                    NSError *_Nullable error) {
                                [self dispatch:^{
@@ -976,7 +976,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                currencyCode:currencyCode
                                           subscriptionGroup:subscriptionGroup
                                                   discounts:discounts
-                                         offeringIdentifier:presentedOffering
+                                         presentedOfferingIdentifier:presentedOffering
                                                  completion:^(RCPurchaserInfo *_Nullable info,
                                                          NSError *_Nullable error) {
                                                      [self handleReceiptPostWithTransaction:transaction

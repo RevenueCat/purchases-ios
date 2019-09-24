@@ -160,7 +160,7 @@ class PurchasesTests: XCTestCase {
         var aliasError: Error?
         var aliasCalled = false
 
-        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, subscriptionGroup: String?, discounts: Array<RCPromotionalOffer>?, offeringIdentifier: String?, completion: @escaping RCBackendPurchaserInfoResponseHandler) {
+        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, subscriptionGroup: String?, discounts: Array<RCPromotionalOffer>?, presentedOfferingIdentifier: String?, completion: @escaping RCBackendPurchaserInfoResponseHandler) {
             postReceiptDataCalled = true
             postedIsRestore = isRestore
 
@@ -173,7 +173,7 @@ class PurchasesTests: XCTestCase {
 
             postedCurrencyCode = currencyCode
             postedDiscounts = discounts
-            postedOfferingIdentifier = offeringIdentifier
+            postedOfferingIdentifier = presentedOfferingIdentifier
 
             completion(postReceiptPurchaserInfo, postReceiptError)
         }
