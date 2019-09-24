@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 NS_SWIFT_NAME(Offerings)
 @interface RCOfferings : NSObject
 
-@property (readonly, nullable) RCOffering *currentOffering NS_SWIFT_NAME(current);
+@property (readonly, nullable) RCOffering *current;
 
 - (nullable RCOffering *)offeringWithIdentifier:(nullable NSString *)identifier NS_SWIFT_NAME(offering(identifier:));
 

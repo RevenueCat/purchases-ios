@@ -36,7 +36,7 @@
     return [self offeringWithIdentifier:key];
 }
 
-- (nullable RCOffering *)currentOffering
+- (nullable RCOffering *)current
 {
     if (self.currentOfferingID) {
         return self.offerings[self.currentOfferingID];
@@ -52,7 +52,7 @@
         NSString *offeringDesc = [NSMutableString stringWithFormat:@"\t%@\n", offering];
         [description appendString:offeringDesc];
     }
-    [description appendFormat:@"\tcurrentOffering=%@", self.currentOffering];
+    [description appendFormat:@"\tcurrentOffering=%@", self.current];
     [description appendString:@">"];
     return description;
 }
