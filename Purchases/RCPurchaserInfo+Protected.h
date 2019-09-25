@@ -14,12 +14,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) NSDictionary<NSString *, NSDate *> *expirationDatesByProduct;
 @property (nonatomic, readonly) NSDictionary<NSString *, NSDate *> *purchaseDatesByProduct;
-@property (nonatomic, readonly) NSDictionary<NSString *, NSObject *> *expirationDateByEntitlement;
-@property (nonatomic, readonly) NSDictionary<NSString *, NSObject *> *purchaseDateByEntitlement;
 @property (nonatomic, readonly) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic, readonly) NSString  * _Nullable originalApplicationVersion;
+@property (readonly) NSString * _Nullable schemaVersion;
 
 - (NSDictionary * _Nonnull)JSONObject;
++ (NSString *)currentSchemaVersion;
 
 @end
 NS_ASSUME_NONNULL_END

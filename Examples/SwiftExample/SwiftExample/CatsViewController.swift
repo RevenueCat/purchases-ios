@@ -34,7 +34,7 @@ class CatsViewController: UIViewController {
         // set the content based on the user subscription status
         if let purchaserInfo = purchaserInfo {
             
-            if purchaserInfo.activeEntitlements.contains("pro_cat") {
+            if purchaserInfo.entitlements["pro_cat"]?.isActive == true {
                 
                 print("Hey there premium, you're a happy cat 😻")
                 self.catContentLabel.text = "😻"

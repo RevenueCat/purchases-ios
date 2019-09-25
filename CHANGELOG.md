@@ -1,3 +1,6 @@
+## 2.6.0
+- Deprecates `activeEntitlements` in `RCPurchaserInfo` and adds `entitlements` object to `RCPurchaserInfo`. For more info look into https://docs.revenuecat.com/docs/purchaserinfo
+
 ## 2.5.0
 - **BREAKING CHANGE**: fixed a typo in `addAttributionData` Swift's name.
 - Error logs for AppsFlyer if using deprecated `rc_appsflyer_id`

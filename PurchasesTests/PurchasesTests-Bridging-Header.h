@@ -20,3 +20,5 @@
 #include <Purchases/RCAttributionData.h>
 #include <Purchases/RCPromotionalOffer+Protected.h>
 #include <Purchases/RCOfferingsFactory.h>
+#include <Purchases/RCEntitlementInfo.h>
+#include <Purchases/RCEntitlementInfos.h>

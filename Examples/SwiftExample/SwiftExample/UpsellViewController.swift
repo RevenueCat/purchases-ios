@@ -84,7 +84,7 @@ class UpsellViewController: UIViewController {
             if let e = error {
                 print("PURCHASE ERROR: - \(e.localizedDescription)")
                 
-            } else if purchaserInfo?.activeEntitlements.contains("pro_cat") ?? false {
+            } else if purchaserInfo?.entitlements["pro_cat"]?.isActive == true {
                 print("Purchased Pro Cats 🎉")
                 
                 self.showCatContent()

@@ -31,7 +31,7 @@
 
 ### CocoaPods
 ```
-pod "Purchases", "2.5.0"
+pod "Purchases", "2.6.0"
 ```
 
 And then run:
@@ -42,7 +42,7 @@ pod install
 
 ### Carthage
 ```
-github "revenuecat/purchases-ios" "2.5.0"
+github "revenuecat/purchases-ios" "2.6.0"
 ```
 
 And then run:
@@ -115,7 +115,7 @@ Swift:
 Purchases.shared.makePurchase(product, { (transaction, purchaserInfo, error, cancelled) in
     if let purchaserInfo = purchaserInfo {
     
-        if purchaserInfo.activeEntitlements.contains("my_entitlement_identifier") {
+        if purchaserInfo.entitlements["my_entitlement_identifier"].isActive == true {
             // Unlock that great "pro" content
         }
         
@@ -127,7 +127,7 @@ Obj-C:
 ```obj-c
 [[RCPurchases sharedPurchases] makePurchase:product withCompletionBlock:^(SKPaymentTransaction *transaction, RCPurchaserInfo *purchaserInfo, NSError *error, BOOL cancelled) {
 
-    if ([purchaserInfo.activeEntitlements containsObject:@"my_entitlement_identifier"]) {
+    if (purchaserInfo.entitlements[@"my_entitlement_identifier"].isActive) {
         // Unlock that great "pro" content.
     }
 
@@ -145,14 +145,7 @@ Swift:
 ```swift
 Purchases.shared.purchaserInfo { (purchaserInfo, error) in
     if let purchaserInfo = purchaserInfo {
-
-        // Option 1: Check if user has access to entitlement (from RevenueCat dashboard)
-        if purchaserInfo.activeEntitlements.contains("my_entitlement_identifier") {
-            // Grant user "pro" access
-        }
-
-        // Option 2: Check if user has active subscription (from App Store Connect or Play Store)
-        if purchaserInfo.activeSubscriptions.contains("my_product_identifier") {
+        if purchaserInfo.entitlements["my_entitlement_identifier"].isActive == true {
             // Grant user "pro" access
         }
     }
@@ -162,15 +155,8 @@ Purchases.shared.purchaserInfo { (purchaserInfo, error) in
 Obj-C:
 ```obj-c
 [[RCPurchases sharedPurchases] purchaserInfoWithCompletionBlock:^(RCPurchaserInfo * purchaserInfo, NSError * error) {
-        
-    // Option 1: Check if user has access to entitlement (from RevenueCat dashboard)
-    if ([purchaserInfo.activeEntitlements containsObject:@"my_entitlement_identifier"]) {
+    if (purchaserInfo.entitlements[@"my_entitlement_identifier"].isActive) {
         // Grant user "pro" access
-    }
-
-    // Option 2: Check if user has active subscription (from App Store Connect or Play Store)
-    if ([purchaserInfo.activeSubscriptions containsObject:@"my_product_identifier"]) {
-    // Grant user "pro" access
     }
 }];
 ```
@@ -218,8 +204,7 @@ func purchases(_ purchases: Purchases, shouldPurchasePromoProduct product: SKPro
     // ...or call it right away to proceed with the purchase
     defermentBlock { (transaction, info, error, cancelled) in
         if let purchaserInfo = info {
-
-            if purchaserInfo.activeEntitlements.contains("my_entitlement_identifier") {
+            if purchaserInfo.entitlements.all["my_entitlement_identifier"]?.isActive == true {
                 // Unlock that great "pro" content
             }
 
@@ -329,7 +314,7 @@ RCPurchases.debugLogsEnabled = YES;
 Example output:
 ```
 [Purchases] - DEBUG: Debug logging enabled.
-[Purchases] - DEBUG: SDK Version - 2.5.0
+[Purchases] - DEBUG: SDK Version - 2.6.0
 [Purchases] - DEBUG: Initial App User ID - (null)
 [Purchases] - DEBUG: GET /v1/subscribers/<APP_USER_ID>
 [Purchases] - DEBUG: GET /v1/subscribers/<APP_USER_ID>/products

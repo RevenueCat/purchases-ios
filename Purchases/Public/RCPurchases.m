@@ -94,7 +94,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 + (NSString *)frameworkVersion {
-    return @"2.6.0-SNAPSHOT";
+    return @"2.7.0-SNAPSHOT";
 }
 
 + (instancetype)sharedPurchases {
@@ -626,7 +626,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         NSDictionary *infoDict = [NSJSONSerialization JSONObjectWithData:purchaserInfoData options:0 error:&jsonError];
         if (jsonError == nil && infoDict != nil) {
             RCPurchaserInfo *info = [[RCPurchaserInfo alloc] initWithData:infoDict];
-            return info;
+            if (info.schemaVersion != nil && [info.schemaVersion isEqual:[RCPurchaserInfo currentSchemaVersion]]) {
+                return info;
+            }
         }
     }
     return nil;
