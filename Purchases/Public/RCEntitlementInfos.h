@@ -16,12 +16,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 NS_SWIFT_NAME(EntitlementInfos)
 @interface RCEntitlementInfos : NSObject
+
 /**
-TODO
+ Dictionary of containing EntitlementInfo objects of all (active and inactive) entitlements by Entitlement identifier. This dictionary can also be accessed by using an index subscript on EntitlementInfos
 */
 @property (readonly) NSDictionary<NSString *, RCEntitlementInfo *> *all;
 /**
-TODO
+ Dictionary of containing EntitlementInfo objects of the active entitlements by Entitlement identifier.
 */
 @property (readonly) NSDictionary<NSString *, RCEntitlementInfo *> *active;
 
