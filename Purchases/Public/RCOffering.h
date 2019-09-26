@@ -18,22 +18,51 @@ NS_ASSUME_NONNULL_BEGIN
  */
 NS_SWIFT_NAME(Offering)
 @interface RCOffering : NSObject
-
+/**
+TODO
+*/
 @property (readonly) NSString *identifier;
+/**
+TODO
+*/
 @property (readonly) NSString *serverDescription;
-
+/**
+TODO
+*/
 @property (readonly) NSArray<RCPackage *> *availablePackages;
-
+/**
+TODO
+*/
 @property (readonly, nullable) RCPackage *lifetime;
+/**
+TODO
+*/
 @property (readonly, nullable) RCPackage *annual;
+/**
+TODO
+*/
 @property (readonly, nullable) RCPackage *sixMonth;
+/**
+TODO
+*/
 @property (readonly, nullable) RCPackage *threeMonth;
+/**
+TODO
+*/
 @property (readonly, nullable) RCPackage *twoMonth;
+/**
+TODO
+*/
 @property (readonly, nullable) RCPackage *monthly;
+/**
+TODO
+*/
 @property (readonly, nullable) RCPackage *weekly;
-
+/**
+TODO
+*/
 - (nullable RCPackage *)packageWithIdentifier:(nullable NSString *)identifier NS_SWIFT_NAME(package(identifier:));
-
+/// :nodoc:
 - (nullable RCPackage *)objectForKeyedSubscript:(NSString *)key;
 
 @end

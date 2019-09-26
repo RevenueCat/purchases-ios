@@ -11,32 +11,68 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class SKProduct;
-
+/**
+TODO
+*/
 typedef NS_ENUM(NSInteger, RCPackageType) {
+    /**
+    TODO
+    */
     RCPackageTypeCustom = -1,
+    /**
+    TODO
+    */
     RCPackageTypeLifetime,
+    /**
+    TODO
+    */
     RCPackageTypeAnnual,
+    /**
+    TODO
+    */
     RCPackageTypeSixMonth,
+    /**
+    TODO
+    */
     RCPackageTypeThreeMonth,
+    /**
+    TODO
+    */
     RCPackageTypeTwoMonth,
+    /**
+    TODO
+    */
     RCPackageTypeMonthly,
+    /**
+    TODO
+    */
     RCPackageTypeWeekly
 } NS_SWIFT_NAME(PackageType);
-
+/**
+TODO
+*/
 NS_SWIFT_NAME(Package)
 @interface RCPackage : NSObject
-
+/**
+TODO
+*/
 @property (readonly) NSString *identifier;
+/**
+TODO
+*/
 @property (readonly) RCPackageType packageType;
+/**
+TODO
+*/
 @property (readonly) SKProduct *product;
 
 /**
- @return A String containing the localized price
+ A String containing the localized price
  */
 @property (readonly) NSString *localizedPriceString;
 
 /**
- @return A String containing the localized introductory price
+ A String containing the localized introductory price
  */
 @property (readonly) NSString *localizedIntroductoryPriceString;
 

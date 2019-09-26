@@ -16,9 +16,17 @@ NS_SWIFT_NAME(PurchasesErrors)
  * NSErrorDomain for errors occurring within the scope of the Purchases SDK
  */
 extern NSErrorDomain const RCPurchasesErrorDomain NS_SWIFT_NAME(PurchasesErrorDomain);
+/**
+TODO
+*/
 extern NSErrorDomain const RCBackendErrorDomain NS_SWIFT_NAME(RevenueCatBackendErrorDomain);
-
+/**
+TODO
+*/
 extern NSErrorUserInfoKey const RCFinishableKey NS_SWIFT_NAME(FinishableKey);
+/**
+TODO
+*/
 extern NSErrorUserInfoKey const RCReadableErrorCodeKey NS_SWIFT_NAME(ReadableErrorCodeKey);
 
 
