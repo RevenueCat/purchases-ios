@@ -13,17 +13,22 @@ NS_SWIFT_NAME(PurchasesErrors)
 @interface RCPurchasesErrors
 
 /**
- * NSErrorDomain for errors occurring within the scope of the Purchases SDK
+ `NSErrorDomain` for errors occurring within the scope of the Purchases SDK.
  */
 extern NSErrorDomain const RCPurchasesErrorDomain NS_SWIFT_NAME(PurchasesErrorDomain);
+
+/**
+ `NSErrorDomain` for errors occurring within the scope of the RevenueCat Backend.
+ */
 extern NSErrorDomain const RCBackendErrorDomain NS_SWIFT_NAME(RevenueCatBackendErrorDomain);
 
 extern NSErrorUserInfoKey const RCFinishableKey NS_SWIFT_NAME(FinishableKey);
+
 extern NSErrorUserInfoKey const RCReadableErrorCodeKey NS_SWIFT_NAME(ReadableErrorCodeKey);
 
 
 /**
- * Error codes used by the Purchases SDK
+ Error codes used by the Purchases SDK
  */
 typedef NS_ERROR_ENUM(RCPurchasesErrorDomain, RCPurchasesErrorCode) {
     RCUnknownError = 0,
@@ -48,7 +53,7 @@ typedef NS_ERROR_ENUM(RCPurchasesErrorDomain, RCPurchasesErrorCode) {
 } NS_SWIFT_NAME(PurchasesErrorCode);
 
 /**
- * Error codes sent by the RevenueCat backend. This only includes the errors that matter to the SDK
+ Error codes sent by the RevenueCat backend. This only includes the errors that matter to the SDK
  */
 typedef NS_ENUM(NSInteger, RCBackendErrorCode) {
     RCBackendInvalidPlatform = 7000,
