@@ -124,7 +124,7 @@ NS_SWIFT_NAME(Purchases)
 
  @return An instantiated `RCPurchases` object that has been set as a singleton.
  */
-+ (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID;
++ (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(nullable NSString *)appUserID;
 
 /**
  Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to sync status across a shared container, such as between a host app and an extension. The instance of the Purchases SDK will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
@@ -138,7 +138,7 @@ NS_SWIFT_NAME(Purchases)
  @return An instantiated `RCPurchases` object that has been set as a singleton.
  */
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
-                          appUserID:(NSString * _Nullable)appUserID
+                          appUserID:(nullable NSString *)appUserID
                        observerMode:(BOOL)observerMode;
 
 /**
@@ -155,9 +155,9 @@ NS_SWIFT_NAME(Purchases)
  @return An instantiated `RCPurchases` object that has been set as a singleton.
  */
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
-                          appUserID:(NSString * _Nullable)appUserID
+                          appUserID:(nullable NSString *)appUserID
                        observerMode:(BOOL)observerMode
-                       userDefaults:(NSUserDefaults * _Nullable)userDefaults;
+                       userDefaults:(nullable NSUserDefaults *)userDefaults;
 
 /**
  Indicates whether the user is allowed to make payments.
@@ -184,7 +184,7 @@ NS_SWIFT_NAME(Purchases)
 + (NSString *)frameworkVersion;
 
 /// Delegate for `RCPurchases` instance. The delegate is responsible for handling promotional product purchases and changes to purchaser information.
-@property (nonatomic, weak) id<RCPurchasesDelegate> _Nullable delegate;
+@property (nonatomic, weak, nullable) id<RCPurchasesDelegate> delegate;
 
 #pragma mark Identity
 
@@ -196,20 +196,20 @@ NS_SWIFT_NAME(Purchases)
  @param alias The new appUserID that should be linked to the currently identified appUserID
  @param completion An optional completion block called when the aliasing has been successful. This completion block will receive an error if there's been one.
  */
-- (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+- (void)createAlias:(NSString *)alias completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(createAlias(_:_:));
 
 /**
  This function will identify the current user with an appUserID. Typically this would be used after a logout to identify a new user without calling configure
  @param appUserID The appUserID that should be linked to the currently user
  */
-- (void)identify:(NSString *)appUserID completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+- (void)identify:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(identify(_:_:));
 
 /**
  * Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
  */
-- (void)resetWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+- (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(reset(_:));
 
 #pragma mark Attribution
@@ -232,7 +232,7 @@ NS_SWIFT_NAME(reset(_:));
  */
 + (void)addAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
-          forNetworkUserId:(NSString * _Nullable)networkUserId NS_SWIFT_NAME(addAttributionData(_:from:forNetworkUserId:));
+          forNetworkUserId:(nullable NSString *)networkUserId NS_SWIFT_NAME(addAttributionData(_:from:forNetworkUserId:));
 
 #pragma mark Purchases
 
@@ -302,7 +302,7 @@ NS_SWIFT_NAME(purchasePackage(_:_:));
 
  @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI.
  */
-- (void)restoreTransactionsWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+- (void)restoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(restoreTransactions(_:));
 
 /**
@@ -372,7 +372,7 @@ NS_SWIFT_NAME(makePurchaseSwift(_:_:)) RC_UNAVAILABLE("makePurchase: has been re
 NS_SWIFT_NAME(entitlements(_:)) RC_UNAVAILABLE("entitlements: has been replaced with offerings:. See https://docs.revenuecat.com/docs/offerings-migration");
 
 - (void)makePurchase:(SKProduct *)product
-        withDiscount:(SKPaymentDiscount * _Nullable)discount
+        withDiscount:(nullable SKPaymentDiscount *)discount
      completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4)) __attribute__((unavailable("makePurchase:withDiscount: has been replaced by purchaseProduct:withDiscount:")));;
 
 #undef RC_UNAVAILABLE

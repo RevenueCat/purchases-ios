@@ -10,15 +10,15 @@
 NS_ASSUME_NONNULL_BEGIN
 @interface RCPurchaserInfo (Protected)
 
-- (instancetype _Nullable)initWithData:(NSDictionary * _Nonnull)data;
+- (nullable instancetype)initWithData:(NSDictionary *)data;
 
 @property (nonatomic, readonly) NSDictionary<NSString *, NSDate *> *expirationDatesByProduct;
 @property (nonatomic, readonly) NSDictionary<NSString *, NSDate *> *purchaseDatesByProduct;
 @property (nonatomic, readonly) NSSet<NSString *> *nonConsumablePurchases;
-@property (nonatomic, readonly) NSString  * _Nullable originalApplicationVersion;
-@property (readonly) NSString * _Nullable schemaVersion;
+@property (nonatomic, readonly, nullable) NSString  *originalApplicationVersion;
+@property (readonly, nullable) NSString *schemaVersion;
 
-- (NSDictionary * _Nonnull)JSONObject;
+- (NSDictionary *)JSONObject;
 + (NSString *)currentSchemaVersion;
 
 @end

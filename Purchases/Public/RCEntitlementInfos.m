@@ -51,7 +51,7 @@
     return activeInfos.copy;
 }
 
-- (RCEntitlementInfo * _Nullable)objectForKeyedSubscript:(id)key
+- (nullable RCEntitlementInfo *)objectForKeyedSubscript:(id)key
 {
     return self.all[key];
 }

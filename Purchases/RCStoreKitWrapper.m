@@ -23,7 +23,7 @@
     return [self initWithPaymentQueue:SKPaymentQueue.defaultQueue];
 }
 
-- (instancetype)initWithPaymentQueue:(SKPaymentQueue *)paymentQueue
+- (nullable instancetype)initWithPaymentQueue:(SKPaymentQueue *)paymentQueue
 {
     if (self = [super init]) {
         self.paymentQueue = paymentQueue;

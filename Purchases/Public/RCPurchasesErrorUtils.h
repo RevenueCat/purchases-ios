@@ -38,7 +38,7 @@ NS_SWIFT_NAME(PurchasesErrorUtils)
  * @note This error is used when an network request returns an error. The backend error returned is wrapped in
  * this internal error code.
  */
-+ (NSError *)backendErrorWithBackendCode:(NSNumber * _Nullable)backendCode backendMessage:(NSString * _Nullable)backendMessage;
++ (NSError *)backendErrorWithBackendCode:(nullable NSNumber *)backendCode backendMessage:(nullable NSString *)backendMessage;
 
 
 /**
@@ -54,7 +54,7 @@ NS_SWIFT_NAME(PurchasesErrorUtils)
  * @note This error is used when an network request returns an error. The backend error returned is wrapped in
  * this internal error code.
  */
-+ (NSError *)backendErrorWithBackendCode:(NSNumber * _Nullable)backendCode backendMessage:(NSString * _Nullable)backendMessage finishable:(BOOL)finishable;
++ (NSError *)backendErrorWithBackendCode:(nullable NSNumber *)backendCode backendMessage:(nullable NSString *)backendMessage finishable:(BOOL)finishable;
 
 /**
  * Constructs an NSError with the [RCUnexpectedBackendResponseError] code.

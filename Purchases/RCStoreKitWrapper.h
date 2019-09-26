@@ -15,9 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCStoreKitWrapper : NSObject <SKPaymentTransactionObserver>
 
-- (instancetype _Nullable)initWithPaymentQueue:(SKPaymentQueue *)paymentQueue;
+- (nullable instancetype)initWithPaymentQueue:(SKPaymentQueue *)paymentQueue;
 
-@property (nonatomic, weak) id<RCStoreKitWrapperDelegate> _Nullable delegate;
+@property (nonatomic, weak, nullable) id<RCStoreKitWrapperDelegate> delegate;
 
 - (void)addPayment:(SKPayment *)payment;
 - (void)finishTransaction:(SKPaymentTransaction *)transaction;
