@@ -30,7 +30,7 @@
 
 @implementation RCAttributionFetcher : NSObject
 
-- (NSString * _Nullable)advertisingIdentifier
+- (nullable NSString *)advertisingIdentifier
 {
     if (@available(iOS 6.0, macOS 10.14, *)) {
         id<FakeASIdentifierManager> asIdentifierManagerClass = (id<FakeASIdentifierManager>)NSClassFromString(@"ASIdentifierManager");
@@ -44,7 +44,7 @@
 }
 
 
-- (NSString * _Nullable)identifierForVendor
+- (nullable NSString *)identifierForVendor
 {
 #if TARGET_OS_IPHONE
     if ([UIDevice class]) {

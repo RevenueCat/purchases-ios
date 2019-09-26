@@ -13,12 +13,12 @@
 @property (readwrite) RCPeriodType periodType;
 @property (readwrite) NSDate *latestPurchaseDate;
 @property (readwrite) NSDate *originalPurchaseDate;
-@property (readwrite) NSDate * _Nullable expirationDate;
+@property (readwrite, nullable) NSDate *expirationDate;
 @property (readwrite) RCStore store;
 @property (readwrite) NSString *productIdentifier;
 @property (readwrite) BOOL isSandbox;
-@property (readwrite) NSDate * _Nullable unsubscribeDetectedAt;
-@property (readwrite) NSDate * _Nullable billingIssueDetectedAt;
+@property (readwrite, nullable) NSDate *unsubscribeDetectedAt;
+@property (readwrite, nullable) NSDate *billingIssueDetectedAt;
 @property (readwrite) BOOL willRenew;
 
 @end
@@ -48,13 +48,13 @@
     return self;
 }
 
-- (BOOL)isDateActive:(NSDate * _Nullable)expirationDate forRequestDate:(NSDate *)requestDate
+- (BOOL)isDateActive:(nullable NSDate *)expirationDate forRequestDate:(NSDate *)requestDate
 {
     NSDate *referenceDate = requestDate ?: [NSDate date];
     return ((expirationDate == nil) || [expirationDate timeIntervalSinceDate:referenceDate] > 0);
 }
 
-- (NSDate * _Nullable)parseDate:(id)dateString withDateFormatter:(NSDateFormatter *)dateFormatter
+- (nullable NSDate *)parseDate:(id)dateString withDateFormatter:(NSDateFormatter *)dateFormatter
 {
     if ([dateString isKindOfClass:NSString.class]) {
         return [dateFormatter dateFromString:(NSString *)dateString];

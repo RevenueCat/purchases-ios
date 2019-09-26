@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef void(^RCHTTPClientResponseHandler)(NSInteger statusCode,
                                            NSDictionary * _Nullable response,
                                            NSError * _Nullable error);
@@ -15,12 +17,14 @@ typedef void(^RCHTTPClientResponseHandler)(NSInteger statusCode,
 @interface RCHTTPClient : NSObject
 
 
-+ (NSString * _Nonnull)serverHostName;
++ (NSString *)serverHostName;
 
-- (void)performRequest:(NSString * _Nonnull)HTTPMethod
-                  path:(NSString * _Nonnull)path
-                  body:(NSDictionary * _Nullable)requestBody
-               headers:(NSDictionary<NSString *, NSString *> * _Nullable)headers
-     completionHandler:(RCHTTPClientResponseHandler _Nullable)completionHandler;
+- (void)performRequest:(NSString *)HTTPMethod
+                  path:(NSString *)path
+                  body:(nullable NSDictionary *)requestBody
+               headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+     completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -14,7 +14,7 @@ NS_SWIFT_NAME(EntitlementInfos)
 @property (readonly) NSDictionary<NSString *, RCEntitlementInfo *> *all;
 @property (readonly) NSDictionary<NSString *, RCEntitlementInfo *> *active;
 
-- (RCEntitlementInfo * _Nullable)objectForKeyedSubscript:(id)key;
+- (nullable RCEntitlementInfo *)objectForKeyedSubscript:(id)key;
 
 @end
 

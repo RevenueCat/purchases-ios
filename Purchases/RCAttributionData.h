@@ -16,9 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readwrite, nonatomic) NSDictionary *data;
 @property (readwrite, nonatomic) RCAttributionNetwork network;
-@property (readwrite, nonatomic) NSString * _Nullable networkUserId;
+@property (readwrite, nonatomic, nullable) NSString * networkUserId;
 
-- (instancetype _Nullable)initWithData:(NSDictionary *)data fromNetwork:(RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId;
+- (nullable instancetype)initWithData:(NSDictionary *)data fromNetwork:(RCAttributionNetwork)network forNetworkUserId:(nullable NSString *)networkUserId;
 
 @end
 

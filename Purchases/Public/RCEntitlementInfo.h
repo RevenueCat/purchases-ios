@@ -78,7 +78,7 @@ NS_SWIFT_NAME(EntitlementInfo)
  The expiration date for the entitlement, can be `nil` for lifetime access.
  If the `periodType` is `trial`, this is the trial expiration date.
  */
-@property (readonly) NSDate * _Nullable expirationDate;
+@property (readonly, nullable) NSDate *expirationDate;
 
 /**
  The store where this entitlement was unlocked from
@@ -101,7 +101,7 @@ NS_SWIFT_NAME(EntitlementInfo)
  
  Note: Entitlement may still be active even if user has unsubscribed. Check the `isActive` property.
  */
-@property (readonly) NSDate * _Nullable unsubscribeDetectedAt;
+@property (readonly, nullable) NSDate *unsubscribeDetectedAt;
 
 /**
  The date a billing issue was detected. Can be `nil` if there is no
@@ -110,7 +110,7 @@ NS_SWIFT_NAME(EntitlementInfo)
  Note: Entitlement may still be active even if there is a billing issue.
  Check the `isActive` property.
  */
-@property (readonly) NSDate * _Nullable billingIssueDetectedAt;
+@property (readonly, nullable) NSDate *billingIssueDetectedAt;
 
 @end
 

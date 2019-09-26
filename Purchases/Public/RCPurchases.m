@@ -123,36 +123,36 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     return [self configureWithAPIKey:APIKey appUserID:nil];
 }
 
-+ (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
++ (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(nullable NSString *)appUserID
 {
     return [self configureWithAPIKey:APIKey appUserID:appUserID observerMode:false];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
-                          appUserID:(NSString * _Nullable)appUserID
+                          appUserID:(nullable NSString *)appUserID
                        observerMode:(BOOL)observerMode
 {
     return [self configureWithAPIKey:APIKey appUserID:appUserID observerMode:observerMode userDefaults:nil];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
-                          appUserID:(NSString *)appUserID
+                          appUserID:(nullable NSString *)appUserID
                        observerMode:(BOOL)observerMode
-                       userDefaults:(NSUserDefaults * _Nullable)userDefaults
+                       userDefaults:(nullable NSUserDefaults *)userDefaults
 {
     RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults observerMode:observerMode];
     [self setDefaultInstance:purchases];
     return purchases;
 }
 
-- (instancetype)initWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID
+- (instancetype)initWithAPIKey:(NSString *)APIKey appUserID:(nullable NSString *)appUserID
 {
     return [self initWithAPIKey:APIKey appUserID:appUserID userDefaults:nil observerMode:false];
 }
 
 - (instancetype)initWithAPIKey:(NSString *)APIKey
-                     appUserID:(NSString * _Nullable)appUserID
-                  userDefaults:(NSUserDefaults * _Nullable)userDefaults
+                     appUserID:(nullable NSString *)appUserID
+                  userDefaults:(nullable NSUserDefaults *)userDefaults
                   observerMode:(BOOL)observerMode
 {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
@@ -300,7 +300,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)postAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
-          forNetworkUserId:(NSString * _Nullable)networkUserId
+          forNetworkUserId:(nullable NSString *)networkUserId
 {
     if (data[@"rc_appsflyer_id"]) {
         RCErrorLog(@"⚠️ The parameter key rc_appsflyer_id is deprecated. Pass networkUserId to addAttribution instead. ⚠️");
@@ -348,11 +348,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 + (void)addAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
-          forNetworkUserId:(NSString * _Nullable)networkUserId
+          forNetworkUserId:(nullable NSString *)networkUserId
 {
     if (_sharedPurchases) {
         RCLog(@"There is an instance configured, posting attribution.");
-        [_sharedPurchases addAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
+        [_sharedPurchases postAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
     } else {
         RCLog(@"There is no instance configured, caching attribution.");
         if (postponedAttributionData == nil) {
@@ -364,7 +364,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 #pragma mark Identity
 
-- (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+- (void)createAlias:(NSString *)alias completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 {
     if ([alias isEqualToString:self.appUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];
@@ -381,7 +381,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)identify:(NSString *)appUserID completionBlock:(RCReceivePurchaserInfoBlock)completion
+- (void)identify:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 {
     if ([appUserID isEqualToString:self.appUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];
@@ -393,7 +393,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)resetWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
+- (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 {
     [self clearCaches];
     [self.userDefaults removeObjectForKey:[self attributionDataUserDefaultCacheKeyForAppUserID:self.appUserID]];
@@ -484,7 +484,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     [self purchaseProduct:package.product withPayment:payment withPresentedOfferingIdentifier:package.offeringIdentifier completion:completion];
 }
 
-- (void)purchaseProduct:(SKProduct *)product withPayment:(SKMutablePayment *)payment withPresentedOfferingIdentifier:(NSString * _Nullable)presentedOfferingIdentifier completion:(RCPurchaseCompletedBlock)completion
+- (void)purchaseProduct:(SKProduct *)product withPayment:(SKMutablePayment *)payment withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier completion:(RCPurchaseCompletedBlock)completion
 {
     if (!self.finishTransactions) {
         RCDebugLog(@"Observer mode is active (finishTransactions is set to false) and makePurchase has been called. Are you sure you want to do this?");
@@ -525,7 +525,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 
-- (void)restoreTransactionsWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
+- (void)restoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 {
     if (!self.allowSharingAppStoreAccount) {
         RCDebugLog(@"allowSharingAppStoreAccount is set to false and restoreTransactions has been called. Are you sure you want to do this?");
@@ -660,14 +660,14 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     [self updateCachesWithCompletionBlock:nil];
 }
 
-- (void)updateCachesWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+- (void)updateCachesWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 {
     self.cachesLastUpdated = [NSDate date];
     [self updatePurchaserInfoCache:completion];
     [self updateOfferingsCache:nil];
 }
 
-- (void)updatePurchaserInfoCache:(RCReceivePurchaserInfoBlock _Nullable)completion
+- (void)updatePurchaserInfoCache:(nullable RCReceivePurchaserInfoBlock)completion
 {
     NSString *appUserID = self.appUserID;
     [self.backend getSubscriberDataWithAppUserID:self.appUserID
@@ -708,7 +708,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)updateOfferingsCache:(RCReceiveOfferingsBlock _Nullable)completion
+- (void)updateOfferingsCache:(nullable RCReceiveOfferingsBlock)completion
 {
     [self.backend getOfferingsForAppUserID:self.appUserID
                                 completion:^(NSDictionary *data, NSError *error) {
@@ -780,8 +780,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)handleReceiptPostWithTransaction:(SKPaymentTransaction *)transaction
-                           purchaserInfo:(RCPurchaserInfo * _Nullable)info
-                                   error:(NSError * _Nullable)error
+                           purchaserInfo:(nullable RCPurchaserInfo *)info
+                                   error:(nullable NSError *)error
 {
     [self dispatch:^{
         RCPurchaseCompletedBlock completion = nil;

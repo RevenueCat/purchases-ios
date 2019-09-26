@@ -44,14 +44,14 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
 @implementation RCBackend
 
-- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
+- (nullable instancetype)initWithAPIKey:(NSString *)APIKey
 {
     RCHTTPClient *client = [[RCHTTPClient alloc] init];
     return [self initWithHTTPClient:client
                              APIKey:APIKey];
 }
 
-- (instancetype _Nullable)initWithHTTPClient:(RCHTTPClient *)client
+- (nullable instancetype)initWithHTTPClient:(RCHTTPClient *)client
                                       APIKey:(NSString *)APIKey
 {
     if (self = [super init]) {
@@ -72,8 +72,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 }
 
 - (void)handle:(NSInteger)statusCode
-  withResponse:(NSDictionary * _Nullable)response
-         error:(NSError * _Nullable)error
+  withResponse:(nullable NSDictionary *)response
+         error:(nullable NSError *)error
     completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     if (error != nil) {
@@ -101,8 +101,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 }
 
 - (void)handle:(NSInteger)statusCode
-  withResponse:(NSDictionary * _Nullable)response
-         error:(NSError * _Nullable)error
+  withResponse:(nullable NSDictionary *)response
+         error:(nullable NSError *)error
   errorHandler:(void (^)(NSError * _Nullable error))errorHandler
 {
 
@@ -156,18 +156,18 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     }
 }
 
-- (void)postReceiptData:(NSData *)data
-              appUserID:(NSString *)appUserID
-              isRestore:(BOOL)isRestore
-      productIdentifier:(NSString * _Nullable)productIdentifier
-                  price:(NSDecimalNumber * _Nullable)price
-            paymentMode:(RCPaymentMode)paymentMode
-      introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice
-           currencyCode:(NSString * _Nullable)currencyCode
-      subscriptionGroup:(NSString * _Nullable)subscriptionGroup
-              discounts:(NSArray<RCPromotionalOffer *> * _Nullable)discounts
-presentedOfferingIdentifier:(NSString * _Nullable)presentedOfferingIdentifier
-             completion:(RCBackendPurchaserInfoResponseHandler)completion
+- (void)    postReceiptData:(NSData *)data
+                  appUserID:(NSString *)appUserID
+                  isRestore:(BOOL)isRestore
+          productIdentifier:(nullable NSString *)productIdentifier
+                      price:(nullable NSDecimalNumber *)price
+                paymentMode:(RCPaymentMode)paymentMode
+          introductoryPrice:(nullable NSDecimalNumber *)introductoryPrice
+               currencyCode:(nullable NSString *)currencyCode
+          subscriptionGroup:(nullable NSString *)subscriptionGroup
+                  discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
+presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
+                 completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
     NSMutableDictionary *body = [NSMutableDictionary dictionaryWithDictionary:
@@ -366,7 +366,7 @@ presentedOfferingIdentifier:(NSString * _Nullable)presentedOfferingIdentifier
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
                forAppUserID:(NSString *)appUserID
-                 completion:(void (^ _Nullable)(NSError * _Nullable error))completion
+                 completion:(nullable void (^)(NSError * _Nullable error))completion
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attribution", escapedAppUserID];
@@ -385,7 +385,7 @@ presentedOfferingIdentifier:(NSString * _Nullable)presentedOfferingIdentifier
 
 - (void)createAliasForAppUserID:(NSString *)appUserID
                withNewAppUserID:(NSString *)newAppUserID
-                     completion:(void (^ _Nullable)(NSError * _Nullable error))completion
+                     completion:(nullable void (^)(NSError * _Nullable error))completion
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/alias", escapedAppUserID];

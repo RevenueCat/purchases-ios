@@ -41,23 +41,23 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
 
 @interface RCBackend : NSObject
 
-- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey;
+- (nullable instancetype)initWithAPIKey:(NSString *)APIKey;
 
-- (instancetype _Nullable)initWithHTTPClient:(RCHTTPClient *)client
-                                      APIKey:(NSString *)APIKey;
+- (nullable instancetype)initWithHTTPClient:(RCHTTPClient *)client
+                                     APIKey:(NSString *)APIKey;
 
-- (void)postReceiptData:(NSData *)data
-              appUserID:(NSString *)appUserID
-              isRestore:(BOOL)isRestore
-      productIdentifier:(NSString * _Nullable)productIdentifier
-                  price:(NSDecimalNumber * _Nullable)price
-            paymentMode:(RCPaymentMode)paymentMode
-      introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice
-           currencyCode:(NSString * _Nullable)currencyCode
-      subscriptionGroup:(NSString * _Nullable)subscriptionGroup
-              discounts:(NSArray<RCPromotionalOffer *> * _Nullable)discounts
-     presentedOfferingIdentifier:(NSString * _Nullable)offeringIdentifier
-             completion:(RCBackendPurchaserInfoResponseHandler)completion;
+- (void)    postReceiptData:(NSData *)data
+                  appUserID:(NSString *)appUserID
+                  isRestore:(BOOL)isRestore
+          productIdentifier:(nullable NSString *)productIdentifier
+                      price:(nullable NSDecimalNumber *)price
+                paymentMode:(RCPaymentMode)paymentMode
+          introductoryPrice:(nullable NSDecimalNumber *)introductoryPrice
+               currencyCode:(nullable NSString *)currencyCode
+          subscriptionGroup:(nullable NSString *)subscriptionGroup
+                  discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
+presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
+                 completion:(RCBackendPurchaserInfoResponseHandler)completion;
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
                             completion:(RCBackendPurchaserInfoResponseHandler)completion;
@@ -73,7 +73,7 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
                forAppUserID:(NSString *)appUserID
-                 completion:(void (^ _Nullable)(NSError * _Nullable error))completion;
+                 completion:(nullable void (^)(NSError * _Nullable error))completion;
 
 - (void)createAliasForAppUserID:(NSString *)appUserID
                withNewAppUserID:(NSString *)newAppUserID
