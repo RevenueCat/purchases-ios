@@ -2,8 +2,8 @@
 //  RCBackend.h
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

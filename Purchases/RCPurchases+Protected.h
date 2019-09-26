@@ -2,8 +2,8 @@
 //  RCPurchases+Protected.h
 //  Purchases
 //
-//  Created by Jacob Eiting on 10/2/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 

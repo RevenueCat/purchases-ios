@@ -2,8 +2,8 @@
 //  RCPackage.m
 //  Purchases
 //
-//  Created by Jacob Eiting on 7/22/19.
-//  Copyright © 2019 Purchases. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import "RCPackage+Protected.h"

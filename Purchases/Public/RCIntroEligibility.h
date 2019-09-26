@@ -2,8 +2,8 @@
 //  RCIntroEligibility.h
 //  Purchases
 //
-//  Created by Jacob Eiting on 2/11/18.
-//  Copyright © 2019 Purchases. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

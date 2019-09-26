@@ -2,8 +2,8 @@
 //  BackendTests.swift
 //  PurchasesTests
 //
-//  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 import Foundation
@@ -871,8 +871,8 @@ purchaserInfo = newPurchaserInfo
         discount.price = 12
 
         backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: productIdentifier, price: price, paymentMode: paymentMode, introductoryPrice: nil, currencyCode: currencyCode, subscriptionGroup: group, discounts: [discount], presentedOfferingIdentifier: nil, completion: { (purchaserInfo, error) in
-           completionCalled = true
-})
+            completionCalled = true
+        })
         
         let body: [String: Any] = [
             "app_user_id": userID,

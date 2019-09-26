@@ -2,8 +2,8 @@
 //  Purchases.h
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/27/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import <StoreKit/StoreKit.h>

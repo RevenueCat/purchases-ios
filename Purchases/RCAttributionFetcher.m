@@ -2,8 +2,8 @@
 //  RCAttributionFetcher.m
 //  Purchases
 //
-//  Created by César de la Vega  on 4/17/19.
-//  Copyright © 2019 Purchases. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import "RCAttributionFetcher.h"

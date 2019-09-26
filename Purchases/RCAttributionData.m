@@ -2,8 +2,8 @@
 //  RCAttributionData.m
 //  Purchases
 //
-//  Created by César de la Vega  on 4/23/19.
-//  Copyright © 2019 Purchases. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

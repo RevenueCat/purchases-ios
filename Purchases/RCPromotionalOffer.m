@@ -1,6 +1,9 @@
 //
-// Created by César de la Vega  on 2019-04-18.
-// Copyright (c) 2019 Purchases. All rights reserved.
+//  RCPromotionalOffer.m
+//  Purchases
+//
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import "RCPromotionalOffer.h"

@@ -2,8 +2,8 @@
 //  RCIntroEligibility+Protected.h
 //  Purchases
 //
-//  Created by César de la Vega  on 12/6/18.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import "RCIntroEligibility.h"
