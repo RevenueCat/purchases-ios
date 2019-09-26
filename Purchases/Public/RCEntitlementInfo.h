@@ -21,7 +21,7 @@ typedef NS_ENUM(NSInteger, RCStore) {
     RCStripe,
     /// For entitlements granted via a promo in RevenueCat.
     RCPromotional,
-    /// TODO
+    /// For entitlements granted via an unknown store.
     RCUnknownStore,
 } NS_SWIFT_NAME(Store);
 
@@ -38,7 +38,7 @@ typedef NS_ENUM(NSInteger, RCPeriodType) {
 } NS_SWIFT_NAME(PeriodType);
 
 /**
- TODO
+ The EntitlementInfo object gives you access to all of the information about the status of a users entitlements.
  */
 NS_SWIFT_NAME(EntitlementInfo)
 @interface RCEntitlementInfo : NSObject
