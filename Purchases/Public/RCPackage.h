@@ -11,58 +11,47 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class SKProduct;
+
 /**
-TODO
+ Enumeration of all possible Package types.
 */
 typedef NS_ENUM(NSInteger, RCPackageType) {
-    /**
-    TODO
-    */
+    /// A package that was defined with a custom identifier.
     RCPackageTypeCustom = -1,
-    /**
-    TODO
-    */
+    /// A package configured with the predefined lifetime identifier.
     RCPackageTypeLifetime,
-    /**
-    TODO
-    */
+    /// A package configured with the predefined annual identifier.
     RCPackageTypeAnnual,
-    /**
-    TODO
-    */
+    /// A package configured with the predefined six month identifier.
     RCPackageTypeSixMonth,
-    /**
-    TODO
-    */
+    /// A package configured with the predefined three month identifier.
     RCPackageTypeThreeMonth,
-    /**
-    TODO
-    */
+    /// A package configured with the predefined two month identifier.
     RCPackageTypeTwoMonth,
-    /**
-    TODO
-    */
+    /// A package configured with the predefined monthly identifier.
     RCPackageTypeMonthly,
-    /**
-    TODO
-    */
+    /// A package configured with the predefined weekly identifier.
     RCPackageTypeWeekly
 } NS_SWIFT_NAME(PackageType);
+
 /**
-TODO
+ Contains information about the product available for the user to purchase. For more info see https://docs.revenuecat.com/docs/entitlements
 */
 NS_SWIFT_NAME(Package)
 @interface RCPackage : NSObject
+
 /**
-TODO
+ Unique identifier for this package. Can be one a predefined package type or a custom one.
 */
 @property (readonly) NSString *identifier;
+
 /**
-TODO
+ Package type for the product. Will be one of `RCPackageType`.
 */
 @property (readonly) RCPackageType packageType;
+
 /**
-TODO
+ `SKProduct` assigned to this package. https://developer.apple.com/documentation/storekit/skproduct
 */
 @property (readonly) SKProduct *product;
 

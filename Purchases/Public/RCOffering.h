@@ -14,54 +14,66 @@ NS_ASSUME_NONNULL_BEGIN
 @class RCPackage, RCOffering;
 
 /**
- An offering is collection of different Packages that lets the user purchase access in different ways.
+ An offering is a collection of Packages (`RCPackage`) available for the user to purchase. For more info see https://docs.revenuecat.com/docs/entitlements
  */
 NS_SWIFT_NAME(Offering)
 @interface RCOffering : NSObject
+
 /**
-TODO
-*/
+ Unique identifier defined in RevenueCat dashboard.
+ */
 @property (readonly) NSString *identifier;
+
 /**
-TODO
-*/
+ Offering description defined in RevenueCat dashboard.
+ */
 @property (readonly) NSString *serverDescription;
+
 /**
-TODO
-*/
+ Array of `RCPackage` objects available for purchase.
+ */
 @property (readonly) NSArray<RCPackage *> *availablePackages;
+
 /**
-TODO
-*/
+ Lifetime package type configured in the RevenueCat dashboard, if available.
+ */
 @property (readonly, nullable) RCPackage *lifetime;
+
 /**
-TODO
-*/
+ Annual package type configured in the RevenueCat dashboard, if available.
+ */
 @property (readonly, nullable) RCPackage *annual;
+
 /**
-TODO
-*/
+ Six month package type configured in the RevenueCat dashboard, if available.
+ */
 @property (readonly, nullable) RCPackage *sixMonth;
+
 /**
-TODO
-*/
+ Three month package type configured in the RevenueCat dashboard, if available.
+ */
 @property (readonly, nullable) RCPackage *threeMonth;
+
 /**
-TODO
-*/
+ Two month package type configured in the RevenueCat dashboard, if available.
+ */
 @property (readonly, nullable) RCPackage *twoMonth;
+
 /**
-TODO
-*/
+ Monthly package type configured in the RevenueCat dashboard, if available.
+ */
 @property (readonly, nullable) RCPackage *monthly;
+
 /**
-TODO
-*/
+ Weekly package type configured in the RevenueCat dashboard, if available.
+ */
 @property (readonly, nullable) RCPackage *weekly;
+
 /**
-TODO
-*/
+ Retrieves a specific package by identifier, use this to access custom package types configured in the RevenueCat dashboard, e.g. `[offering packageWithIdentifier:@"custom_package_id"]` or `offering[@"custom_package_id"]`.
+ */
 - (nullable RCPackage *)packageWithIdentifier:(nullable NSString *)identifier NS_SWIFT_NAME(package(identifier:));
+
 /// :nodoc:
 - (nullable RCPackage *)objectForKeyedSubscript:(NSString *)key;
 

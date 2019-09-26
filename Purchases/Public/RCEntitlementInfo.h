@@ -38,7 +38,7 @@ typedef NS_ENUM(NSInteger, RCPeriodType) {
 } NS_SWIFT_NAME(PeriodType);
 
 /**
- The EntitlementInfo object gives you access to all of the information about the status of a users entitlements.
+ The EntitlementInfo object gives you access to all of the information about the status of a user entitlement.
  */
 NS_SWIFT_NAME(EntitlementInfo)
 @interface RCEntitlementInfo : NSObject

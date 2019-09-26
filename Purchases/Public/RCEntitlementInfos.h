@@ -11,19 +11,21 @@
 @class RCEntitlementInfo;
 
 NS_ASSUME_NONNULL_BEGIN
+
 /**
- TODO
+ This class contains all the entitlements associated to the user.
  */
 NS_SWIFT_NAME(EntitlementInfos)
 @interface RCEntitlementInfos : NSObject
 
 /**
- Dictionary of containing EntitlementInfo objects of all (active and inactive) entitlements by Entitlement identifier. This dictionary can also be accessed by using an index subscript on EntitlementInfos
-*/
+ Dictionary of all EntitlementInfo (`RCEntitlementInfo`) objects (active and inactive) keyed by entitlement identifier. This dictionary can also be accessed by using an index subscript on EntitlementInfos, e.g. `entitlementInfos[@"pro_entitlement_id"]`.
+ */
 @property (readonly) NSDictionary<NSString *, RCEntitlementInfo *> *all;
+
 /**
- Dictionary of containing EntitlementInfo objects of the active entitlements by Entitlement identifier.
-*/
+ Dictionary of active EntitlementInfo (`RCEntitlementInfo`) objects keyed by entitlement identifier.
+ */
 @property (readonly) NSDictionary<NSString *, RCEntitlementInfo *> *active;
 
 /// :nodoc:

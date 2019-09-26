@@ -245,8 +245,7 @@ NS_SWIFT_NAME(reset(_:));
 NS_SWIFT_NAME(purchaserInfo(_:));
 
 /**
- TODO
- Fetch the configured offerings for this users. Offerings allows you to configure your in-app products vis RevenueCat and greatly simplifies management. See the guide (https://docs.revenuecat.com/offerings) for more info.
+ Fetch the configured offerings for this users. Offerings allows you to configure your in-app products vis RevenueCat and greatly simplifies management. See the guide (https://docs.revenuecat.com/entitlements) for more info.
  
  Offerings will be fetched and cached on instantiation so that, by the time they are needed, your prices are loaded for your purchase flow. Time is money.
  
@@ -268,8 +267,7 @@ NS_SWIFT_NAME(purchaserInfo(_:));
 NS_SWIFT_NAME(products(_:_:));
 
 /**
- TODO
- Purchase the passed `SKProduct`.
+ Use this function if you are not using the Offerings system to purchase an `SKProduct`. If you are using the Offerings system, use `-[RCPurchases purchasePackage:withCompletionBlock]` instead.
  
  Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
  
@@ -278,12 +276,13 @@ NS_SWIFT_NAME(products(_:_:));
  @note You do not need to finish the transaction yourself in the completion callback, Purchases will handle this for you.
  
  @param product The `SKProduct` the user intends to purchase
+ 
+ @param completion A completion block that is called when the purchase completes. If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`. If the purchase was not successful, there will be an `NSError`. If the user cancelled, `userCancelled` will be `YES`.
  */
 - (void)purchaseProduct:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
 NS_SWIFT_NAME(purchaseProduct(_:_:));
 
 /**
- TODO
  Purchase the passed `RCPackage`.
 
  Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
@@ -293,6 +292,8 @@ NS_SWIFT_NAME(purchaseProduct(_:_:));
  @note You do not need to finish the transaction yourself in the completion callback, Purchases will handle this for you.
 
  @param package The `RCPackage` the user intends to purchase
+ 
+ @param completion A completion block that is called when the purchase completes. If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`. If the purchase was not successful, there will be an `NSError`. If the user cancelled, `userCancelled` will be `YES`.
  */
 - (void)purchasePackage:(RCPackage *)package withCompletionBlock:(RCPurchaseCompletedBlock)completion
 NS_SWIFT_NAME(purchasePackage(_:_:));
@@ -319,14 +320,22 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
                                  completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility;
 
-// TODO
+/**
+ Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
+ 
+ @param discount The `SKProductDiscount` to apply to the
+ 
+ @param product The `SKProduct` the user intends to purchase
+ 
+ @param completion A completion block that is called when the `SKPaymentDiscount` is returned. If it was not successful, there will be an `NSError`.
+*/
 - (void)paymentDiscountForProductDiscount:(SKProductDiscount *)discount
                                   product:(SKProduct *)product
                                completion:(RCPaymentDiscountBlock)completion API_AVAILABLE(ios(12.2), macosx(10.14.4));
 
 
 /**
- Purchase the passed `SKProduct`.
+ Use this function if you are not using the Offerings system to purchase an `SKProduct` with an applied `SKPaymentDiscount`. If you are using the Offerings system, use `-[RCPurchases purchasePackage:withDiscount:withCompletionBlock]` instead.
  
  Call this method when a user has decided to purchase a product with an applied discount. Only call this in direct response to user input.
  
@@ -337,6 +346,8 @@ NS_SWIFT_NAME(restoreTransactions(_:));
  @param product The `SKProduct` the user intends to purchase
  
  @param discount The `SKPaymentDiscount` to apply to the purchase
+ 
+ @param completion A completion block that is called when the purchase completes. If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`. If the purchase was not successful, there will be an `NSError`. If the user cancelled, `userCancelled` will be `YES`.
  */
 - (void)purchaseProduct:(SKProduct *)product
            withDiscount:(SKPaymentDiscount *)discount
@@ -354,6 +365,8 @@ NS_SWIFT_NAME(restoreTransactions(_:));
  @param package The `RCPackage` the user intends to purchase
 
  @param discount The `SKPaymentDiscount` to apply to the purchase
+ 
+ @param completion A completion block that is called when the purchase completes. If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`. If the purchase was not successful, there will be an `NSError`. If the user cancelled, `userCancelled` will be `YES`.
  */
 - (void)purchasePackage:(RCPackage *)package
            withDiscount:(SKPaymentDiscount *)discount
