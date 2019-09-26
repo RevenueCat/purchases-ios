@@ -323,9 +323,9 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 /**
  Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
  
- @param discount The `SKProductDiscount` to apply to the
+ @param discount The `SKProductDiscount` to apply to the product.
  
- @param product The `SKProduct` the user intends to purchase
+ @param product The `SKProduct` the user intends to purchase.
  
  @param completion A completion block that is called when the `SKPaymentDiscount` is returned. If it was not successful, there will be an `NSError`.
 */
