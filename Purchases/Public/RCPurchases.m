@@ -285,19 +285,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 #pragma mark Attribution
 
-- (void)addAttributionData:(NSDictionary *)data
-               fromNetwork:(RCAttributionNetwork)network
-{
-    [self addAttributionData:data fromNetwork:network forNetworkUserId:nil];
-}
-
-- (void)addAttributionData:(NSDictionary *)data
-               fromNetwork:(RCAttributionNetwork)network
-          forNetworkUserId:(NSString * _Nullable)networkUserId
-{
-    [self postAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
-}
-
 - (void)postAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
           forNetworkUserId:(NSString * _Nullable)networkUserId

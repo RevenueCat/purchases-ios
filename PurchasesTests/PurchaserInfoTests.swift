@@ -144,21 +144,10 @@ class BasicPurchaserInfoTests: XCTestCase {
         expect(info?.latestExpirationDate).toNot(beNil())
     }
 
-    func testActiveEntitlements() {
-        let entitlements = purchaserInfo!.activeEntitlements
-        expect(entitlements as NSSet).to(contain("pro"));
-        expect(entitlements as NSSet).toNot(contain("old_pro"));
-    }
-    
     func testActiveEntitlementInfos() {
         let entitlements = purchaserInfo!.entitlements.active
         expect(entitlements.keys).to(contain("pro"));
         expect(entitlements.keys).toNot(contain("old_pro"));
-    }
-
-    func testRandomEntitlement() {
-        let entitlements = purchaserInfo!.activeEntitlements
-        expect(entitlements as NSSet).toNot(contain("random"));
     }
     
     func testRandomEntitlementInfos() {
@@ -171,11 +160,6 @@ class BasicPurchaserInfoTests: XCTestCase {
         expect(proDate?.timeIntervalSince1970).to(equal(4123276836))
     }
 
-    func testLifetimeSubscriptions() {
-        let entitlements = purchaserInfo!.activeEntitlements
-        expect(entitlements as NSSet).to(contain("forever_pro"));
-    }
-    
     func testLifetimeSubscriptionsEntitlementInfos() {
         let entitlements = purchaserInfo!.entitlements.active
         expect(entitlements.keys).to(contain("forever_pro"));
@@ -192,49 +176,65 @@ class BasicPurchaserInfoTests: XCTestCase {
     func testIfRequestDateIsNilUsesCurrentTime() {
         let response = [
             "subscriber": [
-                "other_purchases": [
+                "original_app_user_id": "app_user_id",
+                "original_application_version": "2083",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "non_subscriptions": [
                     "onetime_purchase": [
-                        "purchase_date": "1990-08-30T02:40:36Z"
+                        [
+                            "original_purchase_date": "1990-08-30T02:40:36Z",
+                            "purchase_date": "1990-08-30T02:40:36Z"
+                        ]
                     ],
                     "pro.3": [
-                        "purchase_date": "1990-08-30T02:40:36Z"
+                        [
+                            "original_purchase_date": "1990-08-30T02:40:36Z",
+                            "purchase_date": "1990-08-30T02:40:36Z"
+                        ]
                     ]
                 ],
                 "subscriptions": [
                     "onemonth_freetrial": [
-                        "expires_date": "2100-08-30T02:40:36Z"
+                        "expires_date": "2100-08-30T02:40:36Z",
+                        "period_type": "normal"
                     ],
                     "threemonth_freetrial": [
-                        "expires_date": "1990-08-30T02:40:36Z"
+                        "expires_date": "1990-08-30T02:40:36Z",
+                        "period_type": "normal"
                     ],
                     "pro.1": [
-                        "expires_date" : "2100-08-30T02:40:36Z"
+                        "expires_date" : "2100-08-30T02:40:36Z",
+                        "period_type": "normal"
                     ],
                     "pro.2": [
-                        "expires_date" : "1990-08-30T02:40:36Z"
+                        "expires_date" : "1990-08-30T02:40:36Z",
+                        "period_type": "normal"
                     ]
                 ],
                 "entitlements": [
                     "pro" : [
                         "expires_date" : "2100-08-30T02:40:36Z",
-                        "product_identifier": "pro.1"
+                        "product_identifier": "pro.1",
+                        "purchase_date": "2018-10-26T23:17:53Z"
                     ],
                     "old_pro" : [
                         "expires_date" : "1990-08-30T02:40:36Z",
-                        "product_identifier": "pro.2"
+                        "product_identifier": "pro.2",
+                        "purchase_date": "1990-06-30T02:40:36Z"
                     ],
                     "forever_pro" : [
                         "expires_date" : nil,
-                        "product_identifier": "pro.3"
+                        "product_identifier": "pro.3",
+                        "purchase_date": "1990-08-30T02:40:36Z"
                     ],
                 ]
             ]
-            ] as [String : Any]
+        ] as [String : Any]
         let purchaserInfoWithoutRequestData = PurchaserInfo(data: response)
 
-        let entitlements = purchaserInfoWithoutRequestData!.activeEntitlements
-        expect(entitlements as NSSet).to(contain("pro"));
-        expect(entitlements as NSSet).toNot(contain("old_pro"));
+        let entitlements: [String : EntitlementInfo] = purchaserInfoWithoutRequestData!.entitlements.active
+        expect(entitlements["pro"]).toNot(beNil());
+        expect(entitlements["old_pro"]).to(beNil());
     }
 
     func testPurchaseDate() {
