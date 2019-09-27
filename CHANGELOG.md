@@ -1,3 +1,10 @@
+## 3.0.0
+
+- Support for new Offerings system, currently invite only. Email support@revenuecat.com if interested in access.
+- Deprecates `makePurchase` methods. Replaces with `purchasePackage`
+- Deprecates `entitlements` method. Replaces with `offerings`
+- See our migration guide for more info: https://docs.revenuecat.com/v3.0/docs/offerings-migration
+
 ## 2.6.0
 - Deprecates `activeEntitlements` in `RCPurchaserInfo` and adds `entitlements` object to `RCPurchaserInfo`. For more info look into https://docs.revenuecat.com/docs/purchaserinfo
 
