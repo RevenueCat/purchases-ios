@@ -32,7 +32,11 @@
 {
     NSInteger index = [PACKAGE_TYPE_STRINGS indexOfObject:string];
     if (NSNotFound == index) {
-        return RCPackageTypeCustom;
+        if ([string hasPrefix:@"$rc_"]) {
+            return RCPackageTypeUnknown;
+        } else {
+            return RCPackageTypeCustom;
+        }
     }
     return (RCPackageType)(index);
 }

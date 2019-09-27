@@ -17,7 +17,9 @@ NS_ASSUME_NONNULL_BEGIN
 */
 typedef NS_ENUM(NSInteger, RCPackageType) {
     /// A package that was defined with a custom identifier.
-    RCPackageTypeCustom = -1,
+    RCPackageTypeUnknown = -2,
+    /// A package that was defined with a custom identifier.
+    RCPackageTypeCustom,
     /// A package configured with the predefined lifetime identifier.
     RCPackageTypeLifetime,
     /// A package configured with the predefined annual identifier.

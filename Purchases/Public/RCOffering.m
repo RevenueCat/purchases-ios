@@ -35,6 +35,7 @@
         self.availablePackages = availablePackages;
         for (RCPackage *package in availablePackages) {
             switch (package.packageType) {
+                case RCPackageTypeUnknown:
                 case RCPackageTypeCustom:
                     break;
                 case RCPackageTypeLifetime:

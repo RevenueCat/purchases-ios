@@ -198,6 +198,10 @@ class OfferingsTests: XCTestCase {
         testPackageType(packageType: PackageType.custom)
     }
     
+    func testUnknownPackageType() {
+        testPackageType(packageType: PackageType.unknown)
+    }
+    
     func testNoOfferings() {
         let data = [
             "offerings": [],
@@ -230,7 +234,11 @@ class OfferingsTests: XCTestCase {
     private func testPackageType(packageType: PackageType) {
         var identifier = Package.string(from: packageType)
         if (identifier == nil) {
-            identifier = "custom"
+            if (packageType == PackageType.unknown) {
+                identifier = "$rc_unknown_id_from_the_future"
+            } else {
+                identifier = "custom"
+            }
         }
         let productIdentifier = "com.myproduct"
         let products = [
