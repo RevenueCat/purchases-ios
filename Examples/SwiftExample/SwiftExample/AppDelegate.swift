@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
         Purchases.debugLogsEnabled = true
-        Purchases.configure(withAPIKey: "my_api_key", appUserID: nil)
+        Purchases.configure(withAPIKey: <your_public_sdk_key_here>)
         
         return true
     }

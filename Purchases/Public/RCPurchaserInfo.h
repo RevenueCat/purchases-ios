@@ -2,8 +2,8 @@
 //  RCPurchaserInfo.h
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -21,9 +21,6 @@ NS_SWIFT_NAME(PurchaserInfo)
 /// Entitlements attached to this purchaser info
 @property (readonly) RCEntitlementInfos *entitlements;
 
-/// All active *entitlements*.
-@property (readonly) NSSet<NSString *> *activeEntitlements DEPRECATED_MSG_ATTRIBUTE("Use PurchaserInfo.entitlements.active instead.");
-
 /// All *subscription* product identifiers with expiration dates in the future.
 @property (readonly) NSSet<NSString *> *activeSubscriptions;
 
@@ -31,7 +28,7 @@ NS_SWIFT_NAME(PurchaserInfo)
 @property (readonly) NSSet<NSString *> *allPurchasedProductIdentifiers;
 
 /// Returns the latest expiration date of all products, nil if there are none
-@property (readonly) NSDate * _Nullable latestExpirationDate;
+@property (readonly, nullable) NSDate *latestExpirationDate;
 
 /// Returns all the non-consumable purchases a user has made.
 @property (readonly) NSSet<NSString *> *nonConsumablePurchases;
@@ -42,13 +39,13 @@ NS_SWIFT_NAME(PurchaserInfo)
  
  @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
  */
-@property (readonly) NSString * _Nullable originalApplicationVersion;
+@property (readonly, nullable) NSString *originalApplicationVersion;
 
 /**
  Returns the fetch date of this Purchaser info.
  @note Can be nil if was cached before we added this
  */
-@property (readonly) NSDate * _Nullable requestDate;
+@property (readonly, nullable) NSDate *requestDate;
 
 /// The date this user was first seen in RevenueCat.
 @property (readonly) NSDate *firstSeen;
@@ -63,7 +60,7 @@ NS_SWIFT_NAME(PurchaserInfo)
  
  @return The expiration date for `productIdentifier`, `nil` if product never purchased
  */
-- (NSDate * _Nullable)expirationDateForProductIdentifier:(NSString *)productIdentifier;
+- (nullable NSDate *)expirationDateForProductIdentifier:(NSString *)productIdentifier;
 
 /**
  Get the latest purchase or renewal date for a given product identifier. You should use Entitlements though!
@@ -72,7 +69,7 @@ NS_SWIFT_NAME(PurchaserInfo)
  
  @return The purchase date for `productIdentifier`, `nil` if product never purchased
  */
-- (NSDate * _Nullable)purchaseDateForProductIdentifier:(NSString *)productIdentifier;
+- (nullable NSDate *)purchaseDateForProductIdentifier:(NSString *)productIdentifier;
 
 /** Get the expiration date for a given entitlement.
  
@@ -80,7 +77,7 @@ NS_SWIFT_NAME(PurchaserInfo)
  
  @return The expiration date for the passed in `entitlement`, can be `nil`
  */
-- (NSDate * _Nullable)expirationDateForEntitlement:(NSString *)entitlementId;
+- (nullable NSDate *)expirationDateForEntitlement:(NSString *)entitlementId;
 
 /**
  Get the latest purchase or renewal date for a given entitlement identifier.
@@ -89,7 +86,7 @@ NS_SWIFT_NAME(PurchaserInfo)
  
  @return The purchase date for `entitlementId`, `nil` if product never purchased
  */
-- (NSDate * _Nullable)purchaseDateForEntitlement:(NSString *)entitlementId;
+- (nullable NSDate *)purchaseDateForEntitlement:(NSString *)entitlementId;
 
 @end
 

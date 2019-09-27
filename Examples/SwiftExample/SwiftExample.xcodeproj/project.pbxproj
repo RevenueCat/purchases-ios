@@ -12,8 +12,8 @@
 		3493336621E6935F007AAAB9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3493336421E6935F007AAAB9 /* Main.storyboard */; };
 		3493336821E69360007AAAB9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3493336721E69360007AAAB9 /* Assets.xcassets */; };
 		3493336B21E69360007AAAB9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3493336921E69360007AAAB9 /* LaunchScreen.storyboard */; };
-		3493337321E694C9007AAAB9 /* UpsellViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493337221E694C9007AAAB9 /* UpsellViewController.swift */; };
 		3493337521E694D6007AAAB9 /* CatsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493337421E694D6007AAAB9 /* CatsViewController.swift */; };
+		34D05817233C1A3700343134 /* SwiftPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D05816233C1A3700343134 /* SwiftPaywall.swift */; };
 		612312EC8EFEAE0D4472F1D9 /* libPods-SwiftExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D95AC7213243D08744E89F6 /* libPods-SwiftExample.a */; };
 /* End PBXBuildFile section */
 
@@ -26,8 +26,8 @@
 		3493336721E69360007AAAB9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3493336A21E69360007AAAB9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3493336C21E69360007AAAB9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		3493337221E694C9007AAAB9 /* UpsellViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpsellViewController.swift; sourceTree = "<group>"; };
 		3493337421E694D6007AAAB9 /* CatsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatsViewController.swift; sourceTree = "<group>"; };
+		34D05816233C1A3700343134 /* SwiftPaywall.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftPaywall.swift; sourceTree = "<group>"; };
 		4D95AC7213243D08744E89F6 /* libPods-SwiftExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SwiftExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F47D44DA0C1FBE5A9FCA7E55 /* Pods-SwiftExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwiftExample.debug.xcconfig"; path = "Target Support Files/Pods-SwiftExample/Pods-SwiftExample.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -67,7 +67,7 @@
 			children = (
 				3493336021E6935F007AAAB9 /* AppDelegate.swift */,
 				3493336221E6935F007AAAB9 /* InitialViewController.swift */,
-				3493337221E694C9007AAAB9 /* UpsellViewController.swift */,
+				34D05816233C1A3700343134 /* SwiftPaywall.swift */,
 				3493337421E694D6007AAAB9 /* CatsViewController.swift */,
 				3493336421E6935F007AAAB9 /* Main.storyboard */,
 				3493336721E69360007AAAB9 /* Assets.xcassets */,
@@ -193,7 +193,7 @@
 			files = (
 				3493336321E6935F007AAAB9 /* InitialViewController.swift in Sources */,
 				3493337521E694D6007AAAB9 /* CatsViewController.swift in Sources */,
-				3493337321E694C9007AAAB9 /* UpsellViewController.swift in Sources */,
+				34D05817233C1A3700343134 /* SwiftPaywall.swift in Sources */,
 				3493336121E6935F007AAAB9 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

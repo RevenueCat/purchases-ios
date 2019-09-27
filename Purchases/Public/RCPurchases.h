@@ -2,15 +2,16 @@
 //  RCPurchases.h
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/29/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 
-#import "RCEntitlement.h"
+#import "RCOffering.h"
+#import "RCOfferings.h"
 
-@class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility, RCEntitlement;
+@class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility;
 @protocol RCPurchasesDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -21,38 +22,38 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceivePurchaserInfoBlock);
 
 /**
- Completion block for `checkTrialOrIntroductoryPriceEligibility:completionBlock:`
+ Completion block for `-[RCPurchases checkTrialOrIntroductoryPriceEligibility:completionBlock:]`
  */
 typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *) NS_SWIFT_NAME(Purchases.ReceiveIntroEligibilityBlock);
 
 /**
- Completion block for `entitlementsWithCompletionBlock:`
+ Completion block for `-[RCPurchases offeringsWithCompletionBlock:]`
  */
-typedef void (^RCReceiveEntitlementsBlock)(RCEntitlements * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceiveEntitlementsBlock);
+typedef void (^RCReceiveOfferingsBlock)(RCOfferings * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceiveOfferingsBlock);
 
 /**
- Completion block for `productsWithIdentifiers:completionBlock:`
+ Completion block for `-[RCPurchases productsWithIdentifiers:completionBlock:]`
  */
 typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *) NS_SWIFT_NAME(Purchases.ReceiveProductsBlock);
 
 /**
- Completion block for `makePurchase:withCompletionBlock:`
+ Completion block for `-[RCPurchases purchaseProduct:withCompletionBlock:]`
  */
 typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable, BOOL userCancelled) NS_SWIFT_NAME(Purchases.PurchaseCompletedBlock);
 
 /**
- Deferred block for `shouldPurchasePromoProduct:defermentBlock`
+ Deferred block for `purchases:shouldPurchasePromoProduct:defermentBlock:`
  */
 typedef void (^RCDeferredPromotionalPurchaseBlock)(RCPurchaseCompletedBlock);
 
+/**
+Deferred block for `-[RCPurchases paymentDiscountForProductDiscount:product:completion:]`
+*/
+API_AVAILABLE(ios(12.2), macos(10.14.4))
+typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PaymentDiscountBlock);
 
 /**
- @typedef RCAttributionNetwork
- @brief Enum of supported attribution networks
- @constant RCAttributionNetworkAppleSearchAds Apple's search ads
- @constant RCAttributionNetworkAppsFlyer AppsFlyer https://www.appsflyer.com/
- @constant RCAttributionNetworkAdjust Adjust https://www.adjust.com/
- @constant RCAttributionNetworkTenjin Tenjin https://www.tenjin.io/
+ Enum of supported attribution networks
  */
 typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
     /**
@@ -92,11 +93,6 @@ NS_SWIFT_NAME(Purchases)
 /**
  Enable automatic collection of Apple Search Ads attribution. Disabled by default
  */
-@property (class, nonatomic, assign) BOOL automaticAttributionCollection DEPRECATED_MSG_ATTRIBUTE("Use automaticAppleSearchAdsAttributionCollection instead.");
-
-/**
- Enable automatic collection of Apple Search Ads attribution. Disabled by default
- */
 @property (class, nonatomic, assign) BOOL automaticAppleSearchAdsAttributionCollection;
 
 /**
@@ -128,7 +124,7 @@ NS_SWIFT_NAME(Purchases)
 
  @return An instantiated `RCPurchases` object that has been set as a singleton.
  */
-+ (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(NSString * _Nullable)appUserID;
++ (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(nullable NSString *)appUserID;
 
 /**
  Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to sync status across a shared container, such as between a host app and an extension. The instance of the Purchases SDK will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
@@ -142,7 +138,7 @@ NS_SWIFT_NAME(Purchases)
  @return An instantiated `RCPurchases` object that has been set as a singleton.
  */
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
-                          appUserID:(NSString * _Nullable)appUserID
+                          appUserID:(nullable NSString *)appUserID
                        observerMode:(BOOL)observerMode;
 
 /**
@@ -159,9 +155,9 @@ NS_SWIFT_NAME(Purchases)
  @return An instantiated `RCPurchases` object that has been set as a singleton.
  */
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
-                          appUserID:(NSString * _Nullable)appUserID
+                          appUserID:(nullable NSString *)appUserID
                        observerMode:(BOOL)observerMode
-                       userDefaults:(NSUserDefaults * _Nullable)userDefaults;
+                       userDefaults:(nullable NSUserDefaults *)userDefaults;
 
 /**
  Indicates whether the user is allowed to make payments.
@@ -188,7 +184,7 @@ NS_SWIFT_NAME(Purchases)
 + (NSString *)frameworkVersion;
 
 /// Delegate for `RCPurchases` instance. The delegate is responsible for handling promotional product purchases and changes to purchaser information.
-@property (nonatomic, weak) id<RCPurchasesDelegate> _Nullable delegate;
+@property (nonatomic, weak, nullable) id<RCPurchasesDelegate> delegate;
 
 #pragma mark Identity
 
@@ -200,32 +196,23 @@ NS_SWIFT_NAME(Purchases)
  @param alias The new appUserID that should be linked to the currently identified appUserID
  @param completion An optional completion block called when the aliasing has been successful. This completion block will receive an error if there's been one.
  */
-- (void)createAlias:(NSString *)alias completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+- (void)createAlias:(NSString *)alias completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(createAlias(_:_:));
 
 /**
  This function will identify the current user with an appUserID. Typically this would be used after a logout to identify a new user without calling configure
  @param appUserID The appUserID that should be linked to the currently user
  */
-- (void)identify:(NSString *)appUserID completionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+- (void)identify:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(identify(_:_:));
 
 /**
  * Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
  */
-- (void)resetWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+- (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(reset(_:));
 
 #pragma mark Attribution
-
-/**
- Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
-
- @param data Dictionary provided by the network. See https://docs.revenuecat.com/docs/attribution
- @param network Enum for the network the data is coming from, see `RCAttributionNetwork` for supported networks
- */
-- (void)addAttributionData:(NSDictionary *)data
-               fromNetwork:(RCAttributionNetwork)network DEPRECATED_MSG_ATTRIBUTE("Use addAttribution method on Purchases class instead.");
 
 /**
  Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
@@ -245,7 +232,7 @@ NS_SWIFT_NAME(reset(_:));
  */
 + (void)addAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
-          forNetworkUserId:(NSString * _Nullable)networkUserId NS_SWIFT_NAME(addAttributionData(_:from:forNetworkUserId:));
+          forNetworkUserId:(nullable NSString *)networkUserId NS_SWIFT_NAME(addAttributionData(_:from:forNetworkUserId:));
 
 #pragma mark Purchases
 
@@ -258,20 +245,17 @@ NS_SWIFT_NAME(reset(_:));
 NS_SWIFT_NAME(purchaserInfo(_:));
 
 /**
- Fetch the configured entitlements for this user. Entitlements allows you to configure your in-app products via RevenueCat
- and greatly simplifies management. See the guide (https://docs.revenuecat.com/docs/entitlements) for more info.
-
- Entitlements will be fetched and cached on instantiation so that, by the time they are needed, your prices are
- loaded for your purchase flow. Time is money.
-
- @param completion A completion block called when entitlements is available. Called immediately if entitlements are cached. Entitlements can be nil if an error occurred.
+ Fetch the configured offerings for this users. Offerings allows you to configure your in-app products vis RevenueCat and greatly simplifies management. See the guide (https://docs.revenuecat.com/entitlements) for more info.
+ 
+ Offerings will be fetched and cached on instantiation so that, by the time they are needed, your prices are loaded for your purchase flow. Time is money.
+ 
+ @param completion A completion block called when offerings are available. Called immediately if offerings are cached. Offerings will be nil if an error occurred.
  */
-- (void)entitlementsWithCompletionBlock:(RCReceiveEntitlementsBlock)completion
-NS_SWIFT_NAME(entitlements(_:));
+- (void)offeringsWithCompletionBlock:(RCReceiveOfferingsBlock)completion NS_SWIFT_NAME(offerings(_:));
 
 /**
- Fetches the `SKProducts` for your IAPs for given `productIdentifiers`. Use this method if you aren't using `-entitlements:`.
- You should use entitlements though.
+ Fetches the `SKProducts` for your IAPs for given `productIdentifiers`. Use this method if you aren't using `-offeringsWithCompletionBlock:`.
+ You should use offerings though.
 
  @note `completion` may be called without `SKProduct`s that you are expecting. This is usually caused by iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect. Also ensure that you have an active developer program subscription and you have signed the latest paid application agreements. If you're having trouble see: https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard
 
@@ -283,7 +267,7 @@ NS_SWIFT_NAME(entitlements(_:));
 NS_SWIFT_NAME(products(_:_:));
 
 /**
- Purchase the passed `SKProduct`.
+ Use this function if you are not using the Offerings system to purchase an `SKProduct`. If you are using the Offerings system, use `-[RCPurchases purchasePackage:withCompletionBlock]` instead.
  
  Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
  
@@ -292,9 +276,27 @@ NS_SWIFT_NAME(products(_:_:));
  @note You do not need to finish the transaction yourself in the completion callback, Purchases will handle this for you.
  
  @param product The `SKProduct` the user intends to purchase
+ 
+ @param completion A completion block that is called when the purchase completes. If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`. If the purchase was not successful, there will be an `NSError`. If the user cancelled, `userCancelled` will be `YES`.
  */
-- (void)makePurchase:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
-NS_SWIFT_NAME(makePurchase(_:_:));
+- (void)purchaseProduct:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)completion
+NS_SWIFT_NAME(purchaseProduct(_:_:));
+
+/**
+ Purchase the passed `RCPackage`.
+
+ Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+
+ From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+
+ @note You do not need to finish the transaction yourself in the completion callback, Purchases will handle this for you.
+
+ @param package The `RCPackage` the user intends to purchase
+ 
+ @param completion A completion block that is called when the purchase completes. If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`. If the purchase was not successful, there will be an `NSError`. If the user cancelled, `userCancelled` will be `YES`.
+ */
+- (void)purchasePackage:(RCPackage *)package withCompletionBlock:(RCPurchaseCompletedBlock)completion
+NS_SWIFT_NAME(purchasePackage(_:_:));
 
 /**
  This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user. Going forward, either `appUserID` will be able to reference the same user.
@@ -304,7 +306,7 @@ NS_SWIFT_NAME(makePurchase(_:_:));
 
  @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI.
  */
-- (void)restoreTransactionsWithCompletionBlock:(RCReceivePurchaserInfoBlock _Nullable)completion
+- (void)restoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(restoreTransactions(_:));
 
 /**
@@ -318,18 +320,22 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
                                  completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility;
 
-
-
-API_AVAILABLE(ios(12.2), macos(10.14.4))
-typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PaymentDiscountBlock);
-
+/**
+ Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
+ 
+ @param discount The `SKProductDiscount` to apply to the product.
+ 
+ @param product The `SKProduct` the user intends to purchase.
+ 
+ @param completion A completion block that is called when the `SKPaymentDiscount` is returned. If it was not successful, there will be an `NSError`.
+*/
 - (void)paymentDiscountForProductDiscount:(SKProductDiscount *)discount
                                   product:(SKProduct *)product
                                completion:(RCPaymentDiscountBlock)completion API_AVAILABLE(ios(12.2), macosx(10.14.4));
 
 
 /**
- Purchase the passed `SKProduct`.
+ Use this function if you are not using the Offerings system to purchase an `SKProduct` with an applied `SKPaymentDiscount`. If you are using the Offerings system, use `-[RCPurchases purchasePackage:withDiscount:withCompletionBlock]` instead.
  
  Call this method when a user has decided to purchase a product with an applied discount. Only call this in direct response to user input.
  
@@ -339,12 +345,50 @@ typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * 
  
  @param product The `SKProduct` the user intends to purchase
  
- @param discount The `SKPatmentDiscount` to apply to the purchase
+ @param discount The `SKPaymentDiscount` to apply to the purchase
+ 
+ @param completion A completion block that is called when the purchase completes. If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`. If the purchase was not successful, there will be an `NSError`. If the user cancelled, `userCancelled` will be `YES`.
  */
+- (void)purchaseProduct:(SKProduct *)product
+           withDiscount:(SKPaymentDiscount *)discount
+        completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(purchaseProduct(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
+
+/**
+ Purchase the passed `RCPackage`.
+
+ Call this method when a user has decided to purchase a product with an applied discount. Only call this in direct response to user input.
+
+ From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+
+ @note You do not need to finish the transaction yourself in the completion callback, Purchases will handle this for you.
+
+ @param package The `RCPackage` the user intends to purchase
+
+ @param discount The `SKPaymentDiscount` to apply to the purchase
+ 
+ @param completion A completion block that is called when the purchase completes. If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`. If the purchase was not successful, there will be an `NSError`. If the user cancelled, `userCancelled` will be `YES`.
+ */
+- (void)purchasePackage:(RCPackage *)package
+           withDiscount:(SKPaymentDiscount *)discount
+        completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(purchasePackage(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
+
+#pragma mark Unavailable Methods
+#define RC_UNAVAILABLE(msg) __attribute__((unavailable(msg)));
+/// :nodoc:
+typedef void (^RCReceiveEntitlementsBlock)(id _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceiveEntitlementsBlock);
+/// :nodoc:
+- (void)makePurchase:(SKProduct *)product withCompletionBlock:(RCPurchaseCompletedBlock)block
+NS_SWIFT_NAME(makePurchaseSwift(_:_:)) RC_UNAVAILABLE("makePurchase: has been replaced by purchaseProduct:");
+/// :nodoc:
+- (void)entitlementsWithCompletionBlock:(RCReceiveEntitlementsBlock)completion
+NS_SWIFT_NAME(entitlements(_:)) RC_UNAVAILABLE("entitlements: has been replaced with offerings:. See https://docs.revenuecat.com/docs/offerings-migration");
+/// :nodoc:
 - (void)makePurchase:(SKProduct *)product
-        withDiscount:(SKPaymentDiscount * _Nullable)discount
-     completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
-    
+        withDiscount:(nullable SKPaymentDiscount *)discount
+     completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4)) __attribute__((unavailable("makePurchase:withDiscount: has been replaced by purchaseProduct:withDiscount:")));;
+
+#undef RC_UNAVAILABLE
+
 @end
 
 /**

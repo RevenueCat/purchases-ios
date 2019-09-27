@@ -1,5 +1,9 @@
 //
-// Created by César de la Vega  on 2019-07-24.
+//  RCEntitlementInfos.m
+//  Purchases
+//
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import "RCEntitlementInfos.h"
@@ -47,7 +51,7 @@
     return activeInfos.copy;
 }
 
-- (RCEntitlementInfo * _Nullable)objectForKeyedSubscript:(id)key
+- (nullable RCEntitlementInfo *)objectForKeyedSubscript:(id)key
 {
     return self.all[key];
 }

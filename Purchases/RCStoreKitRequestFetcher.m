@@ -2,8 +2,8 @@
 //  RCProductFetcher.m
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/29/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import "RCStoreKitRequestFetcher.h"
@@ -13,12 +13,12 @@
 #import "RCUtils.h"
 
 @implementation RCProductsRequestFactory : NSObject
-- (SKProductsRequest *)requestForProductIdentifiers:(NSSet<NSString *> * _Nonnull)identifiers
+- (SKProductsRequest *)requestForProductIdentifiers:(NSSet<NSString *> *)identifiers
 {
     return [[SKProductsRequest alloc] initWithProductIdentifiers:identifiers];
 }
 
-- (SKReceiptRefreshRequest * _Nonnull)receiptRefreshRequest
+- (SKReceiptRefreshRequest *)receiptRefreshRequest
 {
     return [[SKReceiptRefreshRequest alloc] init];
 }
@@ -38,11 +38,11 @@
 
 @implementation RCStoreKitRequestFetcher
 
-- (instancetype _Nullable)init {
+- (nullable instancetype)init {
     return [self initWithRequestFactory:[RCProductsRequestFactory new]];
 }
 
-- (instancetype _Nullable)initWithRequestFactory:(RCProductsRequestFactory * _Nonnull)requestFactory;
+- (nullable instancetype)initWithRequestFactory:(RCProductsRequestFactory *)requestFactory;
 {
     if (self = [super init]) {
         self.requestFactory = requestFactory;
@@ -55,7 +55,7 @@
     return self;
 }
 
-- (void)fetchProducts:(NSSet<NSString *> * _Nonnull)identifiers
+- (void)fetchProducts:(NSSet<NSString *> *)identifiers
            completion:(RCFetchProductsCompletionHandler)completion;
 {
     

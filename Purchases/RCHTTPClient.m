@@ -2,8 +2,8 @@
 //  RCHTTPClient.m
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/28/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import "RCHTTPClient.h"
@@ -55,11 +55,11 @@ void RCOverrideServerHost(NSString *hostname)
     }
 }
 
-- (void)performRequest:(NSString * _Nonnull)HTTPMethod
-                  path:(NSString * _Nonnull)path
-                  body:(NSDictionary * _Nullable)requestBody
-               headers:(NSDictionary<NSString *, NSString *> * _Nullable)headers
-     completionHandler:(RCHTTPClientResponseHandler _Nullable)completionHandler
+- (void)performRequest:(NSString *)HTTPMethod
+                  path:(NSString *)path
+                  body:(nullable NSDictionary *)requestBody
+               headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+     completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler
 {
     NSParameterAssert(!([HTTPMethod isEqualToString:@"GET"] && requestBody));
     NSParameterAssert(([HTTPMethod isEqualToString:@"GET"] || [HTTPMethod isEqualToString:@"POST"]));

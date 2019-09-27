@@ -2,8 +2,8 @@
 //  Purchases.h
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/27/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import <StoreKit/StoreKit.h>
@@ -20,8 +20,9 @@ FOUNDATION_EXPORT const unsigned char PurchasesVersionString[];
 #import "RCPurchases.h"
 #import "RCPurchaserInfo.h"
 #import "RCIntroEligibility.h"
-#import "RCEntitlement.h"
+#import "RCOfferings.h"
 #import "RCOffering.h"
+#import "RCPackage.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCPurchasesErrors.h"
 #import "RCEntitlementInfo.h"

@@ -8,36 +8,38 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- @typedef RCStore
- @brief Enum of supported stores
- @constant RCAppStore For entitlements granted via Apple App Store.
- @constant RCMacAppStore For entitlements granted via Apple Mac App Store.
- @constant RCPlayStore For entitlements granted via Google Play Store.
- @constant RCStripe For entitlements granted via Stripe.
- @constant RCPromotional For entitlements granted via a promo in RevenueCat.
+ Enum of supported stores
  */
 typedef NS_ENUM(NSInteger, RCStore) {
+    /// For entitlements granted via Apple App Store.
     RCAppStore = 0,
+    /// For entitlements granted via Apple Mac App Store.
     RCMacAppStore,
+    /// For entitlements granted via Google Play Store.
     RCPlayStore,
+    /// For entitlements granted via Stripe.
     RCStripe,
+    /// For entitlements granted via a promo in RevenueCat.
     RCPromotional,
+    /// For entitlements granted via an unknown store.
     RCUnknownStore,
 } NS_SWIFT_NAME(Store);
 
 /**
- @typedef RCPeriodType
- @brief Enum of supported period types for an entitlement.
- @constant RCNormal If the entitlement is not under an introductory or trial period.
- @constant RCIntro If the entitlement is under a introductory price period.
- @constant RCTrial If the entitlement is under a trial period.
+ Enum of supported period types for an entitlement.
  */
 typedef NS_ENUM(NSInteger, RCPeriodType) {
+    /// If the entitlement is not under an introductory or trial period.
     RCNormal = 0,
+    /// If the entitlement is under a introductory price period.
     RCIntro,
+    /// If the entitlement is under a trial period.
     RCTrial,
 } NS_SWIFT_NAME(PeriodType);
 
+/**
+ The EntitlementInfo object gives you access to all of the information about the status of a user entitlement.
+ */
 NS_SWIFT_NAME(EntitlementInfo)
 @interface RCEntitlementInfo : NSObject
 
@@ -78,7 +80,7 @@ NS_SWIFT_NAME(EntitlementInfo)
  The expiration date for the entitlement, can be `nil` for lifetime access.
  If the `periodType` is `trial`, this is the trial expiration date.
  */
-@property (readonly) NSDate * _Nullable expirationDate;
+@property (readonly, nullable) NSDate *expirationDate;
 
 /**
  The store where this entitlement was unlocked from
@@ -101,7 +103,7 @@ NS_SWIFT_NAME(EntitlementInfo)
  
  Note: Entitlement may still be active even if user has unsubscribed. Check the `isActive` property.
  */
-@property (readonly) NSDate * _Nullable unsubscribeDetectedAt;
+@property (readonly, nullable) NSDate *unsubscribeDetectedAt;
 
 /**
  The date a billing issue was detected. Can be `nil` if there is no
@@ -110,7 +112,7 @@ NS_SWIFT_NAME(EntitlementInfo)
  Note: Entitlement may still be active even if there is a billing issue.
  Check the `isActive` property.
  */
-@property (readonly) NSDate * _Nullable billingIssueDetectedAt;
+@property (readonly, nullable) NSDate *billingIssueDetectedAt;
 
 @end
 

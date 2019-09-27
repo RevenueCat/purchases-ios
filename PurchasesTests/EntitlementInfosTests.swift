@@ -2,8 +2,8 @@
 //  EntitlementInfosTests.swift
 //  PurchasesTests
 //
-//  Created by César de la Vega  on 7/27/19.
-//  Copyright © 2019 Purchases. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 import Foundation

@@ -2,7 +2,7 @@
 //  RCBackend.m
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/30/17.
+//  Created by RevenueCat.
 //  Copyright © 2019 RevenueCat, Inc. All rights reserved.
 //
 
@@ -12,8 +12,6 @@
 #import "RCPurchaserInfo+Protected.h"
 #import "RCIntroEligibility.h"
 #import "RCIntroEligibility+Protected.h"
-#import "RCEntitlement+Protected.h"
-#import "RCOffering+Protected.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCUtils.h"
 #import "RCPromotionalOffer.h"
@@ -46,14 +44,14 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
 @implementation RCBackend
 
-- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey
+- (nullable instancetype)initWithAPIKey:(NSString *)APIKey
 {
     RCHTTPClient *client = [[RCHTTPClient alloc] init];
     return [self initWithHTTPClient:client
                              APIKey:APIKey];
 }
 
-- (instancetype _Nullable)initWithHTTPClient:(RCHTTPClient *)client
+- (nullable instancetype)initWithHTTPClient:(RCHTTPClient *)client
                                       APIKey:(NSString *)APIKey
 {
     if (self = [super init]) {
@@ -74,8 +72,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 }
 
 - (void)handle:(NSInteger)statusCode
-  withResponse:(NSDictionary * _Nullable)response
-         error:(NSError * _Nullable)error
+  withResponse:(nullable NSDictionary *)response
+         error:(nullable NSError *)error
     completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     if (error != nil) {
@@ -103,8 +101,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 }
 
 - (void)handle:(NSInteger)statusCode
-  withResponse:(NSDictionary * _Nullable)response
-         error:(NSError * _Nullable)error
+  withResponse:(nullable NSDictionary *)response
+         error:(nullable NSError *)error
   errorHandler:(void (^)(NSError * _Nullable error))errorHandler
 {
 
@@ -158,17 +156,18 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     }
 }
 
-- (void)postReceiptData:(NSData *)data
-              appUserID:(NSString *)appUserID
-              isRestore:(BOOL)isRestore
-      productIdentifier:(NSString * _Nullable)productIdentifier
-                  price:(NSDecimalNumber * _Nullable)price
-            paymentMode:(RCPaymentMode)paymentMode
-      introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice
-           currencyCode:(NSString * _Nullable)currencyCode
-      subscriptionGroup:(NSString * _Nullable)subscriptionGroup
-              discounts:(NSArray<RCPromotionalOffer *> * _Nullable)discounts
-             completion:(RCBackendPurchaserInfoResponseHandler)completion
+- (void)    postReceiptData:(NSData *)data
+                  appUserID:(NSString *)appUserID
+                  isRestore:(BOOL)isRestore
+          productIdentifier:(nullable NSString *)productIdentifier
+                      price:(nullable NSDecimalNumber *)price
+                paymentMode:(RCPaymentMode)paymentMode
+          introductoryPrice:(nullable NSDecimalNumber *)introductoryPrice
+               currencyCode:(nullable NSString *)currencyCode
+          subscriptionGroup:(nullable NSString *)subscriptionGroup
+                  discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
+presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
+                 completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
     NSMutableDictionary *body = [NSMutableDictionary dictionaryWithDictionary:
@@ -178,16 +177,17 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                                    @"is_restore": @(isRestore)
                                    }];
 
-    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@",
-                                                    appUserID,
-                                                    @(isRestore),
-                                                    fetchToken,
-                                                    productIdentifier,
-                                                    price,
-                                                    currencyCode,
-                                                    @((NSUInteger)paymentMode),
-                                                    introductoryPrice,
-                                                    subscriptionGroup];
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@-%@",
+                          appUserID,
+                          @(isRestore),
+                          fetchToken,
+                          productIdentifier,
+                          price,
+                          currencyCode,
+                          @((NSUInteger)paymentMode),
+                          introductoryPrice,
+                          subscriptionGroup,
+                          presentedOfferingIdentifier];
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
         for (RCPromotionalOffer *discount in discounts) {
@@ -235,6 +235,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
             }
             body[@"offers"] = offers;
         }
+    }
+
+    if (presentedOfferingIdentifier) {
+        body[@"presented_offering_identifier"] = presentedOfferingIdentifier;
     }
 
     [self.httpClient performRequest:@"POST"
@@ -325,72 +329,44 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     }];
 }
 
-- (RCEntitlements *)parseEntitlementResponse:(NSDictionary *)response
-{
-    NSMutableDictionary *entitlements = [NSMutableDictionary new];
-
-    NSDictionary *entitlementsResponse = response[@"entitlements"];
-
-    for (NSString *proID in entitlementsResponse) {
-        NSDictionary *entDict = entitlementsResponse[proID];
-
-        NSMutableDictionary *offerings = [NSMutableDictionary new];
-        NSDictionary *offeringsResponse = entDict[@"offerings"];
-
-        for (NSString *offeringID in offeringsResponse) {
-            NSDictionary *offDict = offeringsResponse[offeringID];
-
-            RCOffering *offering = [[RCOffering alloc] init];
-            offering.activeProductIdentifier = offDict[@"active_product_identifier"];
-
-            offerings[offeringID] = offering;
-
-        }
-        entitlements[proID] = [[RCEntitlement alloc] initWithOfferings:offerings];
-    }
-
-    return [NSDictionary dictionaryWithDictionary:entitlements];
-}
-
-- (void)getEntitlementsForAppUserID:(NSString *)appUserID
-                         completion:(RCEntitlementResponseHandler)completion
+- (void)getOfferingsForAppUserID:(NSString *)appUserID
+                      completion:(RCOfferingsResponseHandler)completion
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
-    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/products", escapedAppUserID];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/offerings", escapedAppUserID];
 
     if ([self addCallback:completion forKey:path]) {
         return;
     }
-    
+
     [self.httpClient performRequest:@"GET"
                                path:path
                                body:nil
                             headers:self.headers
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
-                      if (error != nil) {
-                          for (RCEntitlementResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
-                              completion(nil, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
+                      if (error == nil && statusCode < 300) {
+                          for (RCOfferingsResponseHandler callback in [self getCallbacksAndClearForKey:path]) {
+                              callback(response, nil);
                           }
                           return;
                       }
-                      NSDictionary *entitlements = nil;
-                      if (statusCode < 300) {
-                           entitlements = [self parseEntitlementResponse:response];
-                      } else {
+
+                      if (error != nil) {
+                          error = [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error];
+                      } else if (statusCode > 300) {
                           error = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
                                                                       backendMessage:response[@"message"]];
                       }
-
-                      for (RCEntitlementResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
-                          completion(entitlements, error);
+                      for (RCOfferingsResponseHandler callback in [self getCallbacksAndClearForKey:path]) {
+                          callback(nil, error);
                       }
-    }];
+                  }];
 }
 
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
                forAppUserID:(NSString *)appUserID
-                 completion:(void (^ _Nullable)(NSError * _Nullable error))completion
+                 completion:(nullable void (^)(NSError * _Nullable error))completion
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attribution", escapedAppUserID];
@@ -409,7 +385,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
 - (void)createAliasForAppUserID:(NSString *)appUserID
                withNewAppUserID:(NSString *)newAppUserID
-                     completion:(void (^ _Nullable)(NSError * _Nullable error))completion
+                     completion:(nullable void (^)(NSError * _Nullable error))completion
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/alias", escapedAppUserID];
