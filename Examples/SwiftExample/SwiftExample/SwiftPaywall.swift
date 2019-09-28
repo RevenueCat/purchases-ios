@@ -757,7 +757,7 @@ private class PackageCell : UICollectionViewCell {
         case .weekly:
             durationLabel.text = "1\nWEEK"
             monthlyPriceLabel.text = "\(package.localizedPriceString) / wk"
-        case .custom:
+        case .custom, .unknown:
             durationLabel.text = package.identifier.uppercased()
             discountLabel.isHidden = true
             monthlyPriceLabel.text = nil
@@ -779,7 +779,7 @@ private class PackageCell : UICollectionViewCell {
             highestAnnualCost = highest.product.price.multiplying(by: 12.0)
         case .weekly:
             highestAnnualCost = highest.product.price.multiplying(by: 52.0)
-        case .lifetime, .custom:
+        case .lifetime, .custom, .unknown:
             return 0.0
         }
         
@@ -797,7 +797,7 @@ private class PackageCell : UICollectionViewCell {
             currentAnnualCost = current.product.price.multiplying(by: 12.0)
         case .weekly:
             currentAnnualCost = current.product.price.multiplying(by: 52.0)
-        case .lifetime, .custom:
+        case .lifetime, .custom, .unknown:
             return 0.0
         }
         
@@ -869,7 +869,7 @@ fileprivate extension Package {
             return self.product.price.doubleValue * 12
         case .weekly:
             return self.product.price.doubleValue * 52
-        case .lifetime, .custom:
+        case .lifetime, .custom, .unknown:
             return 0.0
         }
     }
