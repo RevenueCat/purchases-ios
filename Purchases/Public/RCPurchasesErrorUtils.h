@@ -79,6 +79,14 @@ NS_SWIFT_NAME(PurchasesErrorUtils)
  * @param skError The originating [SKError].
  */
 + (NSError *)purchasesErrorWithSKError:(NSError *)skError;
+
+/**
+ * Constructs an NSError with the [RCInvalidAppUserIdError] code.
+ *
+ * @param methodName The method where this error was originated.
+ */
++ (NSError *)invalidAppUserIDErrorWithMethodName:(NSString *)methodName;
+
 @end
 
 NS_ASSUME_NONNULL_END
