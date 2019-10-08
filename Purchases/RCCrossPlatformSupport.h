@@ -12,7 +12,7 @@
 #import <AppKit/AppKit.h>
 #define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME NSApplicationDidBecomeActiveNotification
 #endif
-#if TARGET_OS_UIKITFORMAC
+#if TARGET_OS_MACCATALYST
 #define PLATFORM_HEADER @"uikitformac"
 #elif TARGET_OS_IPHONE
 #define PLATFORM_HEADER @"iOS"
