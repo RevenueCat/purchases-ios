@@ -16,21 +16,21 @@ class MockTransaction: SKPaymentTransaction {
     var mockPayment: SKPayment?
     override var payment: SKPayment {
         get {
-            mockPayment!
+            return mockPayment!
         }
     }
 
     var mockState = SKPaymentTransactionState.purchasing
     override var transactionState: SKPaymentTransactionState {
         get {
-            mockState
+            return mockState
         }
     }
 
     var mockError: Error?
     override var error: Error? {
         get {
-            mockError
+            return mockError
         }
     }
 }
@@ -46,27 +46,27 @@ class MockProductDiscount: SKProductDiscount {
     }
 
     override var price: NSDecimalNumber {
-        2.99 as NSDecimalNumber
+        return 2.99 as NSDecimalNumber
     }
 
     override var priceLocale: Locale {
-        Locale.current
+        return Locale.current
     }
 
     override var identifier: String {
-        self.mockIdentifier
+        return self.mockIdentifier
     }
 
     override var subscriptionPeriod: SKProductSubscriptionPeriod {
-        SKProductSubscriptionPeriod()
+        return SKProductSubscriptionPeriod()
     }
 
     override var numberOfPeriods: Int {
-        2
+        return 2
     }
 
     override var paymentMode: SKProductDiscount.PaymentMode {
-        SKProductDiscount.PaymentMode.freeTrial;
+        return SKProductDiscount.PaymentMode.freeTrial;
     }
 
 }
@@ -277,7 +277,7 @@ class PurchasesTests: XCTestCase {
         var mockDelegate: RCStoreKitWrapperDelegate?
         override var delegate: RCStoreKitWrapperDelegate? {
             get {
-                mockDelegate
+                return mockDelegate
             }
             set {
                 mockDelegate = newValue
@@ -313,11 +313,11 @@ class PurchasesTests: XCTestCase {
         var receiptDataTimesCalled = 0
 
         override func advertisingIdentifier() -> String? {
-            "rc_idfa"
+            return "rc_idfa"
         }
 
         override func identifierForVendor() -> String? {
-            "rc_idfv"
+            return "rc_idfv"
         }
 
         override func adClientAttributionDetails(completionBlock completionHandler: @escaping ([String: NSObject]?, Error?) -> Void) {
@@ -366,7 +366,7 @@ class PurchasesTests: XCTestCase {
         }
 
         override func cachedPurchaserInfoData(forAppUserID appUserID: Swift.String) -> Data? {
-            cachedUserInfo[appUserID];
+            return cachedUserInfo[appUserID];
         }
 
         override func resetCachesTimestamp() {
@@ -378,7 +378,7 @@ class PurchasesTests: XCTestCase {
         }
 
         override func isCacheStale() -> Bool {
-            staleCache
+            return staleCache
         }
     }
 
@@ -438,7 +438,7 @@ class PurchasesTests: XCTestCase {
         }
 
         override var isAnonymous: Bool {
-            mockIsAnonymous
+            return mockIsAnonymous
         }
     }
 
@@ -2066,7 +2066,7 @@ class PurchasesTests: XCTestCase {
         var mockIdentifier: String?
         override var productIdentifier: String {
             get {
-                mockIdentifier!
+                return mockIdentifier!
             }
         }
 

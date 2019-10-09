@@ -67,7 +67,7 @@ class UserIdentityTests: XCTestCase {
         var isAnonymousCalled: Bool = false
 
         override var cachedAppUserID: String? {
-            mockedAppUserID
+            return mockedAppUserID
         }
 
         override func clearCaches(forAppUserID appUserId: String) {
