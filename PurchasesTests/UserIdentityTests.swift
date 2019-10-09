@@ -228,7 +228,7 @@ class UserIdentityTests: XCTestCase {
     func testConfigureWithUserIDReturnsPositive() {
         let configuredSuccessfully: Bool = self.userIdentity.configureAppUserID("cesar")
         expect(configuredSuccessfully).to(beTrue())
-        assertCorrectlyIdentifiedWithRandom()
+        assertCorrectlyIdentified(expectedAppUserID: "cesar")
     }
 
     private func assertCorrectlyIdentified(expectedAppUserID: String) {

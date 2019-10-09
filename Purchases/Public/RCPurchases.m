@@ -47,6 +47,7 @@
 @property (nonatomic) RCOfferingsFactory *offeringsFactory;
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCUserIdentity *userIdentity;
+@property (nonatomic) BOOL allowSharingAccountSetByUser;
 
 @end
 
@@ -59,20 +60,11 @@ NSMutableArray<RCAttributionData *> * _Nullable postponedAttributionData;
 #pragma mark - Configuration
 static RCPurchases *_sharedPurchases = nil;
 
-NSNumber *_allowSharingAppStoreAccount = nil;
-
-- (void)setAllowSharingAppStoreAccount:(BOOL)allowSharingAppStoreAccount
+// TODO: what do we return if it hasn't been set?
+- (void)setAllowSharingAppStoreAccount:(BOOL)allow
 {
-    _allowSharingAppStoreAccount = @(allowSharingAppStoreAccount);
-}
-
-- (BOOL)allowSharingAppStoreAccount
-{
-    // TODO: confirm we want this
-    if (_allowSharingAppStoreAccount == nil) {
-        return [self isAnonymous];
-    }
-    return [_allowSharingAppStoreAccount boolValue];
+    _allowSharingAccountSetByUser = YES;
+    _allowSharingAppStoreAccount = allow;
 }
 
 static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
@@ -962,9 +954,16 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                   [self.presentedOfferingsByProductIdentifier removeObjectForKey:productIdentifier];
                               }
 
+                              BOOL isRestore;
+                              if (self.allowSharingAccountSetByUser) {
+                                  isRestore = [self allowSharingAppStoreAccount];
+                              } else {
+                                  isRestore = [self isAnonymous];
+                              }
+
                               [self.backend postReceiptData:data
                                                   appUserID:self.appUserID
-                                                  isRestore:self.allowSharingAppStoreAccount
+                                                  isRestore:isRestore
                                           productIdentifier:productIdentifier
                                                       price:price
                                                 paymentMode:paymentMode
