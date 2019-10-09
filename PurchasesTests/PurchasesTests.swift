@@ -1946,6 +1946,17 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
     }
     
+    func testNilProductIdentifier() {
+        setupPurchases()
+        let product = SKProduct()
+        var receivedError: Error?
+        self.purchases?.makePurchase(product) { (tx, info, error, userCancelled) in
+            receivedError = error
+        }
+
+        expect(receivedError).toNot(beNil())
+    }
+
     private func identifiedSuccessfully(appUserID: String) {
         expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
         expect(self.purchases?.appUserID).to(equal(appUserID))
