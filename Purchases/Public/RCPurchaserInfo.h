@@ -40,6 +40,8 @@ NS_SWIFT_NAME(PurchaserInfo)
  Returns the version number for the version of the application when the user bought the app.
  Use this for grandfathering users when migrating to subscriptions.
  
+ This corresponds to the value of CFBundleVersion (in iOS) or CFBundleShortVersionString (in macOS) in the Info.plist file when the purchase was originally made.
+ 
  @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
  */
 @property (readonly) NSString * _Nullable originalApplicationVersion;
