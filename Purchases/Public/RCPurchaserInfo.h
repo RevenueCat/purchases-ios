@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  A container for the most recent purchaser info returned from `RCPurchases`. These objects are non-mutable and do not update automatically.
  */
-NS_SWIFT_NAME(PurchaserInfo)
+NS_SWIFT_NAME(Purchases.PurchaserInfo)
 @interface RCPurchaserInfo : NSObject
 
 /// Entitlements attached to this purchaser info
