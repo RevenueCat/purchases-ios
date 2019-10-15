@@ -363,7 +363,7 @@ underlyingError = error?.userInfo[NSUnderlyingErrorKey] as! NSError?
 })
 
         expect(error).toEventuallyNot(beNil())
-        expect(error?.code).toEventually(be(PurchasesErrorCode.invalidCredentialsError.rawValue))
+        expect(error?.code).toEventually(be(Purchases.ErrorCode.invalidCredentialsError.rawValue))
         expect(error?.userInfo["finishable"]).to(be(false))
 
         expect(underlyingError).toEventuallyNot(beNil())
@@ -382,7 +382,7 @@ error = newError
 })
 
         expect(error).toEventuallyNot(beNil())
-        expect((error as NSError?)?.code).toEventually(be(PurchasesErrorCode.invalidCredentialsError.rawValue))
+        expect((error as NSError?)?.code).toEventually(be(Purchases.ErrorCode.invalidCredentialsError.rawValue))
         expect((error as NSError?)?.userInfo["finishable"]).to(be(true))
 
         underlyingError = (error as NSError?)?.userInfo[NSUnderlyingErrorKey] as? Error
@@ -394,7 +394,7 @@ error = newError
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
-        var purchaserInfo: PurchaserInfo?
+        var purchaserInfo: Purchases.PurchaserInfo?
 
         backend?.postReceiptData(receiptData, appUserID: userID, isRestore: false, productIdentifier: nil, price: nil, paymentMode: RCPaymentMode.none, introductoryPrice: nil, currencyCode: nil, subscriptionGroup: nil, discounts: nil, presentedOfferingIdentifier: nil, completion: { (newPurchaserInfo, newError) in
 purchaserInfo = newPurchaserInfo
@@ -431,7 +431,7 @@ purchaserInfo = newPurchaserInfo
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
 
-        var subscriberInfo: PurchaserInfo?
+        var subscriberInfo: Purchases.PurchaserInfo?
 
         backend?.getSubscriberData(withAppUserID: userID, completion: { (newSubscriberInfo, newError) in
             subscriberInfo = newSubscriberInfo
@@ -447,7 +447,7 @@ purchaserInfo = newPurchaserInfo
         httpClient.mock(requestPath: "/subscribers/" + encodedUserID, response: response)
         httpClient.mock(requestPath: "/subscribers/" + encodeableUserID, response: HTTPResponse(statusCode: 404, response: nil, error: nil))
 
-        var subscriberInfo: PurchaserInfo?
+        var subscriberInfo: Purchases.PurchaserInfo?
 
         backend?.getSubscriberData(withAppUserID: encodeableUserID, completion: { (newSubscriberInfo, newError) in
             subscriberInfo = newSubscriberInfo
@@ -467,10 +467,10 @@ purchaserInfo = newPurchaserInfo
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect(error?.domain).to(equal(PurchasesErrorDomain))
+        expect(error?.domain).to(equal(Purchases.ErrorDomain))
         let underlyingError = (error?.userInfo[NSUnderlyingErrorKey]) as! NSError
         expect(underlyingError).toEventuallyNot(beNil())
-        expect(underlyingError.domain).to(equal(RevenueCatBackendErrorDomain))
+        expect(underlyingError.domain).to(equal(Purchases.RevenueCatBackendErrorDomain))
         expect(error?.userInfo["finishable"]).to(be(true))
     }
 
@@ -485,8 +485,8 @@ purchaserInfo = newPurchaserInfo
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect(error?.domain).to(equal(PurchasesErrorDomain))
-        expect(error?.code).to(be(PurchasesErrorCode.unexpectedBackendResponseError.rawValue))
+        expect(error?.domain).to(equal(Purchases.ErrorDomain))
+        expect(error?.code).to(be(Purchases.ErrorCode.unexpectedBackendResponseError.rawValue))
     }
 
     func testEmptyEligibilityCheckDoesNothing() {
@@ -729,8 +729,8 @@ purchaserInfo = newPurchaserInfo
         })
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(PurchasesErrorDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesErrorCode.networkError.rawValue))
+        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
+        expect(receivedError?.code).toEventually(equal(Purchases.ErrorCode.networkError.rawValue))
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
         expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
@@ -747,8 +747,8 @@ purchaserInfo = newPurchaserInfo
         })
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(PurchasesErrorDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesErrorCode.networkError.rawValue))
+        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
+        expect(receivedError?.code).toEventually(equal(Purchases.ErrorCode.networkError.rawValue))
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
         expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
@@ -767,7 +767,7 @@ purchaserInfo = newPurchaserInfo
         })
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.code).toEventually(be(PurchasesErrorCode.invalidCredentialsError.rawValue))
+        expect(receivedError?.code).toEventually(be(Purchases.ErrorCode.invalidCredentialsError.rawValue))
 
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
@@ -800,8 +800,8 @@ purchaserInfo = newPurchaserInfo
         })
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(PurchasesErrorDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesErrorCode.networkError.rawValue))
+        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
+        expect(receivedError?.code).toEventually(equal(Purchases.ErrorCode.networkError.rawValue))
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
         expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
@@ -820,7 +820,7 @@ purchaserInfo = newPurchaserInfo
         })
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.code).toEventually(be(PurchasesErrorCode.invalidCredentialsError.rawValue))
+        expect(receivedError?.code).toEventually(be(Purchases.ErrorCode.invalidCredentialsError.rawValue))
 
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
@@ -994,8 +994,8 @@ purchaserInfo = newPurchaserInfo
         }
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(PurchasesErrorDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesErrorCode.networkError.rawValue))
+        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
+        expect(receivedError?.code).toEventually(equal(Purchases.ErrorCode.networkError.rawValue))
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
         expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
@@ -1028,8 +1028,8 @@ purchaserInfo = newPurchaserInfo
         }
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(PurchasesErrorDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesErrorCode.unexpectedBackendResponseError.rawValue))
+        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
+        expect(receivedError?.code).toEventually(equal(Purchases.ErrorCode.unexpectedBackendResponseError.rawValue))
         expect(receivedUnderlyingError).toEventually(beNil())
     }
     
@@ -1071,11 +1071,11 @@ purchaserInfo = newPurchaserInfo
         }
         
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(PurchasesErrorDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesErrorCode.invalidAppleSubscriptionKeyError.rawValue))
+        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
+        expect(receivedError?.code).toEventually(equal(Purchases.ErrorCode.invalidAppleSubscriptionKeyError.rawValue))
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.code).toEventually(equal(7234))
-        expect(receivedUnderlyingError?.domain).toEventually(equal(RevenueCatBackendErrorDomain))
+        expect(receivedUnderlyingError?.domain).toEventually(equal(Purchases.RevenueCatBackendErrorDomain))
         expect(receivedUnderlyingError?.localizedDescription).toEventually(equal("Ineligible for some reason"))
     }
     
@@ -1114,8 +1114,8 @@ purchaserInfo = newPurchaserInfo
         }
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(PurchasesErrorDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesErrorCode.unexpectedBackendResponseError.rawValue))
+        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
+        expect(receivedError?.code).toEventually(equal(Purchases.ErrorCode.unexpectedBackendResponseError.rawValue))
         expect(receivedUnderlyingError).toEventually(beNil())
 
     }
@@ -1141,7 +1141,7 @@ purchaserInfo = newPurchaserInfo
         }
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.code).toEventually(be(PurchasesErrorCode.invalidCredentialsError.rawValue))
+        expect(receivedError?.code).toEventually(be(Purchases.ErrorCode.invalidCredentialsError.rawValue))
 
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))

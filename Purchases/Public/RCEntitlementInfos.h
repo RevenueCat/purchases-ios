@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  This class contains all the entitlements associated to the user.
  */
-NS_SWIFT_NAME(EntitlementInfos)
+NS_SWIFT_NAME(Purchases.EntitlementInfos)
 @interface RCEntitlementInfos : NSObject
 
 /**

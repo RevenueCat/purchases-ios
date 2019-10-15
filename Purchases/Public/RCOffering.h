@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  An offering is a collection of Packages (`RCPackage`) available for the user to purchase. For more info see https://docs.revenuecat.com/docs/entitlements
  */
-NS_SWIFT_NAME(Offering)
+NS_SWIFT_NAME(Purchases.Offering)
 @interface RCOffering : NSObject
 
 /**

@@ -23,7 +23,7 @@ typedef NS_ENUM(NSInteger, RCStore) {
     RCPromotional,
     /// For entitlements granted via an unknown store.
     RCUnknownStore,
-} NS_SWIFT_NAME(Store);
+} NS_SWIFT_NAME(Purchases.Store);
 
 /**
  Enum of supported period types for an entitlement.
@@ -35,12 +35,12 @@ typedef NS_ENUM(NSInteger, RCPeriodType) {
     RCIntro,
     /// If the entitlement is under a trial period.
     RCTrial,
-} NS_SWIFT_NAME(PeriodType);
+} NS_SWIFT_NAME(Purchases.PeriodType);
 
 /**
  The EntitlementInfo object gives you access to all of the information about the status of a user entitlement.
  */
-NS_SWIFT_NAME(EntitlementInfo)
+NS_SWIFT_NAME(Purchases.EntitlementInfo)
 @interface RCEntitlementInfo : NSObject
 
 /**

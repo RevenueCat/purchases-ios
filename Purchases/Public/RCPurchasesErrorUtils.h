@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Utility class used to construct [NSError] instances.
  */
-NS_SWIFT_NAME(PurchasesErrorUtils)
+NS_SWIFT_NAME(Purchases.ErrorUtils)
 @interface RCPurchasesErrorUtils : NSObject
 
 /**
