@@ -86,7 +86,7 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testClearCachesRemovesCachedOfferings() {
-        let offerings = Offerings()
+        let offerings = Purchases.Offerings()
         self.deviceCache.cacheOfferings(offerings)
         expect(self.deviceCache.cachedOfferings).to(equal(offerings))
         self.deviceCache.clearCaches(forAppUserID: "cesar")

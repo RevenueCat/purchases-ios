@@ -370,7 +370,7 @@ class PurchasesTests: XCTestCase {
             cachesReset += 1
         }
 
-        override func cacheOfferings(_ offerings: Offerings) {
+        override func cacheOfferings(_ offerings: Purchases.Offerings) {
             cachedOfferingsCount += 1
         }
 
@@ -465,7 +465,7 @@ class PurchasesTests: XCTestCase {
     let attributionFetcher = MockAttributionFetcher();
     let offeringsFactory = MockOfferingsFactory();
     let deviceCache = MockDeviceCache();
-    let userIdentity = MockUserManager(mockAppUserID: "app_user");
+    let userManager = MockUserManager(mockAppUserID: "app_user");
 
     let purchasesDelegate = Delegate()
 
@@ -473,22 +473,22 @@ class PurchasesTests: XCTestCase {
 
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
-        self.userIdentity.mockIsAnonymous = false
-        purchases = Purchases(appUserID: userIdentity.currentAppUserID, requestFetcher: requestFetcher, receiptFetcher: receiptFetcher, attributionFetcher: attributionFetcher, backend: backend, storeKitWrapper: storeKitWrapper, notificationCenter: notificationCenter, userDefaults: userDefaults, observerMode: false, offeringsFactory: offeringsFactory, deviceCache: deviceCache, userIdentity: userIdentity)
+        self.userManager.mockIsAnonymous = false
+        purchases = Purchases(appUserID: userManager.currentAppUserID, requestFetcher: requestFetcher, receiptFetcher: receiptFetcher, attributionFetcher: attributionFetcher, backend: backend, storeKitWrapper: storeKitWrapper, notificationCenter: notificationCenter, userDefaults: userDefaults, observerMode: false, offeringsFactory: offeringsFactory, deviceCache: deviceCache, userManager: userManager)
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
 
     func setupAnonPurchases() {
         Purchases.automaticAppleSearchAdsAttributionCollection = false
-        self.userIdentity.mockIsAnonymous = true
-        purchases = Purchases(appUserID: nil, requestFetcher: requestFetcher, receiptFetcher: receiptFetcher, attributionFetcher: attributionFetcher, backend: backend, storeKitWrapper: storeKitWrapper, notificationCenter: notificationCenter, userDefaults: userDefaults, observerMode: false, offeringsFactory: offeringsFactory, deviceCache: deviceCache, userIdentity: userIdentity)
+        self.userManager.mockIsAnonymous = true
+        purchases = Purchases(appUserID: nil, requestFetcher: requestFetcher, receiptFetcher: receiptFetcher, attributionFetcher: attributionFetcher, backend: backend, storeKitWrapper: storeKitWrapper, notificationCenter: notificationCenter, userDefaults: userDefaults, observerMode: false, offeringsFactory: offeringsFactory, deviceCache: deviceCache, userManager: userManager)
 
         purchases!.delegate = purchasesDelegate
     }
 
     func setupPurchasesObserverModeOn() {
-        purchases = Purchases(appUserID: nil, requestFetcher: requestFetcher, receiptFetcher: receiptFetcher, attributionFetcher: attributionFetcher, backend: backend, storeKitWrapper: storeKitWrapper, notificationCenter: notificationCenter, userDefaults: userDefaults, observerMode: true, offeringsFactory: offeringsFactory, deviceCache: deviceCache, userIdentity: userIdentity)
+        purchases = Purchases(appUserID: nil, requestFetcher: requestFetcher, receiptFetcher: receiptFetcher, attributionFetcher: attributionFetcher, backend: backend, storeKitWrapper: storeKitWrapper, notificationCenter: notificationCenter, userDefaults: userDefaults, observerMode: true, offeringsFactory: offeringsFactory, deviceCache: deviceCache, userManager: userManager)
 
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -1241,12 +1241,12 @@ class PurchasesTests: XCTestCase {
 
     func testAnonPurchasesConfiguresAppUserID() {
         setupAnonPurchases()
-        expect(self.userIdentity.configurationCalled).to(beTrue())
+        expect(self.userManager.configurationCalled).to(beTrue())
     }
 
     func testPurchasesSetupConfiguresAppUserID() {
         setupPurchases()
-        expect(self.userIdentity.configurationCalled).to(beTrue())
+        expect(self.userManager.configurationCalled).to(beTrue())
     }
 
     func testGetEligibility() {
@@ -1341,7 +1341,7 @@ class PurchasesTests: XCTestCase {
         let jsonObject = info!.jsonObject()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedUserInfo[userIdentity.currentAppUserID] = object
+        self.deviceCache.cachedUserInfo[userManager.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1368,7 +1368,7 @@ class PurchasesTests: XCTestCase {
         jsonObject["schema_version"] = NSNull()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedUserInfo[userIdentity.currentAppUserID] = object
+        self.deviceCache.cachedUserInfo[userManager.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1389,7 +1389,7 @@ class PurchasesTests: XCTestCase {
                 "other_purchases": [:]
             ]]);
         let object = try! JSONSerialization.data(withJSONObject: info!.jsonObject(), options: []);
-        self.deviceCache.cachedUserInfo[userIdentity.currentAppUserID] = object
+        self.deviceCache.cachedUserInfo[userManager.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1413,7 +1413,7 @@ class PurchasesTests: XCTestCase {
         jsonObject["schema_version"] = "bad_version"
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
 
-        self.deviceCache.cachedUserInfo[userIdentity.currentAppUserID] = object
+        self.deviceCache.cachedUserInfo[userManager.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1437,7 +1437,7 @@ class PurchasesTests: XCTestCase {
         jsonObject.removeValue(forKey: "schema_version")
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
 
-        self.deviceCache.cachedUserInfo[userIdentity.currentAppUserID] = object
+        self.deviceCache.cachedUserInfo[userManager.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1602,25 +1602,25 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
 
         var completionCalled = false
-        self.userIdentity.aliasError = nil
-        var info: PurchaserInfo?
+        self.userManager.aliasError = nil
+        var info: Purchases.PurchaserInfo?
         self.purchases?.createAlias("cesarpedro") { (newInfo, error) in
             completionCalled = (error == nil)
             info = newInfo
         }
 
         expect(completionCalled).toEventually(beTrue())
-        expect(self.userIdentity.aliasCalled).toEventually(beTrue())
+        expect(self.userManager.aliasCalled).toEventually(beTrue())
         expect(info).toEventuallyNot(beNil())
 
-        self.userIdentity.aliasError = Purchases.ErrorUtils.backendError(withBackendCode: RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
+        self.userManager.aliasError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
 
         self.purchases?.createAlias("cesardro") { (info, error) in
             completionCalled = (error == nil)
         }
 
         expect(completionCalled).toEventually(beFalse())
-        expect(self.userIdentity.aliasCalled).toEventually(beTrue())
+        expect(self.userManager.aliasCalled).toEventually(beTrue())
     }
 
     func testCreateAliasUpdatesCaches() {
@@ -1635,7 +1635,7 @@ class PurchasesTests: XCTestCase {
         let newAppUserID = "cesarPedro"
 
         var completionCalled = false
-        self.userIdentity.aliasError = nil
+        self.userManager.aliasError = nil
         self.purchases?.createAlias(newAppUserID) { (info, error) in
             completionCalled = (error == nil)
         }
@@ -1655,17 +1655,17 @@ class PurchasesTests: XCTestCase {
         }
 
         expect(completionCalled).toEventually(beTrue())
-        expect(self.userIdentity.identifyCalled).toEventually(beTrue())
+        expect(self.userManager.identifyCalled).toEventually(beTrue())
         expect(info).toEventuallyNot(beNil())
 
-        self.userIdentity.identifyError = PurchasesErrorUtils.backendError(withBackendCode: RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
+        self.userManager.identifyError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
 
         self.purchases?.identify("cesardro") { (info, error) in
             completionCalled = (error == nil)
         }
 
         expect(completionCalled).toEventually(beFalse())
-        expect(self.userIdentity.identifyCalled).toEventually(beTrue())
+        expect(self.userManager.identifyCalled).toEventually(beTrue())
     }
 
     func testIdentifyUpdatesCaches() {
@@ -1700,13 +1700,13 @@ class PurchasesTests: XCTestCase {
         }
 
         expect(completionCalled).toEventually(beTrue())
-        expect(self.userIdentity.resetCalled).toEventually(beTrue())
+        expect(self.userManager.resetCalled).toEventually(beTrue())
         expect(info).toEventuallyNot(beNil())
     }
 
     func testResetUpdatesCaches() {
         setupPurchases()
-        self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+        self.backend.overridePurchaserInfo = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:],
@@ -1719,24 +1719,24 @@ class PurchasesTests: XCTestCase {
         }
 
         expect(completionCalled).toEventually(beTrue())
-        verifyUpdatedCaches(newAppUserID: self.userIdentity.currentAppUserID)
+        verifyUpdatedCaches(newAppUserID: self.userManager.currentAppUserID)
     }
 
     func testCreateAliasForTheSameUserID() {
         setupPurchases()
 
-        self.userIdentity.aliasCalled = false
-        self.userIdentity.aliasError = nil
+        self.userManager.aliasCalled = false
+        self.userManager.aliasError = nil
 
         var completionCalled = false
-        var info: PurchaserInfo?
-        self.purchases?.createAlias(userIdentity.currentAppUserID) { (newInfo, error) in
+        var info: Purchases.PurchaserInfo?
+        self.purchases?.createAlias(userManager.currentAppUserID) { (newInfo, error) in
             completionCalled = true
             info = newInfo
         }
 
-        expect(self.userIdentity.aliasCalled).to(be(false))
-        expect(self.userIdentity.aliasError).to(beNil())
+        expect(self.userManager.aliasCalled).to(be(false))
+        expect(self.userManager.aliasError).to(beNil())
         expect(completionCalled).toEventually(be(true))
         expect(info).toEventuallyNot(beNil())
     }
@@ -1747,13 +1747,13 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.getSubscriberCallCount).toEventually(equal(1));
 
         var completionCalled = false
-        var info: PurchaserInfo?
-        self.purchases?.identify(userIdentity.currentAppUserID) { (newInfo, error) in
+        var info: Purchases.PurchaserInfo?
+        self.purchases?.identify(userManager.currentAppUserID) { (newInfo, error) in
             completionCalled = true
             info = newInfo
         }
 
-        expect(self.userIdentity.identifyCalled).to(be(false))
+        expect(self.userManager.identifyCalled).to(be(false))
         expect(completionCalled).toEventually(be(true))
         expect(info).toEventuallyNot(beNil())
     }
@@ -1955,7 +1955,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_attribution_network_id")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data["rc_attribution_network_id"] as? String).toEventually(equal("newuser"))
         expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
-        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.userIdentity.currentAppUserID))
+        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.userManager.currentAppUserID))
     }
 
     func testAttributionDataDontSendNetworkAppUserIdIfNotProvided() {
@@ -1973,7 +1973,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfv")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_attribution_network_id")).toEventually(beFalse())
         expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
-        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.userIdentity.currentAppUserID))
+        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.userManager.currentAppUserID))
     }
 
     func testAdClientAttributionDataIsAutomaticallyCollected() {

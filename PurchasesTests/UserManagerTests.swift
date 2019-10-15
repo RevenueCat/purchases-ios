@@ -17,7 +17,7 @@ class UserManagerTests: XCTestCase {
         var originalApplicationVersion: String?
         var timeout = false
         var getSubscriberCallCount = 0
-        var overridePurchaserInfo = PurchaserInfo(data: [
+        var overridePurchaserInfo = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:]
@@ -34,7 +34,7 @@ class UserManagerTests: XCTestCase {
         var postedDiscounts: Array<RCPromotionalOffer>?
         var postedOfferingIdentifier: String?
 
-        var postReceiptPurchaserInfo: PurchaserInfo?
+        var postReceiptPurchaserInfo: Purchases.PurchaserInfo?
         var postReceiptError: Error?
         var aliasError: Error?
         var aliasCalled = false
@@ -152,7 +152,7 @@ class UserManagerTests: XCTestCase {
     }
 
     func testCreateAliasForwardsErrors() {
-        self.mockBackend.aliasError = PurchasesErrorUtils.backendError(withBackendCode: RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
+        self.mockBackend.aliasError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
         var error: Error? = nil
         self.userManager.createAlias("cesar") { (newError: Error?) in
             error = newError
