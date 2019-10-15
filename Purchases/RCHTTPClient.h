@@ -8,7 +8,11 @@
 
 #import <Foundation/Foundation.h>
 
+@class RCAttributionData;
+
 NS_ASSUME_NONNULL_BEGIN
+
+extern NSMutableArray<RCAttributionData *> * _Nullable postponedAttributionData;
 
 typedef void(^RCHTTPClientResponseHandler)(NSInteger statusCode,
                                            NSDictionary * _Nullable response,

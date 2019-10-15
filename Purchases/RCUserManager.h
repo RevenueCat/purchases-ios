@@ -1,7 +1,4 @@
 //
-//  RCUserIdentity.h
-//  Purchases
-//
 // Created by RevenueCat.
 // Copyright (c) 2019 Purchases. All rights reserved.
 //
@@ -13,27 +10,28 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RCUserIdentity : NSObject
+@interface RCUserManager : NSObject
 
-@property (nonatomic, readonly) NSString *appUserID;
+@property (nonatomic, readonly) NSString *currentAppUserID;
 
 @property (nonatomic, readonly) RCDeviceCache *deviceCache;
 
 @property (nonatomic, readonly) RCBackend *backend;
 
-@property (nonatomic, readonly) BOOL isAnonymous;
+@property (nonatomic, readonly) BOOL currentUserIsAnonymous;
 
 - (instancetype)initWith:(RCDeviceCache *)deviceCache backend:(RCBackend *)backend;
 
 - (NSString *)generateRandomID;
 
-- (BOOL)configureAppUserID:(nullable NSString *)appUserID;
+- (void)configureWithAppUserID:(nullable NSString *)appUserID;
 
 - (void)identifyAppUserID:(NSString *)appUserID withCompletionBlock:(void (^)(NSError * _Nullable error))completion;
 
 - (void)createAlias:(NSString *)alias withCompletionBlock:(void (^)(NSError * _Nullable error))completion;
 
 - (void)resetAppUserID;
+
 @end
 
 NS_ASSUME_NONNULL_END

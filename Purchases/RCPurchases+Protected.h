@@ -7,7 +7,7 @@
 //
 
 
-@class RCPurchases, RCStoreKitRequestFetcher, RCBackend, RCStoreKitWrapper, RCReceiptFetcher, RCAttributionFetcher, RCOfferingsFactory, RCDeviceCache, RCUserIdentity;
+@class RCPurchases, RCStoreKitRequestFetcher, RCBackend, RCStoreKitWrapper, RCReceiptFetcher, RCAttributionFetcher, RCOfferingsFactory, RCDeviceCache, RCUserManager;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
                      observerMode:(BOOL)observerMode
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
                       deviceCache:(RCDeviceCache *)cache
-                     userIdentity:(RCUserIdentity *)userIdentity;
+                     userIdentity:(RCUserManager *)userIdentity;
 
 + (void)setDefaultInstance:(nullable RCPurchases *)instance;
 

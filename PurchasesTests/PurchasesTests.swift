@@ -1,7 +1,4 @@
 //
-//  PurchasesTests.swift
-//  PurchasesTests
-//
 //  Created by RevenueCat.
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
@@ -382,7 +379,7 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    class MockUserIdentity: RCUserIdentity {
+    class MockUserManager: RCUserManager {
 
         var configurationCalled = false
         var identifyError: Error?
@@ -392,14 +389,13 @@ class PurchasesTests: XCTestCase {
         var resetCalled = false
         var mockIsAnonymous = false
         var mockAppUserID: String
-        var mockConfigureAppUserID = true
 
         init(mockAppUserID: String) {
             self.mockAppUserID = mockAppUserID
             super.init()
         }
 
-        override var appUserID: String {
+        override var currentAppUserID: String {
             if (mockIsAnonymous) {
                 return "$RCAnonymousID:ff68f26e432648369a713849a9f93b58"
             } else {
@@ -407,9 +403,8 @@ class PurchasesTests: XCTestCase {
             }
         }
 
-        override func configureAppUserID(_ appUserID: String?) -> Bool {
+        override func configure(withAppUserID appUserID: String?) {
             configurationCalled = true
-            return mockConfigureAppUserID
         }
 
         override func createAlias(_ alias: String, withCompletionBlock completion: @escaping (Error?) -> ()) {
@@ -437,9 +432,10 @@ class PurchasesTests: XCTestCase {
             mockAppUserID = "$RCAnonymousID:ff68f26e432648369a713849a9f93b58"
         }
 
-        override var isAnonymous: Bool {
+        override var currentUserIsAnonymous: Bool {
             return mockIsAnonymous
         }
+
     }
 
     class Delegate: NSObject, PurchasesDelegate {
@@ -469,7 +465,7 @@ class PurchasesTests: XCTestCase {
     let attributionFetcher = MockAttributionFetcher();
     let offeringsFactory = MockOfferingsFactory();
     let deviceCache = MockDeviceCache();
-    let userIdentity = MockUserIdentity(mockAppUserID: "app_user");
+    let userIdentity = MockUserManager(mockAppUserID: "app_user");
 
     let purchasesDelegate = Delegate()
 
@@ -477,7 +473,8 @@ class PurchasesTests: XCTestCase {
 
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
-        purchases = Purchases(appUserID: userIdentity.appUserID, requestFetcher: requestFetcher, receiptFetcher: receiptFetcher, attributionFetcher: attributionFetcher, backend: backend, storeKitWrapper: storeKitWrapper, notificationCenter: notificationCenter, userDefaults: userDefaults, observerMode: false, offeringsFactory: offeringsFactory, deviceCache: deviceCache, userIdentity: userIdentity)
+        self.userIdentity.mockIsAnonymous = false
+        purchases = Purchases(appUserID: userIdentity.currentAppUserID, requestFetcher: requestFetcher, receiptFetcher: receiptFetcher, attributionFetcher: attributionFetcher, backend: backend, storeKitWrapper: storeKitWrapper, notificationCenter: notificationCenter, userDefaults: userDefaults, observerMode: false, offeringsFactory: offeringsFactory, deviceCache: deviceCache, userIdentity: userIdentity)
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
@@ -1344,7 +1341,7 @@ class PurchasesTests: XCTestCase {
         let jsonObject = info!.jsonObject()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedUserInfo[userIdentity.appUserID] = object
+        self.deviceCache.cachedUserInfo[userIdentity.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1371,7 +1368,7 @@ class PurchasesTests: XCTestCase {
         jsonObject["schema_version"] = NSNull()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedUserInfo[userIdentity.appUserID] = object
+        self.deviceCache.cachedUserInfo[userIdentity.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1392,7 +1389,7 @@ class PurchasesTests: XCTestCase {
                 "other_purchases": [:]
             ]]);
         let object = try! JSONSerialization.data(withJSONObject: info!.jsonObject(), options: []);
-        self.deviceCache.cachedUserInfo[userIdentity.appUserID] = object
+        self.deviceCache.cachedUserInfo[userIdentity.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1416,7 +1413,7 @@ class PurchasesTests: XCTestCase {
         jsonObject["schema_version"] = "bad_version"
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
 
-        self.deviceCache.cachedUserInfo[userIdentity.appUserID] = object
+        self.deviceCache.cachedUserInfo[userIdentity.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1440,7 +1437,7 @@ class PurchasesTests: XCTestCase {
         jsonObject.removeValue(forKey: "schema_version")
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
 
-        self.deviceCache.cachedUserInfo[userIdentity.appUserID] = object
+        self.deviceCache.cachedUserInfo[userIdentity.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1721,7 +1718,7 @@ class PurchasesTests: XCTestCase {
         }
 
         expect(completionCalled).toEventually(beTrue())
-        verifyUpdatedCaches(newAppUserID: self.userIdentity.appUserID)
+        verifyUpdatedCaches(newAppUserID: self.userIdentity.currentAppUserID)
     }
 
     func testCreateAliasForTheSameUserID() {
@@ -1732,7 +1729,7 @@ class PurchasesTests: XCTestCase {
 
         var completionCalled = false
         var info: PurchaserInfo?
-        self.purchases?.createAlias(userIdentity.appUserID) { (newInfo, error) in
+        self.purchases?.createAlias(userIdentity.currentAppUserID) { (newInfo, error) in
             completionCalled = true
             info = newInfo
         }
@@ -1750,7 +1747,7 @@ class PurchasesTests: XCTestCase {
 
         var completionCalled = false
         var info: PurchaserInfo?
-        self.purchases?.identify(userIdentity.appUserID) { (newInfo, error) in
+        self.purchases?.identify(userIdentity.currentAppUserID) { (newInfo, error) in
             completionCalled = true
             info = newInfo
         }
@@ -1957,7 +1954,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_attribution_network_id")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data["rc_attribution_network_id"] as? String).toEventually(equal("newuser"))
         expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
-        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.userIdentity.appUserID))
+        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.userIdentity.currentAppUserID))
     }
 
     func testAttributionDataDontSendNetworkAppUserIdIfNotProvided() {
@@ -1975,7 +1972,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfv")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_attribution_network_id")).toEventually(beFalse())
         expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
-        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.userIdentity.appUserID))
+        expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.userIdentity.currentAppUserID))
     }
 
     func testAdClientAttributionDataIsAutomaticallyCollected() {
@@ -2117,26 +2114,12 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
     }
 
-    func testUnsuccessfulConfigurationDoesNotUpdateCaches() {
-        self.userIdentity.mockAppUserID = "$RCAnonymousID:ff68f26e432648369a713849a9f93b58"
-        self.userIdentity.mockConfigureAppUserID = false
-        setupPurchases()
-        expect(self.backend.getSubscriberCallCount).toEventually(equal(0))
-        expect(self.deviceCache.cachedUserInfo.count).toEventually(equal(0))
-        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(0))
-        expect(self.deviceCache.cachesReset).toEventually(equal(0))
-        expect(self.backend.gotOfferings).toEventually(equal(0))
-        expect(self.deviceCache.cachedOfferingsCount).toEventually(equal(0))
-    }
-
     func testIsAnonymous() {
-        self.userIdentity.mockIsAnonymous = true
-        setupPurchases()
+        setupAnonPurchases()
         expect(self.purchases.isAnonymous).to(beTrue())
     }
 
     func testIsNotAnonymous() {
-        self.userIdentity.mockIsAnonymous = false
         setupPurchases()
         expect(self.purchases.isAnonymous).to(beFalse())
     }

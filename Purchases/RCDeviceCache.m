@@ -17,8 +17,8 @@
 
 @end
 
-NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
-NSString * RCIsAnonymousAppUserDefaultsKey = @"com.revenuecat.userdefaults.isAnonymous";
+NSString * RCLegacyGeneratedAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
+NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID.new";
 NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults.purchaserInfo.";
 
 @implementation RCDeviceCache
@@ -36,20 +36,26 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     return self;
 }
 
+- (nullable NSString *)cachedLegacyAppUserID
+{
+    return [self.userDefaults stringForKey:RCLegacyGeneratedAppUserDefaultsKey];
+}
+
 - (nullable NSString *)cachedAppUserID
 {
     return [self.userDefaults stringForKey:RCAppUserDefaultsKey];
 }
 
-- (void)cacheAppUserID:(NSString *)appUserID isAnonymous:(BOOL)isAnonymous
+- (void)cacheAppUserID:(NSString *)appUserID
 {
     [self.userDefaults setObject:appUserID forKey:RCAppUserDefaultsKey];
-    [self cacheIsAnonymous:isAnonymous];
 }
 
-- (void)clearCachesForAppUserID:(NSString *)appUserId
+- (void)clearCachesForAppUserID:(NSString *)appUserID
 {
-    [self clearCachedPurchaserInfoDataForAppUserID:appUserId];
+    [self.userDefaults removeObjectForKey:RCLegacyGeneratedAppUserDefaultsKey];
+    [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
+    [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
     [self clearCachesTimestamp];
     [self clearOfferings];
 }
@@ -92,29 +98,6 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 - (nullable NSData *)cachedPurchaserInfoDataForAppUserID:(NSString *)appUserID
 {
     return [self.userDefaults dataForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
-}
-
-- (void)clearCachedPurchaserInfoDataForAppUserID:(NSString *)appUserID
-{
-    [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
-}
-
-- (BOOL)isAnonymous
-{
-    NSNumber *isAnonymous = [self.userDefaults objectForKey:RCIsAnonymousAppUserDefaultsKey];
-    if (isAnonymous == nil) {
-        // It could be an old anonymous user. We default to YES if there is something saved in the other key.
-        // Before 3.0 we were only saving anonymous appUserIDs in the cache.
-        BOOL isAnOldAnonymousUser = [self.userDefaults stringForKey:RCAppUserDefaultsKey] != nil;
-        [self cacheIsAnonymous:isAnOldAnonymousUser];
-        return isAnOldAnonymousUser;
-    }
-    return [isAnonymous boolValue];
-}
-
-- (void)cacheIsAnonymous:(BOOL)isAnonymous
-{
-    [self.userDefaults setBool:isAnonymous forKey:RCIsAnonymousAppUserDefaultsKey];
 }
 
 @end

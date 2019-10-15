@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		35095A6C2351461E00ADF0B2 /* RCUserManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 35095A6A2351461E00ADF0B2 /* RCUserManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		35095A6D2351461E00ADF0B2 /* RCUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 35095A6B2351461E00ADF0B2 /* RCUserManager.m */; };
 		350A1B87226F937F00CCA10F /* RCAttributionData.h in Headers */ = {isa = PBXBuildFile; fileRef = 350A1B86226F937F00CCA10F /* RCAttributionData.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		350A1B89226F93C800CCA10F /* RCAttributionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 350A1B88226F93C800CCA10F /* RCAttributionData.m */; };
 		350FBDE01F7EE8F20065833D /* RCUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDDF1F7EE8F20065833D /* RCUtils.m */; };
@@ -58,7 +60,7 @@
 		35B1633F2342E67C003371A3 /* RCDeviceCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B1633E2342E67C003371A3 /* RCDeviceCache.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35B163412342E692003371A3 /* RCDeviceCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B163402342E692003371A3 /* RCDeviceCache.m */; };
 		35B1635123467C08003371A3 /* DeviceCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF6FB8DE746087488B86E7A8 /* DeviceCacheTests.swift */; };
-		35B1635223467C10003371A3 /* UserIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF6FBB49E6D96DCADBA269A8 /* UserIdentityTests.swift */; };
+		35B1635223467C10003371A3 /* UserManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF6FBB49E6D96DCADBA269A8 /* UserManagerTests.swift */; };
 		35B54E4622EA6F11005918B1 /* RCEntitlementInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B54E4522EA6F11005918B1 /* RCEntitlementInfo.m */; };
 		35B54E4822EA6F4E005918B1 /* RCEntitlementInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4722EA6F4E005918B1 /* RCEntitlementInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35B54E4A22EA6FBD005918B1 /* RCEntitlementInfos.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -77,8 +79,6 @@
 		35DFC68620B87646004584CC /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
 		35DFC68720B87646004584CC /* OHHTTPStubs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDD71F7DF17F0065833D /* OHHTTPStubs.framework */; };
 		35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */; };
-		EF6FB241F783FBD7361E69DD /* RCUserIdentity.h in Headers */ = {isa = PBXBuildFile; fileRef = EF6FBD01DC9895EEB2B410F7 /* RCUserIdentity.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		EF6FB322AF784FCB549AE18F /* RCUserIdentity.m in Sources */ = {isa = PBXBuildFile; fileRef = EF6FB37BB1C52F650CEA50A7 /* RCUserIdentity.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -106,6 +106,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		35095A6A2351461E00ADF0B2 /* RCUserManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCUserManager.h; sourceTree = "<group>"; };
+		35095A6B2351461E00ADF0B2 /* RCUserManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCUserManager.m; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		350A1B86226F937F00CCA10F /* RCAttributionData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCAttributionData.h; sourceTree = "<group>"; };
 		350A1B88226F93C800CCA10F /* RCAttributionData.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCAttributionData.m; sourceTree = "<group>"; };
@@ -175,12 +177,10 @@
 		35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibility.h; sourceTree = "<group>"; };
 		35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCIntroEligibility.m; sourceTree = "<group>"; };
 		35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWrapperTests.swift; sourceTree = "<group>"; };
-		EF6FB37BB1C52F650CEA50A7 /* RCUserIdentity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCUserIdentity.m; sourceTree = "<group>"; };
 		EF6FB66AA75A6EA23ACC0A9E /* RCPackage+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCPackage+Protected.h"; sourceTree = "<group>"; };
 		EF6FB839CFA4B4A3A3687D61 /* RCPromotionalOffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPromotionalOffer.m; sourceTree = "<group>"; };
 		EF6FB8DE746087488B86E7A8 /* DeviceCacheTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceCacheTests.swift; sourceTree = "<group>"; };
-		EF6FBB49E6D96DCADBA269A8 /* UserIdentityTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserIdentityTests.swift; sourceTree = "<group>"; };
-		EF6FBD01DC9895EEB2B410F7 /* RCUserIdentity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCUserIdentity.h; sourceTree = "<group>"; };
+		EF6FBB49E6D96DCADBA269A8 /* UserManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserManagerTests.swift; sourceTree = "<group>"; };
 		EF6FBD2FBB7BD43897C26768 /* RCPromotionalOffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPromotionalOffer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -299,8 +299,8 @@
 				35B54E5122EF88CE005918B1 /* RCEntitlementInfos+Protected.h */,
 				35B1633E2342E67C003371A3 /* RCDeviceCache.h */,
 				35B163402342E692003371A3 /* RCDeviceCache.m */,
-				EF6FB37BB1C52F650CEA50A7 /* RCUserIdentity.m */,
-				EF6FBD01DC9895EEB2B410F7 /* RCUserIdentity.h */,
+				35095A6A2351461E00ADF0B2 /* RCUserManager.h */,
+				35095A6B2351461E00ADF0B2 /* RCUserManager.m */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -317,10 +317,10 @@
 				351703CC1F805E5D00EEE27A /* PurchaserInfoTests.swift */,
 				35C514BD2321AC23000FFD78 /* OfferingsTests.swift */,
 				35B54E4D22ED1FA9005918B1 /* EntitlementInfosTests.swift */,
+				EF6FBB49E6D96DCADBA269A8 /* UserManagerTests.swift */,
+				EF6FB8DE746087488B86E7A8 /* DeviceCacheTests.swift */,
 				35262A221F7D77E600C04F2C /* Info.plist */,
 				350FBDD61F7DF1640065833D /* Frameworks */,
-				EF6FBB49E6D96DCADBA269A8 /* UserIdentityTests.swift */,
-				EF6FB8DE746087488B86E7A8 /* DeviceCacheTests.swift */,
 			);
 			path = PurchasesTests;
 			sourceTree = "<group>";
@@ -373,7 +373,7 @@
 				35B54E5222EF88CE005918B1 /* RCEntitlementInfos+Protected.h in Headers */,
 				35C98D9520B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */,
 				35B1633F2342E67C003371A3 /* RCDeviceCache.h in Headers */,
-				EF6FB241F783FBD7361E69DD /* RCUserIdentity.h in Headers */,
+				35095A6C2351461E00ADF0B2 /* RCUserManager.h in Headers */,
 				35262A0F1F7C4B9100C04F2C /* Purchases.h in Headers */,
 				35846AFD226940F600CC9E56 /* RCPromotionalOffer.h in Headers */,
 			);
@@ -511,6 +511,7 @@
 				35D3AB442030B4C600DE42C5 /* RCIntroEligibility.m in Sources */,
 				351280382318AFB400BD2163 /* RCOfferingsFactory.m in Sources */,
 				350A1B89226F93C800CCA10F /* RCAttributionData.m in Sources */,
+				35095A6D2351461E00ADF0B2 /* RCUserManager.m in Sources */,
 				352E88442229B1A70046A10A /* RCPurchasesErrorUtils.m in Sources */,
 				359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */,
 				351F4FB01F803D0700F245F4 /* RCPurchaserInfo.m in Sources */,
@@ -521,7 +522,6 @@
 				35B163412342E692003371A3 /* RCDeviceCache.m in Sources */,
 				354D50E022E7D014009B870C /* RCOfferings.m in Sources */,
 				35CE74FD20C38A7100CE09D8 /* RCOffering.m in Sources */,
-				EF6FB322AF784FCB549AE18F /* RCUserIdentity.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -539,7 +539,7 @@
 				350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */,
 				351703CD1F805E5D00EEE27A /* PurchaserInfoTests.swift in Sources */,
 				35B1635123467C08003371A3 /* DeviceCacheTests.swift in Sources */,
-				35B1635223467C10003371A3 /* UserIdentityTests.swift in Sources */,
+				35B1635223467C10003371A3 /* UserManagerTests.swift in Sources */,
 				3585D6A522E680E30079E2C5 /* RCPackage.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -668,11 +668,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -694,11 +694,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -721,6 +721,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -746,6 +747,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",

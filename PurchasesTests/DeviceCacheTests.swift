@@ -18,7 +18,7 @@ class DeviceCacheTests: XCTestCase {
 
         var stringForKeyCalledValue: String? = nil
         var setObjectForKeyCalledValue: String? = nil
-        var removeObjectForKeyCalledValue: String? = nil
+        var removeObjectForKeyCalledValues: Array<String> = []
         var dataForKeyCalledValue: String? = nil
         var objectForKeyCalledValue: String? = nil
         var setBoolForKeyCalledValue: String? = nil
@@ -32,7 +32,7 @@ class DeviceCacheTests: XCTestCase {
         }
 
         override func removeObject(forKey defaultName: String) {
-            removeObjectForKeyCalledValue = defaultName
+            removeObjectForKeyCalledValues.append(defaultName)
             mockValues.removeValue(forKey: defaultName)
         }
 
@@ -62,21 +62,27 @@ class DeviceCacheTests: XCTestCase {
         self.deviceCache = RCDeviceCache(mockUserDefaults)
     }
 
-    func testCachedUserIDUsesRightKey() {
+    func testLegacyCachedUserIDUsesRightKey() {
         self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"] = "cesar"
+        let userID: String? = self.deviceCache.cachedLegacyAppUserID
+        expect(userID).to(equal("cesar"))
+    }
+
+    func testCachedUserIDUsesRightKey() {
+        self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = "cesar"
         let userID: String? = self.deviceCache.cachedAppUserID
         expect(userID).to(equal("cesar"))
     }
 
     func testCacheUserIDUsesRightKey() {
         let userID = "cesar"
-        self.deviceCache.cacheAppUserID(userID, isAnonymous: false)
-        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"] as? String).to(equal(userID))
+        self.deviceCache.cacheAppUserID(userID)
+        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] as? String).to(equal(userID))
     }
 
     func testClearCachesRemovesCachedPurchaserInfo() {
         self.deviceCache.clearCaches(forAppUserID: "cesar")
-        expect(self.mockUserDefaults.removeObjectForKeyCalledValue).to(equal("com.revenuecat.userdefaults.purchaserInfo.cesar"))
+        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.purchaserInfo.cesar")).to(beTrue())
     }
 
     func testClearCachesRemovesCachedOfferings() {
@@ -91,6 +97,12 @@ class DeviceCacheTests: XCTestCase {
         self.deviceCache.resetCachesTimestamp()
         self.deviceCache.clearCaches(forAppUserID: "cesar")
         expect(self.deviceCache.isCacheStale()).to(beTrue())
+    }
+
+    func testClearCachesRemovesCachedAppUserIDs() {
+        self.deviceCache.clearCaches(forAppUserID: "cesar")
+        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.appUserID.new")).to(beTrue())
+        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.appUserID")).to(beTrue())
     }
 
     func testResetCachesTimestamp() {
@@ -115,50 +127,6 @@ class DeviceCacheTests: XCTestCase {
         expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfo.cesar"] as? Data).to(equal(data))
         expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: "cesar")).to(equal(data))
         expect(self.mockUserDefaults.setObjectForKeyCalledValue).to(equal("com.revenuecat.userdefaults.purchaserInfo.cesar"))
-    }
-
-    func testOldAnonymousAppUserIDIsConsideredRandom() {
-        self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"] = "anoldrandomid"
-        let anonymous: Bool = self.deviceCache.isAnonymous()
-        expect(anonymous).to(beTrue())
-    }
-
-    func testOldNotAnonymousAppUserIDIsNotConsideredRandom() {
-        // No need to save anything in the appUserID user defaults key since
-        // before 3.0 we were only saving random ones, and that's what
-        // we are testing
-        let anonymous: Bool = self.deviceCache.isAnonymous()
-        expect(anonymous).to(beFalse())
-    }
-
-    func testAnonymousAppUserID() {
-        self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"] = "$RCAnonymousID:ff68f26e432648369a713849a9f93b58"
-        self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.isAnonymous"] = true
-        let anonymous: Bool = self.deviceCache.isAnonymous()
-        expect(anonymous).to(beTrue())
-    }
-
-    func testNonAnonymousAppUserID() {
-        self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"] = "cesar"
-        self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.isAnonymous"] = false
-        let anonymous: Bool = self.deviceCache.isAnonymous()
-        expect(anonymous).to(beFalse())
-    }
-
-    func testOldAppUserIDIsStoredAsAnonymous() {
-        self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"] = "anoldrandomid"
-        let _: Bool = self.deviceCache.isAnonymous()
-        expect(self.mockUserDefaults.setValueForKeyCalledValue).to(equal("com.revenuecat.userdefaults.isAnonymous"))
-        expect((self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.isAnonymous"] as! Bool)).to(beTrue())
-    }
-
-    func testOldAppUserIDIsStoredAsNotAnonymous() {
-        // No need to save anything in the appUserID user defaults key since
-        // before 3.0 we were only saving random ones, and that's what
-        // we are testing
-        let _: Bool = self.deviceCache.isAnonymous()
-        expect(self.mockUserDefaults.setValueForKeyCalledValue).to(equal("com.revenuecat.userdefaults.isAnonymous"))
-        expect((self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.isAnonymous"] as! Bool)).to(beFalse())
     }
 
 }

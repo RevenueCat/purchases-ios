@@ -16,15 +16,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly, nullable) NSString *cachedAppUserID;
 
+@property (nonatomic, readonly, nullable) NSString *cachedLegacyAppUserID;
+
 @property (nonatomic, readonly, nullable) RCOfferings *cachedOfferings;
 
 @property (nonatomic, nullable) NSDate *cachesLastUpdated;
 
 - (instancetype)initWith:(NSUserDefaults *)userDefaults;
 
-- (void)cacheAppUserID:(NSString *)appUserID isAnonymous:(BOOL)isAnonymous;
+- (void)cacheAppUserID:(NSString *)appUserID;
 
-- (void)clearCachesForAppUserID:(NSString *)appUserId;
+- (void)clearCachesForAppUserID:(NSString *)appUserI;
 
 - (BOOL)isCacheStale;
 
@@ -37,8 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)cachePurchaserInfo:(NSData *)data forAppUserID:(NSString *)appUserID;
 
 - (nullable NSData *)cachedPurchaserInfoDataForAppUserID:(NSString *)appUserID;
-
-- (BOOL)isAnonymous;
 
 @end
 
