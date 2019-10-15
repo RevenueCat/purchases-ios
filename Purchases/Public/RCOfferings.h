@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  This class contains all the offerings configured in RevenueCat dashboard. For more info see https://docs.revenuecat.com/docs/entitlements
 */
-NS_SWIFT_NAME(Offerings)
+NS_SWIFT_NAME(Purchases.Offerings)
 @interface RCOfferings : NSObject
 
 /**

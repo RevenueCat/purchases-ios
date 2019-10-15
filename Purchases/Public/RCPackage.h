@@ -34,12 +34,12 @@ typedef NS_ENUM(NSInteger, RCPackageType) {
     RCPackageTypeMonthly,
     /// A package configured with the predefined weekly identifier.
     RCPackageTypeWeekly
-} NS_SWIFT_NAME(PackageType);
+} NS_SWIFT_NAME(Purchases.PackageType);
 
 /**
  Contains information about the product available for the user to purchase. For more info see https://docs.revenuecat.com/docs/entitlements
 */
-NS_SWIFT_NAME(Package)
+NS_SWIFT_NAME(Purchases.Package)
 @interface RCPackage : NSObject
 
 /**
