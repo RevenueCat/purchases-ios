@@ -95,8 +95,8 @@
 - (BOOL)currentUserIsAnonymous
 {
     BOOL currentAppUserIDLooksAnonymous = [[self.deviceCache cachedAppUserID] rangeOfString:@"\\$RCAnonymousID:([a-z0-9]{32})$" options:NSRegularExpressionSearch].length > 0;
-    BOOL b = [self.deviceCache.cachedAppUserID isEqualToString:self.deviceCache.cachedLegacyAppUserID];
-    return currentAppUserIDLooksAnonymous || b;
+    BOOL isLegacyAnonymousAppUserID = [self.deviceCache.cachedAppUserID isEqualToString:self.deviceCache.cachedLegacyAppUserID];
+    return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID;
 }
 
 @end

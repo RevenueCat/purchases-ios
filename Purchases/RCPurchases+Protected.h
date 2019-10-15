@@ -23,8 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
                      userDefaults:(NSUserDefaults *)userDefaults
                      observerMode:(BOOL)observerMode
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
-                      deviceCache:(RCDeviceCache *)cache
-                     userIdentity:(RCUserManager *)userIdentity;
+                      deviceCache:(RCDeviceCache *)deviceCache
+                      userManager:(RCUserManager *)userManager;
 
 + (void)setDefaultInstance:(nullable RCPurchases *)instance;
 

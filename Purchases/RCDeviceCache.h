@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)cacheAppUserID:(NSString *)appUserID;
 
-- (void)clearCachesForAppUserID:(NSString *)appUserI;
+- (void)clearCachesForAppUserID:(NSString *)appUserID;
 
 - (BOOL)isCacheStale;
 
