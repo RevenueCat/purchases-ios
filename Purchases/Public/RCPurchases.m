@@ -395,7 +395,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 {
-    // TODO: can I move this in the clear caches method?
     [self.userDefaults removeObjectForKey:[self attributionDataUserDefaultCacheKeyForAppUserID:self.appUserID]];
     [self.userManager resetAppUserID];
     [self updateCachesWithCompletionBlock:completion];
