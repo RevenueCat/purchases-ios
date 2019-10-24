@@ -2049,7 +2049,7 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    func testProductIsRemovedButPresentInReceipt() {
+    func testProductIsRemovedButPresentInTheQueuedTransaction() {
         self.requestFetcher.failProducts = true
         setupPurchases()
 
