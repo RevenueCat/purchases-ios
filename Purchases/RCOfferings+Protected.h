@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCOfferings (Protected)
 
-@property (readonly) NSDictionary<NSString *, RCOffering *> *offerings;
+@property (readonly) NSDictionary<NSString *, RCOffering *> *all;
 
 - (instancetype)initWithOfferings:(NSDictionary<NSString *, RCOffering *> *)offerings currentOfferingID:(NSString *)currentOfferingID;
 
