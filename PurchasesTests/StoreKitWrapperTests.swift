@@ -25,7 +25,7 @@ class MockPaymentQueue: SKPaymentQueue {
     }
 
     override func remove(_ observer: SKPaymentTransactionObserver) {
-        let i = observers.index { $0 === observer }
+        let i = observers.firstIndex { $0 === observer }
         observers.remove(at: i!)
     }
 
