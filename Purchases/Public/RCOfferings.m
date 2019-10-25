@@ -11,7 +11,7 @@
 
 @interface RCOfferings ()
 @property (readwrite, nullable) NSString *currentOfferingID;
-@property (readwrite) NSDictionary<NSString *, RCOffering *> *offerings;
+@property (readwrite) NSDictionary<NSString *, RCOffering *> *all;
 @end
 
 @implementation RCOfferings
@@ -19,7 +19,7 @@
 {
     self = [super init];
     if (self) {
-        self.offerings = offerings;
+        self.all = offerings;
         self.currentOfferingID = currentOfferingID;
     }
 
@@ -28,7 +28,7 @@
 
 - (nullable RCOffering *)offeringWithIdentifier:(nullable NSString *)identifier
 {
-    return self.offerings[identifier];
+    return self.all[identifier];
 }
 
 - (nullable RCOffering *)objectForKeyedSubscript:(NSString *)key
@@ -39,7 +39,7 @@
 - (nullable RCOffering *)current
 {
     if (self.currentOfferingID) {
-        return self.offerings[self.currentOfferingID];
+        return self.all[self.currentOfferingID];
     }
     return nil;
 }
@@ -47,8 +47,8 @@
 - (NSString *)description
 {
     NSMutableString *description = [NSMutableString stringWithFormat:@"<Offerings {\n"];
-    for (NSString *offeringName in self.offerings) {
-        RCOffering *offering = self.offerings[offeringName];
+    for (NSString *offeringName in self.all) {
+        RCOffering *offering = self.all[offeringName];
         NSString *offeringDesc = [NSMutableString stringWithFormat:@"\t%@\n", offering];
         [description appendString:offeringDesc];
     }
