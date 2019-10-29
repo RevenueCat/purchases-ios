@@ -2125,6 +2125,30 @@ class PurchasesTests: XCTestCase {
         expect(self.purchases.isAnonymous).to(beFalse())
     }
 
+    func testProductIsRemovedButPresentInTheQueuedTransaction() {
+        self.requestFetcher.failProducts = true
+        setupPurchases()
+
+        let purchaserInfo = Purchases.PurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = purchaserInfo
+
+        let product = MockProduct(mockProductIdentifier: "product")
+        let payment = SKPayment(product: product)
+
+        let transaction = MockTransaction()
+
+        transaction.mockPayment = payment
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
+    }
+
     private func verifyUpdatedCaches(newAppUserID: String) {
         expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
         expect(self.deviceCache.cachedUserInfo.count).toEventually(equal(2))
@@ -2134,4 +2158,5 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.gotOfferings).toEventually(equal(2))
         expect(self.deviceCache.cachedOfferingsCount).toEventually(equal(2))
     }
+
 }

@@ -65,7 +65,7 @@ static RCPurchases *_sharedPurchases = nil;
     if (_allowSharingAppStoreAccount == nil) {
         return self.isAnonymous;
     }
-    
+
     return [_allowSharingAppStoreAccount boolValue];
 }
 
@@ -97,7 +97,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 + (NSString *)frameworkVersion {
-    return @"3.0.0-beta";
+    return @"3.0.0-beta.2";
 }
 
 + (instancetype)sharedPurchases {
@@ -550,7 +550,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                          currencyCode:nil
                     subscriptionGroup:nil
                             discounts:nil
-                   presentedOfferingIdentifier:nil
+          presentedOfferingIdentifier:nil
                            completion:^(RCPurchaserInfo *_Nullable info,
                                    NSError *_Nullable error) {
                                [self dispatch:^{
@@ -922,58 +922,77 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             [self productsWithIdentifiers:@[transaction.payment.productIdentifier]
                           completionBlock:^(NSArray<SKProduct *> *products) {
                               SKProduct *product = products.lastObject;
+                              if (product) {
+                                  NSString *productIdentifier = product.productIdentifier;
+                                  NSDecimalNumber *price = product.price;
 
-                              NSString *productIdentifier = product.productIdentifier;
-                              NSDecimalNumber *price = product.price;
+                                  RCPaymentMode paymentMode = RCPaymentModeNone;
+                                  NSDecimalNumber *introPrice = nil;
 
-                              RCPaymentMode paymentMode = RCPaymentModeNone;
-                              NSDecimalNumber *introPrice = nil;
-
-                              if (@available(iOS 11.2, macOS 10.13.2, *)) {
-                                  if (product.introductoryPrice) {
-                                      paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
-                                      introPrice = product.introductoryPrice.price;
+                                  if (@available(iOS 11.2, macOS 10.13.2, *)) {
+                                      if (product.introductoryPrice) {
+                                          paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
+                                          introPrice = product.introductoryPrice.price;
+                                      }
                                   }
-                              }
 
-                              NSString *subscriptionGroup = nil;
-                              if (@available(iOS 12.0, macOS 10.14.0, *)) {
-                                  subscriptionGroup = product.subscriptionGroupIdentifier;
-                              }
-                              
-                              NSMutableArray *discounts = nil;
-                              if (@available(iOS 12.2, macOS 10.14.4, *)) {
-                                  discounts = [NSMutableArray new];
-                                  for (SKProductDiscount *discount in product.discounts) {
-                                      [discounts addObject:[[RCPromotionalOffer alloc] initWithProductDiscount:discount]];
+                                  NSString *subscriptionGroup = nil;
+                                  if (@available(iOS 12.0, macOS 10.14.0, *)) {
+                                      subscriptionGroup = product.subscriptionGroupIdentifier;
                                   }
+
+                                  NSMutableArray *discounts = nil;
+                                  if (@available(iOS 12.2, macOS 10.14.4, *)) {
+                                      discounts = [NSMutableArray new];
+                                      for (SKProductDiscount *discount in product.discounts) {
+                                          [discounts addObject:[[RCPromotionalOffer alloc] initWithProductDiscount:discount]];
+                                      }
+                                  }
+
+                                  NSString *currencyCode = product.priceLocale.rc_currencyCode;
+
+                                  NSString *presentedOffering = nil;
+                                  @synchronized (self) {
+                                      presentedOffering = self.presentedOfferingsByProductIdentifier[productIdentifier];
+                                      [self.presentedOfferingsByProductIdentifier removeObjectForKey:productIdentifier];
+                                  }
+
+                                  [self.backend postReceiptData:data
+                                                      appUserID:self.appUserID
+                                                      isRestore:self.allowSharingAppStoreAccount
+                                              productIdentifier:productIdentifier
+                                                          price:price
+                                                    paymentMode:paymentMode
+                                              introductoryPrice:introPrice
+                                                   currencyCode:currencyCode
+                                              subscriptionGroup:subscriptionGroup
+                                                      discounts:discounts
+                                    presentedOfferingIdentifier:presentedOffering
+                                                     completion:^(RCPurchaserInfo * _Nullable info,
+                                                             NSError * _Nullable error) {
+                                                         [self handleReceiptPostWithTransaction:transaction
+                                                                                  purchaserInfo:info
+                                                                                          error:error];
+                                                     }];
+                              } else {
+                                  [self.backend postReceiptData:data
+                                                      appUserID:self.appUserID
+                                                      isRestore:self.allowSharingAppStoreAccount
+                                              productIdentifier:nil
+                                                          price:nil
+                                                    paymentMode:RCPaymentModeNone
+                                              introductoryPrice:nil
+                                                   currencyCode:nil
+                                              subscriptionGroup:nil
+                                                      discounts:nil
+                                    presentedOfferingIdentifier:nil
+                                                     completion:^(RCPurchaserInfo * _Nullable info,
+                                                             NSError * _Nullable error) {
+                                                         [self handleReceiptPostWithTransaction:transaction
+                                                                                  purchaserInfo:info
+                                                                                          error:error];
+                                                     }];
                               }
-
-                              NSString *currencyCode = product.priceLocale.rc_currencyCode;
-
-                              NSString *presentedOffering = nil;
-                              @synchronized (self) {
-                                  presentedOffering = self.presentedOfferingsByProductIdentifier[productIdentifier];
-                                  [self.presentedOfferingsByProductIdentifier removeObjectForKey:productIdentifier];
-                              }
-
-                              [self.backend postReceiptData:data
-                                                  appUserID:self.appUserID
-                                                  isRestore:[self allowSharingAppStoreAccount]
-                                          productIdentifier:productIdentifier
-                                                      price:price
-                                                paymentMode:paymentMode
-                                          introductoryPrice:introPrice
-                                               currencyCode:currencyCode
-                                          subscriptionGroup:subscriptionGroup
-                                                  discounts:discounts
-                                presentedOfferingIdentifier:presentedOffering
-                                                 completion:^(RCPurchaserInfo *_Nullable info,
-                                                         NSError *_Nullable error) {
-                                                     [self handleReceiptPostWithTransaction:transaction
-                                                                              purchaserInfo:info
-                                                                                      error:error];
-                                                 }];
                           }];
         }
     }];

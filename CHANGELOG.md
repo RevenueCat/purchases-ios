@@ -1,4 +1,10 @@
-## 3.0.0
+## 3.0.0-beta.2
+
+- Fixes crash when there is a transaction in the queue that refers to a removed product https://github.com/RevenueCat/purchases-ios/issues/135
+- All offerings can be accessed by doing offerings.all on an RCOfferings object https://github.com/RevenueCat/purchases-ios/pull/137
+- Added `Purchases.` prefix to Swift classes to avoid conflicts https://github.com/RevenueCat/purchases-ios/issues/131
+
+## 3.0.0-beta
 
 - Support for new Offerings system, currently invite only. Email support@revenuecat.com if interested in access.
 - Deprecates `makePurchase` methods. Replaces with `purchasePackage`

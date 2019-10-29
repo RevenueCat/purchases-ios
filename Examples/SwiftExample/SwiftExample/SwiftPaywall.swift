@@ -16,9 +16,9 @@ enum PayWallEdgeStyle : String {
 }
 
 @objc protocol SwiftPaywallDelegate {
-    func purchaseCompleted(paywall: SwiftPaywall, transaction: SKPaymentTransaction, purchaserInfo: PurchaserInfo)
-    @objc optional func purchaseFailed(paywall: SwiftPaywall, purchaserInfo: PurchaserInfo?, error: Error, userCancelled: Bool)
-    @objc optional func purchaseRestored(paywall: SwiftPaywall, purchaserInfo: PurchaserInfo?, error: Error?)
+    func purchaseCompleted(paywall: SwiftPaywall, transaction: SKPaymentTransaction, purchaserInfo: Purchases.PurchaserInfo)
+    @objc optional func purchaseFailed(paywall: SwiftPaywall, purchaserInfo: Purchases.PurchaserInfo?, error: Error, userCancelled: Bool)
+    @objc optional func purchaseRestored(paywall: SwiftPaywall, purchaserInfo: Purchases.PurchaserInfo?, error: Error?)
 }
 
 class SwiftPaywall: UIViewController {
@@ -48,7 +48,7 @@ class SwiftPaywall: UIViewController {
     
     // Internal variables
     private var scrollView : UIScrollView!
-    private var offering : Offering?
+    private var offering : Purchases.Offering?
     private var offeringCollectionView : UICollectionView!
     private let maxItemsPerRow : CGFloat = 3
     private let aspectRatio : CGFloat = 1.3
@@ -268,13 +268,13 @@ class SwiftPaywall: UIViewController {
         }
     }
     
-    private func shouldShowDiscount(package: Package?) -> (Bool, Package?) {
+    private func shouldShowDiscount(package: Purchases.Package?) -> (Bool, Purchases.Package?) {
         return (showDiscountPercentage == true
             && mostAffordablePackages.count > 1
             && mostAffordablePackages.first?.product.productIdentifier == package?.product.productIdentifier, mostAffordablePackages.last)
     }
     
-    private var mostAffordablePackages : [Package] {
+    private var mostAffordablePackages : [Purchases.Package] {
         guard let sorted = offering?.availablePackages
             .filter({$0.packageType != .lifetime && $0.packageType != .custom})
             .sorted(by: { $1.annualCost() > $0.annualCost() }) else {
@@ -692,8 +692,8 @@ private class PackageCell : UICollectionViewCell {
     }
     
     func setupWith(
-        package: Package?,
-        discount: (Bool, Package?),
+        package: Purchases.Package?,
+        discount: (Bool, Purchases.Package?),
         edgeStyle: PayWallEdgeStyle = .round,
         productSelectedColor: UIColor? = nil,
         productDeselectedColor: UIColor? = nil) {
@@ -764,7 +764,7 @@ private class PackageCell : UICollectionViewCell {
         }
     }
     
-    func discountBetween(highest: Package, current: Package) -> NSNumber {
+    func discountBetween(highest: Purchases.Package, current: Purchases.Package) -> NSNumber {
         let highestAnnualCost : NSNumber!
         switch highest.packageType {
         case .annual:
@@ -853,7 +853,7 @@ private class PackageCell : UICollectionViewCell {
     }
 }
 
-fileprivate extension Package {
+fileprivate extension Purchases.Package {
     
     func annualCost() -> Double {
         switch self.packageType {
