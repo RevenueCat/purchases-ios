@@ -303,14 +303,6 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
                underlyingError:skError];
 }
 
-+ (NSError *)invalidAppUserIDErrorWithMethodName:(NSString *)methodName
-{
-    NSString *message = [NSString stringWithFormat:@"Cannot call %@ with a RevenueCat anonymous Id. See https://docs.revenuecat.com/docs/user-ids", methodName];
-    return [self errorWithCode:RCInvalidAppUserIdError
-                       message:message];
-}
-
-
 @end
 
 NS_ASSUME_NONNULL_END
