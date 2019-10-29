@@ -25,7 +25,7 @@
 #import "RCOfferingsFactory.h"
 #import "RCPackage+Protected.h"
 #import "RCDeviceCache.h"
-#import "RCUserManager.h"
+#import "RCIdentityManager.h"
 
 #define CALL_AND_DISPATCH_IF_SET(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -48,7 +48,7 @@
 @property (nonatomic) RCAttributionFetcher *attributionFetcher;
 @property (nonatomic) RCOfferingsFactory *offeringsFactory;
 @property (nonatomic) RCDeviceCache *deviceCache;
-@property (nonatomic) RCUserManager *userManager;
+@property (nonatomic) RCIdentityManager *identityManager;
 
 @end
 
@@ -170,7 +170,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 
     RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWith:userDefaults];
-    RCUserManager *userIdentity = [[RCUserManager alloc] initWith:deviceCache backend:backend];
+    RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWith:deviceCache backend:backend];
 
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
@@ -183,7 +183,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                       observerMode:observerMode
                   offeringsFactory:offeringsFactory
                        deviceCache:deviceCache
-                       userManager:userIdentity];
+                   identityManager:identityManager];
 }
 
 - (instancetype)initWithAppUserID:(nullable NSString *)appUserID
@@ -197,7 +197,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                      observerMode:(BOOL)observerMode
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
                       deviceCache:(RCDeviceCache *)deviceCache
-                      userManager:(RCUserManager *)userManager
+                  identityManager:(RCIdentityManager *)identityManager
 {
     if (self = [super init]) {
         RCDebugLog(@"Debug logging enabled.");
@@ -211,7 +211,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.storeKitWrapper = storeKitWrapper;
         self.offeringsFactory = offeringsFactory;
         self.deviceCache = deviceCache;
-        self.userManager = userManager;
+        self.identityManager = identityManager;
 
         self.notificationCenter = notificationCenter;
         self.userDefaults = userDefaults;
@@ -228,7 +228,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             }
         };
 
-        [self.userManager configureWithAppUserID:appUserID];
+        [self.identityManager configureWithAppUserID:appUserID];
         [self updateCachesWithCompletionBlock:callDelegate];
 
         self.storeKitWrapper.delegate = self;
@@ -298,7 +298,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
     NSString *networkKey = [NSString stringWithFormat:@"%ld",(long)network];
     NSString *advertisingIdentifier = [self.attributionFetcher advertisingIdentifier];
-    NSString *cacheKey = [self attributionDataUserDefaultCacheKeyForAppUserID:self.userManager.currentAppUserID];
+    NSString *cacheKey = [self attributionDataUserDefaultCacheKeyForAppUserID:self.identityManager.currentAppUserID];
     NSDictionary *dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks = [self.userDefaults objectForKey:cacheKey];
     NSString *latestSentToNetwork = dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks[networkKey];
     NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", advertisingIdentifier, networkUserId];
@@ -317,7 +317,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         if (newData.count > 0) {
             [self.backend postAttributionData:newData
                                   fromNetwork:network
-                                 forAppUserID:self.userManager.currentAppUserID
+                                 forAppUserID:self.identityManager.currentAppUserID
                                    completion:^(NSError * _Nullable error) {
                                        if (error == nil) {
                                            [self.userDefaults setObject:newDictToCache
@@ -354,20 +354,20 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (NSString *)appUserID
 {
-    return [self.userManager currentAppUserID];
+    return [self.identityManager currentAppUserID];
 }
 
 - (BOOL)isAnonymous
 {
-    return [self.userManager currentUserIsAnonymous];
+    return [self.identityManager currentUserIsAnonymous];
 }
 
 - (void)createAlias:(NSString *)alias completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 {
-    if ([alias isEqualToString:self.userManager.currentAppUserID]) {
+    if ([alias isEqualToString:self.identityManager.currentAppUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];
     } else {
-        [self.userManager createAlias:alias withCompletionBlock:^(NSError * _Nullable error) {
+        [self.identityManager createAlias:alias withCompletionBlock:^(NSError * _Nullable error) {
             if (error == nil) {
                 [self updateCachesWithCompletionBlock:completion];
             } else {
@@ -379,10 +379,10 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)identify:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 {
-    if ([appUserID isEqualToString:self.userManager.currentAppUserID]) {
+    if ([appUserID isEqualToString:self.identityManager.currentAppUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];
     } else {
-        [self.userManager identifyAppUserID:appUserID withCompletionBlock:^(NSError *error) {
+        [self.identityManager identifyAppUserID:appUserID withCompletionBlock:^(NSError *error) {
             if (error == nil) {
                 [self updateCachesWithCompletionBlock:completion];
             } else {
@@ -396,7 +396,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 - (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 {
     [self.userDefaults removeObjectForKey:[self attributionDataUserDefaultCacheKeyForAppUserID:self.appUserID]];
-    [self.userManager resetAppUserID];
+    [self.identityManager resetAppUserID];
     [self updateCachesWithCompletionBlock:completion];
 }
 
@@ -663,7 +663,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)updatePurchaserInfoCache:(nullable RCReceivePurchaserInfoBlock)completion
 {
-    NSString *appUserID = self.userManager.currentAppUserID;
+    NSString *appUserID = self.identityManager.currentAppUserID;
     [self.backend getSubscriberDataWithAppUserID:appUserID
                                       completion:^(RCPurchaserInfo * _Nullable info,
                                                    NSError * _Nullable error) {

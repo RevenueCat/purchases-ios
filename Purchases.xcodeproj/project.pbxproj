@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		35095A6C2351461E00ADF0B2 /* RCUserManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 35095A6A2351461E00ADF0B2 /* RCUserManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35095A6D2351461E00ADF0B2 /* RCUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 35095A6B2351461E00ADF0B2 /* RCUserManager.m */; };
+		35095A6C2351461E00ADF0B2 /* RCIdentityManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 35095A6A2351461E00ADF0B2 /* RCIdentityManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		35095A6D2351461E00ADF0B2 /* RCIdentityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 35095A6B2351461E00ADF0B2 /* RCIdentityManager.m */; };
 		350A1B87226F937F00CCA10F /* RCAttributionData.h in Headers */ = {isa = PBXBuildFile; fileRef = 350A1B86226F937F00CCA10F /* RCAttributionData.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		350A1B89226F93C800CCA10F /* RCAttributionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 350A1B88226F93C800CCA10F /* RCAttributionData.m */; };
 		350FBDE01F7EE8F20065833D /* RCUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDDF1F7EE8F20065833D /* RCUtils.m */; };
@@ -106,8 +106,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		35095A6A2351461E00ADF0B2 /* RCUserManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCUserManager.h; sourceTree = "<group>"; };
-		35095A6B2351461E00ADF0B2 /* RCUserManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCUserManager.m; sourceTree = "<group>"; };
+		35095A6A2351461E00ADF0B2 /* RCIdentityManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCIdentityManager.h; sourceTree = "<group>"; };
+		35095A6B2351461E00ADF0B2 /* RCIdentityManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIdentityManager.m; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		350A1B86226F937F00CCA10F /* RCAttributionData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCAttributionData.h; sourceTree = "<group>"; };
 		350A1B88226F93C800CCA10F /* RCAttributionData.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCAttributionData.m; sourceTree = "<group>"; };
@@ -299,8 +299,8 @@
 				35B54E5122EF88CE005918B1 /* RCEntitlementInfos+Protected.h */,
 				35B1633E2342E67C003371A3 /* RCDeviceCache.h */,
 				35B163402342E692003371A3 /* RCDeviceCache.m */,
-				35095A6A2351461E00ADF0B2 /* RCUserManager.h */,
-				35095A6B2351461E00ADF0B2 /* RCUserManager.m */,
+				35095A6A2351461E00ADF0B2 /* RCIdentityManager.h */,
+				35095A6B2351461E00ADF0B2 /* RCIdentityManager.m */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -373,7 +373,7 @@
 				35B54E5222EF88CE005918B1 /* RCEntitlementInfos+Protected.h in Headers */,
 				35C98D9520B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */,
 				35B1633F2342E67C003371A3 /* RCDeviceCache.h in Headers */,
-				35095A6C2351461E00ADF0B2 /* RCUserManager.h in Headers */,
+				35095A6C2351461E00ADF0B2 /* RCIdentityManager.h in Headers */,
 				35262A0F1F7C4B9100C04F2C /* Purchases.h in Headers */,
 				35846AFD226940F600CC9E56 /* RCPromotionalOffer.h in Headers */,
 			);
@@ -512,7 +512,7 @@
 				35D3AB442030B4C600DE42C5 /* RCIntroEligibility.m in Sources */,
 				351280382318AFB400BD2163 /* RCOfferingsFactory.m in Sources */,
 				350A1B89226F93C800CCA10F /* RCAttributionData.m in Sources */,
-				35095A6D2351461E00ADF0B2 /* RCUserManager.m in Sources */,
+				35095A6D2351461E00ADF0B2 /* RCIdentityManager.m in Sources */,
 				352E88442229B1A70046A10A /* RCPurchasesErrorUtils.m in Sources */,
 				359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */,
 				351F4FB01F803D0700F245F4 /* RCPurchaserInfo.m in Sources */,

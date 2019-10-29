@@ -23,4 +23,4 @@
 #include <Purchases/RCEntitlementInfo.h>
 #include <Purchases/RCEntitlementInfos.h>
 #include <Purchases/RCDeviceCache.h>
-#include <Purchases/RCUserManager.h>
+#include <Purchases/RCIdentityManager.h>

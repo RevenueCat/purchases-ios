@@ -3,12 +3,12 @@
 // Copyright (c) 2019 Purchases. All rights reserved.
 //
 
-#import "RCUserManager.h"
+#import "RCIdentityManager.h"
 #import "RCUtils.h"
 #import "RCBackend.h"
 #import "RCPurchasesErrorUtils.h"
 
-@interface RCUserManager ()
+@interface RCIdentityManager ()
 
 @property (nonatomic) RCDeviceCache *deviceCache;
 
@@ -16,7 +16,7 @@
 
 @end
 
-@implementation RCUserManager
+@implementation RCIdentityManager
 
 - (instancetype)initWith:(RCDeviceCache *)deviceCache backend:(RCBackend *)backend
 {
