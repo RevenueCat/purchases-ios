@@ -976,7 +976,7 @@ class PurchasesTests: XCTestCase {
         let payment = SKMutablePayment()
         payment.productIdentifier = "test"
 
-        expect(payment.applicationUsername).to(equal(""))
+        expect(payment.applicationUsername).to(beNil())
 
         transaction.mockPayment = payment
         transaction.mockState = SKPaymentTransactionState.purchased
