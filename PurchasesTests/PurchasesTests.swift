@@ -1065,7 +1065,7 @@ class PurchasesTests: XCTestCase {
         let payment = SKMutablePayment()
         payment.productIdentifier = "test"
 
-        expect(payment.applicationUsername).to(equal(""))
+        expect(payment.applicationUsername).to(beNil())
 
         transaction.mockPayment = payment
         transaction.mockState = SKPaymentTransactionState.purchased
@@ -1091,7 +1091,7 @@ class PurchasesTests: XCTestCase {
         expect(self.notificationCenter.observers.count).to(equal(1));
         if self.notificationCenter.observers.count > 0 {
             let (_, _, name, _) = self.notificationCenter.observers[0];
-            expect(name).to(equal(NSNotification.Name.UIApplicationDidBecomeActive))
+            expect(name).to(equal(UIApplication.didBecomeActiveNotification))
         }
     }
 
