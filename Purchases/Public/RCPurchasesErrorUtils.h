@@ -79,6 +79,7 @@ NS_SWIFT_NAME(Purchases.ErrorUtils)
  * @param skError The originating [SKError].
  */
 + (NSError *)purchasesErrorWithSKError:(NSError *)skError;
+
 @end
 
 NS_ASSUME_NONNULL_END
