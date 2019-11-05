@@ -51,6 +51,9 @@ And then run:
 carthage update --no-use-binaries
 ```
 
+### Swift Package Manager
+You can use Swift Package Manager to add Purchases to your Xcode project. Select `File » Swift Packages » Add Package Dependency...` and specify the repository URL of the `Purchases` library: https://github.com/RevenueCat/purchases-ios.git. Set the version to `Up to next major` and choose the target where you want to use it. The library should have been added to the Swift Package Dependencies section and you should be able to import it now.
+
 ### Requirements
 *Purchases* requires XCode 10.2+ and minimum targets iOS 9.0+ and macOS 10.12+
 
