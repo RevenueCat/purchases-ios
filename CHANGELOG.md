@@ -1,3 +1,7 @@
+## 2.6.1
+- Support for Swift Package Manager
+- Adds a conditional to protect against nil products or productIdentifier (https://github.com/RevenueCat/purchases-ios/pull/129)
+
 ## 2.6.0
 - Deprecates `activeEntitlements` in `RCPurchaserInfo` and adds `entitlements` object to `RCPurchaserInfo`. For more info look into https://docs.revenuecat.com/docs/purchaserinfo
 

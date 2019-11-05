@@ -91,7 +91,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 + (NSString *)frameworkVersion {
-    return @"2.7.0-SNAPSHOT";
+    return @"2.6.1";
 }
 
 + (instancetype)sharedPurchases {
