@@ -327,7 +327,7 @@ class PurchasesTests: XCTestCase {
 
         var emptyOfferings = false
         var badOfferings = false
-        
+
         override func createOfferings(withProducts products: [String : SKProduct], data: [AnyHashable : Any]) -> Purchases.Offerings? {
             if (emptyOfferings) {
                 return Purchases.Offerings(offerings: [:], currentOfferingID: "base")
@@ -2059,6 +2059,17 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
     }
 
+    func testNilProductIdentifier() {
+        setupPurchases()
+        let product = SKProduct()
+        var receivedError: Error?
+        self.purchases?.makePurchase(product) { (tx, info, error, userCancelled) in
+            receivedError = error
+        }
+
+        expect(receivedError).toNot(beNil())
+    }
+
     class MockSKProduct: SKProduct {
 
         var mockIdentifier: String?
@@ -2072,6 +2083,11 @@ class PurchasesTests: XCTestCase {
             self.mockIdentifier = mockIdentifier
             super.init()
         }
+    }
+    private func identifiedSuccessfully(appUserID: String) {
+        expect(self.userDefaults.cachedUserInfo[self.userDefaults.appUserIDKey]).to(beNil())
+        expect(self.purchases?.appUserID).to(equal(appUserID))
+        expect(self.purchases?.allowSharingAppStoreAccount).to(beFalse())        
     }
 
     func testPostsOfferingIfPurchasingPackage() {

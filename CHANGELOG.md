@@ -1,5 +1,9 @@
-## 3.0.0-beta.3
-
+## 3.0.0
+- Support for new Offerings system, currently invite only. Email support@revenuecat.com if interested in access.
+- Deprecates `makePurchase` methods. Replaces with `purchasePackage`
+- Deprecates `entitlements` method. Replaces with `offerings`
+- See our migration guide for more info: https://docs.revenuecat.com/v3.0/docs/offerings-migration
+- Added `Purchases.` prefix to Swift classes to avoid conflicts https://github.com/RevenueCat/purchases-ios/issues/131
 - Enabled base internationalisation to silence a warning (#119)
 - Migrates tests to Swift 5 (#138)
 - New identity changes (#133):
@@ -8,18 +12,9 @@
   - Added an `isAnonymous` property to `Purchases.shared`
   - Improved offline use
 
-## 3.0.0-beta.2
-
-- Fixes crash when there is a transaction in the queue that refers to a removed product https://github.com/RevenueCat/purchases-ios/issues/135
-- All offerings can be accessed by doing offerings.all on an RCOfferings object https://github.com/RevenueCat/purchases-ios/pull/137
-- Added `Purchases.` prefix to Swift classes to avoid conflicts https://github.com/RevenueCat/purchases-ios/issues/131
-
-## 3.0.0-beta
-
-- Support for new Offerings system, currently invite only. Email support@revenuecat.com if interested in access.
-- Deprecates `makePurchase` methods. Replaces with `purchasePackage`
-- Deprecates `entitlements` method. Replaces with `offerings`
-- See our migration guide for more info: https://docs.revenuecat.com/v3.0/docs/offerings-migration
+## 2.6.1
+- Support for Swift Package Manager
+- Adds a conditional to protect against nil products or productIdentifier (https://github.com/RevenueCat/purchases-ios/pull/129)
 
 ## 2.6.0
 - Deprecates `activeEntitlements` in `RCPurchaserInfo` and adds `entitlements` object to `RCPurchaserInfo`. For more info look into https://docs.revenuecat.com/docs/purchaserinfo

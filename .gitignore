@@ -25,3 +25,4 @@ DerivedData/
 .idea/
 Carthage
 .DS_Store
+.build/

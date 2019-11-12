@@ -485,12 +485,40 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)purchaseProduct:(SKProduct *)product withPayment:(SKMutablePayment *)payment withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier completion:(RCPurchaseCompletedBlock)completion
 {
+    RCDebugLog(@"makePurchase");
+
+    if (!product || !payment) {
+        RCLog(@"makePurchase - Could not purchase SKProduct.");
+        RCLog(@"makePurchase - Ensure your products are correctly configured in App Store Connect");
+        RCLog(@"makePurchase - See https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard");
+        completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
+            code:RCProductNotAvailableForPurchaseError
+        userInfo:@{
+                   NSLocalizedDescriptionKey: @"There was problem purchasing the product."
+                   }], false);
+        return;
+    }
+
+    NSString *productIdentifier;
+    if (product.productIdentifier) {
+        productIdentifier = product.productIdentifier;
+    } else if (payment.productIdentifier) {
+        productIdentifier = payment.productIdentifier;
+    } else {
+        RCLog(@"makePurchase - Could not purchase SKProduct. Couldn't find its product identifier. This is possibly an App Store quirk.");
+        completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
+            code:RCUnknownError
+        userInfo:@{
+                   NSLocalizedDescriptionKey: @"There was problem purchasing the product."
+                   }], false);
+        return;
+    }
+
     if (!self.finishTransactions) {
-        RCDebugLog(@"Observer mode is active (finishTransactions is set to false) and makePurchase has been called. Are you sure you want to do this?");
+        RCDebugLog(@"makePurchase - Observer mode is active (finishTransactions is set to false) and makePurchase has been called. Are you sure you want to do this?");
     }
     payment.applicationUsername = self.appUserID;
 
-    // TODO: double check this
     // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
     // from triggering a refresh.
     [self.deviceCache resetCachesTimestamp];
@@ -502,7 +530,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 
     @synchronized (self) {
-        self.productsByIdentifier[payment.productIdentifier] = product;
+        self.productsByIdentifier[productIdentifier] = product;
     }
 
     @synchronized (self) {
@@ -518,7 +546,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                             }], false);
             return;
         }
-        self.purchaseCompleteCallbacks[payment.productIdentifier] = [completion copy];
+        self.purchaseCompleteCallbacks[productIdentifier] = [completion copy];
     }
     
     [self.storeKitWrapper addPayment:[payment copy]];
@@ -728,12 +756,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                             NSMutableArray *missingProducts = [NSMutableArray new];
                                             [self performOnEachProductIdentifierInOfferings:data block:^(NSString *productIdentifier) {
                                                 SKProduct *product = productsById[productIdentifier];
-                                                
+
                                                 if (product == nil) {
                                                     [missingProducts addObject:productIdentifier];
                                                 }
                                             }];
-                                            
+
                                             if (missingProducts.count > 0) {
                                                 RCLog(@"Could not find SKProduct for %@", missingProducts);
                                                 RCLog(@"Ensure your products are correctly configured in App Store Connect");
@@ -745,7 +773,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                         } else {
                                             CALL_AND_DISPATCH_IF_SET(completion, nil, [RCPurchasesErrorUtils unexpectedBackendResponseError]);
                                         }
-                                        
+
                                     }];
                                    }];
 }
