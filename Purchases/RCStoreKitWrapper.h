@@ -2,8 +2,8 @@
 //  RCStoreKitWrapper.h
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -15,9 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCStoreKitWrapper : NSObject <SKPaymentTransactionObserver>
 
-- (instancetype _Nullable)initWithPaymentQueue:(SKPaymentQueue *)paymentQueue;
+- (nullable instancetype)initWithPaymentQueue:(SKPaymentQueue *)paymentQueue;
 
-@property (nonatomic, weak) id<RCStoreKitWrapperDelegate> _Nullable delegate;
+@property (nonatomic, weak, nullable) id<RCStoreKitWrapperDelegate> delegate;
 
 - (void)addPayment:(SKPayment *)payment;
 - (void)finishTransaction:(SKPaymentTransaction *)transaction;

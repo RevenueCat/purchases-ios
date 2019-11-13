@@ -2,8 +2,8 @@
 //  StoreKitWrapperTests.swift
 //  PurchasesTests
 //
-//  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 import Foundation
@@ -25,7 +25,7 @@ class MockPaymentQueue: SKPaymentQueue {
     }
 
     override func remove(_ observer: SKPaymentTransactionObserver) {
-        let i = observers.index { $0 === observer }
+        let i = observers.firstIndex { $0 === observer }
         observers.remove(at: i!)
     }
 

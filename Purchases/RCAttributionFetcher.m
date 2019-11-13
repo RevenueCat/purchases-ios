@@ -2,8 +2,8 @@
 //  RCAttributionFetcher.m
 //  Purchases
 //
-//  Created by César de la Vega  on 4/17/19.
-//  Copyright © 2019 Purchases. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import "RCAttributionFetcher.h"
@@ -30,7 +30,7 @@
 
 @implementation RCAttributionFetcher : NSObject
 
-- (NSString * _Nullable)advertisingIdentifier
+- (nullable NSString *)advertisingIdentifier
 {
     if (@available(iOS 6.0, macOS 10.14, *)) {
         id<FakeASIdentifierManager> asIdentifierManagerClass = (id<FakeASIdentifierManager>)NSClassFromString(@"ASIdentifierManager");
@@ -44,7 +44,7 @@
 }
 
 
-- (NSString * _Nullable)identifierForVendor
+- (nullable NSString *)identifierForVendor
 {
 #if TARGET_OS_IPHONE
     if ([UIDevice class]) {

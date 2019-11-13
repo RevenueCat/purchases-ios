@@ -2,19 +2,18 @@
 //  RCBackend.h
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
 
 #import "RCPurchases.h"
-#import "RCEntitlement.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCEntitlement, RCPromotionalOffer;
+@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCPromotionalOffer;
 
 typedef NS_ENUM(NSInteger, RCPaymentMode) {
     RCPaymentModeNone = -1,
@@ -32,7 +31,7 @@ typedef void(^RCBackendPurchaserInfoResponseHandler)(RCPurchaserInfo * _Nullable
 typedef void(^RCIntroEligibilityResponseHandler)(NSDictionary<NSString *,
                                                  RCIntroEligibility *> *);
 
-typedef void(^RCEntitlementResponseHandler)(RCEntitlements * _Nullable, NSError * _Nullable);
+typedef void(^RCOfferingsResponseHandler)(NSDictionary * _Nullable, NSError * _Nullable);
 
 typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
                                              NSString * _Nullable keyIdentifier,
@@ -42,22 +41,23 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
 
 @interface RCBackend : NSObject
 
-- (instancetype _Nullable)initWithAPIKey:(NSString *)APIKey;
+- (nullable instancetype)initWithAPIKey:(NSString *)APIKey;
 
-- (instancetype _Nullable)initWithHTTPClient:(RCHTTPClient *)client
-                                      APIKey:(NSString *)APIKey;
+- (nullable instancetype)initWithHTTPClient:(RCHTTPClient *)client
+                                     APIKey:(NSString *)APIKey;
 
-- (void)postReceiptData:(NSData *)data
-              appUserID:(NSString *)appUserID
-              isRestore:(BOOL)isRestore
-      productIdentifier:(NSString * _Nullable)productIdentifier
-                  price:(NSDecimalNumber * _Nullable)price
-            paymentMode:(RCPaymentMode)paymentMode
-      introductoryPrice:(NSDecimalNumber * _Nullable)introductoryPrice
-           currencyCode:(NSString * _Nullable)currencyCode
-      subscriptionGroup:(NSString * _Nullable)subscriptionGroup
-              discounts:(NSArray<RCPromotionalOffer *> * _Nullable)discounts
-             completion:(RCBackendPurchaserInfoResponseHandler)completion;
+- (void)    postReceiptData:(NSData *)data
+                  appUserID:(NSString *)appUserID
+                  isRestore:(BOOL)isRestore
+          productIdentifier:(nullable NSString *)productIdentifier
+                      price:(nullable NSDecimalNumber *)price
+                paymentMode:(RCPaymentMode)paymentMode
+          introductoryPrice:(nullable NSDecimalNumber *)introductoryPrice
+               currencyCode:(nullable NSString *)currencyCode
+          subscriptionGroup:(nullable NSString *)subscriptionGroup
+                  discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
+presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
+                 completion:(RCBackendPurchaserInfoResponseHandler)completion;
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
                             completion:(RCBackendPurchaserInfoResponseHandler)completion;
@@ -67,13 +67,13 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
                      productIdentifiers:(NSArray<NSString *> *)productIdentifiers
                              completion:(RCIntroEligibilityResponseHandler)completion;
 
-- (void)getEntitlementsForAppUserID:(NSString *)appUserID
-                         completion:(RCEntitlementResponseHandler)completion;
+- (void)getOfferingsForAppUserID:(NSString *)appUserID
+                      completion:(RCOfferingsResponseHandler)completion;
 
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
                forAppUserID:(NSString *)appUserID
-                 completion:(void (^ _Nullable)(NSError * _Nullable error))completion;
+                 completion:(nullable void (^)(NSError * _Nullable error))completion;
 
 - (void)createAliasForAppUserID:(NSString *)appUserID
                withNewAppUserID:(NSString *)newAppUserID

@@ -2,8 +2,8 @@
 //  RCStoreKitWrapper.m
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import "RCStoreKitWrapper.h"
@@ -23,7 +23,7 @@
     return [self initWithPaymentQueue:SKPaymentQueue.defaultQueue];
 }
 
-- (instancetype)initWithPaymentQueue:(SKPaymentQueue *)paymentQueue
+- (nullable instancetype)initWithPaymentQueue:(SKPaymentQueue *)paymentQueue
 {
     if (self = [super init]) {
         self.paymentQueue = paymentQueue;

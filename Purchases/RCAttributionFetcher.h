@@ -2,8 +2,8 @@
 //  RCAttributionFetcher.h
 //  Purchases
 //
-//  Created by César de la Vega  on 4/17/19.
-//  Copyright © 2019 Purchases. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -13,9 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCAttributionFetcher : NSObject
 
-- (NSString * _Nullable)advertisingIdentifier;
+- (nullable NSString *)advertisingIdentifier;
 
-- (NSString * _Nullable)identifierForVendor;
+- (nullable NSString *)identifierForVendor;
 
 - (void)adClientAttributionDetailsWithCompletionBlock:(void (^)(NSDictionary<NSString *, NSObject *> * _Nullable attributionDetails, NSError * _Nullable error))completionHandler;
 

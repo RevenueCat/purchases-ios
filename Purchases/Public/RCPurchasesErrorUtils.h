@@ -2,7 +2,7 @@
 //  RCPurchasesErrorUtils.h
 //  Purchases
 //
-//  Created by César de la Vega  on 3/5/19.
+//  Created by RevenueCat.
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Utility class used to construct [NSError] instances.
  */
-NS_SWIFT_NAME(PurchasesErrorUtils)
+NS_SWIFT_NAME(Purchases.ErrorUtils)
 @interface RCPurchasesErrorUtils : NSObject
 
 /**
@@ -38,7 +38,7 @@ NS_SWIFT_NAME(PurchasesErrorUtils)
  * @note This error is used when an network request returns an error. The backend error returned is wrapped in
  * this internal error code.
  */
-+ (NSError *)backendErrorWithBackendCode:(NSNumber * _Nullable)backendCode backendMessage:(NSString * _Nullable)backendMessage;
++ (NSError *)backendErrorWithBackendCode:(nullable NSNumber *)backendCode backendMessage:(nullable NSString *)backendMessage;
 
 
 /**
@@ -54,7 +54,7 @@ NS_SWIFT_NAME(PurchasesErrorUtils)
  * @note This error is used when an network request returns an error. The backend error returned is wrapped in
  * this internal error code.
  */
-+ (NSError *)backendErrorWithBackendCode:(NSNumber * _Nullable)backendCode backendMessage:(NSString * _Nullable)backendMessage finishable:(BOOL)finishable;
++ (NSError *)backendErrorWithBackendCode:(nullable NSNumber *)backendCode backendMessage:(nullable NSString *)backendMessage finishable:(BOOL)finishable;
 
 /**
  * Constructs an NSError with the [RCUnexpectedBackendResponseError] code.
@@ -79,6 +79,7 @@ NS_SWIFT_NAME(PurchasesErrorUtils)
  * @param skError The originating [SKError].
  */
 + (NSError *)purchasesErrorWithSKError:(NSError *)skError;
+
 @end
 
 NS_ASSUME_NONNULL_END

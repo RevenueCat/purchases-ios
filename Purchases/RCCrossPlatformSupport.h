@@ -2,9 +2,10 @@
 //  RCCrossPlatformSupport.h
 //  Purchases
 //
-//  Created by Jacob Eiting on 5/24/18.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
+
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
 #define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME UIApplicationDidBecomeActiveNotification

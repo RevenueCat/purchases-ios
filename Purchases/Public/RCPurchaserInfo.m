@@ -2,8 +2,8 @@
 //  RCPurchaserInfo.m
 //  Purchases
 //
-//  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import "RCPurchaserInfo.h"
@@ -17,13 +17,13 @@
 @property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDatesByProduct;
 @property (nonatomic) NSDictionary<NSString *, NSDate *> *purchaseDatesByProduct;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
-@property (nonatomic) NSString *originalApplicationVersion;
+@property (nonatomic, nullable) NSString *originalApplicationVersion;
 @property (nonatomic) NSDictionary *originalData;
-@property (nonatomic) NSDate * _Nullable requestDate;
+@property (nonatomic, nullable) NSDate *requestDate;
 @property (nonatomic) NSDate *firstSeen;
 @property (nonatomic) RCEntitlementInfos *entitlements;
 @property (nonatomic) NSString *originalAppUserId;
-@property (nonatomic) NSString * _Nullable schemaVersion;
+@property (nonatomic, nullable) NSString *schemaVersion;
 
 @end
 
@@ -32,7 +32,7 @@ static dispatch_once_t onceToken;
 
 @implementation RCPurchaserInfo
 
-- (instancetype _Nullable)initWithData:(NSDictionary *)data
+- (nullable instancetype)initWithData:(NSDictionary *)data
 {
     if (self = [super init]) {
         if (data[@"subscriber"] == nil) {
@@ -89,7 +89,7 @@ static dispatch_once_t onceToken;
     return self;
 }
 
-- (NSDate * _Nullable)parseDate:(id)dateString withDateFormatter:(NSDateFormatter *)dateFormatter
+- (nullable NSDate *)parseDate:(id)dateString withDateFormatter:(NSDateFormatter *)dateFormatter
 {
     if ([dateString isKindOfClass:NSString.class]) {
         return [dateFormatter dateFromString:(NSString *)dateString];
@@ -158,7 +158,7 @@ static dispatch_once_t onceToken;
     return [self activeKeys:self.expirationDatesByProduct];
 }
 
-- (NSDate * _Nullable)latestExpirationDate
+- (nullable NSDate *)latestExpirationDate
 {
     NSDate *maxDate = nil;
     
@@ -176,28 +176,28 @@ static dispatch_once_t onceToken;
     return [NSSet setWithArray:self.entitlements.active.allKeys];
 }
 
-- (NSDate *)expirationDateForProductIdentifier:(NSString *)productIdentifier
+- (nullable NSDate *)expirationDateForProductIdentifier:(NSString *)productIdentifier
 {
     return self.expirationDatesByProduct[productIdentifier];
 }
 
-- (NSDate * _Nullable)purchaseDateForProductIdentifier:(NSString *)productIdentifier
+- (nullable NSDate *)purchaseDateForProductIdentifier:(NSString *)productIdentifier
 {
     NSObject *dateOrNull = self.purchaseDatesByProduct[productIdentifier];
     return [dateOrNull isKindOfClass:NSNull.class] ? nil : (NSDate *)dateOrNull;
 }
 
-- (NSDate * _Nullable)expirationDateForEntitlement:(NSString *)entitlementId
+- (nullable NSDate *)expirationDateForEntitlement:(NSString *)entitlementId
 {
     return self.entitlements[entitlementId].expirationDate;
 }
 
-- (NSDate * _Nullable)purchaseDateForEntitlement:(NSString *)entitlementId
+- (nullable NSDate *)purchaseDateForEntitlement:(NSString *)entitlementId
 {
     return self.entitlements[entitlementId].latestPurchaseDate;
 }
 
-- (NSDictionary * _Nonnull)JSONObject {
+- (NSDictionary *)JSONObject {
     NSMutableDictionary *dictionary = [self.originalData mutableCopy];
     dictionary[@"schema_version"] = [RCPurchaserInfo currentSchemaVersion];
     return dictionary;

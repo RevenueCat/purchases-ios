@@ -24,33 +24,28 @@ class InitialViewController: UIViewController {
             if let e = error {
                 print(e.localizedDescription)
             }
-            if let purchaserInfo = purchaserInfo {
+            
+            // Route the view depending if we have a premium cat user or not
+            if purchaserInfo?.entitlements["pro_cat"]?.isActive == true {
                 
-                // Route the view depending if we have a premium cat user or not
+                // if we have a pro_cat subscriber, send them to the cat screen
                 let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                var controller : UIViewController!
-
+                let controller = storyboard.instantiateViewController(withIdentifier: "cats")
+                controller.modalPresentationStyle = .fullScreen
+                self.present(controller, animated: true, completion: nil)
                 
-                if purchaserInfo.entitlements["pro_cat"]?.isActive == true {
-                    
-                    // if we have a pro_cat subscriber, send them to the cat screen
-                    controller = storyboard.instantiateViewController(withIdentifier: "cats")
-                    
-                } else {
-                    
-                    // if we don't have a pro subscriber, send them to the upsell screen
-                    controller = storyboard.instantiateViewController(withIdentifier: "upsell")
-                }
+            } else {
+                // if we don't have a pro subscriber, send them to the upsell screen
+                let controller = SwiftPaywall(
+                    termsOfServiceUrlString: "https://www.revenuecat.com/terms",
+                    privacyPolicyUrlString: "https://www.revenuecat.com/terms")
                 
-                
-                let nav = UINavigationController(rootViewController: controller)
-                nav.navigationBar.isHidden = true
-                self.present(nav, animated: true, completion: nil)
+                controller.titleLabel.text = "Upsell Screen"
+                controller.subtitleLabel.text = "New cats, unlimited cats, personal cat insights and more!"
+                controller.modalPresentationStyle = .fullScreen
+                self.present(controller, animated: true, completion: nil)
             }
         }
         
     }
-
-
 }
-

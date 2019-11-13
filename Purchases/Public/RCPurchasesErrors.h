@@ -1,29 +1,34 @@
 //
-//  NSError+Purchases.h
+//  RCPurchasesErrors.h
 //  Purchases
 //
-//  Created by César de la Vega  on 3/5/19.
+//  Created by RevenueCat.
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 
 
-NS_SWIFT_NAME(PurchasesErrors)
+NS_SWIFT_NAME(Purchases.Errors)
 @interface RCPurchasesErrors
 
 /**
- * NSErrorDomain for errors occurring within the scope of the Purchases SDK
+ `NSErrorDomain` for errors occurring within the scope of the Purchases SDK.
  */
-extern NSErrorDomain const RCPurchasesErrorDomain NS_SWIFT_NAME(PurchasesErrorDomain);
-extern NSErrorDomain const RCBackendErrorDomain NS_SWIFT_NAME(RevenueCatBackendErrorDomain);
+extern NSErrorDomain const RCPurchasesErrorDomain NS_SWIFT_NAME(Purchases.ErrorDomain);
 
-extern NSErrorUserInfoKey const RCFinishableKey NS_SWIFT_NAME(FinishableKey);
-extern NSErrorUserInfoKey const RCReadableErrorCodeKey NS_SWIFT_NAME(ReadableErrorCodeKey);
+/**
+ `NSErrorDomain` for errors occurring within the scope of the RevenueCat Backend.
+ */
+extern NSErrorDomain const RCBackendErrorDomain NS_SWIFT_NAME(Purchases.RevenueCatBackendErrorDomain);
+
+extern NSErrorUserInfoKey const RCFinishableKey NS_SWIFT_NAME(Purchases.FinishableKey);
+
+extern NSErrorUserInfoKey const RCReadableErrorCodeKey NS_SWIFT_NAME(Purchases.ReadableErrorCodeKey);
 
 
 /**
- * Error codes used by the Purchases SDK
+ Error codes used by the Purchases SDK
  */
 typedef NS_ERROR_ENUM(RCPurchasesErrorDomain, RCPurchasesErrorCode) {
     RCUnknownError = 0,
@@ -45,10 +50,10 @@ typedef NS_ERROR_ENUM(RCPurchasesErrorDomain, RCPurchasesErrorCode) {
     RCUnknownBackendError,
     RCInvalidAppleSubscriptionKeyError,
     RCIneligibleError,
-} NS_SWIFT_NAME(PurchasesErrorCode);
+} NS_SWIFT_NAME(Purchases.ErrorCode);
 
 /**
- * Error codes sent by the RevenueCat backend. This only includes the errors that matter to the SDK
+ Error codes sent by the RevenueCat backend. This only includes the errors that matter to the SDK
  */
 typedef NS_ENUM(NSInteger, RCBackendErrorCode) {
     RCBackendInvalidPlatform = 7000,
@@ -67,6 +72,6 @@ typedef NS_ENUM(NSInteger, RCBackendErrorCode) {
     RCBackendPlayStoreGenericError = 7231,
     RCBackendUserIneligibleForPromoOffer = 7232,
     RCBackendInvalidAppleSubscriptionKey = 7234
-} NS_SWIFT_NAME(RevenueCatBackendErrorCode);
+} NS_SWIFT_NAME(Purchases.RevenueCatBackendErrorCode);
 
 @end

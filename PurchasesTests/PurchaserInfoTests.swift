@@ -2,8 +2,8 @@
 //  PurchaserInfoTests.swift
 //  PurchasesTests
 //
-//  Created by Jacob Eiting on 9/30/17.
-//  Copyright © 2019 RevenueCat, Inc. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 import Foundation
@@ -13,7 +13,7 @@ import Nimble
 import Purchases
 
 class EmptyPurchaserInfoTests: XCTestCase {
-    let purchaserInfo = PurchaserInfo.init(data: [AnyHashable : Any]())
+    let purchaserInfo = Purchases.PurchaserInfo.init(data: [AnyHashable : Any]())
 
     func testEmptyDataYieldsANilInfo() {
         expect(self.purchaserInfo).to(beNil())
@@ -75,12 +75,12 @@ class BasicPurchaserInfoTests: XCTestCase {
                 "\"product_b\": {\"expires_date\": \"2018-05-27T05:24:50Z\",\"period_type\": \"normal\"}" +
             "}}}";
 
-    var purchaserInfo: PurchaserInfo?
+    var purchaserInfo: Purchases.PurchaserInfo?
 
     override func setUp() {
         super.setUp()
 
-        purchaserInfo = PurchaserInfo(data: validSubscriberResponse)
+        purchaserInfo = Purchases.PurchaserInfo(data: validSubscriberResponse)
     }
 
     func testParsesSubscriptions() {
@@ -123,7 +123,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
 
     func testOriginalApplicationVersion() {
-        let purchaserInfo = PurchaserInfo(data: [
+        let purchaserInfo = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "original_application_version": "1.0",
                 "subscriptions": [:],
@@ -134,31 +134,20 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testPreservesOriginalJSONSerializableObject() {
         let json = purchaserInfo?.jsonObject()
-        let newInfo = PurchaserInfo(data: json!)
+        let newInfo = Purchases.PurchaserInfo(data: json!)
         expect(newInfo).toNot(beNil())
     }
 
     func testTwoProductJson() {
         let json = try! JSONSerialization.jsonObject(with: validTwoProductsJSON.data(using: String.Encoding.utf8)!, options: [])
-        let info = PurchaserInfo(data: json as! [AnyHashable : Any])
+        let info = Purchases.PurchaserInfo(data: json as! [AnyHashable : Any])
         expect(info?.latestExpirationDate).toNot(beNil())
     }
 
-    func testActiveEntitlements() {
-        let entitlements = purchaserInfo!.activeEntitlements
-        expect(entitlements as NSSet).to(contain("pro"));
-        expect(entitlements as NSSet).toNot(contain("old_pro"));
-    }
-    
     func testActiveEntitlementInfos() {
         let entitlements = purchaserInfo!.entitlements.active
         expect(entitlements.keys).to(contain("pro"));
         expect(entitlements.keys).toNot(contain("old_pro"));
-    }
-
-    func testRandomEntitlement() {
-        let entitlements = purchaserInfo!.activeEntitlements
-        expect(entitlements as NSSet).toNot(contain("random"));
     }
     
     func testRandomEntitlementInfos() {
@@ -171,11 +160,6 @@ class BasicPurchaserInfoTests: XCTestCase {
         expect(proDate?.timeIntervalSince1970).to(equal(4123276836))
     }
 
-    func testLifetimeSubscriptions() {
-        let entitlements = purchaserInfo!.activeEntitlements
-        expect(entitlements as NSSet).to(contain("forever_pro"));
-    }
-    
     func testLifetimeSubscriptionsEntitlementInfos() {
         let entitlements = purchaserInfo!.entitlements.active
         expect(entitlements.keys).to(contain("forever_pro"));
@@ -192,49 +176,65 @@ class BasicPurchaserInfoTests: XCTestCase {
     func testIfRequestDateIsNilUsesCurrentTime() {
         let response = [
             "subscriber": [
-                "other_purchases": [
+                "original_app_user_id": "app_user_id",
+                "original_application_version": "2083",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "non_subscriptions": [
                     "onetime_purchase": [
-                        "purchase_date": "1990-08-30T02:40:36Z"
+                        [
+                            "original_purchase_date": "1990-08-30T02:40:36Z",
+                            "purchase_date": "1990-08-30T02:40:36Z"
+                        ]
                     ],
                     "pro.3": [
-                        "purchase_date": "1990-08-30T02:40:36Z"
+                        [
+                            "original_purchase_date": "1990-08-30T02:40:36Z",
+                            "purchase_date": "1990-08-30T02:40:36Z"
+                        ]
                     ]
                 ],
                 "subscriptions": [
                     "onemonth_freetrial": [
-                        "expires_date": "2100-08-30T02:40:36Z"
+                        "expires_date": "2100-08-30T02:40:36Z",
+                        "period_type": "normal"
                     ],
                     "threemonth_freetrial": [
-                        "expires_date": "1990-08-30T02:40:36Z"
+                        "expires_date": "1990-08-30T02:40:36Z",
+                        "period_type": "normal"
                     ],
                     "pro.1": [
-                        "expires_date" : "2100-08-30T02:40:36Z"
+                        "expires_date" : "2100-08-30T02:40:36Z",
+                        "period_type": "normal"
                     ],
                     "pro.2": [
-                        "expires_date" : "1990-08-30T02:40:36Z"
+                        "expires_date" : "1990-08-30T02:40:36Z",
+                        "period_type": "normal"
                     ]
                 ],
                 "entitlements": [
                     "pro" : [
                         "expires_date" : "2100-08-30T02:40:36Z",
-                        "product_identifier": "pro.1"
+                        "product_identifier": "pro.1",
+                        "purchase_date": "2018-10-26T23:17:53Z"
                     ],
                     "old_pro" : [
                         "expires_date" : "1990-08-30T02:40:36Z",
-                        "product_identifier": "pro.2"
+                        "product_identifier": "pro.2",
+                        "purchase_date": "1990-06-30T02:40:36Z"
                     ],
                     "forever_pro" : [
                         "expires_date" : nil,
-                        "product_identifier": "pro.3"
+                        "product_identifier": "pro.3",
+                        "purchase_date": "1990-08-30T02:40:36Z"
                     ],
                 ]
             ]
-            ] as [String : Any]
-        let purchaserInfoWithoutRequestData = PurchaserInfo(data: response)
+        ] as [String : Any]
+        let purchaserInfoWithoutRequestData = Purchases.PurchaserInfo(data: response)
 
-        let entitlements = purchaserInfoWithoutRequestData!.activeEntitlements
-        expect(entitlements as NSSet).to(contain("pro"));
-        expect(entitlements as NSSet).toNot(contain("old_pro"));
+        let entitlements: [String : Purchases.EntitlementInfo] = purchaserInfoWithoutRequestData!.entitlements.active
+        expect(entitlements["pro"]).toNot(beNil());
+        expect(entitlements["old_pro"]).to(beNil());
     }
 
     func testPurchaseDate() {
@@ -271,18 +271,18 @@ class BasicPurchaserInfoTests: XCTestCase {
                 ]
             ]
         ] as [String : Any]
-        let purchaserInfoWithoutRequestData = PurchaserInfo(data: response)
+        let purchaserInfoWithoutRequestData = Purchases.PurchaserInfo(data: response)
         let purchaseDate = purchaserInfoWithoutRequestData!.purchaseDate(forEntitlement: "pro")
         expect(purchaseDate).to(beNil())
     }
     
     func testEmptyInfosEqual() {
-        let info1 = PurchaserInfo(data: [
+        let info1 = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        let info2 = PurchaserInfo(data: [
+        let info2 = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:]
@@ -291,13 +291,13 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testDifferentFetchDatesStillEqual() {
-        let info1 = PurchaserInfo(data: [
+        let info1 = Purchases.PurchaserInfo(data: [
             "request_date": "2018-12-19T02:40:36Z",
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        let info2 = PurchaserInfo(data: [
+        let info2 = Purchases.PurchaserInfo(data: [
             "request_date": "2018-11-19T02:40:36Z",
             "subscriber": [
                 "subscriptions": [:],
@@ -307,7 +307,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testDifferentActiveEntitlementsNotEqual() {
-        let info1 = PurchaserInfo(data: [
+        let info1 = Purchases.PurchaserInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
                 "subscriptions": [
@@ -322,7 +322,7 @@ class BasicPurchaserInfoTests: XCTestCase {
                     ]
                 ]
             ]])
-        let info2 = PurchaserInfo(data: [
+        let info2 = Purchases.PurchaserInfo(data: [
             "request_date": "2018-11-19T02:40:36Z",
             "subscriber": [
                 "subscriptions": [
@@ -342,7 +342,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testDifferentEntitlementsNotEqual() {
-        let info1 = PurchaserInfo(data: [
+        let info1 = Purchases.PurchaserInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
                 "subscriptions": [
@@ -366,7 +366,7 @@ class BasicPurchaserInfoTests: XCTestCase {
                     ]
                 ]
             ]])
-        let info2 = PurchaserInfo(data: [
+        let info2 = Purchases.PurchaserInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
                 "subscriptions": [
@@ -394,7 +394,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testSameEntitlementsDifferentRequestDateEqual() {
-        let info1 = PurchaserInfo(data: [
+        let info1 = Purchases.PurchaserInfo(data: [
             "request_date": "2018-12-21T02:40:36Z",
             "subscriber": [
                 "subscriptions": [
@@ -418,7 +418,7 @@ class BasicPurchaserInfoTests: XCTestCase {
                     ]
                 ]
             ]])
-        let info2 = PurchaserInfo(data: [
+        let info2 = Purchases.PurchaserInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
                 "subscriptions": [

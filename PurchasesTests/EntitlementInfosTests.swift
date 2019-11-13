@@ -2,8 +2,8 @@
 //  EntitlementInfosTests.swift
 //  PurchasesTests
 //
-//  Created by César de la Vega  on 7/27/19.
-//  Copyright © 2019 Purchases. All rights reserved.
+//  Created by RevenueCat.
+//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 import Foundation
@@ -85,7 +85,7 @@ class EntitlementInfosTests: XCTestCase {
             ]
         )
         
-        let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
+        let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
         expect(subscriberInfo.entitlements.all.count).to(equal(2))
         // The default is "pro_cat"
         verifySubscriberInfo()
@@ -98,8 +98,8 @@ class EntitlementInfosTests: XCTestCase {
         // Check for "lifetime_cat" entitlement
         verifyEntitlementActive(beTrue(), entitlement: "lifetime_cat")
         verifyRenewal(beTrue(), unsubscribeDetectedAt: beNil(), billingIssueDetectedAt: beNil(), entitlement: "lifetime_cat")
-        verifyPeriodType(equal(PeriodType.normal.rawValue), entitlement: "lifetime_cat")
-        verifyStore(equal(Store.appStore.rawValue), entitlement: "lifetime_cat")
+        verifyPeriodType(equal(Purchases.PeriodType.normal.rawValue), entitlement: "lifetime_cat")
+        verifyStore(equal(Purchases.Store.appStore.rawValue), entitlement: "lifetime_cat")
         verifySandbox(beFalse(), entitlement: "lifetime_cat")
         verifyProduct(identifier: equal("lifetime"),
                       latestPurchaseDate: equal(formatter.date(from: "2019-07-26T23:45:40Z")),
@@ -132,7 +132,7 @@ class EntitlementInfosTests: XCTestCase {
             ]
         )
         
-        let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
+        let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
         
         expect(subscriberInfo.entitlements["pro_cat"]).toNot(beNil())
         expect(subscriberInfo.entitlements.active["pro_cat"]).toNot(beNil())
@@ -192,7 +192,7 @@ class EntitlementInfosTests: XCTestCase {
 
     func testGetsEmptySubscriberInfo() {
         stubResponse()
-        let subscriberInfo = PurchaserInfo(data: response)
+        let subscriberInfo = Purchases.PurchaserInfo(data: response)
 
         expect(subscriberInfo?.firstSeen).toNot(beNil())
         expect(subscriberInfo?.originalAppUserId).to(equal("cesarsandbox1"))
@@ -505,7 +505,7 @@ class EntitlementInfosTests: XCTestCase {
                     ]
                 ])
 
-        verifyStore(equal(Store.appStore.rawValue))
+        verifyStore(equal(Purchases.Store.appStore.rawValue))
         
         stubResponse(
             entitlements: [
@@ -527,7 +527,7 @@ class EntitlementInfosTests: XCTestCase {
                     "unsubscribe_detected_at": nil
                 ]
             ])
-        verifyStore(equal(Store.macAppStore.rawValue))
+        verifyStore(equal(Purchases.Store.macAppStore.rawValue))
         
         stubResponse(
             entitlements: [
@@ -549,7 +549,7 @@ class EntitlementInfosTests: XCTestCase {
                     "unsubscribe_detected_at": nil
                 ]
             ])
-        verifyStore(equal(Store.playStore.rawValue))
+        verifyStore(equal(Purchases.Store.playStore.rawValue))
         
         stubResponse(
             entitlements: [
@@ -571,7 +571,7 @@ class EntitlementInfosTests: XCTestCase {
                     "unsubscribe_detected_at": nil
                 ]
             ])
-        verifyStore(equal(Store.promotional.rawValue))
+        verifyStore(equal(Purchases.Store.promotional.rawValue))
         
         stubResponse(
             entitlements: [
@@ -593,7 +593,7 @@ class EntitlementInfosTests: XCTestCase {
                     "unsubscribe_detected_at": nil
                 ]
             ])
-        verifyStore(equal(Store.stripe.rawValue))
+        verifyStore(equal(Purchases.Store.stripe.rawValue))
         
         stubResponse(
             entitlements: [
@@ -615,7 +615,7 @@ class EntitlementInfosTests: XCTestCase {
                     "unsubscribe_detected_at": nil
                 ]
             ])
-        verifyStore(equal(Store.unknownStore.rawValue))
+        verifyStore(equal(Purchases.Store.unknownStore.rawValue))
     }
 
     func testParseStoreFromNonSubscription() {
@@ -647,7 +647,7 @@ class EntitlementInfosTests: XCTestCase {
                 ],
                 subscriptions: [:]
         )
-        verifyStore(equal(Store.appStore.rawValue))
+        verifyStore(equal(Purchases.Store.appStore.rawValue))
 
         stubResponse(
                 entitlements: [
@@ -677,7 +677,7 @@ class EntitlementInfosTests: XCTestCase {
                 ],
                 subscriptions: [:]
         )
-        verifyStore(equal(Store.macAppStore.rawValue))
+        verifyStore(equal(Purchases.Store.macAppStore.rawValue))
 
         stubResponse(
                 entitlements: [
@@ -707,7 +707,7 @@ class EntitlementInfosTests: XCTestCase {
                 ],
                 subscriptions: [:]
         )
-        verifyStore(equal(Store.playStore.rawValue))
+        verifyStore(equal(Purchases.Store.playStore.rawValue))
 
         stubResponse(
                 entitlements: [
@@ -737,7 +737,7 @@ class EntitlementInfosTests: XCTestCase {
                 ],
                 subscriptions: [:]
         )
-        verifyStore(equal(Store.promotional.rawValue))
+        verifyStore(equal(Purchases.Store.promotional.rawValue))
 
         stubResponse(
                 entitlements: [
@@ -767,7 +767,7 @@ class EntitlementInfosTests: XCTestCase {
                 ],
                 subscriptions: [:]
         )
-        verifyStore(equal(Store.stripe.rawValue))
+        verifyStore(equal(Purchases.Store.stripe.rawValue))
 
         stubResponse(
                 entitlements: [
@@ -797,7 +797,7 @@ class EntitlementInfosTests: XCTestCase {
                 ],
                 subscriptions: [:]
         )
-        verifyStore(equal(Store.unknownStore.rawValue))
+        verifyStore(equal(Purchases.Store.unknownStore.rawValue))
     }
 
     func testParsePeriod() {
@@ -822,7 +822,7 @@ class EntitlementInfosTests: XCTestCase {
                     ]
                 ])
 
-        verifyPeriodType(equal(PeriodType.normal.rawValue))
+        verifyPeriodType(equal(Purchases.PeriodType.normal.rawValue))
 
         stubResponse(
                 entitlements: [
@@ -844,7 +844,7 @@ class EntitlementInfosTests: XCTestCase {
                         "unsubscribe_detected_at": nil
                     ]
                 ])
-        verifyPeriodType(equal(PeriodType.intro.rawValue))
+        verifyPeriodType(equal(Purchases.PeriodType.intro.rawValue))
 
         stubResponse(
                 entitlements: [
@@ -866,7 +866,7 @@ class EntitlementInfosTests: XCTestCase {
                         "unsubscribe_detected_at": nil
                     ]
                 ])
-        verifyPeriodType(equal(PeriodType.trial.rawValue))
+        verifyPeriodType(equal(Purchases.PeriodType.trial.rawValue))
 
         stubResponse(
                 entitlements: [
@@ -888,7 +888,7 @@ class EntitlementInfosTests: XCTestCase {
                         "unsubscribe_detected_at": nil
                     ]
                 ])
-        verifyPeriodType(equal(PeriodType.normal.rawValue))
+        verifyPeriodType(equal(Purchases.PeriodType.normal.rawValue))
     }
 
     func testParsePeriodForNonSubscription() {
@@ -920,11 +920,11 @@ class EntitlementInfosTests: XCTestCase {
             ],
             subscriptions: [:]
         )
-        verifyPeriodType(equal(PeriodType.normal.rawValue))
+        verifyPeriodType(equal(Purchases.PeriodType.normal.rawValue))
     }
 
     func verifySubscriberInfo() {
-        let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
+        let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
 
         expect(subscriberInfo).toNot(beNil())
         expect(subscriberInfo.firstSeen).to(equal(formatter.date(from: "2019-07-26T23:29:50Z")))
@@ -932,8 +932,8 @@ class EntitlementInfosTests: XCTestCase {
     }
 
     func verifyEntitlementActive(_ matcher: Predicate<Bool> = beTrue(), entitlement: String = "pro_cat") {
-        let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
-        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
+        let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
+        let proCat: Purchases.EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.identifier).to(equal(entitlement))
         expect(subscriberInfo.entitlements.all.keys.contains(entitlement)).to(beTrue())
@@ -945,31 +945,31 @@ class EntitlementInfosTests: XCTestCase {
                 unsubscribeDetectedAt: Predicate<Date> = beNil(),
                 billingIssueDetectedAt: Predicate<Date> = beNil(),
                 entitlement: String = "pro_cat") {
-        let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
-        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
+        let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
+        let proCat: Purchases.EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.willRenew).to(matcher)
         expect(proCat.unsubscribeDetectedAt).to(unsubscribeDetectedAt)
         expect(proCat.billingIssueDetectedAt).to(billingIssueDetectedAt)
     }
 
-    func verifyPeriodType(_ matcher: Predicate<Int> = equal(PeriodType.normal.rawValue), entitlement: String = "pro_cat") {
-        let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
-        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
+    func verifyPeriodType(_ matcher: Predicate<Int> = equal(Purchases.PeriodType.normal.rawValue), entitlement: String = "pro_cat") {
+        let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
+        let proCat: Purchases.EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.periodType.rawValue).to(matcher)
     }
 
-    func verifyStore(_ matcher: Predicate<Int> = equal(Store.appStore.rawValue), entitlement: String = "pro_cat") {
-        let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
-        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
+    func verifyStore(_ matcher: Predicate<Int> = equal(Purchases.Store.appStore.rawValue), entitlement: String = "pro_cat") {
+        let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
+        let proCat: Purchases.EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.store.rawValue).to(matcher)
     }
 
     func verifySandbox(_ matcher: Predicate<Bool> = beFalse(), entitlement: String = "pro_cat") {
-        let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
-        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
+        let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
+        let proCat: Purchases.EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.isSandbox).to(matcher)
     }
@@ -988,8 +988,8 @@ class EntitlementInfosTests: XCTestCase {
                        originalPurchaseDate: Predicate<Date>,
                        expirationDate: Predicate<Date>,
                        entitlement: String = "pro_cat") {
-        let subscriberInfo: PurchaserInfo = PurchaserInfo(data: response)!
-        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
+        let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
+        let proCat: Purchases.EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.latestPurchaseDate).to(latestPurchaseDate)
         expect(proCat.originalPurchaseDate).to(originalPurchaseDate)

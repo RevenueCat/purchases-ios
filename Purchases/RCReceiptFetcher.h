@@ -2,7 +2,7 @@
 //  RCReceiptFetcher.h
 //  Purchases
 //
-//  Created by César de la Vega  on 3/6/19.
+//  Created by RevenueCat.
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
