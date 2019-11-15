@@ -1,5 +1,5 @@
 ## 3.0.0
-- Support for new Offerings system, currently invite only. Email support@revenuecat.com if interested in access.
+- Support for new Offerings system.
 - Deprecates `makePurchase` methods. Replaces with `purchasePackage`
 - Deprecates `entitlements` method. Replaces with `offerings`
 - See our migration guide for more info: https://docs.revenuecat.com/v3.0/docs/offerings-migration
