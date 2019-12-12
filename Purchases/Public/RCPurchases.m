@@ -386,7 +386,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             if (error == nil) {
                 [self updateCachesWithCompletionBlock:completion];
             } else {
-                CALL_IF_SET(completion, nil, error);
+                CALL_AND_DISPATCH_IF_SET(completion, nil, error);
             }
         }];
 
@@ -405,7 +405,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
     if (infoFromCache) {
         RCDebugLog(@"Vending purchaserInfo from cache");
-        CALL_IF_SET(completion, infoFromCache, nil);
+        CALL_AND_DISPATCH_IF_SET(completion, infoFromCache, nil);
         if ([self.deviceCache isCacheStale]) {
             RCDebugLog(@"Cache is stale, updating caches");
             [self updateCaches];
@@ -719,7 +719,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 {
     if (self.deviceCache.cachedOfferings) {
         RCDebugLog(@"Vending offerings from cache");
-        CALL_IF_SET(completion, self.deviceCache.cachedOfferings, nil);
+        CALL_AND_DISPATCH_IF_SET(completion, self.deviceCache.cachedOfferings, nil);
         if ([self.deviceCache isCacheStale]) {
             RCDebugLog(@"Cache is stale, updating caches");
             [self updateCaches];
