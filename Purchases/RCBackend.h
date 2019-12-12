@@ -57,6 +57,7 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
           subscriptionGroup:(nullable NSString *)subscriptionGroup
                   discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
 presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
+               observerMode:(BOOL)observerMode
                  completion:(RCBackendPurchaserInfoResponseHandler)completion;
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
