@@ -215,7 +215,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }
 
     if (paymentMode != RCPaymentModeNone) {
-        body[@"payment_mode"] = @((NSUInteger) paymentMode);
+        body[@"payment_mode"] = @((NSUInteger)paymentMode);
     }
 
     if (introductoryPrice) {
