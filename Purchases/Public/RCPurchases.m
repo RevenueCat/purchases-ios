@@ -579,8 +579,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                     subscriptionGroup:nil
                             discounts:nil
           presentedOfferingIdentifier:nil
-                           completion:^(RCPurchaserInfo *_Nullable info,
-                                   NSError *_Nullable error) {
+                         observerMode:!self.finishTransactions
+                           completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
                                [self dispatch:^{
                                    if (error) {
                                        CALL_AND_DISPATCH_IF_SET(completion, nil, error);
@@ -996,6 +996,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                               subscriptionGroup:subscriptionGroup
                                                       discounts:discounts
                                     presentedOfferingIdentifier:presentedOffering
+                                                   observerMode:!self.finishTransactions
                                                      completion:^(RCPurchaserInfo * _Nullable info,
                                                              NSError * _Nullable error) {
                                                          [self handleReceiptPostWithTransaction:transaction
@@ -1014,6 +1015,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                               subscriptionGroup:nil
                                                       discounts:nil
                                     presentedOfferingIdentifier:nil
+                                                   observerMode:!self.finishTransactions
                                                      completion:^(RCPurchaserInfo * _Nullable info,
                                                              NSError * _Nullable error) {
                                                          [self handleReceiptPostWithTransaction:transaction
