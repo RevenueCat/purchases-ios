@@ -375,6 +375,9 @@ NS_SWIFT_NAME(restoreTransactions(_:));
            withDiscount:(SKPaymentDiscount *)discount
         completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(purchasePackage(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
 
+- (void)manageSubscriptionURLForProduct:(SKProduct *)product
+                    withCompletionBlock:(void (^)(NSURL *))completion;
+
 #pragma mark Unavailable Methods
 #define RC_UNAVAILABLE(msg) __attribute__((unavailable(msg)));
 /// :nodoc:

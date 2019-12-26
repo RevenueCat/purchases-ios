@@ -632,6 +632,18 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }];
 }
 
+- (void)manageSubscriptionURLForProduct:(SKProduct *)product
+                    withCompletionBlock:(void (^)(NSURL *))completion
+{
+    [self.backend manageSubscriptionsURLForProductID:product.productIdentifier withAppUserID:self.appUserID completion:^(NSURL * _Nullable url, NSError * _Nullable error) {
+        if (error) {
+            RCDebugLog(@"There was an error fetching URL, using default.");
+            url = [NSURL URLWithString:@"itms-apps://apps.apple.com/account/subscriptions"];
+        }
+        CALL_AND_DISPATCH_IF_SET(completion, url);
+    }];
+}
+
 #pragma mark - Private Methods
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif

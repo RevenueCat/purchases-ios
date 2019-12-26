@@ -403,7 +403,6 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                   }];
 }
 
-
 - (void)postOfferForSigning:(NSString *)offerIdentifier
       withProductIdentifier:(NSString *)productIdentifier
           subscriptionGroup:(NSString *)subscriptionGroup
@@ -456,6 +455,32 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                       }
 
                       completion(nil, nil, nil, nil, error);
+                  }];
+}
+
+- (void)manageSubscriptionsURLForProductID:(NSString *)productID
+                             withAppUserID:(NSString *)appUserID
+                                completion:(nullable void (^)(NSURL * _Nullable url, NSError * _Nullable error))completion
+{
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/subscriptions/%@/manage", escapedAppUserID, productID];
+    [self.httpClient performRequest:@"GET"
+                               path:path
+                               body:nil
+                            headers:self.headers
+                  completionHandler:^(NSInteger statusCode, NSDictionary *_Nullable response, NSError *_Nullable error) {
+                        if (error == nil && statusCode < 300) {
+                            completion([NSURL URLWithString:response[@"url"]], nil);
+                            return;
+                        }
+
+                        if (error != nil) {
+                            error = [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error];
+                        } else if (statusCode > 300) {
+                            error = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
+                                                                        backendMessage:response[@"message"]];
+                        }
+                        completion(nil, error);
                   }];
 }
 

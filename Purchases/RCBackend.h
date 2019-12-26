@@ -87,6 +87,10 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                   appUserID:(NSString *)applicationUsername
                  completion:(RCOfferSigningResponseHandler)completion;
 
+- (void)manageSubscriptionsURLForProductID:(NSString *)productID
+                             withAppUserID:(NSString *)appUserID
+                                completion:(nullable void (^)(NSURL * _Nullable url, NSError * _Nullable error))completion;
+
 @end
 
 NS_ASSUME_NONNULL_END
