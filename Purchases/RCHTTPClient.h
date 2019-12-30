@@ -16,6 +16,7 @@ typedef void(^RCHTTPClientResponseHandler)(NSInteger statusCode,
 
 @interface RCHTTPClient : NSObject
 
+- (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor;
 
 + (NSString *)serverHostName;
 

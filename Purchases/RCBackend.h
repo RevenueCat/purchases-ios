@@ -41,7 +41,7 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
 
 @interface RCBackend : NSObject
 
-- (nullable instancetype)initWithAPIKey:(NSString *)APIKey;
+- (nullable instancetype)initWithAPIKey:(NSString *)APIKey platformFlavor:(NSString *)platformFlavor;
 
 - (nullable instancetype)initWithHTTPClient:(RCHTTPClient *)client
                                      APIKey:(NSString *)APIKey;

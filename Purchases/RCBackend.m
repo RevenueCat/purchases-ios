@@ -44,9 +44,9 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
 @implementation RCBackend
 
-- (nullable instancetype)initWithAPIKey:(NSString *)APIKey
+- (nullable instancetype)initWithAPIKey:(NSString *)APIKey platformFlavor:(NSString *)platformFlavor
 {
-    RCHTTPClient *client = [[RCHTTPClient alloc] init];
+    RCHTTPClient *client = [[RCHTTPClient alloc] initWithPlatformFlavor:platformFlavor];
     return [self initWithHTTPClient:client
                              APIKey:APIKey];
 }

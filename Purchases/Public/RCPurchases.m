@@ -143,25 +143,35 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                        observerMode:(BOOL)observerMode
                        userDefaults:(nullable NSUserDefaults *)userDefaults
 {
-    RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults observerMode:observerMode];
+    return [self configureWithAPIKey:APIKey appUserID:appUserID observerMode:observerMode userDefaults:userDefaults platformFlavor:nil];
+}
+
++ (instancetype)configureWithAPIKey:(NSString *)APIKey
+                          appUserID:(nullable NSString *)appUserID
+                       observerMode:(BOOL)observerMode
+                       userDefaults:(nullable NSUserDefaults *)userDefaults
+                     platformFlavor:(NSString *)platformFlavor
+{
+    RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults observerMode:observerMode platformFlavor:platformFlavor];
     [self setDefaultInstance:purchases];
     return purchases;
 }
 
 - (instancetype)initWithAPIKey:(NSString *)APIKey appUserID:(nullable NSString *)appUserID
 {
-    return [self initWithAPIKey:APIKey appUserID:appUserID userDefaults:nil observerMode:false];
+    return [self initWithAPIKey:APIKey appUserID:appUserID userDefaults:nil observerMode:false platformFlavor:nil];
 }
 
 - (instancetype)initWithAPIKey:(NSString *)APIKey
                      appUserID:(nullable NSString *)appUserID
                   userDefaults:(nullable NSUserDefaults *)userDefaults
                   observerMode:(BOOL)observerMode
+                platformFlavor:(nullable NSString *)platformFlavor
 {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] init];
-    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
+    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey platformFlavor:platformFlavor];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
     RCOfferingsFactory *offeringsFactory = [[RCOfferingsFactory alloc] init];
 
