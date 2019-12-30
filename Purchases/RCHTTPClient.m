@@ -75,9 +75,6 @@ void RCOverrideServerHost(NSString *hostname)
                                                                       @"X-Platform-Version": [self.class systemVersion],
                                                                       @"X-Platform-Flavor": self.platformFlavor ? self.platformFlavor : @"native",
                                                                       @"X-Client-Version": [self.class appVersion]}];
-
-    RCDebugLog(@"Platform header - %@", defaultHeaders[@"X-Platform-Flavor"]);
-
     [defaultHeaders addEntriesFromDictionary:headers];
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
