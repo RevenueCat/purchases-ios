@@ -249,7 +249,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds == nil) {
                 [attributionFetcher adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails, NSError *_Nullable error) {
                     NSArray *values = [attributionDetails allValues];
-                    if (values.count != 0 && values[0][@"iad-attribution"]) {
+                    
+                    bool hasIadAttribution = values.count != 0 && [values[0][@"iad-attribution"] boolValue];
+                    if (hasIadAttribution) {
                         [self postAttributionData:attributionDetails fromNetwork:RCAttributionNetworkAppleSearchAds forNetworkUserId:nil];
                     }
                 }];
