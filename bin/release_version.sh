@@ -19,7 +19,7 @@ printf "current version is $CURRENT_VERSION"
 printf "next version is $NEXT_VERSION"
 
 CURRENT_VERSION=$1
-NEXT_VERSION=$2
+NEXT_VERSION=$2-SNAPSHOT
 
 echo "Creating a tag and pushing"
 git tag -a $CURRENT_VERSION -m "Version $CURRENT_VERSION"
@@ -46,10 +46,10 @@ pod trunk push Purchases.podspec
 COCOAPODS_RESULT=$
 
 if [ $COCOAPODS_RESULT == 0 ]; then
-	echo "Successfully pushed v$CURRENT_VERSION to Cocoapods!"
+  echo "Successfully pushed v$CURRENT_VERSION to Cocoapods!"
 else
-	echo "Error pushing to Cocoapods, aborting"
-	exit $COCOAPODS_RESULT
+  echo "Error pushing to Cocoapods, aborting"
+  exit $COCOAPODS_RESULT
 fi
 
 echo "Preparing Carthage release"
