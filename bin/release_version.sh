@@ -6,22 +6,23 @@
 
 while getopts ":c:n:" opt; do
   case $opt in
-    c) arg_1="$OPTARG"
+    c) CURRENT_VERSION="$OPTARG"
     ;;
-    n) p_out="$OPTARG"
+    n) NEXT_VERSION="$OPTARG"
     ;;
     \?) echo "Invalid option -$OPTARG. Usage: release_version.sh -c <current> -n <next>" >&2
     ;;
   esac
 done
 
-printf "Argument p_out is %s\n" "$p_out"
-printf "Argument arg_1 is %s\n" "$arg_1"
+printf "current version is $CURRENT_VERSION"
+printf "next version is $NEXT_VERSION"
 
-VERSION=$1
+CURRENT_VERSION=$1
+NEXT_VERSION=$2
 
 echo "Creating a tag and pushing"
-git tag -a $VERSION -m "Version $VERSION"
+git tag -a $CURRENT_VERSION -m "Version $CURRENT_VERSION"
 git push --tags
 
 CARTHAGE_BUILDS_PATH=Carthage/Build
@@ -31,7 +32,7 @@ CARTHAGE_UPLOADS_PATH=CarthageUploads
 
 cd ..
 
-echo "Releasing version $VERSION"
+echo "Releasing version $CURRENT_VERSION"
 
 echo "Creating RVM gemset (if needed) and activating..."
 # rvm gemset use --create purchases-ios
@@ -46,7 +47,7 @@ echo "Pushing release to Cocoapods..."
 COCOAPODS_RESULT=0
 
 if [ $COCOAPODS_RESULT == 0 ]; then
-	echo "Successfully pushed v$VERSION to Cocoapods!"
+	echo "Successfully pushed v$CURRENT_VERSION to Cocoapods!"
 else
 	echo "Error pushing to Cocoapods, aborting"
 	exit $COCOAPODS_RESULT
@@ -74,9 +75,10 @@ IOS_DSYM_NAME=$FRAMEWORK_NAME.dSYM
 zip -r $CARTHAGE_UPLOADS_PATH/$IOS_DSYM_NAME.mac.zip $CARTHAGE_MAC_PATH/$IOS_DSYM_NAME
 
 echo "zipping source code"
-git archive --output $CARTHAGE_UPLOADS_PATH/source.zip $VERSION
-git archive --output $CARTHAGE_UPLOADS_PATH/source.tar.gz --format tar $VERSION
+git archive --output $CARTHAGE_UPLOADS_PATH/source.zip $CURRENT_VERSION
+git archive --output $CARTHAGE_UPLOADS_PATH/source.tar.gz --format tar $CURRENT_VERSION
 
 echo "files zipped and stored in path: $CARTHAGE_UPLOADS_PATH."
 echo "Don't forget to create a release in GitHub and upload them!"
 
+./update_version_number.sh $NEXT_VERSION
