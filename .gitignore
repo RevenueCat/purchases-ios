@@ -27,3 +27,5 @@ Carthage
 .DS_Store
 .build/
 CarthageUploads
+*.bck
+fastlane/report.xml

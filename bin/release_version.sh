@@ -80,4 +80,4 @@ git archive --output $CARTHAGE_UPLOADS_PATH/source.tar.gz --format tar $CURRENT_
 echo "files zipped and stored in path: $CARTHAGE_UPLOADS_PATH."
 echo "Don't forget to create a release in GitHub and upload them!"
 
-./update_version_number.sh $NEXT_VERSION
+fastlane bump version:NEXT_VERSION
