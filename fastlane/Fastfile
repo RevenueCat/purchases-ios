@@ -26,4 +26,11 @@ platform :ios do
     snapshot
   end
 
+  desc "Increment build number"
+  lane :bump do |options|
+    version_number = options[:version]
+    increment_version_number(version_number: version_number)
+    version_bump_podspec(version_number: version_number)
+  end
+
 end

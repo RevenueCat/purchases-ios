@@ -1,4 +1,5 @@
-1. Update the version number in `RCPurchases.m`, `Purchases.podspec` and in `Purchases/Info.plist`
+1. Update the version number in `RCPurchases.m`
+1. Update the version number in `Purchases.podspec` and in `Purchases/Info.plist` by running `fastlane bump version:x.y.z`
 1. Update CHANGELOG.md for the new release
 1. Commit the changes `git commit -am "Version x.y.z"`
 1. `git tag -a x.y.z -m "Version x.y.z"`
