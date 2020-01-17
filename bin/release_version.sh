@@ -80,4 +80,17 @@ git archive --output $CARTHAGE_UPLOADS_PATH/source.tar.gz --format tar $CURRENT_
 echo "files zipped and stored in path: $CARTHAGE_UPLOADS_PATH."
 echo "Don't forget to create a release in GitHub and upload them!"
 
-fastlane bump version:NEXT_VERSION
+echo "Preparing next version"
+
+BRANCH_NAME=bump/$NEXT_VERSION
+echo "Creating branch $BRANCH_NAME"
+git checkout -b $BRANCH_NAME
+
+echo "bumping next version"
+fastlane bump version:$NEXT_VERSION
+
+echo "committing and pushing"
+git commit -am "Preparing for next version"
+git push origin $BRANCH_NAME
+
+echo "All set! Don't forget to create the new release in GitHub and upload the files in $CARTHAGE_UPLOADS_PATH!"
