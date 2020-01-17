@@ -8,7 +8,7 @@ while getopts ":c:n:" opt; do
   case $opt in
     c) CURRENT_VERSION="$OPTARG"
     ;;
-    n) NEXT_VERSION="$OPTARG"
+    n) NEXT_VERSION="$OPTARG-SNAPSHOT"
     ;;
     \?) echo "Invalid option -$OPTARG. Usage: release_version.sh -c <current> -n <next>" >&2
     ;;
@@ -17,9 +17,6 @@ done
 
 printf "current version is $CURRENT_VERSION"
 printf "next version is $NEXT_VERSION"
-
-CURRENT_VERSION=$1
-NEXT_VERSION=$2-SNAPSHOT
 
 echo "Creating a tag and pushing"
 git tag -a $CURRENT_VERSION -m "Version $CURRENT_VERSION"
