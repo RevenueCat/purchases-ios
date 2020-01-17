@@ -26,3 +26,4 @@ DerivedData/
 Carthage
 .DS_Store
 .build/
+CarthageUploads
