@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # release a version
-# usage: 
+# usage:
 # release_version.sh -c x.y.z -n a.b.c, where c = current version and n = next release
+# example: release_version.sh -c 3.0.2 -n 3.1.0
 
 while getopts ":c:n:" opt; do
   case $opt in
@@ -59,15 +60,11 @@ mkdir $CARTHAGE_UPLOADS_PATH
 echo "zipping carthage files"
 
 FRAMEWORK_NAME=Purchases.framework
+IOS_DSYM_NAME=$FRAMEWORK_NAME.dSYM
+
 zip -r $CARTHAGE_UPLOADS_PATH/$FRAMEWORK_NAME.zip $CARTHAGE_IOS_PATH/$FRAMEWORK_NAME
-
-IOS_DSYM_NAME=$FRAMEWORK_NAME.dSYM
 zip -r $CARTHAGE_UPLOADS_PATH/$IOS_DSYM_NAME.zip $CARTHAGE_IOS_PATH/$IOS_DSYM_NAME
-
-FRAMEWORK_NAME=Purchases.framework
 zip -r $CARTHAGE_UPLOADS_PATH/$FRAMEWORK_NAME.mac.zip $CARTHAGE_MAC_PATH/$FRAMEWORK_NAME
-
-IOS_DSYM_NAME=$FRAMEWORK_NAME.dSYM
 zip -r $CARTHAGE_UPLOADS_PATH/$IOS_DSYM_NAME.mac.zip $CARTHAGE_MAC_PATH/$IOS_DSYM_NAME
 
 echo "zipping source code"
