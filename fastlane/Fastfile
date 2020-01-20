@@ -29,10 +29,34 @@ platform :ios do
   desc "Increment build number"
   lane :bump do |options|
     new_version_number = options[:version]
+    fail ArgumentError, "missing version" unless release_version
     previous_version_number = get_version_number
     increment_version_number(version_number: new_version_number)
     version_bump_podspec(version_number: new_version_number)
     increment_build_number_in_rc_purchases(previous_version_number, new_version_number)
+  end
+
+  desc "Make github release"
+  lane :github_release do |options|
+    release_version = options[:version]
+    fail ArgumentError, "missing version" unless release_version
+    
+    begin
+      changelog = File.read("../CHANGELOG.latest.md")
+    rescue
+      fail "please add a CHANGELOG.latest.md file before calling this lane" 
+    end
+    
+    set_github_release(
+      repository_name: "revenuecat/purchases-ios",
+      api_token: ENV["GITHUB_TOKEN"],
+      name: release_version,
+      tag_name: "v#{release_version}",
+      description: changelog,
+      commitish: "master",
+      upload_assets: ["CarthageUploads/Purchases.framework.zip"],
+      is_draft: true
+  )
   end
 
 end
