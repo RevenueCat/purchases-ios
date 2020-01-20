@@ -2,7 +2,8 @@
 1. Create a branch bump/x.y.z
 1. Update the version number in `RCPurchases.m`, `Purchases.podspec` and in 
 `Purchases/Info.plist` by running `fastlane bump version:x.y.z`
-1. Update CHANGELOG.md for the new release
+1. Update CHANGELOG.md for the new release and create a CHANGELOG.latest.md with the changes for the current 
+version (to be used by Fastlane for the github release notes)
 1. Commit the changes `git commit -am "Version x.y.z"`
 1. Make a PR, merge when approved
 1. `cd bin`
