@@ -9,8 +9,6 @@
 1. `./release_version.sh -c x.y.z -n a.b.c`, where a.b.c will be the next release after this one. 
 If you're releasing version 3.0.2, for example, this would be `./release_version.sh -c 3.0.2 -n 3.1.0`. 
 This will do all of the other steps in the manual process.
-1. Create a [new github release](https://github.com/revenuecat/purchases-ios/releases)
-1. Upload the contents of `CarthageUploads/` to the new release.   
 1. Make a PR for the snapshot bump, merge when approved
 
 #### Manual process:

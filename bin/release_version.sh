@@ -61,7 +61,7 @@ FRAMEWORK_NAME=Purchases.framework
 
 mv $FRAMEWORK_NAME.zip $CARTHAGE_UPLOADS_PATH
 
-echo "Don't forget to create a release in GitHub and upload them!"
+fastlane github_release $CURRENT_VERSION
 
 echo "Preparing next version"
 
@@ -75,5 +75,3 @@ fastlane bump version:$NEXT_VERSION
 echo "committing and pushing"
 git commit -am "Preparing for next version"
 git push origin $BRANCH_NAME
-
-echo "All set! Don't forget to create the new release in GitHub and upload the files in $CARTHAGE_UPLOADS_PATH!"
