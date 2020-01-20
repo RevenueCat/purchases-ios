@@ -30,17 +30,12 @@ This will do all of the other steps in the manual process.
     - `Purchases.dsym.zip` 
     - `Purchases.framework.mac.zip`
     - `Purchases.dsym.mac.zip` 
-1. Archive the source code: 
-    - `git archive --output <uploads_path>/source.zip <x.y.z>`    
-    - `git archive --output <uploads_path>/source.tar.gz --format tar <x.y.z>`    
 1. Create a [new github release](https://github.com/revenuecat/purchases-ios/releases)
 1. Upload to the new release: 
     - `Purchases.framework.zip`
     - `Purchases.dsym.zip` 
     - `Purchases.framework.mac.zip`
     - `Purchases.dsym.mac.zip` 
-    - `source.zip`
-    - `source.tar.gz`
 1. Create a branch bump/a.b.c, where a.b.c is the next version of the app after this release.
 1. Update the version number in `RCPurchases.m`, `Purchases.podspec` and in `Purchases/Info.plist` to the snapshot version for the next release, i.e. `x.y.z-SNAPSHOT`
 1. `git commit -am "Preparing for next version"`

@@ -67,11 +67,6 @@ zip -r $CARTHAGE_UPLOADS_PATH/$IOS_DSYM_NAME.zip $CARTHAGE_IOS_PATH/$IOS_DSYM_NA
 zip -r $CARTHAGE_UPLOADS_PATH/$FRAMEWORK_NAME.mac.zip $CARTHAGE_MAC_PATH/$FRAMEWORK_NAME
 zip -r $CARTHAGE_UPLOADS_PATH/$IOS_DSYM_NAME.mac.zip $CARTHAGE_MAC_PATH/$IOS_DSYM_NAME
 
-echo "zipping source code"
-git archive --output $CARTHAGE_UPLOADS_PATH/source.zip $CURRENT_VERSION
-git archive --output $CARTHAGE_UPLOADS_PATH/source.tar.gz --format tar $CURRENT_VERSION
-
-echo "files zipped and stored in path: $CARTHAGE_UPLOADS_PATH."
 echo "Don't forget to create a release in GitHub and upload them!"
 
 echo "Preparing next version"
