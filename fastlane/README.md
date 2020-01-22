@@ -26,6 +26,16 @@ Runs all the tests
 fastlane ios bump
 ```
 Increment build number
+### ios bump_and_update_changelog
+```
+fastlane ios bump_and_update_changelog
+```
+Increment build number and update changelog
+### ios github_release
+```
+fastlane ios github_release
+```
+Make github release
 
 ----
 
