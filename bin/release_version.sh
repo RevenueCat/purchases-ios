@@ -52,20 +52,14 @@ fi
 
 echo "Preparing Carthage release"
 echo "building..."
-carthage build --no-skip-current
+carthage build --archive
 
 echo "creating uploads folder if needed"
 mkdir $CARTHAGE_UPLOADS_PATH
 
-echo "zipping carthage files"
-
 FRAMEWORK_NAME=Purchases.framework
-IOS_DSYM_NAME=$FRAMEWORK_NAME.dSYM
 
-zip -r $CARTHAGE_UPLOADS_PATH/$FRAMEWORK_NAME.zip $CARTHAGE_IOS_PATH/$FRAMEWORK_NAME
-zip -r $CARTHAGE_UPLOADS_PATH/$IOS_DSYM_NAME.zip $CARTHAGE_IOS_PATH/$IOS_DSYM_NAME
-zip -r $CARTHAGE_UPLOADS_PATH/$FRAMEWORK_NAME.mac.zip $CARTHAGE_MAC_PATH/$FRAMEWORK_NAME
-zip -r $CARTHAGE_UPLOADS_PATH/$IOS_DSYM_NAME.mac.zip $CARTHAGE_MAC_PATH/$IOS_DSYM_NAME
+mv $FRAMEWORK_NAME.zip $CARTHAGE_UPLOADS_PATH
 
 echo "Don't forget to create a release in GitHub and upload them!"
 
