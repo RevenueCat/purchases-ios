@@ -21,7 +21,7 @@
 📝 | [Online documentation](https://docs.revenuecat.com/docs) up to date  
 🔀 | [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it  
 💯 | Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)  
-📮 | Great support - [Help Center](https://docs.revenuecat.com/discuss)  
+📮 | Great support - [Help Center](https://revenuecat.zendesk.com)
 🤩 | Awesome [new features](https://trello.com/b/RZRnWRbI/revenuecat-product-roadmap)  
 
 ## Getting Started
