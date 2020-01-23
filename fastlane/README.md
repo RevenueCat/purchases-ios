@@ -36,6 +36,11 @@ Increment build number and update changelog
 fastlane ios github_release
 ```
 Make github release
+### ios create_sandbox_account
+```
+fastlane ios create_sandbox_account
+```
+Create sandbox account
 
 ----
 
