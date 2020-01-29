@@ -71,6 +71,7 @@ def increment_build_number_in_rc_purchases(previous_version_number, new_version_
   rc_purchases_path = '../Purchases/Public/RCPurchases.m'
   sed_regex = 's|' + previous_version_number + '|' + new_version_number + '|'
   backup_extension = '.bck'
+  sh("sed", '-i', backup_extension, sed_regex, rc_purchases_path)	
 end
 
 def attach_changelog_to_master
