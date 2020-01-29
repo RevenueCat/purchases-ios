@@ -8,8 +8,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Carthage Update
-          command: carthage update
+          name: Carthage Bootstrap
+          command: carthage bootstrap
       - run: bundle install
       - run:
           name: Run tests
