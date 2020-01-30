@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isCacheStale;
 
+- (BOOL)isOfferingsCacheStale;
+
 - (void)resetCachesTimestamp;
 
 - (void)clearCachesTimestamp;

@@ -57,8 +57,6 @@
 		35A3F73323172D9900559FF9 /* RCOfferings+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35A3F73223172D9900559FF9 /* RCOfferings+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35A3F7352318772500559FF9 /* RCOfferingsFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 35A3F7342318772500559FF9 /* RCOfferingsFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35A60EAA1F82993E00D2FAE8 /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35B1633F2342E67C003371A3 /* RCDeviceCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B1633E2342E67C003371A3 /* RCDeviceCache.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35B163412342E692003371A3 /* RCDeviceCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B163402342E692003371A3 /* RCDeviceCache.m */; };
 		35B1635123467C08003371A3 /* DeviceCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF6FB8DE746087488B86E7A8 /* DeviceCacheTests.swift */; };
 		35B1635223467C10003371A3 /* UserManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF6FBB49E6D96DCADBA269A8 /* UserManagerTests.swift */; };
 		35B54E4622EA6F11005918B1 /* RCEntitlementInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B54E4522EA6F11005918B1 /* RCEntitlementInfo.m */; };
@@ -79,6 +77,10 @@
 		35DFC68620B87646004584CC /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
 		35DFC68720B87646004584CC /* OHHTTPStubs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDD71F7DF17F0065833D /* OHHTTPStubs.framework */; };
 		35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */; };
+		37E3526C938D7B291671BE8A /* RCCachedObjectInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E359893D3371FC3497D957 /* RCCachedObjectInfo.m */; };
+		37E352F190E0E957E8D932F8 /* RCDeviceCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3524E3032ABC72467AA43 /* RCDeviceCache.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		37E3598A1AAA3D70EA01C82D /* RCCachedObjectInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35C6CBB3229AA53ECEB58 /* RCCachedObjectInfo.h */; };
+		37E35D4498633E73BF02BAE7 /* RCDeviceCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E356820F0AD560FA23F3BF /* RCDeviceCache.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -160,8 +162,6 @@
 		35A3F73223172D9900559FF9 /* RCOfferings+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCOfferings+Protected.h"; sourceTree = "<group>"; };
 		35A3F7342318772500559FF9 /* RCOfferingsFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOfferingsFactory.h; sourceTree = "<group>"; };
 		35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCPurchases+Protected.h"; sourceTree = "<group>"; };
-		35B1633E2342E67C003371A3 /* RCDeviceCache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCDeviceCache.h; sourceTree = "<group>"; };
-		35B163402342E692003371A3 /* RCDeviceCache.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCDeviceCache.m; sourceTree = "<group>"; };
 		35B54E4522EA6F11005918B1 /* RCEntitlementInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfo.m; sourceTree = "<group>"; };
 		35B54E4722EA6F4E005918B1 /* RCEntitlementInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfo.h; sourceTree = "<group>"; };
 		35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfos.h; sourceTree = "<group>"; };
@@ -177,6 +177,10 @@
 		35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibility.h; sourceTree = "<group>"; };
 		35D3AB422030B4C600DE42C5 /* RCIntroEligibility.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCIntroEligibility.m; sourceTree = "<group>"; };
 		35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWrapperTests.swift; sourceTree = "<group>"; };
+		37E3524E3032ABC72467AA43 /* RCDeviceCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCDeviceCache.h; sourceTree = "<group>"; };
+		37E356820F0AD560FA23F3BF /* RCDeviceCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCDeviceCache.m; sourceTree = "<group>"; };
+		37E359893D3371FC3497D957 /* RCCachedObjectInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCCachedObjectInfo.m; sourceTree = "<group>"; };
+		37E35C6CBB3229AA53ECEB58 /* RCCachedObjectInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCCachedObjectInfo.h; sourceTree = "<group>"; };
 		EF6FB66AA75A6EA23ACC0A9E /* RCPackage+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCPackage+Protected.h"; sourceTree = "<group>"; };
 		EF6FB839CFA4B4A3A3687D61 /* RCPromotionalOffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPromotionalOffer.m; sourceTree = "<group>"; };
 		EF6FB8DE746087488B86E7A8 /* DeviceCacheTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceCacheTests.swift; sourceTree = "<group>"; };
@@ -297,10 +301,9 @@
 				351280372318AFB400BD2163 /* RCOfferingsFactory.m */,
 				35B54E4F22EF7F3A005918B1 /* RCEntitlementInfo+Protected.h */,
 				35B54E5122EF88CE005918B1 /* RCEntitlementInfos+Protected.h */,
-				35B1633E2342E67C003371A3 /* RCDeviceCache.h */,
-				35B163402342E692003371A3 /* RCDeviceCache.m */,
 				35095A6A2351461E00ADF0B2 /* RCIdentityManager.h */,
 				35095A6B2351461E00ADF0B2 /* RCIdentityManager.m */,
+				37E359927177DF24576FF361 /* Caching */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -333,6 +336,17 @@
 				3530C18822653E8F00D6DF52 /* AdSupport.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		37E359927177DF24576FF361 /* Caching */ = {
+			isa = PBXGroup;
+			children = (
+				37E356820F0AD560FA23F3BF /* RCDeviceCache.m */,
+				37E3524E3032ABC72467AA43 /* RCDeviceCache.h */,
+				37E359893D3371FC3497D957 /* RCCachedObjectInfo.m */,
+				37E35C6CBB3229AA53ECEB58 /* RCCachedObjectInfo.h */,
+			);
+			path = Caching;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -372,10 +386,11 @@
 				35B54E5022EF7F3A005918B1 /* RCEntitlementInfo+Protected.h in Headers */,
 				35B54E5222EF88CE005918B1 /* RCEntitlementInfos+Protected.h in Headers */,
 				35C98D9520B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */,
-				35B1633F2342E67C003371A3 /* RCDeviceCache.h in Headers */,
 				35095A6C2351461E00ADF0B2 /* RCIdentityManager.h in Headers */,
 				35262A0F1F7C4B9100C04F2C /* Purchases.h in Headers */,
 				35846AFD226940F600CC9E56 /* RCPromotionalOffer.h in Headers */,
+				37E352F190E0E957E8D932F8 /* RCDeviceCache.h in Headers */,
+				37E3598A1AAA3D70EA01C82D /* RCCachedObjectInfo.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -520,9 +535,10 @@
 				35262A2D1F7D783F00C04F2C /* RCHTTPClient.m in Sources */,
 				350FBDF41F7FFD350065833D /* RCStoreKitWrapper.m in Sources */,
 				35846AFB2267FE7F00CC9E56 /* RCAttributionFetcher.m in Sources */,
-				35B163412342E692003371A3 /* RCDeviceCache.m in Sources */,
 				354D50E022E7D014009B870C /* RCOfferings.m in Sources */,
 				35CE74FD20C38A7100CE09D8 /* RCOffering.m in Sources */,
+				37E35D4498633E73BF02BAE7 /* RCDeviceCache.m in Sources */,
+				37E3526C938D7B291671BE8A /* RCCachedObjectInfo.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

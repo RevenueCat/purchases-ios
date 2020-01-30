@@ -8,18 +8,22 @@
 
 #import "RCDeviceCache.h"
 #import "RCOfferings.h"
+#import "RCCachedObjectInfo.h"
+
 
 @interface RCDeviceCache ()
 
 @property (nonatomic) NSUserDefaults *userDefaults;
 
 @property (nonatomic) RCOfferings *cachedOfferings;
+@property (nonatomic) RCCachedObjectInfo *offeringsCacheInfo;
 
 @end
 
 NSString * RCLegacyGeneratedAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
 NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID.new";
 NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults.purchaserInfo.";
+#define CACHE_DURATION_IN_SECONDS 60 * 5
 
 @implementation RCDeviceCache
 
@@ -31,6 +35,8 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
             userDefaults = [NSUserDefaults standardUserDefaults];
         }
         self.userDefaults = userDefaults;
+
+        self.offeringsCacheInfo = [[RCCachedObjectInfo alloc] initWithCacheDurationInSeconds:CACHE_DURATION_IN_SECONDS];
     }
 
     return self;
@@ -62,27 +68,36 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (BOOL)isCacheStale {
     NSTimeInterval timeSinceLastCheck = -[self.cachesLastUpdated timeIntervalSinceNow];
-    return !(self.cachesLastUpdated != nil && timeSinceLastCheck < 60. * 5);
+    return !(self.cachesLastUpdated != nil && timeSinceLastCheck < CACHE_DURATION_IN_SECONDS);
+}
+
+- (BOOL)isOfferingsCacheStale {
+    return self.offeringsCacheInfo.isCacheStale;
 }
 
 - (void)resetCachesTimestamp
 {
-    self.cachesLastUpdated = [NSDate date];
+    NSDate *now = [NSDate date];
+    self.cachesLastUpdated = now;
+    [self.offeringsCacheInfo updateCacheTimestampWithDate:now];
 }
 
 - (void)clearCachesTimestamp
 {
     self.cachesLastUpdated = nil;
+    [self.offeringsCacheInfo clearCacheTimestamp];
 }
 
 - (void)cacheOfferings:(RCOfferings *)offerings
 {
     self.cachedOfferings = offerings;
+    [self.offeringsCacheInfo updateCacheTimestampToNow];
 }
 
 - (void)clearOfferings
 {
     self.cachedOfferings = nil;
+    [self.offeringsCacheInfo clearCacheTimestamp];
 }
 
 - (NSString *)purchaserInfoUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {
