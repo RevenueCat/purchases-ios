@@ -644,6 +644,10 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }];
 }
 
+- (void)updatePurchaserInfoCache {
+    [self updateCacheAndSendUpdatedPurchaserInfoIfChanged];
+}
+
 #pragma mark - Private Methods
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif
@@ -651,12 +655,16 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCDebugLog(@"applicationDidBecomeActive");
     if ([self.deviceCache isCacheStale]) {
         RCDebugLog(@"Cache is stale, updating caches");
-        [self updateCachesWithCompletionBlock:^(RCPurchaserInfo *info, NSError *error) {
-            if (info) {
-                [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-            }
-        }];
+        [self updateCacheAndSendUpdatedPurchaserInfoIfChanged];
     }
+}
+
+- (void)updateCacheAndSendUpdatedPurchaserInfoIfChanged {
+    [self updateCachesWithCompletionBlock:^(RCPurchaserInfo *info, NSError *error) {
+        if (info) {
+            [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
+        }
+    }];
 }
 
 - (RCPurchaserInfo *)readPurchaserInfoFromCache {
