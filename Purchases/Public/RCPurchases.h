@@ -422,12 +422,11 @@ NS_SWIFT_NAME(purchases(_:didReceiveUpdated:));
 
 
 /**
- Updates the purchaser information.
- This method should only be called when a purchase has been made through the RevenueCat server, but not through the app,
- to force a refresh.
- If changes are detected for the purchaser info, the delegate will be called with didReceiveUpdatedPurchaserInfo.
+ Invalidates the cache for purchaser information.
+ This is useful for cases where purchaser information might have been updated outside of the app, like if a
+ promotional subscription is granted through the RevenueCat dashboard.
  */
-- (void)updatePurchaserInfoCache;
+- (void)invalidatePurchaserInfoCache;
 
 @end
 

@@ -644,9 +644,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }];
 }
 
-- (void)updatePurchaserInfoCache {
-    RCDebugLog(@"Forcing an update on PurchaserInfo caches");
-    [self updateCacheAndSendUpdatedPurchaserInfoIfChanged];
+- (void)invalidatePurchaserInfoCache {
+    RCDebugLog(@"Purchaser info cache is invalidated");
+    [self updateOfferingsCache:nil];
 }
 
 #pragma mark - Private Methods
