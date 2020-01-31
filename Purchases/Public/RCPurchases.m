@@ -753,13 +753,15 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)updateOfferingsCache:(nullable RCReceiveOfferingsBlock)completion
 {
+    __weak typeof(self) weakSelf = self;
     [self.backend getOfferingsForAppUserID:self.appUserID
                                 completion:^(NSDictionary *data, NSError *error) {
+                                    __strong typeof(self) strongSelf = weakSelf;
                                     if (error != nil) {
-                                        [self handleOfferingsUpdateError:error completion:completion];
+                                        [strongSelf handleOfferingsUpdateError:error completion:completion];
                                         return;
                                     }
-                                    [self handleOfferingsBackendResultWithData:data completion:completion];
+                                    [strongSelf handleOfferingsBackendResultWithData:data completion:completion];
                                 }];
 }
 
