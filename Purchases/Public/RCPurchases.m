@@ -756,48 +756,55 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     [self.backend getOfferingsForAppUserID:self.appUserID
                                 completion:^(NSDictionary *data, NSError *error) {
                                     if (error != nil) {
-                                        RCLog(@"Error fetching offerings - %@", error);
-                                        CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
-                                        [self.deviceCache clearOfferingsCacheTimestamp];
+                                        [self handleOfferingsUpdateError:error completion:completion];
                                         return;
                                     }
+                                    [self handleOfferingsBackendResultWithData:data completion:completion];
+                                }];
+}
 
-                                    NSMutableSet *productIdentifiers = [NSMutableSet new];
-                                    [self performOnEachProductIdentifierInOfferings:data block:^(NSString *productIdentifier) {
-                                        [productIdentifiers addObject:productIdentifier];
-                                    }];
+- (void)handleOfferingsBackendResultWithData:(NSDictionary *)data completion:(RCReceiveOfferingsBlock)completion {
+    NSMutableSet *productIdentifiers = [NSMutableSet new];
+    [self performOnEachProductIdentifierInOfferings:data block:^(NSString *productIdentifier) {
+        [productIdentifiers addObject:productIdentifier];
+    }];
 
-                                    [self productsWithIdentifiers:productIdentifiers.allObjects completionBlock:^(NSArray<SKProduct *> *_Nonnull products) {
+    [self productsWithIdentifiers:productIdentifiers.allObjects completionBlock:^(NSArray<SKProduct *> *_Nonnull products) {
 
-                                        NSMutableDictionary *productsById = [NSMutableDictionary new];
-                                        for (SKProduct *p in products) {
-                                            productsById[p.productIdentifier] = p;
-                                        }
-                                        RCOfferings *offerings = [self.offeringsFactory createOfferingsWithProducts:productsById data:data];
-                                        if (offerings) {
-                                            NSMutableArray *missingProducts = [NSMutableArray new];
-                                            [self performOnEachProductIdentifierInOfferings:data block:^(NSString *productIdentifier) {
-                                                SKProduct *product = productsById[productIdentifier];
+        NSMutableDictionary *productsById = [NSMutableDictionary new];
+        for (SKProduct *p in products) {
+            productsById[p.productIdentifier] = p;
+        }
+        RCOfferings *offerings = [self.offeringsFactory createOfferingsWithProducts:productsById data:data];
+        if (offerings) {
+            NSMutableArray *missingProducts = [NSMutableArray new];
+            [self performOnEachProductIdentifierInOfferings:data block:^(NSString *productIdentifier) {
+                SKProduct *product = productsById[productIdentifier];
 
-                                                if (product == nil) {
-                                                    [missingProducts addObject:productIdentifier];
-                                                }
-                                            }];
+                if (product == nil) {
+                    [missingProducts addObject:productIdentifier];
+                }
+            }];
 
-                                            if (missingProducts.count > 0) {
-                                                RCLog(@"Could not find SKProduct for %@", missingProducts);
-                                                RCLog(@"Ensure your products are correctly configured in App Store Connect");
-                                                RCLog(@"See https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard");
-                                            }
-                                            [self.deviceCache cacheOfferings:offerings];
+            if (missingProducts.count > 0) {
+                RCLog(@"Could not find SKProduct for %@", missingProducts);
+                RCLog(@"Ensure your products are correctly configured in App Store Connect");
+                RCLog(@"See https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard");
+            }
+            [self.deviceCache cacheOfferings:offerings];
 
-                                            CALL_IF_SET_ON_MAIN_THREAD(completion, offerings, nil);
-                                        } else {
-                                            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils unexpectedBackendResponseError]);
-                                        }
+            CALL_IF_SET_ON_MAIN_THREAD(completion, offerings, nil);
+        } else {
+            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils unexpectedBackendResponseError]);
+        }
 
-                                    }];
-                                   }];
+    }];
+}
+
+- (void)handleOfferingsUpdateError:(NSError *)error completion:(RCReceiveOfferingsBlock)completion {
+    RCLog(@"Error fetching offerings - %@", error);
+    CALL_AND_DISPATCH_IF_SET(completion, nil, error);
+    [self.deviceCache clearOfferingsCacheTimestamp];
 }
 
 - (void)receiptData:(void (^ _Nonnull)(NSData * _Nonnull data))completion
