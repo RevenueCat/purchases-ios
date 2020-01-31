@@ -20,8 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, nullable) NSDate *cachesLastUpdated;
 
-- (RCOfferings * _Nullable)cachedOfferings;
-
 - (instancetype)initWith:(NSUserDefaults *)userDefaults;
 
 - (void)cacheAppUserID:(NSString *)appUserID;
@@ -35,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resetCachesTimestamp;
 
 - (void)clearCachesTimestamp;
+
+- (RCOfferings * _Nullable)cachedOfferings;
 
 - (void)cacheOfferings:(RCOfferings *)offerings;
 
