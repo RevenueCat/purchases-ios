@@ -1,5 +1,5 @@
 //
-//  RCCachedObjectInfo.m
+//  RCInMemoryCachedObject.m
 //  Purchases
 //
 //  Created by RevenueCat.
@@ -7,15 +7,16 @@
 //
 #import <Foundation/Foundation.h>
 
-#import "RCCachedObjectInfo.h"
+#import "RCInMemoryCachedObject.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 
-@interface RCCachedObjectInfo ()
+@interface RCInMemoryCachedObject ()
 
 @property (nonatomic, nullable) NSDate *lastUpdatedAt;
 @property (nonatomic, assign) int cacheDurationInSeconds;
+@property (nonatomic, nullable) id cachedInstance;
 
 @end
 
@@ -23,12 +24,13 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 
 
-@implementation RCCachedObjectInfo
+@implementation RCInMemoryCachedObject
 
 - (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds {
     return [self initWithCacheDurationInSeconds:cacheDurationInSeconds
                                   lastUpdatedAt:nil];
 }
+
 - (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds
                                  lastUpdatedAt:(NSDate *_Nullable)lastUpdatedAt {
     if (self == [super init]) {
@@ -51,8 +53,14 @@ NS_ASSUME_NONNULL_END
     self.lastUpdatedAt = nil;
 }
 
-- (void)updateCacheTimestampToNow {
-    [self updateCacheTimestampWithDate:[NSDate date]];
+- (void)clearCache {
+    [self clearCacheTimestamp];
+    self.cachedInstance = nil;
+}
+
+- (void)cacheInstance:(id)instance date:(NSDate *)date {
+    self.cachedInstance = instance;
+    self.lastUpdatedAt = date;
 }
 
 - (void)updateCacheTimestampWithDate:(NSDate *)date {

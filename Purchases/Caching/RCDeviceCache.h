@@ -18,9 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly, nullable) NSString *cachedLegacyAppUserID;
 
-@property (nonatomic, readonly, nullable) RCOfferings *cachedOfferings;
-
 @property (nonatomic, nullable) NSDate *cachesLastUpdated;
+
+- (RCOfferings * _Nullable)cachedOfferings;
 
 - (instancetype)initWith:(NSUserDefaults *)userDefaults;
 

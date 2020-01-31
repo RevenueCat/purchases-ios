@@ -8,15 +8,13 @@
 
 #import "RCDeviceCache.h"
 #import "RCOfferings.h"
-#import "RCCachedObjectInfo.h"
+#import "RCInMemoryCachedObject.h"
 
 
 @interface RCDeviceCache ()
 
 @property (nonatomic) NSUserDefaults *userDefaults;
-
-@property (nonatomic) RCOfferings *cachedOfferings;
-@property (nonatomic) RCCachedObjectInfo *offeringsCacheInfo;
+@property (nonatomic, nonnull) RCInMemoryCachedObject<RCOfferings *> *offeringsCachedObject;
 
 @end
 
@@ -36,7 +34,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
         }
         self.userDefaults = userDefaults;
 
-        self.offeringsCacheInfo = [[RCCachedObjectInfo alloc] initWithCacheDurationInSeconds:CACHE_DURATION_IN_SECONDS];
+        self.offeringsCachedObject = [[RCInMemoryCachedObject alloc] initWithCacheDurationInSeconds:CACHE_DURATION_IN_SECONDS];
     }
 
     return self;
@@ -72,32 +70,34 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 }
 
 - (BOOL)isOfferingsCacheStale {
-    return self.offeringsCacheInfo.isCacheStale;
+    return self.offeringsCachedObject.isCacheStale;
+}
+
+- (RCOfferings * _Nullable)cachedOfferings {
+    return self.offeringsCachedObject.cachedInstance;
 }
 
 - (void)resetCachesTimestamp
 {
     NSDate *now = [NSDate date];
     self.cachesLastUpdated = now;
-    [self.offeringsCacheInfo updateCacheTimestampWithDate:now];
+    [self.offeringsCachedObject updateCacheTimestampWithDate:now];
 }
 
 - (void)clearCachesTimestamp
 {
     self.cachesLastUpdated = nil;
-    [self.offeringsCacheInfo clearCacheTimestamp];
+    [self.offeringsCachedObject clearCacheTimestamp];
 }
 
 - (void)cacheOfferings:(RCOfferings *)offerings
 {
-    self.cachedOfferings = offerings;
-    [self.offeringsCacheInfo updateCacheTimestampToNow];
+    [self.offeringsCachedObject cacheInstance:offerings date:[NSDate date];
 }
 
 - (void)clearOfferings
 {
-    self.cachedOfferings = nil;
-    [self.offeringsCacheInfo clearCacheTimestamp];
+    [self.offeringsCachedObject clearCache];
 }
 
 - (NSString *)purchaserInfoUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {
