@@ -28,27 +28,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - purchaserInfo
 
-- (BOOL)isPurchaserInfoCacheStale;
-
-- (void)clearPurchaserInfoCacheTimestamp;
-
-- (void)resetPurchaserInfoCache;
-
 - (nullable NSData *)cachedPurchaserInfoDataForAppUserID:(NSString *)appUserID;
 
 - (void)cachePurchaserInfo:(NSData *)data forAppUserID:(NSString *)appUserID;
 
+- (BOOL)isPurchaserInfoCacheStale;
+
+- (void)clearPurchaserInfoCacheTimestamp;
+
+- (void)setPurchaserInfoCacheTimestampToNow;
+
+
 #pragma mark - offerings
+
+@property (nonatomic, readonly, nullable) RCOfferings *cachedOfferings;
+
+- (void)cacheOfferings:(RCOfferings *)offerings;
 
 - (BOOL)isOfferingsCacheStale;
 
 - (void)clearOfferingsCacheTimestamp;
 
-- (void)resetOfferingsCache;
-
-- (RCOfferings * _Nullable)cachedOfferings;
-
-- (void)cacheOfferings:(RCOfferings *)offerings;
+- (void)setOfferingsCacheTimestampToNow;
 
 @end
 

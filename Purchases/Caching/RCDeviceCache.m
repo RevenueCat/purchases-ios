@@ -15,6 +15,7 @@
 
 @property (nonatomic) NSUserDefaults *userDefaults;
 @property (nonatomic, nonnull) RCInMemoryCachedObject<RCOfferings *> *offeringsCachedObject;
+@property (nonatomic, nullable) NSDate *purchaserInfoCachesLastUpdated;
 
 @end
 
@@ -40,6 +41,8 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     return self;
 }
 
+#pragma mark - appUserID
+
 - (nullable NSString *)cachedLegacyAppUserID
 {
     return [self.userDefaults stringForKey:RCLegacyGeneratedAppUserDefaultsKey];
@@ -60,53 +63,15 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
     [self.userDefaults removeObjectForKey:RCLegacyGeneratedAppUserDefaultsKey];
     [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
     [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
-    [self clearCachesTimestamp];
-    [self clearOfferings];
+    [self clearPurchaserInfoCacheTimestamp];
+    [self clearOfferingsCache];
 }
 
-- (BOOL)isCacheStale {
-    NSTimeInterval timeSinceLastCheck = -[self.cachesLastUpdated timeIntervalSinceNow];
-    return !(self.cachesLastUpdated != nil && timeSinceLastCheck < CACHE_DURATION_IN_SECONDS);
-}
+#pragma mark - purchaserInfo
 
-- (BOOL)isOfferingsCacheStale {
-    return self.offeringsCachedObject.isCacheStale;
-}
-
-- (RCOfferings * _Nullable)cachedOfferings {
-    return self.offeringsCachedObject.cachedInstance;
-}
-
-- (void)resetCachesTimestamp
+- (nullable NSData *)cachedPurchaserInfoDataForAppUserID:(NSString *)appUserID
 {
-    NSDate *now = [NSDate date];
-    self.cachesLastUpdated = now;
-    [self.offeringsCachedObject updateCacheTimestampWithDate:now];
-}
-
-- (void)clearCachesTimestamp
-{
-    self.cachesLastUpdated = nil;
-    [self clearOfferingsCacheTimestamp];
-}
-
-- (void)clearOfferingsCacheTimestamp
-{
-    [self.offeringsCachedObject clearCacheTimestamp];
-}
-
-- (void)cacheOfferings:(RCOfferings *)offerings
-{
-    [self.offeringsCachedObject cacheInstance:offerings date:[NSDate date]];
-}
-
-- (void)clearOfferings
-{
-    [self.offeringsCachedObject clearCache];
-}
-
-- (NSString *)purchaserInfoUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {
-    return [RCPurchaserInfoAppUserDefaultsKeyBase stringByAppendingString:appUserID];
+    return [self.userDefaults dataForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
 }
 
 - (void)cachePurchaserInfo:(NSData *)data forAppUserID:(NSString *)appUserID
@@ -115,9 +80,55 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
                           forKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
 }
 
-- (nullable NSData *)cachedPurchaserInfoDataForAppUserID:(NSString *)appUserID
+- (BOOL)isPurchaserInfoCacheStale {
+    NSTimeInterval timeSinceLastCheck = -[self.purchaserInfoCachesLastUpdated timeIntervalSinceNow];
+    return !(self.purchaserInfoCachesLastUpdated != nil && timeSinceLastCheck < CACHE_DURATION_IN_SECONDS);
+}
+
+- (void)clearPurchaserInfoCacheTimestamp
 {
-    return [self.userDefaults dataForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
+    self.purchaserInfoCachesLastUpdated = nil;
+}
+
+- (void)setPurchaserInfoCacheTimestampToNow
+{
+    self.purchaserInfoCachesLastUpdated = [NSDate date];
+}
+
+#pragma mark - offerings
+
+- (RCOfferings * _Nullable)cachedOfferings {
+    return self.offeringsCachedObject.cachedInstance;
+}
+
+- (void)cacheOfferings:(RCOfferings *)offerings
+{
+    [self.offeringsCachedObject cacheInstance:offerings date:[NSDate date]];
+}
+
+- (BOOL)isOfferingsCacheStale {
+    return self.offeringsCachedObject.isCacheStale;
+}
+
+- (void)clearOfferingsCacheTimestamp
+{
+    [self.offeringsCachedObject clearCacheTimestamp];
+}
+
+- (void)setOfferingsCacheTimestampToNow
+{
+    [self.offeringsCachedObject updateCacheTimestampWithDate:[NSDate date]];
+}
+
+#pragma mark - private methods
+
+- (void)clearOfferingsCache
+{
+    [self.offeringsCachedObject clearCache];
+}
+
+- (NSString *)purchaserInfoUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {
+    return [RCPurchaserInfoAppUserDefaultsKeyBase stringByAppendingString:appUserID];
 }
 
 @end
