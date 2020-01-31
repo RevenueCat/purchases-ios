@@ -92,7 +92,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (void)cacheOfferings:(RCOfferings *)offerings
 {
-    [self.offeringsCachedObject cacheInstance:offerings date:[NSDate date];
+    [self.offeringsCachedObject cacheInstance:offerings date:[NSDate date]];
 }
 
 - (void)clearOfferings
