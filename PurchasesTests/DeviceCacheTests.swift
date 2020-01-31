@@ -94,9 +94,9 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testClearCachesClearsCachesTimestamp() {
-        self.deviceCache.resetCachesTimestamp()
+        self.deviceCache.setPurchaserInfoCacheTimestampToNow()
         self.deviceCache.clearCaches(forAppUserID: "cesar")
-        expect(self.deviceCache.isCacheStale()).to(beTrue())
+        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
     }
 
     func testClearCachesRemovesCachedAppUserIDs() {
@@ -106,19 +106,19 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testResetCachesTimestamp() {
-        expect(self.deviceCache.isCacheStale()).to(beTrue())
-        self.deviceCache.resetCachesTimestamp()
-        expect(self.deviceCache.isCacheStale()).to(beFalse())
+        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
+        self.deviceCache.setPurchaserInfoCacheTimestampToNow()
+        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beFalse())
     }
 
     func testCacheIsStaleIfNoCaches() {
-        expect(self.deviceCache.isCacheStale()).to(beTrue())
+        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
     }
 
     func testCacheIsStaleIfLongerThanFiveMinutes() {
         let oldDate: Date! = Calendar.current.date(byAdding: .minute, value: -(6), to: Date())
-        self.deviceCache.cachesLastUpdated = oldDate
-        expect(self.deviceCache.isCacheStale()).to(beTrue())
+        self.deviceCache.purchaserInfoCachesLastUpdated = oldDate
+        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
     }
 
     func testPurchaserInfoIsProperlyCached() {

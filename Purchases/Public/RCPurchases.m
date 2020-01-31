@@ -534,6 +534,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
     // from triggering a refresh.
     [self.deviceCache setPurchaserInfoCacheTimestampToNow];
+    [self.deviceCache setOfferingsCacheTimestampToNow];
 
     if (presentedOfferingIdentifier) {
         RCDebugLog(@"makePurchase - %@ - Offering: %@", payment.productIdentifier, presentedOfferingIdentifier);
