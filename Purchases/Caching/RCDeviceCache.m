@@ -87,6 +87,11 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 - (void)clearCachesTimestamp
 {
     self.cachesLastUpdated = nil;
+    [self clearOfferingsCacheTimestamp];
+}
+
+- (void)clearOfferingsCacheTimestamp
+{
     [self.offeringsCachedObject clearCacheTimestamp];
 }
 

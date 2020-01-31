@@ -34,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)clearCachesTimestamp;
 
+- (void)clearOfferingsCacheTimestamp;
+
 - (RCOfferings * _Nullable)cachedOfferings;
 
 - (void)cacheOfferings:(RCOfferings *)offerings;
