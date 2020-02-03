@@ -22,12 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)cacheInstance:(ObjectType)instance
                  date:(NSDate *)date;
 
-- (ObjectType _Nullable)cachedInstance;
+- (nullable ObjectType)cachedInstance;
 
 - (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds;
 
 - (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds
-                                 lastUpdatedAt:(NSDate *_Nullable)lastUpdatedAt;
+                                 lastUpdatedAt:(nullable NSDate *)lastUpdatedAt;
 @end
 
 

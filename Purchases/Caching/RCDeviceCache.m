@@ -98,7 +98,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 #pragma mark - offerings
 
-- (RCOfferings * _Nullable)cachedOfferings {
+- (nullable RCOfferings *)cachedOfferings {
     return self.offeringsCachedObject.cachedInstance;
 }
 

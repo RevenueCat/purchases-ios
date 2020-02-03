@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds
-                                 lastUpdatedAt:(NSDate *_Nullable)lastUpdatedAt {
+                                 lastUpdatedAt:(nullable NSDate *)lastUpdatedAt {
     if (self == [super init]) {
         self.cacheDurationInSeconds = cacheDurationInSeconds;
         self.lastUpdatedAt = lastUpdatedAt;
