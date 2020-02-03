@@ -21,9 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 
-NS_ASSUME_NONNULL_END
-
-
 @implementation RCInMemoryCachedObject
 
 - (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds {
@@ -68,3 +65,6 @@ NS_ASSUME_NONNULL_END
 }
 
 @end
+
+
+NS_ASSUME_NONNULL_END
