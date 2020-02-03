@@ -10,6 +10,7 @@
 #import "RCDeviceCache+Protected.h"
 #import "RCOfferings.h"
 #import "RCInMemoryCachedObject.h"
+#import "RCInMemoryCachedObject+Protected.h"
 
 
 @interface RCDeviceCache ()
@@ -30,8 +31,15 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 @implementation RCDeviceCache
 
 - (instancetype)initWith:(NSUserDefaults *)userDefaults
+              stubbedNow:(nullable NSDate *)stubbedNow {
+    return [self initWith:userDefaults
+               stubbedNow:stubbedNow
+    offeringsCachedObject:nil];
+}
+
+- (instancetype)initWith:(NSUserDefaults *)userDefaults
               stubbedNow:(nullable NSDate *)stubbedNow
-{
+   offeringsCachedObject:(RCInMemoryCachedObject<RCOfferings *> *)offeringsCachedObject {
     self = [super init];
     if (self) {
         if (userDefaults == nil) {
@@ -39,8 +47,15 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
         }
         self.userDefaults = userDefaults;
 
-        self.offeringsCachedObject = [[RCInMemoryCachedObject alloc] initWithCacheDurationInSeconds:CACHE_DURATION_IN_SECONDS];
         self.stubbedNow = stubbedNow;
+        if (offeringsCachedObject == nil) {
+            offeringsCachedObject =
+                [[RCInMemoryCachedObject alloc] initWithCacheDurationInSeconds:CACHE_DURATION_IN_SECONDS
+                                                                 lastUpdatedAt:nil
+                                                                    stubbedNow:self.stubbedNow];
+        }
+        self.offeringsCachedObject = offeringsCachedObject;
+
     }
 
     return self;
