@@ -54,37 +54,6 @@ class IdentityManagerTests: XCTestCase {
                 completion!(nil)
             }
         }
-
-    }
-
-    class MockDeviceCache: RCDeviceCache {
-
-        var clearCachesCalledUserID: String? = nil
-        var mockedAppUserID: String? = nil
-        var mockedLegacyAppUserID: String? = nil
-        var userIDStoredInCache: String? = nil
-        var mockAnonymous: Bool = false
-
-        override var cachedLegacyAppUserID: String? {
-            return mockedLegacyAppUserID
-        }
-
-        override var cachedAppUserID: String? {
-            if (mockedAppUserID != nil) {
-                return mockedAppUserID
-            } else {
-                return userIDStoredInCache
-            }
-        }
-
-        override func cacheAppUserID(_ appUserID: String) {
-            userIDStoredInCache = appUserID
-        }
-
-        override func clearCaches(forAppUserID appUserId: String) {
-            clearCachesCalledUserID = appUserId
-        }
-
     }
 
     private let mockDeviceCache = MockDeviceCache()
@@ -181,14 +150,14 @@ class IdentityManagerTests: XCTestCase {
     }
 
     func testMigrationFromRandomIDConfiguringAnonymously() {
-        self.mockDeviceCache.mockedLegacyAppUserID = "an_old_random"
+        self.mockDeviceCache.stubbedLegacyAppUserID = "an_old_random"
         self.identityManager.configure(withAppUserID: nil)
         assertCorrectlyIdentifiedWithAnonymous(usingOldID: true)
         expect(self.identityManager.currentAppUserID).to(equal("an_old_random"))
     }
 
     func testMigrationFromRandomIDConfiguringWithUser() {
-        self.mockDeviceCache.mockedLegacyAppUserID = "an_old_random"
+        self.mockDeviceCache.stubbedLegacyAppUserID = "an_old_random"
         self.identityManager.configure(withAppUserID: "cesar")
         assertCorrectlyIdentified(expectedAppUserID: "cesar")
     }

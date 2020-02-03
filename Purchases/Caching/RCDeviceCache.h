@@ -38,7 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setPurchaserInfoCacheTimestampToNow;
 
-
 #pragma mark - offerings
 
 @property (nonatomic, readonly, nullable) RCOfferings *cachedOfferings;
