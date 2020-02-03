@@ -6,7 +6,7 @@
 import XCTest
 import Nimble
 
-import Purchases
+@testable import Purchases
 
 class DeviceCacheTests: XCTestCase {
 
@@ -117,7 +117,11 @@ class DeviceCacheTests: XCTestCase {
 
     func testCacheIsStaleIfLongerThanFiveMinutes() {
         let oldDate: Date! = Calendar.current.date(byAdding: .minute, value: -(6), to: Date())
-        self.deviceCache.purchaserInfoCachesLastUpdated = oldDate
+        self.deviceCache = RCDeviceCache(mockUserDefaults, stubbedNow: oldDate)
+        self.deviceCache.cachePurchaserInfo(Data(), forAppUserID: "waldo")
+        
+        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beFalse())
+        self.deviceCache.stubbedNow = Date()
         expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
     }
 

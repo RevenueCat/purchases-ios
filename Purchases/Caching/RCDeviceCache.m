@@ -7,6 +7,7 @@
 //
 
 #import "RCDeviceCache.h"
+#import "RCDeviceCache+Protected.h"
 #import "RCOfferings.h"
 #import "RCInMemoryCachedObject.h"
 
@@ -16,6 +17,8 @@
 @property (nonatomic) NSUserDefaults *userDefaults;
 @property (nonatomic, nonnull) RCInMemoryCachedObject<RCOfferings *> *offeringsCachedObject;
 @property (nonatomic, nullable) NSDate *purchaserInfoCachesLastUpdated;
+
+@property (nonatomic) NSDate *stubbedNow;
 
 @end
 
@@ -27,6 +30,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 @implementation RCDeviceCache
 
 - (instancetype)initWith:(NSUserDefaults *)userDefaults
+              stubbedNow:(nullable NSDate *)stubbedNow
 {
     self = [super init];
     if (self) {
@@ -36,9 +40,14 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
         self.userDefaults = userDefaults;
 
         self.offeringsCachedObject = [[RCInMemoryCachedObject alloc] initWithCacheDurationInSeconds:CACHE_DURATION_IN_SECONDS];
+        self.stubbedNow = stubbedNow;
     }
 
     return self;
+}
+
+- (instancetype)initWith:(NSUserDefaults *)userDefaults {
+    return [self initWith:userDefaults stubbedNow:nil];
 }
 
 #pragma mark - appUserID
@@ -84,7 +93,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 }
 
 - (BOOL)isPurchaserInfoCacheStale {
-    NSTimeInterval timeSinceLastCheck = -[self.purchaserInfoCachesLastUpdated timeIntervalSinceNow];
+    NSTimeInterval timeSinceLastCheck = -[self.purchaserInfoCachesLastUpdated timeIntervalSinceDate:self.now];
     return !(self.purchaserInfoCachesLastUpdated != nil && timeSinceLastCheck < CACHE_DURATION_IN_SECONDS);
 }
 
@@ -95,7 +104,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (void)setPurchaserInfoCacheTimestampToNow
 {
-    self.purchaserInfoCachesLastUpdated = [NSDate date];
+    self.purchaserInfoCachesLastUpdated = self.now;
 }
 
 #pragma mark - offerings
@@ -106,7 +115,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (void)cacheOfferings:(RCOfferings *)offerings
 {
-    [self.offeringsCachedObject cacheInstance:offerings date:[NSDate date]];
+    [self.offeringsCachedObject cacheInstance:offerings date:self.now];
 }
 
 - (BOOL)isOfferingsCacheStale {
@@ -120,7 +129,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (void)setOfferingsCacheTimestampToNow
 {
-    [self.offeringsCachedObject updateCacheTimestampWithDate:[NSDate date]];
+    [self.offeringsCachedObject updateCacheTimestampWithDate:self.now];
 }
 
 #pragma mark - private methods
@@ -132,6 +141,14 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (NSString *)purchaserInfoUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {
     return [RCPurchaserInfoAppUserDefaultsKeyBase stringByAppendingString:appUserID];
+}
+
+- (NSDate *)now {
+    if (self.stubbedNow) {
+        return self.stubbedNow;
+    } else {
+        return [NSDate date];
+    }
 }
 
 @end

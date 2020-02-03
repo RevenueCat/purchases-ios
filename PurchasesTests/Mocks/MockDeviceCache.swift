@@ -38,7 +38,6 @@ class MockDeviceCache: RCDeviceCache {
     // MARK: purchaserInfo
     var cachePurchaserInfoCount = 0
     var cachedPurchaserInfoCount = 0
-    var purchaserInfoCacheResetCount = 0
     var clearPurchaserInfoCacheTimestampCount = 0
     var setPurchaserInfoCacheTimestampToNowCount = 0
     var stubbedIsPurchaserInfoCacheStale = false
@@ -70,7 +69,6 @@ class MockDeviceCache: RCDeviceCache {
 
     var cacheOfferingsCount = 0
     var cachedOfferingsCount = 0
-    var offeringsCacheResetCount = 0
     var clearOfferingsCacheTimestampCount = 0
     var setOfferingsCacheTimestampToNowCount = 0
     var stubbedIsOfferingsCacheStale = false
