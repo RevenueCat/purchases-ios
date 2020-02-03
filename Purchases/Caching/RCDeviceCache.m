@@ -76,9 +76,11 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 
 - (void)cachePurchaserInfo:(NSData *)data forAppUserID:(NSString *)appUserID
 {
-    [self.userDefaults setObject:data
-                          forKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
-    [self setPurchaserInfoCacheTimestampToNow];
+    @synchronized(self) {
+        [self.userDefaults setObject:data
+                              forKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
+        [self setPurchaserInfoCacheTimestampToNow];
+    }
 }
 
 - (BOOL)isPurchaserInfoCacheStale {

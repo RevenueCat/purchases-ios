@@ -51,13 +51,17 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)clearCache {
-    [self clearCacheTimestamp];
-    self.cachedInstance = nil;
+    @synchronized(self) {
+        [self clearCacheTimestamp];
+        self.cachedInstance = nil;
+    }
 }
 
 - (void)cacheInstance:(id)instance date:(NSDate *)date {
-    self.cachedInstance = instance;
-    self.lastUpdatedAt = date;
+    @synchronized(self) {
+        self.cachedInstance = instance;
+        self.lastUpdatedAt = date;
+    }
 }
 
 - (void)updateCacheTimestampWithDate:(NSDate *)date {
