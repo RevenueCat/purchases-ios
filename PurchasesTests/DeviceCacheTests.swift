@@ -82,18 +82,16 @@ class DeviceCacheTests: XCTestCase {
         expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
     }
 
-    func testOfferingsCacheIsStaleIfLongerThanFiveMinutes() {
-        let oldDate: Date! = Calendar.current.date(byAdding: .minute, value: -(6), to: Date())
-        let mockCachedObject = RCInMemoryCachedObject<Purchases.Offerings>(cacheDurationInSeconds: 5 * 60,
-                                                                            lastUpdatedAt: oldDate)
-        self.deviceCache = RCDeviceCache(mockUserDefaults, stubbedNow: oldDate, offeringsCachedObject: mockCachedObject)
-//        self.deviceCache = RCDeviceCache(mockUserDefaults, stubbedNow: oldDate)
+    func testOfferingsCacheIsStaleIfCachedObjectIsStale() {
+        let mockCachedObject = MockInMemoryCachedOfferings<Purchases.Offerings>(cacheDurationInSeconds: 5 * 60,
+                                                                                lastUpdatedAt: Date())
+        self.deviceCache = RCDeviceCache(mockUserDefaults, stubbedNow: Date(), offeringsCachedObject: mockCachedObject)
         let offerings = Purchases.Offerings()
         self.deviceCache.cacheOfferings(offerings)
 
+        mockCachedObject.stubbedIsCacheStaleResult = false
         expect(self.deviceCache.isOfferingsCacheStale()).to(beFalse())
-        // wip, this needs to be initialized with a mock InMemoryCachedObject
-        self.deviceCache.stubbedNow = Date()
+        mockCachedObject.stubbedIsCacheStaleResult = true
         expect(self.deviceCache.isOfferingsCacheStale()).to(beTrue())
     }
 

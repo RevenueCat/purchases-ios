@@ -6,6 +6,7 @@
 #import <Foundation/Foundation.h>
 #import "RCDeviceCache.h"
 #import "RCInMemoryCachedObject.h"
+#import "RCOfferings.h"
 
 
 @interface RCDeviceCache (Protected)

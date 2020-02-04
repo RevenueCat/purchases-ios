@@ -6,20 +6,7 @@
 import Foundation
 import Purchases
 
-class MyMutableArray<T:AnyObject> : NSMutableArray {
-
-}
-
-class MockInMemoryCachedObject<T:AnyObject> : RCInMemoryCachedObject<AnyObject> {
-
-//    required init(cacheDurationInSeconds: Int32) {
-//    }
-//
-//    required init(cacheDurationInSeconds: Int32, lastUpdatedAt: Date?) {
-//    }
-//
-//    required init(cacheDurationInSeconds: Int32, lastUpdatedAt: Date?, stubbedNow: Date?) {
-//    }
+class MockInMemoryCachedOfferings<T: Purchases.Offerings> : RCInMemoryCachedObject<Purchases.Offerings> {
 
     var invokedIsCacheStale = false
     var invokedIsCacheStaleCount = 0
@@ -61,23 +48,23 @@ class MockInMemoryCachedObject<T:AnyObject> : RCInMemoryCachedObject<AnyObject> 
 
     var invokedCacheInstance = false
     var invokedCacheInstanceCount = 0
-    var invokedCacheInstanceParameters: (instance: T, date: Date)?
-    var invokedCacheInstanceParametersList = [(instance: T, date: Date)]()
+    var invokedCacheInstanceParameters: (instance: Purchases.Offerings, date: Date)?
+    var invokedCacheInstanceParametersList = [(instance: Purchases.Offerings, date: Date)]()
 
-//    override func cacheInstance(_ instance: T, date: Date) {
-//        invokedCacheInstance = true
-//        invokedCacheInstanceCount += 1
-//        invokedCacheInstanceParameters = (instance, date)
-//        invokedCacheInstanceParametersList.append((instance, date))
-//    }
-//
-//    var invokedCachedInstance = false
-//    var invokedCachedInstanceCount = 0
-//    var stubbedCachedInstanceResult: T!
-//
-//    override func cachedInstance() -> T? {
-//        invokedCachedInstance = true
-//        invokedCachedInstanceCount += 1
-//        return stubbedCachedInstanceResult
-//    }
+    override func cacheInstance(_ instance: Purchases.Offerings, date: Date) {
+        invokedCacheInstance = true
+        invokedCacheInstanceCount += 1
+        invokedCacheInstanceParameters = (instance, date)
+        invokedCacheInstanceParametersList.append((instance, date))
+    }
+
+    var invokedCachedInstance = false
+    var invokedCachedInstanceCount = 0
+    var stubbedCachedInstanceResult: Purchases.Offerings!
+
+    override func cachedInstance() -> Purchases.Offerings? {
+        invokedCachedInstance = true
+        invokedCachedInstanceCount += 1
+        return stubbedCachedInstanceResult
+    }
 }
