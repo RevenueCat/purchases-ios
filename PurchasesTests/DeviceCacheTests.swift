@@ -62,14 +62,24 @@ class DeviceCacheTests: XCTestCase {
         expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.appUserID")).to(beTrue())
     }
 
-    func testResetCachesTimestamp() {
+    func testSetPurchaserInfoCacheTimestampToNow() {
         expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
         self.deviceCache.setPurchaserInfoCacheTimestampToNow()
         expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beFalse())
     }
 
-    func testCacheIsStaleIfNoCaches() {
+    func testPurchaserInfoCacheIsStaleIfNoCaches() {
         expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
+    }
+
+    func testSetOfferingsCacheTimestampToNow() {
+        expect(self.deviceCache.isOfferingsCacheStale()).to(beTrue())
+        self.deviceCache.setOfferingsCacheTimestampToNow()
+        expect(self.deviceCache.isOfferingsCacheStale()).to(beFalse())
+    }
+
+    func testOfferingsCacheIsStaleIfNoCaches() {
+        expect(self.deviceCache.isOfferingsCacheStale()).to(beTrue())
     }
 
     func testPurchaserInfoCacheIsStaleIfLongerThanFiveMinutes() {
@@ -101,5 +111,31 @@ class DeviceCacheTests: XCTestCase {
         expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfo.cesar"] as? Data).to(equal(data))
         expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: "cesar")).to(equal(data))
         expect(self.mockUserDefaults.setObjectForKeyCalledValue).to(equal("com.revenuecat.userdefaults.purchaserInfo.cesar"))
+    }
+
+    func testOfferingsAreProperlyCached() {
+        let products = [
+            "com.myproduct.annual": MockSKProduct(mockIdentifier: "com.myproduct.annual"),
+            "com.myproduct.monthly": MockSKProduct(mockIdentifier: "com.myproduct.monthly")
+        ]
+        let offeringIdentifier = "offering_a"
+        let serverDescription = "This is the base offering"
+        let optionalOffering = RCOfferingsFactory().createOffering(withProducts: products, offeringData: [
+            "identifier": offeringIdentifier,
+            "description": serverDescription,
+            "packages": [
+                ["identifier": "$rc_monthly",
+                 "platform_product_identifier": "com.myproduct.monthly"],
+                ["identifier": "$rc_annual",
+                 "platform_product_identifier": "com.myproduct.annual"],
+                ["identifier": "$rc_six_month",
+                 "platform_product_identifier": "com.myproduct.sixMonth"]
+            ]
+        ])
+        guard let offering = optionalOffering else { fatalError("couldn't create offering for tests") }
+        let expectedOfferings = Purchases.Offerings(offerings: ["offering1": offering], currentOfferingID: "base")
+        self.deviceCache.cacheOfferings(expectedOfferings)
+
+        expect(self.deviceCache.cachedOfferings).to(beIdenticalTo(expectedOfferings))
     }
 }
