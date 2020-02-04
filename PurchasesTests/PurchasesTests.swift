@@ -2171,6 +2171,26 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedObserverMode).to(beFalse())
     }
 
+    func testInvalidatePurchaserInfoCacheClearsPurchaserInfoCache() {
+        setupPurchases()
+        guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
+
+        expect(self.deviceCache.clearPurchaserInfoCacheTimestampCount) == 0
+
+        nonOptionalPurchases.invalidatePurchaserInfoCache()
+        expect(self.deviceCache.clearPurchaserInfoCacheTimestampCount) == 1
+    }
+
+    func testInvalidatePurchaserInfoCacheDoesntClearOfferingsCache() {
+        setupPurchases()
+        guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
+
+        expect(self.deviceCache.clearOfferingsCacheTimestampCount) == 0
+
+        nonOptionalPurchases.invalidatePurchaserInfoCache()
+        expect(self.deviceCache.clearOfferingsCacheTimestampCount) == 0
+    }
+
     private func verifyUpdatedCaches(newAppUserID: String) {
         expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
         expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(2))
