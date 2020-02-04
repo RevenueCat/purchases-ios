@@ -8,8 +8,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-
-@interface RCInMemoryCachedObject<ObjectType> : NSObject
+@interface RCInMemoryCachedObject<ObjectType: id<NSObject>> : NSObject
 
 - (BOOL)isCacheStale;
 
