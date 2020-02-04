@@ -11,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCInMemoryCachedObject (Protected)
 
 @property (nonatomic, nullable) NSDate *stubbedNow;
+@property (nonatomic, nullable) NSDate *lastUpdatedAt;
 
 - (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds
                                  lastUpdatedAt:(nullable NSDate *)lastUpdatedAt

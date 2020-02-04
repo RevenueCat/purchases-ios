@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable ObjectType)cachedInstance;
 
+- (instancetype)init NS_UNAVAILABLE;
+
 - (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds;
 
 - (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds
