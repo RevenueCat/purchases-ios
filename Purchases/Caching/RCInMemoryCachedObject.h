@@ -18,8 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateCacheTimestampWithDate:(NSDate *)date;
 
-- (void)cacheInstance:(ObjectType)instance
-                 date:(NSDate *)date;
+- (void)cacheInstance:(ObjectType)instance;
 
 - (nullable ObjectType)cachedInstance;
 

@@ -48,14 +48,14 @@ class MockInMemoryCachedOfferings<T: Purchases.Offerings> : RCInMemoryCachedObje
 
     var invokedCacheInstance = false
     var invokedCacheInstanceCount = 0
-    var invokedCacheInstanceParameters: (instance: Purchases.Offerings, date: Date)?
-    var invokedCacheInstanceParametersList = [(instance: Purchases.Offerings, date: Date)]()
+    var invokedCacheInstanceParameters: (instance: Purchases.Offerings, Void)?
+    var invokedCacheInstanceParametersList = [(instance: Purchases.Offerings, Void)]()
 
-    override func cacheInstance(_ instance: Purchases.Offerings, date: Date) {
+    override func cacheInstance(_ instance: Purchases.Offerings) {
         invokedCacheInstance = true
         invokedCacheInstanceCount += 1
-        invokedCacheInstanceParameters = (instance, date)
-        invokedCacheInstanceParametersList.append((instance, date))
+        invokedCacheInstanceParameters = (instance, ())
+        invokedCacheInstanceParametersList.append((instance, ()))
     }
 
     var invokedCachedInstance = false

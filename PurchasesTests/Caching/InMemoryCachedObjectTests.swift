@@ -22,7 +22,7 @@ class InMemoryCachedObjectTests: XCTestCase {
             fatalError("Couldn't set up date for tests")
         }
 
-        cachedObject.cacheInstance("myString", date: oldDate)
+        cachedObject.cacheInstance("myString")
         expect(cachedObject.isCacheStale()) == false
 
         cachedObject.lastUpdatedAt = now
@@ -39,7 +39,8 @@ class InMemoryCachedObjectTests: XCTestCase {
             fatalError("Couldn't set up date for tests")
         }
 
-        cachedObject.cacheInstance("myString", date: oldDate)
+        cachedObject.cacheInstance("myString")
+        cachedObject.lastUpdatedAt = oldDate
         expect(cachedObject.isCacheStale()) == true
     }
 
@@ -49,7 +50,7 @@ class InMemoryCachedObjectTests: XCTestCase {
         let cacheDurationInSeconds: Int32 = 5
 
         let cachedObject = RCInMemoryCachedObject<NSString>(cacheDurationInSeconds: cacheDurationInSeconds)
-        cachedObject.cacheInstance("myString", date: Date())
+        cachedObject.cacheInstance("myString")
         expect(cachedObject.lastUpdatedAt).toNot(beNil())
         expect(cachedObject.cachedInstance()).toNot(beNil())
 
@@ -64,7 +65,7 @@ class InMemoryCachedObjectTests: XCTestCase {
         let cacheDurationInSeconds: Int32 = 5
 
         let cachedObject = RCInMemoryCachedObject<NSString>(cacheDurationInSeconds: cacheDurationInSeconds)
-        cachedObject.cacheInstance("myString", date: Date())
+        cachedObject.cacheInstance("myString")
 
         expect(cachedObject.lastUpdatedAt).toNot(beNil())
         expect(cachedObject.cachedInstance()).toNot(beNil())
@@ -83,9 +84,9 @@ class InMemoryCachedObjectTests: XCTestCase {
         let cachedObject = RCInMemoryCachedObject<NSString>(cacheDurationInSeconds: cacheDurationInSeconds)
         expect(cachedObject.lastUpdatedAt).to(beNil())
         let firstDate = Date()
-        cachedObject.cacheInstance(myString, date: firstDate)
+        cachedObject.cacheInstance(myString)
 
-        expect(cachedObject.lastUpdatedAt) == firstDate
+        cachedObject.lastUpdatedAt = firstDate
 
         let secondDate = Date()
         cachedObject.updateCacheTimestamp(with: secondDate)
@@ -99,7 +100,7 @@ class InMemoryCachedObjectTests: XCTestCase {
         let myString: NSString = "something"
         let cacheDurationInSeconds: Int32 = 5
         let cachedObject = RCInMemoryCachedObject<NSString>(cacheDurationInSeconds: cacheDurationInSeconds)
-        cachedObject.cacheInstance(myString, date: Date())
+        cachedObject.cacheInstance(myString)
 
         expect(cachedObject.cachedInstance()) == myString
     }
@@ -110,8 +111,8 @@ class InMemoryCachedObjectTests: XCTestCase {
         let cachedObject = RCInMemoryCachedObject<NSString>(cacheDurationInSeconds: cacheDurationInSeconds)
         expect(cachedObject.lastUpdatedAt).to(beNil())
         let newDate = Date()
-        cachedObject.cacheInstance(myString, date: newDate)
+        cachedObject.cacheInstance(myString)
 
-        expect(cachedObject.lastUpdatedAt) == newDate
+        expect(cachedObject.lastUpdatedAt).to(beCloseTo(Date()))
     }
 }

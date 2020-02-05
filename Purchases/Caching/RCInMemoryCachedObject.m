@@ -51,10 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (void)cacheInstance:(id)instance date:(NSDate *)date {
-    @synchronized(self) {
+- (void)cacheInstance:(id<NSObject>)instance {
+    @synchronized (self) {
         self.cachedInstance = instance;
-        self.lastUpdatedAt = date;
+        self.lastUpdatedAt = [[NSDate alloc] init];
     }
 }
 
