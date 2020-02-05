@@ -44,6 +44,18 @@ class InMemoryCachedObjectTests: XCTestCase {
         expect(cachedObject.isCacheStale()) == true
     }
 
+
+    func testIsCacheStaleIsTrueIfTheresNothingCached() {
+        let cachedObject = RCInMemoryCachedObject<NSString>(cacheDurationInSeconds: 5)
+
+        expect(cachedObject.isCacheStale()) == true
+
+        cachedObject.cacheInstance("myString")
+        cachedObject.clearCache()
+
+        expect(cachedObject.isCacheStale()) == true
+    }
+
     // mark: clearCacheTimestamp
 
     func testClearCacheTimestampClearsCorrectly() {
