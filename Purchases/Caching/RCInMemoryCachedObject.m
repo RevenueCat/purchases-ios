@@ -19,8 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) int cacheDurationInSeconds;
 @property (nonatomic, nullable) id cachedInstance;
 
-@property (nonatomic, nullable) NSDate *stubbedNow;
-
 @end
 
 
@@ -33,18 +31,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds
                                  lastUpdatedAt:(nullable NSDate *)lastUpdatedAt {
-    return [self initWithCacheDurationInSeconds:cacheDurationInSeconds
-                                  lastUpdatedAt:lastUpdatedAt
-                                     stubbedNow:nil];
-}
-
-- (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds
-                                 lastUpdatedAt:(nullable NSDate *)lastUpdatedAt
-                                    stubbedNow:(nullable NSDate *)stubbedNow {
     if (self == [super init]) {
         self.cacheDurationInSeconds = cacheDurationInSeconds;
         self.lastUpdatedAt = lastUpdatedAt;
-        self.stubbedNow = stubbedNow;
     }
     return self;
 }
@@ -54,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
         return YES;
     }
 
-    NSTimeInterval timeSinceLastCheck = -1 * [self.lastUpdatedAt timeIntervalSinceDate:self.now];
+    NSTimeInterval timeSinceLastCheck = -1 * [self.lastUpdatedAt timeIntervalSinceDate:[[NSDate alloc] init]];
     return timeSinceLastCheck >= self.cacheDurationInSeconds;
 }
 
@@ -78,14 +67,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateCacheTimestampWithDate:(NSDate *)date {
     self.lastUpdatedAt = date;
-}
-
-- (NSDate *)now {
-    if (self.stubbedNow) {
-        return self.stubbedNow;
-    } else {
-        return [NSDate date];
-    }
 }
 
 @end

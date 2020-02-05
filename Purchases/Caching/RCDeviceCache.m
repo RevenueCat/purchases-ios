@@ -51,8 +51,7 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
         if (offeringsCachedObject == nil) {
             offeringsCachedObject =
                 [[RCInMemoryCachedObject alloc] initWithCacheDurationInSeconds:CACHE_DURATION_IN_SECONDS
-                                                                 lastUpdatedAt:nil
-                                                                    stubbedNow:self.stubbedNow];
+                                                                 lastUpdatedAt:nil];
         }
         self.offeringsCachedObject = offeringsCachedObject;
 

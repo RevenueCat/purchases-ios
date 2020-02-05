@@ -15,33 +15,33 @@ class InMemoryCachedObjectTests: XCTestCase {
 
     func testIsCacheStaleIsFalseBeforeDurationExpires() {
         let cacheDurationInSeconds: Int32 = 5
+        let now = Date()
 
         let cachedObject = RCInMemoryCachedObject<NSString>(cacheDurationInSeconds: cacheDurationInSeconds,
                                                             lastUpdatedAt: nil)
-        cachedObject.stubbedNow = Date()
+        guard let oldDate = Calendar.current.date(byAdding: .second, value: -4, to: now) else {
+            fatalError("Couldn't set up date for tests")
+        }
 
-        cachedObject.cacheInstance("myString", date: Date())
-
+        cachedObject.cacheInstance("myString", date: oldDate)
         expect(cachedObject.isCacheStale()) == false
 
-        cachedObject.stubbedNow = Date(timeIntervalSinceNow: 4)
-
+        cachedObject.lastUpdatedAt = now
         expect(cachedObject.isCacheStale()) == false
     }
 
     func testIsCacheStaleIsTrueAfterDurationExpires() {
         let cacheDurationInSeconds: Int32 = 5
+        let now = Date()
 
         let cachedObject = RCInMemoryCachedObject<NSString>(cacheDurationInSeconds: cacheDurationInSeconds,
                                                             lastUpdatedAt: nil)
-        cachedObject.stubbedNow = Date()
 
-        cachedObject.cacheInstance("myString", date: Date())
+        guard let oldDate = Calendar.current.date(byAdding: .second, value: -5, to: now) else {
+            fatalError("Couldn't set up date for tests")
+        }
 
-        expect(cachedObject.isCacheStale()) == false
-
-        cachedObject.stubbedNow = Date(timeIntervalSinceNow: 6)
-
+        cachedObject.cacheInstance("myString", date: oldDate)
         expect(cachedObject.isCacheStale()) == true
     }
 
