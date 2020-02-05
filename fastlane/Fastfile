@@ -57,7 +57,7 @@ platform :ios do
       repository_name: "revenuecat/purchases-ios",
       api_token: ENV["GITHUB_TOKEN"],
       name: release_version,
-      tag_name: "v#{release_version}",
+      tag_name: "#{release_version}",
       description: changelog,
       commitish: "master",
       upload_assets: ["CarthageUploads/Purchases.framework.zip"],
