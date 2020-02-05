@@ -44,6 +44,8 @@ workflows:
   build-test:
     jobs:
       - runtest
+  docs:
+    jobs:
       - docs-approval:
           type: approval
           # TODO: remove after testing it works before merging
