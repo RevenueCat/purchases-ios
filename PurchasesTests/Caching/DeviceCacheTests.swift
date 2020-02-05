@@ -93,8 +93,7 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testOfferingsCacheIsStaleIfCachedObjectIsStale() {
-        let mockCachedObject = MockInMemoryCachedOfferings<Purchases.Offerings>(cacheDurationInSeconds: 5 * 60,
-                                                                                lastUpdatedAt: Date())
+        let mockCachedObject = MockInMemoryCachedOfferings<Purchases.Offerings>(cacheDurationInSeconds: 5 * 60)
         self.deviceCache = RCDeviceCache(mockUserDefaults, stubbedNow: Date(), offeringsCachedObject: mockCachedObject)
         let offerings = Purchases.Offerings()
         self.deviceCache.cacheOfferings(offerings)

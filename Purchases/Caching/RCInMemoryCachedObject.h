@@ -27,8 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds;
 
-- (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds
-                                 lastUpdatedAt:(nullable NSDate *)lastUpdatedAt;
 @end
 
 

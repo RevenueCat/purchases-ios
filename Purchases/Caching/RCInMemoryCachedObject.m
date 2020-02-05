@@ -25,15 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation RCInMemoryCachedObject
 
 - (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds {
-    return [self initWithCacheDurationInSeconds:cacheDurationInSeconds
-                                  lastUpdatedAt:nil];
-}
-
-- (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds
-                                 lastUpdatedAt:(nullable NSDate *)lastUpdatedAt {
     if (self == [super init]) {
         self.cacheDurationInSeconds = cacheDurationInSeconds;
-        self.lastUpdatedAt = lastUpdatedAt;
     }
     return self;
 }
