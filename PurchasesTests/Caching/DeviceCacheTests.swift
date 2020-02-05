@@ -84,22 +84,25 @@ class DeviceCacheTests: XCTestCase {
 
     func testPurchaserInfoCacheIsStaleIfLongerThanFiveMinutes() {
         let oldDate: Date! = Calendar.current.date(byAdding: .minute, value: -(6), to: Date())
-        self.deviceCache = RCDeviceCache(mockUserDefaults, stubbedNow: oldDate)
+        self.deviceCache = RCDeviceCache(mockUserDefaults)
         self.deviceCache.cachePurchaserInfo(Data(), forAppUserID: "waldo")
 
-        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beFalse())
-        self.deviceCache.stubbedNow = Date()
+        self.deviceCache.purchaserInfoCachesLastUpdated = oldDate
         expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
+
+        self.deviceCache.purchaserInfoCachesLastUpdated = Date()
+        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beFalse())
     }
 
     func testOfferingsCacheIsStaleIfCachedObjectIsStale() {
         let mockCachedObject = MockInMemoryCachedOfferings<Purchases.Offerings>(cacheDurationInSeconds: 5 * 60)
-        self.deviceCache = RCDeviceCache(mockUserDefaults, stubbedNow: Date(), offeringsCachedObject: mockCachedObject)
+        self.deviceCache = RCDeviceCache(mockUserDefaults, offeringsCachedObject: mockCachedObject)
         let offerings = Purchases.Offerings()
         self.deviceCache.cacheOfferings(offerings)
 
         mockCachedObject.stubbedIsCacheStaleResult = false
         expect(self.deviceCache.isOfferingsCacheStale()).to(beFalse())
+
         mockCachedObject.stubbedIsCacheStaleResult = true
         expect(self.deviceCache.isOfferingsCacheStale()).to(beTrue())
     }

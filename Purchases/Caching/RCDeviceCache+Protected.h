@@ -11,13 +11,9 @@
 
 @interface RCDeviceCache (Protected)
 
-@property (nonatomic, nullable) NSDate *stubbedNow;
+@property (nonatomic, nullable) NSDate *purchaserInfoCachesLastUpdated;
 
 - (instancetype)initWith:(nullable NSUserDefaults *)userDefaults
-              stubbedNow:(nullable NSDate *)stubbedNow;
-
-- (instancetype)initWith:(nullable NSUserDefaults *)userDefaults
-              stubbedNow:(nullable NSDate *)stubbedNow
    offeringsCachedObject:(nullable RCInMemoryCachedObject<RCOfferings *> *)offeringsCachedObject;
 
 @end
