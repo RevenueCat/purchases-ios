@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://www.revenuecat.com/assets/images/build.svg" alt="RevenueCat"/>
+  <img src="https://d2jzmbury1aqmc.cloudfront.net/assets/images/build.svg" alt="RevenueCat"/>
 </p>
 <h3 align="center">😻 In-app Subscriptions Made Easy 😻</h1>
 
@@ -15,15 +15,15 @@
 |   | RevenueCat |
 | --- | --- |
 ✅ | Server-side receipt validation
-➡️ | [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more  
-🖥 | macOS support  
-🎯 | Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web  
-📊 | Analytics - automatic calculation of metrics like conversion, mrr, and churn  
-📝 | [Online documentation](https://docs.revenuecat.com/docs) up to date  
-🔀 | [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it  
-💯 | Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)  
+➡️ | [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more
+🖥 | macOS support
+🎯 | Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web
+📊 | Analytics - automatic calculation of metrics like conversion, mrr, and churn
+📝 | [Online documentation](https://docs.revenuecat.com/docs) up to date
+🔀 | [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it
+💯 | Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)
 📮 | Great support - [Help Center](https://revenuecat.zendesk.com)
-🤩 | Awesome [new features](https://trello.com/b/RZRnWRbI/revenuecat-product-roadmap)  
+🤩 | Awesome [new features](https://trello.com/b/RZRnWRbI/revenuecat-product-roadmap)
 
 ## Getting Started
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/v3.0/docs).
