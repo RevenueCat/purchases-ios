@@ -44,7 +44,7 @@ pod trunk push Purchases.podspec
 COCOAPODS_RESULT=$
 
 if [ $COCOAPODS_RESULT == 0 ]; then
-  echo "Successfully pushed v$CURRENT_VERSION to Cocoapods!"
+  echo "Successfully pushed $CURRENT_VERSION to Cocoapods!"
 else
   echo "Error pushing to Cocoapods, aborting"
   exit $COCOAPODS_RESULT

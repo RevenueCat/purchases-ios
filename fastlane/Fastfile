@@ -33,7 +33,8 @@ platform :ios do
     previous_version_number = get_version_number
     increment_version_number(version_number: new_version_number)
     version_bump_podspec(version_number: new_version_number)
-    increment_build_number_in_rc_purchases(previous_version_number, new_version_number)
+    increment_build_number(previous_version_number, new_version_number, '../Purchases/Public/RCPurchases.m')
+    increment_build_number(previous_version_number, new_version_number, '../.jazzy.yaml')
   end
 
   desc "Increment build number and update changelog"
@@ -57,7 +58,7 @@ platform :ios do
       repository_name: "revenuecat/purchases-ios",
       api_token: ENV["GITHUB_TOKEN"],
       name: release_version,
-      tag_name: "v#{release_version}",
+      tag_name: "#{release_version}",
       description: changelog,
       commitish: "master",
       upload_assets: ["CarthageUploads/Purchases.framework.zip"],
@@ -81,11 +82,10 @@ platform :ios do
 
 end
 
-def increment_build_number_in_rc_purchases(previous_version_number, new_version_number)
-  rc_purchases_path = '../Purchases/Public/RCPurchases.m'
+def increment_build_number(previous_version_number, new_version_number, file_path)
   sed_regex = 's|' + previous_version_number + '|' + new_version_number + '|'
   backup_extension = '.bck'
-  sh("sed", '-i', backup_extension, sed_regex, rc_purchases_path)	
+  sh("sed", '-i', backup_extension, sed_regex, file_path)	
 end
 
 def attach_changelog_to_master

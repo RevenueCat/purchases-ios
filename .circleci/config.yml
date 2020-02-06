@@ -21,8 +21,40 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/report.html
           destination: test_report.html
+  docs-deploy:
+    macos:
+      xcode: "10.2.0"
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - run: bundle install
+      - run:
+          name: Build docs
+          command: fastlane run jazzy
+      - run:
+          name: Install awscli
+          command: sudo pip install awscli
+      - run:
+          name: Deploy to S3
+          command: aws s3 sync docs s3://purchases-docs/ios --delete --acl public-read
+      - run:
+          name: Invalidate CloudFront caches
+          command: aws cloudfront create-invalidation --distribution-id EPTW7F3CB566V --paths "/*"
+          
 workflows:
   version: 2
   build-test:
     jobs:
       - runtest
+  docs:
+    jobs:
+      - docs-approval:
+          type: approval
+          filters:
+            branches:
+              only: master
+      - docs-deploy:
+          requires:
+            - docs-approval
+
