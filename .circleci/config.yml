@@ -51,10 +51,9 @@ workflows:
     jobs:
       - docs-approval:
           type: approval
-          # TODO: remove after testing it works before merging
-          # filters:
-            # branches:
-              # only: master
+          filters:
+            branches:
+              only: master
       - docs-deploy:
           requires:
             - docs-approval
