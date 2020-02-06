@@ -21,6 +21,7 @@ void RCOverrideServerHost(NSString *hostname)
 @interface RCHTTPClient ()
 
 @property (nonatomic) NSURLSession *session;
+@property (nonatomic) NSString *platformFlavor;
 
 @end
 
@@ -31,12 +32,13 @@ void RCOverrideServerHost(NSString *hostname)
     return  (overrideHostName) ? overrideHostName : @"api.revenuecat.com";
 }
 
-- (instancetype)init
+- (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
 {
     if (self = [super init]) {
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
         config.HTTPMaximumConnectionsPerHost = 1;
         self.session = [NSURLSession sessionWithConfiguration:config];
+        self.platformFlavor = platformFlavor;
     }
     return self;
 }
@@ -71,6 +73,7 @@ void RCOverrideServerHost(NSString *hostname)
                                                                       @"X-Version": [RCPurchases frameworkVersion],
                                                                       @"X-Platform": PLATFORM_HEADER,
                                                                       @"X-Platform-Version": [self.class systemVersion],
+                                                                      @"X-Platform-Flavor": self.platformFlavor ? self.platformFlavor : @"native",
                                                                       @"X-Client-Version": [self.class appVersion]}];
     [defaultHeaders addEntriesFromDictionary:headers];
 

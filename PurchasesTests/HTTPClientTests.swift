@@ -15,7 +15,7 @@ import Purchases
 
 class HTTPClientTests: XCTestCase {
 
-    let client = RCHTTPClient()
+    let client = RCHTTPClient(platformFlavor: nil)
 
     override func tearDown() {
         OHHTTPStubs.removeAllStubs()
@@ -302,6 +302,37 @@ class HTTPClientTests: XCTestCase {
         self.client.performRequest("POST", path: path, body: Dictionary.init(),
                                    headers: ["test_header": "value"], completionHandler:nil)
         
+        expect(headerPresent).toEventually(equal(true))
+    }
+
+    func testDefaultsPlatformFlavorToNative() {
+        let path = "/a_random_path"
+        var headerPresent = false
+
+        stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "native")) { request in
+            headerPresent = true
+            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+        }
+
+        self.client.performRequest("POST", path: path, body: Dictionary.init(),
+                                   headers: ["test_header": "value"], completionHandler:nil)
+
+        expect(headerPresent).toEventually(equal(true))
+    }
+    
+    func testPassesPlatformFlavorHeader() {
+        let path = "/a_random_path"
+        var headerPresent = false
+
+        stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "react-native")) { request in
+            headerPresent = true
+            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+        }
+        let client = RCHTTPClient(platformFlavor: "react-native")
+
+        client.performRequest("POST", path: path, body: Dictionary.init(),
+                                   headers: ["test_header": "value"], completionHandler:nil)
+
         expect(headerPresent).toEventually(equal(true))
     }
 }
