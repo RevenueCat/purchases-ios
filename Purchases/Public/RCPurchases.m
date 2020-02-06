@@ -27,8 +27,8 @@
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
 
-#define CALL_AND_DISPATCH_IF_SET(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
-#define CALL_IF_SET(completion, ...) if (completion) completion(__VA_ARGS__);
+#define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
+#define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
 
 @interface RCPurchases () <RCStoreKitWrapperDelegate> {
     NSNumber * _Nullable _allowSharingAppStoreAccount;
@@ -383,7 +383,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             if (error == nil) {
                 [self updateCachesWithCompletionBlock:completion];
             } else {
-                CALL_AND_DISPATCH_IF_SET(completion, nil, error);
+                CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
             }
         }];
     }
@@ -398,7 +398,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             if (error == nil) {
                 [self updateCachesWithCompletionBlock:completion];
             } else {
-                CALL_IF_SET(completion, nil, error);
+                CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
             }
         }];
 
@@ -417,7 +417,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
     if (infoFromCache) {
         RCDebugLog(@"Vending purchaserInfo from cache");
-        CALL_IF_SET(completion, infoFromCache, nil);
+        CALL_IF_SET_ON_MAIN_THREAD(completion, infoFromCache, nil);
         if ([self.deviceCache isCacheStale]) {
             RCDebugLog(@"Cache is stale, updating caches");
             [self updateCaches];
@@ -456,10 +456,10 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                             self.productsByIdentifier[p.productIdentifier] = p;
                                         }
                                     }
-                                    CALL_AND_DISPATCH_IF_SET(completion, [products arrayByAddingObjectsFromArray:newProducts]);
+                                    CALL_IF_SET_ON_MAIN_THREAD(completion, [products arrayByAddingObjectsFromArray:newProducts]);
                                 }];
     } else {
-        CALL_AND_DISPATCH_IF_SET(completion, products);
+        CALL_IF_SET_ON_MAIN_THREAD(completion, products);
     }
 }
 
@@ -577,7 +577,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             if (RCIsSandbox()) {
                 RCLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless you've purchased before and there is a receipt available.");
             }
-            CALL_AND_DISPATCH_IF_SET(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
+            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
             return;
         }
         [self.backend postReceiptData:data
@@ -595,11 +595,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                            completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
                                [self dispatch:^{
                                    if (error) {
-                                       CALL_AND_DISPATCH_IF_SET(completion, nil, error);
+                                       CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
                                    } else if (info) {
                                        [self cachePurchaserInfo:info forAppUserID:self.appUserID];
                                        [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-                                       CALL_AND_DISPATCH_IF_SET(completion, info, nil);
+                                       CALL_IF_SET_ON_MAIN_THREAD(completion, info, nil);
                                    }
                                }];
                            }];
@@ -614,7 +614,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                           receiptData:data
                                    productIdentifiers:productIdentifiers
                                            completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
-                                               CALL_AND_DISPATCH_IF_SET(receiveEligibility, result);
+                                               CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
                                            }];
     }];
 }
@@ -714,7 +714,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                               [self.deviceCache clearCachesTimestamp];
                                           }
                                           
-                                          CALL_AND_DISPATCH_IF_SET(completion, info, error);
+                                          CALL_IF_SET_ON_MAIN_THREAD(completion, info, error);
                                       }];
 }
 
@@ -731,7 +731,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 {
     if (self.deviceCache.cachedOfferings) {
         RCDebugLog(@"Vending offerings from cache");
-        CALL_IF_SET(completion, self.deviceCache.cachedOfferings, nil);
+        CALL_IF_SET_ON_MAIN_THREAD(completion, self.deviceCache.cachedOfferings, nil);
         if ([self.deviceCache isCacheStale]) {
             RCDebugLog(@"Cache is stale, updating caches");
             [self updateCaches];
@@ -748,7 +748,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                 completion:^(NSDictionary *data, NSError *error) {
                                     if (error != nil) {
                                         RCLog(@"Error fetching offerings - %@", error);
-                                        CALL_AND_DISPATCH_IF_SET(completion, nil, error);
+                                        CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
                                         return;
                                     }
 
@@ -781,9 +781,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                             }
                                             [self.deviceCache cacheOfferings:offerings];
 
-                                            CALL_AND_DISPATCH_IF_SET(completion, offerings, nil);
+                                            CALL_IF_SET_ON_MAIN_THREAD(completion, offerings, nil);
                                         } else {
-                                            CALL_AND_DISPATCH_IF_SET(completion, nil, [RCPurchasesErrorUtils unexpectedBackendResponseError]);
+                                            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils unexpectedBackendResponseError]);
                                         }
 
                                     }];
@@ -827,21 +827,21 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             
             [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
             
-            CALL_IF_SET(completion, transaction, info, nil, false);
+            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, info, nil, false);
             
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if ([error.userInfo[RCFinishableKey] boolValue]) {
-            CALL_IF_SET(completion, transaction, nil, error, false);
+            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if (![error.userInfo[RCFinishableKey] boolValue]) {
-            CALL_IF_SET(completion, transaction, nil, error, false);
+            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
         } else {
             RCLog(@"Unexpected error from backend");
-            CALL_IF_SET(completion, transaction, nil, error, false);
+            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
         }
         
         @synchronized (self) {
@@ -888,7 +888,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                 completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
             }
 
-            CALL_AND_DISPATCH_IF_SET(
+            CALL_IF_SET_ON_MAIN_THREAD(
                     completion,
                     transaction,
                     nil,
