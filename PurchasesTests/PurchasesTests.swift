@@ -157,13 +157,14 @@ class PurchasesTests: XCTestCase {
         var postedSubscriptionGroup: String?
         var postedDiscounts: Array<RCPromotionalOffer>?
         var postedOfferingIdentifier: String?
+        var postedObserverMode: Bool?
 
         var postReceiptPurchaserInfo: Purchases.PurchaserInfo?
         var postReceiptError: Error?
         var aliasError: Error?
         var aliasCalled = false
 
-        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, subscriptionGroup: String?, discounts: Array<RCPromotionalOffer>?, presentedOfferingIdentifier: String?, completion: @escaping RCBackendPurchaserInfoResponseHandler) {
+        override func postReceiptData(_ data: Data, appUserID: String, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, subscriptionGroup: String?, discounts: Array<RCPromotionalOffer>?, presentedOfferingIdentifier: String?, observerMode: Bool, completion: @escaping RCBackendPurchaserInfoResponseHandler) {
             postReceiptDataCalled = true
             postedIsRestore = isRestore
 
@@ -177,7 +178,7 @@ class PurchasesTests: XCTestCase {
             postedCurrencyCode = currencyCode
             postedDiscounts = discounts
             postedOfferingIdentifier = presentedOfferingIdentifier
-
+            postedObserverMode = observerMode
             completion(postReceiptPurchaserInfo, postReceiptError)
         }
 
@@ -2158,6 +2159,46 @@ class PurchasesTests: XCTestCase {
 
         expect(self.backend.postReceiptDataCalled).to(beTrue())
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
+    }
+    
+    func testReceiptsSendsObserverModeWhenObserverMode() {
+        setupPurchasesObserverModeOn()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
+
+        }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.backend.postedObserverMode).to(beTrue())
+    }
+    
+    func testReceiptsSendsObserverModeOffWhenObserverModeOff() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
+
+        }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.backend.postedObserverMode).to(beFalse())
     }
 
     private func verifyUpdatedCaches(newAppUserID: String) {

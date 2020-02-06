@@ -97,7 +97,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 + (NSString *)frameworkVersion {
-    return @"3.0.0-SNAPSHOT";
+    return @"3.1.0-SNAPSHOT";
 }
 
 + (instancetype)sharedPurchases {
@@ -143,25 +143,35 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                        observerMode:(BOOL)observerMode
                        userDefaults:(nullable NSUserDefaults *)userDefaults
 {
-    RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults observerMode:observerMode];
+    return [self configureWithAPIKey:APIKey appUserID:appUserID observerMode:observerMode userDefaults:userDefaults platformFlavor:nil];
+}
+
++ (instancetype)configureWithAPIKey:(NSString *)APIKey
+                          appUserID:(nullable NSString *)appUserID
+                       observerMode:(BOOL)observerMode
+                       userDefaults:(nullable NSUserDefaults *)userDefaults
+                     platformFlavor:(NSString *)platformFlavor
+{
+    RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults observerMode:observerMode platformFlavor:platformFlavor];
     [self setDefaultInstance:purchases];
     return purchases;
 }
 
 - (instancetype)initWithAPIKey:(NSString *)APIKey appUserID:(nullable NSString *)appUserID
 {
-    return [self initWithAPIKey:APIKey appUserID:appUserID userDefaults:nil observerMode:false];
+    return [self initWithAPIKey:APIKey appUserID:appUserID userDefaults:nil observerMode:false platformFlavor:nil];
 }
 
 - (instancetype)initWithAPIKey:(NSString *)APIKey
                      appUserID:(nullable NSString *)appUserID
                   userDefaults:(nullable NSUserDefaults *)userDefaults
                   observerMode:(BOOL)observerMode
+                platformFlavor:(nullable NSString *)platformFlavor
 {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] init];
-    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey];
+    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey platformFlavor:platformFlavor];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
     RCOfferingsFactory *offeringsFactory = [[RCOfferingsFactory alloc] init];
 
@@ -249,7 +259,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds == nil) {
                 [attributionFetcher adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails, NSError *_Nullable error) {
                     NSArray *values = [attributionDetails allValues];
-                    if (values.count != 0 && values[0][@"iad-attribution"]) {
+                    
+                    bool hasIadAttribution = values.count != 0 && [values[0][@"iad-attribution"] boolValue];
+                    if (hasIadAttribution) {
                         [self postAttributionData:attributionDetails fromNetwork:RCAttributionNetworkAppleSearchAds forNetworkUserId:nil];
                     }
                 }];
@@ -579,8 +591,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                     subscriptionGroup:nil
                             discounts:nil
           presentedOfferingIdentifier:nil
-                           completion:^(RCPurchaserInfo *_Nullable info,
-                                   NSError *_Nullable error) {
+                         observerMode:!self.finishTransactions
+                           completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
                                [self dispatch:^{
                                    if (error) {
                                        CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
@@ -996,6 +1008,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                               subscriptionGroup:subscriptionGroup
                                                       discounts:discounts
                                     presentedOfferingIdentifier:presentedOffering
+                                                   observerMode:!self.finishTransactions
                                                      completion:^(RCPurchaserInfo * _Nullable info,
                                                              NSError * _Nullable error) {
                                                          [self handleReceiptPostWithTransaction:transaction
@@ -1014,6 +1027,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                               subscriptionGroup:nil
                                                       discounts:nil
                                     presentedOfferingIdentifier:nil
+                                                   observerMode:!self.finishTransactions
                                                      completion:^(RCPurchaserInfo * _Nullable info,
                                                              NSError * _Nullable error) {
                                                          [self handleReceiptPostWithTransaction:transaction

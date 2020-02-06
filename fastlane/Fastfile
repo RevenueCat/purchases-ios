@@ -26,4 +26,82 @@ platform :ios do
     snapshot
   end
 
+  desc "Increment build number"
+  lane :bump do |options|
+    new_version_number = options[:version]
+    fail ArgumentError, "missing version" unless new_version_number
+    previous_version_number = get_version_number
+    increment_version_number(version_number: new_version_number)
+    version_bump_podspec(version_number: new_version_number)
+    increment_build_number(previous_version_number, new_version_number, '../Purchases/Public/RCPurchases.m')
+    increment_build_number(previous_version_number, new_version_number, '../.jazzy.yaml')
+  end
+
+  desc "Increment build number and update changelog"
+  lane :bump_and_update_changelog do |options|
+    bump(options)
+    attach_changelog_to_master
+  end
+
+  desc "Make github release"
+  lane :github_release do |options|
+    release_version = options[:version]
+    fail ArgumentError, "missing version" unless release_version
+
+    begin
+      changelog = File.read("../CHANGELOG.latest.md")
+    rescue
+      fail "please add a CHANGELOG.latest.md file before calling this lane"
+    end
+
+    set_github_release(
+      repository_name: "revenuecat/purchases-ios",
+      api_token: ENV["GITHUB_TOKEN"],
+      name: release_version,
+      tag_name: "#{release_version}",
+      description: changelog,
+      commitish: "master",
+      upload_assets: ["CarthageUploads/Purchases.framework.zip"],
+      is_draft: true
+  )
+  end
+
+  desc "Create sandbox account"
+  lane :create_sandbox_account do |options|
+    email = options[:email]
+    fail ArgumentError, "missing email" unless email
+
+    password = options[:password]
+    fail ArgumentError, "missing password" unless password
+    require 'Spaceship'
+
+    Spaceship::Tunes.login()
+    
+    Spaceship::Tunes::SandboxTester.create!(email: email, password: password)
+  end
+
+end
+
+def increment_build_number(previous_version_number, new_version_number, file_path)
+  sed_regex = 's|' + previous_version_number + '|' + new_version_number + '|'
+  backup_extension = '.bck'
+  sh("sed", '-i', backup_extension, sed_regex, file_path)	
+end
+
+def attach_changelog_to_master
+  current_changelog = File.open("../CHANGELOG.latest.md", 'r')
+  master_changelog = File.open("../CHANGELOG.md", 'r')
+
+  current_changelog_data = current_changelog.read
+  master_changelog_data = master_changelog.read
+
+  current_changelog.close  
+  master_changelog.close
+
+  File.open("../CHANGELOG.md", 'w') { |master_changelog_write_mode|
+    whole_file_data = "#{current_changelog_data}\n#{master_changelog_data}"
+    puts "going to save. Contents - #{whole_file_data}"
+    
+    master_changelog_write_mode.write(whole_file_data)
+  }
 end

@@ -41,7 +41,7 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
 
 @interface RCBackend : NSObject
 
-- (nullable instancetype)initWithAPIKey:(NSString *)APIKey;
+- (nullable instancetype)initWithAPIKey:(NSString *)APIKey platformFlavor:(NSString *)platformFlavor;
 
 - (nullable instancetype)initWithHTTPClient:(RCHTTPClient *)client
                                      APIKey:(NSString *)APIKey;
@@ -57,6 +57,7 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
           subscriptionGroup:(nullable NSString *)subscriptionGroup
                   discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
 presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
+               observerMode:(BOOL)observerMode
                  completion:(RCBackendPurchaserInfoResponseHandler)completion;
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID

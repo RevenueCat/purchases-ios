@@ -44,9 +44,9 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
 @implementation RCBackend
 
-- (nullable instancetype)initWithAPIKey:(NSString *)APIKey
+- (nullable instancetype)initWithAPIKey:(NSString *)APIKey platformFlavor:(NSString *)platformFlavor
 {
-    RCHTTPClient *client = [[RCHTTPClient alloc] init];
+    RCHTTPClient *client = [[RCHTTPClient alloc] initWithPlatformFlavor:platformFlavor];
     return [self initWithHTTPClient:client
                              APIKey:APIKey];
 }
@@ -167,6 +167,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
           subscriptionGroup:(nullable NSString *)subscriptionGroup
                   discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
 presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
+               observerMode:(BOOL)observerMode
                  completion:(RCBackendPurchaserInfoResponseHandler)completion
 {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
@@ -174,10 +175,11 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                  @{
                                    @"fetch_token": fetchToken,
                                    @"app_user_id": appUserID,
-                                   @"is_restore": @(isRestore)
-                                   }];
+                                   @"is_restore": @(isRestore),
+                                   @"observer_mode": @(observerMode)
+                                 }];
 
-    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@-%@",
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@",
                           appUserID,
                           @(isRestore),
                           fetchToken,
@@ -187,7 +189,8 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                           @((NSUInteger)paymentMode),
                           introductoryPrice,
                           subscriptionGroup,
-                          presentedOfferingIdentifier];
+                          presentedOfferingIdentifier,
+                          @(observerMode)];
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
         for (RCPromotionalOffer *discount in discounts) {
@@ -218,7 +221,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     if (introductoryPrice) {
         body[@"introductory_price"] = introductoryPrice;
     }
-    
+
     if (subscriptionGroup) {
         body[@"subscription_group_id"] = subscriptionGroup;
     }

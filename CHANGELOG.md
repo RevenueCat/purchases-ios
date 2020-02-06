@@ -1,3 +1,10 @@
+## 3.0.2
+- Fixes an issue where Apple Search Ads attribution information would be sent even if the user hadn't clicked on 
+a search ad.
+
+## 3.0.1
+- Adds observer_mode to the backend post receipt call.
+
 ## 3.0.0
 - Support for new Offerings system.
 - Deprecates `makePurchase` methods. Replaces with `purchasePackage`
