@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
         return YES;
     }
 
-    NSTimeInterval timeSinceLastCheck = -1 * [self.lastUpdatedAt timeIntervalSinceDate:[[NSDate alloc] init]];
+    NSTimeInterval timeSinceLastCheck = -1 * [self.lastUpdatedAt timeIntervalSinceNow];
     return timeSinceLastCheck >= self.cacheDurationInSeconds;
 }
 
@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)cacheInstance:(id<NSObject>)instance {
     @synchronized (self) {
         self.cachedInstance = instance;
-        self.lastUpdatedAt = [[NSDate alloc] init];
+        self.lastUpdatedAt = [NSDate date];
     }
 }
 
