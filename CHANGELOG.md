@@ -1,3 +1,7 @@
+## 3.0.3
+- Added new method to invalidate the purchaser info cache, useful when promotional purchases are granted from outside the app. https://github.com/RevenueCat/purchases-ios/pull/168
+- Made sure we dispatch offerings, and purchaser info https://github.com/RevenueCat/purchases-ios/pull/146
+
 ## 3.0.2
 - Fixes an issue where Apple Search Ads attribution information would be sent even if the user hadn't clicked on 
 a search ad.
