@@ -350,36 +350,6 @@ class PurchasesTests: XCTestCase {
 
     }
 
-    class MockDeviceCache: RCDeviceCache {
-
-        var cachedUserInfoCount = 0
-        var cachesReset = 0
-        var cachedOfferingsCount = 0
-        var cachedUserInfo = [String: Data]()
-        var staleCache = false
-
-        override func cachePurchaserInfo(_ data: Data, forAppUserID appUserID: String) {
-            cachedUserInfoCount += 1
-            cachedUserInfo[appUserID] = data as Data?
-        }
-
-        override func cachedPurchaserInfoData(forAppUserID appUserID: Swift.String) -> Data? {
-            return cachedUserInfo[appUserID];
-        }
-
-        override func resetCachesTimestamp() {
-            cachesReset += 1
-        }
-
-        override func cacheOfferings(_ offerings: Purchases.Offerings) {
-            cachedOfferingsCount += 1
-        }
-
-        override func isCacheStale() -> Bool {
-            return staleCache
-        }
-    }
-
     class MockUserManager: RCIdentityManager {
 
         var configurationCalled = false
@@ -1304,10 +1274,10 @@ class PurchasesTests: XCTestCase {
     func testCachesPurchaserInfo() {
         setupPurchases()
 
-        expect(self.deviceCache.cachedUserInfo.count).toEventually(equal(1))
-        expect(self.deviceCache.cachedUserInfo[self.purchases!.appUserID]).toEventuallyNot(beNil())
+        expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(1))
+        expect(self.deviceCache.cachedPurchaserInfo[self.purchases!.appUserID]).toEventuallyNot(beNil())
 
-        let purchaserInfo = self.deviceCache.cachedUserInfo[self.purchases!.appUserID]
+        let purchaserInfo = self.deviceCache.cachedPurchaserInfo[self.purchases!.appUserID]
 
         do {
             if (purchaserInfo != nil) {
@@ -1321,7 +1291,7 @@ class PurchasesTests: XCTestCase {
     func testCachesPurchaserInfoOnPurchase() {
         setupPurchases()
 
-        expect(self.deviceCache.cachedUserInfo.count).toEventually(equal(1))
+        expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(1))
 
         self.backend.postReceiptPurchaserInfo = Purchases.PurchaserInfo(data: [
             "subscriber": [
@@ -1345,7 +1315,7 @@ class PurchasesTests: XCTestCase {
 
         expect(self.backend.postReceiptDataCalled).to(beTrue())
 
-        expect(self.deviceCache.cachedUserInfoCount).toEventually(equal(2))
+        expect(self.deviceCache.cachePurchaserInfoCount).toEventually(equal(2))
     }
 
     func testCachedPurchaserInfoHasSchemaVersion() {
@@ -1357,7 +1327,7 @@ class PurchasesTests: XCTestCase {
         let jsonObject = info!.jsonObject()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedUserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1384,7 +1354,7 @@ class PurchasesTests: XCTestCase {
         jsonObject["schema_version"] = NSNull()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedUserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1405,7 +1375,7 @@ class PurchasesTests: XCTestCase {
                 "other_purchases": [:]
             ]]);
         let object = try! JSONSerialization.data(withJSONObject: info!.jsonObject(), options: []);
-        self.deviceCache.cachedUserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1429,7 +1399,7 @@ class PurchasesTests: XCTestCase {
         jsonObject["schema_version"] = "bad_version"
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
 
-        self.deviceCache.cachedUserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1453,7 +1423,7 @@ class PurchasesTests: XCTestCase {
         jsonObject.removeValue(forKey: "schema_version")
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
 
-        self.deviceCache.cachedUserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -2118,7 +2088,7 @@ class PurchasesTests: XCTestCase {
 
     func testFetchPurchaserInfoWhenCacheStale() {
         setupPurchases()
-        self.deviceCache.staleCache = true
+        self.deviceCache.stubbedIsPurchaserInfoCacheStale = true
 
         self.purchases?.purchaserInfo() { (info, error) in
 
@@ -2201,12 +2171,33 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedObserverMode).to(beFalse())
     }
 
+    func testInvalidatePurchaserInfoCacheClearsPurchaserInfoCache() {
+        setupPurchases()
+        guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
+
+        expect(self.deviceCache.clearPurchaserInfoCacheTimestampCount) == 0
+
+        nonOptionalPurchases.invalidatePurchaserInfoCache()
+        expect(self.deviceCache.clearPurchaserInfoCacheTimestampCount) == 1
+    }
+
+    func testInvalidatePurchaserInfoCacheDoesntClearOfferingsCache() {
+        setupPurchases()
+        guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
+
+        expect(self.deviceCache.clearOfferingsCacheTimestampCount) == 0
+
+        nonOptionalPurchases.invalidatePurchaserInfoCache()
+        expect(self.deviceCache.clearOfferingsCacheTimestampCount) == 0
+    }
+
     private func verifyUpdatedCaches(newAppUserID: String) {
         expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
-        expect(self.deviceCache.cachedUserInfo.count).toEventually(equal(2))
-        expect(self.deviceCache.cachedUserInfo[newAppUserID]).toNot(beNil())
+        expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(2))
+        expect(self.deviceCache.cachedPurchaserInfo[newAppUserID]).toNot(beNil())
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
-        expect(self.deviceCache.cachesReset).toEventually(equal(2))
+        expect(self.deviceCache.setPurchaserInfoCacheTimestampToNowCount).toEventually(equal(2))
+        expect(self.deviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(2))
         expect(self.backend.gotOfferings).toEventually(equal(2))
         expect(self.deviceCache.cachedOfferingsCount).toEventually(equal(2))
     }

@@ -23,4 +23,6 @@
 #include <Purchases/RCEntitlementInfo.h>
 #include <Purchases/RCEntitlementInfos.h>
 #include <Purchases/RCDeviceCache.h>
+#include <Purchases/RCDeviceCache+Protected.h>
+#include <Purchases/RCInMemoryCachedObject+Protected.h>
 #include <Purchases/RCIdentityManager.h>

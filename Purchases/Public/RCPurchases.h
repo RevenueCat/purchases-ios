@@ -392,6 +392,13 @@ NS_SWIFT_NAME(entitlements(_:)) RC_UNAVAILABLE("entitlements: has been replaced 
 
 #undef RC_UNAVAILABLE
 
+/**
+ Invalidates the cache for purchaser information.
+ This is useful for cases where purchaser information might have been updated outside of the app, like if a
+ promotional subscription is granted through the RevenueCat dashboard.
+ */
+- (void)invalidatePurchaserInfoCache;
+
 @end
 
 /**
@@ -406,7 +413,7 @@ NS_SWIFT_NAME(PurchasesDelegate)
 /**
  Called whenever `RCPurchases` receives updated purchaser info. This may happen periodically
  throughout the life of the app if new information becomes available (e.g. UIApplicationDidBecomeActive).
- 
+
  @param purchases Related `RCPurchases` object
  @param purchaserInfo Updated `RCPurchaserInfo`
  */
@@ -415,7 +422,7 @@ NS_SWIFT_NAME(purchases(_:didReceiveUpdated:));
 
 /**
  Called when a user initiates a promotional in-app purchase from the App Store. If your app is able to handle a purchase at the current time, run the deferment block in this method. If the app is not in a state to make a purchase: cache the defermentBlock, then call the defermentBlock when the app is ready to make the promotional purchase. If the purchase should never be made, you don't need to ever call the defermentBlock and `RCPurchases` will not proceed with promotional purchases.
- 
+
  @param product `SKProduct` the product that was selected from the app store
  */
 - (void)purchases:(RCPurchases *)purchases shouldPurchasePromoProduct:(SKProduct *)product defermentBlock:(RCDeferredPromotionalPurchaseBlock)makeDeferredPurchase;
