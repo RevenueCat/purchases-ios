@@ -7,8 +7,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class RCBackend;
+@class RCDeviceCache;
 
 @interface RCSubscriberAttributesManager : NSObject
+
+- (instancetype)initWithBackend:(nullable RCBackend *)backend
+                    deviceCache:(nullable RCDeviceCache *)deviceCache;
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes;
 

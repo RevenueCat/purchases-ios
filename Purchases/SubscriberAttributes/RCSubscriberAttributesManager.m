@@ -5,6 +5,8 @@
 
 #import "RCSubscriberAttributesManager.h"
 #import "RCSpecialSubscriberAttributes.h"
+#import "RCBackend.h"
+#import "RCDeviceCache.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -15,17 +17,27 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) NSUInteger totalAttributesToThrottle;
 
+@property (nonatomic) RCDeviceCache *deviceCache;
+@property (nonatomic) RCBackend *backend;
+
 @end
-
-
 
 
 @implementation RCSubscriberAttributesManager
 
 #pragma MARK - Public methods
 
+- (instancetype)initWithBackend:(nullable RCBackend *)backend
+                    deviceCache:(nullable RCDeviceCache *)deviceCache {
+    if (self = [super init]) {
+        self.backend = backend;
+        self.deviceCache = deviceCache;
+    }
+    return self;
+}
+
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
-    [attributes enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL* stop) {
+    [attributes enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
         [self setAttributeWithKey:key value:value];
     }];
 }
@@ -69,7 +81,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key value:(NSString *)value {
     if ([self currentValueForAttributeWithKey:key] != value) {
-        [self storeAttributeLocallyWithKey:key value: value];
+        [self storeAttributeLocallyWithKey:key value:value];
     }
 }
 
@@ -81,10 +93,11 @@ NS_ASSUME_NONNULL_BEGIN
     return nil;
 }
 
-- (NSUInteger)numberOfUnsyncedAttributes{
+- (NSUInteger)numberOfUnsyncedAttributes {
     return 0;
 }
 
 @end
+
 
 NS_ASSUME_NONNULL_END
