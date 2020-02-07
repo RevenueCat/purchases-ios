@@ -812,7 +812,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 - (void)handleOfferingsUpdateError:(NSError *)error completion:(RCReceiveOfferingsBlock)completion {
     RCLog(@"Error fetching offerings - %@", error);
     [self.deviceCache clearOfferingsCacheTimestamp];
-    CALL_AND_DISPATCH_IF_SET(completion, nil, error);
+    CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
 }
 
 - (void)receiptData:(void (^ _Nonnull)(NSData * _Nonnull data))completion
