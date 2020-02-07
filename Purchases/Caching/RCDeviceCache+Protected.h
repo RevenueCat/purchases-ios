@@ -13,8 +13,8 @@
 
 @property (nonatomic, nullable) NSDate *purchaserInfoCachesLastUpdated;
 
-- (instancetype)initWith:(nullable NSUserDefaults *)userDefaults
-   offeringsCachedObject:(nullable RCInMemoryCachedObject<RCOfferings *> *)offeringsCachedObject;
+- (nullable instancetype)initWith:(nullable NSUserDefaults *)userDefaults
+            offeringsCachedObject:(nullable RCInMemoryCachedObject<RCOfferings *> *)offeringsCachedObject;
 
 @end
 
