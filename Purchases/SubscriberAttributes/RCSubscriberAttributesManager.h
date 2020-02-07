@@ -12,13 +12,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes;
 
-- (void)setEmail:(NSString *)email;
+- (void)setEmail:(nullable NSString *)email;
 
-- (void)setPhoneNumber:(NSString *)phoneNumber;
+- (void)setPhoneNumber:(nullable NSString *)phoneNumber;
 
-- (void)setDisplayName:(NSString *)displayName;
+- (void)setDisplayName:(nullable NSString *)displayName;
 
-- (void)setPushToken:(NSString *)pushToken;
+- (void)setPushToken:(nullable NSString *)pushToken;
+
+- (void)clearAttributes;
 
 @end
 
