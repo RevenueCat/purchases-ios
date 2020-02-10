@@ -41,6 +41,15 @@ bundle install
 echo "Pushing release to Cocoapods..."
 pod trunk push Purchases.podspec
 
+COCOAPODS_RESULT=$
+
+if [ $COCOAPODS_RESULT == 0 ]; then
+  echo "Successfully pushed $CURRENT_VERSION to Cocoapods!"
+else
+  echo "Error pushing to Cocoapods, aborting"
+  exit $COCOAPODS_RESULT
+fi
+
 echo "Preparing Carthage release"
 echo "building..."
 carthage build --archive
@@ -52,7 +61,7 @@ FRAMEWORK_NAME=Purchases.framework
 
 mv $FRAMEWORK_NAME.zip $CARTHAGE_UPLOADS_PATH
 
-fastlane ios github_release version:$CURRENT_VERSION
+fastlane github_release $CURRENT_VERSION
 
 echo "Preparing next version"
 
