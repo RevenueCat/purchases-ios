@@ -22,11 +22,12 @@ func resolveTargets() -> [Target] {
         .target(name: "Purchases",
                 dependencies: [],
                 path: ".",
-                sources: ["Purchases", "Purchases/Public"],
+                sources: ["Purchases", "Purchases/Public", "Purchases/Caching"],
                 publicHeadersPath: "Purchases/Public",
                 cSettings: [
                     .headerSearchPath("Purchases"),
                     .headerSearchPath("Purchases/Public")
+                    .headerSearchPath("Purchases/Caching")
                 ])]
 
     if shouldTest {
