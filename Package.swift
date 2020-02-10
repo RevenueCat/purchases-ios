@@ -26,7 +26,7 @@ func resolveTargets() -> [Target] {
                 publicHeadersPath: "Purchases/Public",
                 cSettings: [
                     .headerSearchPath("Purchases"),
-                    .headerSearchPath("Purchases/Public")
+                    .headerSearchPath("Purchases/Public"),
                     .headerSearchPath("Purchases/Caching")
                 ])]
 
