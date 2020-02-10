@@ -1,3 +1,6 @@
+## 3.0.4
+- Fixed an issue where Swift Package Manager didn't pick up the new Caching group from 3.0.3 https://github.com/RevenueCat/purchases-ios/issues/176
+
 ## 3.0.3
 - Added new method to invalidate the purchaser info cache, useful when promotional purchases are granted from outside the app. https://github.com/RevenueCat/purchases-ios/pull/168
 - Made sure we dispatch offerings, and purchaser info https://github.com/RevenueCat/purchases-ios/pull/146
