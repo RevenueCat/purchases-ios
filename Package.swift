@@ -48,7 +48,7 @@ func resolveTargets() -> [Target] {
 let package = Package(
         name: "Purchases",
         platforms: [
-            .macOS(.v10_12), .iOS(.v9)
+            .macOS(.v10_12), .iOS(.v9), watchOS(.v6_2), tvOS(.v13_4)
         ],
         products: [
             .library(name: "Purchases",
