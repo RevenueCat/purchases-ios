@@ -10,15 +10,19 @@
 #import <UIKit/UIKit.h>
 #define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME UIApplicationDidBecomeActiveNotification
 #define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME UIApplicationWillResignActiveNotification
-#elif TARGET_OS_MAC
+#elif TARGET_OS_OSX
 #import <AppKit/AppKit.h>
 #define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME NSApplicationDidBecomeActiveNotification
 #define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME NSApplicationWillResignActiveNotification
 #endif
 #if TARGET_OS_MACCATALYST
 #define PLATFORM_HEADER @"uikitformac"
-#elif TARGET_OS_IPHONE
+#elif TARGET_OS_IOS
 #define PLATFORM_HEADER @"iOS"
-#elif TARGET_OS_MAC
+#elif TARGET_OS_OSX
 #define PLATFORM_HEADER @"macOS"
+#elif TARGET_OS_WATCHOS
+#define PLATFORM_HEADER @"watchOS"
+#elif TARGET_OS_TVOS
+#define PLATFORM_HEADER @"tvOS"
 #endif
