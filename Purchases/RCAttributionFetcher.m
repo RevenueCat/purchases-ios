@@ -9,7 +9,7 @@
 #import "RCAttributionFetcher.h"
 #import "RCUtils.h"
 
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IOS
 #import <UIKit/UIKit.h>
 #endif
 
@@ -46,7 +46,7 @@
 
 - (nullable NSString *)identifierForVendor
 {
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IOS
     if ([UIDevice class]) {
         return UIDevice.currentDevice.identifierForVendor.UUIDString;
     }
@@ -56,7 +56,7 @@
 
 - (void)adClientAttributionDetailsWithCompletionBlock:(void (^)(NSDictionary<NSString *, NSObject *> * _Nullable attributionDetails, NSError * _Nullable error))completionHandler
 {
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IOS
     id<FakeAdClient> adClientClass = (id<FakeAdClient>)NSClassFromString(@"ADClient");
     
     if (adClientClass) {
