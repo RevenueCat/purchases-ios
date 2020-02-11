@@ -242,10 +242,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         [self updateAllCachesWithCompletionBlock:callDelegate];
 
         self.storeKitWrapper.delegate = self;
+#if !TARGET_OS_WATCH
         [self.notificationCenter addObserver:self
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
 
+#endif
         if (postponedAttributionData) {
             for (RCAttributionData *attributionData in postponedAttributionData) {
                 [self postAttributionData:attributionData.data fromNetwork:attributionData.network forNetworkUserId:attributionData.networkUserId];
@@ -275,9 +277,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 - (void)dealloc
 {
     self.storeKitWrapper.delegate = nil;
+#if !TARGET_OS_WATCH
     [self.notificationCenter removeObserver:self
                                        name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME
                                      object:nil];
+#endif
     self.delegate = nil;
 }
 
