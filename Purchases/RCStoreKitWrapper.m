@@ -82,7 +82,7 @@
     }
 }
 
-#if TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 - (BOOL)paymentQueue:(SKPaymentQueue *)queue shouldAddStorePayment:(SKPayment *)payment forProduct:(SKProduct *)product
 {
     return [self.delegate storeKitWrapper:self shouldAddStorePayment:payment forProduct:product];
