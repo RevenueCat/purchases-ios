@@ -22,7 +22,6 @@ func resolveTargets() -> [Target] {
         .target(name: "Purchases",
                 dependencies: [],
                 path: ".",
-                sources: ["Purchases", "Purchases/Public"],
                 publicHeadersPath: "Purchases/Public",
                 cSettings: [
                     .headerSearchPath("Purchases"),
