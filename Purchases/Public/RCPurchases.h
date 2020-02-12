@@ -399,6 +399,14 @@ NS_SWIFT_NAME(entitlements(_:)) RC_UNAVAILABLE("entitlements: has been replaced 
  */
 - (void)invalidatePurchaserInfoCache;
 
+#if TARGET_OS_WATCH
+/**
+ Used to notify Purchses that the app has become active. WatchOS doesn't implement the ApplicationDidBecomeActive
+ notification, so this should be called instead, from the app's WKExtensionDelegate's applicationDidBecomeActive.
+ */
+- (void)watchAppDidBecomeActive;
+#endif
+
 @end
 
 /**
