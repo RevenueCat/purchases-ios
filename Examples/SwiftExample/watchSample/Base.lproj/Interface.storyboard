@@ -42,17 +42,21 @@
             <objects>
                 <controller id="HvB-v3-SV6" customClass="InterfaceController" customModule="watchPurchasesCocoapods2_WatchKit_App" customModuleProvider="target">
                     <items>
-                        <label alignment="left" text="Pro status: " id="XVG-KA-yeb"/>
-                        <label alignment="left" text="free" numberOfLines="3" id="ZgL-Pj-3eg"/>
-                        <button width="1" alignment="left" title="Buy some cats!" id="2Dh-f7-kvU">
+                        <label alignment="left" text="Pro status: " id="XVG-KA-yeb" userLabel="Pro status title"/>
+                        <label alignment="left" text="free" numberOfLines="3" id="ZgL-Pj-3eg" userLabel="Pro status label"/>
+                        <button width="1" alignment="left" title="Buy some cats!" id="2Dh-f7-kvU" userLabel="Buy button">
                             <connections>
                                 <action selector="didPressBuy" destination="HvB-v3-SV6" id="mth-5C-8rM"/>
                             </connections>
                         </button>
+                        <label alignment="left" hidden="YES" text="Purchased:" numberOfLines="2" id="fVT-iQ-Nak" userLabel="Purchase date label"/>
+                        <label alignment="left" hidden="YES" text="Expires:" numberOfLines="2" id="Liu-9M-f1S" userLabel="Expiry date label"/>
                     </items>
                     <connections>
                         <outlet property="buyButton" destination="2Dh-f7-kvU" id="uvH-ID-DWM"/>
+                        <outlet property="expiryDateLabel" destination="Liu-9M-f1S" id="1ws-Yf-iTK"/>
                         <outlet property="proStatusLabel" destination="ZgL-Pj-3eg" id="3wm-gW-aB7"/>
+                        <outlet property="purchaseDateLabel" destination="fVT-iQ-Nak" id="CHM-wK-NEt"/>
                     </connections>
                 </controller>
             </objects>

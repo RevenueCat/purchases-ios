@@ -13,6 +13,11 @@ import Purchases
 class InterfaceController: WKInterfaceController {
     private var offering : Purchases.Offering?
     
+    @IBOutlet weak var expiryDateLabel: WKInterfaceLabel!
+    @IBOutlet weak var purchaseDateLabel: WKInterfaceLabel!
+    @IBOutlet weak var proStatusLabel: WKInterfaceLabel!
+    @IBOutlet weak var buyButton: WKInterfaceButton!
+    
     override func awake(withContext context: Any?) {
         super.awake(withContext: context)
         configure()
@@ -20,7 +25,6 @@ class InterfaceController: WKInterfaceController {
         // Configure interface objects here.
     }
     
-    @IBOutlet weak var proStatusLabel: WKInterfaceLabel!
     override func willActivate() {
         // This method is called when watch view controller is about to be visible to user
         super.willActivate()
@@ -31,13 +35,15 @@ class InterfaceController: WKInterfaceController {
         super.didDeactivate()
     }
     
-    @IBOutlet weak var buyButton: WKInterfaceButton!
     
     @IBAction func didPressBuy() {
         purchase()
     }
+}
+
+private extension InterfaceController {
     
-    private func purchase() {
+    func purchase() {
         guard let offering = offering else {
             print("No available offerings")
             return
@@ -49,27 +55,30 @@ class InterfaceController: WKInterfaceController {
             guard let self = self else { return }
             
             if let error = error {
-                print(error)
-                self.proStatusLabel.setText("Purchase cancelled!")
-            }
-            else {
+                print(error.localizedDescription)
+                self.proStatusLabel.setText("error while purchasing!")
+            } else if cancelled {
+                self.proStatusLabel.setText("purchase cancelled!")
+            } else {
                 self.configure()
             }
         }
     }
     
     
-    private func loadOfferings() {
+    func loadOfferings() {
         
         proStatusLabel.setText("Loading...")
         buyButton.setHidden(true)
         
         Purchases.shared.offerings { [weak self] (offerings, error) in
             guard let self = self else { return }
-            if error != nil {
+            if let error = error {
+                print(error.localizedDescription)
                 self.proStatusLabel.setText("Error fetching offerings 😿")
                 return
             }
+            
             guard let offerings = offerings, let offering = offerings.current else { fatalError("didn't get an error but didn't get offerings") }
             
             self.offering = offering
@@ -78,19 +87,30 @@ class InterfaceController: WKInterfaceController {
         }
     }
     
-    private func configure() {
+    func configure() {
         Purchases.shared.purchaserInfo { [weak self] (purchaserInfo, error) in
             guard let self = self else { return }
-            if let e = error {
-                print(e.localizedDescription)
+            if let error = error {
+                print(error.localizedDescription)
                 return
             }
             
             guard let purchaserInfo = purchaserInfo else { fatalError("didn't get purchaser info but error was nil") }
-            // Route the view depending if we have a premium cat user or not
-            let hasPro = !purchaserInfo.entitlements.active.isEmpty
+            // Route the view depending if we have a pro cat user or not
+            
+            let hasPro = purchaserInfo.entitlements["pro_cat"]?.isActive == true
             self.proStatusLabel.setText(hasPro ? "pro 😻" : "free 🐱")
             self.buyButton.setHidden(hasPro)
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .short
+            
+            if let purchaseDate = purchaserInfo.purchaseDate(forEntitlement: "pro_cat") {
+                self.purchaseDateLabel.setText("Purchased: \(dateFormatter.string(from: purchaseDate))")
+            }
+            if let expirationDate = purchaserInfo.expirationDate(forEntitlement: "pro_cat") {
+                self.expiryDateLabel.setText("Expires: \(dateFormatter.string(from: expirationDate))")
+            }
         }
     }
 }
