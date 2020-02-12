@@ -7,3 +7,23 @@ target 'SwiftExample' do
   pod 'Purchases', :path => '../../'
 
 end
+
+target 'watchSample' do
+  platform :watchos, '6.2'
+
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for watchPurchasesCocoapods2 WatchKit App
+
+end
+
+target 'watchSample Extension' do
+  platform :watchos, '6.2'
+  
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  pod 'Purchases', :path => '../../'
+
+end
