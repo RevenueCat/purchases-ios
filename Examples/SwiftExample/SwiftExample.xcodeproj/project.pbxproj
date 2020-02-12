@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,7 +14,7 @@
 		2D9F492023F46AB200AA6A98 /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9F491F23F46AB200AA6A98 /* ExtensionDelegate.swift */; };
 		2D9F492223F46AB200AA6A98 /* NotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9F492123F46AB200AA6A98 /* NotificationController.swift */; };
 		2D9F492423F46AB300AA6A98 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D9F492323F46AB300AA6A98 /* Assets.xcassets */; };
-		2D9F492923F46AB300AA6A98 /* watchSample.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 2D9F490C23F46AB100AA6A98 /* watchSample.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2D9F492923F46AB300AA6A98 /* watchSample.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 2D9F490C23F46AB100AA6A98 /* watchSample.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3493336121E6935F007AAAB9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493336021E6935F007AAAB9 /* AppDelegate.swift */; };
 		3493336321E6935F007AAAB9 /* InitialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493336221E6935F007AAAB9 /* InitialViewController.swift */; };
 		3493336621E6935F007AAAB9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3493336421E6935F007AAAB9 /* Main.storyboard */; };
@@ -83,6 +83,7 @@
 		2D9F492323F46AB300AA6A98 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2D9F492523F46AB300AA6A98 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2D9F492623F46AB300AA6A98 /* PushNotificationPayload.apns */ = {isa = PBXFileReference; lastKnownFileType = text; path = PushNotificationPayload.apns; sourceTree = "<group>"; };
+		2D9F493623F4998400AA6A98 /* SwiftExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftExample.entitlements; sourceTree = "<group>"; };
 		3493335D21E6935F007AAAB9 /* SwiftExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3493336021E6935F007AAAB9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3493336221E6935F007AAAB9 /* InitialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialViewController.swift; sourceTree = "<group>"; };
@@ -177,6 +178,7 @@
 		3493335F21E6935F007AAAB9 /* SwiftExample */ = {
 			isa = PBXGroup;
 			children = (
+				2D9F493623F4998400AA6A98 /* SwiftExample.entitlements */,
 				3493336021E6935F007AAAB9 /* AppDelegate.swift */,
 				3493336221E6935F007AAAB9 /* InitialViewController.swift */,
 				34D05816233C1A3700343134 /* SwiftPaywall.swift */,
@@ -463,6 +465,7 @@
 		};
 		2D9F492823F46AB300AA6A98 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilter = ios;
 			target = 2D9F490B23F46AB100AA6A98 /* watchSample */;
 			targetProxy = 2D9F492723F46AB300AA6A98 /* PBXContainerItemProxy */;
 		};
@@ -703,6 +706,7 @@
 			baseConfigurationReference = F47D44DA0C1FBE5A9FCA7E55 /* Pods-SwiftExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SwiftExample/SwiftExample.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = SwiftExample/Info.plist;
@@ -713,6 +717,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -723,6 +728,7 @@
 			baseConfigurationReference = 164A5AED2A65F70448049504 /* Pods-SwiftExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SwiftExample/SwiftExample.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = SwiftExample/Info.plist;
@@ -733,6 +739,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

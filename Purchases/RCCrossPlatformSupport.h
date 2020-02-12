@@ -19,7 +19,7 @@
 #endif
 
 #if TARGET_OS_MACCATALYST
-#define PLATFORM_HEADER @"uikitformac"
+#define PLATFORM_HEADER @"iOS" // temporarily until backend support is added for catalyst platform
 #elif TARGET_OS_IOS
 #define PLATFORM_HEADER @"iOS"
 #elif TARGET_OS_OSX
