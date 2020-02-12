@@ -256,7 +256,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         [self.notificationCenter addObserver:self
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
-
 #endif
         if (postponedAttributionData) {
             for (RCAttributionData *attributionData in postponedAttributionData) {
@@ -689,6 +688,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 - (void)setPushToken:(nullable NSData *)pushToken {
     [self _setPushToken:pushToken];
 }
+
+#if TARGET_OS_WATCH
+- (void)watchAppDidBecomeActive {
+    [self applicationDidBecomeActive:nil];
+}
+#endif
 
 #pragma mark - Private Methods
 
