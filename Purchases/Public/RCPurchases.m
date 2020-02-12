@@ -246,7 +246,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         [self.notificationCenter addObserver:self
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
-
 #endif
         if (postponedAttributionData) {
             for (RCAttributionData *attributionData in postponedAttributionData) {
@@ -653,6 +652,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCDebugLog(@"Purchaser info cache is invalidated");
     [self.deviceCache clearPurchaserInfoCacheTimestamp];
 }
+
+#if TARGET_OS_WATCH
+- (void)watchAppDidBecomeActive {
+    [self applicationDidBecomeActive:nil];
+}
+#endif
 
 #pragma mark - Private Methods
 
