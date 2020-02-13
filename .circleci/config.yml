@@ -49,12 +49,10 @@ workflows:
       - runtest
   docs:
     jobs:
-      - docs-approval:
-          type: approval
-          filters:
-            branches:
-              only: master
       - docs-deploy:
-          requires:
-            - docs-approval
+          filters:
+            tags:
+              ignore: /^.*-SNAPSHOT/
+            branches:
+              ignore: /.*/
 
