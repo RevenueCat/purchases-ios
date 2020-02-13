@@ -25,7 +25,7 @@
 #elif TARGET_OS_OSX
 #define PLATFORM_HEADER @"macOS"
 #elif TARGET_OS_WATCH
-#define PLATFORM_HEADER @"iOS" // temporarily until backend support is added for watchOS platform
+#define PLATFORM_HEADER @"watchOS"
 #elif TARGET_OS_TV
-#define PLATFORM_HEADER @"iOS" // temporarily until backend support is added for watchOS platform
+#define PLATFORM_HEADER @"tvOS"
 #endif
