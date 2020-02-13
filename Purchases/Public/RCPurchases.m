@@ -657,20 +657,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCDebugLog(@"applicationDidBecomeActive");
     if ([self.deviceCache isPurchaserInfoCacheStale]) {
         RCDebugLog(@"PurchaserInfo cache is stale, updating caches");
-        [self updateCacheAndSendUpdatedPurchaserInfoIfChanged];
+        [self fetchAndCachePurchaserInfoWithCompletion:nil];
     }
     if ([self.deviceCache isOfferingsCacheStale]) {
         RCDebugLog(@"Offerings cache is stale, updating caches");
         [self updateOfferingsCache:nil];
     }
-}
-
-- (void)updateCacheAndSendUpdatedPurchaserInfoIfChanged {
-    [self fetchAndCachePurchaserInfoWithCompletion:^(RCPurchaserInfo *info, NSError *error) {
-        if (info) {
-            [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-        }
-    }];
 }
 
 - (RCPurchaserInfo *)readPurchaserInfoFromCache {
@@ -748,7 +740,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         CALL_IF_SET_ON_MAIN_THREAD(completion, self.deviceCache.cachedOfferings, nil);
         if (self.deviceCache.isOfferingsCacheStale) {
             RCDebugLog(@"Offerings cache is stale, updating cache");
-            [self updateOfferingsCache:completion];
+            [self updateOfferingsCache:nil];
         }
     } else {
         RCDebugLog(@"No cached offerings, fetching");
@@ -803,9 +795,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
             CALL_IF_SET_ON_MAIN_THREAD(completion, offerings, nil);
         } else {
-            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils unexpectedBackendResponseError]);
+            [self handleOfferingsUpdateError:RCPurchasesErrorUtils.unexpectedBackendResponseError completion:completion];
         }
-
     }];
 }
 
