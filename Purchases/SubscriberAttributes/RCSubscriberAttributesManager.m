@@ -4,6 +4,7 @@
 //
 
 #import "RCSubscriberAttributesManager.h"
+#import "RCSubscriberAttribute.h"
 #import "RCSpecialSubscriberAttributes.h"
 #import "RCBackend.h"
 #import "RCDeviceCache.h"
@@ -12,10 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 @interface RCSubscriberAttributesManager ()
-
-#define DEFAULT_TOTAL_ATTRIBUTES_TO_THROTTLE 10
-
-@property (nonatomic, assign) NSUInteger totalAttributesToThrottle;
 
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCBackend *backend;
@@ -58,25 +55,27 @@ NS_ASSUME_NONNULL_BEGIN
     [self setAttributeWithKey:SPECIAL_ATTRIBUTE_PUSH_TOKEN value:pushToken];
 }
 
-- (void)clearAttributes {
+- (void)syncIfNeededWithCompletion:(void (^)(NSError * _Nullable error))completion {
+    if (self.numberOfUnsyncedAttributes > 0) {
+        [self syncAttributesWithCompletion:completion];
+    } else {
+        completion(nil);
+    }
+}
 
+- (void)clearAttributes {
+    [self.deviceCache clearSubscriberAttributes];
 }
 
 #pragma MARK - Private methods
 
 - (void)setAttributeWithKey:(nullable NSString *)key value:(NSString *)value {
     [self storeAttributeLocallyIfNeededWithKey:key value:value];
-    [self syncIfNeeded];
 }
 
-- (void)syncIfNeeded {
-    if (self.numberOfUnsyncedAttributes > self.totalAttributesToThrottle) {
-        [self syncAttributes];
-    }
-}
-
-- (void)syncAttributes {
-
+- (void)syncAttributesWithCompletion:(void (^)(NSError * _Nullable error))completion {
+    NSArray <RCSubscriberAttribute *> *unsyncedAttributes = [self.deviceCache unsyncedAttributes];
+    [self.backend syncSubscriberAttributes:unsyncedAttributes completion:completion];
 }
 
 - (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key value:(NSString *)value {
@@ -86,15 +85,19 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)storeAttributeLocallyWithKey:(NSString *)key value:(NSString *)value {
-
+    if ([self currentValueForAttributeWithKey:key] != value) {
+        RCSubscriberAttribute *subscriberAttribute = [[RCSubscriberAttribute alloc] init];
+        [self.deviceCache storeSubscriberAttribute:subscriberAttribute];
+    }
 }
 
 - (NSString *)currentValueForAttributeWithKey:(NSString *)key {
-    return nil;
+    RCSubscriberAttribute *attribute = [self.deviceCache subscriberAttributeWithKey:key];
+    return attribute.value;
 }
 
 - (NSUInteger)numberOfUnsyncedAttributes {
-    return 0;
+    return [self.deviceCache numberOfUnsyncedAttributes];
 }
 
 @end

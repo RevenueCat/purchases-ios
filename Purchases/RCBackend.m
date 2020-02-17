@@ -15,6 +15,7 @@
 #import "RCPurchasesErrorUtils.h"
 #import "RCUtils.h"
 #import "RCPromotionalOffer.h"
+#import "RCSubscriberAttribute.h"
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
 
@@ -457,6 +458,12 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
                       completion(nil, nil, nil, nil, error);
                   }];
+}
+
+- (void)syncSubscriberAttributes:(NSArray <RCSubscriberAttribute *> *)subscriberAttributes
+                      completion:(void (^)(NSError *))completion {
+    // TODO
+
 }
 
 @end

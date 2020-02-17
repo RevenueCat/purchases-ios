@@ -83,10 +83,12 @@
 		37E352F190E0E957E8D932F8 /* RCDeviceCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3524E3032ABC72467AA43 /* RCDeviceCache.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E352F9B7505A398D578F53 /* RCDeviceCache+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3555AC54BD10BE56F2B6B /* RCDeviceCache+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E354BE25CE61E55E4FD89C /* MockDeviceCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354BEB8FDE39CAB7C4D69 /* MockDeviceCache.swift */; };
+		37E354E14A93639577822952 /* RCSubscriberAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E353E5CEE9379EB665FEE3 /* RCSubscriberAttribute.h */; };
 		37E3558F325931DD755C885F /* RCSubscriberAttributesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E3547D3A36BBEFADA64E3A /* RCSubscriberAttributesManager.m */; };
 		37E356619BE46B3AA82A69E8 /* RCInMemoryCachedObject+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35483531C5A5E6BF09BBD /* RCInMemoryCachedObject+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E3585E0B39722838F235BD /* MockUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357D16038F07915D7825D /* MockUserDefaults.swift */; };
 		37E358A7AEB3ADB606831B55 /* RCSubscriberAttributesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3530263379DDB76F945D3 /* RCSubscriberAttributesManager.h */; };
+		37E35973D9A0BE8D879A596F /* RCSubscriberAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E359AA016274A402D8D497 /* RCSubscriberAttribute.m */; };
 		37E3598A1AAA3D70EA01C82D /* RCInMemoryCachedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35C6CBB3229AA53ECEB58 /* RCInMemoryCachedObject.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35AF213F2F79CB067FDC2 /* InMemoryCachedObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35E3250FBBB03D92E06EC /* InMemoryCachedObjectTests.swift */; };
 		37E35D4498633E73BF02BAE7 /* RCDeviceCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E356820F0AD560FA23F3BF /* RCDeviceCache.m */; };
@@ -190,6 +192,7 @@
 		37E35201AC186C616E7F18C7 /* RCSubscriberAttributesManager+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCSubscriberAttributesManager+Protected.h"; sourceTree = "<group>"; };
 		37E3524E3032ABC72467AA43 /* RCDeviceCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCDeviceCache.h; sourceTree = "<group>"; };
 		37E3530263379DDB76F945D3 /* RCSubscriberAttributesManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCSubscriberAttributesManager.h; sourceTree = "<group>"; };
+		37E353E5CEE9379EB665FEE3 /* RCSubscriberAttribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCSubscriberAttribute.h; sourceTree = "<group>"; };
 		37E3547D3A36BBEFADA64E3A /* RCSubscriberAttributesManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCSubscriberAttributesManager.m; sourceTree = "<group>"; };
 		37E35483531C5A5E6BF09BBD /* RCInMemoryCachedObject+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCInMemoryCachedObject+Protected.h"; sourceTree = "<group>"; };
 		37E354BEB8FDE39CAB7C4D69 /* MockDeviceCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockDeviceCache.swift; sourceTree = "<group>"; };
@@ -198,6 +201,7 @@
 		37E356820F0AD560FA23F3BF /* RCDeviceCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCDeviceCache.m; sourceTree = "<group>"; };
 		37E357D16038F07915D7825D /* MockUserDefaults.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockUserDefaults.swift; sourceTree = "<group>"; };
 		37E359893D3371FC3497D957 /* RCInMemoryCachedObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCInMemoryCachedObject.m; sourceTree = "<group>"; };
+		37E359AA016274A402D8D497 /* RCSubscriberAttribute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCSubscriberAttribute.m; sourceTree = "<group>"; };
 		37E35C5A65AAF701DED59800 /* MockInMemoryCachedOfferings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockInMemoryCachedOfferings.swift; sourceTree = "<group>"; };
 		37E35C6CBB3229AA53ECEB58 /* RCInMemoryCachedObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCInMemoryCachedObject.h; sourceTree = "<group>"; };
 		37E35D87B7E6F91E27E98F42 /* DeviceCacheTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceCacheTests.swift; sourceTree = "<group>"; };
@@ -236,6 +240,8 @@
 				37E3530263379DDB76F945D3 /* RCSubscriberAttributesManager.h */,
 				37E35201AC186C616E7F18C7 /* RCSubscriberAttributesManager+Protected.h */,
 				37E3566BF06C3F765369A126 /* RCSpecialSubscriberAttributes.h */,
+				37E359AA016274A402D8D497 /* RCSubscriberAttribute.m */,
+				37E353E5CEE9379EB665FEE3 /* RCSubscriberAttribute.h */,
 			);
 			path = SubscriberAttributes;
 			sourceTree = "<group>";
@@ -450,6 +456,7 @@
 				37E358A7AEB3ADB606831B55 /* RCSubscriberAttributesManager.h in Headers */,
 				37E35FE7DE02ED449BB7569F /* RCSubscriberAttributesManager+Protected.h in Headers */,
 				37E3512049D89935A4FDA89B /* RCSpecialSubscriberAttributes.h in Headers */,
+				37E354E14A93639577822952 /* RCSubscriberAttribute.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -599,6 +606,7 @@
 				37E35D4498633E73BF02BAE7 /* RCDeviceCache.m in Sources */,
 				37E3526C938D7B291671BE8A /* RCInMemoryCachedObject.m in Sources */,
 				37E3558F325931DD755C885F /* RCSubscriberAttributesManager.m in Sources */,
+				37E35973D9A0BE8D879A596F /* RCSubscriberAttribute.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

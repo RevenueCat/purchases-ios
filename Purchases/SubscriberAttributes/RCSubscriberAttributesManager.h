@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)clearAttributes;
 
+- (void)syncIfNeededWithCompletion:(void (^)(NSError * _Nullable error))completion;
+
 @end
 
 

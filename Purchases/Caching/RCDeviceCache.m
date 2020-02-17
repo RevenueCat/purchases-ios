@@ -11,6 +11,7 @@
 #import "RCOfferings.h"
 #import "RCInMemoryCachedObject.h"
 #import "RCInMemoryCachedObject+Protected.h"
+#import "RCSubscriberAttribute.h"
 
 
 @interface RCDeviceCache ()
@@ -132,6 +133,31 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 - (void)setOfferingsCacheTimestampToNow
 {
     [self.offeringsCachedObject updateCacheTimestampWithDate:[NSDate date]];
+}
+
+#pragma mark - Subscriber attributes
+
+- (void)storeSubscriberAttribute:(RCSubscriberAttribute *)attribute {
+    // TODO
+}
+
+- (RCSubscriberAttribute *)subscriberAttributeWithKey:(NSString *)key {
+    // TODO
+    return nil;
+}
+
+- (NSArray<RCSubscriberAttribute *> *)unsyncedAttributes {
+    // TODO
+    return nil;
+}
+
+- (NSUInteger)numberOfUnsyncedAttributes {
+    // TODO
+    return 0;
+}
+
+- (void)clearSubscriberAttributes {
+    // TODO
 }
 
 #pragma mark - private methods
