@@ -9,7 +9,7 @@
 #import "RCAttributionFetcher.h"
 #import "RCUtils.h"
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
 #endif
 
@@ -46,7 +46,7 @@
 
 - (nullable NSString *)identifierForVendor
 {
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_TV
     if ([UIDevice class]) {
         return UIDevice.currentDevice.identifierForVendor.UUIDString;
     }
