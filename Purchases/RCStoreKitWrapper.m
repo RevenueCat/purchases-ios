@@ -82,7 +82,7 @@
     }
 }
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) || TARGET_OS_TV
 - (BOOL)paymentQueue:(SKPaymentQueue *)queue shouldAddStorePayment:(SKPayment *)payment forProduct:(SKProduct *)product
 {
     return [self.delegate storeKitWrapper:self shouldAddStorePayment:payment forProduct:product];
