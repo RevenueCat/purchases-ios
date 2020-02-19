@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_END
 
     if (!jsonData) {
         NSLog(@"failed when converting to json: %@", error.localizedDescription);
-        @throw([NSException exceptionWithName:@"ConvertToJSONError"
+        @throw([NSException exceptionWithName:@"ConvertToJSONException"
                                        reason:@"couldn't convert dict to json"
                                      userInfo:nil]);
     }
