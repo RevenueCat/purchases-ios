@@ -460,7 +460,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                   }];
 }
 
-- (void)syncSubscriberAttributes:(NSArray <RCSubscriberAttribute *> *)subscriberAttributes
+- (void)postSubscriberAttributes:(NSArray <RCSubscriberAttribute *> *)subscriberAttributes
                       completion:(void (^)(NSError *))completion {
     // TODO
 

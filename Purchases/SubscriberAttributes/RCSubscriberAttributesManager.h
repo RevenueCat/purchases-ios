@@ -9,6 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class RCBackend;
 @class RCDeviceCache;
+@class RCSubscriberAttribute;
 
 @interface RCSubscriberAttributesManager : NSObject
 
@@ -28,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)clearAttributes;
 
 - (void)syncIfNeededWithCompletion:(void (^)(NSError * _Nullable error))completion;
+
+- (NSArray <RCSubscriberAttribute *> *)unsyncedAttributes;
 
 @end
 

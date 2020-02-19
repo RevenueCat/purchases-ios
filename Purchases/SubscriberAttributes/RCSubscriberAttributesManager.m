@@ -63,6 +63,10 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+- (NSArray <RCSubscriberAttribute *> *)unsyncedAttributes {
+    return [self.deviceCache unsyncedAttributes];
+}
+
 - (void)clearAttributes {
     [self.deviceCache clearSubscriberAttributes];
 }
@@ -75,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)syncAttributesWithCompletion:(void (^)(NSError * _Nullable error))completion {
     NSArray <RCSubscriberAttribute *> *unsyncedAttributes = [self.deviceCache unsyncedAttributes];
-    [self.backend syncSubscriberAttributes:unsyncedAttributes completion:completion];
+    [self.backend postSubscriberAttributes:unsyncedAttributes completion:completion];
 }
 
 - (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key value:(NSString *)value {
