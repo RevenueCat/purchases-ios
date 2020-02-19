@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '9.0'
   s.osx.deployment_target = '10.12'
   s.watchos.deployment_target = '6.2'
-  s.tvos.deployment_target = '13.4'
+  s.tvos.deployment_target = '9.0'
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
