@@ -15,7 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) NSString *appUserID;
 @property (nonatomic, copy, readonly) NSString *appID;
 @property (nonatomic, readonly) NSDate *syncStartedTime;
+@property (nonatomic, readonly) NSDate *setTime;
 @property (nonatomic, assign, readonly) BOOL isSynced;
+
+- (NSDictionary <NSString *, NSObject *> *)asDictionary;
+- (NSString *)asJSON;
 
 @end
 
