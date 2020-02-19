@@ -150,7 +150,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(RCBackend
     return RCUnknownError;
 }
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IPHONE
     #define CODE_IF_TARGET_IPHONE(code, value) code
 #else
     #define CODE_IF_TARGET_IPHONE(code, value) ((SKErrorCode) value)
