@@ -92,36 +92,11 @@ NS_ASSUME_NONNULL_END
     };
 }
 
-- (NSString *)asJSON {
-    NSDictionary *backendFormatDict = [self convertToBackendFormat];
-    return [self jsonFromDict:backendFormatDict];
-}
-
-- (NSDictionary *)convertToBackendFormat {
+- (NSDictionary <NSString *, NSObject *> *)asBackendDictionary {
     return @{
-        self.key: @{
-            BACKEND_VALUE_KEY: self.value,
-            BACKEND_TIMESTAMP_KEY: @(self.setTime.timeIntervalSince1970)
-        }
+        BACKEND_VALUE_KEY: self.value,
+        BACKEND_TIMESTAMP_KEY: @(self.setTime.timeIntervalSince1970)
     };
-}
-
-#pragma private methods
-
-- (NSString *)jsonFromDict:(NSDictionary <NSString *, NSObject *> *)fromDict {
-    NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:fromDict
-                                                       options:0
-                                                         error:&error];
-
-    if (!jsonData) {
-        NSLog(@"failed when converting to json: %@", error.localizedDescription);
-        @throw([NSException exceptionWithName:@"ConvertToJSONException"
-                                       reason:@"couldn't convert dict to json"
-                                     userInfo:nil]);
-    }
-    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    return jsonString;
 }
 
 @end

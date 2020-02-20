@@ -79,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)syncAttributesWithCompletion:(void (^)(NSError * _Nullable error))completion {
     NSArray <RCSubscriberAttribute *> *unsyncedAttributes = [self.deviceCache unsyncedAttributesForAppUserID:nil];
-    [self.backend postSubscriberAttributes:unsyncedAttributes completion:completion];
+    [self.backend postSubscriberAttributes:unsyncedAttributes appUserID:nil completion:completion];
 }
 
 - (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key value:(NSString *)value {

@@ -461,9 +461,30 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)postSubscriberAttributes:(NSArray <RCSubscriberAttribute *> *)subscriberAttributes
+                       appUserID:(NSString *)appUserID
                       completion:(void (^)(NSError *))completion {
-    // TODO
 
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attributes", escapedAppUserID];
+    NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributes];
+    [self.httpClient performRequest:@"POST"
+                               path:path
+                               body:@{
+                                   @"attributes": attributesInBackendFormat
+                               }
+                            headers:self.headers
+                  completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
+                      [self handle:status withResponse:response error:error errorHandler:completion];
+                  }];
+
+}
+
+- (NSDictionary<NSString *, NSDictionary *> *)subscriberAttributesByKey:(NSArray<RCSubscriberAttribute *> *)subscriberAttributes {
+    NSMutableDictionary <NSString *, NSDictionary *> *attributesByKey = [[NSMutableDictionary alloc] init];
+    for (RCSubscriberAttribute *attribute in subscriberAttributes) {
+        attributesByKey[attribute.key] = attribute.asBackendDictionary;
+    }
+    return attributesByKey;
 }
 
 @end

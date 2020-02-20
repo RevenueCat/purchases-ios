@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSDictionary <NSString *, NSObject *> *)asDictionary;
 
-- (NSString *)asJSON;
+- (NSDictionary <NSString *, NSObject *> *)asBackendDictionary;
 
 @end
 
