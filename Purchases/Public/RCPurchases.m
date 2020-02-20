@@ -593,6 +593,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                             discounts:nil
           presentedOfferingIdentifier:nil
                          observerMode:!self.finishTransactions
+                 subscriberAttributes:nil
                            completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
                                [self dispatch:^{
                                    if (error) {
@@ -1025,8 +1026,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                       discounts:discounts
                                     presentedOfferingIdentifier:presentedOffering
                                                    observerMode:!self.finishTransactions
-                                                     completion:^(RCPurchaserInfo * _Nullable info,
-                                                             NSError * _Nullable error) {
+                                           subscriberAttributes:nil
+                                                     completion:^(RCPurchaserInfo *_Nullable info,
+                                                                  NSError *_Nullable error) {
                                                          [self handleReceiptPostWithTransaction:transaction
                                                                                   purchaserInfo:info
                                                                                           error:error];
@@ -1044,12 +1046,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                       discounts:nil
                                     presentedOfferingIdentifier:nil
                                                    observerMode:!self.finishTransactions
-                                                     completion:^(RCPurchaserInfo * _Nullable info,
-                                                             NSError * _Nullable error) {
+                                           subscriberAttributes:nil
+                                                     completion:^(RCPurchaserInfo *_Nullable info,
+                                                                  NSError *_Nullable error) {
                                                          [self handleReceiptPostWithTransaction:transaction
                                                                                   purchaserInfo:info
                                                                                           error:error];
-                                                     }];
+                                  }];
                               }
                           }];
         }

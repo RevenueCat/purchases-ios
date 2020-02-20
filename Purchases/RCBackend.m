@@ -169,29 +169,31 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                   discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
 presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                observerMode:(BOOL)observerMode
-                 completion:(RCBackendPurchaserInfoResponseHandler)completion
-{
+       subscriberAttributes:(nullable NSArray <RCSubscriberAttribute *> *)subscriberAttributes
+                 completion:(RCBackendPurchaserInfoResponseHandler)completion {
+
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
     NSMutableDictionary *body = [NSMutableDictionary dictionaryWithDictionary:
-                                 @{
-                                   @"fetch_token": fetchToken,
-                                   @"app_user_id": appUserID,
-                                   @"is_restore": @(isRestore),
-                                   @"observer_mode": @(observerMode)
-                                 }];
+                                                         @{
+                                                             @"fetch_token": fetchToken,
+                                                             @"app_user_id": appUserID,
+                                                             @"is_restore": @(isRestore),
+                                                             @"observer_mode": @(observerMode)
+                                                         }];
 
-    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@",
-                          appUserID,
-                          @(isRestore),
-                          fetchToken,
-                          productIdentifier,
-                          price,
-                          currencyCode,
-                          @((NSUInteger)paymentMode),
-                          introductoryPrice,
-                          subscriptionGroup,
-                          presentedOfferingIdentifier,
-                          @(observerMode)];
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@",
+                                                    appUserID,
+                                                    @(isRestore),
+                                                    fetchToken,
+                                                    productIdentifier,
+                                                    price,
+                                                    currencyCode,
+                                                    @((NSUInteger) paymentMode),
+                                                    introductoryPrice,
+                                                    subscriptionGroup,
+                                                    presentedOfferingIdentifier,
+                                                    @(observerMode),
+                                                    subscriberAttributes];
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
         for (RCPromotionalOffer *discount in discounts) {
@@ -225,6 +227,11 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
     if (subscriptionGroup) {
         body[@"subscription_group_id"] = subscriptionGroup;
+    }
+
+    if (subscriberAttributes) {
+        NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributes];
+        body[@"subscriberAttributes"] = attributesInBackendFormat;
     }
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
