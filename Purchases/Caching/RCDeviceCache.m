@@ -22,9 +22,12 @@
 
 @end
 
-NSString * RCLegacyGeneratedAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID";
-NSString * RCAppUserDefaultsKey = @"com.revenuecat.userdefaults.appUserID.new";
-NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults.purchaserInfo.";
+#define RC_CACHE_KEY_PREFIX com.revenuecat.userdefaults
+
+NSString * RCLegacyGeneratedAppUserDefaultsKey = @"RC_CACHE_KEY_PREFIX.appUserID";
+NSString * RCAppUserDefaultsKey = @"RC_CACHE_KEY_PREFIX.appUserID.new";
+NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"RC_CACHE_KEY_PREFIX.purchaserInfo.";
+NSString * RCSubscriberAttributesKeyBase = @"RC_CACHE_KEY_PREFIX.subscriberAttributes.";
 #define CACHE_DURATION_IN_SECONDS 60 * 5
 
 @implementation RCDeviceCache
@@ -138,26 +141,37 @@ NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"com.revenuecat.userdefaults
 #pragma mark - Subscriber attributes
 
 - (void)storeSubscriberAttribute:(RCSubscriberAttribute *)attribute {
-    // TODO
+    NSString *cacheKey = [self subscriberAttributeCacheKeyForAttributeKey:attribute.key
+                                                                appUserID:attribute.appUserID];
+    [self.userDefaults setValue:attribute.asDictionary
+                         forKey:cacheKey];
 }
 
-- (RCSubscriberAttribute *)subscriberAttributeWithKey:(NSString *)key {
+- (RCSubscriberAttribute *)subscriberAttributeWithKey:(NSString *)key appUserID:(NSString *)appUserID {
+    NSString *cacheKey = [self subscriberAttributeCacheKeyForAttributeKey:key
+                                                                appUserID:appUserID];
+    return [self.userDefaults valueForKey:cacheKey];
+}
+
+- (NSArray<RCSubscriberAttribute *> *)unsyncedAttributesForAppUserID:(NSString *)appUserID {
     // TODO
     return nil;
 }
 
-- (NSArray<RCSubscriberAttribute *> *)unsyncedAttributes {
-    // TODO
-    return nil;
-}
-
-- (NSUInteger)numberOfUnsyncedAttributes {
+- (NSUInteger)numberOfUnsyncedAttributesForAppUserID:(NSString *)appUserID {
     // TODO
     return 0;
 }
 
-- (void)clearSubscriberAttributes {
+- (void)clearSubscriberAttributesForAppUserID:(NSString *)appUserID {
     // TODO
+}
+
+
+- (NSString *)subscriberAttributeCacheKeyForAttributeKey:(NSString *)key
+                                               appUserID:(NSString *)appUserID {
+    NSString *attributeKey = [NSString stringWithFormat:@"%@_%@", appUserID, key];
+    return [RCSubscriberAttributesKeyBase stringByAppendingString:attributeKey];
 }
 
 #pragma mark - private methods

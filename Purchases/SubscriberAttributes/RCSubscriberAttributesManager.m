@@ -64,11 +64,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSArray <RCSubscriberAttribute *> *)unsyncedAttributes {
-    return [self.deviceCache unsyncedAttributes];
+    return [self.deviceCache unsyncedAttributesForAppUserID:nil];
 }
 
 - (void)clearAttributes {
-    [self.deviceCache clearSubscriberAttributes];
+    [self.deviceCache clearSubscriberAttributesForAppUserID:nil];
 }
 
 #pragma MARK - Private methods
@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)syncAttributesWithCompletion:(void (^)(NSError * _Nullable error))completion {
-    NSArray <RCSubscriberAttribute *> *unsyncedAttributes = [self.deviceCache unsyncedAttributes];
+    NSArray <RCSubscriberAttribute *> *unsyncedAttributes = [self.deviceCache unsyncedAttributesForAppUserID:nil];
     [self.backend postSubscriberAttributes:unsyncedAttributes completion:completion];
 }
 
@@ -96,12 +96,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSString *)currentValueForAttributeWithKey:(NSString *)key {
-    RCSubscriberAttribute *attribute = [self.deviceCache subscriberAttributeWithKey:key];
+    RCSubscriberAttribute *attribute = [self.deviceCache subscriberAttributeWithKey:key appUserID:nil];
     return attribute.value;
 }
 
 - (NSUInteger)numberOfUnsyncedAttributes {
-    return [self.deviceCache numberOfUnsyncedAttributes];
+    return [self.deviceCache numberOfUnsyncedAttributesForAppUserID:nil];
 }
 
 @end
