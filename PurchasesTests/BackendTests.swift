@@ -1108,11 +1108,11 @@ class BackendTests: XCTestCase {
                                  introductoryPrice: nil,
                                  currencyCode: nil,
                                  subscriptionGroup: nil,
-                                 discounts: [discount
-                                             , presentedOfferingIdentifier: nil,
-                                             bserverMode: observerMode,
-                                             subscriberAttributes: nil,
-                                             completion: { (purchaserInfo, error) in
+                                 discounts: [discount],
+                                 presentedOfferingIdentifier: nil,
+                                 observerMode: observerMode,
+                                 subscriberAttributes: nil,
+                                 completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
 
@@ -1144,15 +1144,15 @@ class BackendTests: XCTestCase {
                                  isRestore: false,
                                  productIdentifier: productIdentifier,
                                  price: price,
-                                 paymentMode: paymentMode, introductoryPrice:
-                                 nil, currencyCode:
-                                 currencyCode, subscriptionGroup:
-                                 group, discounts:
-                                 [discount],
-                                 presentedOfferingIdentifier: nil, observerMode:
-                                 false, subscriberAttributes:
-                                 nil, completion:
-                                 { (purchaserInfo, error) in
+                                 paymentMode: paymentMode,
+                                 introductoryPrice: nil,
+                                 currencyCode: currencyCode,
+                                 subscriptionGroup: group,
+                                 discounts: [discount],
+                                 presentedOfferingIdentifier: nil,
+                                 observerMode: false,
+                                 subscriberAttributes: nil,
+                                 completion: { (purchaserInfo, error) in
             completionCalled = true
         })
 

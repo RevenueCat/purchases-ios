@@ -20,7 +20,6 @@
 		350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDEF1F7EFC410065833D /* StoreKitRequestFetcherTests.swift */; };
 		350FBDF31F7FFD350065833D /* RCStoreKitWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDF11F7FFD340065833D /* RCStoreKitWrapper.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		350FBDF41F7FFD350065833D /* RCStoreKitWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDF21F7FFD340065833D /* RCStoreKitWrapper.m */; };
-		350FD38422E90EDB00B803AD /* RCOfferings.m in Sources */ = {isa = PBXBuildFile; fileRef = 354D50DE22E7D014009B870C /* RCOfferings.m */; };
 		351280382318AFB400BD2163 /* RCOfferingsFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 351280372318AFB400BD2163 /* RCOfferingsFactory.m */; };
 		351703CD1F805E5D00EEE27A /* PurchaserInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351703CC1F805E5D00EEE27A /* PurchaserInfoTests.swift */; };
 		351F4FAB1F80190700F245F4 /* RCBackend.h in Headers */ = {isa = PBXBuildFile; fileRef = 351F4FA91F80190700F245F4 /* RCBackend.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -51,7 +50,6 @@
 		35846AFF226A56AE00CC9E56 /* RCPromotionalOffer+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35846AFE226A554300CC9E56 /* RCPromotionalOffer+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3585D6A322E680E30079E2C5 /* RCPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3585D6A122E680E30079E2C5 /* RCPackage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3585D6A422E680E30079E2C5 /* RCPackage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3585D6A222E680E30079E2C5 /* RCPackage.m */; };
-		3585D6A522E680E30079E2C5 /* RCPackage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3585D6A222E680E30079E2C5 /* RCPackage.m */; };
 		359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 359A0E9F2003C8CD002D8C7F /* NSLocale+RCExtensions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 359A0EA02003C8CD002D8C7F /* NSLocale+RCExtensions.m */; };
 		35A3F73323172D9900559FF9 /* RCOfferings+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 35A3F73223172D9900559FF9 /* RCOfferings+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -76,23 +74,23 @@
 		35DFC68620B87646004584CC /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
 		35DFC68720B87646004584CC /* OHHTTPStubs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDD71F7DF17F0065833D /* OHHTTPStubs.framework */; };
 		35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E5B1DB1F80026C00B2537C /* StoreKitWrapperTests.swift */; };
-		37E3512049D89935A4FDA89B /* RCSpecialSubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3566BF06C3F765369A126 /* RCSpecialSubscriberAttributes.h */; };
+		37E3512049D89935A4FDA89B /* RCSpecialSubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3566BF06C3F765369A126 /* RCSpecialSubscriberAttributes.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E351AB03EE37534CA10B59 /* MockInMemoryCachedOfferings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C5A65AAF701DED59800 /* MockInMemoryCachedOfferings.swift */; };
 		37E351E3AC0B5F67305B4CB6 /* DeviceCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35D87B7E6F91E27E98F42 /* DeviceCacheTests.swift */; };
 		37E3526C938D7B291671BE8A /* RCInMemoryCachedObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E359893D3371FC3497D957 /* RCInMemoryCachedObject.m */; };
 		37E352F190E0E957E8D932F8 /* RCDeviceCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3524E3032ABC72467AA43 /* RCDeviceCache.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E352F9B7505A398D578F53 /* RCDeviceCache+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3555AC54BD10BE56F2B6B /* RCDeviceCache+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E354BE25CE61E55E4FD89C /* MockDeviceCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354BEB8FDE39CAB7C4D69 /* MockDeviceCache.swift */; };
-		37E354E14A93639577822952 /* RCSubscriberAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E353E5CEE9379EB665FEE3 /* RCSubscriberAttribute.h */; };
+		37E354E14A93639577822952 /* RCSubscriberAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E353E5CEE9379EB665FEE3 /* RCSubscriberAttribute.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E3558F325931DD755C885F /* RCSubscriberAttributesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E3547D3A36BBEFADA64E3A /* RCSubscriberAttributesManager.m */; };
 		37E356619BE46B3AA82A69E8 /* RCInMemoryCachedObject+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35483531C5A5E6BF09BBD /* RCInMemoryCachedObject+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E3585E0B39722838F235BD /* MockUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357D16038F07915D7825D /* MockUserDefaults.swift */; };
-		37E358A7AEB3ADB606831B55 /* RCSubscriberAttributesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3530263379DDB76F945D3 /* RCSubscriberAttributesManager.h */; };
+		37E358A7AEB3ADB606831B55 /* RCSubscriberAttributesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3530263379DDB76F945D3 /* RCSubscriberAttributesManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35973D9A0BE8D879A596F /* RCSubscriberAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E359AA016274A402D8D497 /* RCSubscriberAttribute.m */; };
 		37E3598A1AAA3D70EA01C82D /* RCInMemoryCachedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35C6CBB3229AA53ECEB58 /* RCInMemoryCachedObject.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35AF213F2F79CB067FDC2 /* InMemoryCachedObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35E3250FBBB03D92E06EC /* InMemoryCachedObjectTests.swift */; };
 		37E35D4498633E73BF02BAE7 /* RCDeviceCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E356820F0AD560FA23F3BF /* RCDeviceCache.m */; };
-		37E35FE7DE02ED449BB7569F /* RCSubscriberAttributesManager+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35201AC186C616E7F18C7 /* RCSubscriberAttributesManager+Protected.h */; };
+		37E35FE7DE02ED449BB7569F /* RCSubscriberAttributesManager+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35201AC186C616E7F18C7 /* RCSubscriberAttributesManager+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -452,11 +450,11 @@
 				37E352F190E0E957E8D932F8 /* RCDeviceCache.h in Headers */,
 				37E356619BE46B3AA82A69E8 /* RCInMemoryCachedObject+Protected.h in Headers */,
 				35846AFD226940F600CC9E56 /* RCPromotionalOffer.h in Headers */,
-				37E352F9B7505A398D578F53 /* RCDeviceCache+Protected.h in Headers */,
 				37E358A7AEB3ADB606831B55 /* RCSubscriberAttributesManager.h in Headers */,
 				37E35FE7DE02ED449BB7569F /* RCSubscriberAttributesManager+Protected.h in Headers */,
 				37E3512049D89935A4FDA89B /* RCSpecialSubscriberAttributes.h in Headers */,
 				37E354E14A93639577822952 /* RCSubscriberAttribute.h in Headers */,
+				37E352F9B7505A398D578F53 /* RCDeviceCache+Protected.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -614,7 +612,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				350FD38422E90EDB00B803AD /* RCOfferings.m in Sources */,
 				35262A211F7D77E600C04F2C /* PurchasesTests.swift in Sources */,
 				351F4FB21F803D9C00F245F4 /* BackendTests.swift in Sources */,
 				35262A301F7D78C600C04F2C /* HTTPClientTests.swift in Sources */,
@@ -624,7 +621,6 @@
 				350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */,
 				351703CD1F805E5D00EEE27A /* PurchaserInfoTests.swift in Sources */,
 				35B1635223467C10003371A3 /* UserManagerTests.swift in Sources */,
-				3585D6A522E680E30079E2C5 /* RCPackage.m in Sources */,
 				37E354BE25CE61E55E4FD89C /* MockDeviceCache.swift in Sources */,
 				37E3585E0B39722838F235BD /* MockUserDefaults.swift in Sources */,
 				37E351AB03EE37534CA10B59 /* MockInMemoryCachedOfferings.swift in Sources */,
