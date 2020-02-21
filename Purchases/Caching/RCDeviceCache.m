@@ -135,7 +135,12 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
     @synchronized (self) {
         NSString *cacheKey = [self subscriberAttributesCacheKeyForAppUserID:attribute.appUserID];
         NSDictionary *allSubscriberAttributesByKey = (NSDictionary *) [self.userDefaults valueForKey:cacheKey];
-        NSMutableDictionary *mutableSubscriberAttributesByKey = allSubscriberAttributesByKey.mutableCopy;
+        NSMutableDictionary *mutableSubscriberAttributesByKey;
+        if (allSubscriberAttributesByKey) {
+            mutableSubscriberAttributesByKey = allSubscriberAttributesByKey.mutableCopy;
+        } else {
+            mutableSubscriberAttributesByKey = [[NSMutableDictionary alloc] init];
+        }
         mutableSubscriberAttributesByKey[attribute.key] = attribute.asDictionary;
         [self.userDefaults setValue:mutableSubscriberAttributesByKey
                              forKey:cacheKey];
