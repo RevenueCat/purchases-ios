@@ -231,7 +231,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
     if (subscriberAttributes) {
         NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributes];
-        body[@"subscriberAttributes"] = attributesInBackendFormat;
+        body[@"attributes"] = attributesInBackendFormat;
     }
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
