@@ -11,26 +11,41 @@ NS_ASSUME_NONNULL_BEGIN
 @class RCDeviceCache;
 @class RCSubscriberAttribute;
 
+
 @interface RCSubscriberAttributesManager : NSObject
 
 - (instancetype)initWithBackend:(nullable RCBackend *)backend
                     deviceCache:(nullable RCDeviceCache *)deviceCache;
 
-- (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes;
+- (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes
+            appUserID:(NSString *)appUserID
+                appID:(NSString *)appID;
 
-- (void)setEmail:(nullable NSString *)email;
+- (void)setEmail:(nullable NSString *)email
+       appUserID:(NSString *)appUserID
+           appID:(NSString *)appID;
 
-- (void)setPhoneNumber:(nullable NSString *)phoneNumber;
+- (void)setPhoneNumber:(nullable NSString *)phoneNumber
+             appUserID:(NSString *)appUserID
+                 appID:(NSString *)appID;
 
-- (void)setDisplayName:(nullable NSString *)displayName;
+- (void)setDisplayName:(nullable NSString *)displayName
+             appUserID:(NSString *)appUserID
+                 appID:(NSString *)appID;
 
-- (void)setPushToken:(nullable NSString *)pushToken;
+- (void)setPushToken:(nullable NSString *)pushToken
+           appUserID:(NSString *)appUserID
+               appID:(NSString *)appID;
 
-- (void)clearAttributes;
+- (void)clearAttributesForAppUserID:(NSString *)appUserID
+                              appID:(NSString *)appID;
 
-- (void)syncIfNeededWithCompletion:(void (^)(NSError * _Nullable error))completion;
+- (void)syncIfNeededWithAppUserID:(NSString *)appUserID
+                            appID:(NSString *)appID
+                       completion:(void (^)(NSError *_Nullable error))completion;
 
-- (NSArray <RCSubscriberAttribute *> *)unsyncedAttributes;
+- (NSArray <RCSubscriberAttribute *> *)unsyncedAttributesForAppUserID:(NSString *)appUserID
+                                                                appID:(NSString *)appID;
 
 @end
 
