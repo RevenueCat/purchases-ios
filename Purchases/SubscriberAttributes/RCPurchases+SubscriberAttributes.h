@@ -6,10 +6,12 @@
 #import <Foundation/Foundation.h>
 #import "RCPurchases.h
 
+@class RCSubscriberAttribute;
 
 @interface RCPurchases ()
 
 - (void)configureSubscriberAttributesManager;
 - (void)clearSubscriberAttributesCache;
+- (NSArray <RCSubscriberAttribute *> *)unsyncedAttributes;
 
 @end

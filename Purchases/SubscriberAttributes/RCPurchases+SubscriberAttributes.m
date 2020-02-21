@@ -60,6 +60,10 @@ NS_ASSUME_NONNULL_END
     [self.subscriberAttributesManager clearAttributes];
 }
 
+- (NSArray <RCSubscriberAttribute *> *)unsyncedAttributes {
+    return [self.subscriberAttributesManager unsyncedAttributes];
+}
+
 #pragma mark private methods
 
 - (void)initializeSubscriberAttributesManager {
