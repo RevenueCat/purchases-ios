@@ -4,11 +4,25 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "RCPurchases.h
+#import "RCPurchases.h"
 
-@class RCSubscriberAttribute;
+@class RCSubscriberAttribute, RCSubscriberAttributesManager;
 
-@interface RCPurchases ()
+@interface RCPurchases (SubscriberAttributes)
+
+#pragma mark Subscriber Attributes
+
+- (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes;
+
+- (void)setEmail:(nullable NSString *)email;
+
+- (void)setPhoneNumber:(nullable NSString *)phoneNumber;
+
+- (void)setDisplayName:(nullable NSString *)displayName;
+
+- (void)setPushToken:(nullable NSString *)pushToken;
+
+@property (nonatomic) RCSubscriberAttributesManager *subscriberAttributesManager;
 
 - (void)configureSubscriberAttributesManager;
 - (void)clearSubscriberAttributesCache;

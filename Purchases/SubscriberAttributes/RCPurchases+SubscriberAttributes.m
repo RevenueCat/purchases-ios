@@ -3,15 +3,16 @@
 //
 
 #import "RCPurchases.h"
-#import "RCPurchases.m"
+#import "RCPurchases+Protected.h"
+#import "RCPurchases+SubscriberAttributes.h"
 #import "RCSubscriberAttributesManager.h"
+#import "RCCrossPlatformSupport.h"
+#import "RCUtils.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 
-@interface RCPurchases ()
-
-@property (nonatomic) RCSubscriberAttributesManager *subscriberAttributesManager;
+@interface RCPurchases (SubscriberAttributes)
 
 @end
 
@@ -57,11 +58,11 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)clearSubscriberAttributesCache {
-    [self.subscriberAttributesManager clearAttributesForAppUserID:nil];
+    [self.subscriberAttributesManager clearAttributesForAppUserID:self.appUserID];
 }
 
 - (NSArray <RCSubscriberAttribute *> *)unsyncedAttributes {
-    return [self.subscriberAttributesManager unsyncedAttributesForAppUserID:nil];
+    return [self.subscriberAttributesManager unsyncedAttributesForAppUserID:self.appUserID];
 }
 
 #pragma mark private methods
@@ -86,7 +87,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)syncSubscriberAttributesIfNeeded {
-    [self.subscriberAttributesManager syncIfNeededWithAppUserID:nil completion:^(NSError *error) {
+    [self.subscriberAttributesManager syncIfNeededWithAppUserID:self.appUserID completion:^(NSError *error) {
         if (error != nil) {
             RCErrorLog(@"error when syncing subscriber attributes. Details: %@", error.localizedDescription);
         } else {

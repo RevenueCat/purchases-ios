@@ -30,3 +30,4 @@
 #include <Purchases/RCSpecialSubscriberAttributes.h>
 #include <Purchases/RCSubscriberAttributesManager.h>
 #include <Purchases/RCSubscriberAttributesManager+Protected.h>
+#include <Purchases/RCPurchases+SubscriberAttributes.h>

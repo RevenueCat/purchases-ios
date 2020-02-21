@@ -90,7 +90,7 @@
 		37E35973D9A0BE8D879A596F /* RCSubscriberAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E359AA016274A402D8D497 /* RCSubscriberAttribute.m */; };
 		37E3598A1AAA3D70EA01C82D /* RCInMemoryCachedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35C6CBB3229AA53ECEB58 /* RCInMemoryCachedObject.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35AF213F2F79CB067FDC2 /* InMemoryCachedObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35E3250FBBB03D92E06EC /* InMemoryCachedObjectTests.swift */; };
-		37E35B837E0345CBA53794A2 /* RCPurchases+SubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35716EC99B6488BE809C1 /* RCPurchases+SubscriberAttributes.h */; };
+		37E35B837E0345CBA53794A2 /* RCPurchases+SubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35716EC99B6488BE809C1 /* RCPurchases+SubscriberAttributes.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35D4498633E73BF02BAE7 /* RCDeviceCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E356820F0AD560FA23F3BF /* RCDeviceCache.m */; };
 		37E35FE7DE02ED449BB7569F /* RCSubscriberAttributesManager+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35201AC186C616E7F18C7 /* RCSubscriberAttributesManager+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 /* End PBXBuildFile section */
@@ -443,6 +443,7 @@
 				354D50DF22E7D014009B870C /* RCOfferings.h in Headers */,
 				351F4FAF1F803D0700F245F4 /* RCPurchaserInfo.h in Headers */,
 				35C514BF2321DCAC000FFD78 /* RCPackage+Protected.h in Headers */,
+				37E35B837E0345CBA53794A2 /* RCPurchases+SubscriberAttributes.h in Headers */,
 				35CE750120C3932900CE09D8 /* RCOffering+Protected.h in Headers */,
 				350FBDF31F7FFD350065833D /* RCStoreKitWrapper.h in Headers */,
 				35A3F7352318772500559FF9 /* RCOfferingsFactory.h in Headers */,
@@ -461,7 +462,6 @@
 				37E3512049D89935A4FDA89B /* RCSpecialSubscriberAttributes.h in Headers */,
 				37E354E14A93639577822952 /* RCSubscriberAttribute.h in Headers */,
 				37E352F9B7505A398D578F53 /* RCDeviceCache+Protected.h in Headers */,
-				37E35B837E0345CBA53794A2 /* RCPurchases+SubscriberAttributes.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -401,21 +401,6 @@ NS_SWIFT_NAME(entitlements(_:)) RC_UNAVAILABLE("entitlements: has been replaced 
 
 @end
 
-@interface RCPurchases (SubscriberAttributes)
-#pragma mark Subscriber Attributes
-
-- (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes;
-
-- (void)setEmail:(nullable NSString *)email;
-
-- (void)setPhoneNumber:(nullable NSString *)phoneNumber;
-
-- (void)setDisplayName:(nullable NSString *)displayName;
-
-- (void)setPushToken:(nullable NSString *)pushToken;
-
-@end
-
 /**
  Delegate for `RCPurchases` responsible for handling updating your app's state in response to updated purchaser info or promotional product purchases.
  

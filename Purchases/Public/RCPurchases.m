@@ -27,6 +27,7 @@
 #import "RCPackage+Protected.h"
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
+#import "RCSubscriberAttributesManager.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -50,6 +51,7 @@
 @property (nonatomic) RCOfferingsFactory *offeringsFactory;
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCIdentityManager *identityManager;
+@property (nonatomic) RCSubscriberAttributesManager *subscriberAttributesManager;
 
 @end
 
@@ -278,9 +280,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 - (void)dealloc
 {
     self.storeKitWrapper.delegate = nil;
-    [self.notificationCenter removeObserver:self
-                                       name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME
-                                     object:nil];
+    [self.notificationCenter removeObserver:self];
     self.delegate = nil;
 }
 

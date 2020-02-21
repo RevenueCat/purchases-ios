@@ -1087,7 +1087,7 @@ class PurchasesTests: XCTestCase {
 
     func testSubscribesToUIApplicationDidBecomeActive() {
         setupPurchases()
-        expect(self.notificationCenter.observers.count).to(equal(1));
+        expect(self.notificationCenter.observers.count).to(equal(2));
         if self.notificationCenter.observers.count > 0 {
             let (_, _, name, _) = self.notificationCenter.observers[0];
             expect(name).to(equal(UIApplication.didBecomeActiveNotification))
@@ -1116,7 +1116,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         purchases!.delegate = nil
 
-        expect(self.notificationCenter.observers.count).to(equal(1));
+        expect(self.notificationCenter.observers.count).to(equal(2));
     }
 
     func testRestoringPurchasesPostsTheReceipt() {
