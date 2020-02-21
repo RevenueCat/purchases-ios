@@ -14,6 +14,6 @@
 
 - (void)configureSubscriberAttributesManager;
 - (void)clearSubscriberAttributesCache;
-- (NSArray <RCSubscriberAttribute *> *)unsyncedAttributes;
+- (NSDictionary <NSString *, RCSubscriberAttribute *> *)unsyncedAttributesByKey;
 
 @end

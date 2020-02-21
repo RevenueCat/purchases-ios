@@ -169,7 +169,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                   discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
 presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                observerMode:(BOOL)observerMode
-       subscriberAttributes:(nullable NSArray <RCSubscriberAttribute *> *)subscriberAttributes
+       subscriberAttributes:(nullable NSDictionary <NSString *, RCSubscriberAttribute *> *)subscriberAttributesByKey
                  completion:(RCBackendPurchaserInfoResponseHandler)completion {
 
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
@@ -193,7 +193,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                     subscriptionGroup,
                                                     presentedOfferingIdentifier,
                                                     @(observerMode),
-                                                    subscriberAttributes];
+                                                    subscriberAttributesByKey];
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
         for (RCPromotionalOffer *discount in discounts) {
@@ -229,8 +229,8 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         body[@"subscription_group_id"] = subscriptionGroup;
     }
 
-    if (subscriberAttributes) {
-        NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributes];
+    if (subscriberAttributesByKey) {
+        NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributesByKey];
         body[@"attributes"] = attributesInBackendFormat;
     }
 
@@ -467,7 +467,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                   }];
 }
 
-- (void)postSubscriberAttributes:(NSArray <RCSubscriberAttribute *> *)subscriberAttributes
+- (void)postSubscriberAttributes:(NSDictionary<NSString *, NSDictionary *> *)subscriberAttributes
                        appUserID:(NSString *)appUserID
                       completion:(void (^)(NSError *))completion {
 

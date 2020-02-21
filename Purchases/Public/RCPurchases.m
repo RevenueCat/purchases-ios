@@ -595,7 +595,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                             discounts:nil
           presentedOfferingIdentifier:nil
                          observerMode:!self.finishTransactions
-                 subscriberAttributes:self.unsyncedAttributes
+                 subscriberAttributes:self.unsyncedAttributesByKey
                            completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
                                [self dispatch:^{
                                    if (error) {
@@ -1028,7 +1028,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                       discounts:discounts
                                     presentedOfferingIdentifier:presentedOffering
                                                    observerMode:!self.finishTransactions
-                                           subscriberAttributes:self.unsyncedAttributes
+                                           subscriberAttributes:self.unsyncedAttributesByKey
                                                      completion:^(RCPurchaserInfo *_Nullable info,
                                                                   NSError *_Nullable error) {
                                                          [self handleReceiptPostWithTransaction:transaction
@@ -1048,7 +1048,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                       discounts:nil
                                     presentedOfferingIdentifier:nil
                                                    observerMode:!self.finishTransactions
-                                           subscriberAttributes:self.unsyncedAttributes
+                                           subscriberAttributes:self.unsyncedAttributesByKey
                                                      completion:^(RCPurchaserInfo *_Nullable info,
                                                                   NSError *_Nullable error) {
                                                          [self handleReceiptPostWithTransaction:transaction

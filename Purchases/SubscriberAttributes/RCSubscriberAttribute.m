@@ -26,7 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *appUserID;
 @property (nonatomic, nullable) NSDate *syncStartedTime;
 @property (nonatomic) NSDate *setTime;
-@property (nonatomic, assign) BOOL isSynced;
 
 @end
 

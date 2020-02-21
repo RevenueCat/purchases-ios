@@ -63,8 +63,8 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (NSArray <RCSubscriberAttribute *> *)unsyncedAttributesForAppUserID:(NSString *)appUserID {
-    return [self.deviceCache unsyncedAttributesForAppUserID:appUserID];
+- (NSDictionary <NSString *, RCSubscriberAttribute *> *)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID {
+    return [self.deviceCache unsyncedAttributesByKeyForAppUserID:appUserID];
 }
 
 - (void)clearAttributesForAppUserID:(NSString *)appUserID {
@@ -78,20 +78,29 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)syncAttributesWithCompletion:(void (^)(NSError *_Nullable error))completion appUserID:(NSString *)appUserID {
-    RCSubscriberAttribute *attribute =
-        [[RCSubscriberAttribute alloc] initWithKey:@"$email" value:@"someemail@revenuecat.com" appUserID:appUserID];
-    NSArray <RCSubscriberAttribute *> *unsyncedAttributes = @[attribute];
+    NSDictionary <NSString *, RCSubscriberAttribute *> *unsyncedAttributes= [self unsyncedAttributesByKeyForAppUserID:appUserID];
 
     [self.backend postSubscriberAttributes:unsyncedAttributes appUserID:appUserID completion:^(NSError *error) {
         if (error == nil) {
-            [self markAttributesAsSynced];
+            [self markAttributesAsSynced:unsyncedAttributes appUserID:appUserID];
         }
         completion(error);
     }];
 }
 
-- (void)markAttributesAsSynced {
-    // TODO
+- (void)markAttributesAsSynced:(NSDictionary <NSString *, RCSubscriberAttribute *> *)syncedAttributes
+                     appUserID:(NSString *)appUserID {
+    NSMutableDictionary <NSString *, RCSubscriberAttribute *> *unsyncedAttributes =
+        [self unsyncedAttributesByKeyForAppUserID:appUserID].mutableCopy;
+
+    for (NSString *key in syncedAttributes) {
+        RCSubscriberAttribute * attribute = [unsyncedAttributes valueForKey:key];
+        if (attribute != nil && [attribute.value isEqualToString:syncedAttributes[key].value]) {
+            attribute.isSynced = YES;
+            unsyncedAttributes[key] = attribute;
+        }
+    }
+    [self.deviceCache storeSubscriberAttributes:unsyncedAttributes appUserID:appUserID];
 }
 
 - (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
@@ -101,10 +110,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)storeAttributeLocallyWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
-//    if ([self currentValueForAttributeWithKey:key] != value) {
-//        RCSubscriberAttribute *subscriberAttribute = [[RCSubscriberAttribute alloc] init];
-//        [self.deviceCache storeSubscriberAttribute:subscriberAttribute];
-//    }
+    if ([self currentValueForAttributeWithKey:key appUserID:appUserID] != value) {
+        RCSubscriberAttribute *subscriberAttribute = [[RCSubscriberAttribute alloc] initWithKey:key
+                                                                                          value:value
+                                                                                      appUserID:appUserID];
+        [self.deviceCache storeSubscriberAttribute:subscriberAttribute];
+    }
 }
 
 - (NSString *)currentValueForAttributeWithKey:(NSString *)key appUserID:(NSString *)appUserID {

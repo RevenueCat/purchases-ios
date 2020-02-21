@@ -58,7 +58,7 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
                   discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
 presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                observerMode:(BOOL)observerMode
-       subscriberAttributes:(nullable NSArray <RCSubscriberAttribute *> *)subscriberAttributes
+       subscriberAttributes:(nullable NSDictionary <NSString *, RCSubscriberAttribute *> *)subscriberAttributesByKey
                  completion:(RCBackendPurchaserInfoResponseHandler)completion;
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
@@ -88,8 +88,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                   appUserID:(NSString *)applicationUsername
                  completion:(RCOfferSigningResponseHandler)completion;
 
-- (void)postSubscriberAttributes:(NSArray <RCSubscriberAttribute *> *)subscriberAttributes appUserID:(NSString *)appUserID completion:(void (^)(
-    NSError *))completion;
+- (void)postSubscriberAttributes:(NSDictionary<NSString *, NSDictionary *> *)subscriberAttributes
+                       appUserID:(NSString *)appUserID
+                      completion:(void (^)(NSError *))completion;
 @end
 
 NS_ASSUME_NONNULL_END

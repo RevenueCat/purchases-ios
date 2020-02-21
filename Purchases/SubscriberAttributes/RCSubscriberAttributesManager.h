@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)syncIfNeededWithAppUserID:(NSString *)appUserID completion:(void (^)(NSError *_Nullable error))completion;
 
-- (NSArray <RCSubscriberAttribute *> *)unsyncedAttributesForAppUserID:(NSString *)appUserID;
+- (NSDictionary <NSString *, RCSubscriberAttribute *> *)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID;
 
 @end
 

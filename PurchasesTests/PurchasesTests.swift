@@ -176,7 +176,7 @@ class PurchasesTests: XCTestCase {
                                       discounts: Array<RCPromotionalOffer>?,
                                       presentedOfferingIdentifier: String?,
                                       observerMode: Bool,
-                                      subscriberAttributes: Array<RCSubscriberAttribute>?,
+                                      subscriberAttributes: [String: RCSubscriberAttribute]?,
                                       completion: @escaping RCBackendPurchaserInfoResponseHandler) {
             postReceiptDataCalled = true
             postedIsRestore = isRestore
