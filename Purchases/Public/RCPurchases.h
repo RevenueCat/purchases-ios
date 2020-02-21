@@ -375,6 +375,13 @@ NS_SWIFT_NAME(restoreTransactions(_:));
            withDiscount:(SKPaymentDiscount *)discount
         completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(purchasePackage(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
 
+
+/**
+ Invalidates the cache for purchaser information.
+ This is useful for cases where purchaser information might have been updated outside of the app, like if a
+ promotional subscription is granted through the RevenueCat dashboard.
+ */
+- (void)invalidatePurchaserInfoCache;
 #pragma mark Unavailable Methods
 #define RC_UNAVAILABLE(msg) __attribute__((unavailable(msg)));
 /// :nodoc:
@@ -392,12 +399,20 @@ NS_SWIFT_NAME(entitlements(_:)) RC_UNAVAILABLE("entitlements: has been replaced 
 
 #undef RC_UNAVAILABLE
 
-/**
- Invalidates the cache for purchaser information.
- This is useful for cases where purchaser information might have been updated outside of the app, like if a
- promotional subscription is granted through the RevenueCat dashboard.
- */
-- (void)invalidatePurchaserInfoCache;
+@end
+
+@interface RCPurchases (SubscriberAttributes)
+#pragma mark Subscriber Attributes
+
+- (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes;
+
+- (void)setEmail:(nullable NSString *)email;
+
+- (void)setPhoneNumber:(nullable NSString *)phoneNumber;
+
+- (void)setDisplayName:(nullable NSString *)displayName;
+
+- (void)setPushToken:(nullable NSString *)pushToken;
 
 @end
 

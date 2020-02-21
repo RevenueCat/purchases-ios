@@ -7,6 +7,7 @@
 //
 
 #import "RCPurchases.h"
+#import "RCPurchases+SubscriberAttributes.h"
 #import "RCPurchases+Protected.h"
 
 #import "RCStoreKitRequestFetcher.h"
@@ -231,6 +232,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.purchaseCompleteCallbacks = [NSMutableDictionary new];
 
         self.finishTransactions = !observerMode;
+
+        [self configureSubscriberAttributesManager];
 
         RCReceivePurchaserInfoBlock callDelegate = ^void(RCPurchaserInfo *info, NSError *error) {
             if (info) {
