@@ -8,19 +8,7 @@
 
 @class RCSubscriberAttribute, RCSubscriberAttributesManager;
 
-@interface RCPurchases (SubscriberAttributes)
-
-#pragma mark Subscriber Attributes
-
-- (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes;
-
-- (void)setEmail:(nullable NSString *)email;
-
-- (void)setPhoneNumber:(nullable NSString *)phoneNumber;
-
-- (void)setDisplayName:(nullable NSString *)displayName;
-
-- (void)setPushToken:(nullable NSString *)pushToken;
+@interface RCPurchases ()
 
 @property (nonatomic) RCSubscriberAttributesManager *subscriberAttributesManager;
 

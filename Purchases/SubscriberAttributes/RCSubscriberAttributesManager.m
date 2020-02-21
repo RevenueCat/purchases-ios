@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)syncIfNeededWithAppUserID:(NSString *)appUserID completion:(void (^)(NSError *_Nullable error))completion {
-    if ([self numberOfUnsyncedAttributesForAppUserID:nil] > 0) {
+    if ([self numberOfUnsyncedAttributesForAppUserID:appUserID] > 0) {
         [self syncAttributesWithCompletion:completion appUserID:appUserID];
     } else {
         completion(nil);

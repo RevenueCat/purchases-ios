@@ -160,7 +160,7 @@ NSString * RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @"RC_CACHE_KEY_PR
 
 - (NSUInteger)numberOfUnsyncedAttributesForAppUserID:(NSString *)appUserID {
     // TODO
-    return 0;
+    return 1;
 }
 
 - (void)clearSubscriberAttributesForAppUserID:(NSString *)appUserID {

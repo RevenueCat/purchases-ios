@@ -51,7 +51,6 @@
 @property (nonatomic) RCOfferingsFactory *offeringsFactory;
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCIdentityManager *identityManager;
-@property (nonatomic) RCSubscriberAttributesManager *subscriberAttributesManager;
 
 @end
 
