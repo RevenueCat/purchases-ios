@@ -10,7 +10,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define KEY_KEY @"key"
 #define VALUE_KEY @"value"
-#define APP_ID_KEY @"appID"
 #define APP_USER_ID_KEY @"appUserID"
 #define SYNC_STARTED_TIME_KEY @"syncStartedTime"
 #define SET_TIME_KEY @"setTime"
@@ -25,7 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *key;
 @property (nonatomic, copy) NSString *value;
 @property (nonatomic, copy) NSString *appUserID;
-@property (nonatomic, copy) NSString *appID;
 @property (nonatomic, nullable) NSDate *syncStartedTime;
 @property (nonatomic) NSDate *setTime;
 @property (nonatomic, assign) BOOL isSynced;
@@ -38,14 +36,10 @@ NS_ASSUME_NONNULL_END
 
 @implementation RCSubscriberAttribute
 
-- (instancetype)initWithKey:(NSString *)key
-                      value:(NSString *)value
-                  appUserID:(NSString *)appUserID
-                      appID:(NSString *)appID {
+- (instancetype)initWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
     return [self initWithKey:key
                        value:value
                    appUserID:appUserID
-                       appID:appID
                     isSynced:NO
                      setTime:[NSDate date]
              syncStartedTime:nil];
@@ -54,7 +48,6 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithKey:(NSString *)key
                       value:(NSString *)value
                   appUserID:(NSString *)appUserID
-                      appID:(NSString *)appID
                    isSynced:(BOOL)isSynced
                     setTime:(NSDate *)setTime
             syncStartedTime:(NSDate *)syncStartedTime {
@@ -62,7 +55,6 @@ NS_ASSUME_NONNULL_END
         self.key = key;
         self.value = value;
         self.appUserID = appUserID;
-        self.appID = appID;
         self.isSynced = isSynced;
         self.setTime = setTime;
         self.syncStartedTime = syncStartedTime;
@@ -74,7 +66,6 @@ NS_ASSUME_NONNULL_END
     return [self initWithKey:(NSString *) dict[KEY_KEY]
                        value:(NSString *) dict[VALUE_KEY]
                    appUserID:(NSString *) dict[APP_USER_ID_KEY]
-                       appID:(NSString *) dict[APP_ID_KEY]
                     isSynced:((NSNumber *) dict[IS_SYNCED_KEY]).boolValue
                      setTime:(NSDate *) dict[SET_TIME_KEY]
              syncStartedTime:(NSDate *) dict[SYNC_STARTED_TIME_KEY]];
@@ -84,7 +75,6 @@ NS_ASSUME_NONNULL_END
     return @{
         KEY_KEY: self.key,
         VALUE_KEY: self.value,
-        APP_ID_KEY: self.appID,
         APP_USER_ID_KEY: self.appUserID,
         SYNC_STARTED_TIME_KEY: self.syncStartedTime,
         IS_SYNCED_KEY: @(self.isSynced),

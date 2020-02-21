@@ -25,27 +25,27 @@ NS_ASSUME_NONNULL_END
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
     NSLog(@"setAttributes called");
-    [self.subscriberAttributesManager setAttributes:attributes appUserID:self.appUserID appID:nil];
+    [self.subscriberAttributesManager setAttributes:attributes appUserID:self.appUserID];
 }
 
 - (void)setEmail:(nullable NSString *)email {
     NSLog(@"setEmail called");
-    [self.subscriberAttributesManager setEmail:email appUserID:self.appUserID appID:nil];
+    [self.subscriberAttributesManager setEmail:email appUserID:self.appUserID];
 }
 
 - (void)setPhoneNumber:(nullable NSString *)phoneNumber {
     NSLog(@"setPhoneNumber called");
-    [self.subscriberAttributesManager setPhoneNumber:phoneNumber appUserID:self.appUserID appID:nil];
+    [self.subscriberAttributesManager setPhoneNumber:phoneNumber appUserID:self.appUserID];
 }
 
 - (void)setDisplayName:(nullable NSString *)displayName {
     NSLog(@"setDisplayName called");
-    [self.subscriberAttributesManager setDisplayName:displayName appUserID:self.appUserID appID:nil];
+    [self.subscriberAttributesManager setDisplayName:displayName appUserID:self.appUserID];
 }
 
 - (void)setPushToken:(nullable NSString *)pushToken {
     NSLog(@"setPushToken called");
-    [self.subscriberAttributesManager setPushToken:pushToken appUserID:self.appUserID appID:nil];
+    [self.subscriberAttributesManager setPushToken:pushToken appUserID:self.appUserID];
 }
 
 #pragma mark protected methods
@@ -57,11 +57,11 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)clearSubscriberAttributesCache {
-    [self.subscriberAttributesManager clearAttributesForAppUserID:nil appID:nil];
+    [self.subscriberAttributesManager clearAttributesForAppUserID:nil];
 }
 
 - (NSArray <RCSubscriberAttribute *> *)unsyncedAttributes {
-    return [self.subscriberAttributesManager unsyncedAttributesForAppUserID:nil appID:nil];
+    return [self.subscriberAttributesManager unsyncedAttributesForAppUserID:nil];
 }
 
 #pragma mark private methods
@@ -86,7 +86,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)syncSubscriberAttributesIfNeeded {
-    [self.subscriberAttributesManager syncIfNeededWithAppUserID:nil appID:nil completion:^(NSError *error) {
+    [self.subscriberAttributesManager syncIfNeededWithAppUserID:nil completion:^(NSError *error) {
         if (error != nil) {
             RCErrorLog(@"error when syncing subscriber attributes. Details: %@", error.localizedDescription);
         } else {
