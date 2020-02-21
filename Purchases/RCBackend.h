@@ -88,7 +88,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                   appUserID:(NSString *)applicationUsername
                  completion:(RCOfferSigningResponseHandler)completion;
 
-- (void)postSubscriberAttributes:(NSDictionary<NSString *, NSDictionary *> *)subscriberAttributes
+- (void)postSubscriberAttributes:(NSDictionary<NSString *, RCSubscriberAttribute *> *)subscriberAttributes
                        appUserID:(NSString *)appUserID
                       completion:(void (^)(NSError *))completion;
 @end

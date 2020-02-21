@@ -73,9 +73,9 @@ NS_ASSUME_NONNULL_END
 - (NSDictionary <NSString *, NSObject *> *)asDictionary {
     return @{
         KEY_KEY: self.key,
-        VALUE_KEY: self.value?: [NSNull null],
+        VALUE_KEY: self.value?: @"",
         APP_USER_ID_KEY: self.appUserID,
-        SYNC_STARTED_TIME_KEY: self.syncStartedTime?: [NSNull null],
+        SYNC_STARTED_TIME_KEY: self.syncStartedTime?: [NSDate dateWithTimeIntervalSince1970:0],
         IS_SYNCED_KEY: @(self.isSynced),
         SET_TIME_KEY: self.setTime,
     };

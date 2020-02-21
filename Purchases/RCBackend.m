@@ -467,7 +467,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                   }];
 }
 
-- (void)postSubscriberAttributes:(NSDictionary<NSString *, NSDictionary *> *)subscriberAttributes
+- (void)postSubscriberAttributes:(NSDictionary<NSString *, RCSubscriberAttribute *> *)subscriberAttributes
                        appUserID:(NSString *)appUserID
                       completion:(void (^)(NSError *))completion {
 
@@ -486,10 +486,10 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 }
 
-- (NSDictionary<NSString *, NSDictionary *> *)subscriberAttributesByKey:(NSArray<RCSubscriberAttribute *> *)subscriberAttributes {
+- (NSDictionary<NSString *, NSDictionary *> *)subscriberAttributesByKey:(NSDictionary<NSString *, RCSubscriberAttribute *> *)subscriberAttributes {
     NSMutableDictionary <NSString *, NSDictionary *> *attributesByKey = [[NSMutableDictionary alloc] init];
-    for (RCSubscriberAttribute *attribute in subscriberAttributes) {
-        attributesByKey[attribute.key] = attribute.asBackendDictionary;
+    for (NSString *key in subscriberAttributes) {
+        attributesByKey[key] = subscriberAttributes[key].asBackendDictionary;
     }
     return attributesByKey;
 }
