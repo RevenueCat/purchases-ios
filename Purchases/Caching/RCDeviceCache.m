@@ -22,12 +22,12 @@
 
 @end
 
-#define RC_CACHE_KEY_PREFIX com.revenuecat.userdefaults
+#define RC_CACHE_KEY_PREFIX @"com.revenuecat.userdefaults"
 
-NSString * RCLegacyGeneratedAppUserDefaultsKey = @"RC_CACHE_KEY_PREFIX.appUserID";
-NSString * RCAppUserDefaultsKey = @"RC_CACHE_KEY_PREFIX.appUserID.new";
-NSString * RCPurchaserInfoAppUserDefaultsKeyBase = @"RC_CACHE_KEY_PREFIX.purchaserInfo.";
-NSString * RCSubscriberAttributesKeyBase = @"RC_CACHE_KEY_PREFIX.subscriberAttributes.";
+NSString * RCLegacyGeneratedAppUserDefaultsKey = RC_CACHE_KEY_PREFIX @".appUserID";
+NSString * RCAppUserDefaultsKey = RC_CACHE_KEY_PREFIX @".appUserID.new";
+NSString * RCPurchaserInfoAppUserDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".purchaserInfo.";
+NSString * RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @"RC_CACHE_KEY_PREFIX.subscriberAttributes.";
 #define CACHE_DURATION_IN_SECONDS 60 * 5
 
 @implementation RCDeviceCache
