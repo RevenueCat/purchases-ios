@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setOfferingsCacheTimestampToNow;
 
 - (void)storeSubscriberAttribute:(RCSubscriberAttribute *)attribute;
-- (RCSubscriberAttribute *)subscriberAttributeWithKey:(NSString *)key appUserID:(NSString *)appUserID;
+- (RCSubscriberAttribute *)subscriberAttributeWithKey:(NSString *)attributeKey appUserID:(NSString *)appUserID;
 - (NSArray<RCSubscriberAttribute *> *)unsyncedAttributesForAppUserID:(NSString *)appUserID;
 - (NSUInteger)numberOfUnsyncedAttributesForAppUserID:(NSString *)appUserID;
 - (void)clearSubscriberAttributesForAppUserID:(NSString *)appUserID;
