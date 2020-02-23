@@ -34,7 +34,7 @@ NS_SWIFT_NAME(Purchases.PurchaserInfo)
 @property (readonly) NSSet<NSString *> *nonConsumablePurchases;
 
 /**
- Returns the version number for the version of the application when the user bought the app.
+ Returns the build number for the version of the application when the user bought the app.
  Use this for grandfathering users when migrating to subscriptions.
  
  This corresponds to the value of CFBundleVersion (in iOS) or CFBundleShortVersionString (in macOS) in the Info.plist file when the purchase was originally made.
@@ -42,6 +42,14 @@ NS_SWIFT_NAME(Purchases.PurchaserInfo)
  @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
  */
 @property (readonly, nullable) NSString *originalApplicationVersion;
+
+/**
+Returns the purchase date for the version of the application when the user bought the app.
+Use this for grandfathering users when migrating to subscriptions.
+
+@note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
+ */
+@property (readonly, nullable) NSDate *originalPurchaseDate;
 
 /**
  Returns the fetch date of this Purchaser info.

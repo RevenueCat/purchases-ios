@@ -18,6 +18,7 @@
 @property (nonatomic) NSDictionary<NSString *, NSDate *> *purchaseDatesByProduct;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic, nullable) NSString *originalApplicationVersion;
+@property (nonatomic, nullable) NSDate *originalPurchaseDate;
 @property (nonatomic) NSDictionary *originalData;
 @property (nonatomic, nullable) NSDate *requestDate;
 @property (nonatomic) NSDate *firstSeen;
@@ -78,6 +79,9 @@ static dispatch_once_t onceToken;
         
         NSString *originalApplicationVersion = subscriberData[@"original_application_version"];
         self.originalApplicationVersion = [originalApplicationVersion isKindOfClass:[NSNull class]] ? nil : originalApplicationVersion;
+
+        NSDate *originalPurchaseDate = [self parseDate:subscriberData[@"original_purchase_date"] withDateFormatter:dateFormatter];
+        self.originalPurchaseDate = [originalPurchaseDate isKindOfClass:[NSNull class]] ? nil : originalPurchaseDate;
 
         self.firstSeen = [self parseDate:subscriberData[@"first_seen"] withDateFormatter:dateFormatter];
         
