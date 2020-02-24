@@ -8,7 +8,7 @@
 #import "RCSpecialSubscriberAttributes.h"
 #import "RCBackend.h"
 #import "RCDeviceCache.h"
-#import "RCPurchasesErrors.h"
+#import "NSError+RCExtensions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -83,15 +83,8 @@ NS_ASSUME_NONNULL_BEGIN
         *unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID];
 
     [self.backend postSubscriberAttributes:unsyncedAttributes appUserID:appUserID completion:^(NSError *error) {
-        BOOL didBackendReceiveValues = (error == nil);
-        if (error != nil) {
-            if (error.userInfo[NSUnderlyingErrorKey]) {
-                NSError *underlyingError = (NSError *)error.userInfo[NSUnderlyingErrorKey];
-                if (underlyingError && [underlyingError.domain isEqualToString:RCBackendErrorDomain]) {
-                    didBackendReceiveValues = YES;
-                }
-            }
-        }
+        BOOL didBackendReceiveValues = (error == nil || error.isBackendError);
+
         if (didBackendReceiveValues) {
             [self markAttributesAsSynced:unsyncedAttributes appUserID:appUserID];
         }
