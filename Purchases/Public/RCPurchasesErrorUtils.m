@@ -146,6 +146,8 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(RCBackend
             return RCInvalidAppleSubscriptionKeyError;
         case RCBackendUserIneligibleForPromoOffer:
             return RCIneligibleError;
+        case RCBackendInvalidSubscriberAttributes:
+            return RCBackendInvalidSubscriberAttributesError;
     }
     return RCUnknownError;
 }
