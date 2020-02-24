@@ -13,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) NSString *key;
 @property (nonatomic, copy, readonly) NSString *value;
 @property (nonatomic, copy, readonly) NSString *appUserID;
-@property (nonatomic, readonly, nullable) NSDate *syncStartedTime;
 @property (nonatomic, readonly) NSDate *setTime;
 @property (nonatomic, assign) BOOL isSynced;
 
