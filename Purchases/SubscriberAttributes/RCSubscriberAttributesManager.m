@@ -78,7 +78,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)syncAttributesWithCompletion:(void (^)(NSError *_Nullable error))completion appUserID:(NSString *)appUserID {
-    NSDictionary <NSString *, RCSubscriberAttribute *> *unsyncedAttributes= [self unsyncedAttributesByKeyForAppUserID:appUserID];
+    NSDictionary <NSString *, RCSubscriberAttribute *>
+        *unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID];
 
     [self.backend postSubscriberAttributes:unsyncedAttributes appUserID:appUserID completion:^(NSError *error) {
         if (error == nil) {
@@ -94,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self unsyncedAttributesByKeyForAppUserID:appUserID].mutableCopy;
 
     for (NSString *key in syncedAttributes) {
-        RCSubscriberAttribute * attribute = [unsyncedAttributes valueForKey:key];
+        RCSubscriberAttribute *attribute = [unsyncedAttributes valueForKey:key];
         if (attribute != nil && [attribute.value isEqualToString:syncedAttributes[key].value]) {
             attribute.isSynced = YES;
             unsyncedAttributes[key] = attribute;
@@ -104,7 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
-    if ([self currentValueForAttributeWithKey:key appUserID:appUserID] != value) {
+    if (![[self currentValueForAttributeWithKey:key appUserID:appUserID] isEqualToString:value]) {
         [self storeAttributeLocallyWithKey:key value:value appUserID:appUserID];
     }
 }
