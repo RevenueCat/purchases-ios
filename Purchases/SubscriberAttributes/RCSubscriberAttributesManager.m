@@ -108,8 +108,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
-    NSString *valueOrEmtpy = value ?: @"";
-    if (![[self currentValueForAttributeWithKey:key appUserID:appUserID] isEqualToString:valueOrEmtpy]) {
+    NSString *valueOrEmpty = value ?: @"";
+    if (![[self currentValueForAttributeWithKey:key appUserID:appUserID] isEqualToString:valueOrEmpty]) {
         [self storeAttributeLocallyWithKey:key value:value appUserID:appUserID];
     }
 }
