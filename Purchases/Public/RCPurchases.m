@@ -27,7 +27,7 @@
 #import "RCPackage+Protected.h"
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
-#import "RCSubscriberAttributesManager.h"
+#import "NSError+RCExtensions.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -215,7 +215,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         RCDebugLog(@"Debug logging enabled.");
         RCDebugLog(@"SDK Version - %@", self.class.frameworkVersion);
         RCDebugLog(@"Initial App User ID - %@", appUserID);
-        
+
         self.requestFetcher = requestFetcher;
         self.receiptFetcher = receiptFetcher;
         self.attributionFetcher = attributionFetcher;
@@ -263,7 +263,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds == nil) {
                 [attributionFetcher adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails, NSError *_Nullable error) {
                     NSArray *values = [attributionDetails allValues];
-                    
+
                     bool hasIadAttribution = values.count != 0 && [values[0][@"iad-attribution"] boolValue];
                     if (hasIadAttribution) {
                         [self postAttributionData:attributionDetails fromNetwork:RCAttributionNetworkAppleSearchAds forNetworkUserId:nil];
@@ -583,6 +583,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
             return;
         }
+        RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
                             isRestore:YES
@@ -599,10 +600,14 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                            completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
                                [self dispatch:^{
                                    if (error) {
+                                       if (error.isBackendError) {
+                                           [self markAttributesAsSynced:subscriberAttributes appUserID:self.appUserID];
+                                       }
                                        CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
                                    } else if (info) {
                                        [self cachePurchaserInfo:info forAppUserID:self.appUserID];
                                        [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
+                                       [self markAttributesAsSynced:subscriberAttributes appUserID:self.appUserID];
                                        CALL_IF_SET_ON_MAIN_THREAD(completion, info, nil);
                                    }
                                }];
@@ -833,25 +838,27 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)handleReceiptPostWithTransaction:(SKPaymentTransaction *)transaction
                            purchaserInfo:(nullable RCPurchaserInfo *)info
-                                   error:(nullable NSError *)error
-{
+                    subscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
+                                   error:(nullable NSError *)error {
     [self dispatch:^{
         RCPurchaseCompletedBlock completion = nil;
         @synchronized (self) {
-             completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
+            completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
         }
-        
+
         if (info) {
             [self cachePurchaserInfo:info forAppUserID:self.appUserID];
-            
+
             [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-            
+            [self markAttributesAsSynced:subscriberAttributes appUserID:self.appUserID];
+
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, info, nil, false);
-            
+
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if ([error.userInfo[RCFinishableKey] boolValue]) {
+            [self markAttributesAsSynced:subscriberAttributes appUserID:self.appUserID];
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
@@ -976,11 +983,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         if (data.length == 0) {
             [self handleReceiptPostWithTransaction:transaction
                                      purchaserInfo:nil
+                              subscriberAttributes:nil
                                              error:[RCPurchasesErrorUtils missingReceiptFileError]];
         } else {
             [self productsWithIdentifiers:@[transaction.payment.productIdentifier]
                           completionBlock:^(NSArray<SKProduct *> *products) {
                               SKProduct *product = products.lastObject;
+                              RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
                               if (product) {
                                   NSString *productIdentifier = product.productIdentifier;
                                   NSDecimalNumber *price = product.price;
@@ -1028,11 +1037,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                       discounts:discounts
                                     presentedOfferingIdentifier:presentedOffering
                                                    observerMode:!self.finishTransactions
-                                           subscriberAttributes:self.unsyncedAttributesByKey
+                                           subscriberAttributes:subscriberAttributes
                                                      completion:^(RCPurchaserInfo *_Nullable info,
                                                                   NSError *_Nullable error) {
                                                          [self handleReceiptPostWithTransaction:transaction
                                                                                   purchaserInfo:info
+                                                                           subscriberAttributes:subscriberAttributes
                                                                                           error:error];
                                                      }];
                               } else {
@@ -1048,11 +1058,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                       discounts:nil
                                     presentedOfferingIdentifier:nil
                                                    observerMode:!self.finishTransactions
-                                           subscriberAttributes:self.unsyncedAttributesByKey
+                                           subscriberAttributes:subscriberAttributes
                                                      completion:^(RCPurchaserInfo *_Nullable info,
                                                                   NSError *_Nullable error) {
                                                          [self handleReceiptPostWithTransaction:transaction
                                                                                   purchaserInfo:info
+                                                                           subscriberAttributes:subscriberAttributes
                                                                                           error:error];
                                   }];
                               }

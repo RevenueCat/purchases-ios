@@ -65,6 +65,11 @@ NS_ASSUME_NONNULL_END
     return [self.subscriberAttributesManager unsyncedAttributesByKeyForAppUserID:self.appUserID];
 }
 
+- (void)markAttributesAsSynced:(RCSubscriberAttributeDict)syncedAttributes
+                     appUserID:(NSString *)appUserID {
+    [self.subscriberAttributesManager markAttributesAsSynced:syncedAttributes appUserID:appUserID];
+}
+
 #pragma mark private methods
 
 - (void)initializeSubscriberAttributesManager {

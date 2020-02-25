@@ -93,6 +93,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)markAttributesAsSynced:(RCSubscriberAttributeDict)syncedAttributes
                      appUserID:(NSString *)appUserID {
+    if (syncedAttributes == nil || syncedAttributes.count == 0) {
+        return;
+    }
     RCSubscriberAttributeMutableDict unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID].mutableCopy;
 
     for (NSString *key in syncedAttributes) {

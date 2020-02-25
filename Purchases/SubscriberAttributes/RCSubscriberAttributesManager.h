@@ -4,6 +4,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RCSubscriberAttribute.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -32,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)syncIfNeededWithAppUserID:(NSString *)appUserID completion:(void (^)(NSError *_Nullable error))completion;
 
 - (NSDictionary <NSString *, RCSubscriberAttribute *> *)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID;
+
+- (void)markAttributesAsSynced:(RCSubscriberAttributeDict)syncedAttributes
+                     appUserID:(NSString *)appUserID;
 
 @end
 

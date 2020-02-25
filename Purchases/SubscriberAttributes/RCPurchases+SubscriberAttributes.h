@@ -16,5 +16,7 @@
 - (void)configureSubscriberAttributesManager;
 - (void)clearSubscriberAttributesCache;
 - (RCSubscriberAttributeDict)unsyncedAttributesByKey;
+- (void)markAttributesAsSynced:(RCSubscriberAttributeDict)syncedAttributes
+                     appUserID:(NSString *)appUserID;
 
 @end
