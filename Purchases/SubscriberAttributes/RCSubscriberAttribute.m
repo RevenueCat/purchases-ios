@@ -67,7 +67,7 @@ NS_ASSUME_NONNULL_END
 - (NSDictionary <NSString *, NSObject *> *)asDictionary {
     return @{
         KEY_KEY: self.key,
-        VALUE_KEY: self.value?: @"",
+        VALUE_KEY: self.value ?: @"",
         APP_USER_ID_KEY: self.appUserID,
         IS_SYNCED_KEY: @(self.isSynced),
         SET_TIME_KEY: self.setTime,
@@ -76,7 +76,7 @@ NS_ASSUME_NONNULL_END
 
 - (NSDictionary <NSString *, NSObject *> *)asBackendDictionary {
     return @{
-        BACKEND_VALUE_KEY: self.value,
+        BACKEND_VALUE_KEY: self.value ?: @"",
         BACKEND_TIMESTAMP_KEY: @(self.setTime.timeIntervalSince1970)
     };
 }
