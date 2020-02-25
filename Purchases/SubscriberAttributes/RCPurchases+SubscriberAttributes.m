@@ -53,8 +53,8 @@ NS_ASSUME_NONNULL_END
 
 - (void)configureSubscriberAttributesManager {
     [self initializeSubscriberAttributesManager];
-    [self subscribeToAppBackgroundedNotifications];
     [self subscribeToAppDidBecomeActiveNotifications];
+    [self subscribeToAppBackgroundedNotifications];
 }
 
 - (void)clearSubscriberAttributesCache {
@@ -74,16 +74,18 @@ NS_ASSUME_NONNULL_END
     self.subscriberAttributesManager = subscriberAttributesManager;
 }
 
-- (void)subscribeToAppBackgroundedNotifications {
-    // TODO
-}
-
 - (void)subscribeToAppDidBecomeActiveNotifications {
     [self.notificationCenter addObserver:self
                                 selector:@selector(syncSubscriberAttributesIfNeeded)
                                     name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME
                                   object:nil];
+}
 
+- (void)subscribeToAppBackgroundedNotifications {
+    [self.notificationCenter addObserver:self
+                                selector:@selector(syncSubscriberAttributesIfNeeded)
+                                    name:APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME
+                                  object:nil];
 }
 
 - (void)syncSubscriberAttributesIfNeeded {
