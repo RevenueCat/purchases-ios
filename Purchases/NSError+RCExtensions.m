@@ -9,13 +9,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-@interface NSError (RCExtensions)
-@end
-
-
-NS_ASSUME_NONNULL_END
-
-
 @implementation NSError (RCExtensions)
 
 - (BOOL)isBackendError {
@@ -33,3 +26,6 @@ NS_ASSUME_NONNULL_END
 }
 
 @end
+
+
+NS_ASSUME_NONNULL_END

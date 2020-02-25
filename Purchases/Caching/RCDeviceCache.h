@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "RCSubscriberAttribute.h";
+#import "RCSubscriberAttribute.h"
 
 @class RCOfferings;
 
