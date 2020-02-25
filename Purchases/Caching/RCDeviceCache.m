@@ -142,7 +142,7 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
     }
 }
 
-- (void)storeSubscriberAttributes:(NSDictionary <NSString *, RCSubscriberAttribute *> *)attributesByKey
+- (void)storeSubscriberAttributes:(RCSubscriberAttributeDict)attributesByKey
                         appUserID:(NSString *)appUserID {
     @synchronized (self) {
         NSString *cacheKey = [self subscriberAttributesCacheKeyForAppUserID:appUserID];
@@ -165,12 +165,10 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
     }
 }
 
-- (NSDictionary<NSString *, RCSubscriberAttribute *> *)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID {
+- (RCSubscriberAttributeDict)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID {
     @synchronized (self) {
-        NSDictionary <NSString *, RCSubscriberAttribute *>
-            *allSubscriberAttributesByKey = [self storedSubscriberAttributesForAppUserID:appUserID];
-        NSMutableDictionary <NSString *, RCSubscriberAttribute *>
-            *unsyncedAttributesByKey = [[NSMutableDictionary alloc] init];
+        RCSubscriberAttributeDict allSubscriberAttributesByKey = [self storedSubscriberAttributesForAppUserID:appUserID];
+        RCSubscriberAttributeMutableDict unsyncedAttributesByKey = [[NSMutableDictionary alloc] init];
         for (NSString *key in allSubscriberAttributesByKey) {
             RCSubscriberAttribute *attribute = allSubscriberAttributesByKey[key];
             if (!attribute.isSynced) {
@@ -181,10 +179,10 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
     }
 }
 
-- (NSDictionary<NSString *, RCSubscriberAttribute *> *)storedSubscriberAttributesForAppUserID:(NSString *)appUserID {
+- (RCSubscriberAttributeDict)storedSubscriberAttributesForAppUserID:(NSString *)appUserID {
     NSDictionary <NSString *, NSObject *>
         *allAttributesObjectsByKey = [self storedSubscriberAttributesDictionaryForAppUserID:appUserID];
-    NSMutableDictionary <NSString *, RCSubscriberAttribute *> *allSubscriberAttributesByKey =
+    RCSubscriberAttributeMutableDict allSubscriberAttributesByKey =
         [[NSMutableDictionary alloc] init];
 
     for (NSString *key in allAttributesObjectsByKey) {

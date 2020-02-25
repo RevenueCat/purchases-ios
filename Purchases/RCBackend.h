@@ -10,6 +10,7 @@
 #import <StoreKit/StoreKit.h>
 
 #import "RCPurchases.h"
+#import "RCSubscriberAttribute.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -58,7 +59,7 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
                   discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
 presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                observerMode:(BOOL)observerMode
-       subscriberAttributes:(nullable NSDictionary <NSString *, RCSubscriberAttribute *> *)subscriberAttributesByKey
+       subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
                  completion:(RCBackendPurchaserInfoResponseHandler)completion;
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
@@ -88,7 +89,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                   appUserID:(NSString *)applicationUsername
                  completion:(RCOfferSigningResponseHandler)completion;
 
-- (void)postSubscriberAttributes:(NSDictionary<NSString *, RCSubscriberAttribute *> *)subscriberAttributes
+- (void)postSubscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
                        appUserID:(NSString *)appUserID
                       completion:(void (^)(NSError *))completion;
 @end

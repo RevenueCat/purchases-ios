@@ -5,6 +5,7 @@
 
 #import <Foundation/Foundation.h>
 #import "RCPurchases.h"
+#import "RCSubscriberAttribute.h"
 
 @class RCSubscriberAttribute, RCSubscriberAttributesManager;
 
@@ -14,6 +15,6 @@
 
 - (void)configureSubscriberAttributesManager;
 - (void)clearSubscriberAttributesCache;
-- (NSDictionary <NSString *, RCSubscriberAttribute *> *)unsyncedAttributesByKey;
+- (RCSubscriberAttributeDict)unsyncedAttributesByKey;
 
 @end

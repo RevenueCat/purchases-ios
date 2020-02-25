@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (NSDictionary <NSString *, RCSubscriberAttribute *> *)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID {
+- (RCSubscriberAttributeDict)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID {
     return [self.deviceCache unsyncedAttributesByKeyForAppUserID:appUserID];
 }
 
@@ -79,8 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)syncAttributesWithCompletion:(void (^)(NSError *_Nullable error))completion appUserID:(NSString *)appUserID {
-    NSDictionary <NSString *, RCSubscriberAttribute *>
-        *unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID];
+    RCSubscriberAttributeDict unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID];
 
     [self.backend postSubscriberAttributes:unsyncedAttributes appUserID:appUserID completion:^(NSError *error) {
         BOOL didBackendReceiveValues = (error == nil || error.isBackendError);
@@ -92,10 +91,9 @@ NS_ASSUME_NONNULL_BEGIN
     }];
 }
 
-- (void)markAttributesAsSynced:(NSDictionary <NSString *, RCSubscriberAttribute *> *)syncedAttributes
+- (void)markAttributesAsSynced:(RCSubscriberAttributeDict)syncedAttributes
                      appUserID:(NSString *)appUserID {
-    NSMutableDictionary <NSString *, RCSubscriberAttribute *> *unsyncedAttributes =
-        [self unsyncedAttributesByKeyForAppUserID:appUserID].mutableCopy;
+    RCSubscriberAttributeMutableDict unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID].mutableCopy;
 
     for (NSString *key in syncedAttributes) {
         RCSubscriberAttribute *attribute = [unsyncedAttributes valueForKey:key];

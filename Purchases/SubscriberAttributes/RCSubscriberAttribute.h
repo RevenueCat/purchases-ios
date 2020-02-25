@@ -28,5 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+typedef NSMutableDictionary<NSString *, RCSubscriberAttribute *> *RCSubscriberAttributeMutableDict;
+typedef NSDictionary<NSString *, RCSubscriberAttribute *> *RCSubscriberAttributeDict;
 
 NS_ASSUME_NONNULL_END

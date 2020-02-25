@@ -61,7 +61,7 @@ NS_ASSUME_NONNULL_END
     [self.subscriberAttributesManager clearAttributesForAppUserID:self.appUserID];
 }
 
-- (NSDictionary <NSString *, RCSubscriberAttribute *> *)unsyncedAttributesByKey {
+- (RCSubscriberAttributeDict)unsyncedAttributesByKey {
     return [self.subscriberAttributesManager unsyncedAttributesByKeyForAppUserID:self.appUserID];
 }
 

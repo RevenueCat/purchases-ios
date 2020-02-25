@@ -169,7 +169,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                   discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
 presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                observerMode:(BOOL)observerMode
-       subscriberAttributes:(nullable NSDictionary <NSString *, RCSubscriberAttribute *> *)subscriberAttributesByKey
+       subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
                  completion:(RCBackendPurchaserInfoResponseHandler)completion {
 
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
@@ -467,7 +467,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                   }];
 }
 
-- (void)postSubscriberAttributes:(NSDictionary<NSString *, RCSubscriberAttribute *> *)subscriberAttributes
+- (void)postSubscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
                        appUserID:(NSString *)appUserID
                       completion:(void (^)(NSError *))completion {
 
@@ -486,7 +486,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 }
 
-- (NSDictionary<NSString *, NSDictionary *> *)subscriberAttributesByKey:(NSDictionary<NSString *, RCSubscriberAttribute *> *)subscriberAttributes {
+- (NSDictionary<NSString *, NSDictionary *> *)subscriberAttributesByKey:(RCSubscriberAttributeDict)subscriberAttributes {
     NSMutableDictionary <NSString *, NSDictionary *> *attributesByKey = [[NSMutableDictionary alloc] init];
     for (NSString *key in subscriberAttributes) {
         attributesByKey[key] = subscriberAttributes[key].asBackendDictionary;
