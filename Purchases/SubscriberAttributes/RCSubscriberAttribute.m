@@ -81,4 +81,9 @@ NS_ASSUME_NONNULL_END
     };
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"Subscriber attribute: key: %@ value: %@ appUserID: %@ setTime: %@",
+                                      self.key, self.value, self.appUserID, self.setTime];
+}
+
 @end
