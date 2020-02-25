@@ -57,10 +57,6 @@ NS_ASSUME_NONNULL_END
     [self subscribeToAppBackgroundedNotifications];
 }
 
-- (void)clearSubscriberAttributesCache {
-    [self.subscriberAttributesManager clearAttributesForAppUserID:self.appUserID];
-}
-
 - (RCSubscriberAttributeDict)unsyncedAttributesByKey {
     return [self.subscriberAttributesManager unsyncedAttributesByKeyForAppUserID:self.appUserID];
 }

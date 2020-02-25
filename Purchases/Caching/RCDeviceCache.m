@@ -72,6 +72,7 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
     [self.userDefaults removeObjectForKey:RCLegacyGeneratedAppUserDefaultsKey];
     [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
     [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
+    [self.userDefaults removeObjectForKey:[self subscriberAttributesCacheKeyForAppUserID:appUserID]];
     [self clearPurchaserInfoCacheTimestamp];
     [self clearOfferingsCache];
 }

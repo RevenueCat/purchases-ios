@@ -14,7 +14,6 @@
 @property (nonatomic) RCSubscriberAttributesManager *subscriberAttributesManager;
 
 - (void)configureSubscriberAttributesManager;
-- (void)clearSubscriberAttributesCache;
 - (RCSubscriberAttributeDict)unsyncedAttributesByKey;
 - (void)markAttributesAsSynced:(RCSubscriberAttributeDict)syncedAttributes
                      appUserID:(NSString *)appUserID;
