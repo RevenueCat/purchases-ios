@@ -43,4 +43,14 @@ class NSErrorRCExtensionsTests: XCTestCase {
         let error = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
         expect((error as NSError).didBackendReceiveRequestCorrectly()) == true
     }
+
+    func testDidBackendReceiveRequestCorrectlyFalseIfFalseForUnderlyingError() {
+        let errorCode = Purchases.ErrorCode.networkError.rawValue
+        let underlyingError = NSError(domain: Purchases.ErrorDomain, code: errorCode,
+                                      userInfo: [Purchases.FinishableKey: true])
+        expect(underlyingError.didBackendReceiveRequestCorrectly()) == false
+
+        let error = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
+        expect((error as NSError).didBackendReceiveRequestCorrectly()) == false
+    }
 }
