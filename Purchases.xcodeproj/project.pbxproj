@@ -14,6 +14,9 @@
 		2D8DB34E240731E000BE3D31 /* NSError+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D8DB34C240731E000BE3D31 /* NSError+RCExtensions.m */; };
 		2D8DB34F240731E000BE3D31 /* NSError+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D8DB34D240731E000BE3D31 /* NSError+RCExtensions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D8DB3502407333100BE3D31 /* NSError+RCExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3550459807FF5636B2667 /* NSError+RCExtensionsTests.swift */; };
+		2D50332A2406EA61009CAE61 /* RCSubscriberAttributesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2D50332B2406EA61009CAE61 /* RCSubscriberAttributesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D5033282406EA61009CAE61 /* RCSubscriberAttributesManager.m */; };
+		2D50332C2406EA61009CAE61 /* RCSubscriberAttributesManager+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033292406EA61009CAE61 /* RCSubscriberAttributesManager+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35095A6C2351461E00ADF0B2 /* RCIdentityManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 35095A6A2351461E00ADF0B2 /* RCIdentityManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35095A6D2351461E00ADF0B2 /* RCIdentityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 35095A6B2351461E00ADF0B2 /* RCIdentityManager.m */; };
 		350A1B87226F937F00CCA10F /* RCAttributionData.h in Headers */ = {isa = PBXBuildFile; fileRef = 350A1B86226F937F00CCA10F /* RCAttributionData.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -137,6 +140,9 @@
 		2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscriberAttributeTests.swift; sourceTree = "<group>"; };
 		2D8DB34C240731E000BE3D31 /* NSError+RCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSError+RCExtensions.m"; sourceTree = "<group>"; };
 		2D8DB34D240731E000BE3D31 /* NSError+RCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSError+RCExtensions.h"; sourceTree = "<group>"; };
+		2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCSubscriberAttributesManager.h; path = Purchases/SubscriberAttributes/RCSubscriberAttributesManager.h; sourceTree = SOURCE_ROOT; };
+		2D5033282406EA61009CAE61 /* RCSubscriberAttributesManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RCSubscriberAttributesManager.m; path = Purchases/SubscriberAttributes/RCSubscriberAttributesManager.m; sourceTree = SOURCE_ROOT; };
+		2D5033292406EA61009CAE61 /* RCSubscriberAttributesManager+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "RCSubscriberAttributesManager+Protected.h"; path = "Purchases/SubscriberAttributes/RCSubscriberAttributesManager+Protected.h"; sourceTree = SOURCE_ROOT; };
 		35095A6A2351461E00ADF0B2 /* RCIdentityManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCIdentityManager.h; sourceTree = "<group>"; };
 		35095A6B2351461E00ADF0B2 /* RCIdentityManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIdentityManager.m; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -258,6 +264,9 @@
 		2D5033202406E4C7009CAE61 /* SubscriberAttributes */ = {
 			isa = PBXGroup;
 			children = (
+				2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */,
+				2D5033282406EA61009CAE61 /* RCSubscriberAttributesManager.m */,
+				2D5033292406EA61009CAE61 /* RCSubscriberAttributesManager+Protected.h */,
 				2D5033232406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h */,
 				2D5033212406E4E8009CAE61 /* RCSubscriberAttribute.h */,
 				2D5033222406E4E8009CAE61 /* RCSubscriberAttribute.m */,
@@ -265,6 +274,15 @@
 			);
 			name = SubscriberAttributes;
 			path = Public/SubscriberAttributes;
+			sourceTree = "<group>";
+		};
+		2DCB85BF2406EC3F003C1260 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				2D50332E2406EAAD009CAE61 /* NSError+RCExtensions.m */,
+				2D50332D2406EAAD009CAE61 /* NSError+RCExtensions.h */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		350FBDD61F7DF1640065833D /* Frameworks */ = {
@@ -310,6 +328,7 @@
 				35262A1F1F7D77E600C04F2C /* PurchasesTests */,
 				352629FF1F7C4B9100C04F2C /* Products */,
 				3530C18722653E8F00D6DF52 /* Frameworks */,
+				2DCB85BF2406EC3F003C1260 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -494,6 +513,9 @@
 				2D5033262406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h in Headers */,
 				2D5033242406E4E8009CAE61 /* RCSubscriberAttribute.h in Headers */,
 				37E356619BE46B3AA82A69E8 /* RCInMemoryCachedObject+Protected.h in Headers */,
+				2D50332A2406EA61009CAE61 /* RCSubscriberAttributesManager.h in Headers */,
+				2D50332C2406EA61009CAE61 /* RCSubscriberAttributesManager+Protected.h in Headers */,
+				2DCB85C32406ED0B003C1260 /* NSError+RCExtensions.h in Headers */,
 				35846AFD226940F600CC9E56 /* RCPromotionalOffer.h in Headers */,
 				2D8DB34F240731E000BE3D31 /* NSError+RCExtensions.h in Headers */,
 				37E35AE982974800FF079C14 /* RCSubscriberAttribute+Protected.h in Headers */,
@@ -627,6 +649,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2DCB85C22406ED0A003C1260 /* NSError+RCExtensions.m in Sources */,
 				35B54E4622EA6F11005918B1 /* RCEntitlementInfo.m in Sources */,
 				35846AFC226940F000CC9E56 /* RCPromotionalOffer.m in Sources */,
 				350FBDEE1F7EFB950065833D /* RCStoreKitRequestFetcher.m in Sources */,
@@ -646,6 +669,7 @@
 				350FBDEA1F7EEF070065833D /* RCPurchases.m in Sources */,
 				35262A2D1F7D783F00C04F2C /* RCHTTPClient.m in Sources */,
 				350FBDF41F7FFD350065833D /* RCStoreKitWrapper.m in Sources */,
+				2D50332B2406EA61009CAE61 /* RCSubscriberAttributesManager.m in Sources */,
 				35846AFB2267FE7F00CC9E56 /* RCAttributionFetcher.m in Sources */,
 				354D50E022E7D014009B870C /* RCOfferings.m in Sources */,
 				35CE74FD20C38A7100CE09D8 /* RCOffering.m in Sources */,
