@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D5033242406E4E8009CAE61 /* RCSubscriberAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033212406E4E8009CAE61 /* RCSubscriberAttribute.h */; };
+		2D5033242406E4E8009CAE61 /* RCSubscriberAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033212406E4E8009CAE61 /* RCSubscriberAttribute.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D5033252406E4E8009CAE61 /* RCSubscriberAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D5033222406E4E8009CAE61 /* RCSubscriberAttribute.m */; };
-		2D5033262406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033232406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h */; };
+		2D5033262406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033232406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35095A6C2351461E00ADF0B2 /* RCIdentityManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 35095A6A2351461E00ADF0B2 /* RCIdentityManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35095A6D2351461E00ADF0B2 /* RCIdentityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 35095A6B2351461E00ADF0B2 /* RCIdentityManager.m */; };
 		350A1B87226F937F00CCA10F /* RCAttributionData.h in Headers */ = {isa = PBXBuildFile; fileRef = 350A1B86226F937F00CCA10F /* RCAttributionData.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -234,7 +234,8 @@
 				2D5033212406E4E8009CAE61 /* RCSubscriberAttribute.h */,
 				2D5033222406E4E8009CAE61 /* RCSubscriberAttribute.m */,
 			);
-			path = SubscriberAttributes;
+			name = SubscriberAttributes;
+			path = Public/SubscriberAttributes;
 			sourceTree = "<group>";
 		};
 		350FBDD61F7DF1640065833D /* Frameworks */ = {
@@ -249,7 +250,6 @@
 		350FBDE61F7EEEDF0065833D /* Public */ = {
 			isa = PBXGroup;
 			children = (
-				2D5033202406E4C7009CAE61 /* SubscriberAttributes */,
 				353AB5E5222F633D003754E6 /* RCPurchasesErrorUtils.h */,
 				352E88422229B1A60046A10A /* RCPurchasesErrorUtils.m */,
 				353AB5E3222F624E003754E6 /* RCPurchasesErrors.h */,
@@ -297,6 +297,7 @@
 			isa = PBXGroup;
 			children = (
 				350FBDE61F7EEEDF0065833D /* Public */,
+				2D5033202406E4C7009CAE61 /* SubscriberAttributes */,
 				35A60EA81F82993E00D2FAE8 /* RCPurchases+Protected.h */,
 				35395CB321B9EB1000286D13 /* RCIntroEligibility+Protected.h */,
 				352C36BE1F9D372D00A15783 /* RCPurchaserInfo+Protected.h */,
@@ -418,7 +419,6 @@
 				35B54E4822EA6F4E005918B1 /* RCEntitlementInfo.h in Headers */,
 				353AB5E4222F624E003754E6 /* RCPurchasesErrors.h in Headers */,
 				35846AFF226A56AE00CC9E56 /* RCPromotionalOffer+Protected.h in Headers */,
-				2D5033262406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h in Headers */,
 				3585D6A322E680E30079E2C5 /* RCPackage.h in Headers */,
 				353AB5E6222F633D003754E6 /* RCPurchasesErrorUtils.h in Headers */,
 				351F4FAB1F80190700F245F4 /* RCBackend.h in Headers */,
@@ -426,7 +426,6 @@
 				352C36BF1F9D372D00A15783 /* RCPurchaserInfo+Protected.h in Headers */,
 				35A3F73323172D9900559FF9 /* RCOfferings+Protected.h in Headers */,
 				35395CB421B9F59E00286D13 /* RCIntroEligibility+Protected.h in Headers */,
-				2D5033242406E4E8009CAE61 /* RCSubscriberAttribute.h in Headers */,
 				350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */,
 				35A60EAA1F82993E00D2FAE8 /* RCPurchases+Protected.h in Headers */,
 				354D50DF22E7D014009B870C /* RCOfferings.h in Headers */,
@@ -437,15 +436,17 @@
 				35A3F7352318772500559FF9 /* RCOfferingsFactory.h in Headers */,
 				35B54E5022EF7F3A005918B1 /* RCEntitlementInfo+Protected.h in Headers */,
 				35B54E5222EF88CE005918B1 /* RCEntitlementInfos+Protected.h in Headers */,
-				35C98D9520B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */,
 				35095A6C2351461E00ADF0B2 /* RCIdentityManager.h in Headers */,
 				35262A0F1F7C4B9100C04F2C /* Purchases.h in Headers */,
 				359A0EA12003C8CD002D8C7F /* NSLocale+RCExtensions.h in Headers */,
 				37E3598A1AAA3D70EA01C82D /* RCInMemoryCachedObject.h in Headers */,
 				37E352F190E0E957E8D932F8 /* RCDeviceCache.h in Headers */,
+				2D5033262406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h in Headers */,
+				2D5033242406E4E8009CAE61 /* RCSubscriberAttribute.h in Headers */,
 				37E356619BE46B3AA82A69E8 /* RCInMemoryCachedObject+Protected.h in Headers */,
 				35846AFD226940F600CC9E56 /* RCPromotionalOffer.h in Headers */,
 				37E352F9B7505A398D578F53 /* RCDeviceCache+Protected.h in Headers */,
+				35C98D9520B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
