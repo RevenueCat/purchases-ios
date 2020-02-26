@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define IS_SYNCED_KEY @"isSynced"
 
 #define BACKEND_VALUE_KEY @"value"
-#define BACKEND_TIMESTAMP_KEY @"timestamp"
+#define BACKEND_TIMESTAMP_KEY @"updated_at"
 
 
 @interface RCSubscriberAttribute ()
