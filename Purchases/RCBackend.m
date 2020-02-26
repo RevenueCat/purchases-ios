@@ -15,6 +15,7 @@
 #import "RCPurchasesErrorUtils.h"
 #import "RCUtils.h"
 #import "RCPromotionalOffer.h"
+#import "RCSubscriberAttribute.h"
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
 
@@ -114,8 +115,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     NSError *responseError = nil;
 
     if (statusCode > 300) {
+        BOOL isInternalServerError = (statusCode >= 500);
         responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
-                                                            backendMessage:response[@"message"]];
+                                                            backendMessage:response[@"message"]
+                                                                finishable:!isInternalServerError];
     }
 
     if (errorHandler != nil) {
@@ -168,29 +171,31 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                   discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
 presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                observerMode:(BOOL)observerMode
-                 completion:(RCBackendPurchaserInfoResponseHandler)completion
-{
+       subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
+                 completion:(RCBackendPurchaserInfoResponseHandler)completion {
+
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
     NSMutableDictionary *body = [NSMutableDictionary dictionaryWithDictionary:
-                                 @{
-                                   @"fetch_token": fetchToken,
-                                   @"app_user_id": appUserID,
-                                   @"is_restore": @(isRestore),
-                                   @"observer_mode": @(observerMode)
-                                 }];
+                                                         @{
+                                                             @"fetch_token": fetchToken,
+                                                             @"app_user_id": appUserID,
+                                                             @"is_restore": @(isRestore),
+                                                             @"observer_mode": @(observerMode)
+                                                         }];
 
-    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@",
-                          appUserID,
-                          @(isRestore),
-                          fetchToken,
-                          productIdentifier,
-                          price,
-                          currencyCode,
-                          @((NSUInteger)paymentMode),
-                          introductoryPrice,
-                          subscriptionGroup,
-                          presentedOfferingIdentifier,
-                          @(observerMode)];
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@",
+                                                    appUserID,
+                                                    @(isRestore),
+                                                    fetchToken,
+                                                    productIdentifier,
+                                                    price,
+                                                    currencyCode,
+                                                    @((NSUInteger) paymentMode),
+                                                    introductoryPrice,
+                                                    subscriptionGroup,
+                                                    presentedOfferingIdentifier,
+                                                    @(observerMode),
+                                                    subscriberAttributesByKey];
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
         for (RCPromotionalOffer *discount in discounts) {
@@ -224,6 +229,11 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
     if (subscriptionGroup) {
         body[@"subscription_group_id"] = subscriptionGroup;
+    }
+
+    if (subscriberAttributesByKey) {
+        NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributesByKey];
+        body[@"attributes"] = attributesInBackendFormat;
     }
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
@@ -457,6 +467,33 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
                       completion(nil, nil, nil, nil, error);
                   }];
+}
+
+- (void)postSubscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
+                       appUserID:(NSString *)appUserID
+                      completion:(void (^)(NSError *))completion {
+
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attributes", escapedAppUserID];
+    NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributes];
+    [self.httpClient performRequest:@"POST"
+                               path:path
+                               body:@{
+                                   @"attributes": attributesInBackendFormat
+                               }
+                            headers:self.headers
+                  completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
+                      [self handle:status withResponse:response error:error errorHandler:completion];
+                  }];
+
+}
+
+- (NSDictionary<NSString *, NSDictionary *> *)subscriberAttributesByKey:(RCSubscriberAttributeDict)subscriberAttributes {
+    NSMutableDictionary <NSString *, NSDictionary *> *attributesByKey = [[NSMutableDictionary alloc] init];
+    for (NSString *key in subscriberAttributes) {
+        attributesByKey[key] = subscriberAttributes[key].asBackendDictionary;
+    }
+    return attributesByKey;
 }
 
 @end
