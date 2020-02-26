@@ -28,6 +28,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)setDefaultInstance:(nullable RCPurchases *)instance;
 
+@property (nonatomic) RCDeviceCache *deviceCache;
+@property (nonatomic) RCBackend *backend;
+@property (nonatomic) NSNotificationCenter *notificationCenter;
+
 @end
 
 NS_ASSUME_NONNULL_END
