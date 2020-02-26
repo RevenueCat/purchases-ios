@@ -115,8 +115,10 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     NSError *responseError = nil;
 
     if (statusCode > 300) {
+        BOOL isInternalServerError = (statusCode >= 500);
         responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
-                                                            backendMessage:response[@"message"]];
+                                                            backendMessage:response[@"message"]
+                                                                finishable:!isInternalServerError];
     }
 
     if (errorHandler != nil) {

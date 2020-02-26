@@ -11,14 +11,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation NSError (RCExtensions)
 
-- (BOOL)isBackendError {
-    BOOL isBackendErrorDomain = [self.domain isEqualToString:RCBackendErrorDomain];
-    if (isBackendErrorDomain) {
+- (BOOL)didBackendReceiveRequestCorrectly {
+    BOOL isNetworkError = self.code == RCNetworkError;
+    BOOL didBackendReceiveRequest = (
+        !isNetworkError
+        && self.userInfo[RCFinishableKey] != nil
+        && ((NSNumber *) self.userInfo[RCFinishableKey]).boolValue
+    );
+    if (didBackendReceiveRequest) {
         return YES;
     } else if (self.userInfo[NSUnderlyingErrorKey]) {
         NSError *underlyingError = (NSError *) self.userInfo[NSUnderlyingErrorKey];
         if (underlyingError) {
-            return underlyingError.isBackendError;
+            return underlyingError.didBackendReceiveRequestCorrectly;
         }
     }
 
