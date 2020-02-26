@@ -10,10 +10,11 @@
 #import <StoreKit/StoreKit.h>
 
 #import "RCPurchases.h"
+#import "RCSubscriberAttribute.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCPromotionalOffer;
+@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCPromotionalOffer, RCSubscriberAttribute;
 
 typedef NS_ENUM(NSInteger, RCPaymentMode) {
     RCPaymentModeNone = -1,
@@ -58,6 +59,7 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
                   discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
 presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                observerMode:(BOOL)observerMode
+       subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
                  completion:(RCBackendPurchaserInfoResponseHandler)completion;
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
@@ -87,6 +89,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                   appUserID:(NSString *)applicationUsername
                  completion:(RCOfferSigningResponseHandler)completion;
 
+- (void)postSubscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
+                       appUserID:(NSString *)appUserID
+                      completion:(void (^)(NSError *))completion;
 @end
 
 NS_ASSUME_NONNULL_END
