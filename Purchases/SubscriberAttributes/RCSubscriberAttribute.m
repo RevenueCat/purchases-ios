@@ -1,5 +1,5 @@
 //
-// Created by Andrés Boedo on 2/17/20.
+// Created by RevenueCat on 2/17/20.
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
