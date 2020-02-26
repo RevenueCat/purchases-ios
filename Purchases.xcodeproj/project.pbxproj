@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2D5033242406E4E8009CAE61 /* RCSubscriberAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033212406E4E8009CAE61 /* RCSubscriberAttribute.h */; };
+		2D5033252406E4E8009CAE61 /* RCSubscriberAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D5033222406E4E8009CAE61 /* RCSubscriberAttribute.m */; };
+		2D5033262406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033232406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h */; };
 		35095A6C2351461E00ADF0B2 /* RCIdentityManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 35095A6A2351461E00ADF0B2 /* RCIdentityManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35095A6D2351461E00ADF0B2 /* RCIdentityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 35095A6B2351461E00ADF0B2 /* RCIdentityManager.m */; };
 		350A1B87226F937F00CCA10F /* RCAttributionData.h in Headers */ = {isa = PBXBuildFile; fileRef = 350A1B86226F937F00CCA10F /* RCAttributionData.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -114,6 +117,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2D5033212406E4E8009CAE61 /* RCSubscriberAttribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCSubscriberAttribute.h; path = Purchases/SubscriberAttributes/RCSubscriberAttribute.h; sourceTree = SOURCE_ROOT; };
+		2D5033222406E4E8009CAE61 /* RCSubscriberAttribute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RCSubscriberAttribute.m; path = Purchases/SubscriberAttributes/RCSubscriberAttribute.m; sourceTree = SOURCE_ROOT; };
+		2D5033232406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCSpecialSubscriberAttributes.h; path = Purchases/SubscriberAttributes/RCSpecialSubscriberAttributes.h; sourceTree = SOURCE_ROOT; };
 		35095A6A2351461E00ADF0B2 /* RCIdentityManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCIdentityManager.h; sourceTree = "<group>"; };
 		35095A6B2351461E00ADF0B2 /* RCIdentityManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIdentityManager.m; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -221,6 +227,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2D5033202406E4C7009CAE61 /* SubscriberAttributes */ = {
+			isa = PBXGroup;
+			children = (
+				2D5033232406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h */,
+				2D5033212406E4E8009CAE61 /* RCSubscriberAttribute.h */,
+				2D5033222406E4E8009CAE61 /* RCSubscriberAttribute.m */,
+			);
+			path = SubscriberAttributes;
+			sourceTree = "<group>";
+		};
 		350FBDD61F7DF1640065833D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -233,6 +249,7 @@
 		350FBDE61F7EEEDF0065833D /* Public */ = {
 			isa = PBXGroup;
 			children = (
+				2D5033202406E4C7009CAE61 /* SubscriberAttributes */,
 				353AB5E5222F633D003754E6 /* RCPurchasesErrorUtils.h */,
 				352E88422229B1A60046A10A /* RCPurchasesErrorUtils.m */,
 				353AB5E3222F624E003754E6 /* RCPurchasesErrors.h */,
@@ -401,6 +418,7 @@
 				35B54E4822EA6F4E005918B1 /* RCEntitlementInfo.h in Headers */,
 				353AB5E4222F624E003754E6 /* RCPurchasesErrors.h in Headers */,
 				35846AFF226A56AE00CC9E56 /* RCPromotionalOffer+Protected.h in Headers */,
+				2D5033262406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h in Headers */,
 				3585D6A322E680E30079E2C5 /* RCPackage.h in Headers */,
 				353AB5E6222F633D003754E6 /* RCPurchasesErrorUtils.h in Headers */,
 				351F4FAB1F80190700F245F4 /* RCBackend.h in Headers */,
@@ -408,6 +426,7 @@
 				352C36BF1F9D372D00A15783 /* RCPurchaserInfo+Protected.h in Headers */,
 				35A3F73323172D9900559FF9 /* RCOfferings+Protected.h in Headers */,
 				35395CB421B9F59E00286D13 /* RCIntroEligibility+Protected.h in Headers */,
+				2D5033242406E4E8009CAE61 /* RCSubscriberAttribute.h in Headers */,
 				350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */,
 				35A60EAA1F82993E00D2FAE8 /* RCPurchases+Protected.h in Headers */,
 				354D50DF22E7D014009B870C /* RCOfferings.h in Headers */,
@@ -567,6 +586,7 @@
 				352E88442229B1A70046A10A /* RCPurchasesErrorUtils.m in Sources */,
 				359A0EA22003C8CD002D8C7F /* NSLocale+RCExtensions.m in Sources */,
 				351F4FB01F803D0700F245F4 /* RCPurchaserInfo.m in Sources */,
+				2D5033252406E4E8009CAE61 /* RCSubscriberAttribute.m in Sources */,
 				350FBDEA1F7EEF070065833D /* RCPurchases.m in Sources */,
 				35262A2D1F7D783F00C04F2C /* RCHTTPClient.m in Sources */,
 				350FBDF41F7FFD350065833D /* RCStoreKitWrapper.m in Sources */,
