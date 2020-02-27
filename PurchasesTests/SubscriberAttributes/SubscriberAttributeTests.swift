@@ -86,7 +86,6 @@ class SubscriberAttributeTests: XCTestCase {
 
         expect(receivedDictionary["value"] as? String) == value
         let updatedAtEpoch = (receivedDictionary["updated_at"] as! NSNumber).doubleValue
-        let updatedAtDate = Date(timeIntervalSince1970: updatedAtEpoch)
-        expect(updatedAtDate).to(beCloseTo(now))
+        expect(updatedAtEpoch) == now.timeIntervalSince1970
     }
 }
