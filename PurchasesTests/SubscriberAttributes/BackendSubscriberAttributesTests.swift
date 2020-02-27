@@ -15,8 +15,13 @@ class BackendSubscriberAttributesTests: XCTestCase {
     var dateProvider: MockDateProvider!
     var subscriberAttribute1: RCSubscriberAttribute!
     var subscriberAttribute2: RCSubscriberAttribute!
+    var mockHTTPClient: MockHTTPClient!
+    var backend: RCBackend!
 
     override func setUp() {
+        mockHTTPClient = MockHTTPClient(platformFlavor: "iPhone")
+        guard let backend = RCBackend(httpClient: mockHTTPClient, apiKey: "key") else { fatalError() }
+        self.backend = backend
         dateProvider = MockDateProvider(stubbedNow: now)
         subscriberAttribute1 = RCSubscriberAttribute(key: "a key",
                                                      value: "a value",
@@ -30,8 +35,6 @@ class BackendSubscriberAttributesTests: XCTestCase {
     }
 
     func testPostSubscriberAttributesSendsRightParameters() {
-        let mockHTTPClient = MockHTTPClient(platformFlavor: "iPhone")
-        guard let backend = RCBackend(httpClient: mockHTTPClient, apiKey: "key") else { fatalError() }
 
         backend.postSubscriberAttributes([
                                              subscriberAttribute1.key: subscriberAttribute1,
@@ -40,8 +43,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                          appUserID: appUserID,
                                          completion: { (error: Error!) in })
 
-        expect(mockHTTPClient.invokedPerformRequest) == true
-        expect(mockHTTPClient.invokedPerformRequestCount) == 1
+        expect(self.mockHTTPClient.invokedPerformRequest) == true
+        expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
 
         guard let receivedParameters = mockHTTPClient.invokedPerformRequestParameters else {
             fatalError("no parameters sent!")
@@ -68,14 +71,80 @@ class BackendSubscriberAttributesTests: XCTestCase {
     }
 
     func testPostSubscriberAttributesCallsCompletionInSuccessCase() {
+        var completionCallCount = 0
+        mockHTTPClient.shouldInvokeCompletion = true
+
+        backend.postSubscriberAttributes([
+                                             subscriberAttribute1.key: subscriberAttribute1,
+                                             subscriberAttribute2.key: subscriberAttribute2
+                                         ],
+                                         appUserID: appUserID,
+                                         completion: { (error: Error!) in
+                                             completionCallCount += 1
+                                         })
+
+        expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
+        expect(completionCallCount).toEventually(equal(1))
     }
 
     func testPostSubscriberAttributesCallsCompletionInNetworkErrorCase() {
+        var completionCallCount = 0
+        mockHTTPClient.shouldInvokeCompletion = true
+        let underlyingError = NSError(domain: "domain", code: 0, userInfo: nil)
+
+        mockHTTPClient.stubbedCompletionError = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
+
+        var receivedError: Error? = nil
+        backend.postSubscriberAttributes([
+                                             subscriberAttribute1.key: subscriberAttribute1,
+                                             subscriberAttribute2.key: subscriberAttribute2
+                                         ],
+                                         appUserID: appUserID,
+                                         completion: { (error: Error!) in
+                                             completionCallCount += 1
+                                             receivedError = error
+                                         })
+
+        expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
+        expect(completionCallCount).toEventually(equal(1))
+        expect(receivedError).toNot(beNil())
+        expect(receivedError).to(beAKindOf(Error.self))
+        expect((receivedError! as NSError).code) == Purchases.ErrorCode.networkError.rawValue
     }
 
-    func testPostSubscriberAttributesCallsCompletionInBackendErrorCase() {
+    func testPostSubscriberAttributesCallsCompletionWithErrorInBackendErrorCase() {
+        var completionCallCount = 0
+        mockHTTPClient.shouldInvokeCompletion = true
+        mockHTTPClient.stubbedCompletionStatusCode = 503
+        mockHTTPClient.stubbedCompletionError = nil
+
+        var receivedError: Error? = nil
+        backend.postSubscriberAttributes([
+                                             subscriberAttribute1.key: subscriberAttribute1,
+                                             subscriberAttribute2.key: subscriberAttribute2
+                                         ],
+                                         appUserID: appUserID,
+                                         completion: { (error: Error!) in
+                                             completionCallCount += 1
+                                             receivedError = error
+                                         })
+
+        expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
+        expect(completionCallCount).toEventually(equal(1))
+        expect(receivedError).toNot(beNil())
+        expect(receivedError).to(beAKindOf(Error.self))
+
+        let receivedNSError = receivedError! as NSError
+        expect(receivedNSError.code) == Purchases.ErrorCode.networkError.rawValue
     }
 
     func testPostSubscriberAttributesNoOpIfAttributesAreEmpty() {
+        var completionCallCount = 0
+        backend.postSubscriberAttributes([:],
+                                         appUserID: appUserID,
+                                         completion: { (error: Error!) in
+                                             completionCallCount += 1
+                                         })
+        expect(self.mockHTTPClient.invokedPerformRequestCount) == 0
     }
 }
