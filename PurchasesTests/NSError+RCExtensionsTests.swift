@@ -11,47 +11,47 @@ import Purchases
 
 class NSErrorRCExtensionsTests: XCTestCase {
 
-    func testDidBackendReceiveRequestCorrectlyFalseIfCodeIsNetworkError() {
+    func testShouldMarkSyncedKeyPresentFalseIfCodeIsNetworkError() {
         let errorCode = Purchases.ErrorCode.networkError.rawValue
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [:])
-        expect(error.didBackendReceiveRequestCorrectly()) == false
+        expect(error.shouldMarkSyncedKeyPresent()) == false
     }
 
-    func testDidBackendReceiveRequestCorrectlyFalseIfNotFinishable() {
+    func testShouldMarkSyncedKeyPresentFalseIfNotShouldMarkSynced() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [Purchases.FinishableKey: false])
-        expect(error.didBackendReceiveRequestCorrectly()) == false
+        let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [RCShouldMarkSyncedKey: false])
+        expect(error.shouldMarkSyncedKeyPresent()) == false
     }
 
-    func testDidBackendReceiveRequestCorrectlyFalseIfFinishableNotPresent() {
+    func testShouldMarkSyncedKeyPresentFalseIfShouldMarkSyncedNotPresent() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [:])
-        expect(error.didBackendReceiveRequestCorrectly()) == false
+        expect(error.shouldMarkSyncedKeyPresent()) == false
     }
 
-    func testDidBackendReceiveRequestCorrectlyTrueIfFinishable() {
+    func testShouldMarkSyncedKeyPresentTrueIfShouldMarkSynced() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [Purchases.FinishableKey: true])
-        expect(error.didBackendReceiveRequestCorrectly()) == true
+        let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [RCShouldMarkSyncedKey: true])
+        expect(error.shouldMarkSyncedKeyPresent()) == true
     }
 
-    func testDidBackendReceiveRequestCorrectlyTrueIfTrueForUnderlyingError() {
+    func testShouldMarkSyncedKeyPresentTrueIfTrueForUnderlyingError() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
         let underlyingError = NSError(domain: Purchases.ErrorDomain, code: errorCode,
-                                      userInfo: [Purchases.FinishableKey: true])
-        expect(underlyingError.didBackendReceiveRequestCorrectly()) == true
+                                      userInfo: [RCShouldMarkSyncedKey: true])
+        expect(underlyingError.shouldMarkSyncedKeyPresent()) == true
 
         let error = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
-        expect((error as NSError).didBackendReceiveRequestCorrectly()) == true
+        expect((error as NSError).shouldMarkSyncedKeyPresent()) == true
     }
 
-    func testDidBackendReceiveRequestCorrectlyFalseIfFalseForUnderlyingError() {
+    func testShouldMarkSyncedKeyPresentFalseIfFalseForUnderlyingError() {
         let errorCode = Purchases.ErrorCode.networkError.rawValue
         let underlyingError = NSError(domain: Purchases.ErrorDomain, code: errorCode,
-                                      userInfo: [Purchases.FinishableKey: true])
-        expect(underlyingError.didBackendReceiveRequestCorrectly()) == false
+                                      userInfo: [RCShouldMarkSyncedKey: true])
+        expect(underlyingError.shouldMarkSyncedKeyPresent()) == false
 
         let error = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
-        expect((error as NSError).didBackendReceiveRequestCorrectly()) == false
+        expect((error as NSError).shouldMarkSyncedKeyPresent()) == false
     }
 }

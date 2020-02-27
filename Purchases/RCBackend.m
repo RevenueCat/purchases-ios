@@ -13,11 +13,12 @@
 #import "RCIntroEligibility.h"
 #import "RCIntroEligibility+Protected.h"
 #import "RCPurchasesErrorUtils.h"
+#import "RCPurchasesErrorUtils+Protected.h"
 #import "RCUtils.h"
 #import "RCPromotionalOffer.h"
-#import "RCSubscriberAttribute.h"
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
+NSErrorUserInfoKey const RCShouldMarkSyncedKey = @"shouldMarkSynced";
 
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
@@ -94,8 +95,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
         BOOL finishable = (statusCode < 500);
         responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
                                                             backendMessage:response[@"message"]
-                                                                finishable:finishable
-                                                             ];
+                                                                finishable:finishable];
     }
 
     completion(info, responseError);
@@ -115,10 +115,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     NSError *responseError = nil;
 
     if (statusCode > 300) {
-        BOOL isInternalServerError = (statusCode >= 500);
         responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
-                                                            backendMessage:response[@"message"]
-                                                                finishable:!isInternalServerError];
+                                                            backendMessage:response[@"message"]];
     }
 
     if (errorHandler != nil) {
@@ -486,7 +484,10 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                }
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
-                      [self handle:status withResponse:response error:error errorHandler:completion];
+                      [self handleSubscriberAttributesResultWithStatusCode:status
+                                                                  response:response
+                                                                     error:error
+                                                                completion:completion];
                   }];
 
 }
@@ -497,6 +498,35 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         attributesByKey[key] = subscriberAttributes[key].asBackendDictionary;
     }
     return attributesByKey;
+}
+
+- (void)handleSubscriberAttributesResultWithStatusCode:(NSInteger)statusCode
+                                              response:(nullable NSDictionary *)response
+                                                 error:(nullable NSError *)error
+                                            completion:(void (^)(NSError *_Nullable error))completion {
+
+    if (completion == nil) {
+        return;
+    }
+
+    if (error != nil) {
+        completion([RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
+        return;
+    }
+
+    if (statusCode > 300) {
+        BOOL isInternalServerError = statusCode >= 500;
+        NSDictionary *extraUserInfo = @{
+            RCShouldMarkSyncedKey: @(!isInternalServerError)
+        };
+        NSError *responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
+                                                                     backendMessage:response[@"message"]
+                                                                      extraUserInfo:extraUserInfo];
+        completion(responseError);
+        return;
+    }
+
+    completion(nil);
 }
 
 @end

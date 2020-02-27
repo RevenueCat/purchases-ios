@@ -31,3 +31,5 @@
 #include <Purchases/RCSpecialSubscriberAttributes.h>
 #include <Purchases/RCDateProvider.h>
 #include <Purchases/NSError+RCExtensions.h>
+#include <Purchases/RCPurchasesErrorUtils.h>
+#include <Purchases/RCPurchasesErrorUtils+Protected.h>

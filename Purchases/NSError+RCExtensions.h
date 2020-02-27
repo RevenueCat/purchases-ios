@@ -10,7 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSError (RCExtensions)
 
-- (BOOL)didBackendReceiveRequestCorrectly;
+- (BOOL)shouldMarkSyncedKeyPresent;
 
 @end
 
