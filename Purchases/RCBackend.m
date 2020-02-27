@@ -472,7 +472,10 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)postSubscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
                        appUserID:(NSString *)appUserID
                       completion:(void (^)(NSError *))completion {
-
+    if (subscriberAttributes.count == 0) {
+        RCLog(@"called post subscriber attributes with an empty attributes dict!");
+        return;
+    }
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attributes", escapedAppUserID];
     NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributes];
