@@ -12,6 +12,8 @@ import Purchases
 class BackendSubscriberAttributesTests: XCTestCase {
     let appUserID = "abc123"
     let now = Date()
+    let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
+
     var dateProvider: MockDateProvider!
     var subscriberAttribute1: RCSubscriberAttribute!
     var subscriberAttribute2: RCSubscriberAttribute!
@@ -34,6 +36,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                                      dateProvider: dateProvider)
     }
 
+    // MARK: PostSubscriberAttributes
     func testPostSubscriberAttributesSendsRightParameters() {
 
         backend.postSubscriberAttributes([
@@ -146,5 +149,85 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                              completionCallCount += 1
                                          })
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 0
+    }
+
+    // MARK: PostReceipt with subscriberAttributes
+
+    func testPostReceiptWithSubscriberAttributesSendsThemCorrectly() {
+        var completionCallCount = 0
+
+        let subscriberAttributesByKey: [String: RCSubscriberAttribute] = [
+            subscriberAttribute1.key: subscriberAttribute1,
+            subscriberAttribute2.key: subscriberAttribute2
+        ]
+
+        backend.postReceiptData(receiptData,
+                                appUserID: appUserID,
+                                isRestore: false,
+                                productIdentifier: nil,
+                                price: nil,
+                                paymentMode: .none,
+                                introductoryPrice: nil,
+                                currencyCode: nil,
+                                subscriptionGroup: nil,
+                                discounts: nil,
+                                presentedOfferingIdentifier: nil,
+                                observerMode: false,
+                                subscriberAttributes: subscriberAttributesByKey,
+                                completion: { (purchaserInfo, error) in
+                                    completionCallCount += 1
+                                })
+
+        expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
+
+        guard let receivedParameters = mockHTTPClient.invokedPerformRequestParameters,
+            let requestBody = receivedParameters.requestBody else {
+            fatalError("parameters or request body missing!")
+        }
+
+        expect(requestBody["attributes"]).toNot(beNil())
+
+        let expectedBody: [String: NSObject] = [
+            subscriberAttribute1.key: [
+                "updated_at": subscriberAttribute1.setTime.timeIntervalSince1970,
+                "value": subscriberAttribute1.value
+            ] as NSObject,
+            subscriberAttribute2.key: [
+                "updated_at": subscriberAttribute2.setTime.timeIntervalSince1970,
+                "value": subscriberAttribute2.value
+            ] as NSObject
+        ]
+
+        expect(requestBody["attributes"] as? [String: NSObject]) == expectedBody
+    }
+
+    func testPostReceiptWithoutSubscriberAttributesSkipsThem() {
+        var completionCallCount = 0
+
+        backend.postReceiptData(receiptData,
+                                appUserID: appUserID,
+                                isRestore: false,
+                                productIdentifier: nil,
+                                price: nil,
+                                paymentMode: .none,
+                                introductoryPrice: nil,
+                                currencyCode: nil,
+                                subscriptionGroup: nil,
+                                discounts: nil,
+                                presentedOfferingIdentifier: nil,
+                                observerMode: false,
+                                subscriberAttributes: nil,
+                                completion: { (purchaserInfo, error) in
+                                    completionCallCount += 1
+                                })
+
+        expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
+
+        guard let receivedParameters = mockHTTPClient.invokedPerformRequestParameters,
+            let requestBody = receivedParameters.requestBody else {
+            fatalError("parameters or request body missing!")
+        }
+
+        expect(requestBody["attributes"]).to(beNil())
     }
 }
