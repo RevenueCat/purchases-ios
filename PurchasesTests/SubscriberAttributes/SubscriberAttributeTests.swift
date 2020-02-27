@@ -11,26 +11,17 @@ import Purchases
 
 class SubscriberAttributeTests: XCTestCase {
     func testInitWithKeyValueAppUserIDSetsRightValues() {
+        let now = Date()
+        let dateProvider = MockDateProvider(stubbedNow: now)
         let subscriberAttribute = RCSubscriberAttribute(key: "a key",
                                                         value: "a value",
-                                                        appUserID: "user id")
+                                                        appUserID: "user id",
+                                                        dateProvider: dateProvider)
         expect(subscriberAttribute.key) == "a key"
         expect(subscriberAttribute.value) == "a value"
         expect(subscriberAttribute.appUserID) == "user id"
-        expect(subscriberAttribute.setTime).to(beCloseTo(Date(), within: 0.5))
+        expect(subscriberAttribute.setTime) == now
         expect(subscriberAttribute.isSynced) == false
-
-        let setTime = Date()
-        let subscriberAttribute2 = RCSubscriberAttribute(key: "another key",
-                                                         value: "another value",
-                                                         appUserID: "user id2",
-                                                         isSynced: true,
-                                                         setTime: setTime)
-        expect(subscriberAttribute2.key) == "another key"
-        expect(subscriberAttribute2.value) == "another value"
-        expect(subscriberAttribute2.appUserID) == "user id2"
-        expect(subscriberAttribute2.setTime) == setTime
-        expect(subscriberAttribute2.isSynced) == true
     }
 
     func testInitWithDictionarySetsRightValues() {
@@ -60,9 +51,13 @@ class SubscriberAttributeTests: XCTestCase {
         let key = "some key"
         let value = "some value"
         let appUserID = "68asdfa4g3210"
+        let now = Date()
+        let dateProvider = MockDateProvider(stubbedNow: now)
+
         let subscriberAttribute = RCSubscriberAttribute(key: key,
                                                         value: value,
-                                                        appUserID: appUserID)
+                                                        appUserID: appUserID,
+                                                        dateProvider: dateProvider)
 
         let receivedDictionary = subscriberAttribute.asDictionary()
         expect(receivedDictionary.keys.count) == 5
@@ -70,7 +65,7 @@ class SubscriberAttributeTests: XCTestCase {
         expect(receivedDictionary["key"] as? String) == key
         expect(receivedDictionary["value"] as? String) == value
         expect(receivedDictionary["appUserID"] as? String) == appUserID
-        expect(receivedDictionary["setTime"] as! Date).to(beCloseTo(Date(), within: 0.5))
+        expect(receivedDictionary["setTime"] as! Date) == now
         expect((receivedDictionary["isSynced"] as! NSNumber).boolValue) == false
     }
 
@@ -78,9 +73,13 @@ class SubscriberAttributeTests: XCTestCase {
         let key = "some key"
         let value = "some value"
         let appUserID = "68asdfa4g3210"
+        let now = Date()
+        let dateProvider = MockDateProvider(stubbedNow: now)
+
         let subscriberAttribute = RCSubscriberAttribute(key: key,
                                                         value: value,
-                                                        appUserID: appUserID)
+                                                        appUserID: appUserID,
+                                                        dateProvider: dateProvider)
 
         let receivedDictionary = subscriberAttribute.asBackendDictionary()
         expect(receivedDictionary.keys.count) == 2
@@ -88,6 +87,6 @@ class SubscriberAttributeTests: XCTestCase {
         expect(receivedDictionary["value"] as? String) == value
         let updatedAtEpoch = (receivedDictionary["updated_at"] as! NSNumber).doubleValue
         let updatedAtDate = Date(timeIntervalSince1970: updatedAtEpoch)
-        expect(updatedAtDate).to(beCloseTo(Date(), within: 0.5))
+        expect(updatedAtDate) == now
     }
 }

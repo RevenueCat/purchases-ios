@@ -5,6 +5,7 @@
 
 #import <Foundation/Foundation.h>
 #import "RCSubscriberAttribute.h"
+#import "RCDateProvider.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,8 +38,7 @@ NS_ASSUME_NONNULL_END
     return [self initWithKey:key
                        value:value
                    appUserID:appUserID
-                    isSynced:NO
-                     setTime:[NSDate date]];
+                dateProvider:[[RCDateProvider alloc] init]];
 }
 
 - (instancetype)initWithKey:(NSString *)key
@@ -54,6 +54,17 @@ NS_ASSUME_NONNULL_END
         self.setTime = setTime;
     }
     return self;
+}
+
+- (instancetype)initWithKey:(NSString *)key
+                      value:(NSString *)value
+                  appUserID:(NSString *)appUserID
+               dateProvider:(RCDateProvider *)dateProvider {
+    return [self initWithKey:key
+                       value:value
+                   appUserID:appUserID
+                    isSynced:NO
+                     setTime:dateProvider.now];
 }
 
 - (instancetype)initWithDictionary:(NSDictionary <NSString *, NSObject *> *)dict {

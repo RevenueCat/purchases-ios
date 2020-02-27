@@ -8,6 +8,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class RCDateProvider;
+
 @interface RCSubscriberAttribute (Protected)
 
 - (instancetype)initWithKey:(NSString *)key
@@ -16,6 +18,12 @@ NS_ASSUME_NONNULL_BEGIN
                    isSynced:(BOOL)isSynced
                     setTime:(NSDate *)setTime;
 
+- (instancetype)initWithKey:(NSString *)key
+                      value:(NSString *)value
+                  appUserID:(NSString *)appUserID
+               dateProvider:(RCDateProvider *)dateProvider;
+
 @end
+
 
 NS_ASSUME_NONNULL_END

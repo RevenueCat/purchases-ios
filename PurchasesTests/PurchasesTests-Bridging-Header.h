@@ -29,3 +29,4 @@
 #include <Purchases/RCSubscriberAttribute.h>
 #include <Purchases/RCSubscriberAttribute+Protected.h>
 #include <Purchases/RCSpecialSubscriberAttributes.h>
+#include <Purchases/RCDateProvider.h>
