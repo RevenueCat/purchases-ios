@@ -92,6 +92,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 - (void)postSubscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
                        appUserID:(NSString *)appUserID
                       completion:(void (^)(NSError *))completion;
+
+extern NSErrorUserInfoKey const RCShouldMarkSyncedKey;
+
 @end
 
 NS_ASSUME_NONNULL_END

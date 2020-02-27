@@ -5,25 +5,26 @@
 
 #import "NSError+RCExtensions.h"
 #import "RCPurchasesErrors.h"
+#import "RCBackend.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 
 @implementation NSError (RCExtensions)
 
-- (BOOL)didBackendReceiveRequestCorrectly {
+- (BOOL)shouldMarkSyncedKeyPresent {
     BOOL isNetworkError = self.code == RCNetworkError;
-    BOOL didBackendReceiveRequest = (
+    BOOL shouldMarkSynced = (
         !isNetworkError
-        && self.userInfo[RCFinishableKey] != nil
-        && ((NSNumber *) self.userInfo[RCFinishableKey]).boolValue
+        && self.userInfo[RCShouldMarkSyncedKey] != nil
+        && ((NSNumber *) self.userInfo[RCShouldMarkSyncedKey]).boolValue
     );
-    if (didBackendReceiveRequest) {
+    if (shouldMarkSynced) {
         return YES;
     } else if (self.userInfo[NSUnderlyingErrorKey]) {
         NSError *underlyingError = (NSError *) self.userInfo[NSUnderlyingErrorKey];
         if (underlyingError) {
-            return underlyingError.didBackendReceiveRequestCorrectly;
+            return underlyingError.shouldMarkSyncedKeyPresent;
         }
     }
 
