@@ -138,7 +138,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         expect(receivedError).to(beAKindOf(Error.self))
 
         let receivedNSError = receivedError! as NSError
-        expect(receivedNSError.code) == Purchases.ErrorCode.networkError.rawValue
+        expect(receivedNSError.code) == Purchases.ErrorCode.unknownBackendError.rawValue
     }
 
     func testPostSubscriberAttributesNoOpIfAttributesAreEmpty() {
