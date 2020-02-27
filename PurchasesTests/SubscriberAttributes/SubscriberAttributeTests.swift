@@ -57,6 +57,7 @@ class SubscriberAttributeTests: XCTestCase {
 
         expect(receivedDictionary["key"] as? String) == key
         expect(receivedDictionary["value"] as? String) == value
+        expect(receivedDictionary["setTime"] as? Date) == now
         expect((receivedDictionary["isSynced"] as! NSNumber).boolValue) == false
     }
 
