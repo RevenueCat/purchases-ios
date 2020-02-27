@@ -10,6 +10,7 @@ import Nimble
 import Purchases
 
 class NSErrorRCExtensionsTests: XCTestCase {
+
     func testDidBackendReceiveRequestCorrectlyFalseIfCodeIsNetworkError() {
         let errorCode = Purchases.ErrorCode.networkError.rawValue
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [:])
