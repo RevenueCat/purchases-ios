@@ -339,4 +339,96 @@ class DeviceCacheTests: XCTestCase {
     func testSubscriberAttributeWithKeyReturnsNilIfNotFound() {
         expect(self.deviceCache.subscriberAttribute(withKey: "doesn't exist", appUserID: "whoever")).to(beNil())
     }
+
+    func testUnsyncedAttributesByKeyReturnsEmptyIfNoneStored() {
+        expect(self.deviceCache.unsyncedAttributesByKey(forAppUserID: "waldo")).to(beEmpty())
+    }
+
+    func testUnsyncedAttributesByKeyReturnsEmptyIfNoneUnsynced() {
+        subscriberAttributeHeight.isSynced = true
+        self.deviceCache.store(subscriberAttributeHeight)
+        expect(self.deviceCache.unsyncedAttributesByKey(forAppUserID: "waldo")).to(beEmpty())
+    }
+
+    func testUnsyncedAttributesByKeyReturnsCorrectlyWhenFound() {
+        let subscriberAttribute1 = RCSubscriberAttribute(key: "height",
+                                                         value: "460",
+                                                         appUserID: "waldo",
+                                                         isSynced: true,
+                                                         setTime: now)
+
+        let subscriberAttribute2 = RCSubscriberAttribute(key: "weight",
+                                                         value: "120",
+                                                         appUserID: "waldo",
+                                                         isSynced: false,
+                                                         setTime: now)
+
+        let subscriberAttribute3 = RCSubscriberAttribute(key: "age",
+                                                         value: "66",
+                                                         appUserID: "waldo",
+                                                         isSynced: false,
+                                                         setTime: now)
+        let subscriberAttribute4 = RCSubscriberAttribute(key: "device",
+                                                         value: "iPhone",
+                                                         appUserID: "waldo",
+                                                         isSynced: true,
+                                                         setTime: now)
+
+        self.deviceCache.storeSubscriberAttributes([
+                                                       subscriberAttribute1.key: subscriberAttribute1,
+                                                       subscriberAttribute2.key: subscriberAttribute2,
+                                                       subscriberAttribute3.key: subscriberAttribute3,
+                                                       subscriberAttribute4.key: subscriberAttribute4
+                                                   ],
+                                                   appUserID: "waldo")
+        let receivedUnsyncedAttributes = self.deviceCache.unsyncedAttributesByKey(forAppUserID: "waldo")
+        expect(receivedUnsyncedAttributes).toNot(beEmpty())
+        expect(receivedUnsyncedAttributes.count) == 2
+        expect(receivedUnsyncedAttributes[subscriberAttribute2.key]).to(equal(subscriberAttribute2))
+        expect(receivedUnsyncedAttributes[subscriberAttribute3.key]).to(equal(subscriberAttribute3))
+    }
+
+    func testNumberOfUnsyncedAttributesReturnsEmptyIfNoneStored() {
+        expect(self.deviceCache.numberOfUnsyncedAttributes(forAppUserID: "waldo")) == 0
+    }
+
+    func testNumberOfUnsyncedAttributesReturnsEmptyIfNoneUnsynced() {
+        subscriberAttributeHeight.isSynced = true
+        self.deviceCache.store(subscriberAttributeHeight)
+        expect(self.deviceCache.numberOfUnsyncedAttributes(forAppUserID: "waldo")) == 0
+    }
+
+    func testNumberOfUnsyncedAttributesReturnsCorrectlyWhenFound() {
+        let subscriberAttribute1 = RCSubscriberAttribute(key: "height",
+                                                         value: "460",
+                                                         appUserID: "waldo",
+                                                         isSynced: true,
+                                                         setTime: now)
+
+        let subscriberAttribute2 = RCSubscriberAttribute(key: "weight",
+                                                         value: "120",
+                                                         appUserID: "waldo",
+                                                         isSynced: false,
+                                                         setTime: now)
+
+        let subscriberAttribute3 = RCSubscriberAttribute(key: "age",
+                                                         value: "66",
+                                                         appUserID: "waldo",
+                                                         isSynced: false,
+                                                         setTime: now)
+        let subscriberAttribute4 = RCSubscriberAttribute(key: "device",
+                                                         value: "iPhone",
+                                                         appUserID: "waldo",
+                                                         isSynced: true,
+                                                         setTime: now)
+
+        self.deviceCache.storeSubscriberAttributes([
+                                                       subscriberAttribute1.key: subscriberAttribute1,
+                                                       subscriberAttribute2.key: subscriberAttribute2,
+                                                       subscriberAttribute3.key: subscriberAttribute3,
+                                                       subscriberAttribute4.key: subscriberAttribute4
+                                                   ],
+                                                   appUserID: "waldo")
+        expect(self.deviceCache.numberOfUnsyncedAttributes(forAppUserID: "waldo")) == 2
+    }
 }
