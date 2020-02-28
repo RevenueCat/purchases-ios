@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)storeSubscriberAttribute:(RCSubscriberAttribute *)attribute;
 - (void)storeSubscriberAttributes:(RCSubscriberAttributeDict)attributesByKey
                         appUserID:(NSString *)appUserID;
-- (RCSubscriberAttribute *)subscriberAttributeWithKey:(NSString *)attributeKey appUserID:(NSString *)appUserID;
+- (nullable RCSubscriberAttribute *)subscriberAttributeWithKey:(NSString *)attributeKey appUserID:(NSString *)appUserID;
 - (RCSubscriberAttributeDict)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID;
 - (NSUInteger)numberOfUnsyncedAttributesForAppUserID:(NSString *)appUserID;
 - (void)clearSubscriberAttributesForAppUserID:(NSString *)appUserID;
