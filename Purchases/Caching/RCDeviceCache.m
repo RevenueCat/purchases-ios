@@ -211,13 +211,6 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
     return [self unsyncedAttributesByKeyForAppUserID:appUserID].count;
 }
 
-- (void)clearSubscriberAttributesForAppUserID:(NSString *)appUserID {
-    @synchronized (self) {
-        NSString *cacheKey = [self subscriberAttributesCacheKeyForAppUserID:appUserID];
-        [self.userDefaults removeObjectForKey:cacheKey];
-    }
-}
-
 - (NSString *)subscriberAttributesCacheKeyForAppUserID:(NSString *)appUserID {
     NSString *attributeKey = [NSString stringWithFormat:@"%@", appUserID];
     return [RCSubscriberAttributesKeyBase stringByAppendingString:attributeKey];
