@@ -92,16 +92,20 @@ NS_ASSUME_NONNULL_BEGIN
     if (syncedAttributes == nil || syncedAttributes.count == 0) {
         return;
     }
-    RCSubscriberAttributeMutableDict unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID].mutableCopy;
 
-    for (NSString *key in syncedAttributes) {
-        RCSubscriberAttribute *attribute = [unsyncedAttributes valueForKey:key];
-        if (attribute != nil && [attribute.value isEqualToString:syncedAttributes[key].value]) {
-            attribute.isSynced = YES;
-            unsyncedAttributes[key] = attribute;
+    @synchronized (self) {
+        RCSubscriberAttributeMutableDict
+            unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID].mutableCopy;
+
+        for (NSString *key in syncedAttributes) {
+            RCSubscriberAttribute *attribute = [unsyncedAttributes valueForKey:key];
+            if (attribute != nil && [attribute.value isEqualToString:syncedAttributes[key].value]) {
+                attribute.isSynced = YES;
+                unsyncedAttributes[key] = attribute;
+            }
         }
+        [self.deviceCache storeSubscriberAttributes:unsyncedAttributes appUserID:appUserID];
     }
-    [self.deviceCache storeSubscriberAttributes:unsyncedAttributes appUserID:appUserID];
 }
 
 - (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
