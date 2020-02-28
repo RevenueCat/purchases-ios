@@ -25,6 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSDictionary <NSString *, NSObject *> *)asBackendDictionary;
 
+- (BOOL)isEqual:(RCSubscriberAttribute *)attribute;
+
 @end
 
 typedef NSMutableDictionary<NSString *, RCSubscriberAttribute *> *RCSubscriberAttributeMutableDict;
