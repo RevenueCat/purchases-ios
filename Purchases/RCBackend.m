@@ -469,7 +469,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)postSubscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
                        appUserID:(NSString *)appUserID
-                      completion:(void (^)(NSError *))completion {
+                      completion:(nullable void (^)(NSError *_Nullable error))completion {
     if (subscriberAttributes.count == 0) {
         RCLog(@"called post subscriber attributes with an empty attributes dict!");
         return;
