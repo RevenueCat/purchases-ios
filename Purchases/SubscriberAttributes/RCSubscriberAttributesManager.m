@@ -68,10 +68,6 @@ NS_ASSUME_NONNULL_BEGIN
     return [self.deviceCache unsyncedAttributesByKeyForAppUserID:appUserID];
 }
 
-- (void)clearAttributesForAppUserID:(NSString *)appUserID {
-    [self.deviceCache clearSubscriberAttributesForAppUserID:appUserID];
-}
-
 #pragma MARK - Private methods
 
 - (void)setAttributeWithKey:(nullable NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
