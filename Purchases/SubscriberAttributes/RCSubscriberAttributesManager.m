@@ -110,21 +110,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
     NSString *valueOrEmpty = value ?: @"";
-    if (![[self currentValueForAttributeWithKey:key appUserID:appUserID] isEqualToString:valueOrEmpty]) {
+    NSString * _Nullable currentValue = [self currentValueForAttributeWithKey:key appUserID:appUserID];
+    if (!currentValue || ![currentValue isEqualToString:valueOrEmpty]) {
         [self storeAttributeLocallyWithKey:key value:value appUserID:appUserID];
     }
 }
 
 - (void)storeAttributeLocallyWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
-    if ([self currentValueForAttributeWithKey:key appUserID:appUserID] != value) {
-        RCSubscriberAttribute *subscriberAttribute = [[RCSubscriberAttribute alloc] initWithKey:key
-                                                                                          value:value
-                                                                                      appUserID:appUserID];
-        [self.deviceCache storeSubscriberAttribute:subscriberAttribute];
-    }
+    RCSubscriberAttribute *subscriberAttribute = [[RCSubscriberAttribute alloc] initWithKey:key
+                                                                                      value:value
+                                                                                  appUserID:appUserID];
+    [self.deviceCache storeSubscriberAttribute:subscriberAttribute];
 }
 
-- (NSString *)currentValueForAttributeWithKey:(NSString *)key appUserID:(NSString *)appUserID {
+- (nullable NSString *)currentValueForAttributeWithKey:(NSString *)key appUserID:(NSString *)appUserID {
     RCSubscriberAttribute *attribute = [self.deviceCache subscriberAttributeWithKey:key appUserID:appUserID];
     return attribute.value;
 }
