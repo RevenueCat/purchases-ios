@@ -89,6 +89,7 @@
 		37E351A24D613F0DFE6AF05F /* MockBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35645928A0009F4C105A7 /* MockBackend.swift */; };
 		37E351AB03EE37534CA10B59 /* MockInMemoryCachedOfferings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C5A65AAF701DED59800 /* MockInMemoryCachedOfferings.swift */; };
 		37E351E3AC0B5F67305B4CB6 /* DeviceCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35D87B7E6F91E27E98F42 /* DeviceCacheTests.swift */; };
+		37E3524628A1D7568679FEE2 /* SusbcriberAttributesManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3567E972B9B04FE079ABA /* SusbcriberAttributesManagerTests.swift */; };
 		37E3526C938D7B291671BE8A /* RCInMemoryCachedObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E359893D3371FC3497D957 /* RCInMemoryCachedObject.m */; };
 		37E352F190E0E957E8D932F8 /* RCDeviceCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3524E3032ABC72467AA43 /* RCDeviceCache.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E352F9B7505A398D578F53 /* RCDeviceCache+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3555AC54BD10BE56F2B6B /* RCDeviceCache+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -223,6 +224,7 @@
 		37E3555AC54BD10BE56F2B6B /* RCDeviceCache+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCDeviceCache+Protected.h"; sourceTree = "<group>"; };
 		37E35642B1AD2A45A7152CD5 /* RCDateProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCDateProvider.m; sourceTree = "<group>"; };
 		37E35645928A0009F4C105A7 /* MockBackend.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockBackend.swift; sourceTree = "<group>"; };
+		37E3567E972B9B04FE079ABA /* SusbcriberAttributesManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SusbcriberAttributesManagerTests.swift; sourceTree = "<group>"; };
 		37E356820F0AD560FA23F3BF /* RCDeviceCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCDeviceCache.m; sourceTree = "<group>"; };
 		37E356CA7C7188A8B6E2811A /* NSDate+RCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+RCExtensions.h"; sourceTree = "<group>"; };
 		37E3578BD602C7B8E2274279 /* MockDateProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockDateProvider.swift; sourceTree = "<group>"; };
@@ -469,6 +471,7 @@
 			children = (
 				2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */,
 				37E357F69438004E1F443C03 /* BackendSubscriberAttributesTests.swift */,
+				37E3567E972B9B04FE079ABA /* SusbcriberAttributesManagerTests.swift */,
 			);
 			path = SubscriberAttributes;
 			sourceTree = "<group>";
@@ -711,6 +714,7 @@
 				37E354C46A8A3C2DC861C224 /* MockHTTPClient.swift in Sources */,
 				37E3591A10D3219021886E0C /* NSDate+RCExtensionsTests.swift in Sources */,
 				37E351A24D613F0DFE6AF05F /* MockBackend.swift in Sources */,
+				37E3524628A1D7568679FEE2 /* SusbcriberAttributesManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
