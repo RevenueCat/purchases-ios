@@ -93,4 +93,75 @@ class MockDeviceCache: RCDeviceCache {
     override func setOfferingsCacheTimestampToNow() {
         setOfferingsCacheTimestampToNowCount += 1
     }
+
+    // MARK: SubscriberAttributes
+
+    var invokedStore = false
+    var invokedStoreCount = 0
+    var invokedStoreParameters: (attribute: RCSubscriberAttribute, Void)?
+    var invokedStoreParametersList = [(attribute: RCSubscriberAttribute, Void)]()
+
+    override func store(_ attribute: RCSubscriberAttribute) {
+        invokedStore = true
+        invokedStoreCount += 1
+        invokedStoreParameters = (attribute, ())
+        invokedStoreParametersList.append((attribute, ()))
+    }
+
+    var invokedStoreSubscriberAttributes = false
+    var invokedStoreSubscriberAttributesCount = 0
+    var invokedStoreSubscriberAttributesParameters: (attributesByKey: [String: RCSubscriberAttribute], appUserID: String)?
+    var invokedStoreSubscriberAttributesParametersList = [(attributesByKey: [String: RCSubscriberAttribute],
+        appUserID: String)]()
+
+    override func storeSubscriberAttributes(_ attributesByKey: [String: RCSubscriberAttribute],
+                                            appUserID: String) {
+        invokedStoreSubscriberAttributes = true
+        invokedStoreSubscriberAttributesCount += 1
+        invokedStoreSubscriberAttributesParameters = (attributesByKey, appUserID)
+        invokedStoreSubscriberAttributesParametersList.append((attributesByKey, appUserID))
+    }
+
+    var invokedSubscriberAttribute = false
+    var invokedSubscriberAttributeCount = 0
+    var invokedSubscriberAttributeParameters: (attributeKey: String, appUserID: String)?
+    var invokedSubscriberAttributeParametersList = [(attributeKey: String, appUserID: String)]()
+    var stubbedSubscriberAttributeResult: RCSubscriberAttribute!
+
+    override func subscriberAttribute(withKey attributeKey: String,
+                                      appUserID: String) -> RCSubscriberAttribute? {
+        invokedSubscriberAttribute = true
+        invokedSubscriberAttributeCount += 1
+        invokedSubscriberAttributeParameters = (attributeKey, appUserID)
+        invokedSubscriberAttributeParametersList.append((attributeKey, appUserID))
+        return stubbedSubscriberAttributeResult
+    }
+
+    var invokedUnsyncedAttributesByKey = false
+    var invokedUnsyncedAttributesByKeyCount = 0
+    var invokedUnsyncedAttributesByKeyParameters: (appUserID: String, Void)?
+    var invokedUnsyncedAttributesByKeyParametersList = [(appUserID: String, Void)]()
+    var stubbedUnsyncedAttributesByKeyResult: [String: RCSubscriberAttribute]! = [:]
+
+    override func unsyncedAttributesByKey(forAppUserID appUserID: String) -> [String: RCSubscriberAttribute] {
+        invokedUnsyncedAttributesByKey = true
+        invokedUnsyncedAttributesByKeyCount += 1
+        invokedUnsyncedAttributesByKeyParameters = (appUserID, ())
+        invokedUnsyncedAttributesByKeyParametersList.append((appUserID, ()))
+        return stubbedUnsyncedAttributesByKeyResult
+    }
+
+    var invokedNumberOfUnsyncedAttributes = false
+    var invokedNumberOfUnsyncedAttributesCount = 0
+    var invokedNumberOfUnsyncedAttributesParameters: (appUserID: String, Void)?
+    var invokedNumberOfUnsyncedAttributesParametersList = [(appUserID: String, Void)]()
+    var stubbedNumberOfUnsyncedAttributesResult: UInt! = 0
+
+    override func numberOfUnsyncedAttributes(forAppUserID appUserID: String) -> UInt {
+        invokedNumberOfUnsyncedAttributes = true
+        invokedNumberOfUnsyncedAttributesCount += 1
+        invokedNumberOfUnsyncedAttributesParameters = (appUserID, ())
+        invokedNumberOfUnsyncedAttributesParametersList.append((appUserID, ()))
+        return stubbedNumberOfUnsyncedAttributesResult
+    }
 }
