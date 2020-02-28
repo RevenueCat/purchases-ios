@@ -261,6 +261,13 @@ class DeviceCacheTests: XCTestCase {
             subscriberAttributeWeight.asDictionary() as NSDictionary
     }
 
+    func testStoreSubscriberAttributesNoOpIfAttributesDictIsEmpty() {
+        self.deviceCache.storeSubscriberAttributes([:], appUserID: "waldo")
+
+        expect(self.mockUserDefaults.setObjectForKeyCalledValue).to(beNil())
+        expect(self.mockUserDefaults.mockValues.count) == 0
+    }
+
     func testStoreSubscriberAttributesDoesNotModifyExistingValuesWithDifferentKeys() {
         let otherSubscriberAttribute = RCSubscriberAttribute(key: "age",
                                                              value: "46",
