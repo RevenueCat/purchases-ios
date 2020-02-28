@@ -258,7 +258,7 @@ class DeviceCacheTests: XCTestCase {
         expect(storedDict[self.subscriberAttributeHeight.key] as? NSDictionary) ==
             subscriberAttributeHeight.asDictionary() as NSDictionary
         expect(storedDict[self.subscriberAttributeWeight.key] as? NSDictionary) ==
-            subscriberAttributeHeight.asDictionary() as NSDictionary
+            subscriberAttributeWeight.asDictionary() as NSDictionary
     }
 
     func testStoreSubscriberAttributesDoesNotModifyExistingValuesWithDifferentKeys() {
@@ -283,10 +283,10 @@ class DeviceCacheTests: XCTestCase {
         expect(storedDict[self.subscriberAttributeHeight.key] as? NSDictionary) ==
             subscriberAttributeHeight.asDictionary() as NSDictionary
         expect(storedDict[self.subscriberAttributeWeight.key] as? NSDictionary) ==
-            subscriberAttributeHeight.asDictionary() as NSDictionary
+            subscriberAttributeWeight.asDictionary() as NSDictionary
 
         expect(storedDict[otherSubscriberAttribute.key] as? NSDictionary) ==
-            subscriberAttributeHeight.asDictionary() as NSDictionary
+            otherSubscriberAttribute.asDictionary() as NSDictionary
     }
 
     func testStoreSubscriberAttributesUpdatesExistingValue() {
@@ -316,5 +316,20 @@ class DeviceCacheTests: XCTestCase {
 
         expect(storedDict[self.subscriberAttributeWeight.key] as? NSDictionary) ==
             subscriberAttributeWeight.asDictionary() as NSDictionary
+    }
+
+    func testSubscriberAttributeWithKeyReturnsCorrectly() {
+        self.deviceCache.store(subscriberAttributeHeight)
+
+        let storedAttribute = self.deviceCache.subscriberAttribute(withKey: subscriberAttributeHeight.key,
+                                                                   appUserID: subscriberAttributeHeight.appUserID)
+
+        expect(storedAttribute).toNot(beNil())
+
+        expect(storedAttribute).to(equal(subscriberAttributeHeight))
+    }
+
+    func testSubscriberAttributeWithKeyReturnsNilIfNotFound() {
+        expect(self.deviceCache.subscriberAttribute(withKey: "doesn't exist", appUserID: "whoever")).to(beNil())
     }
 }
