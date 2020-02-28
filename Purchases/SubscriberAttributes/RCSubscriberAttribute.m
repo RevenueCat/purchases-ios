@@ -89,4 +89,22 @@ NS_ASSUME_NONNULL_END
                                       self.key, self.value, self.setTime];
 }
 
+- (BOOL)isEqual:(RCSubscriberAttribute *)attribute {
+    if (self == attribute)
+        return YES;
+    if (attribute == nil)
+        return NO;
+    if (self.key != attribute.key)
+        return NO;
+    if (self.value != attribute.value)
+        return NO;
+    if (self.appUserID != attribute.appUserID)
+        return NO;
+    if (self.setTime != attribute.setTime && ![self.setTime isEqualToDate:attribute.setTime])
+        return NO;
+    if (self.isSynced != attribute.isSynced)
+        return NO;
+    return YES;
+}
+
 @end
