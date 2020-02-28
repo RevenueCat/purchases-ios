@@ -144,6 +144,10 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
 
 - (void)storeSubscriberAttributes:(RCSubscriberAttributeDict)attributesByKey
                         appUserID:(NSString *)appUserID {
+    if (attributesByKey.count == 0) {
+        return;
+    }
+
     @synchronized (self) {
         NSString *cacheKey = [self subscriberAttributesCacheKeyForAppUserID:appUserID];
         NSDictionary <NSString *, NSObject *>
