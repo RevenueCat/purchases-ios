@@ -34,12 +34,14 @@ class DeviceCacheTests: XCTestCase {
     func testCacheUserIDUsesRightKey() {
         let userID = "cesar"
         self.deviceCache.cacheAppUserID(userID)
-        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] as? String).to(equal(userID))
+        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] as? String)
+            .to(equal(userID))
     }
 
     func testClearCachesRemovesCachedPurchaserInfo() {
         self.deviceCache.clearCaches(forAppUserID: "cesar")
-        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.purchaserInfo.cesar")).to(beTrue())
+        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.purchaserInfo.cesar"))
+            .to(beTrue())
     }
 
     func testClearCachesRemovesCachedOfferings() {
@@ -58,8 +60,16 @@ class DeviceCacheTests: XCTestCase {
 
     func testClearCachesRemovesCachedAppUserIDs() {
         self.deviceCache.clearCaches(forAppUserID: "cesar")
-        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.appUserID.new")).to(beTrue())
-        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.appUserID")).to(beTrue())
+        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.appUserID.new"))
+            .to(beTrue())
+        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.appUserID"))
+            .to(beTrue())
+    }
+
+    func testClearCachesRemovesCachedSubscriberAttributes() {
+        self.deviceCache.clearCaches(forAppUserID: "andy")
+        let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes.andy"
+        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains(attributesKey)).to(beTrue())
     }
 
     func testSetPurchaserInfoCacheTimestampToNow() {
@@ -110,9 +120,11 @@ class DeviceCacheTests: XCTestCase {
     func testPurchaserInfoIsProperlyCached() {
         let data = Data()
         self.deviceCache.cachePurchaserInfo(data, forAppUserID: "cesar")
-        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfo.cesar"] as? Data).to(equal(data))
+        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfo.cesar"] as? Data)
+            .to(equal(data))
         expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: "cesar")).to(equal(data))
-        expect(self.mockUserDefaults.setObjectForKeyCalledValue).to(equal("com.revenuecat.userdefaults.purchaserInfo.cesar"))
+        expect(self.mockUserDefaults.setObjectForKeyCalledValue)
+            .to(equal("com.revenuecat.userdefaults.purchaserInfo.cesar"))
     }
 
     func testOfferingsAreProperlyCached() {
@@ -139,5 +151,93 @@ class DeviceCacheTests: XCTestCase {
         self.deviceCache.cacheOfferings(expectedOfferings)
 
         expect(self.deviceCache.cachedOfferings).to(beIdenticalTo(expectedOfferings))
+    }
+
+    // MARK: Subscriber Attributes
+
+    func testStoreSubscriberAttributeStoresCorrectly() {
+        let now = Date()
+        let dateProvider = MockDateProvider(stubbedNow: now)
+        let subscriberAttribute = RCSubscriberAttribute(key: "height",
+                                                        value: "183",
+                                                        appUserID: "waldo",
+                                                        dateProvider: dateProvider)
+
+        self.deviceCache.store(subscriberAttribute)
+
+        let expectedStoreKey = "com.revenuecat.userdefaults.subscriberAttributes.waldo"
+        expect(self.mockUserDefaults.setObjectForKeyCalledValue) == expectedStoreKey
+        expect(self.mockUserDefaults.mockValues.count) == 1
+
+        guard let storedValue = self.mockUserDefaults.mockValues[expectedStoreKey],
+            let storedDict = storedValue as? NSDictionary else {
+            fatalError("didn't actually store the value or it wasn't a dictionary")
+        }
+        expect(storedDict[subscriberAttribute.key] as? NSDictionary) ==
+            subscriberAttribute.asDictionary() as NSDictionary
+    }
+
+    func testStoreSubscriberAttributeDoesNotModifyExistingValuesWithDifferentKeys() {
+        let now = Date()
+        let dateProvider = MockDateProvider(stubbedNow: now)
+        let subscriberAttributeHeight = RCSubscriberAttribute(key: "height",
+                                                              value: "183",
+                                                              appUserID: "waldo",
+                                                              dateProvider: dateProvider)
+        self.deviceCache.store(subscriberAttributeHeight)
+
+        expect(self.mockUserDefaults.mockValues.count) == 1
+
+        let subscriberAttributeWeight = RCSubscriberAttribute(key: "weight",
+                                                              value: "160",
+                                                              appUserID: "waldo",
+                                                              dateProvider: dateProvider)
+        self.deviceCache.store(subscriberAttributeWeight)
+        expect(self.mockUserDefaults.mockValues.count) == 1
+
+        let expectedStoreKey = "com.revenuecat.userdefaults.subscriberAttributes.waldo"
+        expect(self.mockUserDefaults.setObjectForKeyCalledValue) == expectedStoreKey
+
+        guard let storedValue = self.mockUserDefaults.mockValues[expectedStoreKey],
+            let storedDict = storedValue as? NSDictionary else {
+            fatalError("didn't actually store the value or it wasn't a dictionary")
+        }
+        expect(storedDict[subscriberAttributeWeight.key] as? NSDictionary) ==
+            subscriberAttributeWeight.asDictionary() as NSDictionary
+
+        expect(storedDict[subscriberAttributeHeight.key] as? NSDictionary) ==
+            subscriberAttributeHeight.asDictionary() as NSDictionary
+    }
+
+    func testStoreSubscriberAttributeUpdatesExistingValue() {
+        let now = Date()
+        let dateProvider = MockDateProvider(stubbedNow: now)
+        let oldSubscriberAttribute = RCSubscriberAttribute(key: "height",
+                                                           value: "183",
+                                                           appUserID: "waldo",
+                                                           dateProvider: dateProvider)
+        self.deviceCache.store(oldSubscriberAttribute)
+
+        let newSubscriberAttribute = RCSubscriberAttribute(key: "height",
+                                                           value: "250",
+                                                           appUserID: "waldo",
+                                                           dateProvider: dateProvider)
+        self.deviceCache.store(newSubscriberAttribute)
+
+        let expectedStoreKey = "com.revenuecat.userdefaults.subscriberAttributes.waldo"
+        expect(self.mockUserDefaults.setObjectForKeyCalledValue) == expectedStoreKey
+
+        guard let storedValue = self.mockUserDefaults.mockValues[expectedStoreKey],
+            let storedDict = storedValue as? NSDictionary else {
+            fatalError("didn't actually store the value or it wasn't a dictionary")
+        }
+
+        expect(self.mockUserDefaults.mockValues.count) == 1
+
+        expect(storedDict[newSubscriberAttribute.key] as? NSDictionary) ==
+            newSubscriberAttribute.asDictionary() as NSDictionary
+
+        expect(storedDict[oldSubscriberAttribute.key] as? NSDictionary) ==
+            newSubscriberAttribute.asDictionary() as NSDictionary
     }
 }
