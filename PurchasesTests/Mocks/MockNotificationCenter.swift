@@ -5,7 +5,7 @@
 
 class MockNotificationCenter: NotificationCenter {
 
-    var observers = [(AnyObject, Selector, NSNotification.Name?, Any?)]();
+    var observers = [(observer: AnyObject, selector: Selector, notificationName: NSNotification.Name?, object: Any?)]()
 
     override func addObserver(_ observer: Any, selector
     aSelector: Selector, name aName: NSNotification.Name?, object anObject: Any?) {
@@ -20,7 +20,7 @@ class MockNotificationCenter: NotificationCenter {
 
     func fireNotifications() {
         for (observer, selector, _, _) in observers {
-            _ = observer.perform(selector, with: nil);
+            _ = observer.perform(selector, with: nil)
         }
     }
 }
