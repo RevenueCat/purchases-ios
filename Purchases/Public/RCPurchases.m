@@ -658,6 +658,28 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     [self.deviceCache clearPurchaserInfoCacheTimestamp];
 }
 
+#pragma mark Subcriber Attributes
+
+- (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
+    [self _setAttributes:attributes];
+}
+
+- (void)setEmail:(nullable NSString *)email {
+    [self _setEmail:email];
+}
+
+- (void)setPhoneNumber:(nullable NSString *)phoneNumber {
+    [self _setPhoneNumber:phoneNumber];
+}
+
+- (void)setDisplayName:(nullable NSString *)displayName {
+    [self _setDisplayName:displayName];
+}
+
+- (void)setPushToken:(nullable NSString *)pushToken {
+    [self _setPushToken:pushToken];
+}
+
 #pragma mark - Private Methods
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif

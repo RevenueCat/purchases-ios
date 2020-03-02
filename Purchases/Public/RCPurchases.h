@@ -399,10 +399,6 @@ NS_SWIFT_NAME(entitlements(_:)) RC_UNAVAILABLE("entitlements: has been replaced 
 
 #undef RC_UNAVAILABLE
 
-@end
-
-@interface RCPurchases (SubscriberAttributes)
-
 #pragma mark Subscriber Attributes
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes;
