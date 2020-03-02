@@ -444,6 +444,25 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedError as NSError?).toEventually(equal(mockError))
         expect(self.mockDeviceCache.invokedStoreSubscriberAttributesCount).toEventually(equal(0))
     }
+
+    func testUnsyncedAttributesByKeyReturnsResultFromDeviceCache() {
+        mockDeviceCache.stubbedUnsyncedAttributesByKeyResult = [:]
+        expect(self.subscriberAttributesManager.unsyncedAttributesByKey(forAppUserID: "waldo")) == [:]
+
+        mockDeviceCache.stubbedUnsyncedAttributesByKeyResult = mockAttributes
+        expect(self.subscriberAttributesManager.unsyncedAttributesByKey(forAppUserID: "waldo")) == mockAttributes
+    }
+
+    func testMarkAttributesAsSynced() {
+        self.mockDeviceCache.stubbedUnsyncedAttributesByKeyResult = mockAttributes
+        self.subscriberAttributesManager.markAttributes(asSynced: mockAttributes, appUserID: "waldo")
+        assertMockAttributesSynced()
+    }
+
+    func testMarkAttributesAsSyncedSkipsIfEmpty() {
+        self.subscriberAttributesManager.markAttributes(asSynced: [:], appUserID: "waldo")
+        expect(self.mockDeviceCache.invokedStoreSubscriberAttributesCount) == 0
+    }
 }
 
 private extension SubscriberAttributesManagerTests {
