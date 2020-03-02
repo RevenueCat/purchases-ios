@@ -145,6 +145,28 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
 
+    func testSetEmailOverwritesIfNewValue() {
+        let oldSyncTime = Date()
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$email",
+                                                                                      value: "kratos@sparta.com",
+                                                                                      appUserID: "kratos",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setEmail("kratos@protonmail.com", appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$email"
+        expect(receivedAttribute.value) == "kratos@protonmail.com"
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.appUserID) == "kratos"
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
     func testSetPhoneNumber() {
         self.subscriberAttributesManager.setPhoneNumber("+0238320812", appUserID: "kratos")
 
@@ -181,6 +203,28 @@ class SubscriberAttributesManagerTests: XCTestCase {
                                                                                       appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetPhoneNumberOverwritesIfNewValue() {
+        let oldSyncTime = Date()
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$phoneNumber",
+                                                                                      value: "9823523",
+                                                                                      appUserID: "kratos",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setPhoneNumber("25235325", appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$phoneNumber"
+        expect(receivedAttribute.value) == "25235325"
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.appUserID) == "kratos"
+        expect(receivedAttribute.setTime) > oldSyncTime
     }
 
     func testSetDisplayName() {
@@ -223,6 +267,28 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
 
+    func testSetDisplayNameOverwritesIfNewValue() {
+        let oldSyncTime = Date()
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$displayName",
+                                                                                      value: "Kratos",
+                                                                                      appUserID: "kratos",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setDisplayName("Ghost of Sparta", appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$displayName"
+        expect(receivedAttribute.value) == "Ghost of Sparta"
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.appUserID) == "kratos"
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
     func testSetPushToken() {
         self.subscriberAttributesManager.setPushToken("laisbawba2332g", appUserID: "kratos")
 
@@ -261,6 +327,28 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.subscriberAttributesManager.setPushToken("laisbawba2332g", appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetPushTokenOverwritesIfNewValue() {
+        let oldSyncTime = Date()
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$apnsTokens",
+                                                                                      value: "oagi3wg93wg",
+                                                                                      appUserID: "kratos",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setPushToken("8jb4g203g3jg2p3", appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$apnsTokens"
+        expect(receivedAttribute.value) == "8jb4g203g3jg2p3"
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.appUserID) == "kratos"
+        expect(receivedAttribute.setTime) > oldSyncTime
     }
 
     // MARK: syncing
