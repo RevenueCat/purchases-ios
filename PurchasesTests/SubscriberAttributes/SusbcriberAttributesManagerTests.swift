@@ -24,6 +24,76 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
     // MARK: setting attributes
 
+    func testSetAttributes() {
+        self.subscriberAttributesManager.setAttributes(["genre": "blues",
+                                                        "instrument": "guitar"], appUserID: "Stevie Ray Vaughan")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(beEmpty())
+        var attributesByKey: [String: RCSubscriberAttribute] = [:]
+        for (attribute, _) in invokedParams {
+            attributesByKey[attribute.key] = attribute
+        }
+
+        expect(attributesByKey["genre"]?.key) == "genre"
+        expect(attributesByKey["genre"]?.value) == "blues"
+        expect(attributesByKey["genre"]?.isSynced) == false
+        expect(attributesByKey["genre"]?.appUserID) == "Stevie Ray Vaughan"
+
+        expect(attributesByKey["instrument"]?.key) == "instrument"
+        expect(attributesByKey["instrument"]?.value) == "guitar"
+        expect(attributesByKey["instrument"]?.isSynced) == false
+        expect(attributesByKey["instrument"]?.appUserID) == "Stevie Ray Vaughan"
+    }
+
+
+    func testSetAttributesSkipsIfSameValue() {
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "genre",
+                                                                                      value: "blues",
+                                                                                      appUserID: "Stevie Ray Vaughan")
+
+        self.subscriberAttributesManager.setAttributes(["genre": "blues",
+                                                        "instrument": "guitar"], appUserID: "Stevie Ray Vaughan")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "instrument"
+        expect(receivedAttribute.value) == "guitar"
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.appUserID) == "Stevie Ray Vaughan"
+    }
+
+    func testSetAttributesUpdatesIfDifferentValue() {
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "genre",
+                                                                                      value: "texas blues",
+                                                                                      appUserID: "Stevie Ray Vaughan")
+
+        self.subscriberAttributesManager.setAttributes(["genre": "blues",
+                                                        "instrument": "guitar"], appUserID: "Stevie Ray Vaughan")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(beEmpty())
+        var attributesByKey: [String: RCSubscriberAttribute] = [:]
+        for (attribute, _) in invokedParams {
+            attributesByKey[attribute.key] = attribute
+        }
+
+        expect(attributesByKey["genre"]?.key) == "genre"
+        expect(attributesByKey["genre"]?.value) == "blues"
+        expect(attributesByKey["genre"]?.isSynced) == false
+        expect(attributesByKey["genre"]?.appUserID) == "Stevie Ray Vaughan"
+
+        expect(attributesByKey["instrument"]?.key) == "instrument"
+        expect(attributesByKey["instrument"]?.value) == "guitar"
+        expect(attributesByKey["instrument"]?.isSynced) == false
+        expect(attributesByKey["instrument"]?.appUserID) == "Stevie Ray Vaughan"
+    }
+
     func testSetEmail() {
         self.subscriberAttributesManager.setEmail("kratos@sparta.com", appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 1
