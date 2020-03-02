@@ -42,7 +42,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)configureSubscriberAttributesManager {
-    [self initializeSubscriberAttributesManager];
     [self subscribeToAppDidBecomeActiveNotifications];
     [self subscribeToAppBackgroundedNotifications];
 }
@@ -57,13 +56,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark private methods
-
-- (void)initializeSubscriberAttributesManager {
-    RCSubscriberAttributesManager
-        *subscriberAttributesManager = [[RCSubscriberAttributesManager alloc] initWithBackend:self.backend
-                                                                                  deviceCache:self.deviceCache];
-    self.subscriberAttributesManager = subscriberAttributesManager;
-}
 
 - (void)subscribeToAppDidBecomeActiveNotifications {
     [self.notificationCenter addObserver:self

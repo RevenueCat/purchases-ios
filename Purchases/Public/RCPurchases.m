@@ -28,6 +28,7 @@
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
 #import "NSError+RCExtensions.h"
+#import "RCSubscriberAttributesManager.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -183,6 +184,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
     RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWith:userDefaults];
     RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWith:deviceCache backend:backend];
+    RCSubscriberAttributesManager *subscriberAttributesManager =
+        [[RCSubscriberAttributesManager alloc] initWithBackend:self.backend
+                                                   deviceCache:self.deviceCache];
 
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
@@ -195,7 +199,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                       observerMode:observerMode
                   offeringsFactory:offeringsFactory
                        deviceCache:deviceCache
-                   identityManager:identityManager];
+                   identityManager:identityManager
+       subscriberAttributesManager:subscriberAttributesManager];
 }
 
 - (instancetype)initWithAppUserID:(nullable NSString *)appUserID
@@ -210,6 +215,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
                       deviceCache:(RCDeviceCache *)deviceCache
                   identityManager:(RCIdentityManager *)identityManager
+      subscriberAttributesManager:(RCSubscriberAttributesManager *)subscriberAttributesManager
 {
     if (self = [super init]) {
         RCDebugLog(@"Debug logging enabled.");
@@ -233,8 +239,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.purchaseCompleteCallbacks = [NSMutableDictionary new];
 
         self.finishTransactions = !observerMode;
-
-        [self configureSubscriberAttributesManager];
+        self.subscriberAttributesManager = subscriberAttributesManager;
 
         RCReceivePurchaserInfoBlock callDelegate = ^void(RCPurchaserInfo *info, NSError *error) {
             if (info) {
@@ -244,6 +249,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
         [self.identityManager configureWithAppUserID:appUserID];
         [self updateAllCachesWithCompletionBlock:callDelegate];
+        [self configureSubscriberAttributesManager];
 
         self.storeKitWrapper.delegate = self;
         [self.notificationCenter addObserver:self

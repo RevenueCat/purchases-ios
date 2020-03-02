@@ -5,7 +5,11 @@
 
 class MockNotificationCenter: NotificationCenter {
 
-    var observers = [(observer: AnyObject, selector: Selector, notificationName: NSNotification.Name?, object: Any?)]()
+    typealias AddObserverTuple = (observer: AnyObject,
+                                  selector: Selector,
+                                  notificationName: NSNotification.Name?,
+                                  object: Any?)
+    var observers = [AddObserverTuple]()
 
     override func addObserver(_ observer: Any, selector
     aSelector: Selector, name aName: NSNotification.Name?, object anObject: Any?) {

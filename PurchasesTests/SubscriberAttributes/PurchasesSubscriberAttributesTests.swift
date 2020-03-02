@@ -22,16 +22,17 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         UserDefaults().removePersistentDomain(forName: "TestDefaults")
     }
 
-    let receiptFetcher = MockReceiptFetcher()
-    let requestFetcher = MockRequestFetcher()
-    let backend = MockBackend()
-    let storeKitWrapper = MockStoreKitWrapper()
-    let notificationCenter = MockNotificationCenter()
+    let mockReceiptFetcher = MockReceiptFetcher()
+    let mockRequestFetcher = MockRequestFetcher()
+    let mockBackend = MockBackend()
+    let mockStoreKitWrapper = MockStoreKitWrapper()
+    let mockNotificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
-    let attributionFetcher = MockAttributionFetcher()
-    let offeringsFactory = MockOfferingsFactory()
-    let deviceCache = MockDeviceCache()
-    let identityManager = MockUserManager(mockAppUserID: "app_user");
+    let mockAttributionFetcher = MockAttributionFetcher()
+    let mockOfferingsFactory = MockOfferingsFactory()
+    let mockDeviceCache = MockDeviceCache()
+    let mockIdentityManager = MockUserManager(mockAppUserID: "app_user");
+    let mockSubscriberAttributesManager = MockSubscriberAttributesManager()
 
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -39,19 +40,20 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
-        self.identityManager.mockIsAnonymous = false
-        purchases = Purchases(appUserID: identityManager.currentAppUserID,
-                              requestFetcher: requestFetcher,
-                              receiptFetcher: receiptFetcher,
-                              attributionFetcher: attributionFetcher,
-                              backend: backend,
-                              storeKitWrapper: storeKitWrapper,
-                              notificationCenter: notificationCenter,
+        self.mockIdentityManager.mockIsAnonymous = false
+        purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
+                              requestFetcher: mockRequestFetcher,
+                              receiptFetcher: mockReceiptFetcher,
+                              attributionFetcher: mockAttributionFetcher,
+                              backend: mockBackend,
+                              storeKitWrapper: mockStoreKitWrapper,
+                              notificationCenter: mockNotificationCenter,
                               userDefaults: userDefaults,
                               observerMode: false,
-                              offeringsFactory: offeringsFactory,
-                              deviceCache: deviceCache,
-                              identityManager: identityManager)
+                              offeringsFactory: mockOfferingsFactory,
+                              deviceCache: mockDeviceCache,
+                              identityManager: mockIdentityManager,
+                              subscriberAttributesManager: mockSubscriberAttributesManager)
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
@@ -61,4 +63,56 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(purchases.subscriberAttributesManager).toNot(beNil())
     }
 
+    func testSubscribesToForegroundNotifications() {
+        setupPurchases()
+
+        expect(self.mockNotificationCenter.observers.count) > 0
+
+        var isObservingDidBecomeActive = false
+
+        for (_, _, name, _) in self.mockNotificationCenter.observers {
+            if name == UIApplication.didBecomeActiveNotification {
+                isObservingDidBecomeActive = true
+                break
+            }
+        }
+        expect(isObservingDidBecomeActive) == true
+
+        self.mockNotificationCenter.fireNotifications()
+        expect(self.mockSubscriberAttributesManager.invokedSyncIfNeededCount) == 2
+    }
+
+    func testSubscribesToBackgroundNotifications() {
+        setupPurchases()
+
+        expect(self.mockNotificationCenter.observers.count) > 0
+
+        var isObservingDidBecomeActive = false
+
+        for (_, _, name, _) in self.mockNotificationCenter.observers {
+            if name == UIApplication.willResignActiveNotification {
+                isObservingDidBecomeActive = true
+                break
+            }
+        }
+        expect(isObservingDidBecomeActive) == true
+
+        self.mockNotificationCenter.fireNotifications()
+        expect(self.mockSubscriberAttributesManager.invokedSyncIfNeededCount) == 2
+    }
+
+    func testSetAttributesMakesRightCalls() {
+    }
+
+    func testSetEmailMakesRightCalls() {
+    }
+
+    func testSetPhoneNumberMakesRightCalls() {
+    }
+
+    func testSetDisplayNameMakesRightCalls() {
+    }
+
+    func testSetPushTokenMakesRightCalls() {
+    }
 }
