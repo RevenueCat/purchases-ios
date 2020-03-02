@@ -102,17 +102,51 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     }
 
     func testSetAttributesMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setAttributes(["genre": "rock n' roll"])
+        expect(self.mockSubscriberAttributesManager.invokedSetAttributesCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetAttributesParameters?.attributes) == ["genre": "rock n' roll"]
+        expect(self.mockSubscriberAttributesManager.invokedSetAttributesParameters?.appUserID) == mockIdentityManager.currentAppUserID
     }
 
     func testSetEmailMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setEmail("ac.dc@rock.com")
+        expect(self.mockSubscriberAttributesManager.invokedSetEmailCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetEmailParameters?.email) == "ac.dc@rock.com"
+        expect(self.mockSubscriberAttributesManager.invokedSetEmailParameters?.appUserID) == mockIdentityManager
+            .currentAppUserID
     }
 
     func testSetPhoneNumberMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setPhoneNumber("8561365841")
+        expect(self.mockSubscriberAttributesManager.invokedSetPhoneNumberCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetPhoneNumberParameters?.phoneNumber) == "8561365841"
+        expect(self.mockSubscriberAttributesManager.invokedSetPhoneNumberParameters?.appUserID) == mockIdentityManager
+            .currentAppUserID
     }
 
     func testSetDisplayNameMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setDisplayName("Stevie Ray Vaughan")
+        expect(self.mockSubscriberAttributesManager.invokedSetDisplayNameCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetDisplayNameParameters?.displayName) == "Stevie Ray Vaughan"
+        expect(self.mockSubscriberAttributesManager.invokedSetDisplayNameParameters?.appUserID) == mockIdentityManager
+            .currentAppUserID
     }
 
     func testSetPushTokenMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setPushToken("asdf45asdg35asd5")
+        expect(self.mockSubscriberAttributesManager.invokedSetPushTokenCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParameters?.pushToken) == "asdf45asdg35asd5"
+        expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParameters?.appUserID) == mockIdentityManager
+            .currentAppUserID
     }
 }
