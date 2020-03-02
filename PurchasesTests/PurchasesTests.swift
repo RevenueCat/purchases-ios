@@ -177,6 +177,7 @@ class PurchasesTests: XCTestCase {
     let attributionFetcher = MockAttributionFetcher()
     let offeringsFactory = MockOfferingsFactory()
     let deviceCache = MockDeviceCache()
+    let subscriberAttributesManager = MockSubscriberAttributesManager()
     let identityManager = MockUserManager(mockAppUserID: "app_user");
 
     let purchasesDelegate = MockPurchasesDelegate()
@@ -197,7 +198,8 @@ class PurchasesTests: XCTestCase {
                               observerMode: false,
                               offeringsFactory: offeringsFactory,
                               deviceCache: deviceCache,
-                              identityManager: identityManager)
+                              identityManager: identityManager,
+                              subscriberAttributesManager: subscriberAttributesManager)
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
@@ -216,7 +218,8 @@ class PurchasesTests: XCTestCase {
                               observerMode: false,
                               offeringsFactory: offeringsFactory,
                               deviceCache: deviceCache,
-                              identityManager: identityManager)
+                              identityManager: identityManager,
+                              subscriberAttributesManager: subscriberAttributesManager)
 
         purchases!.delegate = purchasesDelegate
     }
@@ -233,7 +236,8 @@ class PurchasesTests: XCTestCase {
                               observerMode: true,
                               offeringsFactory: offeringsFactory,
                               deviceCache: deviceCache,
-                              identityManager: identityManager)
+                              identityManager: identityManager,
+                              subscriberAttributesManager: subscriberAttributesManager)
 
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
