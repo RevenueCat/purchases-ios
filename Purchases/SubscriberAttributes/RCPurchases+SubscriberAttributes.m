@@ -12,44 +12,41 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-@interface RCPurchases (SubscriberAttributes)
+@interface RCPurchases ()
+
+@property (nonatomic) RCSubscriberAttributesManager *subscriberAttributesManager;
 
 @end
 
 
-NS_ASSUME_NONNULL_END
-
-
 @implementation RCPurchases (SubscriberAttributes)
 
-#pragma mark public methods
+#pragma mark protected methods
 
-- (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
+- (void)_setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
     NSLog(@"setAttributes called");
     [self.subscriberAttributesManager setAttributes:attributes appUserID:self.appUserID];
 }
 
-- (void)setEmail:(nullable NSString *)email {
+- (void)_setEmail:(nullable NSString *)email {
     NSLog(@"setEmail called");
     [self.subscriberAttributesManager setEmail:email appUserID:self.appUserID];
 }
 
-- (void)setPhoneNumber:(nullable NSString *)phoneNumber {
+- (void)_setPhoneNumber:(nullable NSString *)phoneNumber {
     NSLog(@"setPhoneNumber called");
     [self.subscriberAttributesManager setPhoneNumber:phoneNumber appUserID:self.appUserID];
 }
 
-- (void)setDisplayName:(nullable NSString *)displayName {
+- (void)_setDisplayName:(nullable NSString *)displayName {
     NSLog(@"setDisplayName called");
     [self.subscriberAttributesManager setDisplayName:displayName appUserID:self.appUserID];
 }
 
-- (void)setPushToken:(nullable NSString *)pushToken {
+- (void)_setPushToken:(nullable NSString *)pushToken {
     NSLog(@"setPushToken called");
     [self.subscriberAttributesManager setPushToken:pushToken appUserID:self.appUserID];
 }
-
-#pragma mark protected methods
 
 - (void)configureSubscriberAttributesManager {
     [self initializeSubscriberAttributesManager];
@@ -100,3 +97,6 @@ NS_ASSUME_NONNULL_END
 }
 
 @end
+
+
+NS_ASSUME_NONNULL_END

@@ -9,9 +9,16 @@
 
 @class RCSubscriberAttribute, RCSubscriberAttributesManager;
 
-@interface RCPurchases ()
+NS_ASSUME_NONNULL_BEGIN
 
-@property (nonatomic) RCSubscriberAttributesManager *subscriberAttributesManager;
+
+@interface RCPurchases (SubscriberAttributes)
+
+- (void)_setAttributes:(NSDictionary<NSString *, NSString *> *)attributes;
+- (void)_setEmail:(nullable NSString *)email;
+- (void)_setPhoneNumber:(nullable NSString *)phoneNumber;
+- (void)_setDisplayName:(nullable NSString *)displayName;
+- (void)_setPushToken:(nullable NSString *)pushToken;
 
 - (void)configureSubscriberAttributesManager;
 - (RCSubscriberAttributeDict)unsyncedAttributesByKey;
@@ -19,3 +26,6 @@
                      appUserID:(NSString *)appUserID;
 
 @end
+
+
+NS_ASSUME_NONNULL_END
