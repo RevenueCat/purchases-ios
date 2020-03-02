@@ -12,13 +12,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-@interface RCPurchases ()
-
-@property (nonatomic) RCSubscriberAttributesManager *subscriberAttributesManager;
-
-@end
-
-
 @implementation RCPurchases (SubscriberAttributes)
 
 #pragma mark protected methods
