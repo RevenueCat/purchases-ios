@@ -602,7 +602,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                             discounts:nil
           presentedOfferingIdentifier:nil
                          observerMode:!self.finishTransactions
-                 subscriberAttributes:self.unsyncedAttributesByKey
+                 subscriberAttributes:subscriberAttributes
                            completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
                                [self dispatch:^{
                                    if (error) {
