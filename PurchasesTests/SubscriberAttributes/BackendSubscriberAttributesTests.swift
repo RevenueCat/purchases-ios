@@ -27,12 +27,10 @@ class BackendSubscriberAttributesTests: XCTestCase {
         dateProvider = MockDateProvider(stubbedNow: now)
         subscriberAttribute1 = RCSubscriberAttribute(key: "a key",
                                                      value: "a value",
-                                                     appUserID: appUserID,
                                                      dateProvider: dateProvider)
 
         subscriberAttribute2 = RCSubscriberAttribute(key: "another key",
                                                      value: "another value",
-                                                     appUserID: appUserID,
                                                      dateProvider: dateProvider)
     }
 
