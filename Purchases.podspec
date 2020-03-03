@@ -28,6 +28,8 @@ Pod::Spec.new do |s|
     'Purchases/Public/*.m',
     'Purchases/Caching/*.h',
     'Purchases/Caching/*.m',
+    'Purchases/SubscriberAttributes/*.h',
+    'Purchases/SubscriberAttributes/*.m',
   ]
 
 
