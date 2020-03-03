@@ -98,8 +98,6 @@ NS_ASSUME_NONNULL_END
         return NO;
     if (self.value != attribute.value)
         return NO;
-    if (self.appUserID != attribute.appUserID)
-        return NO;
     if (self.setTime != attribute.setTime && ![self.setTime isEqualToDate:attribute.setTime])
         return NO;
     if (self.isSynced != attribute.isSynced)

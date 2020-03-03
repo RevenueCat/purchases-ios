@@ -118,9 +118,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)storeAttributeLocallyWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
     RCSubscriberAttribute *subscriberAttribute = [[RCSubscriberAttribute alloc] initWithKey:key
-                                                                                      value:value
-                                                                                  appUserID:appUserID];
-    [self.deviceCache storeSubscriberAttribute:subscriberAttribute];
+                                                                                      value:value];
+    [self.deviceCache storeSubscriberAttribute:subscriberAttribute appUserID:appUserID];
 }
 
 - (nullable NSString *)currentValueForAttributeWithKey:(NSString *)key appUserID:(NSString *)appUserID {
