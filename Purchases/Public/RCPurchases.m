@@ -185,8 +185,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWith:userDefaults];
     RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWith:deviceCache backend:backend];
     RCSubscriberAttributesManager *subscriberAttributesManager =
-        [[RCSubscriberAttributesManager alloc] initWithBackend:self.backend
-                                                   deviceCache:self.deviceCache];
+        [[RCSubscriberAttributesManager alloc] initWithBackend:backend
+                                                   deviceCache:deviceCache];
 
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
