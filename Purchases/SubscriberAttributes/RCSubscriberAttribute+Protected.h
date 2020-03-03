@@ -14,13 +14,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithKey:(NSString *)key
                       value:(NSString *)value
-                  appUserID:(NSString *)appUserID
                    isSynced:(BOOL)isSynced
                     setTime:(NSDate *)setTime;
 
 - (instancetype)initWithKey:(NSString *)key
                       value:(NSString *)value
-                  appUserID:(NSString *)appUserID
                dateProvider:(RCDateProvider *)dateProvider;
 
 @end

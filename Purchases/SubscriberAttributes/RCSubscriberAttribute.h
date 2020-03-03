@@ -12,11 +12,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy, readonly) NSString *key;
 @property (nonatomic, copy, readonly) NSString *value;
-@property (nonatomic, copy, readonly) NSString *appUserID;
 @property (nonatomic, readonly) NSDate *setTime;
 @property (nonatomic, assign) BOOL isSynced;
 
-- (instancetype)initWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID;
+- (instancetype)initWithKey:(NSString *)key value:(NSString *)value;
 
 - (instancetype)initWithDictionary:(NSDictionary <NSString *, NSObject *> *)dict;
 

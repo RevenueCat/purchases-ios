@@ -11,7 +11,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define KEY_KEY @"key"
 #define VALUE_KEY @"value"
-#define APP_USER_ID_KEY @"appUserID"
 #define SET_TIME_KEY @"setTime"
 #define IS_SYNCED_KEY @"isSynced"
 
@@ -23,7 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy) NSString *key;
 @property (nonatomic, copy) NSString *value;
-@property (nonatomic, copy) NSString *appUserID;
 @property (nonatomic) NSDate *setTime;
 
 @end
@@ -34,22 +32,19 @@ NS_ASSUME_NONNULL_END
 
 @implementation RCSubscriberAttribute
 
-- (instancetype)initWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
+- (instancetype)initWithKey:(NSString *)key value:(NSString *)value {
     return [self initWithKey:key
                        value:value
-                   appUserID:appUserID
                 dateProvider:[[RCDateProvider alloc] init]];
 }
 
 - (instancetype)initWithKey:(NSString *)key
                       value:(NSString *)value
-                  appUserID:(NSString *)appUserID
                    isSynced:(BOOL)isSynced
                     setTime:(NSDate *)setTime {
     if (self = [super init]) {
         self.key = key;
         self.value = value;
-        self.appUserID = appUserID;
         self.isSynced = isSynced;
         self.setTime = setTime;
     }
@@ -58,11 +53,9 @@ NS_ASSUME_NONNULL_END
 
 - (instancetype)initWithKey:(NSString *)key
                       value:(NSString *)value
-                  appUserID:(NSString *)appUserID
                dateProvider:(RCDateProvider *)dateProvider {
     return [self initWithKey:key
                        value:value
-                   appUserID:appUserID
                     isSynced:NO
                      setTime:dateProvider.now];
 }
@@ -70,7 +63,6 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithDictionary:(NSDictionary <NSString *, NSObject *> *)dict {
     return [self initWithKey:(NSString *) dict[KEY_KEY]
                        value:(NSString *) dict[VALUE_KEY]
-                   appUserID:(NSString *) dict[APP_USER_ID_KEY]
                     isSynced:((NSNumber *) dict[IS_SYNCED_KEY]).boolValue
                      setTime:(NSDate *) dict[SET_TIME_KEY]];
 }
@@ -79,7 +71,6 @@ NS_ASSUME_NONNULL_END
     return @{
         KEY_KEY: self.key,
         VALUE_KEY: self.value ?: @"",
-        APP_USER_ID_KEY: self.appUserID,
         IS_SYNCED_KEY: @(self.isSynced),
         SET_TIME_KEY: self.setTime,
     };
@@ -93,8 +84,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Subscriber attribute: key: %@ value: %@ appUserID: %@ setTime: %@",
-                                      self.key, self.value, self.appUserID, self.setTime];
+    return [NSString stringWithFormat:@"Subscriber attribute: key: %@ value: %@ setTime: %@",
+                                      self.key, self.value, self.setTime];
 }
 
 @end
