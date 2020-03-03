@@ -57,7 +57,6 @@ class SubscriberAttributeTests: XCTestCase {
 
         expect(receivedDictionary["key"] as? String) == key
         expect(receivedDictionary["value"] as? String) == value
-        expect(receivedDictionary["appUserID"] as? String) == appUserID
         expect((receivedDictionary["isSynced"] as! NSNumber).boolValue) == false
     }
 
