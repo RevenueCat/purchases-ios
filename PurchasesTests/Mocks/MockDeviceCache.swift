@@ -98,14 +98,14 @@ class MockDeviceCache: RCDeviceCache {
 
     var invokedStore = false
     var invokedStoreCount = 0
-    var invokedStoreParameters: (attribute: RCSubscriberAttribute, Void)?
-    var invokedStoreParametersList = [(attribute: RCSubscriberAttribute, Void)]()
+    var invokedStoreParameters: (attribute: RCSubscriberAttribute, appUserID: String)?
+    var invokedStoreParametersList = [(attribute: RCSubscriberAttribute, appUserID: String)]()
 
-    override func store(_ attribute: RCSubscriberAttribute) {
+    override func store(_ attribute: RCSubscriberAttribute, appUserID: String) {
         invokedStore = true
         invokedStoreCount += 1
-        invokedStoreParameters = (attribute, ())
-        invokedStoreParametersList.append((attribute, ()))
+        invokedStoreParameters = (attribute, appUserID)
+        invokedStoreParametersList.append((attribute, appUserID))
     }
 
     var invokedStoreSubscriberAttributes = false

@@ -163,16 +163,14 @@ class DeviceCacheTests: XCTestCase {
         self.mockDateProvider = MockDateProvider(stubbedNow: now)
         self.subscriberAttributeHeight = RCSubscriberAttribute(key: "height",
                                                                value: "183",
-                                                               appUserID: "waldo",
                                                                dateProvider: mockDateProvider)
         self.subscriberAttributeWeight = RCSubscriberAttribute(key: "weight",
                                                                value: "160",
-                                                               appUserID: "waldo",
                                                                dateProvider: mockDateProvider)
     }
 
     func testStoreSubscriberAttributeStoresCorrectly() {
-        self.deviceCache.store(subscriberAttributeHeight)
+        self.deviceCache.store(subscriberAttributeHeight, appUserID: "waldo")
 
         let expectedStoreKey = "com.revenuecat.userdefaults.subscriberAttributes.waldo"
         expect(self.mockUserDefaults.setObjectForKeyCalledValue) == expectedStoreKey
@@ -187,15 +185,14 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testStoreSubscriberAttributeDoesNotModifyExistingValuesWithDifferentKeys() {
-        self.deviceCache.store(subscriberAttributeHeight)
+        self.deviceCache.store(subscriberAttributeHeight, appUserID: "waldo")
 
         expect(self.mockUserDefaults.mockValues.count) == 1
 
         let subscriberAttributeWeight = RCSubscriberAttribute(key: "weight",
                                                               value: "160",
-                                                              appUserID: "waldo",
                                                               dateProvider: mockDateProvider)
-        self.deviceCache.store(subscriberAttributeWeight)
+        self.deviceCache.store(subscriberAttributeWeight, appUserID: "waldo")
         expect(self.mockUserDefaults.mockValues.count) == 1
 
         let expectedStoreKey = "com.revenuecat.userdefaults.subscriberAttributes.waldo"
@@ -215,15 +212,13 @@ class DeviceCacheTests: XCTestCase {
     func testStoreSubscriberAttributeUpdatesExistingValue() {
         let oldSubscriberAttribute = RCSubscriberAttribute(key: "height",
                                                            value: "183",
-                                                           appUserID: "waldo",
                                                            dateProvider: mockDateProvider)
-        self.deviceCache.store(oldSubscriberAttribute)
+        self.deviceCache.store(oldSubscriberAttribute, appUserID: "waldo")
 
         let newSubscriberAttribute = RCSubscriberAttribute(key: "height",
                                                            value: "250",
-                                                           appUserID: "waldo",
                                                            dateProvider: mockDateProvider)
-        self.deviceCache.store(newSubscriberAttribute)
+        self.deviceCache.store(newSubscriberAttribute, appUserID: "waldo")
 
         let expectedStoreKey = "com.revenuecat.userdefaults.subscriberAttributes.waldo"
         expect(self.mockUserDefaults.setObjectForKeyCalledValue) == expectedStoreKey
@@ -271,9 +266,8 @@ class DeviceCacheTests: XCTestCase {
     func testStoreSubscriberAttributesDoesNotModifyExistingValuesWithDifferentKeys() {
         let otherSubscriberAttribute = RCSubscriberAttribute(key: "age",
                                                              value: "46",
-                                                             appUserID: "waldo",
                                                              dateProvider: mockDateProvider)
-        self.deviceCache.store(otherSubscriberAttribute)
+        self.deviceCache.store(otherSubscriberAttribute, appUserID: "waldo")
 
         self.deviceCache.storeSubscriberAttributes([subscriberAttributeHeight.key: subscriberAttributeHeight,
                                                     subscriberAttributeWeight.key: subscriberAttributeWeight],
@@ -297,11 +291,10 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testStoreSubscriberAttributesUpdatesExistingValue() {
-        self.deviceCache.store(subscriberAttributeHeight)
+        self.deviceCache.store(subscriberAttributeHeight, appUserID: "waldo")
 
         let subscriberAttributeNewHeight = RCSubscriberAttribute(key: "height",
                                                                  value: "460",
-                                                                 appUserID: "waldo",
                                                                  dateProvider: mockDateProvider)
 
         self.deviceCache.storeSubscriberAttributes([subscriberAttributeNewHeight.key: subscriberAttributeNewHeight,
@@ -326,10 +319,10 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testSubscriberAttributeWithKeyReturnsCorrectly() {
-        self.deviceCache.store(subscriberAttributeHeight)
+        self.deviceCache.store(subscriberAttributeHeight, appUserID: "waldo")
 
         let storedAttribute = self.deviceCache.subscriberAttribute(withKey: subscriberAttributeHeight.key,
-                                                                   appUserID: subscriberAttributeHeight.appUserID)
+                                                                   appUserID: "waldo")
 
         expect(storedAttribute).toNot(beNil())
 
@@ -346,31 +339,27 @@ class DeviceCacheTests: XCTestCase {
 
     func testUnsyncedAttributesByKeyReturnsEmptyIfNoneUnsynced() {
         subscriberAttributeHeight.isSynced = true
-        self.deviceCache.store(subscriberAttributeHeight)
+        self.deviceCache.store(subscriberAttributeHeight, appUserID: "waldo")
         expect(self.deviceCache.unsyncedAttributesByKey(forAppUserID: "waldo")).to(beEmpty())
     }
 
     func testUnsyncedAttributesByKeyReturnsCorrectlyWhenFound() {
         let subscriberAttribute1 = RCSubscriberAttribute(key: "height",
                                                          value: "460",
-                                                         appUserID: "waldo",
                                                          isSynced: true,
                                                          setTime: now)
 
         let subscriberAttribute2 = RCSubscriberAttribute(key: "weight",
                                                          value: "120",
-                                                         appUserID: "waldo",
                                                          isSynced: false,
                                                          setTime: now)
 
         let subscriberAttribute3 = RCSubscriberAttribute(key: "age",
                                                          value: "66",
-                                                         appUserID: "waldo",
                                                          isSynced: false,
                                                          setTime: now)
         let subscriberAttribute4 = RCSubscriberAttribute(key: "device",
                                                          value: "iPhone",
-                                                         appUserID: "waldo",
                                                          isSynced: true,
                                                          setTime: now)
 
@@ -394,31 +383,27 @@ class DeviceCacheTests: XCTestCase {
 
     func testNumberOfUnsyncedAttributesReturnsEmptyIfNoneUnsynced() {
         subscriberAttributeHeight.isSynced = true
-        self.deviceCache.store(subscriberAttributeHeight)
+        self.deviceCache.store(subscriberAttributeHeight, appUserID: "waldo")
         expect(self.deviceCache.numberOfUnsyncedAttributes(forAppUserID: "waldo")) == 0
     }
 
     func testNumberOfUnsyncedAttributesReturnsCorrectlyWhenFound() {
         let subscriberAttribute1 = RCSubscriberAttribute(key: "height",
                                                          value: "460",
-                                                         appUserID: "waldo",
                                                          isSynced: true,
                                                          setTime: now)
 
         let subscriberAttribute2 = RCSubscriberAttribute(key: "weight",
                                                          value: "120",
-                                                         appUserID: "waldo",
                                                          isSynced: false,
                                                          setTime: now)
 
         let subscriberAttribute3 = RCSubscriberAttribute(key: "age",
                                                          value: "66",
-                                                         appUserID: "waldo",
                                                          isSynced: false,
                                                          setTime: now)
         let subscriberAttribute4 = RCSubscriberAttribute(key: "device",
                                                          value: "iPhone",
-                                                         appUserID: "waldo",
                                                          isSynced: true,
                                                          setTime: now)
 

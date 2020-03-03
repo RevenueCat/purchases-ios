@@ -128,9 +128,9 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
 
 #pragma mark - Subscriber attributes
 
-- (void)storeSubscriberAttribute:(RCSubscriberAttribute *)attribute {
+- (void)storeSubscriberAttribute:(RCSubscriberAttribute *)attribute appUserID:(NSString *)appUserID {
     @synchronized (self) {
-        NSString *cacheKey = [self subscriberAttributesCacheKeyForAppUserID:attribute.appUserID];
+        NSString *cacheKey = [self subscriberAttributesCacheKeyForAppUserID:appUserID];
         NSDictionary *allSubscriberAttributesByKey = (NSDictionary *) [self.userDefaults valueForKey:cacheKey];
         NSMutableDictionary *mutableSubscriberAttributesByKey = allSubscriberAttributesByKey
                                                                 ? allSubscriberAttributesByKey.mutableCopy
