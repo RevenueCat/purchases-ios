@@ -395,8 +395,6 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 
 - (void)setPushToken:(nullable NSString *)pushToken;
 
-@end
-
 #pragma mark Unavailable Methods
 #define RC_UNAVAILABLE(msg) __attribute__((unavailable(msg)));
 /// :nodoc:
@@ -413,6 +411,8 @@ NS_SWIFT_NAME(entitlements(_:)) RC_UNAVAILABLE("entitlements: has been replaced 
      completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4)) __attribute__((unavailable("makePurchase:withDiscount: has been replaced by purchaseProduct:withDiscount:")));;
 
 #undef RC_UNAVAILABLE
+
+@end
 
 /**
  Delegate for `RCPurchases` responsible for handling updating your app's state in response to updated purchaser info or promotional product purchases.
