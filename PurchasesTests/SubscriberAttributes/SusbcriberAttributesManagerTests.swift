@@ -276,7 +276,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
     }
 
     func testSetPushToken() {
-        self.subscriberAttributesManager.setPushToken("laisbawba2332g", appUserID: "kratos")
+        let tokenData = "ligai32g32ig".data(using: .utf8)!
+        self.subscriberAttributesManager.setPushToken(tokenData, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
@@ -284,12 +285,15 @@ class SubscriberAttributesManagerTests: XCTestCase {
         }
         let receivedAttribute = invokedParams.attribute
         expect(receivedAttribute.key) == "$apnsTokens"
-        expect(receivedAttribute.value) == "laisbawba2332g"
+
+        let tokenString = (tokenData as NSData).dataAsString()
+        expect(receivedAttribute.value) == tokenString
         expect(receivedAttribute.isSynced) == false
     }
 
     func testSetPushTokenSetsEmptyIfNil() {
-        self.subscriberAttributesManager.setPushToken("laisbawba2332g", appUserID: "kratos")
+        let tokenData = "ligai32g32ig".data(using: .utf8)!
+        self.subscriberAttributesManager.setPushToken(tokenData, appUserID: "kratos")
 
         self.subscriberAttributesManager.setPushToken(nil, appUserID: "kratos")
 
@@ -304,22 +308,27 @@ class SubscriberAttributesManagerTests: XCTestCase {
     }
 
     func testSetPushTokenSkipsIfSameValue() {
+        let tokenData = "ligai32g32ig".data(using: .utf8)!
+        let tokenString = (tokenData as NSData).dataAsString()
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$apnsTokens",
-                                                                                      value: "laisbawba2332g")
+                                                                                      value: tokenString)
 
-        self.subscriberAttributesManager.setPushToken("laisbawba2332g", appUserID: "kratos")
+        self.subscriberAttributesManager.setPushToken(tokenData, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
 
     func testSetPushTokenOverwritesIfNewValue() {
+        let tokenData = "ligai32g32ig".data(using: .utf8)!
+        let tokenString = (tokenData as NSData).dataAsString()
         let oldSyncTime = Date()
+
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$apnsTokens",
-                                                                                      value: "oagi3wg93wg",
+                                                                                      value: "other value",
                                                                                       isSynced: true,
                                                                                       setTime: oldSyncTime)
 
-        self.subscriberAttributesManager.setPushToken("8jb4g203g3jg2p3", appUserID: "kratos")
+        self.subscriberAttributesManager.setPushToken(tokenData, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
@@ -327,7 +336,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         }
         let receivedAttribute = invokedParams.attribute
         expect(receivedAttribute.key) == "$apnsTokens"
-        expect(receivedAttribute.value) == "8jb4g203g3jg2p3"
+        expect(receivedAttribute.value) == tokenString
         expect(receivedAttribute.isSynced) == false
         expect(receivedAttribute.setTime) > oldSyncTime
     }
