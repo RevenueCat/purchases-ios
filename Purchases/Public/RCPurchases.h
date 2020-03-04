@@ -393,7 +393,7 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 
 - (void)setDisplayName:(nullable NSString *)displayName;
 
-- (void)setPushToken:(nullable NSString *)pushToken;
+- (void)setPushToken:(nullable NSData *)pushToken;
 
 #pragma mark Unavailable Methods
 #define RC_UNAVAILABLE(msg) __attribute__((unavailable(msg)));

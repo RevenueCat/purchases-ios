@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_setEmail:(nullable NSString *)email;
 - (void)_setPhoneNumber:(nullable NSString *)phoneNumber;
 - (void)_setDisplayName:(nullable NSString *)displayName;
-- (void)_setPushToken:(nullable NSString *)pushToken;
+- (void)_setPushToken:(nullable NSData *)pushToken;
 
 - (void)configureSubscriberAttributesManager;
 - (RCSubscriberAttributeDict)unsyncedAttributesByKey;
