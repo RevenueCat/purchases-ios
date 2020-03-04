@@ -21,6 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Purchases.debugLogsEnabled = true
         Purchases.configure(withAPIKey: <your_public_sdk_key_here>)
 
+        Purchases.shared.setAttributes(["favorite_cat" : "garfield"])
         requestPushNotificationsPermisssions()
 
         return true
