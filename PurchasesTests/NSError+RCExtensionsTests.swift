@@ -19,7 +19,7 @@ class NSErrorRCExtensionsTests: XCTestCase {
 
     func testShouldMarkSyncedKeyPresentFalseIfNotShouldMarkSynced() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [RCShouldMarkSyncedKey: false])
+        let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [RCSuccessfullySyncedKey: false])
         expect(error.shouldMarkSyncedKeyPresent()) == false
     }
 
@@ -31,14 +31,14 @@ class NSErrorRCExtensionsTests: XCTestCase {
 
     func testShouldMarkSyncedKeyPresentTrueIfShouldMarkSynced() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [RCShouldMarkSyncedKey: true])
+        let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [RCSuccessfullySyncedKey: true])
         expect(error.shouldMarkSyncedKeyPresent()) == true
     }
 
     func testShouldMarkSyncedKeyPresentTrueIfTrueForUnderlyingError() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
         let underlyingError = NSError(domain: Purchases.ErrorDomain, code: errorCode,
-                                      userInfo: [RCShouldMarkSyncedKey: true])
+                                      userInfo: [RCSuccessfullySyncedKey: true])
         expect(underlyingError.shouldMarkSyncedKeyPresent()) == true
 
         let error = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
@@ -48,7 +48,7 @@ class NSErrorRCExtensionsTests: XCTestCase {
     func testShouldMarkSyncedKeyPresentFalseIfFalseForUnderlyingError() {
         let errorCode = Purchases.ErrorCode.networkError.rawValue
         let underlyingError = NSError(domain: Purchases.ErrorDomain, code: errorCode,
-                                      userInfo: [RCShouldMarkSyncedKey: true])
+                                      userInfo: [RCSuccessfullySyncedKey: true])
         expect(underlyingError.shouldMarkSyncedKeyPresent()) == false
 
         let error = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)

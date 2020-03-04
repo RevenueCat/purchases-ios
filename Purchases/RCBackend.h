@@ -23,6 +23,8 @@ typedef NS_ENUM(NSInteger, RCPaymentMode) {
     RCPaymentModeFreeTrial = 2
 };
 
+extern NSErrorUserInfoKey const RCSuccessfullySyncedKey;
+
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode);
 
@@ -92,8 +94,6 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 - (void)postSubscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
                        appUserID:(NSString *)appUserID
                       completion:(void (^)(NSError *))completion;
-
-extern NSErrorUserInfoKey const RCShouldMarkSyncedKey;
 
 @end
 

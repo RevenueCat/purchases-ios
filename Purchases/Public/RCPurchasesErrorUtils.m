@@ -66,7 +66,7 @@ static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
             return @"Apple Subscription Key is invalid or not present. In order to provide subscription offers, you must first generate a subscription key. Please see https://docs.revenuecat.com/docs/ios-subscription-offers for more info.";
         case RCIneligibleError:
             return @"The User is ineligible for that action.";
-        case RCBackendInvalidSubscriberAttributesError:
+        case RCInvalidSubscriberAttributesError:
             return @"One or more of the attributes sent could not be saved.";
     }
     return @"Something went wrong.";
@@ -116,9 +116,9 @@ static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
         case RCInvalidAppleSubscriptionKeyError:
             return @"INVALID_APPLE_SUBSCRIPTION_KEY";
         case RCIneligibleError:
-            return @"INVALID_OFFER";
-        case RCBackendInvalidSubscriberAttributesError:
-            return @"SUBSCRIBER_ATTRIBUTES_SYNC_ERROR";
+            return @"INELIGIBLE_ERROR";
+        case RCInvalidSubscriberAttributesError:
+            return @"INVALID_SUBSCRIBER_ATTRIBUTES";
     }
     return @"UNRECOGNIZED_ERROR";
 }
@@ -151,7 +151,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(RCBackend
         case RCBackendUserIneligibleForPromoOffer:
             return RCIneligibleError;
         case RCBackendInvalidSubscriberAttributes:
-            return RCBackendInvalidSubscriberAttributesError;
+            return RCInvalidSubscriberAttributesError;
     }
     return RCUnknownError;
 }

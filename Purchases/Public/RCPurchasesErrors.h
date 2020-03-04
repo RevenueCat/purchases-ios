@@ -50,7 +50,7 @@ typedef NS_ERROR_ENUM(RCPurchasesErrorDomain, RCPurchasesErrorCode) {
     RCUnknownBackendError,
     RCInvalidAppleSubscriptionKeyError,
     RCIneligibleError,
-    RCBackendInvalidSubscriberAttributesError
+    RCInvalidSubscriberAttributesError
 } NS_SWIFT_NAME(Purchases.ErrorCode);
 
 /**
