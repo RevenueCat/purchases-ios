@@ -18,7 +18,7 @@
 #import "RCPromotionalOffer.h"
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
-NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"shouldMarkSynced";
+NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"successfullySynced";
 
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)

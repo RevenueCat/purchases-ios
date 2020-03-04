@@ -110,7 +110,10 @@ class BackendSubscriberAttributesTests: XCTestCase {
         expect(completionCallCount).toEventually(equal(1))
         expect(receivedError).toNot(beNil())
         expect(receivedError).to(beAKindOf(Error.self))
-        expect((receivedError! as NSError).code) == Purchases.ErrorCode.networkError.rawValue
+        let receivedNSError = receivedError! as NSError
+
+        expect(receivedNSError.code) == Purchases.ErrorCode.networkError.rawValue
+        expect(receivedNSError.successfullySynced()) == false
     }
 
     func testPostSubscriberAttributesCallsCompletionWithErrorInBackendErrorCase() {
@@ -137,6 +140,39 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == Purchases.ErrorCode.unknownBackendError.rawValue
+        expect(receivedNSError.successfullySynced()) == false
+        expect(receivedNSError.userInfo["successfullySynced"]).toNot(beNil())
+        expect((receivedNSError.userInfo["successfullySynced"] as! NSNumber).boolValue) == false
+    }
+
+
+    func testPostSubscriberAttributesCallsCompletionWithErrorInBadRequestCase() {
+        var completionCallCount = 0
+        mockHTTPClient.shouldInvokeCompletion = true
+        mockHTTPClient.stubbedCompletionStatusCode = 400
+        mockHTTPClient.stubbedCompletionError = nil
+
+        var receivedError: Error? = nil
+        backend.postSubscriberAttributes([
+                                             subscriberAttribute1.key: subscriberAttribute1,
+                                             subscriberAttribute2.key: subscriberAttribute2
+                                         ],
+                                         appUserID: appUserID,
+                                         completion: { (error: Error!) in
+                                             completionCallCount += 1
+                                             receivedError = error
+                                         })
+
+        expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
+        expect(completionCallCount).toEventually(equal(1))
+        expect(receivedError).toNot(beNil())
+        expect(receivedError).to(beAKindOf(Error.self))
+
+        let receivedNSError = receivedError! as NSError
+        expect(receivedNSError.code) == Purchases.ErrorCode.unknownBackendError.rawValue
+        expect(receivedNSError.successfullySynced()) == true
+        expect(receivedNSError.userInfo["successfullySynced"]).toNot(beNil())
+        expect((receivedNSError.userInfo["successfullySynced"] as! NSNumber).boolValue) == true
     }
 
     func testPostSubscriberAttributesNoOpIfAttributesAreEmpty() {
@@ -148,6 +184,32 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                          })
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 0
     }
+
+//    func testPostSubscriberAttributesErrorIncludesRCSuccessfullySyncedKeyIfInternalServerError() {
+//        var completionCallCount = 0
+//        mockHTTPClient.shouldInvokeCompletion = true
+//        mockHTTPClient.stubbedCompletionStatusCode = 503
+//        mockHTTPClient.stubbedCompletionError = nil
+//
+//        var receivedError: Error? = nil
+//        backend.postSubscriberAttributes([
+//                                             subscriberAttribute1.key: subscriberAttribute1,
+//                                             subscriberAttribute2.key: subscriberAttribute2
+//                                         ],
+//                                         appUserID: appUserID,
+//                                         completion: { (error: Error!) in
+//                                             completionCallCount += 1
+//                                             receivedError = error
+//                                         })
+//
+//        expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
+//        expect(completionCallCount).toEventually(equal(1))
+//        expect(receivedError).toNot(beNil())
+//        expect(receivedError).to(beAKindOf(Error.self))
+//
+//        let receivedNSError = receivedError! as NSError
+//        expect(receivedNSError.code) == Purchases.ErrorCode.unknownBackendError.rawValue
+//    }
 
     // MARK: PostReceipt with subscriberAttributes
 
