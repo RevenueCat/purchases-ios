@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setPushToken:(nullable NSData *)pushToken appUserID:(NSString *)appUserID {
-    NSMutableString *deviceTokenString = pushToken.dataAsString;
+    NSString *deviceTokenString = pushToken.dataAsString;
     [self setAttributeWithKey:SPECIAL_ATTRIBUTE_PUSH_TOKEN value:deviceTokenString appUserID:appUserID];
 }
 
