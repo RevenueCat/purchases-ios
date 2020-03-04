@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_END
 
 @implementation NSData (RCExtensions)
 
-- (NSString *)dataAsString {
+- (NSString *)asString {
     NSMutableString *deviceTokenString = [NSMutableString string];
     [self enumerateByteRangesUsingBlock:^(const void *bytes,
                                           NSRange byteRange,
