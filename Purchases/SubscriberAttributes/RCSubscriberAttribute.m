@@ -6,6 +6,7 @@
 #import <Foundation/Foundation.h>
 #import "RCSubscriberAttribute.h"
 #import "RCDateProvider.h"
+#import "NSDate+RCExtensions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -79,7 +80,7 @@ NS_ASSUME_NONNULL_END
 - (NSDictionary <NSString *, NSObject *> *)asBackendDictionary {
     return @{
         BACKEND_VALUE_KEY: self.value ?: @"",
-        BACKEND_TIMESTAMP_KEY: @(self.setTime.timeIntervalSince1970)
+        BACKEND_TIMESTAMP_KEY: @(self.setTime.millisecondsSince1970)
     };
 }
 

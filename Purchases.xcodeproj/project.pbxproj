@@ -95,9 +95,11 @@
 		37E356619BE46B3AA82A69E8 /* RCInMemoryCachedObject+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35483531C5A5E6BF09BBD /* RCInMemoryCachedObject+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E3585E0B39722838F235BD /* MockUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357D16038F07915D7825D /* MockUserDefaults.swift */; };
 		37E358E75F7A3C75F2CA10BA /* RCDateProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E35642B1AD2A45A7152CD5 /* RCDateProvider.m */; };
+		37E35971060F603C2F028D1F /* NSDate+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E356CA7C7188A8B6E2811A /* NSDate+RCExtensions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E3598A1AAA3D70EA01C82D /* RCInMemoryCachedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35C6CBB3229AA53ECEB58 /* RCInMemoryCachedObject.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35AE982974800FF079C14 /* RCSubscriberAttribute+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35C82A59C953A5F6017BB /* RCSubscriberAttribute+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35AF213F2F79CB067FDC2 /* InMemoryCachedObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35E3250FBBB03D92E06EC /* InMemoryCachedObjectTests.swift */; };
+		37E35BCE176D557487A903CC /* NSDate+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E358235BB58A968B059B6B /* NSDate+RCExtensions.m */; };
 		37E35D4498633E73BF02BAE7 /* RCDeviceCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E356820F0AD560FA23F3BF /* RCDeviceCache.m */; };
 		37E35EA06000D9C8AFE77348 /* RCPurchasesErrorUtils+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35D0E675B0E6829E7968F /* RCPurchasesErrorUtils+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35EC177759FE5350F53B3 /* RCDateProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35192068E91782835FA85 /* RCDateProvider.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -212,9 +214,11 @@
 		37E3555AC54BD10BE56F2B6B /* RCDeviceCache+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCDeviceCache+Protected.h"; sourceTree = "<group>"; };
 		37E35642B1AD2A45A7152CD5 /* RCDateProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCDateProvider.m; sourceTree = "<group>"; };
 		37E356820F0AD560FA23F3BF /* RCDeviceCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCDeviceCache.m; sourceTree = "<group>"; };
+		37E356CA7C7188A8B6E2811A /* NSDate+RCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+RCExtensions.h"; sourceTree = "<group>"; };
 		37E3578BD602C7B8E2274279 /* MockDateProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockDateProvider.swift; sourceTree = "<group>"; };
 		37E357D16038F07915D7825D /* MockUserDefaults.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockUserDefaults.swift; sourceTree = "<group>"; };
 		37E357F69438004E1F443C03 /* BackendSubscriberAttributesTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackendSubscriberAttributesTests.swift; sourceTree = "<group>"; };
+		37E358235BB58A968B059B6B /* NSDate+RCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+RCExtensions.m"; sourceTree = "<group>"; };
 		37E359893D3371FC3497D957 /* RCInMemoryCachedObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCInMemoryCachedObject.m; sourceTree = "<group>"; };
 		37E35C5A65AAF701DED59800 /* MockInMemoryCachedOfferings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockInMemoryCachedOfferings.swift; sourceTree = "<group>"; };
 		37E35C6CBB3229AA53ECEB58 /* RCInMemoryCachedObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCInMemoryCachedObject.h; sourceTree = "<group>"; };
@@ -362,6 +366,8 @@
 				37E35642B1AD2A45A7152CD5 /* RCDateProvider.m */,
 				37E35192068E91782835FA85 /* RCDateProvider.h */,
 				37E35D0E675B0E6829E7968F /* RCPurchasesErrorUtils+Protected.h */,
+				37E358235BB58A968B059B6B /* NSDate+RCExtensions.m */,
+				37E356CA7C7188A8B6E2811A /* NSDate+RCExtensions.h */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -491,6 +497,7 @@
 				37E35EC177759FE5350F53B3 /* RCDateProvider.h in Headers */,
 				37E35EA06000D9C8AFE77348 /* RCPurchasesErrorUtils+Protected.h in Headers */,
 				37E352F9B7505A398D578F53 /* RCDeviceCache+Protected.h in Headers */,
+				37E35971060F603C2F028D1F /* NSDate+RCExtensions.h in Headers */,
 				35C98D9520B7306A006DCBB5 /* RCCrossPlatformSupport.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -643,6 +650,7 @@
 				37E3526C938D7B291671BE8A /* RCInMemoryCachedObject.m in Sources */,
 				37E358E75F7A3C75F2CA10BA /* RCDateProvider.m in Sources */,
 				2D8DB34E240731E000BE3D31 /* NSError+RCExtensions.m in Sources */,
+				37E35BCE176D557487A903CC /* NSDate+RCExtensions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
