@@ -18,7 +18,7 @@
 #import "RCPromotionalOffer.h"
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
-NSErrorUserInfoKey const RCShouldMarkSyncedKey = @"shouldMarkSynced";
+NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"shouldMarkSynced";
 
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
@@ -517,7 +517,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     if (statusCode > 300) {
         BOOL isInternalServerError = statusCode >= 500;
         NSDictionary *extraUserInfo = @{
-            RCShouldMarkSyncedKey: @(!isInternalServerError)
+            RCSuccessfullySyncedKey: @(!isInternalServerError)
         };
         NSError *responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
                                                                      backendMessage:response[@"message"]

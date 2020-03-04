@@ -16,8 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL isNetworkError = self.code == RCNetworkError;
     BOOL shouldMarkSynced = (
         !isNetworkError
-        && self.userInfo[RCShouldMarkSyncedKey] != nil
-        && ((NSNumber *) self.userInfo[RCShouldMarkSyncedKey]).boolValue
+        && self.userInfo[RCSuccessfullySyncedKey] != nil
+        && ((NSNumber *) self.userInfo[RCSuccessfullySyncedKey]).boolValue
     );
     if (shouldMarkSynced) {
         return YES;
