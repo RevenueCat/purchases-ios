@@ -4,11 +4,11 @@
 //
 
 #import "RCSubscriberAttributesManager.h"
-#import "RCSubscriberAttribute.h"
 #import "RCSpecialSubscriberAttributes.h"
 #import "RCBackend.h"
 #import "RCDeviceCache.h"
 #import "NSError+RCExtensions.h"
+#import "NSData+RCExtensions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -54,8 +54,9 @@ NS_ASSUME_NONNULL_BEGIN
     [self setAttributeWithKey:SPECIAL_ATTRIBUTE_DISPLAY_NAME value:displayName appUserID:appUserID];
 }
 
-- (void)setPushToken:(nullable NSString *)pushToken appUserID:(NSString *)appUserID {
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_PUSH_TOKEN value:pushToken appUserID:appUserID];
+- (void)setPushToken:(nullable NSData *)pushToken appUserID:(NSString *)appUserID {
+    NSMutableString *deviceTokenString = pushToken.dataAsString;
+    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_PUSH_TOKEN value:deviceTokenString appUserID:appUserID];
 }
 
 - (void)syncIfNeededWithAppUserID:(NSString *)appUserID completion:(void (^)(NSError *_Nullable error))completion {
@@ -112,7 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
     NSString *valueOrEmpty = value ?: @"";
-    NSString * _Nullable currentValue = [self currentValueForAttributeWithKey:key appUserID:appUserID];
+    NSString *_Nullable currentValue = [self currentValueForAttributeWithKey:key appUserID:appUserID];
     if (!currentValue || ![currentValue isEqualToString:valueOrEmpty]) {
         [self storeAttributeLocallyWithKey:key value:value appUserID:appUserID];
     }

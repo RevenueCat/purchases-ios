@@ -682,7 +682,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     [self _setDisplayName:displayName];
 }
 
-- (void)setPushToken:(nullable NSString *)pushToken {
+- (void)setPushToken:(nullable NSData *)pushToken {
     [self _setPushToken:pushToken];
 }
 

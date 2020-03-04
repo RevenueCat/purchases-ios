@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.subscriberAttributesManager setDisplayName:displayName appUserID:self.appUserID];
 }
 
-- (void)_setPushToken:(nullable NSString *)pushToken {
+- (void)_setPushToken:(nullable NSData *)pushToken {
     RCDebugLog(@"setPushToken called");
     [self.subscriberAttributesManager setPushToken:pushToken appUserID:self.appUserID];
 }

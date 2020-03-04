@@ -26,11 +26,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setDisplayName:(nullable NSString *)displayName appUserID:(NSString *)appUserID;
 
-- (void)setPushToken:(nullable NSString *)pushToken appUserID:(NSString *)appUserID;
+- (void)setPushToken:(nullable NSData *)pushToken appUserID:(NSString *)appUserID;
 
 - (void)syncIfNeededWithAppUserID:(NSString *)appUserID completion:(void (^)(NSError *_Nullable error))completion;
 
-- (NSDictionary <NSString *, RCSubscriberAttribute *> *)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID;
+- (RCSubscriberAttributeDict)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID;
 
 - (void)markAttributesAsSynced:(RCSubscriberAttributeDict)syncedAttributes
                      appUserID:(NSString *)appUserID;
