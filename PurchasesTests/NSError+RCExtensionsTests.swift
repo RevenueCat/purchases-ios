@@ -11,47 +11,47 @@ import Purchases
 
 class NSErrorRCExtensionsTests: XCTestCase {
 
-    func testShouldMarkSyncedKeyPresentFalseIfCodeIsNetworkError() {
+    func testSuccessfullySyncedFalseIfCodeIsNetworkError() {
         let errorCode = Purchases.ErrorCode.networkError.rawValue
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [:])
-        expect(error.shouldMarkSyncedKeyPresent()) == false
+        expect(error.successfullySynced()) == false
     }
 
-    func testShouldMarkSyncedKeyPresentFalseIfNotShouldMarkSynced() {
+    func testSuccessfullySyncedFalseIfNotShouldMarkSynced() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [RCSuccessfullySyncedKey: false])
-        expect(error.shouldMarkSyncedKeyPresent()) == false
+        expect(error.successfullySynced()) == false
     }
 
-    func testShouldMarkSyncedKeyPresentFalseIfShouldMarkSyncedNotPresent() {
+    func testSuccessfullySyncedFalseIfShouldMarkSyncedNotPresent() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [:])
-        expect(error.shouldMarkSyncedKeyPresent()) == false
+        expect(error.successfullySynced()) == false
     }
 
-    func testShouldMarkSyncedKeyPresentTrueIfShouldMarkSynced() {
+    func testSuccessfullySyncedTrueIfShouldMarkSynced() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [RCSuccessfullySyncedKey: true])
-        expect(error.shouldMarkSyncedKeyPresent()) == true
+        expect(error.successfullySynced()) == true
     }
 
-    func testShouldMarkSyncedKeyPresentTrueIfTrueForUnderlyingError() {
+    func testSuccessfullySyncedTrueIfTrueForUnderlyingError() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
         let underlyingError = NSError(domain: Purchases.ErrorDomain, code: errorCode,
                                       userInfo: [RCSuccessfullySyncedKey: true])
-        expect(underlyingError.shouldMarkSyncedKeyPresent()) == true
+        expect(underlyingError.successfullySynced()) == true
 
         let error = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
-        expect((error as NSError).shouldMarkSyncedKeyPresent()) == true
+        expect((error as NSError).successfullySynced()) == true
     }
 
-    func testShouldMarkSyncedKeyPresentFalseIfFalseForUnderlyingError() {
+    func testSuccessfullySyncedFalseIfFalseForUnderlyingError() {
         let errorCode = Purchases.ErrorCode.networkError.rawValue
         let underlyingError = NSError(domain: Purchases.ErrorDomain, code: errorCode,
                                       userInfo: [RCSuccessfullySyncedKey: true])
-        expect(underlyingError.shouldMarkSyncedKeyPresent()) == false
+        expect(underlyingError.successfullySynced()) == false
 
         let error = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
-        expect((error as NSError).shouldMarkSyncedKeyPresent()) == false
+        expect((error as NSError).successfullySynced()) == false
     }
 }

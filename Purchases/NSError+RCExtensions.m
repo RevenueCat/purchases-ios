@@ -12,19 +12,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation NSError (RCExtensions)
 
-- (BOOL)shouldMarkSyncedKeyPresent {
+- (BOOL)successfullySynced {
     BOOL isNetworkError = self.code == RCNetworkError;
-    BOOL shouldMarkSynced = (
+    BOOL successfullySynced = (
         !isNetworkError
         && self.userInfo[RCSuccessfullySyncedKey] != nil
         && ((NSNumber *) self.userInfo[RCSuccessfullySyncedKey]).boolValue
     );
-    if (shouldMarkSynced) {
+    if (successfullySynced) {
         return YES;
     } else if (self.userInfo[NSUnderlyingErrorKey]) {
         NSError *underlyingError = (NSError *) self.userInfo[NSUnderlyingErrorKey];
         if (underlyingError) {
-            return underlyingError.shouldMarkSyncedKeyPresent;
+            return underlyingError.successfullySynced;
         }
     }
 
