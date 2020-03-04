@@ -1,3 +1,16 @@
-PODFILE CHECKSUM: b4d1fa385624aae137b02b01f594f56927c94307
+PODS:
+  - Purchases (3.1.0-SNAPSHOT)
 
-COCOAPODS: 1.6.0.beta.2
+DEPENDENCIES:
+  - Purchases (from `../../`)
+
+EXTERNAL SOURCES:
+  Purchases:
+    :path: "../../"
+
+SPEC CHECKSUMS:
+  Purchases: c489d0cf7114a6da5f86bd14031cdc686398e814
+
+PODFILE CHECKSUM: b6ad00ca1e6fc400e0898ad2ac4a293958616d2e
+
+COCOAPODS: 1.8.4
