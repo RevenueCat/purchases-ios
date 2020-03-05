@@ -132,6 +132,17 @@ class BasicPurchaserInfoTests: XCTestCase {
         expect(purchaserInfo!.originalApplicationVersion).to(equal("1.0"))
     }
 
+    func testOriginalPurchaseDate() {
+        let purchaserInfo = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "original_application_version": "1.0",
+                "original_purchase_date": "2018-10-26T23:17:53Z",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(purchaserInfo!.originalPurchaseDate).to(equal(Date(timeIntervalSinceReferenceDate: 562288673)))
+    }
+
     func testPreservesOriginalJSONSerializableObject() {
         let json = purchaserInfo?.jsonObject()
         let newInfo = Purchases.PurchaserInfo(data: json!)

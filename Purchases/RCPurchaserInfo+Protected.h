@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSDictionary<NSString *, NSDate *> *purchaseDatesByProduct;
 @property (nonatomic, readonly) NSSet<NSString *> *nonConsumablePurchases;
 @property (nonatomic, readonly, nullable) NSString  *originalApplicationVersion;
+@property (nonatomic, readonly, nullable) NSDate *originalPurchaseDate;
 @property (readonly, nullable) NSString *schemaVersion;
 
 - (NSDictionary *)JSONObject;

@@ -127,6 +127,7 @@ class PurchasesTests: XCTestCase {
     class MockBackend: RCBackend {
         var userID: String?
         var originalApplicationVersion: String?
+        var originalPurchaseDate: Date?
         var timeout = false
         var getSubscriberCallCount = 0
         var overridePurchaserInfo = Purchases.PurchaserInfo(data: [
@@ -1256,7 +1257,8 @@ class PurchasesTests: XCTestCase {
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:],
-                "original_application_version": "1.0"
+                "original_application_version": "1.0",
+                "original_purchase_date": "2018-10-26T23:17:53Z"
             ]
         ])
         
@@ -1267,6 +1269,7 @@ class PurchasesTests: XCTestCase {
         }
 
         expect(receivedPurchaserInfo?.originalApplicationVersion).toEventually(equal("1.0"))
+        expect(receivedPurchaserInfo?.originalPurchaseDate).toEventually(equal(Date(timeIntervalSinceReferenceDate: 562288673)))
         expect(self.backend.userID).toEventuallyNot(beNil())
         expect(self.backend.postReceiptDataCalled).toEventuallyNot(beFalse())
     }
