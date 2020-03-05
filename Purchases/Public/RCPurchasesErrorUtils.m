@@ -66,6 +66,10 @@ static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
             return @"Apple Subscription Key is invalid or not present. In order to provide subscription offers, you must first generate a subscription key. Please see https://docs.revenuecat.com/docs/ios-subscription-offers for more info.";
         case RCIneligibleError:
             return @"The User is ineligible for that action.";
+        case RCInsufficientPermissionsError:
+            return @"App does not have sufficient permissions to make purchases";
+        case RCPaymentPendingError:
+            return @"The payment is pending.";
         case RCInvalidSubscriberAttributesError:
             return @"One or more of the attributes sent could not be saved.";
     }
