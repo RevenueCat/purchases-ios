@@ -57,7 +57,6 @@ class SubscriberAttributeTests: XCTestCase {
 
         expect(receivedDictionary["key"] as? String) == key
         expect(receivedDictionary["value"] as? String) == value
-        expect(receivedDictionary["setTime"] as! Date) == now
         expect((receivedDictionary["isSynced"] as! NSNumber).boolValue) == false
     }
 
@@ -75,7 +74,7 @@ class SubscriberAttributeTests: XCTestCase {
         expect(receivedDictionary.keys.count) == 2
 
         expect(receivedDictionary["value"] as? String) == value
-        let updatedAtEpoch = (receivedDictionary["updated_at"] as! NSNumber).doubleValue
-        expect(updatedAtEpoch) == now.timeIntervalSince1970
+        let updatedAtEpoch = (receivedDictionary["updated_at_ms"] as! NSNumber).uint64Value
+        expect(updatedAtEpoch) == (now as NSDate).millisecondsSince1970()
     }
 }
