@@ -22,6 +22,7 @@ func resolveTargets() -> [Target] {
         .target(name: "Purchases",
                 dependencies: [],
                 path: ".",
+                exclude: ["Purchases/Info.plist"],
                 sources: ["Purchases", "Purchases/Public"],
                 publicHeadersPath: "Purchases/Public",
                 cSettings: [
