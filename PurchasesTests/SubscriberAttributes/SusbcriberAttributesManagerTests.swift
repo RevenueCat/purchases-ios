@@ -387,7 +387,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         mockDeviceCache.stubbedNumberOfUnsyncedAttributesResult = UInt(mockAttributes.count)
         mockDeviceCache.stubbedUnsyncedAttributesByKeyResult = mockAttributes
         let errorCode = Purchases.ErrorCode.unknownBackendError.rawValue
-        let mockError = NSError(domain: "error", code: errorCode, userInfo: ["shouldMarkSynced": "true"])
+        let mockError = NSError(domain: "error", code: errorCode, userInfo: [RCSuccessfullySyncedKey: "true"])
         mockBackend.stubbedPostSubscriberAttributesCompletionResult = (mockError, ())
 
         var receivedError: Error? = nil
