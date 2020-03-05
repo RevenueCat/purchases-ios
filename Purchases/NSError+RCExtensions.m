@@ -13,22 +13,17 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation NSError (RCExtensions)
 
 - (BOOL)successfullySynced {
-    BOOL isNetworkError = self.code == RCNetworkError;
-    BOOL successfullySynced = (
-        !isNetworkError
-        && self.userInfo[RCSuccessfullySyncedKey] != nil
-        && ((NSNumber *) self.userInfo[RCSuccessfullySyncedKey]).boolValue
-    );
-    if (successfullySynced) {
-        return YES;
-    } else if (self.userInfo[NSUnderlyingErrorKey]) {
-        NSError *underlyingError = (NSError *) self.userInfo[NSUnderlyingErrorKey];
-        if (underlyingError) {
-            return underlyingError.successfullySynced;
-        }
+    if (self.code == RCNetworkError) {
+        return NO;
     }
 
-    return NO;
+    if (self.userInfo[RCSuccessfullySyncedKey] == nil) {
+        return NO;
+    }
+
+    NSNumber *successfullySyncedNumber = self.userInfo[RCSuccessfullySyncedKey];
+
+    return successfullySyncedNumber.boolValue;
 }
 
 @end

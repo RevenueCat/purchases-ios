@@ -34,24 +34,4 @@ class NSErrorRCExtensionsTests: XCTestCase {
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [RCSuccessfullySyncedKey: true])
         expect(error.successfullySynced()) == true
     }
-
-    func testSuccessfullySyncedTrueIfTrueForUnderlyingError() {
-        let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
-        let underlyingError = NSError(domain: Purchases.ErrorDomain, code: errorCode,
-                                      userInfo: [RCSuccessfullySyncedKey: true])
-        expect(underlyingError.successfullySynced()) == true
-
-        let error = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
-        expect((error as NSError).successfullySynced()) == true
-    }
-
-    func testSuccessfullySyncedFalseIfFalseForUnderlyingError() {
-        let errorCode = Purchases.ErrorCode.networkError.rawValue
-        let underlyingError = NSError(domain: Purchases.ErrorDomain, code: errorCode,
-                                      userInfo: [RCSuccessfullySyncedKey: true])
-        expect(underlyingError.successfullySynced()) == false
-
-        let error = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
-        expect((error as NSError).successfullySynced()) == false
-    }
 }
