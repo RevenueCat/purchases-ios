@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
     RCSubscriberAttributeDict unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID];
 
     [self.backend postSubscriberAttributes:unsyncedAttributes appUserID:appUserID completion:^(NSError *error) {
-        BOOL didBackendReceiveValues = (error == nil || error.shouldMarkSyncedKeyPresent);
+        BOOL didBackendReceiveValues = (error == nil || error.successfullySynced);
 
         if (didBackendReceiveValues) {
             [self markAttributesAsSynced:unsyncedAttributes appUserID:appUserID];
