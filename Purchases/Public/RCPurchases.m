@@ -606,7 +606,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                            completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
                                [self dispatch:^{
                                    if (error) {
-                                       if (error.shouldMarkSyncedKeyPresent) {
+                                       if (error.successfullySynced) {
                                            [self markAttributesAsSynced:subscriberAttributes appUserID:self.appUserID];
                                        }
                                        CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
