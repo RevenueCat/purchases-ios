@@ -35,4 +35,3 @@
 #include <Purchases/RCPurchasesErrorUtils+Protected.h>
 #include <Purchases/NSDate+RCExtensions.h>
 #include <Purchases/RCSubscriberAttributesManager.h>
-#include <Purchases/RCSubscriberAttributesManager+Protected.h>
