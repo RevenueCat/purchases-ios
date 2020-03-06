@@ -145,6 +145,39 @@ class BackendSubscriberAttributesTests: XCTestCase {
         expect((receivedNSError.userInfo["successfullySynced"] as! NSNumber).boolValue) == false
     }
 
+    func testPostSubscriberAttributesSendsAttributesErrorsIfAny() {
+        var completionCallCount = 0
+        mockHTTPClient.shouldInvokeCompletion = true
+        mockHTTPClient.stubbedCompletionStatusCode = 503
+        mockHTTPClient.stubbedCompletionError = nil
+        let attributeErrors = ["attribute_errors": ["some_attribute": "wasn't valid"]]
+        mockHTTPClient.stubbedCompletionResponse = attributeErrors
+
+        var receivedError: Error? = nil
+        backend.postSubscriberAttributes([
+                                             subscriberAttribute1.key: subscriberAttribute1,
+                                             subscriberAttribute2.key: subscriberAttribute2
+                                         ],
+                                         appUserID: appUserID,
+                                         completion: { (error: Error!) in
+                                             completionCallCount += 1
+                                             receivedError = error
+                                         })
+
+        expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
+        expect(completionCallCount).toEventually(equal(1))
+        expect(receivedError).toNot(beNil())
+        expect(receivedError).to(beAKindOf(Error.self))
+
+        let receivedNSError = receivedError! as NSError
+        expect(receivedNSError.code) == Purchases.ErrorCode.unknownBackendError.rawValue
+        expect(receivedNSError.userInfo["attribute_errors"]).toNot(beNil())
+
+        guard let receivedAttributeErrors = receivedNSError.userInfo["attribute_errors"] as? [String: String] else {
+            fatalError("received attribute errors are not of type [String: String]")
+        }
+        expect(receivedAttributeErrors) == ["some_attribute": "wasn't valid"]
+    }
 
     func testPostSubscriberAttributesCallsCompletionWithErrorInBadRequestCase() {
         var completionCallCount = 0
