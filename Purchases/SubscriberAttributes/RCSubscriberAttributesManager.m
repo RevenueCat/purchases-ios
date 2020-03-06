@@ -113,7 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
     NSString *valueOrEmpty = value ?: @"";
-    NSString *_Nullable currentValue = [self currentValueForAttributeWithKey:key appUserID:appUserID];
+    NSString * _Nullable currentValue = [self currentValueForAttributeWithKey:key appUserID:appUserID];
     if (!currentValue || ![currentValue isEqualToString:valueOrEmpty]) {
         [self storeAttributeLocallyWithKey:key value:value appUserID:appUserID];
     }
