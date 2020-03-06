@@ -21,7 +21,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Purchases.debugLogsEnabled = true
         Purchases.configure(withAPIKey: <your_public_sdk_key_here>)
 
+        // set attributes to store additional, structured information for a user in RevenueCat.
+        // More info: https://docs.revenuecat.com/docs/user-attributes
         Purchases.shared.setAttributes(["favorite_cat" : "garfield"])
+
+        // we're requesting push notifications on app start only to showcase how to set the push token in RevenueCat
         requestPushNotificationsPermisssions()
 
         return true
