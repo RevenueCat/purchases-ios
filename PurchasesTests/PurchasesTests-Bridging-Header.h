@@ -34,3 +34,4 @@
 #include <Purchases/RCPurchasesErrorUtils.h>
 #include <Purchases/RCPurchasesErrorUtils+Protected.h>
 #include <Purchases/NSDate+RCExtensions.h>
+#include <Purchases/RCSubscriberAttributesManager.h>

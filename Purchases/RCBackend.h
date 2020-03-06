@@ -93,7 +93,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 
 - (void)postSubscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
                        appUserID:(NSString *)appUserID
-                      completion:(void (^)(NSError *))completion;
+                      completion:(nullable void (^)(NSError * _Nullable error))completion;
 
 @end
 
