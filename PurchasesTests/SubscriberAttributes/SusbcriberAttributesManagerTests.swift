@@ -33,6 +33,16 @@ class SubscriberAttributesManagerTests: XCTestCase {
         ]
     }
 
+    func testInitializerCrashesIfNilParams() {
+        expect(expression: {
+            RCSubscriberAttributesManager(backend: nil, deviceCache: self.mockDeviceCache) }
+        ).to(raiseException())
+
+        expect(expression: {
+            RCSubscriberAttributesManager(backend: self.mockBackend, deviceCache: nil)
+        }).to(raiseException())
+    }
+
     // MARK: setting attributes
 
     func testSetAttributes() {
