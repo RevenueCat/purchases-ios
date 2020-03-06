@@ -17,27 +17,27 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark protected methods
 
 - (void)_setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
-    NSLog(@"setAttributes called");
+    RCDebugLog(@"setAttributes called");
     [self.subscriberAttributesManager setAttributes:attributes appUserID:self.appUserID];
 }
 
 - (void)_setEmail:(nullable NSString *)email {
-    NSLog(@"setEmail called");
+    RCDebugLog(@"setEmail called");
     [self.subscriberAttributesManager setEmail:email appUserID:self.appUserID];
 }
 
 - (void)_setPhoneNumber:(nullable NSString *)phoneNumber {
-    NSLog(@"setPhoneNumber called");
+    RCDebugLog(@"setPhoneNumber called");
     [self.subscriberAttributesManager setPhoneNumber:phoneNumber appUserID:self.appUserID];
 }
 
 - (void)_setDisplayName:(nullable NSString *)displayName {
-    NSLog(@"setDisplayName called");
+    RCDebugLog(@"setDisplayName called");
     [self.subscriberAttributesManager setDisplayName:displayName appUserID:self.appUserID];
 }
 
 - (void)_setPushToken:(nullable NSString *)pushToken {
-    NSLog(@"setPushToken called");
+    RCDebugLog(@"setPushToken called");
     [self.subscriberAttributesManager setPushToken:pushToken appUserID:self.appUserID];
 }
 
