@@ -11,17 +11,6 @@ import Purchases
 
 class PurchasesSubscriberAttributesTests: XCTestCase {
 
-    override func setUp() {
-        self.userDefaults = UserDefaults(suiteName: "TestDefaults")
-    }
-
-    override func tearDown() {
-        purchases?.delegate = nil
-        purchases = nil
-        Purchases.setDefaultInstance(nil)
-        UserDefaults().removePersistentDomain(forName: "TestDefaults")
-    }
-
     let mockReceiptFetcher = MockReceiptFetcher()
     let mockRequestFetcher = MockRequestFetcher()
     let mockBackend = MockBackend()
@@ -33,10 +22,33 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     let mockDeviceCache = MockDeviceCache()
     let mockIdentityManager = MockUserManager(mockAppUserID: "app_user");
     let mockSubscriberAttributesManager = MockSubscriberAttributesManager()
+    var subscriberAttributeHeight: RCSubscriberAttribute!
+    var subscriberAttributeWeight: RCSubscriberAttribute!
+    var mockAttributes: [String: RCSubscriberAttribute]!
 
     let purchasesDelegate = MockPurchasesDelegate()
 
     var purchases: Purchases!
+
+
+    override func setUp() {
+        self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        self.subscriberAttributeHeight = RCSubscriberAttribute(key: "height",
+                                                               value: "183")
+        self.subscriberAttributeWeight = RCSubscriberAttribute(key: "weight",
+                                                               value: "160")
+        self.mockAttributes = [
+            subscriberAttributeHeight.key: subscriberAttributeHeight,
+            subscriberAttributeWeight.key: subscriberAttributeWeight
+        ]
+    }
+
+    override func tearDown() {
+        purchases?.delegate = nil
+        purchases = nil
+        Purchases.setDefaultInstance(nil)
+        UserDefaults().removePersistentDomain(forName: "TestDefaults")
+    }
 
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
@@ -62,6 +74,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         let purchases = Purchases.configure(withAPIKey: "key")
         expect(purchases.subscriberAttributesManager).toNot(beNil())
     }
+
+    // Mark: Notifications
 
     func testSubscribesToForegroundNotifications() {
         setupPurchases()
@@ -100,6 +114,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockNotificationCenter.fireNotifications()
         expect(self.mockSubscriberAttributesManager.invokedSyncIfNeededCount) == 2
     }
+
+    // Mark: Set attributes
 
     func testSetAttributesMakesRightCalls() {
         setupPurchases()
@@ -148,5 +164,83 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParameters?.pushToken) == "asdf45asdg35asd5"
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParameters?.appUserID) == mockIdentityManager
             .currentAppUserID
+    }
+
+    // MARK: Post receipt with attributes
+
+    func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessful() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
+        mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.mockStoreKitWrapper.payment!
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
+
+        self.mockBackend.stubbedPostReceiptPurchaserInfo = Purchases.PurchaserInfo()
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
+
+        expect(self.mockBackend.invokedPostReceiptData).to(beTrue())
+        expect(self.mockStoreKitWrapper.finishCalled).toEventually(beTrue())
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == true
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.syncedAttributes) == mockAttributes
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.appUserID) == mockIdentityManager
+            .currentAppUserID
+    }
+
+    func testPostReceiptMarksSubscriberAttributesSyncedIfBackendErrorIsFinishable() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
+        mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.mockStoreKitWrapper.payment!
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
+
+        let errorCode = Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber
+        self.mockBackend.stubbedPostReceiptPurchaserError = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
+                                                                                              backendMessage: "Invalid credentials",
+                                                                                              finishable: true)
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
+
+        expect(self.mockBackend.invokedPostReceiptData) == true
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == true
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.syncedAttributes) == mockAttributes
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.appUserID) == mockIdentityManager
+            .currentAppUserID
+    }
+
+    func testPostReceiptDoesntMarkSubscriberAttributesSyncedIfBackendErrorIsNotFinishable() {
+        setupPurchases()
+        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
+        mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.mockStoreKitWrapper.payment!
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
+
+        let errorCode = Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber
+        self.mockBackend.stubbedPostReceiptPurchaserError = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
+                                                                                              backendMessage: "Invalid credentials",
+                                                                                              finishable: false)
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
+
+        expect(self.mockBackend.invokedPostReceiptData).to(beTrue())
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == false
     }
 }

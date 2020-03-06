@@ -7,6 +7,8 @@ class MockBackend: RCBackend {
 
     var invokedPostReceiptData = false
     var invokedPostReceiptDataCount = 0
+    var stubbedPostReceiptPurchaserInfo: Purchases.PurchaserInfo? = nil
+    var stubbedPostReceiptPurchaserError: Error? = nil
     var invokedPostReceiptDataParameters: (data: Data?, appUserID: String?, isRestore: Bool, productIdentifier: String?, price: NSDecimalNumber?, paymentMode: RCPaymentMode, introductoryPrice: NSDecimalNumber?, currencyCode: String?, subscriptionGroup: String?, discounts: [RCPromotionalOffer]?, offeringIdentifier: String?, observerMode: Bool, subscriberAttributesByKey: [String: RCSubscriberAttribute]?, completion: RCBackendPurchaserInfoResponseHandler?)?
     var invokedPostReceiptDataParametersList = [(data: Data?,
         appUserID: String?,
@@ -67,6 +69,7 @@ class MockBackend: RCBackend {
                                                         observerMode,
                                                         subscriberAttributesByKey,
                                                         completion))
+        completion(stubbedPostReceiptPurchaserInfo, stubbedPostReceiptPurchaserError)
     }
 
     var invokedGetSubscriberData = false
