@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithBackend:(nullable RCBackend *)backend
                     deviceCache:(nullable RCDeviceCache *)deviceCache {
     if (self = [super init]) {
+        NSParameterAssert(backend);
+        NSParameterAssert(deviceCache);
         self.backend = backend;
         self.deviceCache = deviceCache;
     }
