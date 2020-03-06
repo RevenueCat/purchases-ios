@@ -516,9 +516,13 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
     if (statusCode > 300) {
         BOOL isInternalServerError = statusCode >= 500;
-        NSDictionary *extraUserInfo = @{
+        NSMutableDictionary *extraUserInfo = @{
             RCSuccessfullySyncedKey: @(!isInternalServerError)
-        };
+        }.mutableCopy;
+        NSString *attributeErrorsKey = @"attribute_errors";
+        if (response[attributeErrorsKey] != nil) {
+            extraUserInfo[attributeErrorsKey] = response[attributeErrorsKey];
+        }
         NSError *responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
                                                                      backendMessage:response[@"message"]
                                                                       extraUserInfo:extraUserInfo];
