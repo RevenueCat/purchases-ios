@@ -9,9 +9,11 @@
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
 #define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME UIApplicationDidBecomeActiveNotification
+#define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME UIApplicationWillResignActiveNotification
 #elif TARGET_OS_MAC
 #import <AppKit/AppKit.h>
 #define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME NSApplicationDidBecomeActiveNotification
+#define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME NSApplicationWillResignActiveNotification
 #endif
 #if TARGET_OS_MACCATALYST
 #define PLATFORM_HEADER @"uikitformac"

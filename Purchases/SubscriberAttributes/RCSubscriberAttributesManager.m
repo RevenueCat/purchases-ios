@@ -126,7 +126,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSString *)currentValueForAttributeWithKey:(NSString *)key appUserID:(NSString *)appUserID {
     RCSubscriberAttribute *attribute = [self.deviceCache subscriberAttributeWithKey:key appUserID:appUserID];
-    return attribute.value;
+    return attribute ? attribute.value : nil;
 }
 
 - (NSUInteger)numberOfUnsyncedAttributesForAppUserID:(NSString *)appUserID {
