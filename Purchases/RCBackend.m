@@ -101,7 +101,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     NSDictionary *subscriberAttributesErrorInfo = [self attributesUserInfoFromResponse:response
                                                                             statusCode:statusCode];
 
-    BOOL hasError = (isErrorStatusCode || subscriberAttributesErrorInfo.count > 0);
+    BOOL hasError = (isErrorStatusCode || subscriberAttributesErrorInfo[RCAttributeErrorsKey] != nil);
 
     if (hasError) {
         BOOL finishable = (statusCode < 500);
