@@ -150,7 +150,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         mockHTTPClient.shouldInvokeCompletion = true
         mockHTTPClient.stubbedCompletionStatusCode = 503
         mockHTTPClient.stubbedCompletionError = nil
-        let attributeErrors = ["attribute_errors": ["some_attribute": "wasn't valid"]]
+        let attributeErrors = [RCAttributeErrorsKey: ["some_attribute": "wasn't valid"]]
         mockHTTPClient.stubbedCompletionResponse = attributeErrors
 
         var receivedError: Error? = nil
@@ -171,9 +171,9 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == Purchases.ErrorCode.unknownBackendError.rawValue
-        expect(receivedNSError.userInfo["attribute_errors"]).toNot(beNil())
+        expect(receivedNSError.userInfo[RCAttributeErrorsKey]).toNot(beNil())
 
-        guard let receivedAttributeErrors = receivedNSError.userInfo["attribute_errors"] as? [String: String] else {
+        guard let receivedAttributeErrors = receivedNSError.userInfo[RCAttributeErrorsKey] as? [String: String] else {
             fatalError("received attribute errors are not of type [String: String]")
         }
         expect(receivedAttributeErrors) == ["some_attribute": "wasn't valid"]
