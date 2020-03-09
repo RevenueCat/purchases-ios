@@ -302,10 +302,13 @@ class BackendSubscriberAttributesTests: XCTestCase {
         var completionCallCount = 0
 
         self.mockHTTPClient.stubbedCompletionStatusCode = 400
-        let attributesErrors = [
+        let attributeErrors = [
             RCAttributeErrorsKey: ["$email": "email is not in valid format"]
         ]
-        self.mockHTTPClient.stubbedCompletionResponse = attributesErrors
+        let attributesErrorsResponse = [
+            RCAttributeErrorsResponseKey: attributeErrors
+        ]
+        self.mockHTTPClient.stubbedCompletionResponse = attributesErrorsResponse
 
         let subscriberAttributesByKey: [String: RCSubscriberAttribute] = [
             subscriberAttribute1.key: subscriberAttribute1,
@@ -336,6 +339,6 @@ class BackendSubscriberAttributesTests: XCTestCase {
         guard let nonNilReceivedError = receivedError else { fatalError() }
         expect(nonNilReceivedError.successfullySynced()) == true
         expect(nonNilReceivedError.subscriberAttributesErrors() as? [String: String])
-            == attributesErrors[RCAttributeErrorsKey]
+            == attributeErrors[RCAttributeErrorsKey]
     }
 }

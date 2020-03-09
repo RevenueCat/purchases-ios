@@ -19,7 +19,9 @@
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
 NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"successfullySynced";
-NSString * const RCAttributeErrorsKey = @"attribute_errors";
+NSString *const RCAttributeErrorsKey = @"attribute_errors";
+NSString *const RCAttributeErrorsResponseKey = @"attribute_errors_response";
+
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
 {
@@ -538,8 +540,14 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     BOOL isInternalServerError = statusCode >= 500;
     resultDict[RCSuccessfullySyncedKey] = @(!isInternalServerError);
 
-    if (response[RCAttributeErrorsKey] != nil) {
-        resultDict[RCAttributeErrorsKey] = response[RCAttributeErrorsKey];
+    BOOL hasAttributesResponseContainerKey = (response[RCAttributeErrorsResponseKey] != nil);
+    NSDictionary *attributesResponseDict = hasAttributesResponseContainerKey
+                                           ? response[RCAttributeErrorsResponseKey]
+                                           : response;
+
+    BOOL hasAttributeErrors = (attributesResponseDict[RCAttributeErrorsKey] != nil);
+    if (hasAttributeErrors) {
+        resultDict[RCAttributeErrorsKey] = attributesResponseDict[RCAttributeErrorsKey];
     }
     return resultDict;
 }
