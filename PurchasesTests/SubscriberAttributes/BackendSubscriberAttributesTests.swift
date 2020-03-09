@@ -217,7 +217,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                          })
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 0
     }
-    
+
     // MARK: PostReceipt with subscriberAttributes
 
     func testPostReceiptWithSubscriberAttributesSendsThemCorrectly() {
@@ -296,5 +296,46 @@ class BackendSubscriberAttributesTests: XCTestCase {
         }
 
         expect(requestBody["attributes"]).to(beNil())
+    }
+
+    func testPostReceiptWithSubscriberAttributesPassesErrorsToCallback() {
+        var completionCallCount = 0
+
+        self.mockHTTPClient.stubbedCompletionStatusCode = 400
+        let attributesErrors = [
+            RCAttributeErrorsKey: ["$email": "email is not in valid format"]
+        ]
+        self.mockHTTPClient.stubbedCompletionResponse = attributesErrors
+
+        let subscriberAttributesByKey: [String: RCSubscriberAttribute] = [
+            subscriberAttribute1.key: subscriberAttribute1,
+            subscriberAttribute2.key: subscriberAttribute2
+        ]
+        var receivedError: NSError? = nil
+        backend.postReceiptData(receiptData,
+                                appUserID: appUserID,
+                                isRestore: false,
+                                productIdentifier: nil,
+                                price: nil,
+                                paymentMode: .none,
+                                introductoryPrice: nil,
+                                currencyCode: nil,
+                                subscriptionGroup: nil,
+                                discounts: nil,
+                                presentedOfferingIdentifier: nil,
+                                observerMode: false,
+                                subscriberAttributes: subscriberAttributesByKey,
+                                completion: { (purchaserInfo, error) in
+                                    completionCallCount += 1
+                                    receivedError = error as NSError?
+                                })
+
+        expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
+
+        expect(receivedError).toNot(beNil())
+        guard let nonNilReceivedError = receivedError else { fatalError() }
+        expect(nonNilReceivedError.successfullySynced()) == true
+        expect(nonNilReceivedError.subscriberAttributesErrors() as? [String: String])
+            == attributesErrors[RCAttributeErrorsKey]
     }
 }
