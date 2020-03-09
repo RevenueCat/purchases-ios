@@ -20,7 +20,7 @@
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
 NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"successfullySynced";
 NSString *const RCAttributeErrorsKey = @"attribute_errors";
-NSString *const RCAttributeErrorsResponseKey = @"attribute_errors_response";
+NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
 
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
@@ -101,7 +101,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     NSDictionary *subscriberAttributesErrorInfo = [self attributesUserInfoFromResponse:response
                                                                             statusCode:statusCode];
 
-    BOOL hasError = (isErrorStatusCode || subscriberAttributesErrorInfo != nil);
+    BOOL hasError = (isErrorStatusCode || subscriberAttributesErrorInfo.count > 0);
 
     if (hasError) {
         BOOL finishable = (statusCode < 500);
@@ -544,9 +544,6 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (NSDictionary *)attributesUserInfoFromResponse:(NSDictionary *)response statusCode:(NSInteger)statusCode {
     NSMutableDictionary *resultDict = [[NSMutableDictionary alloc] init];
 
-    BOOL isInternalServerError = statusCode >= 300 && statusCode >= 500;
-    resultDict[RCSuccessfullySyncedKey] = @(!isInternalServerError);
-
     BOOL hasAttributesResponseContainerKey = (response[RCAttributeErrorsResponseKey] != nil);
     NSDictionary *attributesResponseDict = hasAttributesResponseContainerKey
                                            ? response[RCAttributeErrorsResponseKey]
@@ -555,6 +552,9 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     BOOL hasAttributeErrors = (attributesResponseDict[RCAttributeErrorsKey] != nil);
     if (hasAttributeErrors) {
         resultDict[RCAttributeErrorsKey] = attributesResponseDict[RCAttributeErrorsKey];
+
+        BOOL isInternalServerError = statusCode >= 300 && statusCode >= 500;
+        resultDict[RCSuccessfullySyncedKey] = @(!isInternalServerError);
     }
     return resultDict;
 }
