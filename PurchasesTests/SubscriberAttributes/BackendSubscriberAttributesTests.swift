@@ -141,8 +141,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == Purchases.ErrorCode.unknownBackendError.rawValue
         expect(receivedNSError.successfullySynced()) == false
-        expect(receivedNSError.userInfo["successfullySynced"]).toNot(beNil())
-        expect((receivedNSError.userInfo["successfullySynced"] as! NSNumber).boolValue) == false
+        expect(receivedNSError.userInfo[RCSuccessfullySyncedKey]).toNot(beNil())
+        expect((receivedNSError.userInfo[RCSuccessfullySyncedKey] as! NSNumber).boolValue) == false
     }
 
     func testPostSubscriberAttributesSendsAttributesErrorsIfAny() {
@@ -204,8 +204,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == Purchases.ErrorCode.unknownBackendError.rawValue
         expect(receivedNSError.successfullySynced()) == true
-        expect(receivedNSError.userInfo["successfullySynced"]).toNot(beNil())
-        expect((receivedNSError.userInfo["successfullySynced"] as! NSNumber).boolValue) == true
+        expect(receivedNSError.userInfo[RCSuccessfullySyncedKey]).toNot(beNil())
+        expect((receivedNSError.userInfo[RCSuccessfullySyncedKey] as! NSNumber).boolValue) == true
     }
 
     func testPostSubscriberAttributesNoOpIfAttributesAreEmpty() {
