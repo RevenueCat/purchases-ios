@@ -22,8 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)configureSubscriberAttributesManager;
 - (RCSubscriberAttributeDict)unsyncedAttributesByKey;
-- (void)markAttributesAsSynced:(RCSubscriberAttributeDict)syncedAttributes
-                     appUserID:(NSString *)appUserID;
+- (void)markAttributesAsSyncedIfNeeded:(RCSubscriberAttributeDict)syncedAttributes
+                             appUserID:(NSString *)appUserID
+                                 error:(nullable NSError *)error;
 @end
 
 @interface RCPurchases ()

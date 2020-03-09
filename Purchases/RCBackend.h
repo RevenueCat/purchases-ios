@@ -24,6 +24,7 @@ typedef NS_ENUM(NSInteger, RCPaymentMode) {
 };
 
 extern NSErrorUserInfoKey const RCSuccessfullySyncedKey;
+extern NSString * const RCAttributeErrorsKey;
 
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode);

@@ -26,6 +26,10 @@ NS_ASSUME_NONNULL_BEGIN
     return successfullySyncedNumber.boolValue;
 }
 
+- (nullable NSDictionary *)subscriberAttributesErrors {
+    return self.userInfo[RCAttributeErrorsKey];
+}
+
 @end
 
 

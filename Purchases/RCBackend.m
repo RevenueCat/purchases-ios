@@ -19,8 +19,7 @@
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
 NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"successfullySynced";
-static NSString *const kAttributeErrorsKey = @"attribute_errors";
-
+NSString * const RCAttributeErrorsKey = @"attribute_errors";
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
 {
@@ -94,11 +93,16 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
         }
     } else {
         BOOL finishable = (statusCode < 500);
+        NSMutableDictionary *extraUserInfo = @{
+            RCFinishableKey: @(finishable)
+        }.mutableCopy;
+        NSDictionary *subscriberAttributesUserInfo = [self attributesUserInfoFromResponse:response
+                                                                               statusCode:statusCode];
+        [extraUserInfo addEntriesFromDictionary:subscriberAttributesUserInfo];
         responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
                                                             backendMessage:response[@"message"]
-                                                                finishable:finishable];
+                                                             extraUserInfo:extraUserInfo];
     }
-
     completion(info, responseError);
 }
 
@@ -534,8 +538,8 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     BOOL isInternalServerError = statusCode >= 500;
     resultDict[RCSuccessfullySyncedKey] = @(!isInternalServerError);
 
-    if (response[kAttributeErrorsKey] != nil) {
-        resultDict[kAttributeErrorsKey] = response[kAttributeErrorsKey];
+    if (response[RCAttributeErrorsKey] != nil) {
+        resultDict[RCAttributeErrorsKey] = response[RCAttributeErrorsKey];
     }
     return resultDict;
 }
