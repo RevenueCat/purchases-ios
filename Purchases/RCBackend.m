@@ -87,20 +87,28 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
     RCPurchaserInfo *info = nil;
     NSError *responseError = nil;
+    BOOL isErrorStatusCode = (statusCode >= 300);
 
-    if (statusCode < 300) {
+    if (!isErrorStatusCode) {
         info = [[RCPurchaserInfo alloc] initWithData:response];
         if (info == nil) {
             responseError = [RCPurchasesErrorUtils unexpectedBackendResponseError];
+            completion(info, responseError);
+            return;
         }
-    } else {
+    }
+
+    NSDictionary *subscriberAttributesErrorInfo = [self attributesUserInfoFromResponse:response
+                                                                            statusCode:statusCode];
+
+    BOOL hasError = (isErrorStatusCode || subscriberAttributesErrorInfo != nil);
+
+    if (hasError) {
         BOOL finishable = (statusCode < 500);
         NSMutableDictionary *extraUserInfo = @{
             RCFinishableKey: @(finishable)
         }.mutableCopy;
-        NSDictionary *subscriberAttributesUserInfo = [self attributesUserInfoFromResponse:response
-                                                                               statusCode:statusCode];
-        [extraUserInfo addEntriesFromDictionary:subscriberAttributesUserInfo];
+        [extraUserInfo addEntriesFromDictionary:subscriberAttributesErrorInfo];
         responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
                                                             backendMessage:response[@"message"]
                                                              extraUserInfo:extraUserInfo];
@@ -520,24 +528,23 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         completion([RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
         return;
     }
+    NSError *responseError = nil;
 
     if (statusCode > 300) {
         NSDictionary *extraUserInfo = [self attributesUserInfoFromResponse:response
                                                                 statusCode:statusCode];
-        NSError *responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
-                                                                     backendMessage:response[@"message"]
-                                                                      extraUserInfo:extraUserInfo];
-        completion(responseError);
-        return;
+        responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
+                                                            backendMessage:response[@"message"]
+                                                             extraUserInfo:extraUserInfo];
     }
 
-    completion(nil);
+    completion(responseError);
 }
 
 - (NSDictionary *)attributesUserInfoFromResponse:(NSDictionary *)response statusCode:(NSInteger)statusCode {
     NSMutableDictionary *resultDict = [[NSMutableDictionary alloc] init];
 
-    BOOL isInternalServerError = statusCode >= 500;
+    BOOL isInternalServerError = statusCode >= 300 && statusCode >= 500;
     resultDict[RCSuccessfullySyncedKey] = @(!isInternalServerError);
 
     BOOL hasAttributesResponseContainerKey = (response[RCAttributeErrorsResponseKey] != nil);
