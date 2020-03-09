@@ -543,6 +543,8 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (NSDictionary *)attributesUserInfoFromResponse:(NSDictionary *)response statusCode:(NSInteger)statusCode {
     NSMutableDictionary *resultDict = [[NSMutableDictionary alloc] init];
+    BOOL isInternalServerError = statusCode >= 500;
+    resultDict[RCSuccessfullySyncedKey] = @(!isInternalServerError);
 
     BOOL hasAttributesResponseContainerKey = (response[RCAttributeErrorsResponseKey] != nil);
     NSDictionary *attributesResponseDict = hasAttributesResponseContainerKey
@@ -552,9 +554,6 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     BOOL hasAttributeErrors = (attributesResponseDict[RCAttributeErrorsKey] != nil);
     if (hasAttributeErrors) {
         resultDict[RCAttributeErrorsKey] = attributesResponseDict[RCAttributeErrorsKey];
-
-        BOOL isInternalServerError = statusCode >= 300 && statusCode >= 500;
-        resultDict[RCSuccessfullySyncedKey] = @(!isInternalServerError);
     }
     return resultDict;
 }
