@@ -30,7 +30,6 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     var purchases: Purchases!
 
-
     override func setUp() {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
         self.subscriberAttributeHeight = RCSubscriberAttribute(key: "height",
@@ -198,7 +197,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             .currentAppUserID
     }
 
-    func testPostReceiptMarksSubscriberAttributesSyncedIfBackendErrorIsFinishable() {
+    func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessfullySynced() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
@@ -211,9 +210,10 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
         let errorCode = Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber
+        let extraUserInfo = [RCSuccessfullySyncedKey: true]
         self.mockBackend.stubbedPostReceiptPurchaserError = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
                                                                                               backendMessage: "Invalid credentials",
-                                                                                              finishable: true)
+                                                                                              extraUserInfo: extraUserInfo)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
@@ -225,7 +225,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             .currentAppUserID
     }
 
-    func testPostReceiptDoesntMarkSubscriberAttributesSyncedIfBackendErrorIsNotFinishable() {
+    func testPostReceiptDoesntMarkSubscriberAttributesSyncedIfBackendNotSuccessfullySynced() {
         setupPurchases()
         let product = MockProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
@@ -238,9 +238,10 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
         let errorCode = Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber
+        let extraUserInfo = [RCSuccessfullySyncedKey: false]
         self.mockBackend.stubbedPostReceiptPurchaserError = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
                                                                                               backendMessage: "Invalid credentials",
-                                                                                              finishable: false)
+                                                                                              extraUserInfo: extraUserInfo)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)

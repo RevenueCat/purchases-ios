@@ -20,6 +20,16 @@ class BackendSubscriberAttributesTests: XCTestCase {
     var mockHTTPClient: MockHTTPClient!
     var backend: RCBackend!
 
+    let validSubscriberResponse = [
+        "subscriber": [
+            "subscriptions": [
+                "onemonth_freetrial": [
+                    "expires_date": "2017-08-30T02:40:36Z"
+                ]
+            ]
+        ]
+    ]
+
     override func setUp() {
         mockHTTPClient = MockHTTPClient(platformFlavor: "iPhone")
         guard let backend = RCBackend(httpClient: mockHTTPClient, apiKey: "key") else { fatalError() }
@@ -141,8 +151,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == Purchases.ErrorCode.unknownBackendError.rawValue
         expect(receivedNSError.successfullySynced()) == false
-        expect(receivedNSError.userInfo["successfullySynced"]).toNot(beNil())
-        expect((receivedNSError.userInfo["successfullySynced"] as! NSNumber).boolValue) == false
+        expect(receivedNSError.userInfo[RCSuccessfullySyncedKey]).toNot(beNil())
+        expect((receivedNSError.userInfo[RCSuccessfullySyncedKey] as! NSNumber).boolValue) == false
     }
 
     func testPostSubscriberAttributesSendsAttributesErrorsIfAny() {
@@ -150,7 +160,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         mockHTTPClient.shouldInvokeCompletion = true
         mockHTTPClient.stubbedCompletionStatusCode = 503
         mockHTTPClient.stubbedCompletionError = nil
-        let attributeErrors = ["attribute_errors": ["some_attribute": "wasn't valid"]]
+        let attributeErrors = [RCAttributeErrorsKey: ["some_attribute": "wasn't valid"]]
         mockHTTPClient.stubbedCompletionResponse = attributeErrors
 
         var receivedError: Error? = nil
@@ -171,9 +181,9 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == Purchases.ErrorCode.unknownBackendError.rawValue
-        expect(receivedNSError.userInfo["attribute_errors"]).toNot(beNil())
+        expect(receivedNSError.userInfo[RCAttributeErrorsKey]).toNot(beNil())
 
-        guard let receivedAttributeErrors = receivedNSError.userInfo["attribute_errors"] as? [String: String] else {
+        guard let receivedAttributeErrors = receivedNSError.userInfo[RCAttributeErrorsKey] as? [String: String] else {
             fatalError("received attribute errors are not of type [String: String]")
         }
         expect(receivedAttributeErrors) == ["some_attribute": "wasn't valid"]
@@ -204,8 +214,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == Purchases.ErrorCode.unknownBackendError.rawValue
         expect(receivedNSError.successfullySynced()) == true
-        expect(receivedNSError.userInfo["successfullySynced"]).toNot(beNil())
-        expect((receivedNSError.userInfo["successfullySynced"] as! NSNumber).boolValue) == true
+        expect(receivedNSError.userInfo[RCSuccessfullySyncedKey]).toNot(beNil())
+        expect((receivedNSError.userInfo[RCSuccessfullySyncedKey] as! NSNumber).boolValue) == true
     }
 
     func testPostSubscriberAttributesNoOpIfAttributesAreEmpty() {
@@ -217,7 +227,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                          })
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 0
     }
-    
+
     // MARK: PostReceipt with subscriberAttributes
 
     func testPostReceiptWithSubscriberAttributesSendsThemCorrectly() {
@@ -296,5 +306,92 @@ class BackendSubscriberAttributesTests: XCTestCase {
         }
 
         expect(requestBody["attributes"]).to(beNil())
+    }
+
+    func testPostReceiptWithSubscriberAttributesPassesErrorsToCallbackIfStatusCodeIsError() {
+        var completionCallCount = 0
+
+        self.mockHTTPClient.stubbedCompletionStatusCode = 400
+        let attributeErrors = [
+            RCAttributeErrorsKey: ["$email": "email is not in valid format"]
+        ]
+        let attributesErrorsResponse = [
+            RCAttributeErrorsResponseKey: attributeErrors
+        ]
+        self.mockHTTPClient.stubbedCompletionResponse = attributesErrorsResponse
+
+        let subscriberAttributesByKey: [String: RCSubscriberAttribute] = [
+            subscriberAttribute1.key: subscriberAttribute1,
+            subscriberAttribute2.key: subscriberAttribute2
+        ]
+        var receivedError: NSError? = nil
+        backend.postReceiptData(receiptData,
+                                appUserID: appUserID,
+                                isRestore: false,
+                                productIdentifier: nil,
+                                price: nil,
+                                paymentMode: .none,
+                                introductoryPrice: nil,
+                                currencyCode: nil,
+                                subscriptionGroup: nil,
+                                discounts: nil,
+                                presentedOfferingIdentifier: nil,
+                                observerMode: false,
+                                subscriberAttributes: subscriberAttributesByKey,
+                                completion: { (purchaserInfo, error) in
+                                    completionCallCount += 1
+                                    receivedError = error as NSError?
+                                })
+
+        expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
+
+        expect(receivedError).toNot(beNil())
+        guard let nonNilReceivedError = receivedError else { fatalError() }
+        expect(nonNilReceivedError.successfullySynced()) == true
+        expect(nonNilReceivedError.subscriberAttributesErrors() as? [String: String])
+            == attributeErrors[RCAttributeErrorsKey]
+    }
+
+    func testPostReceiptWithSubscriberAttributesPassesErrorsToCallbackIfStatusCodeIsSuccess() {
+        var completionCallCount = 0
+
+        self.mockHTTPClient.stubbedCompletionStatusCode = 200
+        let attributeErrors = [
+            RCAttributeErrorsKey: ["$email": "email is not in valid format"]
+        ]
+        var response: [String: Any] = validSubscriberResponse
+        response[RCAttributeErrorsResponseKey] = attributeErrors
+        self.mockHTTPClient.stubbedCompletionResponse = response
+
+        let subscriberAttributesByKey: [String: RCSubscriberAttribute] = [
+            subscriberAttribute1.key: subscriberAttribute1,
+            subscriberAttribute2.key: subscriberAttribute2
+        ]
+        var receivedError: NSError? = nil
+        backend.postReceiptData(receiptData,
+                                appUserID: appUserID,
+                                isRestore: false,
+                                productIdentifier: nil,
+                                price: nil,
+                                paymentMode: .none,
+                                introductoryPrice: nil,
+                                currencyCode: nil,
+                                subscriptionGroup: nil,
+                                discounts: nil,
+                                presentedOfferingIdentifier: nil,
+                                observerMode: false,
+                                subscriberAttributes: subscriberAttributesByKey,
+                                completion: { (purchaserInfo, error) in
+                                    completionCallCount += 1
+                                    receivedError = error as NSError?
+                                })
+
+        expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
+
+        expect(receivedError).toNot(beNil())
+        guard let nonNilReceivedError = receivedError else { fatalError() }
+        expect(nonNilReceivedError.successfullySynced()) == true
+        expect(nonNilReceivedError.subscriberAttributesErrors() as? [String: String])
+            == attributeErrors[RCAttributeErrorsKey]
     }
 }

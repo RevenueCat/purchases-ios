@@ -606,14 +606,16 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                            completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
                                [self dispatch:^{
                                    if (error) {
-                                       if (error.successfullySynced) {
-                                           [self markAttributesAsSynced:subscriberAttributes appUserID:self.appUserID];
-                                       }
+                                       [self markAttributesAsSyncedIfNeeded:subscriberAttributes
+                                                                  appUserID:self.appUserID
+                                                                      error:error];
                                        CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
                                    } else if (info) {
                                        [self cachePurchaserInfo:info forAppUserID:self.appUserID];
                                        [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-                                       [self markAttributesAsSynced:subscriberAttributes appUserID:self.appUserID];
+                                       [self markAttributesAsSyncedIfNeeded:subscriberAttributes
+                                                                  appUserID:self.appUserID
+                                                                      error:nil];
                                        CALL_IF_SET_ON_MAIN_THREAD(completion, info, nil);
                                    }
                                }];
@@ -869,6 +871,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                     subscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
                                    error:(nullable NSError *)error {
     [self dispatch:^{
+        [self markAttributesAsSyncedIfNeeded:subscriberAttributes appUserID:self.appUserID error:error];
+
         RCPurchaseCompletedBlock completion = nil;
         @synchronized (self) {
             completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
@@ -878,7 +882,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             [self cachePurchaserInfo:info forAppUserID:self.appUserID];
 
             [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-            [self markAttributesAsSynced:subscriberAttributes appUserID:self.appUserID];
 
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, info, nil, false);
 
@@ -886,7 +889,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if ([error.userInfo[RCFinishableKey] boolValue]) {
-            [self markAttributesAsSynced:subscriberAttributes appUserID:self.appUserID];
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];

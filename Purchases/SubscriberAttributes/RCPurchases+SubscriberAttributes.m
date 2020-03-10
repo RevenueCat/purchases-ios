@@ -8,6 +8,7 @@
 #import "RCSubscriberAttributesManager.h"
 #import "RCCrossPlatformSupport.h"
 #import "RCUtils.h"
+#import "NSError+RCExtensions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -50,8 +51,16 @@ NS_ASSUME_NONNULL_BEGIN
     return [self.subscriberAttributesManager unsyncedAttributesByKeyForAppUserID:self.appUserID];
 }
 
-- (void)markAttributesAsSynced:(RCSubscriberAttributeDict)syncedAttributes
-                     appUserID:(NSString *)appUserID {
+- (void)markAttributesAsSyncedIfNeeded:(RCSubscriberAttributeDict)syncedAttributes
+                             appUserID:(NSString *)appUserID
+                                 error:(nullable NSError *)error {
+    if (error && !error.successfullySynced) {
+        return;
+    }
+
+    if (error.subscriberAttributesErrors) {
+        RCLog(@"Subscriber attributes errors: %@", error.subscriberAttributesErrors);
+    }
     [self.subscriberAttributesManager markAttributesAsSynced:syncedAttributes appUserID:appUserID];
 }
 
