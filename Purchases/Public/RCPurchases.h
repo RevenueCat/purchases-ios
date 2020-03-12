@@ -397,12 +397,32 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 */
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes;
 
+/**
+ * Subscriber attribute associated with the email address for the user
+ *
+ *  @param email Empty String or nil will delete the subscriber attribute.
+ */
 - (void)setEmail:(nullable NSString *)email;
 
+/**
+ * Subscriber attribute associated with the phone number for the user
+ *
+ *  @param phoneNumber Empty String or nil will delete the subscriber attribute.
+ */
 - (void)setPhoneNumber:(nullable NSString *)phoneNumber;
 
+/**
+ * Subscriber attribute associated with the display name for the user
+ *
+ *  @param displayName Empty String or nil will delete the subscriber attribute.
+ */
 - (void)setDisplayName:(nullable NSString *)displayName;
 
+/**
+ * Subscriber attribute associated with the push token for the user
+ *
+ *  @param pushToken Empty String or nil will delete the subscriber attribute.
+ */
 - (void)setPushToken:(nullable NSData *)pushToken;
 
 #pragma mark Unavailable Methods
