@@ -1,0 +1,32 @@
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '9.0'
+
+target 'WatchSample' do
+  platform :watchos, '6.2'
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for WatchSample
+
+end
+
+target 'WatchSample WatchKit App' do
+  platform :watchos, '6.2'
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for WatchSample WatchKit App
+
+end
+
+target 'WatchSample WatchKit Extension' do
+  platform :watchos, '6.2'
+  
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  pod 'Purchases', :path => '../../'
+
+  # Pods for WatchSample WatchKit Extension
+
+end
