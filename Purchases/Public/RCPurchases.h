@@ -385,6 +385,16 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 
 #pragma mark Subscriber Attributes
 
+/**
+ Subscriber attributes are useful for storing additional, structured information on a user.
+ Since attributes are writable using a public key they should not be used for
+ managing secure or sensitive information such as subscription status, coins, etc.
+
+ Key names starting with "$" are reserved names used by RevenueCat. For a full list of key
+ restrictions refer to our guide: https://docs.revenuecat.com/docs/subscriber-attributes
+
+ @param attributes Map of attributes by key. Set the value as an empty string to delete an attribute.
+*/
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes;
 
 - (void)setEmail:(nullable NSString *)email;
