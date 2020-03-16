@@ -75,7 +75,8 @@ typedef NS_ENUM(NSInteger, RCBackendErrorCode) {
     RCBackendPlayStoreGenericError = 7231,
     RCBackendUserIneligibleForPromoOffer = 7232,
     RCBackendInvalidAppleSubscriptionKey = 7234,
-    RCBackendInvalidSubscriberAttributes = 7262
+    RCBackendInvalidSubscriberAttributes = 7263,
+    RCBackendInvalidSubscriberAttributesBody = 7264
 } NS_SWIFT_NAME(Purchases.RevenueCatBackendErrorCode);
 
 @end

@@ -121,6 +121,10 @@ static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
             return @"INVALID_APPLE_SUBSCRIPTION_KEY";
         case RCIneligibleError:
             return @"INELIGIBLE_ERROR";
+        case RCInsufficientPermissionsError:
+            return @"INSUFFICIENT_PERMISSIONS_ERROR";
+        case RCPaymentPendingError:
+            return @"payment_pending_error";
         case RCInvalidSubscriberAttributesError:
             return @"INVALID_SUBSCRIBER_ATTRIBUTES";
     }
@@ -155,6 +159,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(RCBackend
         case RCBackendUserIneligibleForPromoOffer:
             return RCIneligibleError;
         case RCBackendInvalidSubscriberAttributes:
+        case RCBackendInvalidSubscriberAttributesBody:
             return RCInvalidSubscriberAttributesError;
     }
     return RCUnknownError;
