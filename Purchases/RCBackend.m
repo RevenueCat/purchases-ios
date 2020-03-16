@@ -13,10 +13,14 @@
 #import "RCIntroEligibility.h"
 #import "RCIntroEligibility+Protected.h"
 #import "RCPurchasesErrorUtils.h"
+#import "RCPurchasesErrorUtils+Protected.h"
 #import "RCUtils.h"
 #import "RCPromotionalOffer.h"
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
+NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"successfullySynced";
+NSString *const RCAttributeErrorsKey = @"attribute_errors";
+NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
 
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
@@ -83,20 +87,32 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
     RCPurchaserInfo *info = nil;
     NSError *responseError = nil;
+    BOOL isErrorStatusCode = (statusCode >= 300);
 
-    if (statusCode < 300) {
+    if (!isErrorStatusCode) {
         info = [[RCPurchaserInfo alloc] initWithData:response];
         if (info == nil) {
             responseError = [RCPurchasesErrorUtils unexpectedBackendResponseError];
+            completion(info, responseError);
+            return;
         }
-    } else {
-        BOOL finishable = (statusCode < 500);
-        responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
-                                                            backendMessage:response[@"message"]
-                                                                finishable:finishable
-                                                             ];
     }
 
+    NSDictionary *subscriberAttributesErrorInfo = [self attributesUserInfoFromResponse:response
+                                                                            statusCode:statusCode];
+
+    BOOL hasError = (isErrorStatusCode || subscriberAttributesErrorInfo[RCAttributeErrorsKey] != nil);
+
+    if (hasError) {
+        BOOL finishable = (statusCode < 500);
+        NSMutableDictionary *extraUserInfo = @{
+            RCFinishableKey: @(finishable)
+        }.mutableCopy;
+        [extraUserInfo addEntriesFromDictionary:subscriberAttributesErrorInfo];
+        responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
+                                                            backendMessage:response[@"message"]
+                                                             extraUserInfo:extraUserInfo];
+    }
     completion(info, responseError);
 }
 
@@ -168,29 +184,31 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                   discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
 presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                observerMode:(BOOL)observerMode
-                 completion:(RCBackendPurchaserInfoResponseHandler)completion
-{
+       subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
+                 completion:(RCBackendPurchaserInfoResponseHandler)completion {
+
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
     NSMutableDictionary *body = [NSMutableDictionary dictionaryWithDictionary:
-                                 @{
-                                   @"fetch_token": fetchToken,
-                                   @"app_user_id": appUserID,
-                                   @"is_restore": @(isRestore),
-                                   @"observer_mode": @(observerMode)
-                                 }];
+                                                         @{
+                                                             @"fetch_token": fetchToken,
+                                                             @"app_user_id": appUserID,
+                                                             @"is_restore": @(isRestore),
+                                                             @"observer_mode": @(observerMode)
+                                                         }];
 
-    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@",
-                          appUserID,
-                          @(isRestore),
-                          fetchToken,
-                          productIdentifier,
-                          price,
-                          currencyCode,
-                          @((NSUInteger)paymentMode),
-                          introductoryPrice,
-                          subscriptionGroup,
-                          presentedOfferingIdentifier,
-                          @(observerMode)];
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@",
+                                                    appUserID,
+                                                    @(isRestore),
+                                                    fetchToken,
+                                                    productIdentifier,
+                                                    price,
+                                                    currencyCode,
+                                                    @((NSUInteger) paymentMode),
+                                                    introductoryPrice,
+                                                    subscriptionGroup,
+                                                    presentedOfferingIdentifier,
+                                                    @(observerMode),
+                                                    subscriberAttributesByKey];
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
         for (RCPromotionalOffer *discount in discounts) {
@@ -224,6 +242,11 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
     if (subscriptionGroup) {
         body[@"subscription_group_id"] = subscriptionGroup;
+    }
+
+    if (subscriberAttributesByKey) {
+        NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributesByKey];
+        body[@"attributes"] = attributesInBackendFormat;
     }
 
     if (@available(iOS 12.2, macOS 10.14.4, *)) {
@@ -457,6 +480,82 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
                       completion(nil, nil, nil, nil, error);
                   }];
+}
+
+- (void)postSubscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
+                       appUserID:(NSString *)appUserID
+                      completion:(nullable void (^)(NSError *_Nullable error))completion {
+    if (subscriberAttributes.count == 0) {
+        RCLog(@"called post subscriber attributes with an empty attributes dict!");
+        return;
+    }
+    NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attributes", escapedAppUserID];
+    NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributes];
+    [self.httpClient performRequest:@"POST"
+                               path:path
+                               body:@{
+                                   @"attributes": attributesInBackendFormat
+                               }
+                            headers:self.headers
+                  completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
+                      [self handleSubscriberAttributesResultWithStatusCode:status
+                                                                  response:response
+                                                                     error:error
+                                                                completion:completion];
+                  }];
+
+}
+
+- (NSDictionary<NSString *, NSDictionary *> *)subscriberAttributesByKey:(RCSubscriberAttributeDict)subscriberAttributes {
+    NSMutableDictionary <NSString *, NSDictionary *> *attributesByKey = [[NSMutableDictionary alloc] init];
+    for (NSString *key in subscriberAttributes) {
+        attributesByKey[key] = subscriberAttributes[key].asBackendDictionary;
+    }
+    return attributesByKey;
+}
+
+- (void)handleSubscriberAttributesResultWithStatusCode:(NSInteger)statusCode
+                                              response:(nullable NSDictionary *)response
+                                                 error:(nullable NSError *)error
+                                            completion:(void (^)(NSError *_Nullable error))completion {
+
+    if (completion == nil) {
+        return;
+    }
+
+    if (error != nil) {
+        completion([RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
+        return;
+    }
+    NSError *responseError = nil;
+
+    if (statusCode > 300) {
+        NSDictionary *extraUserInfo = [self attributesUserInfoFromResponse:response
+                                                                statusCode:statusCode];
+        responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
+                                                            backendMessage:response[@"message"]
+                                                             extraUserInfo:extraUserInfo];
+    }
+
+    completion(responseError);
+}
+
+- (NSDictionary *)attributesUserInfoFromResponse:(NSDictionary *)response statusCode:(NSInteger)statusCode {
+    NSMutableDictionary *resultDict = [[NSMutableDictionary alloc] init];
+    BOOL isInternalServerError = statusCode >= 500;
+    resultDict[RCSuccessfullySyncedKey] = @(!isInternalServerError);
+
+    BOOL hasAttributesResponseContainerKey = (response[RCAttributeErrorsResponseKey] != nil);
+    NSDictionary *attributesResponseDict = hasAttributesResponseContainerKey
+                                           ? response[RCAttributeErrorsResponseKey]
+                                           : response;
+
+    BOOL hasAttributeErrors = (attributesResponseDict[RCAttributeErrorsKey] != nil);
+    if (hasAttributeErrors) {
+        resultDict[RCAttributeErrorsKey] = attributesResponseDict[RCAttributeErrorsKey];
+    }
+    return resultDict;
 }
 
 @end

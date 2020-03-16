@@ -26,3 +26,14 @@
 #include <Purchases/RCDeviceCache+Protected.h>
 #include <Purchases/RCInMemoryCachedObject+Protected.h>
 #include <Purchases/RCIdentityManager.h>
+#include <Purchases/RCSubscriberAttribute.h>
+#include <Purchases/RCSubscriberAttribute+Protected.h>
+#include <Purchases/RCSpecialSubscriberAttributes.h>
+#include <Purchases/RCDateProvider.h>
+#include <Purchases/NSError+RCExtensions.h>
+#include <Purchases/RCPurchasesErrorUtils.h>
+#include <Purchases/RCPurchasesErrorUtils+Protected.h>
+#include <Purchases/NSDate+RCExtensions.h>
+#include <Purchases/RCSubscriberAttributesManager.h>
+#include <Purchases/RCPurchases+SubscriberAttributes.h>
+#include <Purchases/NSData+RCExtensions.h>

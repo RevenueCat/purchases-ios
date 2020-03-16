@@ -27,7 +27,8 @@ func resolveTargets() -> [Target] {
                 cSettings: [
                     .headerSearchPath("Purchases"),
                     .headerSearchPath("Purchases/Public"),
-                    .headerSearchPath("Purchases/Caching")
+                    .headerSearchPath("Purchases/Caching"),
+                    .headerSearchPath("Purchases/SubscriberAttributes")
                 ])]
 
     if shouldTest {

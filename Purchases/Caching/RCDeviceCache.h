@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RCSubscriberAttribute.h"
 
 @class RCOfferings;
 
@@ -50,6 +51,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setOfferingsCacheTimestampToNow;
 
+- (void)storeSubscriberAttribute:(RCSubscriberAttribute *)attribute appUserID:(NSString *)appUserID;
+- (void)storeSubscriberAttributes:(RCSubscriberAttributeDict)attributesByKey
+                        appUserID:(NSString *)appUserID;
+- (nullable RCSubscriberAttribute *)subscriberAttributeWithKey:(NSString *)attributeKey appUserID:(NSString *)appUserID;
+- (RCSubscriberAttributeDict)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID;
+- (NSUInteger)numberOfUnsyncedAttributesForAppUserID:(NSString *)appUserID;
 @end
 
 NS_ASSUME_NONNULL_END

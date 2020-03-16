@@ -7,9 +7,19 @@
 //
 
 
-@class RCPurchases, RCStoreKitRequestFetcher, RCBackend, RCStoreKitWrapper, RCReceiptFetcher, RCAttributionFetcher, RCOfferingsFactory, RCDeviceCache, RCIdentityManager;
+@class RCPurchases,
+    RCStoreKitRequestFetcher,
+    RCBackend,
+    RCStoreKitWrapper,
+    RCReceiptFetcher,
+    RCAttributionFetcher,
+    RCOfferingsFactory,
+    RCDeviceCache,
+    RCIdentityManager,
+    RCSubscriberAttributesManager;
 
 NS_ASSUME_NONNULL_BEGIN
+
 
 @interface RCPurchases (Protected)
 
@@ -24,10 +34,16 @@ NS_ASSUME_NONNULL_BEGIN
                      observerMode:(BOOL)observerMode
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
                       deviceCache:(RCDeviceCache *)deviceCache
-                  identityManager:(RCIdentityManager *)identityManager;
+                  identityManager:(RCIdentityManager *)identityManager
+      subscriberAttributesManager:(RCSubscriberAttributesManager *)subscriberAttributesManager;
 
 + (void)setDefaultInstance:(nullable RCPurchases *)instance;
 
+@property (nonatomic) RCDeviceCache *deviceCache;
+@property (nonatomic) RCBackend *backend;
+@property (nonatomic) NSNotificationCenter *notificationCenter;
+
 @end
+
 
 NS_ASSUME_NONNULL_END

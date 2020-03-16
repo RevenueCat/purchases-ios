@@ -12,26 +12,10 @@ import Nimble
 
 import Purchases
 
-class MockSKProduct: SKProduct {
-
-    var mockIdentifier: String?
-    override var productIdentifier: String {
-        get {
-            return mockIdentifier!
-        }
-    }
-
-    init(mockIdentifier: String?) {
-        self.mockIdentifier = mockIdentifier
-        super.init()
-    }
-}
-
-
 class OfferingsTests: XCTestCase {
-    
+
     let offeringsFactory = RCOfferingsFactory()
-    
+
     func testPackageIsNotCreatedIfNoValidProducts() {
         let package = offeringsFactory.createPackage(withData: [
             "identifier": "$rc_monthly",
@@ -197,18 +181,18 @@ class OfferingsTests: XCTestCase {
     func testCustomPackage() {
         testPackageType(packageType: Purchases.PackageType.custom)
     }
-    
+
     func testUnknownPackageType() {
         testPackageType(packageType: Purchases.PackageType.unknown)
     }
-    
+
     func testNoOfferings() {
         let data = [
             "offerings": [],
             "current_offering_id": nil
         ]
         let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [AnyHashable : Any])
-        
+
         expect(offerings).toNot(beNil())
         expect(offerings!.current).to(beNil())
     }
@@ -223,11 +207,11 @@ class OfferingsTests: XCTestCase {
         expect(offerings).toNot(beNil())
         expect(offerings!.current).to(beNil())
     }
-    
+
     func testBadOfferingsDataReturnsNil() {
         let data = [:] as [String : Any]
         let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [AnyHashable : Any])
-        
+
         expect(offerings).to(beNil())
     }
 
