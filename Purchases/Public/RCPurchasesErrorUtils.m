@@ -124,7 +124,7 @@ static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
         case RCInsufficientPermissionsError:
             return @"INSUFFICIENT_PERMISSIONS_ERROR";
         case RCPaymentPendingError:
-            return @"payment_pending_error";
+            return @"PAYMENT_PENDING_ERROR";
         case RCInvalidSubscriberAttributesError:
             return @"INVALID_SUBSCRIBER_ATTRIBUTES";
     }
