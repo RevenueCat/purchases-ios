@@ -1155,6 +1155,28 @@ class PurchasesTests: XCTestCase {
         expect(receivedInfo).toNot(beNil())
     }
 
+    func testPurchaserInfoCompletionBlockCalledExactlyOnceWhenInfoCached() {
+        let info = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]]);
+        let object = try! JSONSerialization.data(withJSONObject: info!.jsonObject(), options: []);
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.stubbedIsPurchaserInfoCacheStale = true
+        self.backend.timeout = false
+
+        setupPurchases()
+
+        var callCount = 0
+
+        purchases!.purchaserInfo { (_, _) in
+            callCount += 1
+        }
+
+        expect(callCount).toEventually(equal(1))
+    }
+
     func testDoesntSendsCachedPurchaserInfoToGetterIfSchemaVersionDiffers() {
         let info = Purchases.PurchaserInfo(data: [
             "subscriber": [
