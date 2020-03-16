@@ -18,9 +18,6 @@ class InMemoryCachedObjectTests: XCTestCase {
         let now = Date()
 
         let cachedObject = RCInMemoryCachedObject<NSString>(cacheDurationInSeconds: cacheDurationInSeconds)
-        guard let oldDate = Calendar.current.date(byAdding: .second, value: -4, to: now) else {
-            fatalError("Couldn't set up date for tests")
-        }
 
         cachedObject.cacheInstance("myString")
         expect(cachedObject.isCacheStale()) == false
@@ -125,6 +122,6 @@ class InMemoryCachedObjectTests: XCTestCase {
         let newDate = Date()
         cachedObject.cacheInstance(myString)
 
-        expect(cachedObject.lastUpdatedAt).to(beCloseTo(Date()))
+        expect(cachedObject.lastUpdatedAt).to(beCloseTo(newDate))
     }
 }
