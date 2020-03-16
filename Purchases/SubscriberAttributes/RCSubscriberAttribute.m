@@ -89,7 +89,7 @@ NS_ASSUME_NONNULL_END
                                       self.key, self.value, self.setTime];
 }
 
-- (BOOL)isEqual:(RCSubscriberAttribute *)attribute {
+- (BOOL)isEqual:(nullable RCSubscriberAttribute *)attribute {
     if (self == attribute)
         return YES;
     if (attribute == nil)
