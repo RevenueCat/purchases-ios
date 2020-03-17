@@ -1,3 +1,12 @@
+## 3.1.1
+- small fixes to docs and release scripts: 
+    - the release script was referencing a fastlane lane that was under the group ios, 
+    so it needs to be called with ios first
+    - the docs for setPushToken in RCPurchases.m say to pass an empty string or nil to erase data, 
+    however since the param is of type NSData, you can't pass in an empty string.
+    
+    https://github.com/RevenueCat/purchases-ios/pull/203
+    
 ## 3.1.0
 - Added Subscriber Attributes, which allow developers to store additional, structured information 
 for a user in RevenueCat. More info: // More info: https://docs.revenuecat.com/docs/user-attributes.
