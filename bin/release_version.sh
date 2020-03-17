@@ -52,7 +52,7 @@ FRAMEWORK_NAME=Purchases.framework
 
 mv $FRAMEWORK_NAME.zip $CARTHAGE_UPLOADS_PATH
 
-fastlane github_release $CURRENT_VERSION
+fastlane ios github_release version:$CURRENT_VERSION
 
 echo "Preparing next version"
 
