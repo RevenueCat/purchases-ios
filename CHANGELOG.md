@@ -6,6 +6,7 @@
     however since the param is of type NSData, you can't pass in an empty string.
     
     https://github.com/RevenueCat/purchases-ios/pull/203
+    
 ## 3.1.0
 - Added Subscriber Attributes, which allow developers to store additional, structured information 
 for a user in RevenueCat. More info: // More info: https://docs.revenuecat.com/docs/user-attributes.
