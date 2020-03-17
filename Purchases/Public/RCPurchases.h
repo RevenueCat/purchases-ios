@@ -421,7 +421,7 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 /**
  * Subscriber attribute associated with the push token for the user
  *
- *  @param pushToken Empty String or nil will delete the subscriber attribute.
+ *  @param pushToken nil will delete the subscriber attribute.
  */
 - (void)setPushToken:(nullable NSData *)pushToken;
 
