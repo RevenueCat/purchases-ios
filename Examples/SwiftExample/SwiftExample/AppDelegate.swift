@@ -26,7 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Purchases.shared.setAttributes(["favorite_cat" : "garfield"])
 
         // we're requesting push notifications on app start only to showcase how to set the push token in RevenueCat
-        requestPushNotificationsPermisssions()
+        requestPushNotificationsPermissions()
 
         return true
     }
@@ -39,7 +39,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print("Failed to register: \(error)")
     }
 
-    private func requestPushNotificationsPermisssions() {
+    private func requestPushNotificationsPermissions() {
         let userNotificationCenter = UNUserNotificationCenter.current()
         userNotificationCenter.requestAuthorization(options: [.alert, .sound, .badge]) { [weak self] granted, error in
             print("Permission granted: \(granted)")
