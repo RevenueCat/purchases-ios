@@ -39,7 +39,7 @@
 - (void)setDelegate:(id<RCStoreKitWrapperDelegate>)delegate
 {
     _delegate = delegate;
-
+    
     if (_delegate != nil) {
         [self.paymentQueue addTransactionObserver:self];
     } else {

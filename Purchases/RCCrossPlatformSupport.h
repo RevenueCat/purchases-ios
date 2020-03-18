@@ -12,6 +12,9 @@
 #elif TARGET_OS_OSX
 #define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME NSApplicationDidBecomeActiveNotification
 #define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME NSApplicationWillResignActiveNotification
+#elif TARGET_OS_WATCH
+#define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME NSExtensionHostDidBecomeActiveNotification
+#define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME NSExtensionHostWillResignActiveNotification
 #endif
 
 #if TARGET_OS_IPHONE
