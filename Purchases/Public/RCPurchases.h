@@ -442,13 +442,6 @@ NS_SWIFT_NAME(entitlements(_:)) RC_UNAVAILABLE("entitlements: has been replaced 
 
 #undef RC_UNAVAILABLE
 
-/**
- Invalidates the cache for purchaser information.
- This is useful for cases where purchaser information might have been updated outside of the app, like if a
- promotional subscription is granted through the RevenueCat dashboard.
- */
-- (void)invalidatePurchaserInfoCache;
-
 @end
 
 /**
