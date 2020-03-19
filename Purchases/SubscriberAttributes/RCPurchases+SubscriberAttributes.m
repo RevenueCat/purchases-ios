@@ -42,6 +42,11 @@ NS_ASSUME_NONNULL_BEGIN
     [self.subscriberAttributesManager setPushToken:pushToken appUserID:self.appUserID];
 }
 
+- (void)_setPushTokenString:(nullable NSString *)pushToken {
+    RCDebugLog(@"setPushTokenString called");
+    [self.subscriberAttributesManager setPushTokenString:pushToken appUserID:self.appUserID];
+}
+
 - (void)configureSubscriberAttributesManager {
     [self subscribeToAppDidBecomeActiveNotifications];
     [self subscribeToAppBackgroundedNotifications];

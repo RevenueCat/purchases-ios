@@ -65,6 +65,18 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
         invokedSetPushTokenParametersList.append((pushToken, appUserID))
     }
 
+    var invokedSetPushTokenString = false
+    var invokedSetPushTokenStringCount = 0
+    var invokedSetPushTokenStringParameters: (pushToken: String?, appUserID: String?)?
+    var invokedSetPushTokenStringParametersList = [(pushToken: String?, appUserID: String?)]()
+
+    override func setPushTokenString(_ pushToken: String?, appUserID: String?) {
+        invokedSetPushTokenString = true
+        invokedSetPushTokenStringCount += 1
+        invokedSetPushTokenStringParameters = (pushToken, appUserID)
+        invokedSetPushTokenStringParametersList.append((pushToken, appUserID))
+    }
+
     var invokedSyncIfNeeded = false
     var invokedSyncIfNeededCount = 0
     var invokedSyncIfNeededParameters: (appUserID: String, Void)?
