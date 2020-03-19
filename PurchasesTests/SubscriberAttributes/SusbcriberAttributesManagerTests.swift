@@ -341,6 +341,69 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.setTime) > oldSyncTime
     }
 
+    func testSetPushTokenString() {
+        let tokenString = "oiag023jkgsop"
+        self.subscriberAttributesManager.setPushTokenString(tokenString, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$apnsTokens"
+
+        expect(receivedAttribute.value) == tokenString
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetPushTokenStringSetsEmptyIfNil() {
+        let tokenString = "oiag023jkgsop"
+        self.subscriberAttributesManager.setPushTokenString(tokenString, appUserID: "kratos")
+
+        self.subscriberAttributesManager.setPushTokenString(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$apnsTokens"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetPushTokenStringSkipsIfSameValue() {
+        let tokenString = "oiag023jkgsop"
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$apnsTokens",
+                                                                                      value: tokenString)
+
+        self.subscriberAttributesManager.setPushTokenString(tokenString, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetPushTokenStringOverwritesIfNewValue() {
+        let tokenString = "oiag023jkgsop"
+        let oldSyncTime = Date()
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$apnsTokens",
+                                                                                      value: "other value",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setPushTokenString(tokenString, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == "$apnsTokens"
+        expect(receivedAttribute.value) == tokenString
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
     // MARK: syncing
 
     func testSyncIfNeededWithAppUserIDSkipsIfNoUnsyncedAttributes() {

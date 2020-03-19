@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setPushToken:(nullable NSData *)pushToken appUserID:(NSString *)appUserID;
 
+- (void)setPushTokenString:(nullable NSString *)pushToken appUserID:(NSString *)appUserID;
+
 - (void)syncIfNeededWithAppUserID:(NSString *)appUserID completion:(void (^)(NSError *_Nullable error))completion;
 
 - (RCSubscriberAttributeDict)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID;

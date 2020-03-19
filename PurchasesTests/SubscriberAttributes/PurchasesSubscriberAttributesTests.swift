@@ -170,6 +170,20 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             .currentAppUserID
     }
 
+    func testSetPushTokenStringMakesRightCalls() {
+        setupPurchases()
+        let tokenString = "ligai32g32ig"
+
+        Purchases.shared._setPushTokenString(tokenString)
+        expect(self.mockSubscriberAttributesManager.invokedSetPushTokenStringCount) == 1
+
+        let receivedPushToken = self.mockSubscriberAttributesManager.invokedSetPushTokenStringParameters!.pushToken!
+
+        expect(receivedPushToken) == tokenString
+        expect(self.mockSubscriberAttributesManager.invokedSetPushTokenStringParameters?.appUserID) ==
+            mockIdentityManager.currentAppUserID
+    }
+
     // MARK: Post receipt with attributes
 
     func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessful() {

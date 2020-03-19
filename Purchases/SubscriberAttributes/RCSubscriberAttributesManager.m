@@ -55,8 +55,12 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setPushToken:(nullable NSData *)pushToken appUserID:(NSString *)appUserID {
-    NSString *deviceTokenString = pushToken ? pushToken.asString : nil;
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_PUSH_TOKEN value:deviceTokenString appUserID:appUserID];
+    NSString *pushTokenString = pushToken ? pushToken.asString : nil;
+    [self setPushTokenString:pushTokenString appUserID:appUserID];
+}
+
+- (void)setPushTokenString:(nullable NSString *)pushTokenString appUserID:(NSString *)appUserID {
+    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_PUSH_TOKEN value:pushTokenString appUserID:appUserID];
 }
 
 - (void)syncIfNeededWithAppUserID:(NSString *)appUserID completion:(void (^)(NSError *_Nullable error))completion {
