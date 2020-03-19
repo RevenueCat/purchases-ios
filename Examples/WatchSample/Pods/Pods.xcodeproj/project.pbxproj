@@ -3,83 +3,100 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0B37D86C9F4A85ED1D7D7F12DC224C58 /* RCIntroEligibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FCBFD5CE8EF6C4EB43C412D32FF5873 /* RCIntroEligibility.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		0B9A594A2AD0E2B3BF01EAE871AE2D8F /* RCPurchasesErrorUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 88CE5554C93F49A03193E4A35ED4AACB /* RCPurchasesErrorUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		0F1AA9380F935D90825B30B5464C1787 /* RCEntitlementInfos+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 25B2D596CECA33141957F3931B8FC631 /* RCEntitlementInfos+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		14447DE9C6CCC1D39F11A475CC370A97 /* RCEntitlementInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = A84A0A30C28A30609B71AE02D99C2D57 /* RCEntitlementInfo.m */; };
-		151332323EFA2B139FC86BA929C5C0AD /* RCPurchaserInfo+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 29B972E99A164581A7C305C2DF57C6BF /* RCPurchaserInfo+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		1764D6294502A4B3466922A7A70F2211 /* RCAttributionFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = C1AD9348C776DDB975B19778D90283D3 /* RCAttributionFetcher.m */; };
-		177F1659797FB90F0E79780A41ACD6CC /* RCPackage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6579F43118B3242AF7EEAD70208525 /* RCPackage.m */; };
-		1DE1D3A976FE27533285C4AA9044D011 /* RCOfferings.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C4ABECDC9F13076E94D60B0B5605129 /* RCOfferings.m */; };
-		228A4CC4AB1966C258F77CD27A5656E9 /* RCHTTPClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 76A51D6C3CA51830E02A6FE84154E5AD /* RCHTTPClient.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		24DC501997B63EADA1F592D2BBDA252C /* RCOffering.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A3E79C0C78E8D06E8A012EFA617481D /* RCOffering.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		252671738FBEA19310E79022F386F372 /* RCAttributionFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 86C38C97BDBEB311A6C41CD8D8B5C345 /* RCAttributionFetcher.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		29D55174BA1AC2DD7EE67BED0C037DD8 /* RCPromotionalOffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 67CD84578B857C07240B98B7F407381D /* RCPromotionalOffer.m */; };
-		29F23EC187F2280CE95711E41F9BC78A /* RCIdentityManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 6D01B5283D2E4DE660A78B18803922AA /* RCIdentityManager.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		2AE02B68F1FB10D28CA62E12F44EC62E /* Purchases-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 254CC1ED11112C43BA9013E97174918B /* Purchases-dummy.m */; };
-		2B771F6153BDE71CE219C50DE07ADE7E /* RCPurchaserInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C2A9CEB81EFEFCC7C419EBC60750EFC /* RCPurchaserInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		2D4BFE90EB293C663105AAFEB96A3794 /* RCPromotionalOffer+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = C724C5840505DD9A139B83BC415F1788 /* RCPromotionalOffer+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		2E439BC0C881F9DA3F37D75221B53D5A /* RCDeviceCache+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 593975DA8A7AACA90E07157196193939 /* RCDeviceCache+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		38BF5AF552ACC0FB702BAD92D5D68663 /* RCOffering+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 19B34CF9CFF38B7C320981E2507EBAB7 /* RCOffering+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		4048DDBBD733C1045BB8CF64ECA2418F /* RCInMemoryCachedObject+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = DF69F70563FB440941EC2B796EACA064 /* RCInMemoryCachedObject+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		43AD030AA6A0086F8763A498A228CD88 /* Purchases-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 36046351525F1AAC198085F3C3496148 /* Purchases-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		44C7EDA0D7846AF783A8DDF9FA19F37D /* RCReceiptFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 61212593FE036A160D7129834A164E4C /* RCReceiptFetcher.m */; };
-		46D397200CBC39F95152B8E739E0AB09 /* RCPurchaserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 3237DC1589ABC591AFC82E9CFC34EC6A /* RCPurchaserInfo.m */; };
-		485C638F22FB5DC4C055EFED7F982559 /* RCAttributionData.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D91BE78F9087584F7A5E098DD6EE08D /* RCAttributionData.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		52AE0479D7C63D5390875F279475F0B1 /* RCHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = FFFFD95AD2694BFCB94C9EF9261C6421 /* RCHTTPClient.m */; };
-		543457DE2C28B47225285B937112ECB5 /* RCEntitlementInfo+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 0246C22F208C58913C7E27CA120AC57D /* RCEntitlementInfo+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		573E055D20D98E86828EF37E0FC13BDC /* RCBackend.h in Headers */ = {isa = PBXBuildFile; fileRef = 2AB9E56B96FEA0DE2CB8E568512E226C /* RCBackend.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		577D7A3E6A95D55DB08BBCACA42F392D /* Purchases.h in Headers */ = {isa = PBXBuildFile; fileRef = B06248FA1CC0ED1FE3CBA61E9BA8E7C9 /* Purchases.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		5E164F1DC5F981760E98831F123F80EB /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 368131A60465123266A6A0E07D96C355 /* Foundation.framework */; };
-		6475BF36A1FC20B15331ECE301D13D2D /* RCPackage+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 311B4D8D498318ACE1E4A6C27CEA8C6F /* RCPackage+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		66515CC6FC1F9007BD94003732310B4A /* RCOfferingsFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A2C7DD9630FFA296F17DABAF7D2EE45 /* RCOfferingsFactory.m */; };
-		66E36BA6E98F53006C4C471B28ABC5B5 /* RCPromotionalOffer.h in Headers */ = {isa = PBXBuildFile; fileRef = B37BB3FC329682ED31BF467CC08C17E3 /* RCPromotionalOffer.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		67CAB6FF45B9E5D7C0F612D3C2E1C0A0 /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 918AF0D2871DB820366719BE1DB86CC5 /* NSLocale+RCExtensions.m */; };
-		6E292E5E1373115A3CF2F27B9A6CA408 /* RCInMemoryCachedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 09EF4928DA06E47058F201A3234D820C /* RCInMemoryCachedObject.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		09031BF18474F97BC6B000028E744EE0 /* RCUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = B1616585241521939008367DBC7A9AE2 /* RCUtils.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		0AE5646575E8F8023390038D451935AA /* RCPurchases.h in Headers */ = {isa = PBXBuildFile; fileRef = 855BB8C4AC09BC393A1FC9E1B927D40E /* RCPurchases.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1137744BF82437051AF1838863462D58 /* RCEntitlementInfos+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = A54007D9C87923E13F9E68561E3D2838 /* RCEntitlementInfos+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		12927A2D1C28DE280F39144A1B983E4E /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC958DAFA11B7CF3E364BAE0E9800441 /* StoreKit.framework */; };
+		13E41E7A1B288023AFA1E02C70D503D4 /* RCDeviceCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 352E8D42AA4AEBE15D1395E50C50A85F /* RCDeviceCache.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		2194CB9BAFD5C48A11E8974C51CBA2D2 /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC08DF70D9B23593A6002D757DBABA21 /* NSLocale+RCExtensions.m */; };
+		21CF056D52AF9E878B259338F7AAEDA0 /* RCStoreKitRequestFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = B00A5E435D64029493C570A908C55160 /* RCStoreKitRequestFetcher.m */; };
+		226F8C97F54562D89C26124FE5D2D6B4 /* RCInMemoryCachedObject+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = B017816781B67EB52848C59BEAF608E0 /* RCInMemoryCachedObject+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		231FC4E82085DA8591CBF82EC0360232 /* RCPurchases+SubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E90A7050E81A1DCB62F5A65B1EBD48E /* RCPurchases+SubscriberAttributes.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		25B009D910399B4B93C4EDF71316052F /* RCIntroEligibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F55305CF01460106AE0421F6E95CA47 /* RCIntroEligibility.m */; };
+		266E361C33F307118BD7D10DEBC016A3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 368131A60465123266A6A0E07D96C355 /* Foundation.framework */; };
+		290A18FD12A4907300DE822743477009 /* RCIdentityManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 6E96E1A7CA6B4F59A79D05BA13F9FFDC /* RCIdentityManager.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		2BA199D89DFFB6DC8CFE73E8054DBDF7 /* RCOfferings+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A314AB43F5B90ED28218BE00D0FC568 /* RCOfferings+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		2BABDC6BF143E8CA45B26D3042CCCEE2 /* RCEntitlementInfo+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 91267F9891CC016437558BF4F17406B0 /* RCEntitlementInfo+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		302DEE0AF3D38FF0F2184CE493ED7ED6 /* NSLocale+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3648321883B9FAC5FD23FB8FB98CB2DA /* NSLocale+RCExtensions.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		31E0D1CC39539A5870019E5D52B5977F /* RCPurchasesErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = CD508DD64F8EAD8CC4526D15DE6D4037 /* RCPurchasesErrors.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		31EFE3A65331AFB04C1CDF2DE7E74C75 /* RCDateProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD9DAFE2F2F1D3222B3BAC581CF4156 /* RCDateProvider.m */; };
+		33106BE630FA33FD998877E2F7F79ADC /* RCOffering.m in Sources */ = {isa = PBXBuildFile; fileRef = BD3A1DB14AD73B3408CC2BA190F6072D /* RCOffering.m */; };
+		3710630D7A64770BC16881E4B419129B /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4171F5AFFF52551DEE1900F57B4526CB /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		3DC166CF6945A9F07BC11AC773CCC88F /* NSData+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = B1D8C771D3203F4E2CE20534312C74C7 /* NSData+RCExtensions.m */; };
+		3E96C0543F36BEC622FC5B9558043A20 /* RCHTTPClient.h in Headers */ = {isa = PBXBuildFile; fileRef = B2E7DE9D69CB34AFC23CE8658DD7DDC0 /* RCHTTPClient.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		47029E8C24FCD94C9DDD8586C179C56C /* NSError+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4776AD5165D0E7F3596D0A1230C53DB3 /* NSError+RCExtensions.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		50A2A35D4A49ED3FF811B5DE4D4A176B /* RCHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 1728F6B96D47D1741AF1ADF98E316E8E /* RCHTTPClient.m */; };
+		5775266CDF0D80A1C255FB681F382FDC /* RCIdentityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D60DBFE9EEFB4F7C6B8EB3A73FE4AA23 /* RCIdentityManager.m */; };
+		579EAF086A1E4539551B3E0B58135E52 /* Purchases.h in Headers */ = {isa = PBXBuildFile; fileRef = D222276D555F86EE90AC8F169EDFD70F /* Purchases.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58A8623379260B12D55330AA1C396924 /* RCOffering.h in Headers */ = {isa = PBXBuildFile; fileRef = A07A1C476D735789F7A91C2EDA107404 /* RCOffering.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		592F6B0ACD09ACAEE6689E8A13EF9CFE /* RCBackend.h in Headers */ = {isa = PBXBuildFile; fileRef = ACCA0887E03788D01BBFF87A721F112C /* RCBackend.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		59C7773849365ED83CDE3A4AFB2D2127 /* RCAttributionData.h in Headers */ = {isa = PBXBuildFile; fileRef = 3256F3D205ED6C2C4117070015438277 /* RCAttributionData.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		6051714BB4BC3C7224E8471044C0DE71 /* RCPurchaserInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 46106D08BFB0653A8BBC8F666B0EF7DD /* RCPurchaserInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		60A8F3DDF35A25E5DA9C1CB16D841E74 /* RCSubscriberAttribute+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 332208FC44EB041E185ED3B5A6787112 /* RCSubscriberAttribute+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		63C15DF83EE69A5508F803EAA4993DCD /* RCBackend.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FBE6D4B635F783701B3A051B4590A10 /* RCBackend.m */; };
+		63FA8F75DC16F6326BEC723512542CA4 /* RCReceiptFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 51BF721F3D023C5779A94E4EE118993E /* RCReceiptFetcher.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		647D67687E889C18935A034B1E44B4EE /* NSDate+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = C1C832F8860BE9A0B42BB1B31E7D12C1 /* NSDate+RCExtensions.m */; };
 		70564EAF4559FD7BFC8C10023BF24153 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 368131A60465123266A6A0E07D96C355 /* Foundation.framework */; };
-		716F95A2BCF36E33D37DF7D4A6B3489F /* RCEntitlementInfos.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AB3953AD61073A0983B329E0F07DFF4 /* RCEntitlementInfos.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		740FCCFC90036328C02B99440B8C1428 /* RCPurchasesErrorUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 5DC5AE6FCE31C300C1FD5545628B018D /* RCPurchasesErrorUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		75A2D17AAFB1BF57CB9A16484598C829 /* RCStoreKitWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A92CE7AF502C06ACF5C32192D01202D /* RCStoreKitWrapper.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		76E442B39839B8B92449CDA49EEF1BB4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 368131A60465123266A6A0E07D96C355 /* Foundation.framework */; };
 		771EC4FBCC8C9E91AF1C663814BB5ED3 /* Pods-WatchSample-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 50F6559924FB3F88D1C753486A459C6F /* Pods-WatchSample-dummy.m */; };
-		78CCD5BC9C1F57AA8D2F642F7504BBF0 /* RCOfferings+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 2AF58B607D35DA8638D1B30DA89678D8 /* RCOfferings+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		7E9ABD20D6962EAB7413FF9FCFFA0E42 /* RCOfferingsFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = A9795F07DB034A8FBC7968ECBA505D9D /* RCOfferingsFactory.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		83484AA989F7CE98BE5F649066F76ABE /* RCReceiptFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A2C81FE1EB28AC74FD0E18D14A7169 /* RCReceiptFetcher.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		8819D88EF0194978EBEDA2415A9D634B /* RCStoreKitWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = FA15DBBF867525C525DF55704DEAAD25 /* RCStoreKitWrapper.m */; };
-		8AE378A0661A4FC23543B64E2DF9668B /* RCInMemoryCachedObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F2721D9A5ED59767EDE42C3650AE063 /* RCInMemoryCachedObject.m */; };
-		8B679EEA9CC210B3F35D712783159AA8 /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = C9AE19704D5BC7BF5814CA79DB83C725 /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		8BD91D95870D51D80ECE0798E7EEDE3D /* RCDeviceCache.m in Sources */ = {isa = PBXBuildFile; fileRef = A5727E3B6549462D57FA38E21AAE9CE8 /* RCDeviceCache.m */; };
-		904A4B6EE643248666F98CAC0793C270 /* RCStoreKitRequestFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = F3AE6D245CB7732E569FA9A76371E66F /* RCStoreKitRequestFetcher.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		77B3EB1C05816069F4B23FEEC16C5669 /* RCDeviceCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F98F3335A3C42863FAEB0999290976B /* RCDeviceCache.m */; };
+		78178497EAAE2E5CE35D3303E9B50DDC /* RCStoreKitRequestFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = FE023634F2A088FFDA19A70AE0D58092 /* RCStoreKitRequestFetcher.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		797F9E927D63326A1ED8941A5FD4BD0D /* RCAttributionFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 9AC0535099C18A28BCC36121AD4D91C1 /* RCAttributionFetcher.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		7B433196A5BA83714DEEAB0EB8F70D4B /* RCIntroEligibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 7EFB8E116D20804F6184944BE01CED57 /* RCIntroEligibility.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7D2ADD48CA9D6E4D8451AE886445D0B8 /* RCPromotionalOffer+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 94759BF6658FB2C03715700F3A05897D /* RCPromotionalOffer+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		7F000B17B2280886895BADF54735E86A /* RCUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = AED3DF9B9F406C9C5F1D9E82387F5B76 /* RCUtils.m */; };
+		8A5BAE085044E55CEFF3274D9DBA725B /* RCInMemoryCachedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 745CAC9A2E831BA1D4603A130FC0E0FB /* RCInMemoryCachedObject.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		8E97973CB97C266F120210325C180DA9 /* RCOffering+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D7010C88CC5E58C34C86C3BC2F275EC /* RCOffering+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		918BC99B641C4F0398F4C961F2D93CBF /* Pods-WatchSample WatchKit Extension-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 7993531D1FCB6913C1CBBB42B4E20AD0 /* Pods-WatchSample WatchKit Extension-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		93A1B86892E807898CFDCAD44D1DC244 /* RCPurchasesErrorUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9061FE94A2BB761CB23F3A5817CC9570 /* RCPurchasesErrorUtils.m */; };
-		9A2DDE1EBB60D4E08867A55A7823B254 /* RCOffering.m in Sources */ = {isa = PBXBuildFile; fileRef = FBE9014742FEC3F0C75C5AA8D0AA2EC9 /* RCOffering.m */; };
-		A1778E9A892B36198B56964CF5D0E408 /* RCCrossPlatformSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = ADFCF78B7CB156C3AE179D8BC5E040B3 /* RCCrossPlatformSupport.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		A400769ADF96FAC6BA69C4A68F94B74F /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC958DAFA11B7CF3E364BAE0E9800441 /* StoreKit.framework */; };
-		A4B52482F3D14F38CC13CE0316A1B34D /* RCStoreKitRequestFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = D76F74E3A8228FD6EAD87ED184FF2779 /* RCStoreKitRequestFetcher.m */; };
-		A5DC7643258BE677471E0CCD727D3353 /* RCEntitlementInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 269414999704C537DCFA8A9F65B3C7B4 /* RCEntitlementInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		AAE88509C3E4C26291AB9D61ADAC830C /* NSLocale+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 77040704F503C24B8D08BAD22ABE033C /* NSLocale+RCExtensions.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		ACEB66EA8613FDC74BB47A9B01044CC8 /* RCDeviceCache.h in Headers */ = {isa = PBXBuildFile; fileRef = E826227A955F7675B3A1C7BFFB75BF55 /* RCDeviceCache.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		96DA268F324A98C9DB4B9168EA93E025 /* RCEntitlementInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D49DA30A3EC30CE7FF7EC3AF52FC13E /* RCEntitlementInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		97B97D3089B70B7E4A4159940B6A074F /* RCOfferings.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B925150A531BFF8549402385A436D3 /* RCOfferings.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		98498281098272BCF606BF64400703B2 /* RCInMemoryCachedObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D535FD43CB02B291868B719863771688 /* RCInMemoryCachedObject.m */; };
+		99F5EF4F380B78CDF6ED260F82255BF7 /* RCPurchasesErrorUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 4185BDD59F31370A8F8F7F3ADCA5D3A3 /* RCPurchasesErrorUtils.m */; };
+		9A2B81B7F373B2297D29EDACA0A168F4 /* RCOfferings.m in Sources */ = {isa = PBXBuildFile; fileRef = 11EBE72AE4FDEC8546907F64FB4D0DBB /* RCOfferings.m */; };
+		9C88076C32870321A3E70EB1CB9A53C7 /* RCCrossPlatformSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = E618D249A9385B3E086D121C15FA8B11 /* RCCrossPlatformSupport.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		9CF84B22036684D5226ED52142982C5E /* RCPurchaserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 3FE58C91BA10160EB43C01A2904D401D /* RCPurchaserInfo.m */; };
+		9D9C33EDDE38D36FD31762B412141850 /* RCStoreKitWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = A2B99134E03726DAF823A66C9A638904 /* RCStoreKitWrapper.m */; };
+		9DCD36C5005E40D5063C4851B1077A76 /* NSData+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F232C671E6EC90D11DF4048E22E5F604 /* NSData+RCExtensions.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		A33F01AD108258F6BA89BDE5148999E7 /* RCSubscriberAttributesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = C1A2E46E0A6A62D434E8BF551A2A3EA2 /* RCSubscriberAttributesManager.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		A4D052303C4BB53E753C17E76A928CF3 /* RCSubscriberAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 175F47962F3DF2B80BD57F1E3DB3C977 /* RCSubscriberAttribute.m */; };
+		A5ADC3FA5BA2B74392222FF79F99D3EF /* RCOfferingsFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 2848B413272C44FA7264D3641E60D0CA /* RCOfferingsFactory.m */; };
+		A918683B1F8C974C4FFC53DF7A7DFCC1 /* RCPurchaserInfo+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DFC6B0AF47A73A9740EF1B02DA27AB0 /* RCPurchaserInfo+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		AB92C551E917EFC8822BFC4F5C3851AB /* RCDeviceCache+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = A2193DE579B6F8FC96EE19D663142C96 /* RCDeviceCache+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		AFDF43EB9963B4BEB0B7C52C56504427 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 368131A60465123266A6A0E07D96C355 /* Foundation.framework */; };
-		B3602F9BC0C8829EEC2FAFCF1FC9889E /* RCAttributionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BD0DB6083C49E5F737C13CA617BFB01 /* RCAttributionData.m */; };
-		B433868D0FBB14B4983CE5DA24E5253C /* RCPurchases.h in Headers */ = {isa = PBXBuildFile; fileRef = 3FC885D359206CC37978306D944C0B08 /* RCPurchases.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		BD89C2495872BC23E8B49EC186D7F78F /* RCUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 21CF1EDC6106736259EB613AAC2C3863 /* RCUtils.m */; };
-		BDC7CACE24D8FD61E5CE05C554000D06 /* RCPurchases.m in Sources */ = {isa = PBXBuildFile; fileRef = ABAB77A0C2AB462AFCCAE459856CE17E /* RCPurchases.m */; };
+		B0BD96F5164A4F5C08859419518C5E3B /* RCPurchasesErrorUtils+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 86E15BC88B55B8EE5E2B8B63BBA1D3DA /* RCPurchasesErrorUtils+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		B20887F2DD9B4A92B36549590AA0A600 /* RCDateProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = EC6E8FBE3FAF706C6697A58C7A4138B3 /* RCDateProvider.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		B2B85A88A102DDAF73581E6D1BE6E608 /* RCPurchases.m in Sources */ = {isa = PBXBuildFile; fileRef = 900E6C4ACAC2B37A5838737B82AE5BDE /* RCPurchases.m */; };
+		B4C7862EA509ACBA40399AF1D008DA3A /* RCAttributionFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F10983D94AF8AA3A23A2AF1DEA2D761 /* RCAttributionFetcher.m */; };
+		B7248ECC42D9EAF954AC51E3B07507B1 /* RCAttributionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C032A12DD7864D0FFC1D251AE8702B6 /* RCAttributionData.m */; };
+		B78E1330EFCA8F45F8B187296546F9C7 /* RCReceiptFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 917D4AB08B76BFEAAF38272A65B6AC52 /* RCReceiptFetcher.m */; };
+		BEA30F197081B1F1F3EC1B4B09590635 /* NSError+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A979C670793F6C6DD581A7287641552F /* NSError+RCExtensions.m */; };
+		BEC99D6AA145FFD394FC1D6126E83213 /* NSDate+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 979F65CC2A3813E69D362E295BD76357 /* NSDate+RCExtensions.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		BF51B064EBA02CA2CDB65162CF46B227 /* RCOfferingsFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D46BF831B677F6F3827519D74356967 /* RCOfferingsFactory.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		BFAB3D1876B59B39712A454AE6FBD275 /* Pods-WatchSample WatchKit App-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = E98915085C0193589F778C33876AF4C8 /* Pods-WatchSample WatchKit App-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C57DE7FBAA2EBD5CF8D7124998FD27D7 /* RCStoreKitWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 72AABB1BF44844F96BB286125FC85852 /* RCStoreKitWrapper.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		C1E72E77580D4E47C3A0C767A62F46AA /* RCEntitlementInfos.h in Headers */ = {isa = PBXBuildFile; fileRef = BEF89ABF8F3C2806BDE1756E1022B8EF /* RCEntitlementInfos.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C7E5A7B9CDDC9EF904A66F4E41C550B2 /* RCPackage+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 9FA80A4530A13DDD17AD9740671D872A /* RCPackage+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		CA3CA206C4E2309849C5DAFBA24E5021 /* RCSpecialSubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 42DE908C24ECE17F2C409FEAC765D5FD /* RCSpecialSubscriberAttributes.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		CD440D1E8A3FE6EC105BDEBB2B472A33 /* Pods-WatchSample WatchKit Extension-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 89E02F1F47C798CAE2A6258FDD13B0BB /* Pods-WatchSample WatchKit Extension-dummy.m */; };
 		CD5C0248DCEB93428740233899B5EBD9 /* Pods-WatchSample-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = D0AD7A316BEB6EA397DDDC3DBD2DDA93 /* Pods-WatchSample-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CFDFA299062AB13EEC6CDE3404D91221 /* RCBackend.m in Sources */ = {isa = PBXBuildFile; fileRef = 014A85B6D824A40573CD74A4566F0EAD /* RCBackend.m */; };
+		CDB5FBEE73007F669D2B8352FE4DACC2 /* RCIntroEligibility+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = F5E58E5FA44C2A362ECA004C52E94940 /* RCIntroEligibility+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		D17907273F15B7F02B330E3BAFDC60DF /* Pods-WatchSample WatchKit App-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 7348728B98FC35E9CCC8E4D19977BC14 /* Pods-WatchSample WatchKit App-dummy.m */; };
-		DA8C523ADDBEDDD30B9C560F9DD13331 /* RCOfferings.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D0CFC272C61012EF42788B26027063E /* RCOfferings.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		E44958F59F789161B02CF1C38B85D5E8 /* RCIntroEligibility+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = DAB446C8694F01F6846BA9AFD308F707 /* RCIntroEligibility+Protected.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		E4B22B7BCB6AC93B85E4C34F6A144E4B /* RCPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 148702507FBEA6F21210E936067553D6 /* RCPackage.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		E80B383A94DC4A07E5BCC33063ACA147 /* RCIdentityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 14492FFC74A2C26DBC4563901ED89538 /* RCIdentityManager.m */; };
-		F40147436043CA3ED381EF6F8D6813CE /* RCPurchasesErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = B5645B531C94BDE6279594DBC089D4DF /* RCPurchasesErrors.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		F6F31AB81A3E1FC09FE8E52403B55AC9 /* RCEntitlementInfos.m in Sources */ = {isa = PBXBuildFile; fileRef = 896878242BB34EC1342B10565956A41D /* RCEntitlementInfos.m */; };
-		FC5B8DF211AB176DE475C0B2FBA66567 /* RCIntroEligibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 80440E7EBEA0011237CF50DB276D7A40 /* RCIntroEligibility.m */; };
-		FEEA8F32FFB698FA30E54C6532A7659C /* RCUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = CB96B40CDFFD66F6C2EA4556211D0E1C /* RCUtils.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		D5895457C74F8F5EF8EEC74BA67180A4 /* RCEntitlementInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C0B855383951E9F1B25B70CF10983F6 /* RCEntitlementInfo.m */; };
+		D95366CFE34825C52B642A762BDE776B /* Purchases-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = EC2C8E1531DBB2AA0112564535700608 /* Purchases-dummy.m */; };
+		DDD349F5099FEA34D0EFA261CA3E8049 /* RCPackage.m in Sources */ = {isa = PBXBuildFile; fileRef = F875CBCD04663E030FF9B22EC07592E5 /* RCPackage.m */; };
+		DEAA6C094B1CFD262ED6916181676F6A /* RCSubscriberAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 731DC4E86E15EAEC471865863048F921 /* RCSubscriberAttribute.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		E37D96E0968876134AD25B41649B4D2D /* RCPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 6B54A2164BC4D1B6EA4238F7978C996E /* RCPackage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E9DEFE74E2CC88C96B3F4E64524B8D5B /* RCPurchases+SubscriberAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 04CA75D0BFD40E3A7A6F1E2A81C0C6F6 /* RCPurchases+SubscriberAttributes.m */; };
+		EF1DEA4D384DD3D35B8593D0B851E3DB /* RCPromotionalOffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 118EC5C620AE877214EBFB2EB92D00DF /* RCPromotionalOffer.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		F0E69ECB37B23FE237E5B903C88FDFEE /* RCSubscriberAttributesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A9563DCA2188AB6EA87C706E041FE5D /* RCSubscriberAttributesManager.m */; };
+		F1EB47FD1D0CCA6CB339C33B9B8EACE7 /* RCPromotionalOffer.m in Sources */ = {isa = PBXBuildFile; fileRef = FC20B483ABCC8B82C06763523AC3EF8D /* RCPromotionalOffer.m */; };
+		F8BC98A88EDFDED1AD5C4765879B337E /* RCEntitlementInfos.m in Sources */ = {isa = PBXBuildFile; fileRef = D18B6FC39ACE3BC5F465DBB23BC09EC7 /* RCEntitlementInfos.m */; };
+		FE196C7A75FCCCB38AD347565C66E1CF /* Purchases-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = CBEE4636CA25D9353F22CA6D6D8CA228 /* Purchases-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -93,107 +110,124 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		014A85B6D824A40573CD74A4566F0EAD /* RCBackend.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCBackend.m; path = Purchases/RCBackend.m; sourceTree = "<group>"; };
-		0246C22F208C58913C7E27CA120AC57D /* RCEntitlementInfo+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCEntitlementInfo+Protected.h"; path = "Purchases/RCEntitlementInfo+Protected.h"; sourceTree = "<group>"; };
-		02A2C81FE1EB28AC74FD0E18D14A7169 /* RCReceiptFetcher.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCReceiptFetcher.h; path = Purchases/RCReceiptFetcher.h; sourceTree = "<group>"; };
-		04D345543485223E999CD66F0B0219D2 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE; sourceTree = "<group>"; };
-		09EF4928DA06E47058F201A3234D820C /* RCInMemoryCachedObject.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCInMemoryCachedObject.h; sourceTree = "<group>"; };
-		0AB3953AD61073A0983B329E0F07DFF4 /* RCEntitlementInfos.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfos.h; sourceTree = "<group>"; };
-		14492FFC74A2C26DBC4563901ED89538 /* RCIdentityManager.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCIdentityManager.m; path = Purchases/RCIdentityManager.m; sourceTree = "<group>"; };
-		148702507FBEA6F21210E936067553D6 /* RCPackage.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCPackage.h; sourceTree = "<group>"; };
-		19B34CF9CFF38B7C320981E2507EBAB7 /* RCOffering+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCOffering+Protected.h"; path = "Purchases/RCOffering+Protected.h"; sourceTree = "<group>"; };
+		0256FA5636C9F74D4A6127BC1B905165 /* Purchases.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Purchases.xcconfig; sourceTree = "<group>"; };
+		04CA75D0BFD40E3A7A6F1E2A81C0C6F6 /* RCPurchases+SubscriberAttributes.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "RCPurchases+SubscriberAttributes.m"; sourceTree = "<group>"; };
+		118EC5C620AE877214EBFB2EB92D00DF /* RCPromotionalOffer.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCPromotionalOffer.h; path = Purchases/RCPromotionalOffer.h; sourceTree = "<group>"; };
+		11EBE72AE4FDEC8546907F64FB4D0DBB /* RCOfferings.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCOfferings.m; sourceTree = "<group>"; };
+		12ABC113B8A947E116EB3C0DC2599836 /* Purchases.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = Purchases.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		1728F6B96D47D1741AF1ADF98E316E8E /* RCHTTPClient.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCHTTPClient.m; path = Purchases/RCHTTPClient.m; sourceTree = "<group>"; };
+		175F47962F3DF2B80BD57F1E3DB3C977 /* RCSubscriberAttribute.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCSubscriberAttribute.m; sourceTree = "<group>"; };
+		1A9563DCA2188AB6EA87C706E041FE5D /* RCSubscriberAttributesManager.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCSubscriberAttributesManager.m; sourceTree = "<group>"; };
 		1AE0C49A17906C3418D4F9CFFA6BA416 /* Pods-WatchSample WatchKit Extension.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-WatchSample WatchKit Extension.modulemap"; sourceTree = "<group>"; };
-		1D0CFC272C61012EF42788B26027063E /* RCOfferings.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCOfferings.h; sourceTree = "<group>"; };
-		21CF1EDC6106736259EB613AAC2C3863 /* RCUtils.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCUtils.m; path = Purchases/RCUtils.m; sourceTree = "<group>"; };
-		254CC1ED11112C43BA9013E97174918B /* Purchases-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Purchases-dummy.m"; sourceTree = "<group>"; };
-		25B2D596CECA33141957F3931B8FC631 /* RCEntitlementInfos+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCEntitlementInfos+Protected.h"; path = "Purchases/RCEntitlementInfos+Protected.h"; sourceTree = "<group>"; };
-		269414999704C537DCFA8A9F65B3C7B4 /* RCEntitlementInfo.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfo.h; sourceTree = "<group>"; };
-		26C65641FAF4C31489AB2667DD2F1DD7 /* Purchases.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Purchases.modulemap; sourceTree = "<group>"; };
+		1C0B855383951E9F1B25B70CF10983F6 /* RCEntitlementInfo.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfo.m; sourceTree = "<group>"; };
+		1CA407B8CF9DF39CC4553A479CCAC82F /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
 		27B948A150792EB2D704BAF6B873F5AB /* Pods-WatchSample WatchKit Extension-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-WatchSample WatchKit Extension-acknowledgements.markdown"; sourceTree = "<group>"; };
+		2848B413272C44FA7264D3641E60D0CA /* RCOfferingsFactory.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCOfferingsFactory.m; path = Purchases/RCOfferingsFactory.m; sourceTree = "<group>"; };
 		2899183A32F2EC3207B71C878FC12D8F /* Pods-WatchSample-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-WatchSample-acknowledgements.markdown"; sourceTree = "<group>"; };
-		29B972E99A164581A7C305C2DF57C6BF /* RCPurchaserInfo+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCPurchaserInfo+Protected.h"; path = "Purchases/RCPurchaserInfo+Protected.h"; sourceTree = "<group>"; };
-		2AB9E56B96FEA0DE2CB8E568512E226C /* RCBackend.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCBackend.h; path = Purchases/RCBackend.h; sourceTree = "<group>"; };
-		2AF58B607D35DA8638D1B30DA89678D8 /* RCOfferings+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCOfferings+Protected.h"; path = "Purchases/RCOfferings+Protected.h"; sourceTree = "<group>"; };
-		2D91BE78F9087584F7A5E098DD6EE08D /* RCAttributionData.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCAttributionData.h; path = Purchases/RCAttributionData.h; sourceTree = "<group>"; };
 		2E66419751CEE2173B11B373CF8434A8 /* Pods-WatchSample.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-WatchSample.modulemap"; sourceTree = "<group>"; };
 		301C1E4D34927FB594252AF6926E1764 /* Pods-WatchSample WatchKit App-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-WatchSample WatchKit App-Info.plist"; sourceTree = "<group>"; };
-		311B4D8D498318ACE1E4A6C27CEA8C6F /* RCPackage+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCPackage+Protected.h"; path = "Purchases/RCPackage+Protected.h"; sourceTree = "<group>"; };
-		3237DC1589ABC591AFC82E9CFC34EC6A /* RCPurchaserInfo.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCPurchaserInfo.m; sourceTree = "<group>"; };
-		36046351525F1AAC198085F3C3496148 /* Purchases-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Purchases-umbrella.h"; sourceTree = "<group>"; };
+		3256F3D205ED6C2C4117070015438277 /* RCAttributionData.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCAttributionData.h; path = Purchases/RCAttributionData.h; sourceTree = "<group>"; };
+		332208FC44EB041E185ED3B5A6787112 /* RCSubscriberAttribute+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "RCSubscriberAttribute+Protected.h"; sourceTree = "<group>"; };
+		352E8D42AA4AEBE15D1395E50C50A85F /* RCDeviceCache.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCDeviceCache.h; sourceTree = "<group>"; };
+		3648321883B9FAC5FD23FB8FB98CB2DA /* NSLocale+RCExtensions.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "NSLocale+RCExtensions.h"; path = "Purchases/NSLocale+RCExtensions.h"; sourceTree = "<group>"; };
 		368131A60465123266A6A0E07D96C355 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS5.2.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		3A3E79C0C78E8D06E8A012EFA617481D /* RCOffering.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCOffering.h; sourceTree = "<group>"; };
-		3C2A9CEB81EFEFCC7C419EBC60750EFC /* RCPurchaserInfo.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCPurchaserInfo.h; sourceTree = "<group>"; };
-		3FC885D359206CC37978306D944C0B08 /* RCPurchases.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCPurchases.h; sourceTree = "<group>"; };
-		4A6579F43118B3242AF7EEAD70208525 /* RCPackage.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCPackage.m; sourceTree = "<group>"; };
+		3DFC6B0AF47A73A9740EF1B02DA27AB0 /* RCPurchaserInfo+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCPurchaserInfo+Protected.h"; path = "Purchases/RCPurchaserInfo+Protected.h"; sourceTree = "<group>"; };
+		3F10983D94AF8AA3A23A2AF1DEA2D761 /* RCAttributionFetcher.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCAttributionFetcher.m; path = Purchases/RCAttributionFetcher.m; sourceTree = "<group>"; };
+		3FE58C91BA10160EB43C01A2904D401D /* RCPurchaserInfo.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCPurchaserInfo.m; sourceTree = "<group>"; };
+		4171F5AFFF52551DEE1900F57B4526CB /* RCPurchases+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCPurchases+Protected.h"; path = "Purchases/RCPurchases+Protected.h"; sourceTree = "<group>"; };
+		4185BDD59F31370A8F8F7F3ADCA5D3A3 /* RCPurchasesErrorUtils.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesErrorUtils.m; sourceTree = "<group>"; };
+		42DE908C24ECE17F2C409FEAC765D5FD /* RCSpecialSubscriberAttributes.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCSpecialSubscriberAttributes.h; sourceTree = "<group>"; };
+		46106D08BFB0653A8BBC8F666B0EF7DD /* RCPurchaserInfo.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCPurchaserInfo.h; sourceTree = "<group>"; };
+		4776AD5165D0E7F3596D0A1230C53DB3 /* NSError+RCExtensions.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "NSError+RCExtensions.h"; path = "Purchases/NSError+RCExtensions.h"; sourceTree = "<group>"; };
+		4A314AB43F5B90ED28218BE00D0FC568 /* RCOfferings+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCOfferings+Protected.h"; path = "Purchases/RCOfferings+Protected.h"; sourceTree = "<group>"; };
+		4AD9DAFE2F2F1D3222B3BAC581CF4156 /* RCDateProvider.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCDateProvider.m; path = Purchases/RCDateProvider.m; sourceTree = "<group>"; };
+		4D49DA30A3EC30CE7FF7EC3AF52FC13E /* RCEntitlementInfo.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfo.h; sourceTree = "<group>"; };
+		4D7010C88CC5E58C34C86C3BC2F275EC /* RCOffering+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCOffering+Protected.h"; path = "Purchases/RCOffering+Protected.h"; sourceTree = "<group>"; };
+		4F55305CF01460106AE0421F6E95CA47 /* RCIntroEligibility.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCIntroEligibility.m; sourceTree = "<group>"; };
 		50F6559924FB3F88D1C753486A459C6F /* Pods-WatchSample-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-WatchSample-dummy.m"; sourceTree = "<group>"; };
-		52822E6EDFD6B7B3934FF89FBDDD2BC5 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
+		51BF721F3D023C5779A94E4EE118993E /* RCReceiptFetcher.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCReceiptFetcher.h; path = Purchases/RCReceiptFetcher.h; sourceTree = "<group>"; };
 		54C3C28C7869FB9D4D1D562CEFD6A520 /* Pods-WatchSample-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-WatchSample-Info.plist"; sourceTree = "<group>"; };
-		593975DA8A7AACA90E07157196193939 /* RCDeviceCache+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "RCDeviceCache+Protected.h"; sourceTree = "<group>"; };
-		5FCBFD5CE8EF6C4EB43C412D32FF5873 /* RCIntroEligibility.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibility.h; sourceTree = "<group>"; };
+		5DC5AE6FCE31C300C1FD5545628B018D /* RCPurchasesErrorUtils.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrorUtils.h; sourceTree = "<group>"; };
 		611ED2E05332BC5DC8D9FD596068461C /* Pods-WatchSample WatchKit Extension-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-WatchSample WatchKit Extension-acknowledgements.plist"; sourceTree = "<group>"; };
-		61212593FE036A160D7129834A164E4C /* RCReceiptFetcher.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCReceiptFetcher.m; path = Purchases/RCReceiptFetcher.m; sourceTree = "<group>"; };
 		636E44710B1CCF55F49B82050607C14F /* Pods-WatchSample WatchKit Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-WatchSample WatchKit Extension.release.xcconfig"; sourceTree = "<group>"; };
-		67CD84578B857C07240B98B7F407381D /* RCPromotionalOffer.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCPromotionalOffer.m; path = Purchases/RCPromotionalOffer.m; sourceTree = "<group>"; };
-		6C4ABECDC9F13076E94D60B0B5605129 /* RCOfferings.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCOfferings.m; sourceTree = "<group>"; };
-		6D01B5283D2E4DE660A78B18803922AA /* RCIdentityManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCIdentityManager.h; path = Purchases/RCIdentityManager.h; sourceTree = "<group>"; };
+		6B54A2164BC4D1B6EA4238F7978C996E /* RCPackage.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCPackage.h; sourceTree = "<group>"; };
 		6D63BCCC7A420FCC2FDD40C8904768DB /* Pods-WatchSample WatchKit Extension-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-WatchSample WatchKit Extension-Info.plist"; sourceTree = "<group>"; };
+		6E96E1A7CA6B4F59A79D05BA13F9FFDC /* RCIdentityManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCIdentityManager.h; path = Purchases/RCIdentityManager.h; sourceTree = "<group>"; };
+		6F98F3335A3C42863FAEB0999290976B /* RCDeviceCache.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCDeviceCache.m; sourceTree = "<group>"; };
 		72227E62D2C1AC24E726BE613FB62EA4 /* Pods-WatchSample WatchKit App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-WatchSample WatchKit App.release.xcconfig"; sourceTree = "<group>"; };
-		72AABB1BF44844F96BB286125FC85852 /* RCStoreKitWrapper.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCStoreKitWrapper.h; path = Purchases/RCStoreKitWrapper.h; sourceTree = "<group>"; };
+		731DC4E86E15EAEC471865863048F921 /* RCSubscriberAttribute.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCSubscriberAttribute.h; sourceTree = "<group>"; };
 		7348728B98FC35E9CCC8E4D19977BC14 /* Pods-WatchSample WatchKit App-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-WatchSample WatchKit App-dummy.m"; sourceTree = "<group>"; };
+		745CAC9A2E831BA1D4603A130FC0E0FB /* RCInMemoryCachedObject.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCInMemoryCachedObject.h; sourceTree = "<group>"; };
 		75F2382A6DDA3C38597F8FEE46772513 /* Pods_WatchSample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_WatchSample.framework; path = "Pods-WatchSample.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
-		76A51D6C3CA51830E02A6FE84154E5AD /* RCHTTPClient.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCHTTPClient.h; path = Purchases/RCHTTPClient.h; sourceTree = "<group>"; };
-		77040704F503C24B8D08BAD22ABE033C /* NSLocale+RCExtensions.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "NSLocale+RCExtensions.h"; path = "Purchases/NSLocale+RCExtensions.h"; sourceTree = "<group>"; };
 		7993531D1FCB6913C1CBBB42B4E20AD0 /* Pods-WatchSample WatchKit Extension-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-WatchSample WatchKit Extension-umbrella.h"; sourceTree = "<group>"; };
-		7A2C7DD9630FFA296F17DABAF7D2EE45 /* RCOfferingsFactory.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCOfferingsFactory.m; path = Purchases/RCOfferingsFactory.m; sourceTree = "<group>"; };
 		7BCF94AB5E1D452679F50DD9E72D9BD4 /* Pods-WatchSample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-WatchSample.debug.xcconfig"; sourceTree = "<group>"; };
-		7BD0DB6083C49E5F737C13CA617BFB01 /* RCAttributionData.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCAttributionData.m; path = Purchases/RCAttributionData.m; sourceTree = "<group>"; };
+		7C032A12DD7864D0FFC1D251AE8702B6 /* RCAttributionData.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCAttributionData.m; path = Purchases/RCAttributionData.m; sourceTree = "<group>"; };
 		7DFA19D030AAC5F062708265F86FDDE5 /* Pods-WatchSample WatchKit Extension-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-WatchSample WatchKit Extension-frameworks.sh"; sourceTree = "<group>"; };
-		7F2721D9A5ED59767EDE42C3650AE063 /* RCInMemoryCachedObject.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCInMemoryCachedObject.m; sourceTree = "<group>"; };
-		80440E7EBEA0011237CF50DB276D7A40 /* RCIntroEligibility.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCIntroEligibility.m; sourceTree = "<group>"; };
+		7EFB8E116D20804F6184944BE01CED57 /* RCIntroEligibility.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibility.h; sourceTree = "<group>"; };
+		7FBE6D4B635F783701B3A051B4590A10 /* RCBackend.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCBackend.m; path = Purchases/RCBackend.m; sourceTree = "<group>"; };
 		8423F1CE8516284EE8D29D322444A4A2 /* Pods_WatchSample_WatchKit_Extension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_WatchSample_WatchKit_Extension.framework; path = "Pods-WatchSample WatchKit Extension.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
-		86C38C97BDBEB311A6C41CD8D8B5C345 /* RCAttributionFetcher.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCAttributionFetcher.h; path = Purchases/RCAttributionFetcher.h; sourceTree = "<group>"; };
-		88CE5554C93F49A03193E4A35ED4AACB /* RCPurchasesErrorUtils.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrorUtils.h; sourceTree = "<group>"; };
-		896878242BB34EC1342B10565956A41D /* RCEntitlementInfos.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfos.m; sourceTree = "<group>"; };
+		855BB8C4AC09BC393A1FC9E1B927D40E /* RCPurchases.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCPurchases.h; sourceTree = "<group>"; };
+		86E15BC88B55B8EE5E2B8B63BBA1D3DA /* RCPurchasesErrorUtils+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCPurchasesErrorUtils+Protected.h"; path = "Purchases/RCPurchasesErrorUtils+Protected.h"; sourceTree = "<group>"; };
 		89E02F1F47C798CAE2A6258FDD13B0BB /* Pods-WatchSample WatchKit Extension-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-WatchSample WatchKit Extension-dummy.m"; sourceTree = "<group>"; };
+		8A92CE7AF502C06ACF5C32192D01202D /* RCStoreKitWrapper.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCStoreKitWrapper.h; path = Purchases/RCStoreKitWrapper.h; sourceTree = "<group>"; };
 		8E6C8F079B7E4924A4DDD7C98B238C71 /* Pods-WatchSample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-WatchSample.release.xcconfig"; sourceTree = "<group>"; };
-		9061FE94A2BB761CB23F3A5817CC9570 /* RCPurchasesErrorUtils.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesErrorUtils.m; sourceTree = "<group>"; };
+		8E90A7050E81A1DCB62F5A65B1EBD48E /* RCPurchases+SubscriberAttributes.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "RCPurchases+SubscriberAttributes.h"; sourceTree = "<group>"; };
+		900E6C4ACAC2B37A5838737B82AE5BDE /* RCPurchases.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCPurchases.m; sourceTree = "<group>"; };
+		91267F9891CC016437558BF4F17406B0 /* RCEntitlementInfo+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCEntitlementInfo+Protected.h"; path = "Purchases/RCEntitlementInfo+Protected.h"; sourceTree = "<group>"; };
 		91627C16AA08B602EECE56E675E95163 /* Pods-WatchSample-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-WatchSample-acknowledgements.plist"; sourceTree = "<group>"; };
-		918AF0D2871DB820366719BE1DB86CC5 /* NSLocale+RCExtensions.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "NSLocale+RCExtensions.m"; path = "Purchases/NSLocale+RCExtensions.m"; sourceTree = "<group>"; };
-		937D81C0AFEA38D8AF176EA203D3ABB6 /* Purchases-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Purchases-prefix.pch"; sourceTree = "<group>"; };
+		917D4AB08B76BFEAAF38272A65B6AC52 /* RCReceiptFetcher.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCReceiptFetcher.m; path = Purchases/RCReceiptFetcher.m; sourceTree = "<group>"; };
+		94759BF6658FB2C03715700F3A05897D /* RCPromotionalOffer+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCPromotionalOffer+Protected.h"; path = "Purchases/RCPromotionalOffer+Protected.h"; sourceTree = "<group>"; };
+		979F65CC2A3813E69D362E295BD76357 /* NSDate+RCExtensions.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "NSDate+RCExtensions.h"; path = "Purchases/NSDate+RCExtensions.h"; sourceTree = "<group>"; };
+		9AC0535099C18A28BCC36121AD4D91C1 /* RCAttributionFetcher.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCAttributionFetcher.h; path = Purchases/RCAttributionFetcher.h; sourceTree = "<group>"; };
 		9B6DBCA20B60F8899379B839A32DCEC2 /* Pods-WatchSample WatchKit App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-WatchSample WatchKit App.debug.xcconfig"; sourceTree = "<group>"; };
+		9D46BF831B677F6F3827519D74356967 /* RCOfferingsFactory.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCOfferingsFactory.h; path = Purchases/RCOfferingsFactory.h; sourceTree = "<group>"; };
 		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
-		A5727E3B6549462D57FA38E21AAE9CE8 /* RCDeviceCache.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCDeviceCache.m; sourceTree = "<group>"; };
-		A84A0A30C28A30609B71AE02D99C2D57 /* RCEntitlementInfo.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfo.m; sourceTree = "<group>"; };
-		A9795F07DB034A8FBC7968ECBA505D9D /* RCOfferingsFactory.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCOfferingsFactory.h; path = Purchases/RCOfferingsFactory.h; sourceTree = "<group>"; };
-		ABAB77A0C2AB462AFCCAE459856CE17E /* RCPurchases.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCPurchases.m; sourceTree = "<group>"; };
-		ADFCF78B7CB156C3AE179D8BC5E040B3 /* RCCrossPlatformSupport.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCCrossPlatformSupport.h; path = Purchases/RCCrossPlatformSupport.h; sourceTree = "<group>"; };
+		9FA80A4530A13DDD17AD9740671D872A /* RCPackage+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCPackage+Protected.h"; path = "Purchases/RCPackage+Protected.h"; sourceTree = "<group>"; };
+		A07A1C476D735789F7A91C2EDA107404 /* RCOffering.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCOffering.h; sourceTree = "<group>"; };
+		A2193DE579B6F8FC96EE19D663142C96 /* RCDeviceCache+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "RCDeviceCache+Protected.h"; sourceTree = "<group>"; };
+		A2B99134E03726DAF823A66C9A638904 /* RCStoreKitWrapper.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCStoreKitWrapper.m; path = Purchases/RCStoreKitWrapper.m; sourceTree = "<group>"; };
+		A3B925150A531BFF8549402385A436D3 /* RCOfferings.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCOfferings.h; sourceTree = "<group>"; };
+		A54007D9C87923E13F9E68561E3D2838 /* RCEntitlementInfos+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCEntitlementInfos+Protected.h"; path = "Purchases/RCEntitlementInfos+Protected.h"; sourceTree = "<group>"; };
+		A979C670793F6C6DD581A7287641552F /* NSError+RCExtensions.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "NSError+RCExtensions.m"; path = "Purchases/NSError+RCExtensions.m"; sourceTree = "<group>"; };
+		ACCA0887E03788D01BBFF87A721F112C /* RCBackend.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCBackend.h; path = Purchases/RCBackend.h; sourceTree = "<group>"; };
+		AED3DF9B9F406C9C5F1D9E82387F5B76 /* RCUtils.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCUtils.m; path = Purchases/RCUtils.m; sourceTree = "<group>"; };
+		B00A5E435D64029493C570A908C55160 /* RCStoreKitRequestFetcher.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCStoreKitRequestFetcher.m; path = Purchases/RCStoreKitRequestFetcher.m; sourceTree = "<group>"; };
+		B017816781B67EB52848C59BEAF608E0 /* RCInMemoryCachedObject+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "RCInMemoryCachedObject+Protected.h"; sourceTree = "<group>"; };
 		B04083BA1AD5732CCA7DAA901B5D5854 /* Pods-WatchSample WatchKit App-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-WatchSample WatchKit App-acknowledgements.markdown"; sourceTree = "<group>"; };
-		B06248FA1CC0ED1FE3CBA61E9BA8E7C9 /* Purchases.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = Purchases.h; sourceTree = "<group>"; };
-		B37BB3FC329682ED31BF467CC08C17E3 /* RCPromotionalOffer.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCPromotionalOffer.h; path = Purchases/RCPromotionalOffer.h; sourceTree = "<group>"; };
-		B5645B531C94BDE6279594DBC089D4DF /* RCPurchasesErrors.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrors.h; sourceTree = "<group>"; };
+		B1616585241521939008367DBC7A9AE2 /* RCUtils.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCUtils.h; path = Purchases/RCUtils.h; sourceTree = "<group>"; };
+		B1D8C771D3203F4E2CE20534312C74C7 /* NSData+RCExtensions.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "NSData+RCExtensions.m"; path = "Purchases/NSData+RCExtensions.m"; sourceTree = "<group>"; };
+		B268118C1765AD9F372D2ED1FF1C7EC9 /* Purchases-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Purchases-Info.plist"; sourceTree = "<group>"; };
+		B2E7DE9D69CB34AFC23CE8658DD7DDC0 /* RCHTTPClient.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCHTTPClient.h; path = Purchases/RCHTTPClient.h; sourceTree = "<group>"; };
+		BC08DF70D9B23593A6002D757DBABA21 /* NSLocale+RCExtensions.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "NSLocale+RCExtensions.m"; path = "Purchases/NSLocale+RCExtensions.m"; sourceTree = "<group>"; };
 		BC958DAFA11B7CF3E364BAE0E9800441 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS5.2.sdk/System/Library/Frameworks/StoreKit.framework; sourceTree = DEVELOPER_DIR; };
-		C1AD9348C776DDB975B19778D90283D3 /* RCAttributionFetcher.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCAttributionFetcher.m; path = Purchases/RCAttributionFetcher.m; sourceTree = "<group>"; };
-		C724C5840505DD9A139B83BC415F1788 /* RCPromotionalOffer+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCPromotionalOffer+Protected.h"; path = "Purchases/RCPromotionalOffer+Protected.h"; sourceTree = "<group>"; };
-		C9AE19704D5BC7BF5814CA79DB83C725 /* RCPurchases+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCPurchases+Protected.h"; path = "Purchases/RCPurchases+Protected.h"; sourceTree = "<group>"; };
-		CB96B40CDFFD66F6C2EA4556211D0E1C /* RCUtils.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCUtils.h; path = Purchases/RCUtils.h; sourceTree = "<group>"; };
+		BD3A1DB14AD73B3408CC2BA190F6072D /* RCOffering.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCOffering.m; sourceTree = "<group>"; };
+		BEF89ABF8F3C2806BDE1756E1022B8EF /* RCEntitlementInfos.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfos.h; sourceTree = "<group>"; };
+		C1A2E46E0A6A62D434E8BF551A2A3EA2 /* RCSubscriberAttributesManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCSubscriberAttributesManager.h; sourceTree = "<group>"; };
+		C1C832F8860BE9A0B42BB1B31E7D12C1 /* NSDate+RCExtensions.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "NSDate+RCExtensions.m"; path = "Purchases/NSDate+RCExtensions.m"; sourceTree = "<group>"; };
+		CBEE4636CA25D9353F22CA6D6D8CA228 /* Purchases-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Purchases-umbrella.h"; sourceTree = "<group>"; };
+		CBF37DC7C34FD8AED4DE4EB1AC69C863 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; path = LICENSE; sourceTree = "<group>"; };
+		CD508DD64F8EAD8CC4526D15DE6D4037 /* RCPurchasesErrors.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrors.h; sourceTree = "<group>"; };
 		CDC650F509D1617C3465078A314680DD /* Pods_WatchSample_WatchKit_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_WatchSample_WatchKit_App.framework; path = "Pods-WatchSample WatchKit App.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0AD7A316BEB6EA397DDDC3DBD2DDA93 /* Pods-WatchSample-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-WatchSample-umbrella.h"; sourceTree = "<group>"; };
-		D33704177C798A2D9D57E3F0DC01AFB7 /* Purchases.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Purchases.xcconfig; sourceTree = "<group>"; };
-		D76F74E3A8228FD6EAD87ED184FF2779 /* RCStoreKitRequestFetcher.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCStoreKitRequestFetcher.m; path = Purchases/RCStoreKitRequestFetcher.m; sourceTree = "<group>"; };
-		DAB446C8694F01F6846BA9AFD308F707 /* RCIntroEligibility+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCIntroEligibility+Protected.h"; path = "Purchases/RCIntroEligibility+Protected.h"; sourceTree = "<group>"; };
-		DF69F70563FB440941EC2B796EACA064 /* RCInMemoryCachedObject+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "RCInMemoryCachedObject+Protected.h"; sourceTree = "<group>"; };
-		E060DFBE6C80A9C46DF4A5E976BD327F /* Purchases-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Purchases-Info.plist"; sourceTree = "<group>"; };
+		D10C3BABABB733CE57623373278D4971 /* Purchases-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Purchases-prefix.pch"; sourceTree = "<group>"; };
+		D18B6FC39ACE3BC5F465DBB23BC09EC7 /* RCEntitlementInfos.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfos.m; sourceTree = "<group>"; };
+		D193AB4B8BB1645BE58BCF943F12FD28 /* Purchases.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Purchases.modulemap; sourceTree = "<group>"; };
+		D222276D555F86EE90AC8F169EDFD70F /* Purchases.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = Purchases.h; sourceTree = "<group>"; };
+		D535FD43CB02B291868B719863771688 /* RCInMemoryCachedObject.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCInMemoryCachedObject.m; sourceTree = "<group>"; };
+		D60DBFE9EEFB4F7C6B8EB3A73FE4AA23 /* RCIdentityManager.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCIdentityManager.m; path = Purchases/RCIdentityManager.m; sourceTree = "<group>"; };
+		E618D249A9385B3E086D121C15FA8B11 /* RCCrossPlatformSupport.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCCrossPlatformSupport.h; path = Purchases/RCCrossPlatformSupport.h; sourceTree = "<group>"; };
 		E7289177BC650F7AE29E45BAFA827599 /* Pods-WatchSample WatchKit Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-WatchSample WatchKit Extension.debug.xcconfig"; sourceTree = "<group>"; };
-		E826227A955F7675B3A1C7BFFB75BF55 /* RCDeviceCache.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RCDeviceCache.h; sourceTree = "<group>"; };
 		E98915085C0193589F778C33876AF4C8 /* Pods-WatchSample WatchKit App-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-WatchSample WatchKit App-umbrella.h"; sourceTree = "<group>"; };
-		E9995A45EB1E8AC4D79FFC1730BF0385 /* Purchases.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = Purchases.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		E9FEEC3963A31A2A1F6CAD79E1CDE88C /* Pods-WatchSample WatchKit App.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-WatchSample WatchKit App.modulemap"; sourceTree = "<group>"; };
+		EC2C8E1531DBB2AA0112564535700608 /* Purchases-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Purchases-dummy.m"; sourceTree = "<group>"; };
+		EC6E8FBE3FAF706C6697A58C7A4138B3 /* RCDateProvider.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCDateProvider.h; path = Purchases/RCDateProvider.h; sourceTree = "<group>"; };
 		ED9F20E2E741D5CEBC5101861DE3E3DF /* Pods-WatchSample WatchKit App-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-WatchSample WatchKit App-acknowledgements.plist"; sourceTree = "<group>"; };
-		F3AE6D245CB7732E569FA9A76371E66F /* RCStoreKitRequestFetcher.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCStoreKitRequestFetcher.h; path = Purchases/RCStoreKitRequestFetcher.h; sourceTree = "<group>"; };
-		FA15DBBF867525C525DF55704DEAAD25 /* RCStoreKitWrapper.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCStoreKitWrapper.m; path = Purchases/RCStoreKitWrapper.m; sourceTree = "<group>"; };
+		F232C671E6EC90D11DF4048E22E5F604 /* NSData+RCExtensions.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "NSData+RCExtensions.h"; path = "Purchases/NSData+RCExtensions.h"; sourceTree = "<group>"; };
+		F5E58E5FA44C2A362ECA004C52E94940 /* RCIntroEligibility+Protected.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "RCIntroEligibility+Protected.h"; path = "Purchases/RCIntroEligibility+Protected.h"; sourceTree = "<group>"; };
+		F875CBCD04663E030FF9B22EC07592E5 /* RCPackage.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCPackage.m; sourceTree = "<group>"; };
 		FBA7F9EF3FAEB0BC7D79BB1AFF265A06 /* Purchases.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Purchases.framework; path = Purchases.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FBE9014742FEC3F0C75C5AA8D0AA2EC9 /* RCOffering.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = RCOffering.m; sourceTree = "<group>"; };
-		FFFFD95AD2694BFCB94C9EF9261C6421 /* RCHTTPClient.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCHTTPClient.m; path = Purchases/RCHTTPClient.m; sourceTree = "<group>"; };
+		FC20B483ABCC8B82C06763523AC3EF8D /* RCPromotionalOffer.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RCPromotionalOffer.m; path = Purchases/RCPromotionalOffer.m; sourceTree = "<group>"; };
+		FE023634F2A088FFDA19A70AE0D58092 /* RCStoreKitRequestFetcher.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RCStoreKitRequestFetcher.h; path = Purchases/RCStoreKitRequestFetcher.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -221,26 +255,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B0B447261EBD1EE8C1259365F106DCC8 /* Frameworks */ = {
+		DC4C963AD161431466FD200C18C8B53C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5E164F1DC5F981760E98831F123F80EB /* Foundation.framework in Frameworks */,
-				A400769ADF96FAC6BA69C4A68F94B74F /* StoreKit.framework in Frameworks */,
+				266E361C33F307118BD7D10DEBC016A3 /* Foundation.framework in Frameworks */,
+				12927A2D1C28DE280F39144A1B983E4E /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0CDB84F2531A142B56C7F17A88D5BD2E /* Development Pods */ = {
-			isa = PBXGroup;
-			children = (
-				95DE2877534E45C5EF0794A1C6F3F0C8 /* Purchases */,
-			);
-			name = "Development Pods";
-			sourceTree = "<group>";
-		};
 		1223A0A6FBC0A3309620A92588A9C939 /* Targets Support Files */ = {
 			isa = PBXGroup;
 			children = (
@@ -249,6 +275,90 @@
 				A625CB882279656F33F26E75BE6D5B5C /* Pods-WatchSample WatchKit Extension */,
 			);
 			name = "Targets Support Files";
+			sourceTree = "<group>";
+		};
+		1289549AE2840987D6DC4081A0AC7266 /* Public */ = {
+			isa = PBXGroup;
+			children = (
+				D222276D555F86EE90AC8F169EDFD70F /* Purchases.h */,
+				4D49DA30A3EC30CE7FF7EC3AF52FC13E /* RCEntitlementInfo.h */,
+				1C0B855383951E9F1B25B70CF10983F6 /* RCEntitlementInfo.m */,
+				BEF89ABF8F3C2806BDE1756E1022B8EF /* RCEntitlementInfos.h */,
+				D18B6FC39ACE3BC5F465DBB23BC09EC7 /* RCEntitlementInfos.m */,
+				7EFB8E116D20804F6184944BE01CED57 /* RCIntroEligibility.h */,
+				4F55305CF01460106AE0421F6E95CA47 /* RCIntroEligibility.m */,
+				A07A1C476D735789F7A91C2EDA107404 /* RCOffering.h */,
+				BD3A1DB14AD73B3408CC2BA190F6072D /* RCOffering.m */,
+				A3B925150A531BFF8549402385A436D3 /* RCOfferings.h */,
+				11EBE72AE4FDEC8546907F64FB4D0DBB /* RCOfferings.m */,
+				6B54A2164BC4D1B6EA4238F7978C996E /* RCPackage.h */,
+				F875CBCD04663E030FF9B22EC07592E5 /* RCPackage.m */,
+				46106D08BFB0653A8BBC8F666B0EF7DD /* RCPurchaserInfo.h */,
+				3FE58C91BA10160EB43C01A2904D401D /* RCPurchaserInfo.m */,
+				855BB8C4AC09BC393A1FC9E1B927D40E /* RCPurchases.h */,
+				900E6C4ACAC2B37A5838737B82AE5BDE /* RCPurchases.m */,
+				CD508DD64F8EAD8CC4526D15DE6D4037 /* RCPurchasesErrors.h */,
+				5DC5AE6FCE31C300C1FD5545628B018D /* RCPurchasesErrorUtils.h */,
+				4185BDD59F31370A8F8F7F3ADCA5D3A3 /* RCPurchasesErrorUtils.m */,
+			);
+			name = Public;
+			path = Purchases/Public;
+			sourceTree = "<group>";
+		};
+		2C61E306E78E5E46C5B87AE0AA3298E2 /* Purchases */ = {
+			isa = PBXGroup;
+			children = (
+				F232C671E6EC90D11DF4048E22E5F604 /* NSData+RCExtensions.h */,
+				B1D8C771D3203F4E2CE20534312C74C7 /* NSData+RCExtensions.m */,
+				979F65CC2A3813E69D362E295BD76357 /* NSDate+RCExtensions.h */,
+				C1C832F8860BE9A0B42BB1B31E7D12C1 /* NSDate+RCExtensions.m */,
+				4776AD5165D0E7F3596D0A1230C53DB3 /* NSError+RCExtensions.h */,
+				A979C670793F6C6DD581A7287641552F /* NSError+RCExtensions.m */,
+				3648321883B9FAC5FD23FB8FB98CB2DA /* NSLocale+RCExtensions.h */,
+				BC08DF70D9B23593A6002D757DBABA21 /* NSLocale+RCExtensions.m */,
+				3256F3D205ED6C2C4117070015438277 /* RCAttributionData.h */,
+				7C032A12DD7864D0FFC1D251AE8702B6 /* RCAttributionData.m */,
+				9AC0535099C18A28BCC36121AD4D91C1 /* RCAttributionFetcher.h */,
+				3F10983D94AF8AA3A23A2AF1DEA2D761 /* RCAttributionFetcher.m */,
+				ACCA0887E03788D01BBFF87A721F112C /* RCBackend.h */,
+				7FBE6D4B635F783701B3A051B4590A10 /* RCBackend.m */,
+				E618D249A9385B3E086D121C15FA8B11 /* RCCrossPlatformSupport.h */,
+				EC6E8FBE3FAF706C6697A58C7A4138B3 /* RCDateProvider.h */,
+				4AD9DAFE2F2F1D3222B3BAC581CF4156 /* RCDateProvider.m */,
+				91267F9891CC016437558BF4F17406B0 /* RCEntitlementInfo+Protected.h */,
+				A54007D9C87923E13F9E68561E3D2838 /* RCEntitlementInfos+Protected.h */,
+				B2E7DE9D69CB34AFC23CE8658DD7DDC0 /* RCHTTPClient.h */,
+				1728F6B96D47D1741AF1ADF98E316E8E /* RCHTTPClient.m */,
+				6E96E1A7CA6B4F59A79D05BA13F9FFDC /* RCIdentityManager.h */,
+				D60DBFE9EEFB4F7C6B8EB3A73FE4AA23 /* RCIdentityManager.m */,
+				F5E58E5FA44C2A362ECA004C52E94940 /* RCIntroEligibility+Protected.h */,
+				4D7010C88CC5E58C34C86C3BC2F275EC /* RCOffering+Protected.h */,
+				4A314AB43F5B90ED28218BE00D0FC568 /* RCOfferings+Protected.h */,
+				9D46BF831B677F6F3827519D74356967 /* RCOfferingsFactory.h */,
+				2848B413272C44FA7264D3641E60D0CA /* RCOfferingsFactory.m */,
+				9FA80A4530A13DDD17AD9740671D872A /* RCPackage+Protected.h */,
+				118EC5C620AE877214EBFB2EB92D00DF /* RCPromotionalOffer.h */,
+				FC20B483ABCC8B82C06763523AC3EF8D /* RCPromotionalOffer.m */,
+				94759BF6658FB2C03715700F3A05897D /* RCPromotionalOffer+Protected.h */,
+				3DFC6B0AF47A73A9740EF1B02DA27AB0 /* RCPurchaserInfo+Protected.h */,
+				4171F5AFFF52551DEE1900F57B4526CB /* RCPurchases+Protected.h */,
+				86E15BC88B55B8EE5E2B8B63BBA1D3DA /* RCPurchasesErrorUtils+Protected.h */,
+				51BF721F3D023C5779A94E4EE118993E /* RCReceiptFetcher.h */,
+				917D4AB08B76BFEAAF38272A65B6AC52 /* RCReceiptFetcher.m */,
+				FE023634F2A088FFDA19A70AE0D58092 /* RCStoreKitRequestFetcher.h */,
+				B00A5E435D64029493C570A908C55160 /* RCStoreKitRequestFetcher.m */,
+				8A92CE7AF502C06ACF5C32192D01202D /* RCStoreKitWrapper.h */,
+				A2B99134E03726DAF823A66C9A638904 /* RCStoreKitWrapper.m */,
+				B1616585241521939008367DBC7A9AE2 /* RCUtils.h */,
+				AED3DF9B9F406C9C5F1D9E82387F5B76 /* RCUtils.m */,
+				5D54964E6CEA5D2B1A0B5E9240DB6B40 /* Caching */,
+				F37DEE8704DEAA986343D93041A8CA4D /* Pod */,
+				1289549AE2840987D6DC4081A0AC7266 /* Public */,
+				DDBE9AA7C2714B1C9AEF57D70076B47B /* SubscriberAttributes */,
+				5ACE061004E5355326EFBEDC4FAB7660 /* Support Files */,
+			);
+			name = Purchases;
+			path = ../../..;
 			sourceTree = "<group>";
 		};
 		3013AFD60297BC7F7FFE7583752AE6FC /* Pods-WatchSample WatchKit App */ = {
@@ -276,60 +386,32 @@
 			name = watchOS;
 			sourceTree = "<group>";
 		};
-		44CC7122232B8BD356480CAED8C8C72B /* Pod */ = {
+		5ACE061004E5355326EFBEDC4FAB7660 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				04D345543485223E999CD66F0B0219D2 /* LICENSE */,
-				E9995A45EB1E8AC4D79FFC1730BF0385 /* Purchases.podspec */,
-				52822E6EDFD6B7B3934FF89FBDDD2BC5 /* README.md */,
+				D193AB4B8BB1645BE58BCF943F12FD28 /* Purchases.modulemap */,
+				0256FA5636C9F74D4A6127BC1B905165 /* Purchases.xcconfig */,
+				EC2C8E1531DBB2AA0112564535700608 /* Purchases-dummy.m */,
+				B268118C1765AD9F372D2ED1FF1C7EC9 /* Purchases-Info.plist */,
+				D10C3BABABB733CE57623373278D4971 /* Purchases-prefix.pch */,
+				CBEE4636CA25D9353F22CA6D6D8CA228 /* Purchases-umbrella.h */,
 			);
-			name = Pod;
+			name = "Support Files";
+			path = "Examples/WatchSample/Pods/Target Support Files/Purchases";
 			sourceTree = "<group>";
 		};
-		95DE2877534E45C5EF0794A1C6F3F0C8 /* Purchases */ = {
+		5D54964E6CEA5D2B1A0B5E9240DB6B40 /* Caching */ = {
 			isa = PBXGroup;
 			children = (
-				77040704F503C24B8D08BAD22ABE033C /* NSLocale+RCExtensions.h */,
-				918AF0D2871DB820366719BE1DB86CC5 /* NSLocale+RCExtensions.m */,
-				2D91BE78F9087584F7A5E098DD6EE08D /* RCAttributionData.h */,
-				7BD0DB6083C49E5F737C13CA617BFB01 /* RCAttributionData.m */,
-				86C38C97BDBEB311A6C41CD8D8B5C345 /* RCAttributionFetcher.h */,
-				C1AD9348C776DDB975B19778D90283D3 /* RCAttributionFetcher.m */,
-				2AB9E56B96FEA0DE2CB8E568512E226C /* RCBackend.h */,
-				014A85B6D824A40573CD74A4566F0EAD /* RCBackend.m */,
-				ADFCF78B7CB156C3AE179D8BC5E040B3 /* RCCrossPlatformSupport.h */,
-				0246C22F208C58913C7E27CA120AC57D /* RCEntitlementInfo+Protected.h */,
-				25B2D596CECA33141957F3931B8FC631 /* RCEntitlementInfos+Protected.h */,
-				76A51D6C3CA51830E02A6FE84154E5AD /* RCHTTPClient.h */,
-				FFFFD95AD2694BFCB94C9EF9261C6421 /* RCHTTPClient.m */,
-				6D01B5283D2E4DE660A78B18803922AA /* RCIdentityManager.h */,
-				14492FFC74A2C26DBC4563901ED89538 /* RCIdentityManager.m */,
-				DAB446C8694F01F6846BA9AFD308F707 /* RCIntroEligibility+Protected.h */,
-				19B34CF9CFF38B7C320981E2507EBAB7 /* RCOffering+Protected.h */,
-				2AF58B607D35DA8638D1B30DA89678D8 /* RCOfferings+Protected.h */,
-				A9795F07DB034A8FBC7968ECBA505D9D /* RCOfferingsFactory.h */,
-				7A2C7DD9630FFA296F17DABAF7D2EE45 /* RCOfferingsFactory.m */,
-				311B4D8D498318ACE1E4A6C27CEA8C6F /* RCPackage+Protected.h */,
-				B37BB3FC329682ED31BF467CC08C17E3 /* RCPromotionalOffer.h */,
-				67CD84578B857C07240B98B7F407381D /* RCPromotionalOffer.m */,
-				C724C5840505DD9A139B83BC415F1788 /* RCPromotionalOffer+Protected.h */,
-				29B972E99A164581A7C305C2DF57C6BF /* RCPurchaserInfo+Protected.h */,
-				C9AE19704D5BC7BF5814CA79DB83C725 /* RCPurchases+Protected.h */,
-				02A2C81FE1EB28AC74FD0E18D14A7169 /* RCReceiptFetcher.h */,
-				61212593FE036A160D7129834A164E4C /* RCReceiptFetcher.m */,
-				F3AE6D245CB7732E569FA9A76371E66F /* RCStoreKitRequestFetcher.h */,
-				D76F74E3A8228FD6EAD87ED184FF2779 /* RCStoreKitRequestFetcher.m */,
-				72AABB1BF44844F96BB286125FC85852 /* RCStoreKitWrapper.h */,
-				FA15DBBF867525C525DF55704DEAAD25 /* RCStoreKitWrapper.m */,
-				CB96B40CDFFD66F6C2EA4556211D0E1C /* RCUtils.h */,
-				21CF1EDC6106736259EB613AAC2C3863 /* RCUtils.m */,
-				BDE75AFE13A776206BEB2D3CA3D3E5C5 /* Caching */,
-				44CC7122232B8BD356480CAED8C8C72B /* Pod */,
-				D6B9E6F9B4C6502679238C7FCC13961A /* Public */,
-				C9EB935FFAD8C74A891C334CA2EF8936 /* Support Files */,
+				352E8D42AA4AEBE15D1395E50C50A85F /* RCDeviceCache.h */,
+				6F98F3335A3C42863FAEB0999290976B /* RCDeviceCache.m */,
+				A2193DE579B6F8FC96EE19D663142C96 /* RCDeviceCache+Protected.h */,
+				745CAC9A2E831BA1D4603A130FC0E0FB /* RCInMemoryCachedObject.h */,
+				D535FD43CB02B291868B719863771688 /* RCInMemoryCachedObject.m */,
+				B017816781B67EB52848C59BEAF608E0 /* RCInMemoryCachedObject+Protected.h */,
 			);
-			name = Purchases;
-			path = ../../..;
+			name = Caching;
+			path = Purchases/Caching;
 			sourceTree = "<group>";
 		};
 		A625CB882279656F33F26E75BE6D5B5C /* Pods-WatchSample WatchKit Extension */ = {
@@ -357,20 +439,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		BDE75AFE13A776206BEB2D3CA3D3E5C5 /* Caching */ = {
-			isa = PBXGroup;
-			children = (
-				E826227A955F7675B3A1C7BFFB75BF55 /* RCDeviceCache.h */,
-				A5727E3B6549462D57FA38E21AAE9CE8 /* RCDeviceCache.m */,
-				593975DA8A7AACA90E07157196193939 /* RCDeviceCache+Protected.h */,
-				09EF4928DA06E47058F201A3234D820C /* RCInMemoryCachedObject.h */,
-				7F2721D9A5ED59767EDE42C3650AE063 /* RCInMemoryCachedObject.m */,
-				DF69F70563FB440941EC2B796EACA064 /* RCInMemoryCachedObject+Protected.h */,
-			);
-			name = Caching;
-			path = Purchases/Caching;
-			sourceTree = "<group>";
-		};
 		C44B032B1205AD3F0DD74412443EBDCD /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -382,57 +450,23 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		C9EB935FFAD8C74A891C334CA2EF8936 /* Support Files */ = {
-			isa = PBXGroup;
-			children = (
-				26C65641FAF4C31489AB2667DD2F1DD7 /* Purchases.modulemap */,
-				D33704177C798A2D9D57E3F0DC01AFB7 /* Purchases.xcconfig */,
-				254CC1ED11112C43BA9013E97174918B /* Purchases-dummy.m */,
-				E060DFBE6C80A9C46DF4A5E976BD327F /* Purchases-Info.plist */,
-				937D81C0AFEA38D8AF176EA203D3ABB6 /* Purchases-prefix.pch */,
-				36046351525F1AAC198085F3C3496148 /* Purchases-umbrella.h */,
-			);
-			name = "Support Files";
-			path = "Examples/WatchSample/Pods/Target Support Files/Purchases";
-			sourceTree = "<group>";
-		};
 		CF1408CF629C7361332E53B88F7BD30C = {
 			isa = PBXGroup;
 			children = (
 				9D940727FF8FB9C785EB98E56350EF41 /* Podfile */,
-				0CDB84F2531A142B56C7F17A88D5BD2E /* Development Pods */,
+				D8D91A1E66311D1080BEF67C3A0ECF14 /* Development Pods */,
 				B28CE43407CEAC117D2A976683A764D8 /* Frameworks */,
 				C44B032B1205AD3F0DD74412443EBDCD /* Products */,
 				1223A0A6FBC0A3309620A92588A9C939 /* Targets Support Files */,
 			);
 			sourceTree = "<group>";
 		};
-		D6B9E6F9B4C6502679238C7FCC13961A /* Public */ = {
+		D8D91A1E66311D1080BEF67C3A0ECF14 /* Development Pods */ = {
 			isa = PBXGroup;
 			children = (
-				B06248FA1CC0ED1FE3CBA61E9BA8E7C9 /* Purchases.h */,
-				269414999704C537DCFA8A9F65B3C7B4 /* RCEntitlementInfo.h */,
-				A84A0A30C28A30609B71AE02D99C2D57 /* RCEntitlementInfo.m */,
-				0AB3953AD61073A0983B329E0F07DFF4 /* RCEntitlementInfos.h */,
-				896878242BB34EC1342B10565956A41D /* RCEntitlementInfos.m */,
-				5FCBFD5CE8EF6C4EB43C412D32FF5873 /* RCIntroEligibility.h */,
-				80440E7EBEA0011237CF50DB276D7A40 /* RCIntroEligibility.m */,
-				3A3E79C0C78E8D06E8A012EFA617481D /* RCOffering.h */,
-				FBE9014742FEC3F0C75C5AA8D0AA2EC9 /* RCOffering.m */,
-				1D0CFC272C61012EF42788B26027063E /* RCOfferings.h */,
-				6C4ABECDC9F13076E94D60B0B5605129 /* RCOfferings.m */,
-				148702507FBEA6F21210E936067553D6 /* RCPackage.h */,
-				4A6579F43118B3242AF7EEAD70208525 /* RCPackage.m */,
-				3C2A9CEB81EFEFCC7C419EBC60750EFC /* RCPurchaserInfo.h */,
-				3237DC1589ABC591AFC82E9CFC34EC6A /* RCPurchaserInfo.m */,
-				3FC885D359206CC37978306D944C0B08 /* RCPurchases.h */,
-				ABAB77A0C2AB462AFCCAE459856CE17E /* RCPurchases.m */,
-				B5645B531C94BDE6279594DBC089D4DF /* RCPurchasesErrors.h */,
-				88CE5554C93F49A03193E4A35ED4AACB /* RCPurchasesErrorUtils.h */,
-				9061FE94A2BB761CB23F3A5817CC9570 /* RCPurchasesErrorUtils.m */,
+				2C61E306E78E5E46C5B87AE0AA3298E2 /* Purchases */,
 			);
-			name = Public;
-			path = Purchases/Public;
+			name = "Development Pods";
 			sourceTree = "<group>";
 		};
 		DA01B6D45DD93D9ECFADB7BEEF42103B /* Pods-WatchSample */ = {
@@ -451,54 +485,35 @@
 			path = "Target Support Files/Pods-WatchSample";
 			sourceTree = "<group>";
 		};
+		DDBE9AA7C2714B1C9AEF57D70076B47B /* SubscriberAttributes */ = {
+			isa = PBXGroup;
+			children = (
+				8E90A7050E81A1DCB62F5A65B1EBD48E /* RCPurchases+SubscriberAttributes.h */,
+				04CA75D0BFD40E3A7A6F1E2A81C0C6F6 /* RCPurchases+SubscriberAttributes.m */,
+				42DE908C24ECE17F2C409FEAC765D5FD /* RCSpecialSubscriberAttributes.h */,
+				731DC4E86E15EAEC471865863048F921 /* RCSubscriberAttribute.h */,
+				175F47962F3DF2B80BD57F1E3DB3C977 /* RCSubscriberAttribute.m */,
+				332208FC44EB041E185ED3B5A6787112 /* RCSubscriberAttribute+Protected.h */,
+				C1A2E46E0A6A62D434E8BF551A2A3EA2 /* RCSubscriberAttributesManager.h */,
+				1A9563DCA2188AB6EA87C706E041FE5D /* RCSubscriberAttributesManager.m */,
+			);
+			name = SubscriberAttributes;
+			path = Purchases/SubscriberAttributes;
+			sourceTree = "<group>";
+		};
+		F37DEE8704DEAA986343D93041A8CA4D /* Pod */ = {
+			isa = PBXGroup;
+			children = (
+				CBF37DC7C34FD8AED4DE4EB1AC69C863 /* LICENSE */,
+				12ABC113B8A947E116EB3C0DC2599836 /* Purchases.podspec */,
+				1CA407B8CF9DF39CC4553A479CCAC82F /* README.md */,
+			);
+			name = Pod;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		4D6D4AFB79EFAB08A441F162FC66C938 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AAE88509C3E4C26291AB9D61ADAC830C /* NSLocale+RCExtensions.h in Headers */,
-				43AD030AA6A0086F8763A498A228CD88 /* Purchases-umbrella.h in Headers */,
-				577D7A3E6A95D55DB08BBCACA42F392D /* Purchases.h in Headers */,
-				485C638F22FB5DC4C055EFED7F982559 /* RCAttributionData.h in Headers */,
-				252671738FBEA19310E79022F386F372 /* RCAttributionFetcher.h in Headers */,
-				573E055D20D98E86828EF37E0FC13BDC /* RCBackend.h in Headers */,
-				A1778E9A892B36198B56964CF5D0E408 /* RCCrossPlatformSupport.h in Headers */,
-				2E439BC0C881F9DA3F37D75221B53D5A /* RCDeviceCache+Protected.h in Headers */,
-				ACEB66EA8613FDC74BB47A9B01044CC8 /* RCDeviceCache.h in Headers */,
-				543457DE2C28B47225285B937112ECB5 /* RCEntitlementInfo+Protected.h in Headers */,
-				A5DC7643258BE677471E0CCD727D3353 /* RCEntitlementInfo.h in Headers */,
-				0F1AA9380F935D90825B30B5464C1787 /* RCEntitlementInfos+Protected.h in Headers */,
-				716F95A2BCF36E33D37DF7D4A6B3489F /* RCEntitlementInfos.h in Headers */,
-				228A4CC4AB1966C258F77CD27A5656E9 /* RCHTTPClient.h in Headers */,
-				29F23EC187F2280CE95711E41F9BC78A /* RCIdentityManager.h in Headers */,
-				4048DDBBD733C1045BB8CF64ECA2418F /* RCInMemoryCachedObject+Protected.h in Headers */,
-				6E292E5E1373115A3CF2F27B9A6CA408 /* RCInMemoryCachedObject.h in Headers */,
-				E44958F59F789161B02CF1C38B85D5E8 /* RCIntroEligibility+Protected.h in Headers */,
-				0B37D86C9F4A85ED1D7D7F12DC224C58 /* RCIntroEligibility.h in Headers */,
-				38BF5AF552ACC0FB702BAD92D5D68663 /* RCOffering+Protected.h in Headers */,
-				24DC501997B63EADA1F592D2BBDA252C /* RCOffering.h in Headers */,
-				78CCD5BC9C1F57AA8D2F642F7504BBF0 /* RCOfferings+Protected.h in Headers */,
-				DA8C523ADDBEDDD30B9C560F9DD13331 /* RCOfferings.h in Headers */,
-				7E9ABD20D6962EAB7413FF9FCFFA0E42 /* RCOfferingsFactory.h in Headers */,
-				6475BF36A1FC20B15331ECE301D13D2D /* RCPackage+Protected.h in Headers */,
-				E4B22B7BCB6AC93B85E4C34F6A144E4B /* RCPackage.h in Headers */,
-				2D4BFE90EB293C663105AAFEB96A3794 /* RCPromotionalOffer+Protected.h in Headers */,
-				66E36BA6E98F53006C4C471B28ABC5B5 /* RCPromotionalOffer.h in Headers */,
-				151332323EFA2B139FC86BA929C5C0AD /* RCPurchaserInfo+Protected.h in Headers */,
-				2B771F6153BDE71CE219C50DE07ADE7E /* RCPurchaserInfo.h in Headers */,
-				8B679EEA9CC210B3F35D712783159AA8 /* RCPurchases+Protected.h in Headers */,
-				B433868D0FBB14B4983CE5DA24E5253C /* RCPurchases.h in Headers */,
-				F40147436043CA3ED381EF6F8D6813CE /* RCPurchasesErrors.h in Headers */,
-				0B9A594A2AD0E2B3BF01EAE871AE2D8F /* RCPurchasesErrorUtils.h in Headers */,
-				83484AA989F7CE98BE5F649066F76ABE /* RCReceiptFetcher.h in Headers */,
-				904A4B6EE643248666F98CAC0793C270 /* RCStoreKitRequestFetcher.h in Headers */,
-				C57DE7FBAA2EBD5CF8D7124998FD27D7 /* RCStoreKitWrapper.h in Headers */,
-				FEEA8F32FFB698FA30E54C6532A7659C /* RCUtils.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		946C3654BECAF4BF0AED405B8F74C11C /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -520,6 +535,61 @@
 			buildActionMask = 2147483647;
 			files = (
 				BFAB3D1876B59B39712A454AE6FBD275 /* Pods-WatchSample WatchKit App-umbrella.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FF4565316DA6598DEF7AAC76FC0BC929 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9DCD36C5005E40D5063C4851B1077A76 /* NSData+RCExtensions.h in Headers */,
+				BEC99D6AA145FFD394FC1D6126E83213 /* NSDate+RCExtensions.h in Headers */,
+				47029E8C24FCD94C9DDD8586C179C56C /* NSError+RCExtensions.h in Headers */,
+				302DEE0AF3D38FF0F2184CE493ED7ED6 /* NSLocale+RCExtensions.h in Headers */,
+				FE196C7A75FCCCB38AD347565C66E1CF /* Purchases-umbrella.h in Headers */,
+				579EAF086A1E4539551B3E0B58135E52 /* Purchases.h in Headers */,
+				59C7773849365ED83CDE3A4AFB2D2127 /* RCAttributionData.h in Headers */,
+				797F9E927D63326A1ED8941A5FD4BD0D /* RCAttributionFetcher.h in Headers */,
+				592F6B0ACD09ACAEE6689E8A13EF9CFE /* RCBackend.h in Headers */,
+				9C88076C32870321A3E70EB1CB9A53C7 /* RCCrossPlatformSupport.h in Headers */,
+				B20887F2DD9B4A92B36549590AA0A600 /* RCDateProvider.h in Headers */,
+				AB92C551E917EFC8822BFC4F5C3851AB /* RCDeviceCache+Protected.h in Headers */,
+				13E41E7A1B288023AFA1E02C70D503D4 /* RCDeviceCache.h in Headers */,
+				2BABDC6BF143E8CA45B26D3042CCCEE2 /* RCEntitlementInfo+Protected.h in Headers */,
+				96DA268F324A98C9DB4B9168EA93E025 /* RCEntitlementInfo.h in Headers */,
+				1137744BF82437051AF1838863462D58 /* RCEntitlementInfos+Protected.h in Headers */,
+				C1E72E77580D4E47C3A0C767A62F46AA /* RCEntitlementInfos.h in Headers */,
+				3E96C0543F36BEC622FC5B9558043A20 /* RCHTTPClient.h in Headers */,
+				290A18FD12A4907300DE822743477009 /* RCIdentityManager.h in Headers */,
+				226F8C97F54562D89C26124FE5D2D6B4 /* RCInMemoryCachedObject+Protected.h in Headers */,
+				8A5BAE085044E55CEFF3274D9DBA725B /* RCInMemoryCachedObject.h in Headers */,
+				CDB5FBEE73007F669D2B8352FE4DACC2 /* RCIntroEligibility+Protected.h in Headers */,
+				7B433196A5BA83714DEEAB0EB8F70D4B /* RCIntroEligibility.h in Headers */,
+				8E97973CB97C266F120210325C180DA9 /* RCOffering+Protected.h in Headers */,
+				58A8623379260B12D55330AA1C396924 /* RCOffering.h in Headers */,
+				2BA199D89DFFB6DC8CFE73E8054DBDF7 /* RCOfferings+Protected.h in Headers */,
+				97B97D3089B70B7E4A4159940B6A074F /* RCOfferings.h in Headers */,
+				BF51B064EBA02CA2CDB65162CF46B227 /* RCOfferingsFactory.h in Headers */,
+				C7E5A7B9CDDC9EF904A66F4E41C550B2 /* RCPackage+Protected.h in Headers */,
+				E37D96E0968876134AD25B41649B4D2D /* RCPackage.h in Headers */,
+				7D2ADD48CA9D6E4D8451AE886445D0B8 /* RCPromotionalOffer+Protected.h in Headers */,
+				EF1DEA4D384DD3D35B8593D0B851E3DB /* RCPromotionalOffer.h in Headers */,
+				A918683B1F8C974C4FFC53DF7A7DFCC1 /* RCPurchaserInfo+Protected.h in Headers */,
+				6051714BB4BC3C7224E8471044C0DE71 /* RCPurchaserInfo.h in Headers */,
+				3710630D7A64770BC16881E4B419129B /* RCPurchases+Protected.h in Headers */,
+				231FC4E82085DA8591CBF82EC0360232 /* RCPurchases+SubscriberAttributes.h in Headers */,
+				0AE5646575E8F8023390038D451935AA /* RCPurchases.h in Headers */,
+				31E0D1CC39539A5870019E5D52B5977F /* RCPurchasesErrors.h in Headers */,
+				B0BD96F5164A4F5C08859419518C5E3B /* RCPurchasesErrorUtils+Protected.h in Headers */,
+				740FCCFC90036328C02B99440B8C1428 /* RCPurchasesErrorUtils.h in Headers */,
+				63FA8F75DC16F6326BEC723512542CA4 /* RCReceiptFetcher.h in Headers */,
+				CA3CA206C4E2309849C5DAFBA24E5021 /* RCSpecialSubscriberAttributes.h in Headers */,
+				78178497EAAE2E5CE35D3303E9B50DDC /* RCStoreKitRequestFetcher.h in Headers */,
+				75A2D17AAFB1BF57CB9A16484598C829 /* RCStoreKitWrapper.h in Headers */,
+				60A8F3DDF35A25E5DA9C1CB16D841E74 /* RCSubscriberAttribute+Protected.h in Headers */,
+				DEAA6C094B1CFD262ED6916181676F6A /* RCSubscriberAttribute.h in Headers */,
+				A33F01AD108258F6BA89BDE5148999E7 /* RCSubscriberAttributesManager.h in Headers */,
+				09031BF18474F97BC6B000028E744EE0 /* RCUtils.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -547,12 +617,12 @@
 		};
 		19EF5509BA60F0CD4916B9F24A2F7886 /* Purchases */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C6AF88221CA92FA7AD14E9DA20844455 /* Build configuration list for PBXNativeTarget "Purchases" */;
+			buildConfigurationList = BB0F5964222466DD9E8B09D6D2E92DD9 /* Build configuration list for PBXNativeTarget "Purchases" */;
 			buildPhases = (
-				4D6D4AFB79EFAB08A441F162FC66C938 /* Headers */,
-				639C2C0F1F538683B324D4F993325161 /* Sources */,
-				B0B447261EBD1EE8C1259365F106DCC8 /* Frameworks */,
-				AD2724E1EEBC1B8A9404D572AB8A7E1C /* Resources */,
+				FF4565316DA6598DEF7AAC76FC0BC929 /* Headers */,
+				69E72D8295BC141130FF0E1DE0F920FA /* Sources */,
+				DC4C963AD161431466FD200C18C8B53C /* Frameworks */,
+				D07466B32C25871F41C4B4FBA5EF8516 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -609,7 +679,7 @@
 				LastUpgradeCheck = 1100;
 			};
 			buildConfigurationList = 4821239608C13582E20E6DA73FD5F1F9 /* Build configuration list for PBXProject "Pods" */;
-			compatibilityVersion = "Xcode 9.3";
+			compatibilityVersion = "Xcode 10.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -644,7 +714,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AD2724E1EEBC1B8A9404D572AB8A7E1C /* Resources */ = {
+		D07466B32C25871F41C4B4FBA5EF8516 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -669,34 +739,41 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		639C2C0F1F538683B324D4F993325161 /* Sources */ = {
+		69E72D8295BC141130FF0E1DE0F920FA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				67CAB6FF45B9E5D7C0F612D3C2E1C0A0 /* NSLocale+RCExtensions.m in Sources */,
-				2AE02B68F1FB10D28CA62E12F44EC62E /* Purchases-dummy.m in Sources */,
-				B3602F9BC0C8829EEC2FAFCF1FC9889E /* RCAttributionData.m in Sources */,
-				1764D6294502A4B3466922A7A70F2211 /* RCAttributionFetcher.m in Sources */,
-				CFDFA299062AB13EEC6CDE3404D91221 /* RCBackend.m in Sources */,
-				8BD91D95870D51D80ECE0798E7EEDE3D /* RCDeviceCache.m in Sources */,
-				14447DE9C6CCC1D39F11A475CC370A97 /* RCEntitlementInfo.m in Sources */,
-				F6F31AB81A3E1FC09FE8E52403B55AC9 /* RCEntitlementInfos.m in Sources */,
-				52AE0479D7C63D5390875F279475F0B1 /* RCHTTPClient.m in Sources */,
-				E80B383A94DC4A07E5BCC33063ACA147 /* RCIdentityManager.m in Sources */,
-				8AE378A0661A4FC23543B64E2DF9668B /* RCInMemoryCachedObject.m in Sources */,
-				FC5B8DF211AB176DE475C0B2FBA66567 /* RCIntroEligibility.m in Sources */,
-				9A2DDE1EBB60D4E08867A55A7823B254 /* RCOffering.m in Sources */,
-				1DE1D3A976FE27533285C4AA9044D011 /* RCOfferings.m in Sources */,
-				66515CC6FC1F9007BD94003732310B4A /* RCOfferingsFactory.m in Sources */,
-				177F1659797FB90F0E79780A41ACD6CC /* RCPackage.m in Sources */,
-				29D55174BA1AC2DD7EE67BED0C037DD8 /* RCPromotionalOffer.m in Sources */,
-				46D397200CBC39F95152B8E739E0AB09 /* RCPurchaserInfo.m in Sources */,
-				BDC7CACE24D8FD61E5CE05C554000D06 /* RCPurchases.m in Sources */,
-				93A1B86892E807898CFDCAD44D1DC244 /* RCPurchasesErrorUtils.m in Sources */,
-				44C7EDA0D7846AF783A8DDF9FA19F37D /* RCReceiptFetcher.m in Sources */,
-				A4B52482F3D14F38CC13CE0316A1B34D /* RCStoreKitRequestFetcher.m in Sources */,
-				8819D88EF0194978EBEDA2415A9D634B /* RCStoreKitWrapper.m in Sources */,
-				BD89C2495872BC23E8B49EC186D7F78F /* RCUtils.m in Sources */,
+				3DC166CF6945A9F07BC11AC773CCC88F /* NSData+RCExtensions.m in Sources */,
+				647D67687E889C18935A034B1E44B4EE /* NSDate+RCExtensions.m in Sources */,
+				BEA30F197081B1F1F3EC1B4B09590635 /* NSError+RCExtensions.m in Sources */,
+				2194CB9BAFD5C48A11E8974C51CBA2D2 /* NSLocale+RCExtensions.m in Sources */,
+				D95366CFE34825C52B642A762BDE776B /* Purchases-dummy.m in Sources */,
+				B7248ECC42D9EAF954AC51E3B07507B1 /* RCAttributionData.m in Sources */,
+				B4C7862EA509ACBA40399AF1D008DA3A /* RCAttributionFetcher.m in Sources */,
+				63C15DF83EE69A5508F803EAA4993DCD /* RCBackend.m in Sources */,
+				31EFE3A65331AFB04C1CDF2DE7E74C75 /* RCDateProvider.m in Sources */,
+				77B3EB1C05816069F4B23FEEC16C5669 /* RCDeviceCache.m in Sources */,
+				D5895457C74F8F5EF8EEC74BA67180A4 /* RCEntitlementInfo.m in Sources */,
+				F8BC98A88EDFDED1AD5C4765879B337E /* RCEntitlementInfos.m in Sources */,
+				50A2A35D4A49ED3FF811B5DE4D4A176B /* RCHTTPClient.m in Sources */,
+				5775266CDF0D80A1C255FB681F382FDC /* RCIdentityManager.m in Sources */,
+				98498281098272BCF606BF64400703B2 /* RCInMemoryCachedObject.m in Sources */,
+				25B009D910399B4B93C4EDF71316052F /* RCIntroEligibility.m in Sources */,
+				33106BE630FA33FD998877E2F7F79ADC /* RCOffering.m in Sources */,
+				9A2B81B7F373B2297D29EDACA0A168F4 /* RCOfferings.m in Sources */,
+				A5ADC3FA5BA2B74392222FF79F99D3EF /* RCOfferingsFactory.m in Sources */,
+				DDD349F5099FEA34D0EFA261CA3E8049 /* RCPackage.m in Sources */,
+				F1EB47FD1D0CCA6CB339C33B9B8EACE7 /* RCPromotionalOffer.m in Sources */,
+				9CF84B22036684D5226ED52142982C5E /* RCPurchaserInfo.m in Sources */,
+				E9DEFE74E2CC88C96B3F4E64524B8D5B /* RCPurchases+SubscriberAttributes.m in Sources */,
+				B2B85A88A102DDAF73581E6D1BE6E608 /* RCPurchases.m in Sources */,
+				99F5EF4F380B78CDF6ED260F82255BF7 /* RCPurchasesErrorUtils.m in Sources */,
+				B78E1330EFCA8F45F8B187296546F9C7 /* RCReceiptFetcher.m in Sources */,
+				21CF056D52AF9E878B259338F7AAEDA0 /* RCStoreKitRequestFetcher.m in Sources */,
+				9D9C33EDDE38D36FD31762B412141850 /* RCStoreKitWrapper.m in Sources */,
+				A4D052303C4BB53E753C17E76A928CF3 /* RCSubscriberAttribute.m in Sources */,
+				F0E69ECB37B23FE237E5B903C88FDFEE /* RCSubscriberAttributesManager.m in Sources */,
+				7F000B17B2280886895BADF54735E86A /* RCUtils.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -767,9 +844,9 @@
 			};
 			name = Release;
 		};
-		2A051ACEF7A03414C71F46D868764D64 /* Release */ = {
+		17FAF9CF8EF9BFABEC6086A403355226 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D33704177C798A2D9D57E3F0DC01AFB7 /* Purchases.xcconfig */;
+			baseConfigurationReference = 0256FA5636C9F74D4A6127BC1B905165 /* Purchases.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -796,12 +873,11 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
 			};
-			name = Release;
+			name = Debug;
 		};
 		2AEFDD6A78E15B0DDF37B6DB1D6FC58B /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1055,9 +1131,9 @@
 			};
 			name = Debug;
 		};
-		E2241F4E2A091C1995C6FD3324D32A95 /* Debug */ = {
+		DAA65F923E64D627884FF38D9AED0276 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D33704177C798A2D9D57E3F0DC01AFB7 /* Purchases.xcconfig */;
+			baseConfigurationReference = 0256FA5636C9F74D4A6127BC1B905165 /* Purchases.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -1084,11 +1160,12 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
 			};
-			name = Debug;
+			name = Release;
 		};
 		F0C6C280C06765A7967F6DCA09B3CB8A /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1184,11 +1261,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C6AF88221CA92FA7AD14E9DA20844455 /* Build configuration list for PBXNativeTarget "Purchases" */ = {
+		BB0F5964222466DD9E8B09D6D2E92DD9 /* Build configuration list for PBXNativeTarget "Purchases" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				E2241F4E2A091C1995C6FD3324D32A95 /* Debug */,
-				2A051ACEF7A03414C71F46D868764D64 /* Release */,
+				17FAF9CF8EF9BFABEC6086A403355226 /* Debug */,
+				DAA65F923E64D627884FF38D9AED0276 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

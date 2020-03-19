@@ -1,6 +1,6 @@
 {
   "name": "Purchases",
-  "version": "3.1.0-SNAPSHOT",
+  "version": "3.2.0-SNAPSHOT",
   "summary": "Subscription and in-app-purchase backend service.",
   "description": "Save yourself the hastle of implementing a subscriptions backend. Use RevenueCat instead https://www.revenuecat.com/",
   "homepage": "https://www.revenuecat.com/",
@@ -12,7 +12,7 @@
   },
   "source": {
     "git": "https://github.com/revenuecat/purchases-ios.git",
-    "tag": "3.1.0-SNAPSHOT"
+    "tag": "3.2.0-SNAPSHOT"
   },
   "documentation_url": "https://docs.revenuecat.com/",
   "frameworks": "StoreKit",
@@ -32,7 +32,9 @@
     "Purchases/Public/*.h",
     "Purchases/Public/*.m",
     "Purchases/Caching/*.h",
-    "Purchases/Caching/*.m"
+    "Purchases/Caching/*.m",
+    "Purchases/SubscriberAttributes/*.h",
+    "Purchases/SubscriberAttributes/*.m"
   ],
   "public_header_files": [
     "Purchases/Public/Purchases.h",
