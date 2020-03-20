@@ -1,3 +1,8 @@
+## 3.1.2
+- Added an extra method, `setPushTokenString`, to be used by multi-platform SDKs that don't 
+have direct access to the push token as `NSData *`, but rather as `NSString *`.
+    https://github.com/RevenueCat/purchases-ios/pull/208
+
 ## 3.1.1
 - small fixes to docs and release scripts: 
     - the release script was referencing a fastlane lane that was under the group ios, 
