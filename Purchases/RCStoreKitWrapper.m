@@ -7,6 +7,7 @@
 //
 
 #import "RCStoreKitWrapper.h"
+#import "RCCrossPlatformSupport.h"
 
 #import "RCUtils.h"
 

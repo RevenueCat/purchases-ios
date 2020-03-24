@@ -7,11 +7,8 @@
 //
 
 #import "RCAttributionFetcher.h"
+#import "RCCrossPlatformSupport.h"
 #import "RCUtils.h"
-
-#if TARGET_OS_IPHONE
-#import <UIKit/UIKit.h>
-#endif
 
 @protocol FakeAdClient <NSObject>
 
