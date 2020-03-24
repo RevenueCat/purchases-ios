@@ -46,7 +46,7 @@
 
 - (nullable NSString *)identifierForVendor
 {
-#if TARGET_OS_IOS || TARGET_OS_TV
+#if UI_DEVICE_AVAILABLE
     if ([UIDevice class]) {
         return UIDevice.currentDevice.identifierForVendor.UUIDString;
     }
@@ -56,7 +56,7 @@
 
 - (void)adClientAttributionDetailsWithCompletionBlock:(void (^)(NSDictionary<NSString *, NSObject *> * _Nullable attributionDetails, NSError * _Nullable error))completionHandler
 {
-#if TARGET_OS_IOS
+#if AD_CLIENT_AVAILABLE
     id<FakeAdClient> adClientClass = (id<FakeAdClient>)NSClassFromString(@"ADClient");
     
     if (adClientClass) {

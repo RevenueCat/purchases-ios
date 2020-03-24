@@ -34,3 +34,27 @@
 #elif TARGET_OS_TV
 #define PLATFORM_HEADER @"tvOS"
 #endif
+
+// Should match available platforms in
+// https://developer.apple.com/documentation/uikit/uidevice?language=objc
+#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST
+#define UI_DEVICE_AVAILABLE 1
+#else
+#define UI_DEVICE_AVAILABLE 0
+#endif
+
+// Should match available platforms in
+// https://developer.apple.com/documentation/iad/adclient?language=objc
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#define AD_CLIENT_AVAILABLE 1
+#else
+#define AD_CLIENT_AVAILABLE 0
+#endif
+
+// Should match available platforms in
+// https://developer.apple.com/documentation/storekit/skpaymenttransactionobserver/2877502-paymentqueue?language=objc
+#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#define PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE 1
+#else
+#define PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE 0
+#endif
