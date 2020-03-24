@@ -6,7 +6,7 @@
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
-#if TARGET_OS_IOS || TARGET_OS_TV
+#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST
 #define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME UIApplicationDidBecomeActiveNotification
 #define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME UIApplicationWillResignActiveNotification
 #elif TARGET_OS_OSX
