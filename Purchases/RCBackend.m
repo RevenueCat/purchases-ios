@@ -210,7 +210,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                     @(observerMode),
                                                     subscriberAttributesByKey];
 
-    if (@available(iOS 12.2, macOS 10.14.4, *)) {
+    if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
         for (RCPromotionalOffer *discount in discounts) {
             cacheKey = [NSString stringWithFormat:@"%@-%@", cacheKey, discount.offerIdentifier];
         }
@@ -249,7 +249,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         body[@"attributes"] = attributesInBackendFormat;
     }
 
-    if (@available(iOS 12.2, macOS 10.14.4, *)) {
+    if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
         if (discounts) {
             NSMutableArray *offers = [NSMutableArray array];
             for (RCPromotionalOffer *discount in discounts) {

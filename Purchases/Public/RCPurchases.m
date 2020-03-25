@@ -1027,7 +1027,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                   RCPaymentMode paymentMode = RCPaymentModeNone;
                                   NSDecimalNumber *introPrice = nil;
 
-                                  if (@available(iOS 11.2, macOS 10.13.2, *)) {
+                                  if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
                                       if (product.introductoryPrice) {
                                           paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
                                           introPrice = product.introductoryPrice.price;
@@ -1035,12 +1035,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                   }
 
                                   NSString *subscriptionGroup = nil;
-                                  if (@available(iOS 12.0, macOS 10.14.0, *)) {
+                                  if (@available(iOS 12.0, macOS 10.14.0, tvOS 12.0, *)) {
                                       subscriptionGroup = product.subscriptionGroupIdentifier;
                                   }
 
                                   NSMutableArray *discounts = nil;
-                                  if (@available(iOS 12.2, macOS 10.14.4, *)) {
+                                  if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
                                       discounts = [NSMutableArray new];
                                       for (SKProductDiscount *discount in product.discounts) {
                                           [discounts addObject:[[RCPromotionalOffer alloc] initWithProductDiscount:discount]];

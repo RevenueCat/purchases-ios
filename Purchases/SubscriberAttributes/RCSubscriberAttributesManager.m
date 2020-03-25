@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma MARK - Private methods
 
-- (void)setAttributeWithKey:(nullable NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
+- (void)setAttributeWithKey:(NSString *)key value:(nullable NSString *)value appUserID:(NSString *)appUserID {
     [self storeAttributeLocallyIfNeededWithKey:key value:value appUserID:appUserID];
 }
 
