@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   runtest:
     macos:
-      xcode: "10.2.0"
+      xcode: "11.4"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -23,7 +23,7 @@ jobs:
           destination: test_report.html
   docs-deploy:
     macos:
-      xcode: "10.2.0"
+      xcode: "11.4"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
