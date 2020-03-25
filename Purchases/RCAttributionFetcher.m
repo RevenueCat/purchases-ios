@@ -7,11 +7,8 @@
 //
 
 #import "RCAttributionFetcher.h"
+#import "RCCrossPlatformSupport.h"
 #import "RCUtils.h"
-
-#if TARGET_OS_IPHONE
-#import <UIKit/UIKit.h>
-#endif
 
 @protocol FakeAdClient <NSObject>
 
@@ -46,7 +43,7 @@
 
 - (nullable NSString *)identifierForVendor
 {
-#if TARGET_OS_IPHONE
+#if UI_DEVICE_AVAILABLE
     if ([UIDevice class]) {
         return UIDevice.currentDevice.identifierForVendor.UUIDString;
     }
@@ -56,7 +53,7 @@
 
 - (void)adClientAttributionDetailsWithCompletionBlock:(void (^)(NSDictionary<NSString *, NSObject *> * _Nullable attributionDetails, NSError * _Nullable error))completionHandler
 {
-#if TARGET_OS_IPHONE
+#if AD_CLIENT_AVAILABLE
     id<FakeAdClient> adClientClass = (id<FakeAdClient>)NSClassFromString(@"ADClient");
     
     if (adClientClass) {

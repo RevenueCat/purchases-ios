@@ -22,7 +22,8 @@ func resolveTargets() -> [Target] {
         .target(name: "Purchases",
                 dependencies: [],
                 path: ".",
-                sources: ["Purchases", "Purchases/Public", "Purchases/Caching"],
+                exclude: ["Purchases/Info.plist"],
+                sources: ["Purchases", "Purchases/Public"],
                 publicHeadersPath: "Purchases/Public",
                 cSettings: [
                     .headerSearchPath("Purchases"),
@@ -48,7 +49,7 @@ func resolveTargets() -> [Target] {
 let package = Package(
         name: "Purchases",
         platforms: [
-            .macOS(.v10_12), .iOS(.v9)
+            .macOS(.v10_12), .iOS(.v9), .watchOS("6.2"), .tvOS(.v9)
         ],
         products: [
             .library(name: "Purchases",

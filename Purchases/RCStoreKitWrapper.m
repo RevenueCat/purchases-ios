@@ -7,6 +7,7 @@
 //
 
 #import "RCStoreKitWrapper.h"
+#import "RCCrossPlatformSupport.h"
 
 #import "RCUtils.h"
 
@@ -82,7 +83,7 @@
     }
 }
 
-#if TARGET_OS_IPHONE && !TARGET_OS_MACCATALYST
+#if PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE
 - (BOOL)paymentQueue:(SKPaymentQueue *)queue shouldAddStorePayment:(SKPayment *)payment forProduct:(SKProduct *)product
 {
     return [self.delegate storeKitWrapper:self shouldAddStorePayment:payment forProduct:product];
