@@ -1,3 +1,7 @@
+## 3.2.0
+- Added support for WatchOS and tvOS, fixed some issues with pre-processor macro checks on different platforms. 
+    https://github.com/RevenueCat/purchases-ios/pull/183
+
 ## 3.1.2
 - Added an extra method, `setPushTokenString`, to be used by multi-platform SDKs that don't 
 have direct access to the push token as `NSData *`, but rather as `NSString *`.
