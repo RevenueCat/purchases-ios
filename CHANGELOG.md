@@ -1,3 +1,7 @@
+## 3.2.1
+- Fixed build warnings on tvOS and API availability checks
+    https://github.com/RevenueCat/purchases-ios/pull/212
+
 ## 3.2.0
 - Added support for WatchOS and tvOS, fixed some issues with pre-processor macro checks on different platforms. 
     https://github.com/RevenueCat/purchases-ios/pull/183
