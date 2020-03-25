@@ -53,7 +53,7 @@
 
 // Should match available platforms in
 // https://developer.apple.com/documentation/storekit/skpaymenttransactionobserver/2877502-paymentqueue?language=objc
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_TV
 #define PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE 1
 #else
 #define PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE 0
