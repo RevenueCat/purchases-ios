@@ -119,11 +119,11 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *valueOrEmpty = value ?: @"";
     NSString * _Nullable currentValue = [self currentValueForAttributeWithKey:key appUserID:appUserID];
     if (!currentValue || ![currentValue isEqualToString:valueOrEmpty]) {
-        [self storeAttributeLocallyWithKey:key value:value appUserID:appUserID];
+        [self storeAttributeLocallyWithKey:key value:valueOrEmpty appUserID:appUserID];
     }
 }
 
-- (void)storeAttributeLocallyWithKey:(NSString *)key value:(nullable NSString *)value appUserID:(NSString *)appUserID {
+- (void)storeAttributeLocallyWithKey:(NSString *)key value:(NSString *)value appUserID:(NSString *)appUserID {
     RCSubscriberAttribute *subscriberAttribute = [[RCSubscriberAttribute alloc] initWithKey:key
                                                                                       value:value];
     [self.deviceCache storeSubscriberAttribute:subscriberAttribute appUserID:appUserID];

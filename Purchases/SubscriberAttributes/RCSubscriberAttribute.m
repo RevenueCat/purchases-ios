@@ -33,14 +33,14 @@ NS_ASSUME_NONNULL_END
 
 @implementation RCSubscriberAttribute
 
-- (instancetype)initWithKey:(NSString *)key value:(nullable NSString *)value {
+- (instancetype)initWithKey:(NSString *)key value:(NSString *)value {
     return [self initWithKey:key
                        value:value
                 dateProvider:[[RCDateProvider alloc] init]];
 }
 
 - (instancetype)initWithKey:(NSString *)key
-                      value:(nullable NSString *)value
+                      value:(NSString *)value
                    isSynced:(BOOL)isSynced
                     setTime:(NSDate *)setTime {
     if (self = [super init]) {
@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (instancetype)initWithKey:(NSString *)key
-                      value:(nullable NSString *)value
+                      value:(NSString *)value
                dateProvider:(RCDateProvider *)dateProvider {
     return [self initWithKey:key
                        value:value

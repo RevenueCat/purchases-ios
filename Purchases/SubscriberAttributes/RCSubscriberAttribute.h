@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSDate *setTime;
 @property (nonatomic, assign) BOOL isSynced;
 
-- (instancetype)initWithKey:(NSString *)key value:(nullable NSString *)value;
+- (instancetype)initWithKey:(NSString *)key value:(NSString *)value;
 
 - (instancetype)initWithDictionary:(NSDictionary <NSString *, NSObject *> *)dict;
 
