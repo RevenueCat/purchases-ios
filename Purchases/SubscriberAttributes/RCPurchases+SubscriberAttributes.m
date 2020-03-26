@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
     return [self.subscriberAttributesManager unsyncedAttributesByKeyForAppUserID:self.appUserID];
 }
 
-- (void)markAttributesAsSyncedIfNeeded:(RCSubscriberAttributeDict)syncedAttributes
+- (void)markAttributesAsSyncedIfNeeded:(nullable RCSubscriberAttributeDict)syncedAttributes
                              appUserID:(NSString *)appUserID
                                  error:(nullable NSError *)error {
     if (error && !error.successfullySynced) {

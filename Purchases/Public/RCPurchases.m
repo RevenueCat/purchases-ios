@@ -868,7 +868,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)handleReceiptPostWithTransaction:(SKPaymentTransaction *)transaction
                            purchaserInfo:(nullable RCPurchaserInfo *)info
-                    subscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
+                    subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributes
                                    error:(nullable NSError *)error {
     [self dispatch:^{
         [self markAttributesAsSyncedIfNeeded:subscriberAttributes appUserID:self.appUserID error:error];
