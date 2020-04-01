@@ -34,7 +34,7 @@ jobs:
           command: fastlane run jazzy
       - run:
           name: Install awscli
-          command: sudo pip install awscli
+          command: sudo python -m pip install awscli
       - run:
           name: Deploy to S3
           command: aws s3 sync docs s3://purchases-docs/ios --delete --acl public-read
