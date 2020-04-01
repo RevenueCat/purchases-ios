@@ -1,3 +1,7 @@
+## 3.2.2
+- Fixed build warnings about nil being passed to callees that require non-null parameters
+    https://github.com/RevenueCat/purchases-ios/pull/216
+
 ## 3.2.1
 - Fixed build warnings on tvOS and API availability checks
     https://github.com/RevenueCat/purchases-ios/pull/212
