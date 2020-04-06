@@ -7,3 +7,10 @@ target 'SwiftExample' do
   pod 'Purchases', :path => '../../'
 
 end
+
+target 'WatchExample Extension' do
+
+  # Pods for SwiftExample
+  pod 'Purchases', :path => '../../'
+
+end
