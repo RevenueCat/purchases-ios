@@ -18,7 +18,7 @@ class HTTPClientTests: XCTestCase {
     let client = RCHTTPClient(platformFlavor: nil)
 
     override func tearDown() {
-        OHHTTPStubs.removeAllStubs()
+        HTTPStubs.removeAllStubs()
     }
 
     func testCantPostABodyWithGet() {
@@ -41,7 +41,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isHost(RCHTTPClient.serverHostName())) { _ in
             hostCorrect = true
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
 
         self.client.performRequest("POST", path: path, body: Dictionary.init(),
@@ -56,7 +56,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("test_header")) { _ in
             headerPresent = true
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
 
         self.client.performRequest("POST", path: path, body: Dictionary.init(),
@@ -71,7 +71,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("content-type", value: "application/json")) { request in
             headerPresent = true
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
 
         self.client.performRequest("POST", path: path, body: Dictionary.init(),
@@ -86,7 +86,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform", value: "iOS")) { request in
             headerPresent = true
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
 
         self.client.performRequest("POST", path: path, body: Dictionary.init(),
@@ -101,7 +101,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Version", value: Purchases.frameworkVersion())) { request in
             headerPresent = true
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
 
         self.client.performRequest("POST", path: path, body: Dictionary.init(),
@@ -116,7 +116,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Version", value: ProcessInfo().operatingSystemVersionString)) { request in
             headerPresent = true
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
 
         self.client.performRequest("POST", path: path, body: Dictionary.init(),
@@ -131,7 +131,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { _ in
             pathHit = true
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
         
         self.client.performRequest("POST", path: path, body: Dictionary.init(),
@@ -147,7 +147,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             pathHit = request.httpMethod == method
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
 
         self.client.performRequest(method, path: path, body: body, headers: nil, completionHandler:nil)
@@ -164,7 +164,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasBody(bodyData)) { _ in
             pathHit = true
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
 
         self.client.performRequest(method, path: path, body: body, headers: nil, completionHandler:nil)
@@ -177,7 +177,7 @@ class HTTPClientTests: XCTestCase {
         var completionCalled = false
 
         stub(condition: isPath("/v1" + path)) { _ in
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
 
         self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, error) in
@@ -193,7 +193,7 @@ class HTTPClientTests: XCTestCase {
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
 
         stub(condition: isPath("/v1" + path)) { request in
-            let response = OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            let response = HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
             response.error = error
             return response
         }
@@ -213,7 +213,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             let json = "{\"message\": \"something is broken up in the cloud\"}"
-            return OHHTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
         }
 
         self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, error) in
@@ -235,7 +235,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             let json = "{\"message\": \"something is broken up in the cloud\"}"
-            return OHHTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
         }
 
         self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, error) in
@@ -256,7 +256,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             let json = "{this is not JSON.csdsd"
-            return OHHTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
         }
 
         self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, error) in
@@ -274,7 +274,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return OHHTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
         }
 
         self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, error) in
@@ -296,7 +296,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Client-Version", value: version )) { request in
             headerPresent = true
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
         
         self.client.performRequest("POST", path: path, body: Dictionary.init(),
@@ -311,7 +311,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "native")) { request in
             headerPresent = true
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
 
         self.client.performRequest("POST", path: path, body: Dictionary.init(),
@@ -326,7 +326,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "react-native")) { request in
             headerPresent = true
-            return OHHTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
         let client = RCHTTPClient(platformFlavor: "react-native")
 
