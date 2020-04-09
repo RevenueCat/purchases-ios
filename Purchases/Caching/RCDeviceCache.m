@@ -24,7 +24,8 @@
 NSString *RCLegacyGeneratedAppUserDefaultsKey = RC_CACHE_KEY_PREFIX @".appUserID";
 NSString *RCAppUserDefaultsKey = RC_CACHE_KEY_PREFIX @".appUserID.new";
 NSString *RCPurchaserInfoAppUserDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".purchaserInfo.";
-NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttributes.";
+NSString *RCLegacySubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttributes.";
+NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttributes";
 #define CACHE_DURATION_IN_SECONDS 60 * 5
 
 
@@ -72,7 +73,7 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
     [self.userDefaults removeObjectForKey:RCLegacyGeneratedAppUserDefaultsKey];
     [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
     [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
-    [self.userDefaults removeObjectForKey:[self subscriberAttributesCacheKeyForAppUserID:appUserID]];
+    [self.userDefaults removeObjectForKey:[self legacySubscriberAttributesCacheKeyForAppUserID:appUserID]];
     [self clearPurchaserInfoCacheTimestamp];
     [self clearOfferingsCache];
 }
@@ -130,7 +131,7 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
 
 - (void)storeSubscriberAttribute:(RCSubscriberAttribute *)attribute appUserID:(NSString *)appUserID {
     @synchronized (self) {
-        NSString *cacheKey = [self subscriberAttributesCacheKeyForAppUserID:appUserID];
+        NSString *cacheKey = [self legacySubscriberAttributesCacheKeyForAppUserID:appUserID];
         NSDictionary *allSubscriberAttributesByKey = (NSDictionary *) [self.userDefaults valueForKey:cacheKey];
         NSMutableDictionary *mutableSubscriberAttributesByKey = allSubscriberAttributesByKey
                                                                 ? allSubscriberAttributesByKey.mutableCopy
@@ -149,7 +150,7 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
     }
 
     @synchronized (self) {
-        NSString *cacheKey = [self subscriberAttributesCacheKeyForAppUserID:appUserID];
+        NSString *cacheKey = [self legacySubscriberAttributesCacheKeyForAppUserID:appUserID];
         NSDictionary <NSString *, NSObject *>
             *allSubscriberAttributesByKey = [self storedSubscriberAttributesDictionaryForAppUserID:appUserID];
         NSMutableDictionary *mutableSubscriberAttributesByKey = allSubscriberAttributesByKey
@@ -163,7 +164,8 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
     }
 }
 
-- (nullable RCSubscriberAttribute *)subscriberAttributeWithKey:(NSString *)attributeKey appUserID:(NSString *)appUserID {
+- (nullable RCSubscriberAttribute *)subscriberAttributeWithKey:(NSString *)attributeKey
+                                                     appUserID:(NSString *)appUserID {
     @synchronized (self) {
         RCSubscriberAttributeDict
             allSubscriberAttributesByKey = [self storedSubscriberAttributesForAppUserID:appUserID];
@@ -202,7 +204,7 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
 }
 
 - (NSDictionary <NSString *, NSObject *> *)storedSubscriberAttributesDictionaryForAppUserID:(NSString *)appUserID {
-    NSString *cacheKey = [self subscriberAttributesCacheKeyForAppUserID:appUserID];
+    NSString *cacheKey = [self legacySubscriberAttributesCacheKeyForAppUserID:appUserID];
     NSDictionary *allAttributesObjectsByKey = [self.userDefaults valueForKey:cacheKey];
     return allAttributesObjectsByKey;
 }
@@ -211,9 +213,35 @@ NSString *RCSubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttri
     return [self unsyncedAttributesByKeyForAppUserID:appUserID].count;
 }
 
-- (NSString *)subscriberAttributesCacheKeyForAppUserID:(NSString *)appUserID {
+- (NSString *)legacySubscriberAttributesCacheKeyForAppUserID:(NSString *)appUserID {
     NSString *attributeKey = [NSString stringWithFormat:@"%@", appUserID];
-    return [RCSubscriberAttributesKeyBase stringByAppendingString:attributeKey];
+    return [RCLegacySubscriberAttributesKeyBase stringByAppendingString:attributeKey];
+}
+
+- (void)migrateSubscriberAttributesIfNeeded:(NSString *)appUserID {
+    @synchronized (self) {
+        NSDictionary *legacySubscriberAttributes = [self valueForLegacySubscriberAttributes:appUserID];
+        if (legacySubscriberAttributes != nil) {
+            [self migrateSubscriberAttributes:legacySubscriberAttributes withAppUserID:appUserID];
+        }
+    }
+}
+
+- (void)migrateSubscriberAttributes:(nonnull NSDictionary *)subscriberAttributes
+                      withAppUserID:(NSString *)appUserID {
+    NSMutableDictionary *allSubscriberAttributes = [self.userDefaults objectForKey:RCSubscriberAttributesKey]
+                                                   ?: [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *currentAttributesForAppUserID = currentAttributesForAppUserID[appUserID]
+                                                         ?: [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *mutableSubscriberAttributes = subscriberAttributes.mutableCopy;
+    [mutableSubscriberAttributes addEntriesFromDictionary:currentAttributesForAppUserID];
+
+    allSubscriberAttributes[appUserID] = mutableSubscriberAttributes;
+    [self.userDefaults setObject:allSubscriberAttributes forKey:RCSubscriberAttributesKey];
+}
+
+- (nullable NSDictionary *)valueForLegacySubscriberAttributes:(NSString *)appUserID {
+    return [self.userDefaults dictionaryForKey:[self legacySubscriberAttributesCacheKeyForAppUserID:appUserID]];
 }
 
 #pragma mark - private methods
