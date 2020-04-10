@@ -120,6 +120,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
+    NSLog(@"marking the following attributes as synced for appUserID: %@: %@", appUserID, syncedAttributes);
     @synchronized (self) {
         RCSubscriberAttributeMutableDict
             unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID].mutableCopy;
