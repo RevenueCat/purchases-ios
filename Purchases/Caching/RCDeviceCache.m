@@ -149,7 +149,7 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
 - (void)storeSubscriberAttribute:(RCSubscriberAttribute *)attribute appUserID:(NSString *)appUserID {
     @synchronized (self) {
         NSMutableDictionary *groupedSubscriberAttributes = [self groupedSubscriberAttributes].mutableCopy;
-        NSMutableDictionary *subscriberAttributesForAppUserID = (groupedSubscriberAttributes[appUserID] ?: @{})
+        NSMutableDictionary *subscriberAttributesForAppUserID = ((NSDictionary *)groupedSubscriberAttributes[appUserID] ?: @{})
                                                                 .mutableCopy;
 
         subscriberAttributesForAppUserID[attribute.key] = attribute.asDictionary;
@@ -167,10 +167,13 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
 
     @synchronized (self) {
         NSMutableDictionary *groupedSubscriberAttributes = [self groupedSubscriberAttributes].mutableCopy;
-        NSMutableDictionary *subscriberAttributesForAppUserID = (groupedSubscriberAttributes[appUserID] ?: @{})
+        NSMutableDictionary *subscriberAttributesForAppUserID = ((NSDictionary *)groupedSubscriberAttributes[appUserID] ?: @{})
                                                                  .mutableCopy;
-        [subscriberAttributesForAppUserID addEntriesFromDictionary:attributesByKey];
-
+    
+        for (NSString *key in attributesByKey) {
+            subscriberAttributesForAppUserID[key] = attributesByKey[key].asDictionary;
+        }
+        
         groupedSubscriberAttributes[appUserID] = subscriberAttributesForAppUserID;
         [self.userDefaults setObject:groupedSubscriberAttributes
                               forKey:RCSubscriberAttributesKey];
