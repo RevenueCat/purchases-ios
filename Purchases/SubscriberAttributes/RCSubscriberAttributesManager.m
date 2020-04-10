@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)syncIfNeededWithAppUserID:(NSString *)appUserID completion:(void (^)(NSError *_Nullable error))completion {
     if ([self numberOfUnsyncedAttributesForAppUserID:appUserID] > 0) {
-        [self syncAttributesWithCompletion:completion appUserID:appUserID];
+        [self syncAttributesWithAppUserID:appUserID completion:completion];
     } else {
         completion(nil);
     }
@@ -75,18 +75,38 @@ NS_ASSUME_NONNULL_BEGIN
     return [self.deviceCache unsyncedAttributesByKeyForAppUserID:appUserID];
 }
 
+- (NSDictionary <NSString *, RCSubscriberAttributeDict> *)unsyncedAttributesByKeyForAllUsers {
+    return [self.deviceCache unsyncedAttributesByKeyForAllUsers];
+}
+
 #pragma MARK - Private methods
 
 - (void)setAttributeWithKey:(NSString *)key value:(nullable NSString *)value appUserID:(NSString *)appUserID {
     [self storeAttributeLocallyIfNeededWithKey:key value:value appUserID:appUserID];
 }
 
-- (void)syncAttributesWithCompletion:(void (^)(NSError *_Nullable error))completion appUserID:(NSString *)appUserID {
-    RCSubscriberAttributeDict unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID];
+- (void)syncAttributesForAllUsersWithCompletion:(void (^)(NSError *_Nullable error))completion
+                               currentAppUserID:(NSString *)currentAppUserID {
+    
+    NSDictionary <NSString *, RCSubscriberAttributeDict> *unsyncedAttributesForAllUsers =
+        [self unsyncedAttributesByKeyForAllUsers];
+    
+    for (NSString *syncingAppUserID in unsyncedAttributesForAllUsers.allKeys) {
+        [self syncAttributesWithAppUserID:syncingAppUserID
+                               completion:^(NSError *error) {
+                                   if (error == nil && syncingAppUserID != currentAppUserID) {
+                                       [self.deviceCache deleteAttributesIfSyncedForAppUserID:currentAppUserID];
+                                   }
+                               }];
+    }
+}
 
+- (void)syncAttributesWithAppUserID:(NSString *)appUserID completion:(void (^)(NSError *_Nullable error))completion {
+    RCSubscriberAttributeDict unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID];
+    
     [self.backend postSubscriberAttributes:unsyncedAttributes appUserID:appUserID completion:^(NSError *error) {
         BOOL didBackendReceiveValues = (error == nil || error.successfullySynced);
-
+        
         if (didBackendReceiveValues) {
             [self markAttributesAsSynced:unsyncedAttributes appUserID:appUserID];
         }
@@ -115,7 +135,9 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key value:(nullable NSString *)value appUserID:(NSString *)appUserID {
+- (void)storeAttributeLocallyIfNeededWithKey:(NSString *)key
+                                       value:(nullable NSString *)value
+                                   appUserID:(NSString *)appUserID {
     NSString *valueOrEmpty = value ?: @"";
     NSString * _Nullable currentValue = [self currentValueForAttributeWithKey:key appUserID:appUserID];
     if (!currentValue || ![currentValue isEqualToString:valueOrEmpty]) {

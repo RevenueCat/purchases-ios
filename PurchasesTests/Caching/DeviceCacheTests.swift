@@ -68,7 +68,7 @@ class DeviceCacheTests: XCTestCase {
 
     func testClearCachesRemovesCachedSubscriberAttributes() {
         self.deviceCache.clearCaches(forAppUserID: "andy")
-        let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes.andy"
+        let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
         expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains(attributesKey)).to(beTrue())
     }
 
@@ -170,9 +170,10 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testStoreSubscriberAttributeStoresCorrectly() {
-        self.deviceCache.store(subscriberAttributeHeight, appUserID: "waldo")
+        let appUserID = "waldo"
+        self.deviceCache.store(subscriberAttributeHeight, appUserID: appUserID)
 
-        let expectedStoreKey = "com.revenuecat.userdefaults.subscriberAttributes.waldo"
+        let expectedStoreKey = "com.revenuecat.userdefaults.subscriberAttributes"
         expect(self.mockUserDefaults.setObjectForKeyCalledValue) == expectedStoreKey
         expect(self.mockUserDefaults.mockValues.count) == 1
 
@@ -180,8 +181,12 @@ class DeviceCacheTests: XCTestCase {
             let storedDict = storedValue as? NSDictionary else {
             fatalError("didn't actually store the value or it wasn't a dictionary")
         }
-        expect(storedDict[self.subscriberAttributeHeight.key] as? NSDictionary) ==
-            subscriberAttributeHeight.asDictionary() as NSDictionary
+        let expectedStoredDict = [
+            appUserID: [
+                self.subscriberAttributeHeight.key: subscriberAttributeHeight.asDictionary()
+            ]
+        ]
+        expect(storedDict) == expectedStoredDict as NSDictionary
     }
 
     func testStoreSubscriberAttributeDoesNotModifyExistingValuesWithDifferentKeys() {
@@ -207,7 +212,7 @@ class DeviceCacheTests: XCTestCase {
             appUserID: [
                 subscriberAttributeWeight.key: subscriberAttributeWeight.asDictionary(),
                 subscriberAttributeHeight.key: subscriberAttributeHeight.asDictionary()
-                ]
+            ]
         ]
         expect(storedDict) == expectedStoredDict as NSDictionary
     }

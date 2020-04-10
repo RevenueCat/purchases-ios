@@ -263,5 +263,22 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
     return [RCLegacySubscriberAttributesKeyBase stringByAppendingString:attributeKey];
 }
 
+- (NSDictionary<NSString *, RCSubscriberAttributeDict> *)unsyncedAttributesByKeyForAllUsers {
+    return [self groupedSubscriberAttributes];
+}
+
+- (void)deleteAttributesIfSyncedForAppUserID:(NSString *)appUserID {
+    @synchronized (self) {
+        if ([self numberOfUnsyncedAttributesForAppUserID:appUserID] != 0) {
+            return;
+        }
+        
+        NSMutableDictionary <NSString *, RCSubscriberAttributeDict>
+            *groupedAttributes = [self groupedSubscriberAttributes].mutableCopy;
+        [groupedAttributes removeObjectForKey:appUserID];
+        [self.userDefaults setObject:groupedAttributes forKey:RCSubscriberAttributesKey];
+    }
+}
+
 @end
 
