@@ -85,18 +85,18 @@ NS_ASSUME_NONNULL_BEGIN
     [self storeAttributeLocallyIfNeededWithKey:key value:value appUserID:appUserID];
 }
 
-- (void)syncAttributesForAllUsersWithCompletion:(void (^)(NSError *_Nullable error))completion
-                               currentAppUserID:(NSString *)currentAppUserID {
-    
+- (void)syncAttributesForAllUsersWithCurrentAppUserID:(NSString *)currentAppUserID
+                                           completion:(void (^)(NSError *_Nullable error))completion {
     NSDictionary <NSString *, RCSubscriberAttributeDict> *unsyncedAttributesForAllUsers =
         [self unsyncedAttributesByKeyForAllUsers];
-    
+
     for (NSString *syncingAppUserID in unsyncedAttributesForAllUsers.allKeys) {
         [self syncAttributesWithAppUserID:syncingAppUserID
                                completion:^(NSError *error) {
                                    if (error == nil && syncingAppUserID != currentAppUserID) {
                                        [self.deviceCache deleteAttributesIfSyncedForAppUserID:currentAppUserID];
                                    }
+                                   completion(error);
                                }];
     }
 }
