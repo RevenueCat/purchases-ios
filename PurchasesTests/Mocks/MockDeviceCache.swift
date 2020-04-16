@@ -164,4 +164,38 @@ class MockDeviceCache: RCDeviceCache {
         invokedNumberOfUnsyncedAttributesParametersList.append((appUserID, ()))
         return stubbedNumberOfUnsyncedAttributesResult
     }
+
+    var invokedMigrateSubscriberAttributesIfNeeded = false
+    var invokedMigrateSubscriberAttributesIfNeededCount = 0
+    var invokedMigrateSubscriberAttributesIfNeededParameters: (appUserID: String?, Void)?
+    var invokedMigrateSubscriberAttributesIfNeededParametersList = [(appUserID: String?, Void)]()
+
+    override func migrateSubscriberAttributesIfNeeded(forAppUserID appUserID: String) {
+        invokedMigrateSubscriberAttributesIfNeeded = true
+        invokedMigrateSubscriberAttributesIfNeededCount += 1
+        invokedMigrateSubscriberAttributesIfNeededParameters = (appUserID, ())
+        invokedMigrateSubscriberAttributesIfNeededParametersList.append((appUserID, ()))
+    }
+
+    var invokedUnsyncedAttributesByKeyForAllUsers = false
+    var invokedUnsyncedAttributesByKeyForAllUsersCount = 0
+    var stubbedUnsyncedAttributesByKeyForAllUsersResult: [String: [String: RCSubscriberAttribute]]!
+
+    override func unsyncedAttributesByKeyForAllUsers() -> [String: [String: RCSubscriberAttribute]] {
+        invokedUnsyncedAttributesByKeyForAllUsers = true
+        invokedUnsyncedAttributesByKeyForAllUsersCount += 1
+        return stubbedUnsyncedAttributesByKeyForAllUsersResult
+    }
+
+    var invokedDeleteAttributesIfSynced = false
+    var invokedDeleteAttributesIfSyncedCount = 0
+    var invokedDeleteAttributesIfSyncedParameters: (appUserID: String?, Void)?
+    var invokedDeleteAttributesIfSyncedParametersList = [(appUserID: String?, Void)]()
+
+    override func deleteAttributesIfSynced(forAppUserID appUserID: String) {
+        invokedDeleteAttributesIfSynced = true
+        invokedDeleteAttributesIfSyncedCount += 1
+        invokedDeleteAttributesIfSyncedParameters = (appUserID, ())
+        invokedDeleteAttributesIfSyncedParametersList.append((appUserID, ()))
+    }
 }
