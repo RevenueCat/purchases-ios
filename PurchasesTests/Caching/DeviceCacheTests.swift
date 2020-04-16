@@ -66,10 +66,36 @@ class DeviceCacheTests: XCTestCase {
             .to(beTrue())
     }
 
-    func testClearCachesRemovesCachedSubscriberAttributes() {
-        self.deviceCache.clearCaches(forAppUserID: "andy")
+    func testClearCachesRemovesCachedSubscriberAttributesIfSynced() {
+        let userID = "andy"
         let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
-        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains(attributesKey)).to(beTrue())
+        let key = "band"
+        let unsyncedSubscriberAttribute = RCSubscriberAttribute(key: key, value: "La Renga",
+                                                                isSynced: false, setTime: Date()).asDictionary()
+        mockUserDefaults.mockValues[attributesKey] = [
+            userID: [key: unsyncedSubscriberAttribute]
+        ]
+
+        self.deviceCache.clearCaches(forAppUserID: userID)
+
+        expect(self.mockUserDefaults.setObjectForKeyCallCount) == 0
+    }
+
+    func testClearCachesDoesntRemoveCachedSubscriberAttributesIfUnsynced() {
+        let userID = "andy"
+        let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
+        let key = "band"
+        let unsyncedSubscriberAttribute = RCSubscriberAttribute(key: key, value: "La Renga",
+                                                                isSynced: true, setTime: Date()).asDictionary()
+        mockUserDefaults.mockValues[attributesKey] = [
+            userID: [key: unsyncedSubscriberAttribute]
+        ]
+
+        self.deviceCache.clearCaches(forAppUserID: userID)
+
+        expect(self.mockUserDefaults.setObjectForKeyCallCount) == 1
+        expect(self.mockUserDefaults.setObjectForKeyCalledValue?.contains(attributesKey)) == true
+
     }
 
     func testSetPurchaserInfoCacheTimestampToNow() {
