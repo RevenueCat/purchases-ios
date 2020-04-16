@@ -119,4 +119,21 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
         invokedMarkAttributesParameters = (syncedAttributes, appUserID)
         invokedMarkAttributesParametersList.append((syncedAttributes, appUserID))
     }
+
+    var invokedSyncAttributesForAllUsers = false
+    var invokedSyncAttributesForAllUsersCount = 0
+    var invokedSyncAttributesForAllUsersParameters: (currentAppUserID: String?, Void)?
+    var invokedSyncAttributesForAllUsersParametersList = [(currentAppUserID: String?, Void)]()
+    var stubbedSyncAttributesForAllUsersCompletionResult: (Error?, Void)?
+
+    override func syncAttributesForAllUsers(withCurrentAppUserID currentAppUserID: String,
+                                            completion: @escaping ((Error?) -> ())) {
+        invokedSyncAttributesForAllUsers = true
+        invokedSyncAttributesForAllUsersCount += 1
+        invokedSyncAttributesForAllUsersParameters = (currentAppUserID, ())
+        invokedSyncAttributesForAllUsersParametersList.append((currentAppUserID, ()))
+        if let result = stubbedSyncAttributesForAllUsersCompletionResult {
+            completion(result.0)
+        }
+    }
 }

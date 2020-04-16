@@ -92,7 +92,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(isObservingDidBecomeActive) == true
 
         self.mockNotificationCenter.fireNotifications()
-        expect(self.mockSubscriberAttributesManager.invokedSyncIfNeededCount) == 2
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
     }
 
     func testSubscribesToBackgroundNotifications() {
@@ -111,7 +111,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(isObservingDidBecomeActive) == true
 
         self.mockNotificationCenter.fireNotifications()
-        expect(self.mockSubscriberAttributesManager.invokedSyncIfNeededCount) == 2
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
     }
 
     // Mark: Set attributes
