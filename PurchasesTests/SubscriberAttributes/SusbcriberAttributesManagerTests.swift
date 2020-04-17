@@ -35,7 +35,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
     func testInitializerCrashesIfNilParams() {
         expect(expression: {
-            RCSubscriberAttributesManager(backend: nil, deviceCache: self.mockDeviceCache) }
+            RCSubscriberAttributesManager(backend: nil, deviceCache: self.mockDeviceCache)
+        }
         ).to(raiseException())
 
         expect(expression: {
@@ -514,6 +515,124 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testMarkAttributesAsSyncedSkipsIfEmpty() {
         self.subscriberAttributesManager.markAttributes(asSynced: [:], appUserID: "waldo")
         expect(self.mockDeviceCache.invokedStoreSubscriberAttributesCount) == 0
+    }
+
+    // mark - sync attributes for all users
+
+    func testSyncAttributesForAllUsersSyncsForEveryUserWithUnsyncedAttributes() {
+        let userID1 = "userID1"
+        let userID2 = "userID2"
+        let userID3 = "userID3"
+
+        let userID1Attributes = [
+            "band": RCSubscriberAttribute(key: "band", value: "The Doors"),
+            "song": RCSubscriberAttribute(key: "song", value: "Riders on the storm"),
+            "album": RCSubscriberAttribute(key: "album", value: "L.A. Woman")
+        ]
+        let userID2Attributes = [
+            "instrument": RCSubscriberAttribute(key: "instrument", value: "Guitar"),
+            "name": RCSubscriberAttribute(key: "name", value: "Robert Krieger")
+        ]
+        let userID3Attributes = [
+            "band": RCSubscriberAttribute(key: "band", value: "Dire Straits"),
+            "song": RCSubscriberAttribute(key: "song", value: "Sultans of Swing"),
+            "album": RCSubscriberAttribute(key: "album", value: "Dire Straits")
+        ]
+        let allAttributes: [String: [String: RCSubscriberAttribute]] = [
+            userID1: userID1Attributes,
+            userID2: userID2Attributes,
+            userID3: userID3Attributes,
+        ]
+        mockDeviceCache.stubbedUnsyncedAttributesByKeyForAllUsersResult = allAttributes
+
+        subscriberAttributesManager.syncAttributesForAllUsers(withCurrentAppUserID: userID1)
+        expect(self.mockBackend.invokedPostSubscriberAttributesCount) == 3
+
+        expect(self.mockBackend.invokedPostSubscriberAttributesParametersList).to(contain(
+            MockBackend.InvokedPostSubscriberAttributesParameters(subscriberAttributes: userID1Attributes,
+                                                                  appUserID: userID1)))
+        expect(self.mockBackend.invokedPostSubscriberAttributesParametersList).to(contain(
+            MockBackend.InvokedPostSubscriberAttributesParameters(subscriberAttributes: userID2Attributes,
+                                                                  appUserID: userID2)))
+        expect(self.mockBackend.invokedPostSubscriberAttributesParametersList).to(contain(
+            MockBackend.InvokedPostSubscriberAttributesParameters(subscriberAttributes: userID3Attributes,
+                                                                  appUserID: userID3)))
+    }
+
+    func testSyncAttributesForAllUsersSyncsDeletesAttributesForOtherUsersIfSynced() {
+        let userID1 = "userID1"
+        let userID2 = "userID2"
+        let currentUserID = "userID3"
+
+        let userID1Attributes = [
+            "band": RCSubscriberAttribute(key: "band", value: "The Doors"),
+            "song": RCSubscriberAttribute(key: "song", value: "Riders on the storm"),
+            "album": RCSubscriberAttribute(key: "album", value: "L.A. Woman")
+        ]
+        let userID2Attributes = [
+            "instrument": RCSubscriberAttribute(key: "instrument", value: "Guitar"),
+            "name": RCSubscriberAttribute(key: "name", value: "Robert Krieger")
+        ]
+        let allAttributes: [String: [String: RCSubscriberAttribute]] = [
+            userID1: userID1Attributes,
+            userID2: userID2Attributes,
+        ]
+        mockDeviceCache.stubbedUnsyncedAttributesByKeyForAllUsersResult = allAttributes
+
+        self.subscriberAttributesManager.syncAttributesForAllUsers(withCurrentAppUserID: currentUserID)
+        expect(self.mockDeviceCache.invokedDeleteAttributesIfSyncedCount).toEventually(equal(2))
+        expect(Set(self.mockDeviceCache.invokedDeleteAttributesIfSyncedParametersList)) == Set([userID1, userID2])
+    }
+
+    func testSyncAttributesForAllUsersDoesntDeleteAttributesForOtherUsersIfSyncFailed() {
+        let userID1 = "userID1"
+        let userID2 = "userID2"
+        let currentUserID = "userID3"
+
+        let userID1Attributes = [
+            "band": RCSubscriberAttribute(key: "band", value: "The Doors"),
+            "song": RCSubscriberAttribute(key: "song", value: "Riders on the storm"),
+            "album": RCSubscriberAttribute(key: "album", value: "L.A. Woman")
+        ]
+        let userID2Attributes = [
+            "instrument": RCSubscriberAttribute(key: "instrument", value: "Guitar"),
+            "name": RCSubscriberAttribute(key: "name", value: "Robert Krieger")
+        ]
+        let allAttributes: [String: [String: RCSubscriberAttribute]] = [
+            userID1: userID1Attributes,
+            userID2: userID2Attributes,
+        ]
+        mockDeviceCache.stubbedUnsyncedAttributesByKeyForAllUsersResult = allAttributes
+
+        let mockError = NSError(domain: Purchases.ErrorDomain, code: 123, userInfo: [:])
+        mockBackend.stubbedPostSubscriberAttributesCompletionResult = (mockError, ())
+
+        self.subscriberAttributesManager.syncAttributesForAllUsers(withCurrentAppUserID: currentUserID)
+        expect(self.mockDeviceCache.invokedDeleteAttributesIfSyncedCount).toEventually(equal(0))
+    }
+
+    func testSyncAttributesForAllUsersDoesntDeleteForCurrentUser() {
+        let currentUserID = "userID1"
+        let otherUserID = "userID2"
+
+        let userID1Attributes = [
+            "band": RCSubscriberAttribute(key: "band", value: "The Doors"),
+            "song": RCSubscriberAttribute(key: "song", value: "Riders on the storm"),
+            "album": RCSubscriberAttribute(key: "album", value: "L.A. Woman")
+        ]
+        let userID2Attributes = [
+            "instrument": RCSubscriberAttribute(key: "instrument", value: "Guitar"),
+            "name": RCSubscriberAttribute(key: "name", value: "Robert Krieger")
+        ]
+        let allAttributes: [String: [String: RCSubscriberAttribute]] = [
+            currentUserID: userID1Attributes,
+            otherUserID: userID2Attributes,
+        ]
+        mockDeviceCache.stubbedUnsyncedAttributesByKeyForAllUsersResult = allAttributes
+
+        self.subscriberAttributesManager.syncAttributesForAllUsers(withCurrentAppUserID: currentUserID)
+        expect(self.mockDeviceCache.invokedDeleteAttributesIfSyncedCount).toEventually(equal(1))
+        expect(Set(self.mockDeviceCache.invokedDeleteAttributesIfSyncedParametersList)) == Set([otherUserID])
     }
 }
 

@@ -86,16 +86,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)syncSubscriberAttributesIfNeeded {
-    [self.subscriberAttributesManager syncAttributesForAllUsersWithCurrentAppUserID:self.appUserID
-                                                                         completion:^(NSError *error) {
-        if (error != nil) {
-            RCErrorLog(@"error when syncing subscriber attributes. Details: %@\n UserInfo:%@",
-                       error.localizedDescription,
-                       error.userInfo);
-        } else {
-            RCLog(@"Subscriber attributes synced successfully");
-        }
-    }];
+    [self.subscriberAttributesManager syncAttributesForAllUsersWithCurrentAppUserID:self.appUserID];
 }
 
 @end

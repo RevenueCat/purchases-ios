@@ -190,12 +190,12 @@ class MockDeviceCache: RCDeviceCache {
     var invokedDeleteAttributesIfSynced = false
     var invokedDeleteAttributesIfSyncedCount = 0
     var invokedDeleteAttributesIfSyncedParameters: (appUserID: String?, Void)?
-    var invokedDeleteAttributesIfSyncedParametersList = [(appUserID: String?, Void)]()
+    var invokedDeleteAttributesIfSyncedParametersList: [String] = []
 
     override func deleteAttributesIfSynced(forAppUserID appUserID: String) {
         invokedDeleteAttributesIfSynced = true
         invokedDeleteAttributesIfSyncedCount += 1
         invokedDeleteAttributesIfSyncedParameters = (appUserID, ())
-        invokedDeleteAttributesIfSyncedParametersList.append((appUserID, ()))
+        invokedDeleteAttributesIfSyncedParametersList.append(appUserID)
     }
 }
