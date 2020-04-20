@@ -8,6 +8,7 @@
 
 #import "RCDeviceCache.h"
 #import "RCDeviceCache+Protected.h"
+#import "RCUtils.h"
 
 
 @interface RCDeviceCache ()
@@ -204,9 +205,9 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
                 unsyncedAttributesByKey[attribute.key] = attribute;
             }
         }
-        NSLog(@"found %lu unsynced attributes for appUserID: %@", unsyncedAttributesByKey.count, appUserID);
+        RCLog(@"found %lu unsynced attributes for appUserID: %@", unsyncedAttributesByKey.count, appUserID);
         if (unsyncedAttributesByKey.count > 0) {
-            NSLog(@"unsynced attributes: %@", unsyncedAttributesByKey);
+            RCLog(@"unsynced attributes: %@", unsyncedAttributesByKey);
         }
         return unsyncedAttributesByKey;
     }
