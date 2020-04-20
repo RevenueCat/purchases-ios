@@ -384,7 +384,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(self.mockUserDefaults.mockValues[userID2AttributesKey]).to(beNil())
     }
 
-    // mark: unsyncedAttributesByKeyForAllUsers
+    // mark: unsyncedAttributesForAllUsers
 
     func testUnsyncedAttributesByKeyForAllUsersReturnsCorrectly() {
         let attributeLedZeppelin = RCSubscriberAttribute(key: "band", value: "Led Zeppelin")
@@ -414,7 +414,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
                 ]
             ]
         ]
-        let receivedUnsyncedAttributes = self.deviceCache.unsyncedAttributesByKeyForAllUsers()
+        let receivedUnsyncedAttributes = self.deviceCache.unsyncedAttributesForAllUsers()
         expect(receivedUnsyncedAttributes) == subscriberAttributes
     }
 

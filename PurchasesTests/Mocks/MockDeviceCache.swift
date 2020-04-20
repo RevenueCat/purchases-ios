@@ -177,14 +177,14 @@ class MockDeviceCache: RCDeviceCache {
         invokedMigrateSubscriberAttributesIfNeededParametersList.append((appUserID, ()))
     }
 
-    var invokedUnsyncedAttributesByKeyForAllUsers = false
-    var invokedUnsyncedAttributesByKeyForAllUsersCount = 0
-    var stubbedUnsyncedAttributesByKeyForAllUsersResult: [String: [String: RCSubscriberAttribute]]!
+    var invokedUnsyncedAttributesForAllUsers = false
+    var invokedUnsyncedAttributesForAllUsersCount = 0
+    var stubbedUnsyncedAttributesForAllUsersResult: [String: [String: RCSubscriberAttribute]]!
 
-    override func unsyncedAttributesByKeyForAllUsers() -> [String: [String: RCSubscriberAttribute]] {
-        invokedUnsyncedAttributesByKeyForAllUsers = true
-        invokedUnsyncedAttributesByKeyForAllUsersCount += 1
-        return stubbedUnsyncedAttributesByKeyForAllUsersResult
+    override func unsyncedAttributesForAllUsers() -> [String: [String: RCSubscriberAttribute]] {
+        invokedUnsyncedAttributesForAllUsers = true
+        invokedUnsyncedAttributesForAllUsersCount += 1
+        return stubbedUnsyncedAttributesForAllUsersResult
     }
 
     var invokedDeleteAttributesIfSynced = false

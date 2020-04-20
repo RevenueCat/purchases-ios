@@ -543,7 +543,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
             userID2: userID2Attributes,
             userID3: userID3Attributes,
         ]
-        mockDeviceCache.stubbedUnsyncedAttributesByKeyForAllUsersResult = allAttributes
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = allAttributes
 
         subscriberAttributesManager.syncAttributesForAllUsers(withCurrentAppUserID: userID1)
         expect(self.mockBackend.invokedPostSubscriberAttributesCount) == 3
@@ -577,7 +577,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
             userID1: userID1Attributes,
             userID2: userID2Attributes,
         ]
-        mockDeviceCache.stubbedUnsyncedAttributesByKeyForAllUsersResult = allAttributes
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = allAttributes
 
         self.subscriberAttributesManager.syncAttributesForAllUsers(withCurrentAppUserID: currentUserID)
         expect(self.mockDeviceCache.invokedDeleteAttributesIfSyncedCount).toEventually(equal(2))
@@ -602,7 +602,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
             userID1: userID1Attributes,
             userID2: userID2Attributes,
         ]
-        mockDeviceCache.stubbedUnsyncedAttributesByKeyForAllUsersResult = allAttributes
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = allAttributes
 
         let mockError = NSError(domain: Purchases.ErrorDomain, code: 123, userInfo: [:])
         mockBackend.stubbedPostSubscriberAttributesCompletionResult = (mockError, ())
@@ -628,7 +628,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
             currentUserID: userID1Attributes,
             otherUserID: userID2Attributes,
         ]
-        mockDeviceCache.stubbedUnsyncedAttributesByKeyForAllUsersResult = allAttributes
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = allAttributes
 
         self.subscriberAttributesManager.syncAttributesForAllUsers(withCurrentAppUserID: currentUserID)
         expect(self.mockDeviceCache.invokedDeleteAttributesIfSyncedCount).toEventually(equal(1))

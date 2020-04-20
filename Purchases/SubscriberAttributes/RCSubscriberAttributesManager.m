@@ -97,7 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSDictionary <NSString *, RCSubscriberAttributeDict> *)unsyncedAttributesByKeyForAllUsers {
-    return [self.deviceCache unsyncedAttributesByKeyForAllUsers];
+    return [self.deviceCache unsyncedAttributesForAllUsers];
 }
 
 #pragma MARK - Private methods
