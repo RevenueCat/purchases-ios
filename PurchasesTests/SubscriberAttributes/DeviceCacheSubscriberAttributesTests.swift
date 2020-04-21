@@ -391,17 +391,8 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let attributeWholeLottaLove = RCSubscriberAttribute(key: "song", value: "Whole Lotta Love")
         let attributeMetallica = RCSubscriberAttribute(key: "band", value: "Metallica")
         let attributeRideTheLightning = RCSubscriberAttribute(key: "song", value: "Ride the Lightning")
-        let subscriberAttributes = [
-            "userID1": [
-                "band": attributeLedZeppelin,
-                "song": attributeWholeLottaLove
-            ],
-            "userID2": [
-                "band": attributeMetallica,
-                "song": attributeRideTheLightning
-            ]
-        ]
-
+        let syncedAttribute = RCSubscriberAttribute(key: "album", value: "... And Justice for All", isSynced: true, 
+                                                    setTime: Date())
         mockUserDefaults.mockValues = [
             "com.revenuecat.userdefaults.subscriberAttributes": [
                 "userID1": [
@@ -410,12 +401,23 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
                 ],
                 "userID2": [
                     "band": attributeMetallica.asDictionary(),
-                    "song": attributeRideTheLightning.asDictionary()
+                    "song": attributeRideTheLightning.asDictionary(),
+                    "album": syncedAttribute.asDictionary()
                 ]
             ]
         ]
         let receivedUnsyncedAttributes = self.deviceCache.unsyncedAttributesForAllUsers()
-        expect(receivedUnsyncedAttributes) == subscriberAttributes
+        expect(receivedUnsyncedAttributes["userID1"]) == [
+            "band": attributeLedZeppelin,
+            "song": attributeWholeLottaLove
+        ]
+
+        expect(receivedUnsyncedAttributes["userID2"]) == [
+            "band": attributeMetallica,
+            "song": attributeRideTheLightning,
+        ]
+
+        expect(receivedUnsyncedAttributes["userID2"]?.keys).notTo(contain("album"))
     }
 
     // mark: deleteAttributesIfSyncedForAppUserID
