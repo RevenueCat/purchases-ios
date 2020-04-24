@@ -266,16 +266,16 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
     }
 }
 
-- (void)migrateSubscriberAttributes:(nonnull NSDictionary *)subscriberAttributes
+- (void)migrateSubscriberAttributes:(nonnull NSDictionary *)legacyAttributes
                       withAppUserID:(nonnull NSString *)appUserID {
     NSMutableDictionary *allSubscriberAttributes = ([self.userDefaults dictionaryForKey:RCSubscriberAttributesKey]
                                                     ?: @{}).mutableCopy;
     NSMutableDictionary *currentAttributesForAppUserID = allSubscriberAttributes[appUserID]
                                                          ?: @{}.mutableCopy;
-    NSMutableDictionary *mutableSubscriberAttributes = subscriberAttributes.mutableCopy;
-    [mutableSubscriberAttributes addEntriesFromDictionary:currentAttributesForAppUserID];
+    NSMutableDictionary *mutableLegacyAttributes = legacyAttributes.mutableCopy;
+    [mutableLegacyAttributes addEntriesFromDictionary:currentAttributesForAppUserID];
 
-    allSubscriberAttributes[appUserID] = mutableSubscriberAttributes;
+    allSubscriberAttributes[appUserID] = mutableLegacyAttributes;
     [self.userDefaults setObject:allSubscriberAttributes forKey:RCSubscriberAttributesKey];
 
     NSString *legacyAttributesKey = [self legacySubscriberAttributesCacheKeyForAppUserID:appUserID];
