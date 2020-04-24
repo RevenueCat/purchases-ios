@@ -65,7 +65,7 @@ class DeviceCacheTests: XCTestCase {
             .to(beTrue())
     }
 
-    func testClearCachesRemovesCachedSubscriberAttributesIfSynced() {
+    func testClearCachesDoesntRemoveCachedSubscriberAttributesIfUnsynced() {
         let userID = "andy"
         let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let key = "band"
@@ -80,7 +80,7 @@ class DeviceCacheTests: XCTestCase {
         expect(self.mockUserDefaults.setObjectForKeyCallCount) == 0
     }
 
-    func testClearCachesDoesntRemoveCachedSubscriberAttributesIfUnsynced() {
+    func testClearCachesRemovesCachedSubscriberAttributesIfSynced() {
         let userID = "andy"
         let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let key = "band"
