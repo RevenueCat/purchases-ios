@@ -78,7 +78,7 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
         [self clearPurchaserInfoCacheTimestamp];
         [self clearOfferingsCache];
 
-        [self clearSubscriberAttributesIfSyncedForAppUserID:appUserID];
+        [self deleteAttributesIfSyncedForAppUserID:appUserID];
     }
 }
 
@@ -252,16 +252,6 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
             *groupedAttributes = self.storedAttributesForAllUsers.mutableCopy;
         [groupedAttributes removeObjectForKey:appUserID];
         [self.userDefaults setObject:groupedAttributes forKey:RCSubscriberAttributesKey];
-    }
-}
-
-- (void)clearSubscriberAttributesIfSyncedForAppUserID:(NSString *)appUserID {
-    @synchronized (self) {
-        if ([self numberOfUnsyncedAttributesForAppUserID:appUserID] == 0) {
-            NSMutableDictionary *groupedSubscriberAttributes = self.storedAttributesForAllUsers.mutableCopy;
-            [groupedSubscriberAttributes removeObjectForKey:appUserID];
-            [self.userDefaults setObject:groupedSubscriberAttributes forKey:RCSubscriberAttributesKey];
-        }
     }
 }
 
