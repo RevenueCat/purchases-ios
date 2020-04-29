@@ -192,8 +192,7 @@ class MockBackend: RCBackend {
     var invokedPostSubscriberAttributes = false
     var invokedPostSubscriberAttributesCount = 0
     var invokedPostSubscriberAttributesParameters: (subscriberAttributes: [String: RCSubscriberAttribute]?, appUserID: String?)?
-    var invokedPostSubscriberAttributesParametersList = [(subscriberAttributes: RCSubscriberAttributeDict?,
-        appUserID: String?)]()
+    var invokedPostSubscriberAttributesParametersList: [InvokedPostSubscriberAttributesParameters] = []
     var stubbedPostSubscriberAttributesCompletionResult: (Error?, Void)?
 
     override func postSubscriberAttributes(_ subscriberAttributes: [String: RCSubscriberAttribute],
@@ -202,11 +201,19 @@ class MockBackend: RCBackend {
         invokedPostSubscriberAttributes = true
         invokedPostSubscriberAttributesCount += 1
         invokedPostSubscriberAttributesParameters = (subscriberAttributes, appUserID)
-        invokedPostSubscriberAttributesParametersList.append((subscriberAttributes as RCSubscriberAttributeDict,
-                                                                 appUserID))
+        invokedPostSubscriberAttributesParametersList.append(
+            InvokedPostSubscriberAttributesParameters(subscriberAttributes: subscriberAttributes, appUserID: appUserID)
+        )
         if let result = stubbedPostSubscriberAttributesCompletionResult {
             completion?(result.0)
+        } else {
+            completion?(nil)
         }
+    }
+
+    struct InvokedPostSubscriberAttributesParameters: Equatable {
+        let subscriberAttributes: [String: RCSubscriberAttribute]?
+        let appUserID: String?
     }
 }
 

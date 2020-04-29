@@ -9,9 +9,11 @@ class MockUserDefaults: UserDefaults {
 
     var stringForKeyCalledValue: String? = nil
     var setObjectForKeyCalledValue: String? = nil
+    var setObjectForKeyCallCount: Int = 0
     var removeObjectForKeyCalledValues: Array<String> = []
     var dataForKeyCalledValue: String? = nil
     var objectForKeyCalledValue: String? = nil
+    var dictionaryForKeyCalledValue: String? = nil
     var setBoolForKeyCalledValue: String? = nil
     var setValueForKeyCalledValue: String? = nil
 
@@ -28,6 +30,7 @@ class MockUserDefaults: UserDefaults {
     }
 
     override func set(_ value: Any?, forKey defaultName: String) {
+        setObjectForKeyCallCount += 1
         setObjectForKeyCalledValue = defaultName
         mockValues[defaultName] = value
     }
@@ -45,5 +48,10 @@ class MockUserDefaults: UserDefaults {
     override func set(_ value: Bool, forKey defaultName: String) {
         setValueForKeyCalledValue = defaultName
         mockValues[defaultName] = value
+    }
+
+    override func dictionary(forKey defaultName: String) -> [String: Any]? {
+        dictionaryForKeyCalledValue = defaultName
+        return mockValues[defaultName] as? [String : Any]
     }
 }

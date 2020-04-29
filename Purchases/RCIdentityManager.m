@@ -46,7 +46,9 @@
             }
         }
     }
+
     [self saveAppUserID:appUserID];
+    [self.deviceCache migrateSubscriberAttributesIfNeededForAppUserID:appUserID];
 }
 
 - (void)identifyAppUserID:(NSString *)appUserID withCompletionBlock:(void (^)(NSError *_Nullable error))completion
