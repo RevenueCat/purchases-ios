@@ -419,6 +419,30 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
         expect(receivedUnsyncedAttributes["userID2"]?.keys).notTo(contain("album"))
     }
+    
+    func testUnsyncedAttributesByKeyForAllUsersOnlyIncludesUsersWithUnsyncedAttributes() {
+        let attributeLedZeppelin = RCSubscriberAttribute(key: "band", value: "Led Zeppelin")
+        let attributeWholeLottaLove = RCSubscriberAttribute(key: "song", value: "Whole Lotta Love")
+        let syncedAttribute = RCSubscriberAttribute(key: "album", value: "... And Justice for All", isSynced: true,
+                                                    setTime: Date())
+        mockUserDefaults.mockValues = [
+            "com.revenuecat.userdefaults.subscriberAttributes": [
+                "userID1": [
+                    "band": attributeLedZeppelin.asDictionary(),
+                    "song": attributeWholeLottaLove.asDictionary()
+                ],
+                "userID2": [
+                    "album": syncedAttribute.asDictionary()
+                ]
+            ]
+        ]
+        let receivedUnsyncedAttributes = self.deviceCache.unsyncedAttributesForAllUsers()
+        expect(receivedUnsyncedAttributes["userID1"]) == [
+            "band": attributeLedZeppelin,
+            "song": attributeWholeLottaLove
+        ]
+        expect(receivedUnsyncedAttributes["userID2"]).to(beNil())
+    }
 
     // mark: deleteAttributesIfSyncedForAppUserID
 
