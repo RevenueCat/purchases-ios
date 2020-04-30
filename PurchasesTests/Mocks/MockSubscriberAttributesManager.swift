@@ -77,22 +77,6 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
         invokedSetPushTokenStringParametersList.append((pushToken, appUserID))
     }
 
-    var invokedSyncIfNeeded = false
-    var invokedSyncIfNeededCount = 0
-    var invokedSyncIfNeededParameters: (appUserID: String, Void)?
-    var invokedSyncIfNeededParametersList = [(appUserID: String, Void)]()
-    var stubbedSyncIfNeededCompletionResult: (Error?, Void)?
-
-    override func syncIfNeeded(withAppUserID appUserID: String, completion: @escaping ((Error?) -> ())) {
-        invokedSyncIfNeeded = true
-        invokedSyncIfNeededCount += 1
-        invokedSyncIfNeededParameters = (appUserID, ())
-        invokedSyncIfNeededParametersList.append((appUserID, ()))
-        if let result = stubbedSyncIfNeededCompletionResult {
-            completion(result.0)
-        }
-    }
-
     var invokedUnsyncedAttributesByKey = false
     var invokedUnsyncedAttributesByKeyCount = 0
     var invokedUnsyncedAttributesByKeyParameters: (appUserID: String, Void)?
