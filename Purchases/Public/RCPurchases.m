@@ -461,7 +461,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                     @synchronized (self) {
                                         for (SKProduct *p in newProducts)
                                         {
-                                            self.productsByIdentifier[p.productIdentifier] = p;
+                                            if (p.productIdentifier) {
+                                                self.productsByIdentifier[p.productIdentifier] = p;
+                                            }
                                         }
                                     }
                                     CALL_IF_SET_ON_MAIN_THREAD(completion, [products arrayByAddingObjectsFromArray:newProducts]);
@@ -527,10 +529,10 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     } else {
         RCLog(@"makePurchase - Could not purchase SKProduct. Couldn't find its product identifier. This is possibly an App Store quirk.");
         completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
-            code:RCUnknownError
-        userInfo:@{
-                   NSLocalizedDescriptionKey: @"There was problem purchasing the product."
-                   }], false);
+                                                 code:RCUnknownError
+                                             userInfo:@{
+                                                 NSLocalizedDescriptionKey: @"There was problem purchasing the product."
+                                             }], false);
         return;
     }
 
@@ -545,9 +547,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     [self.deviceCache setOfferingsCacheTimestampToNow];
 
     if (presentedOfferingIdentifier) {
-        RCDebugLog(@"makePurchase - %@ - Offering: %@", payment.productIdentifier, presentedOfferingIdentifier);
+        RCDebugLog(@"makePurchase - %@ - Offering: %@", productIdentifier, presentedOfferingIdentifier);
     } else {
-        RCDebugLog(@"makePurchase - %@", payment.productIdentifier);
+        RCDebugLog(@"makePurchase - %@", productIdentifier);
     }
 
     @synchronized (self) {
@@ -555,11 +557,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 
     @synchronized (self) {
-        self.presentedOfferingsByProductIdentifier[payment.productIdentifier] = presentedOfferingIdentifier;
+        self.presentedOfferingsByProductIdentifier[productIdentifier] = presentedOfferingIdentifier;
     }
 
     @synchronized (self) {
-        if (self.purchaseCompleteCallbacks[product.productIdentifier]) {
+        if (self.purchaseCompleteCallbacks[productIdentifier]) {
             completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
                                                      code:RCOperationAlreadyInProgressError
                                                  userInfo:@{
