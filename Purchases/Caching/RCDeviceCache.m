@@ -238,7 +238,9 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
                 attributesForUser[attributeKey] = attribute;
             }
         }
-        attributes[appUserID] = attributesForUser;
+        if (attributesForUser.count > 0) {
+            attributes[appUserID] = attributesForUser;
+        }
     }
     return attributes;
 }
