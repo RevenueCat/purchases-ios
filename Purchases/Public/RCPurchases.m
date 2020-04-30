@@ -461,7 +461,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                     @synchronized (self) {
                                         for (SKProduct *p in newProducts)
                                         {
-                                            self.productsByIdentifier[p.productIdentifier] = p;
+                                            if (p.productIdentifier) {
+                                                self.productsByIdentifier[p.productIdentifier] = p;
+                                            }
                                         }
                                     }
                                     CALL_IF_SET_ON_MAIN_THREAD(completion, [products arrayByAddingObjectsFromArray:newProducts]);
