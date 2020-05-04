@@ -8,13 +8,18 @@
 #import "RCInMemoryCachedObject.h"
 #import "RCOfferings.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 
 @interface RCDeviceCache (Protected)
 
 @property (nonatomic, nullable) NSDate *purchaserInfoCachesLastUpdated;
 
 - (nullable instancetype)initWith:(nullable NSUserDefaults *)userDefaults
-            offeringsCachedObject:(nullable RCInMemoryCachedObject<RCOfferings *> *)offeringsCachedObject;
+            offeringsCachedObject:(nullable RCInMemoryCachedObject<RCOfferings *> *)offeringsCachedObject
+               notificationCenter:(nullable NSNotificationCenter *)notificationCenter;
 
 @end
 
+
+NS_ASSUME_NONNULL_END
