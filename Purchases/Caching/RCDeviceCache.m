@@ -40,20 +40,38 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
    offeringsCachedObject:(RCInMemoryCachedObject<RCOfferings *> *)offeringsCachedObject {
     self = [super init];
     if (self) {
-        if (userDefaults == nil) {
-            userDefaults = [NSUserDefaults standardUserDefaults];
-        }
-        self.userDefaults = userDefaults;
-
         if (offeringsCachedObject == nil) {
             offeringsCachedObject =
                 [[RCInMemoryCachedObject alloc] initWithCacheDurationInSeconds:CACHE_DURATION_IN_SECONDS];
         }
         self.offeringsCachedObject = offeringsCachedObject;
 
+        if (userDefaults == nil) {
+            userDefaults = NSUserDefaults.standardUserDefaults;
+        }
+        self.userDefaults = userDefaults;
+        [self observeAppUserIDChanges];
     }
 
     return self;
+}
+
+#pragma mark - NSUserDefaults KVO
+
+- (void)observeAppUserIDChanges {
+    [NSNotificationCenter.defaultCenter addObserver:self
+                                           selector:@selector(userDefaultsChanged:)
+                                               name:NSUserDefaultsDidChangeNotification
+                                             object:nil];
+}
+
+- (void)userDefaultsChanged:(NSNotification *)notification {
+    if (notification.object == self.userDefaults) {
+        if (!self.cachedAppUserID) {
+            RCLog(@"Cached app user ID has been deleted!");
+            NSAssert(false, @"Cached app user ID has been deleted, RevenueCat SDK is in an unknown state");
+        }
+    }
 }
 
 #pragma mark - appUserID
