@@ -82,6 +82,10 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
     }
 }
 
+- (void)dealloc {
+    [self.notificationCenter removeObserver:self];
+}
+
 #pragma mark - appUserID
 
 - (nullable NSString *)cachedLegacyAppUserID {
