@@ -69,7 +69,7 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
     [self.notificationCenter addObserver:self
                                 selector:@selector(handleUserDefaultsChanged:)
                                     name:NSUserDefaultsDidChangeNotification
-                                  object:nil];
+                                  object:self.userDefaults];
 }
 
 - (void)handleUserDefaultsChanged:(NSNotification *)notification {

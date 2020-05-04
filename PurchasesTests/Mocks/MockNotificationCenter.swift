@@ -23,8 +23,12 @@ class MockNotificationCenter: NotificationCenter {
     }
 
     func fireNotifications() {
-        for (observer, selector, _, _) in observers {
-            _ = observer.perform(selector, with: nil)
+        for (observer, selector, name, object) in observers {
+            var notification: NSNotification? = nil
+            if let name = name {
+                notification = NSNotification(name: name, object: object)
+            }
+            _ = observer.perform(selector, with: notification)
         }
     }
 }
