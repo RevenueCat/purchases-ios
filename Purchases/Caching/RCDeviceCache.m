@@ -317,20 +317,23 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
 - (void)deleteSyncedSubscriberAttributesForOtherUsers {
     NSDictionary<NSString *, NSDictionary *> *allStoredAttributes = self.storedAttributesForAllUsers;
     NSMutableDictionary<NSString *, NSDictionary *> *unsyncedAttributes = [[NSMutableDictionary alloc] init];
+
     NSString *currentAppUserID = self.cachedAppUserID;
+    NSParameterAssert(currentAppUserID);
+    unsyncedAttributes[currentAppUserID] = allStoredAttributes[currentAppUserID];
+
     for (NSString *appUserID in allStoredAttributes.allKeys) {
-        if ([appUserID isEqualToString:currentAppUserID]) {
+        if (![appUserID isEqualToString:currentAppUserID]) {
             NSMutableDictionary *unsyncedAttributesForUser = [[NSMutableDictionary alloc] init];
             for (NSString *attributeKey in allStoredAttributes[appUserID].allKeys) {
                 RCSubscriberAttribute *attribute = [[RCSubscriberAttribute alloc]
                                                                            initWithDictionary:allStoredAttributes[appUserID][attributeKey]];
                 if (!attribute.isSynced) {
-                    unsyncedAttributesForUser[currentAppUserID][attributeKey] =
-                        allStoredAttributes[appUserID][attributeKey];
+                    unsyncedAttributesForUser[attributeKey] = allStoredAttributes[appUserID][attributeKey];
                 }
             }
             if (unsyncedAttributesForUser.count > 0) {
-                unsyncedAttributes[currentAppUserID] = unsyncedAttributesForUser;
+                unsyncedAttributes[appUserID] = unsyncedAttributesForUser;
             }
         }
     }

@@ -321,6 +321,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         mockUserDefaults.mockValues = [
             "com.revenuecat.userdefaults.subscriberAttributes.\(userID1)": userID1Attributes,
             "com.revenuecat.userdefaults.subscriberAttributes.\(userID2)": userID2Attributes,
+            "com.revenuecat.userdefaults.appUserID.new": userID1
         ]
 
         deviceCache.cleanupSubscriberAttributes()
@@ -348,14 +349,18 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
             "com.revenuecat.userdefaults.subscriberAttributes": [
                 userID1: userID1Attributes,
                 userID2: userID2Attributes
-            ]
-        ]
+            ],
+            "com.revenuecat.userdefaults.appUserID.new": userID1
+        ] as [String: AnyObject]
         mockUserDefaults.mockValues = valuesBeforeMigration
 
         deviceCache.cleanupSubscriberAttributes()
 
-        let valuesAfterMigration = self.mockUserDefaults.mockValues as? [String: [String: [String: [String: NSObject]]]]
-        expect(valuesBeforeMigration) == valuesAfterMigration
+        expect(valuesBeforeMigration["com.revenuecat.userdefaults.subscriberAttributes"] as? [String: [String: NSDictionary]]) == mockUserDefaults
+            .mockValues["com.revenuecat.userdefaults.subscriberAttributes"] as? [String: [String: NSDictionary]]
+
+        expect(valuesBeforeMigration["com.revenuecat.userdefaults.appUserID.new"] as? String) == 
+            mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] as? String
     }
 
     func testMigrateSubscriberAttributesIfNeededForAppUserDeletesOldFormatAfterFinishing() {
@@ -374,6 +379,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         mockUserDefaults.mockValues = [
             userID1AttributesKey: userID1Attributes,
             userID2AttributesKey: userID2Attributes,
+            "com.revenuecat.userdefaults.appUserID.new": userID1
         ]
 
         self.deviceCache.cleanupSubscriberAttributes()
