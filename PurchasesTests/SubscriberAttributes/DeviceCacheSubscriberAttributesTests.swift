@@ -324,7 +324,6 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         ]
 
         deviceCache.cleanupSubscriberAttributes()
-        deviceCache.cleanupSubscriberAttributes()
 
         let storedAttributes = self.mockUserDefaults.mockValues[
             "com.revenuecat.userdefaults.subscriberAttributes"
@@ -377,7 +376,6 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
             userID2AttributesKey: userID2Attributes,
         ]
 
-        self.deviceCache.cleanupSubscriberAttributes()
         self.deviceCache.cleanupSubscriberAttributes()
 
         expect(self.mockUserDefaults.mockValues[userID1AttributesKey]).to(beNil())

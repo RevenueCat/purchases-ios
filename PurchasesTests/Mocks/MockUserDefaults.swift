@@ -54,4 +54,6 @@ class MockUserDefaults: UserDefaults {
         dictionaryForKeyCalledValue = defaultName
         return mockValues[defaultName] as? [String : Any]
     }
+
+    override func dictionaryRepresentation() -> [String: Any] { mockValues }
 }

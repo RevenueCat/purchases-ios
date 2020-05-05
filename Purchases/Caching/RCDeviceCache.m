@@ -311,6 +311,7 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
         NSString *legacyAttributesKey = [self legacySubscriberAttributesCacheKeyForAppUserID:appUserID];
         [self.userDefaults removeObjectForKey:legacyAttributesKey];
     }
+    [self.userDefaults setObject:attributesInNewFormat forKey:RCSubscriberAttributesKey];
 }
 
 - (void)deleteSyncedSubscriberAttributesForOtherUsers {
@@ -342,7 +343,9 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
     NSDictionary *userDefaultsDict = [self.userDefaults dictionaryRepresentation];
     for (NSString *key in userDefaultsDict.allKeys) {
         if ([key containsString:RCLegacySubscriberAttributesKeyBase]) {
-            [appUserIDsWithLegacyAttributes addObject:key];
+            NSString *appUserID = [key stringByReplacingOccurrencesOfString:RCLegacySubscriberAttributesKeyBase
+                                                                 withString:@""];
+            [appUserIDsWithLegacyAttributes addObject:appUserID];
         }
     }
     return appUserIDsWithLegacyAttributes;
