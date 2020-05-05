@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSUInteger)numberOfUnsyncedAttributesForAppUserID:(NSString *)appUserID;
 
-- (void)migrateSubscriberAttributesIfNeededForAppUserID:(NSString *)appUserID;
+- (void)cleanupSubscriberAttributes;
 
 - (NSDictionary<NSString *, RCSubscriberAttributeDict> *)unsyncedAttributesForAllUsers;
 

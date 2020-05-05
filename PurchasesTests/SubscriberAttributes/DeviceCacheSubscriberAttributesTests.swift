@@ -301,9 +301,9 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(self.deviceCache.numberOfUnsyncedAttributes(forAppUserID: "waldo")) == 2
     }
 
-    // mark: migrateSubscriberAttributesIfNeededForAppUserID
+    // mark: cleanupSubscriberAttributes
 
-    func testMigrateSubscriberAttributesIfNeededForAppUserIDMigratesIfOldAttributesFound() {
+    func testCleanupSubscriberAttributesMigratesIfOldAttributesFound() {
         let userID1 = "userID1"
         let userID2 = "userID2"
         let userID1Attributes = [
@@ -323,8 +323,8 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
             "com.revenuecat.userdefaults.subscriberAttributes.\(userID2)": userID2Attributes,
         ]
 
-        deviceCache.migrateSubscriberAttributesIfNeeded(forAppUserID: userID1)
-        deviceCache.migrateSubscriberAttributesIfNeeded(forAppUserID: userID2)
+        deviceCache.cleanupSubscriberAttributes()
+        deviceCache.cleanupSubscriberAttributes()
 
         let storedAttributes = self.mockUserDefaults.mockValues[
             "com.revenuecat.userdefaults.subscriberAttributes"
@@ -333,7 +333,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(storedAttributes) == newSubscriberAttributes
     }
 
-    func testMigrateSubscriberAttributesIfNeededForAppUserIDSkipsIfNoOldAttributesFound() {
+    func testCleanupSubscriberAttributesSkipsIfNoOldAttributesFound() {
         let userID1 = "userID1"
         let userID2 = "userID2"
         let userID1Attributes = [
@@ -353,7 +353,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         ]
         mockUserDefaults.mockValues = valuesBeforeMigration
 
-        deviceCache.migrateSubscriberAttributesIfNeeded(forAppUserID: userID1)
+        deviceCache.cleanupSubscriberAttributes()
 
         let valuesAfterMigration = self.mockUserDefaults.mockValues as? [String: [String: [String: [String: NSObject]]]]
         expect(valuesBeforeMigration) == valuesAfterMigration
@@ -377,8 +377,8 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
             userID2AttributesKey: userID2Attributes,
         ]
 
-        self.deviceCache.migrateSubscriberAttributesIfNeeded(forAppUserID: userID1)
-        self.deviceCache.migrateSubscriberAttributesIfNeeded(forAppUserID: userID2)
+        self.deviceCache.cleanupSubscriberAttributes()
+        self.deviceCache.cleanupSubscriberAttributes()
 
         expect(self.mockUserDefaults.mockValues[userID1AttributesKey]).to(beNil())
         expect(self.mockUserDefaults.mockValues[userID2AttributesKey]).to(beNil())

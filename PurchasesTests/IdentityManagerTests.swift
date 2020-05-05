@@ -79,9 +79,9 @@ class IdentityManagerTests: XCTestCase {
         assertCorrectlyIdentified(expectedAppUserID: "cesar")
     }
 
-    func testConfigureMigratesSubscriberAttributes() {
+    func testConfigureCleansUpSubscriberAttributes() {
         identityManager.configure(withAppUserID: "andy")
-        expect(self.mockDeviceCache.invokedMigrateSubscriberAttributesIfNeededCount) == 1
+        expect(self.mockDeviceCache.invokedCleanupSubscriberAttributesCount) == 1
     }
 
     func testConfigureWithAnonymousUserSavesTheIDInTheCache() {
