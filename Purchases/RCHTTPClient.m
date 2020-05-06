@@ -145,13 +145,14 @@ void RCOverrideServerHost(NSString *hostname) {
 }
 
 - (NSDictionary *)defaultHeaders {
-    return [NSMutableDictionary
-        dictionaryWithDictionary:@{@"content-type": @"application/json",
-            @"X-Version": RCPurchases.frameworkVersion,
-            @"X-Platform": PLATFORM_HEADER,
-            @"X-Platform-Version": self.class.systemVersion,
-            @"X-Platform-Flavor": self.platformFlavor ?: @"native",
-            @"X-Client-Version": self.class.appVersion}];
+    return @{
+        @"content-type": @"application/json",
+        @"X-Version": RCPurchases.frameworkVersion,
+        @"X-Platform": PLATFORM_HEADER,
+        @"X-Platform-Version": self.class.systemVersion,
+        @"X-Platform-Flavor": self.platformFlavor ?: @"native",
+        @"X-Client-Version": self.class.appVersion
+    };
 }
 
 
