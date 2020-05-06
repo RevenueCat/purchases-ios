@@ -10,6 +10,7 @@
 #import "RCUtils.h"
 #import "RCPurchases.h"
 #import "RCCrossPlatformSupport.h"
+#import "RCHTTPStatusCodes.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -92,7 +93,7 @@ void RCOverrideServerHost(NSString *hostname) {
                  error:(NSError *)error
                request:(NSMutableURLRequest *)request
      completionHandler:(RCHTTPClientResponseHandler)completionHandler {
-    NSInteger statusCode = 599;
+    NSInteger statusCode = RC_NETWORK_CONNECT_TIMEOUT_ERROR;
     NSDictionary *responseObject = nil;
 
     if (error == nil) {
