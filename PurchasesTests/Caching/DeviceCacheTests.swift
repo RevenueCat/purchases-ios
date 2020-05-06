@@ -131,7 +131,9 @@ class DeviceCacheTests: XCTestCase {
 
     func testOfferingsCacheIsStaleIfCachedObjectIsStale() {
         let mockCachedObject = MockInMemoryCachedOfferings<Purchases.Offerings>(cacheDurationInSeconds: 5 * 60)
-        self.deviceCache = RCDeviceCache(mockUserDefaults, offeringsCachedObject: mockCachedObject)
+        self.deviceCache = RCDeviceCache(mockUserDefaults,
+                                         offeringsCachedObject: mockCachedObject,
+                                         notificationCenter: nil)
         let offerings = Purchases.Offerings()
         self.deviceCache.cacheOfferings(offerings)
 
@@ -176,5 +178,19 @@ class DeviceCacheTests: XCTestCase {
         self.deviceCache.cacheOfferings(expectedOfferings)
 
         expect(self.deviceCache.cachedOfferings).to(beIdenticalTo(expectedOfferings))
+    }
+
+    func testCrashesWhenAppUserIDIsDeleted() {
+        let mockNotificationCenter = MockNotificationCenter()
+        self.deviceCache = RCDeviceCache(mockUserDefaults,
+                                         offeringsCachedObject: nil,
+                                         notificationCenter: mockNotificationCenter)
+        mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = "Rage Against the Machine"
+
+        expect { mockNotificationCenter.fireNotifications() }.notTo(raiseException())
+
+        mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
+
+        expect { mockNotificationCenter.fireNotifications() }.to(raiseException())
     }
 }

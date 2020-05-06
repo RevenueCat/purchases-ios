@@ -14,6 +14,7 @@
 @interface RCDeviceCache ()
 
 @property (nonatomic) NSUserDefaults *userDefaults;
+@property (nonatomic) NSNotificationCenter *notificationCenter;
 @property (nonatomic, nonnull) RCInMemoryCachedObject<RCOfferings *> *offeringsCachedObject;
 @property (nonatomic, nullable) NSDate *purchaserInfoCachesLastUpdated;
 
@@ -33,27 +34,57 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
 @implementation RCDeviceCache
 
 - (instancetype)initWith:(NSUserDefaults *)userDefaults {
-    return [self initWith:userDefaults offeringsCachedObject:nil];
+    return [self initWith:userDefaults offeringsCachedObject:nil notificationCenter:nil];
 }
 
 - (instancetype)initWith:(NSUserDefaults *)userDefaults
-   offeringsCachedObject:(RCInMemoryCachedObject<RCOfferings *> *)offeringsCachedObject {
+   offeringsCachedObject:(RCInMemoryCachedObject<RCOfferings *> *)offeringsCachedObject
+      notificationCenter:(NSNotificationCenter *)notificationCenter {
     self = [super init];
     if (self) {
-        if (userDefaults == nil) {
-            userDefaults = [NSUserDefaults standardUserDefaults];
-        }
-        self.userDefaults = userDefaults;
-
         if (offeringsCachedObject == nil) {
             offeringsCachedObject =
                 [[RCInMemoryCachedObject alloc] initWithCacheDurationInSeconds:CACHE_DURATION_IN_SECONDS];
         }
         self.offeringsCachedObject = offeringsCachedObject;
 
+        if (notificationCenter == nil) {
+            notificationCenter = NSNotificationCenter.defaultCenter;
+        }
+        self.notificationCenter = notificationCenter;
+
+        if (userDefaults == nil) {
+            userDefaults = NSUserDefaults.standardUserDefaults;
+        }
+        self.userDefaults = userDefaults;
+        [self observeAppUserIDChanges];
     }
 
     return self;
+}
+
+#pragma mark - UserDefaults Observer
+
+- (void)observeAppUserIDChanges {
+    [self.notificationCenter addObserver:self
+                                selector:@selector(handleUserDefaultsChanged:)
+                                    name:NSUserDefaultsDidChangeNotification
+                                  object:self.userDefaults];
+}
+
+- (void)handleUserDefaultsChanged:(NSNotification *)notification {
+    if (notification.object == self.userDefaults) {
+        if (!self.cachedAppUserID) {
+            NSAssert(false, @"[Purchases] - Cached appUserID has been deleted from user defaults. "
+                            "This leaves the SDK in an undetermined state. Please make sure that RevenueCat "
+                            "entries in user defaults don't get deleted by anything other than the SDK. "
+                            "More info: https://support.revenuecat.com/hc/en-us/articles/360047927393");
+        }
+    }
+}
+
+- (void)dealloc {
+    [self.notificationCenter removeObserver:self];
 }
 
 #pragma mark - appUserID
