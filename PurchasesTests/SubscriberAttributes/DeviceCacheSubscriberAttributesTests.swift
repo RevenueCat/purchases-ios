@@ -345,25 +345,27 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
             "song": RCSubscriberAttribute(key: "song", value: "Ride the Lightning").asDictionary()
         ]
 
+        let subscriberAttributesNewKey = "com.revenuecat.userdefaults.subscriberAttributes"
+        let appUserIDKey = "com.revenuecat.userdefaults.appUserID.new"
         let valuesBeforeMigration = [
-            "com.revenuecat.userdefaults.subscriberAttributes": [
-                userID1: userID1Attributes,
-                userID2: userID2Attributes
-            ],
-            "com.revenuecat.userdefaults.appUserID.new": userID1
-        ] as [String: AnyObject]
+                                        subscriberAttributesNewKey: [
+                                            userID1: userID1Attributes,
+                                            userID2: userID2Attributes
+                                        ],
+                                        appUserIDKey: userID1
+                                    ] as [String: AnyObject]
         mockUserDefaults.mockValues = valuesBeforeMigration
 
         deviceCache.cleanupSubscriberAttributes()
 
-        expect(valuesBeforeMigration["com.revenuecat.userdefaults.subscriberAttributes"] as? [String: [String: NSDictionary]]) == mockUserDefaults
-            .mockValues["com.revenuecat.userdefaults.subscriberAttributes"] as? [String: [String: NSDictionary]]
+        expect(valuesBeforeMigration[subscriberAttributesNewKey] as? [String: [String: NSDictionary]])
+            == mockUserDefaults.mockValues[subscriberAttributesNewKey] as? [String: [String: NSDictionary]]
 
-        expect(valuesBeforeMigration["com.revenuecat.userdefaults.appUserID.new"] as? String) == 
-            mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] as? String
+        expect(valuesBeforeMigration[appUserIDKey] as? String) ==
+            mockUserDefaults.mockValues[appUserIDKey] as? String
     }
 
-    func testMigrateSubscriberAttributesIfNeededForAppUserDeletesOldFormatAfterFinishing() {
+    func testCleanupSubscriberAttributesDeletesOldFormatAfterFinishing() {
         let userID1 = "userID1"
         let userID2 = "userID2"
         let userID1Attributes = [
@@ -388,6 +390,83 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(self.mockUserDefaults.mockValues[userID2AttributesKey]).to(beNil())
     }
 
+    func testCleanupSubscriberAttributesDeletesSyncedAttributesForOtherUsers() {
+        let userID1 = "userID1"
+        let userID2 = "userID2"
+        let currentUserID = "currentUserID"
+        let date = Date()
+        let unsyncedAttribute = RCSubscriberAttribute(key: "song", value: "Ride the Lightning", isSynced: false, setTime: date)
+        let userID1Attributes = [
+            "band": RCSubscriberAttribute(key: "band", value: "Led Zeppelin", isSynced: true, setTime: date)
+                .asDictionary(),
+            "song": RCSubscriberAttribute(key: "song", value: "Whole Lotta Love", isSynced: true, setTime: date)
+                .asDictionary()
+        ]
+        let userID2Attributes = [
+            "band": RCSubscriberAttribute(key: "band", value: "Metallica", isSynced: true, setTime: date)
+                .asDictionary(),
+            unsyncedAttribute.key: unsyncedAttribute.asDictionary()
+        ]
+
+        let userID1AttributesKey = "com.revenuecat.userdefaults.subscriberAttributes.\(userID1)"
+        let userID2AttributesKey = "com.revenuecat.userdefaults.subscriberAttributes.\(userID2)"
+        mockUserDefaults.mockValues = [
+            userID1AttributesKey: userID1Attributes,
+            userID2AttributesKey: userID2Attributes,
+            "com.revenuecat.userdefaults.appUserID.new": currentUserID
+        ]
+
+        self.deviceCache.cleanupSubscriberAttributes()
+
+        let subscriberAttributesNewKey = "com.revenuecat.userdefaults.subscriberAttributes"
+        let receivedSubscriberAttributes = self.mockUserDefaults.mockValues[subscriberAttributesNewKey]
+            as! [String: [String: NSObject]]
+        expect(receivedSubscriberAttributes).toNot(beNil())
+        expect(receivedSubscriberAttributes[userID1]).to(beNil())
+        expect(receivedSubscriberAttributes[userID2]).toNot(beNil())
+        expect(receivedSubscriberAttributes[userID2]?[unsyncedAttribute.key] as? [String: NSObject]) ==
+            unsyncedAttribute.asDictionary()
+    }
+
+    func testCleanupSubscriberAttributesDoesntDeleteSyncedAttributesForCurrentUser() {
+        let userID1 = "userID1"
+        let currentUserID = "currentUserID"
+        let date = Date()
+        let unsyncedAttribute = RCSubscriberAttribute(key: "song", value: "Ride the Lightning", isSynced: false, setTime: date)
+        let syncedAttribute = RCSubscriberAttribute(key: "band", value: "Metallica", isSynced: true, setTime: date)
+        let userID1Attributes = [
+            "band": RCSubscriberAttribute(key: "band", value: "Led Zeppelin", isSynced: true, setTime: date)
+                .asDictionary(),
+            "song": RCSubscriberAttribute(key: "song", value: "Whole Lotta Love", isSynced: true, setTime: date)
+                .asDictionary()
+        ]
+        let currentUserIDAttributes = [
+            syncedAttribute.key: syncedAttribute.asDictionary(),
+            unsyncedAttribute.key: unsyncedAttribute.asDictionary()
+        ]
+
+        let userID1AttributesKey = "com.revenuecat.userdefaults.subscriberAttributes.\(userID1)"
+        let currentUserIDAttributesKey = "com.revenuecat.userdefaults.subscriberAttributes.\(currentUserID)"
+        mockUserDefaults.mockValues = [
+            userID1AttributesKey: userID1Attributes,
+            currentUserIDAttributesKey: currentUserIDAttributes,
+            "com.revenuecat.userdefaults.appUserID.new": currentUserID
+        ]
+
+        self.deviceCache.cleanupSubscriberAttributes()
+
+        let subscriberAttributesNewKey = "com.revenuecat.userdefaults.subscriberAttributes"
+        let receivedSubscriberAttributes = self.mockUserDefaults.mockValues[subscriberAttributesNewKey]
+            as! [String: [String: NSObject]]
+        expect(receivedSubscriberAttributes).toNot(beNil())
+        expect(receivedSubscriberAttributes[userID1]).to(beNil())
+        expect(receivedSubscriberAttributes[currentUserID]).toNot(beNil())
+        expect(receivedSubscriberAttributes[currentUserID]?[unsyncedAttribute.key] as? [String: NSObject]) ==
+            unsyncedAttribute.asDictionary()
+        expect(receivedSubscriberAttributes[currentUserID]?[syncedAttribute.key] as? [String: NSObject]) ==
+            syncedAttribute.asDictionary()
+    }
+
     // mark: unsyncedAttributesForAllUsers
 
     func testUnsyncedAttributesByKeyForAllUsersReturnsCorrectly() {
@@ -395,7 +474,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let attributeWholeLottaLove = RCSubscriberAttribute(key: "song", value: "Whole Lotta Love")
         let attributeMetallica = RCSubscriberAttribute(key: "band", value: "Metallica")
         let attributeRideTheLightning = RCSubscriberAttribute(key: "song", value: "Ride the Lightning")
-        let syncedAttribute = RCSubscriberAttribute(key: "album", value: "... And Justice for All", isSynced: true, 
+        let syncedAttribute = RCSubscriberAttribute(key: "album", value: "... And Justice for All", isSynced: true,
                                                     setTime: Date())
         mockUserDefaults.mockValues = [
             "com.revenuecat.userdefaults.subscriberAttributes": [
@@ -423,7 +502,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
         expect(receivedUnsyncedAttributes["userID2"]?.keys).notTo(contain("album"))
     }
-    
+
     func testUnsyncedAttributesByKeyForAllUsersOnlyIncludesUsersWithUnsyncedAttributes() {
         let attributeLedZeppelin = RCSubscriberAttribute(key: "band", value: "Led Zeppelin")
         let attributeWholeLottaLove = RCSubscriberAttribute(key: "song", value: "Whole Lotta Love")
