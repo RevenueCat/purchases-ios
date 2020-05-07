@@ -304,10 +304,11 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
     NSArray *appUserIDsWithLegacyAttributes = [self appUserIDsWithLegacyAttributes];
     NSMutableDictionary *attributesInNewFormat = self.storedAttributesForAllUsers.mutableCopy;
     for (NSString *appUserID in appUserIDsWithLegacyAttributes) {
-        NSDictionary *legacyAttributes = ([self valueForLegacySubscriberAttributes:appUserID] ?: @{}).mutableCopy;
-        NSMutableDictionary *currentAttributesForAppUserID = (legacyAttributes ?: @{}).mutableCopy;
+        NSDictionary *legacyAttributes = [self valueForLegacySubscriberAttributes:appUserID] ?: @{};
+        NSDictionary *existingAttributes = self.storedAttributesForAllUsers[appUserID] ?: @{};
+
         NSMutableDictionary *allAttributesForUser = legacyAttributes.mutableCopy;
-        [allAttributesForUser addEntriesFromDictionary:currentAttributesForAppUserID];
+        [allAttributesForUser addEntriesFromDictionary:existingAttributes];
 
         attributesInNewFormat[appUserID] = allAttributesForUser;
 
