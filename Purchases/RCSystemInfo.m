@@ -4,14 +4,9 @@
 //
 
 #import "RCSystemInfo.h"
+#import "RCCrossPlatformSupport.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-
-@interface RCSystemInfo ()
-
-
-@end
 
 
 @implementation RCSystemInfo
@@ -27,19 +22,17 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (NSString *)systemVersion {
-    return nil;
+    NSProcessInfo *info = [[NSProcessInfo alloc] init];
+    return info.operatingSystemVersionString;
 }
 
 + (NSString *)appVersion {
-    return nil;
+    NSString *version = NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"];
+    return version ?: @"";
 }
 
 + (NSString *)platformHeader {
-    return nil;
-}
-
-+ (NSString *)platformFlavor {
-    return nil;
+    return PLATFORM_HEADER;
 }
 
 @end

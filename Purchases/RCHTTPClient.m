@@ -8,9 +8,8 @@
 
 #import "RCHTTPClient.h"
 #import "RCUtils.h"
-#import "RCPurchases.h"
-#import "RCCrossPlatformSupport.h"
 #import "RCHTTPStatusCodes.h"
+#import "RCSystemInfo.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -43,20 +42,6 @@ void RCOverrideServerHost(NSString *hostname) {
         self.platformFlavor = platformFlavor;
     }
     return self;
-}
-
-+ (NSString *)systemVersion {
-    NSProcessInfo *info = [[NSProcessInfo alloc] init];
-    return info.operatingSystemVersionString;
-}
-
-+ (NSString *)appVersion {
-    NSString *version = NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"];
-    if (version) {
-        return version;
-    } else {
-        return @"";
-    }
 }
 
 - (void)performRequest:(NSString *)HTTPMethod
@@ -147,11 +132,11 @@ void RCOverrideServerHost(NSString *hostname) {
 - (NSDictionary *)defaultHeaders {
     return @{
         @"content-type": @"application/json",
-        @"X-Version": RCPurchases.frameworkVersion,
-        @"X-Platform": PLATFORM_HEADER,
-        @"X-Platform-Version": self.class.systemVersion,
+        @"X-Version": RCSystemInfo.frameworkVersion,
+        @"X-Platform": RCSystemInfo.platformHeader,
+        @"X-Platform-Version": RCSystemInfo.systemVersion,
         @"X-Platform-Flavor": self.platformFlavor ?: @"native",
-        @"X-Client-Version": self.class.appVersion
+        @"X-Client-Version": RCSystemInfo.appVersion
     };
 }
 
