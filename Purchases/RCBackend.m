@@ -16,6 +16,7 @@
 #import "RCPurchasesErrorUtils+Protected.h"
 #import "RCUtils.h"
 #import "RCPromotionalOffer.h"
+#import "RCSystemInfo.h"
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
 NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"successfullySynced";
@@ -309,7 +310,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         return;
     }
     if (receiptData.length == 0) {
-        if (RCIsSandbox()) {
+        if (RCSystemInfo.isSandbox) {
             RCLog(@"App running on sandbox without a receipt file. Unable to determine into eligibility unless you've purchased before and there is a receipt available.");
         }
         NSMutableDictionary *eligibilities = [NSMutableDictionary new];

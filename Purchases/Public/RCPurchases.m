@@ -29,6 +29,7 @@
 #import "RCIdentityManager.h"
 #import "NSError+RCExtensions.h"
 #import "RCSubscriberAttributesManager.h"
+#import "RCSystemInfo.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -100,7 +101,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 + (NSString *)frameworkVersion {
-    return @"3.3.0-SNAPSHOT";
+    return RCSystemInfo.frameworkVersion;
 }
 
 + (instancetype)sharedPurchases {
@@ -585,7 +586,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
     [self receiptData:^(NSData * _Nonnull data) {
         if (data.length == 0) {
-            if (RCIsSandbox()) {
+            if (RCSystemInfo.isSandbox) {
                 RCLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless you've purchased before and there is a receipt available.");
             }
             CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
