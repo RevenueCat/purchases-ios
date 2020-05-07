@@ -390,6 +390,45 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         expect(self.mockUserDefaults.mockValues[userID2AttributesKey]).to(beNil())
     }
 
+    func testCleanupSubscriberAttributesMergesAttributesInOldAndNewFormat() {
+        let userID = "userID"
+
+        let legacyAttributeBand = RCSubscriberAttribute(key: "band", value: "Led Zeppelin")
+        let legacyAttributeSong = RCSubscriberAttribute(key: "song", value: "Whole Lotta Love")
+        let legacyFormatAttributes = [
+            legacyAttributeBand.key: legacyAttributeBand.asDictionary(),
+            legacyAttributeSong.key: legacyAttributeSong.asDictionary()
+        ]
+        let newAttributeBand = RCSubscriberAttribute(key: "band", value: "Metallica")
+        let newAttributeDrummer = RCSubscriberAttribute(key: "drummer", value: "Lars Ulrich")
+        let newFormatAttributes = [
+            newAttributeBand.key: newAttributeBand.asDictionary(),
+            newAttributeDrummer.key: newAttributeDrummer.asDictionary()
+        ]
+        let legacyAttributesKey = "com.revenuecat.userdefaults.subscriberAttributes.\(userID)"
+        let newAttributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
+        let appUserIDKey = "com.revenuecat.userdefaults.appUserID.new"
+
+        mockUserDefaults.mockValues = [
+            legacyAttributesKey: legacyFormatAttributes,
+            newAttributesKey: [userID: newFormatAttributes],
+            appUserIDKey: userID
+        ]
+
+        self.deviceCache.cleanupSubscriberAttributes()
+
+        let receivedAttributes: [String: [String: NSObject]]? =
+            self.mockUserDefaults.mockValues[newAttributesKey] as? [String: [String: NSObject]]
+        expect(receivedAttributes?[userID]).toNot(beNil())
+
+        let expectedAttributes: [String: [String: NSObject]] = [
+            newAttributeBand.key: newAttributeBand.asDictionary(),
+            newAttributeDrummer.key: newAttributeDrummer.asDictionary(),
+            legacyAttributeSong.key: legacyAttributeSong.asDictionary()
+        ]
+        expect(receivedAttributes?[userID] as? [String: [String: NSObject]]) == expectedAttributes
+    }
+
     func testCleanupSubscriberAttributesDeletesSyncedAttributesForOtherUsers() {
         let userID1 = "userID1"
         let userID2 = "userID2"
