@@ -53,6 +53,7 @@
 @property (nonatomic) RCOfferingsFactory *offeringsFactory;
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCIdentityManager *identityManager;
+@property (nonatomic) RCSystemInfo *systemInfo;
 
 @end
 
@@ -102,6 +103,14 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 + (NSString *)frameworkVersion {
     return RCSystemInfo.frameworkVersion;
+}
+
+- (BOOL)finishTransactions {
+    return self.systemInfo.observerMode;
+}
+
+- (void)setFinishTransactions:(BOOL)observerMode {
+    self.systemInfo.observerMode = observerMode;
 }
 
 + (instancetype)sharedPurchases {
@@ -175,7 +184,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] init];
-    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey platformFlavor:platformFlavor];
+    RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor observerMode:observerMode];
+    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey systemInfo:systemInfo];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
     RCOfferingsFactory *offeringsFactory = [[RCOfferingsFactory alloc] init];
 

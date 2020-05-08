@@ -37,3 +37,4 @@
 #include <Purchases/RCSubscriberAttributesManager.h>
 #include <Purchases/RCPurchases+SubscriberAttributes.h>
 #include <Purchases/NSData+RCExtensions.h>
+#include <Purchases/RCSystemInfo.h>

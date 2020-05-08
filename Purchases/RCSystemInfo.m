@@ -9,7 +9,24 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
+@interface RCSystemInfo()
+
+@property(nonatomic, copy, nullable) NSString *platformFlavor;
+
+@end
+
 @implementation RCSystemInfo
+
+- (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor observerMode:(BOOL)observerMode {
+    if (self = [super init]) {
+        if (!platformFlavor) {
+            platformFlavor =  @"native";
+        }
+        self.platformFlavor = platformFlavor;
+        self.observerMode = observerMode;
+    }
+    return self;
+}
 
 + (BOOL)isSandbox {
     NSURL *url = NSBundle.mainBundle.appStoreReceiptURL;

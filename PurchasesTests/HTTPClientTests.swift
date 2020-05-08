@@ -15,7 +15,7 @@ import Purchases
 
 class HTTPClientTests: XCTestCase {
 
-    let client = RCHTTPClient(platformFlavor: nil)
+    let client = RCHTTPClient(systemInfo: RCSystemInfo(platformFlavor: nil, observerMode: false))
 
     override func tearDown() {
         HTTPStubs.removeAllStubs()
@@ -328,7 +328,8 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
-        let client = RCHTTPClient(platformFlavor: "react-native")
+        let systemInfo = RCSystemInfo(platformFlavor: "react-native", observerMode: false)
+        let client = RCHTTPClient(systemInfo: systemInfo)
 
         client.performRequest("POST", path: path, body: Dictionary.init(),
                                    headers: ["test_header": "value"], completionHandler:nil)
