@@ -77,7 +77,6 @@
 
 - (void)resetAppUserID {
     NSString *randomId = [self generateRandomID];
-    [self saveAppUserID:randomId];
     [self.deviceCache clearCachesForAppUserID:self.currentAppUserID andSaveNewUserID:randomId];
 }
 

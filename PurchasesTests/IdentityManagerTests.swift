@@ -94,7 +94,7 @@ class IdentityManagerTests: XCTestCase {
         let initialAppUserID: String = self.identityManager.currentAppUserID
         let newAppUserID = "cesar"
         self.identityManager.identifyAppUserID(newAppUserID) { (error: Error?) in  }
-        expect(self.mockDeviceCache.clearCachesCalledUserID).toEventually(equal(initialAppUserID))
+        expect(self.mockDeviceCache.clearCachesCalledOldUserID).toEventually(equal(initialAppUserID))
     }
 
     func testIdentifyingCorrectlyIdentifies() {
@@ -122,7 +122,7 @@ class IdentityManagerTests: XCTestCase {
         let initialAppUserID: String = self.identityManager.currentAppUserID
         self.identityManager.createAlias("cesar") { (error: Error?) in
         }
-        expect(self.mockDeviceCache.clearCachesCalledUserID).to(equal(initialAppUserID))
+        expect(self.mockDeviceCache.clearCachesCalledOldUserID).to(equal(initialAppUserID))
     }
 
     func testCreateAliasForwardsErrors() {
@@ -138,7 +138,7 @@ class IdentityManagerTests: XCTestCase {
         self.identityManager.configure(withAppUserID: nil)
         let initialAppUserID: String = self.identityManager.currentAppUserID
         self.identityManager.resetAppUserID()
-        expect(self.mockDeviceCache.clearCachesCalledUserID).to(equal(initialAppUserID))
+        expect(self.mockDeviceCache.clearCachesCalledOldUserID).to(equal(initialAppUserID))
     }
 
     func testResetCreatesRandomIDAndCachesIt() {
