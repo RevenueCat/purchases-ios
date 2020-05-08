@@ -72,7 +72,7 @@
         }
         
         NSMutableArray *handlers = self.productsCompletionHandlers[identifiers];
-        NSAssert(handlers != nil, @"Curropted handler storage");
+        NSAssert(handlers != nil, @"Corrupted handler storage");
         
         [handlers addObject:completion];
         

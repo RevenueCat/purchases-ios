@@ -195,8 +195,7 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
         }
 
         groupedSubscriberAttributes[appUserID] = subscriberAttributesForAppUserID;
-        [self.userDefaults setObject:groupedSubscriberAttributes
-                              forKey:RCSubscriberAttributesKey];
+        [self storeAttributesForAllUsers:groupedSubscriberAttributes];
     }
 }
 
@@ -254,6 +253,10 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
     return [self.userDefaults dictionaryForKey:RCSubscriberAttributesKey] ?: @{};
 }
 
+- (void)storeAttributesForAllUsers:(NSMutableDictionary<NSString *, NSDictionary *> *)groupedAttributes {
+    [self.userDefaults setObject:groupedAttributes forKey:RCSubscriberAttributesKey];
+}
+
 - (NSDictionary<NSString *, RCSubscriberAttributeDict> *)unsyncedAttributesForAllUsers {
     NSDictionary *attributesDict = self.storedAttributesForAllUsers;
     NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
@@ -284,35 +287,78 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
         NSMutableDictionary <NSString *, NSDictionary *>
             *groupedAttributes = self.storedAttributesForAllUsers.mutableCopy;
         [groupedAttributes removeObjectForKey:appUserID];
-        [self.userDefaults setObject:groupedAttributes forKey:RCSubscriberAttributesKey];
+        [self storeAttributesForAllUsers:groupedAttributes];
     }
 }
 
 # pragma mark - subscriber attributes migration from per-user key to grouped key
 
-- (void)migrateSubscriberAttributesIfNeededForAppUserID:(nonnull NSString *)appUserID {
+- (void)cleanupSubscriberAttributes {
     @synchronized (self) {
-        NSDictionary *legacySubscriberAttributes = [self valueForLegacySubscriberAttributes:appUserID];
-        if (legacySubscriberAttributes != nil) {
-            [self migrateSubscriberAttributes:legacySubscriberAttributes withAppUserID:appUserID];
-        }
+        [self migrateSubscriberAttributes];
+        [self deleteSyncedSubscriberAttributesForOtherUsers];
     }
 }
 
-- (void)migrateSubscriberAttributes:(nonnull NSDictionary *)legacyAttributes
-                      withAppUserID:(nonnull NSString *)appUserID {
-    NSMutableDictionary *allSubscriberAttributes = ([self.userDefaults dictionaryForKey:RCSubscriberAttributesKey]
-                                                    ?: @{}).mutableCopy;
-    NSMutableDictionary *currentAttributesForAppUserID = allSubscriberAttributes[appUserID]
-                                                         ?: @{}.mutableCopy;
-    NSMutableDictionary *mutableLegacyAttributes = legacyAttributes.mutableCopy;
-    [mutableLegacyAttributes addEntriesFromDictionary:currentAttributesForAppUserID];
+- (void)migrateSubscriberAttributes {
+    NSArray *appUserIDsWithLegacyAttributes = [self appUserIDsWithLegacyAttributes];
+    NSMutableDictionary *attributesInNewFormat = self.storedAttributesForAllUsers.mutableCopy;
+    for (NSString *appUserID in appUserIDsWithLegacyAttributes) {
+        NSDictionary *legacyAttributes = [self valueForLegacySubscriberAttributes:appUserID] ?: @{};
+        NSDictionary *existingAttributes = self.storedAttributesForAllUsers[appUserID] ?: @{};
 
-    allSubscriberAttributes[appUserID] = mutableLegacyAttributes;
-    [self.userDefaults setObject:allSubscriberAttributes forKey:RCSubscriberAttributesKey];
+        NSMutableDictionary *allAttributesForUser = legacyAttributes.mutableCopy;
+        [allAttributesForUser addEntriesFromDictionary:existingAttributes];
 
-    NSString *legacyAttributesKey = [self legacySubscriberAttributesCacheKeyForAppUserID:appUserID];
-    [self.userDefaults removeObjectForKey:legacyAttributesKey];
+        attributesInNewFormat[appUserID] = allAttributesForUser;
+
+        NSString *legacyAttributesKey = [self legacySubscriberAttributesCacheKeyForAppUserID:appUserID];
+        [self.userDefaults removeObjectForKey:legacyAttributesKey];
+    }
+    [self storeAttributesForAllUsers:attributesInNewFormat];
+}
+
+- (void)deleteSyncedSubscriberAttributesForOtherUsers {
+    NSDictionary<NSString *, NSDictionary *> *allStoredAttributes = self.storedAttributesForAllUsers;
+    NSMutableDictionary<NSString *, NSDictionary *> *filteredAttributes = [[NSMutableDictionary alloc] init];
+
+    NSString *currentAppUserID = self.cachedAppUserID;
+    NSParameterAssert(currentAppUserID);
+    filteredAttributes[currentAppUserID] = allStoredAttributes[currentAppUserID];
+
+    for (NSString *appUserID in allStoredAttributes.allKeys) {
+        if (![appUserID isEqualToString:currentAppUserID]) {
+            NSMutableDictionary *unsyncedAttributesForUser = [[NSMutableDictionary alloc] init];
+            for (NSString *attributeKey in allStoredAttributes[appUserID].allKeys) {
+                NSDictionary<NSString *, NSObject *>
+                    *storedAttributesForUser = allStoredAttributes[appUserID][attributeKey];
+
+                RCSubscriberAttribute *attribute = [[RCSubscriberAttribute alloc]
+                                                                           initWithDictionary:storedAttributesForUser];
+                if (!attribute.isSynced) {
+                    unsyncedAttributesForUser[attributeKey] = storedAttributesForUser;
+                }
+            }
+            if (unsyncedAttributesForUser.count > 0) {
+                filteredAttributes[appUserID] = unsyncedAttributesForUser;
+            }
+        }
+    }
+
+    [self storeAttributesForAllUsers:filteredAttributes];
+}
+
+- (NSArray<NSString *> *)appUserIDsWithLegacyAttributes {
+    NSMutableArray *appUserIDsWithLegacyAttributes = [[NSMutableArray alloc] init];
+    NSDictionary *userDefaultsDict = [self.userDefaults dictionaryRepresentation];
+    for (NSString *key in userDefaultsDict.allKeys) {
+        if ([key containsString:RCLegacySubscriberAttributesKeyBase]) {
+            NSString *appUserID = [key stringByReplacingOccurrencesOfString:RCLegacySubscriberAttributesKeyBase
+                                                                 withString:@""];
+            [appUserIDsWithLegacyAttributes addObject:appUserID];
+        }
+    }
+    return appUserIDsWithLegacyAttributes;
 }
 
 - (nullable NSDictionary *)valueForLegacySubscriberAttributes:(NSString *)appUserID {

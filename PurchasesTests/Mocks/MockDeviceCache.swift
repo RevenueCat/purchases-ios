@@ -151,6 +151,14 @@ class MockDeviceCache: RCDeviceCache {
         return stubbedUnsyncedAttributesByKeyResult
     }
 
+    var invokedCleanupSubscriberAttributes = false
+    var invokedCleanupSubscriberAttributesCount = 0
+
+    override func cleanupSubscriberAttributes() {
+        invokedCleanupSubscriberAttributes = true
+        invokedCleanupSubscriberAttributesCount += 1
+    }
+
     var invokedNumberOfUnsyncedAttributes = false
     var invokedNumberOfUnsyncedAttributesCount = 0
     var invokedNumberOfUnsyncedAttributesParameters: (appUserID: String, Void)?
@@ -163,18 +171,6 @@ class MockDeviceCache: RCDeviceCache {
         invokedNumberOfUnsyncedAttributesParameters = (appUserID, ())
         invokedNumberOfUnsyncedAttributesParametersList.append((appUserID, ()))
         return stubbedNumberOfUnsyncedAttributesResult
-    }
-
-    var invokedMigrateSubscriberAttributesIfNeeded = false
-    var invokedMigrateSubscriberAttributesIfNeededCount = 0
-    var invokedMigrateSubscriberAttributesIfNeededParameters: (appUserID: String?, Void)?
-    var invokedMigrateSubscriberAttributesIfNeededParametersList = [(appUserID: String?, Void)]()
-
-    override func migrateSubscriberAttributesIfNeeded(forAppUserID appUserID: String) {
-        invokedMigrateSubscriberAttributesIfNeeded = true
-        invokedMigrateSubscriberAttributesIfNeededCount += 1
-        invokedMigrateSubscriberAttributesIfNeededParameters = (appUserID, ())
-        invokedMigrateSubscriberAttributesIfNeededParametersList.append((appUserID, ()))
     }
 
     var invokedUnsyncedAttributesForAllUsers = false
