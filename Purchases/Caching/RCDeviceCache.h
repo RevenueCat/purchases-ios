@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)cacheAppUserID:(NSString *)appUserID;
 
-- (void)clearCachesForAppUserID:(NSString *)appUserID;
+- (void)clearCachesForAppUserID:(NSString *)oldAppUserID andSaveNewUserID:(NSString *)newUserID;
 
 #pragma mark - purchaserInfo
 

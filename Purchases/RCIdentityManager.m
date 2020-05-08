@@ -18,8 +18,7 @@
 
 @implementation RCIdentityManager
 
-- (instancetype)initWith:(RCDeviceCache *)deviceCache backend:(RCBackend *)backend
-{
+- (instancetype)initWith:(RCDeviceCache *)deviceCache backend:(RCBackend *)backend {
     self = [super init];
     if (self) {
         self.deviceCache = deviceCache;
@@ -29,13 +28,12 @@
     return self;
 }
 
-- (NSString *)generateRandomID
-{
-    return [NSString stringWithFormat:@"$RCAnonymousID:%@", [[NSUUID.new.UUIDString stringByReplacingOccurrencesOfString:@"-" withString:@""] lowercaseString]];
+- (NSString *)generateRandomID {
+    NSString *uuid = [NSUUID.new.UUIDString stringByReplacingOccurrencesOfString:@"-" withString:@""];
+    return [NSString stringWithFormat:@"$RCAnonymousID:%@", uuid.lowercaseString];
 }
 
-- (void)configureWithAppUserID:(nullable NSString *)appUserID
-{
+- (void)configureWithAppUserID:(nullable NSString *)appUserID {
     if (appUserID == nil) {
         appUserID = [self.deviceCache cachedAppUserID];
         if (appUserID == nil) {
@@ -51,51 +49,43 @@
     [self.deviceCache cleanupSubscriberAttributes];
 }
 
-- (void)identifyAppUserID:(NSString *)appUserID withCompletionBlock:(void (^)(NSError *_Nullable error))completion
-{
+- (void)identifyAppUserID:(NSString *)appUserID withCompletionBlock:(void (^)(NSError *_Nullable error))completion {
     if (self.currentUserIsAnonymous) {
         RCDebugLog(@"Identifying from an anonymous ID: %@. An alias will be created.", self.currentAppUserID);
         [self createAlias:appUserID withCompletionBlock:completion];
     } else {
         RCDebugLog(@"Changing App User ID: %@ -> %@", self.currentAppUserID, appUserID);
-        [self.deviceCache clearCachesForAppUserID:self.currentAppUserID];
-        [self saveAppUserID:appUserID];
+        [self.deviceCache clearCachesForAppUserID:self.currentAppUserID andSaveNewUserID:appUserID];
         completion(nil);
     }
 }
 
-- (void)saveAppUserID:(NSString *)appUserID
-{
+- (void)saveAppUserID:(NSString *)appUserID {
     [self.deviceCache cacheAppUserID:appUserID];
 }
 
-- (void)createAlias:(NSString *)alias withCompletionBlock:(void (^)(NSError *_Nullable error))completion
-{
+- (void)createAlias:(NSString *)alias withCompletionBlock:(void (^)(NSError *_Nullable error))completion {
     RCDebugLog(@"Creating an alias to %@ from %@", self.currentAppUserID, alias);
     [self.backend createAliasForAppUserID:self.currentAppUserID withNewAppUserID:alias completion:^(NSError *_Nullable error) {
         if (error == nil) {
             RCDebugLog(@"Alias created");
-            [self.deviceCache clearCachesForAppUserID:self.currentAppUserID];
-            [self saveAppUserID:alias];
+            [self.deviceCache clearCachesForAppUserID:self.currentAppUserID andSaveNewUserID:alias];
         }
         completion(error);
     }];
 }
 
-- (void)resetAppUserID
-{
-    [self.deviceCache clearCachesForAppUserID:self.currentAppUserID];
+- (void)resetAppUserID {
     NSString *randomId = [self generateRandomID];
     [self saveAppUserID:randomId];
+    [self.deviceCache clearCachesForAppUserID:self.currentAppUserID andSaveNewUserID:randomId];
 }
 
-- (NSString *)currentAppUserID
-{
+- (NSString *)currentAppUserID {
     return [self.deviceCache cachedAppUserID];
 }
 
-- (BOOL)currentUserIsAnonymous
-{
+- (BOOL)currentUserIsAnonymous {
     BOOL currentAppUserIDLooksAnonymous = [[self.deviceCache cachedAppUserID] rangeOfString:@"\\$RCAnonymousID:([a-z0-9]{32})$" options:NSRegularExpressionSearch].length > 0;
     BOOL isLegacyAnonymousAppUserID = [self.deviceCache.cachedAppUserID isEqualToString:self.deviceCache.cachedLegacyAppUserID];
     return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID;

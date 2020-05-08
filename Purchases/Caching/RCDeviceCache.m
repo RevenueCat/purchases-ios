@@ -101,15 +101,16 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
     [self.userDefaults setObject:appUserID forKey:RCAppUserDefaultsKey];
 }
 
-- (void)clearCachesForAppUserID:(NSString *)appUserID {
+- (void)clearCachesForAppUserID:(NSString *)oldAppUserID andSaveNewUserID:(NSString *)newUserID {
     @synchronized (self) {
         [self.userDefaults removeObjectForKey:RCLegacyGeneratedAppUserDefaultsKey];
-        [self.userDefaults removeObjectForKey:RCAppUserDefaultsKey];
-        [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
+        [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:oldAppUserID]];
         [self clearPurchaserInfoCacheTimestamp];
         [self clearOfferingsCache];
 
-        [self deleteAttributesIfSyncedForAppUserID:appUserID];
+        [self deleteAttributesIfSyncedForAppUserID:oldAppUserID];
+
+        [self.userDefaults setObject:newUserID forKey:RCAppUserDefaultsKey];
     }
 }
 
