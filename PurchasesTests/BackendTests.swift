@@ -54,7 +54,8 @@ class BackendTests: XCTestCase {
         }
     }
 
-    let httpClient = MockHTTPClient()
+    let systemInfo = RCSystemInfo(platformFlavor: nil, finishTransactions: true)
+    var httpClient: MockHTTPClient!
     let apiKey = "asharedsecret"
     let bundleID = "com.bundle.id"
     let userID = "user"
@@ -79,6 +80,7 @@ class BackendTests: XCTestCase {
     var backend: RCBackend?
 
     override func setUp() {
+        httpClient = MockHTTPClient(systemInfo: systemInfo)
         backend = RCBackend.init(httpClient: httpClient,
                                  apiKey: apiKey)
     }

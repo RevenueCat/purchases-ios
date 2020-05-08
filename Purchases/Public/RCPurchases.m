@@ -106,11 +106,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (BOOL)finishTransactions {
-    return self.systemInfo.observerMode;
+    return self.systemInfo.finishTransactions;
 }
 
-- (void)setFinishTransactions:(BOOL)observerMode {
-    self.systemInfo.observerMode = observerMode;
+- (void)setFinishTransactions:(BOOL)finishTransactions {
+    self.systemInfo.finishTransactions = finishTransactions;
 }
 
 + (instancetype)sharedPurchases {
@@ -184,7 +184,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] init];
-    RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor observerMode:observerMode];
+    RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
+                                                         finishTransactions:!observerMode];
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey systemInfo:systemInfo];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
     RCOfferingsFactory *offeringsFactory = [[RCOfferingsFactory alloc] init];
@@ -207,7 +208,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                    storeKitWrapper:storeKitWrapper
                 notificationCenter:[NSNotificationCenter defaultCenter]
                       userDefaults:userDefaults
-                      observerMode:observerMode
+                        systemInfo:systemInfo
                   offeringsFactory:offeringsFactory
                        deviceCache:deviceCache
                    identityManager:identityManager
@@ -222,7 +223,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                notificationCenter:(NSNotificationCenter *)notificationCenter
                      userDefaults:(NSUserDefaults *)userDefaults
-                     observerMode:(BOOL)observerMode
+                       systemInfo:systemInfo
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
                       deviceCache:(RCDeviceCache *)deviceCache
                   identityManager:(RCIdentityManager *)identityManager
@@ -249,7 +250,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.presentedOfferingsByProductIdentifier = [NSMutableDictionary new];
         self.purchaseCompleteCallbacks = [NSMutableDictionary new];
 
-        self.finishTransactions = !observerMode;
+        self.systemInfo = systemInfo;
         self.subscriberAttributesManager = subscriberAttributesManager;
 
         RCReceivePurchaserInfoBlock callDelegate = ^void(RCPurchaserInfo *info, NSError *error) {

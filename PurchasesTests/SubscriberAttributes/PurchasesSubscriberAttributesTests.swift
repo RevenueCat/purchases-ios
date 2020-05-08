@@ -4,7 +4,6 @@
 //
 
 import XCTest
-import OHHTTPStubs
 import Nimble
 
 import Purchases
@@ -25,6 +24,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var subscriberAttributeHeight: RCSubscriberAttribute!
     var subscriberAttributeWeight: RCSubscriberAttribute!
     var mockAttributes: [String: RCSubscriberAttribute]!
+    let systemInfo: RCSystemInfo = RCSystemInfo(platformFlavor: nil, finishTransactions: true)
 
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -60,7 +60,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               storeKitWrapper: mockStoreKitWrapper,
                               notificationCenter: mockNotificationCenter,
                               userDefaults: userDefaults,
-                              observerMode: false,
+                              systemInfo: systemInfo,
                               offeringsFactory: mockOfferingsFactory,
                               deviceCache: mockDeviceCache,
                               identityManager: mockIdentityManager,

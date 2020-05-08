@@ -17,13 +17,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation RCSystemInfo
 
-- (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor observerMode:(BOOL)observerMode {
+- (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
+                    finishTransactions:(BOOL)finishTransactions {
     if (self = [super init]) {
         if (!platformFlavor) {
             platformFlavor =  @"native";
         }
         self.platformFlavor = platformFlavor;
-        self.observerMode = observerMode;
+        self.finishTransactions = finishTransactions;
     }
     return self;
 }

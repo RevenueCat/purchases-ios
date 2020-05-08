@@ -11,10 +11,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCSystemInfo : NSObject
 
 - (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
-                          observerMode:(BOOL)observerMode NS_DESIGNATED_INITIALIZER;
+                    finishTransactions:(BOOL)finishTransactions NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
-@property(nonatomic, assign) BOOL observerMode;
+@property(nonatomic, assign) BOOL finishTransactions;
 @property(nonatomic, copy, readonly) NSString *platformFlavor;
 
 + (BOOL)isSandbox;

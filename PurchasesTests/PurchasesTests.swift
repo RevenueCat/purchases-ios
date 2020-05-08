@@ -188,6 +188,8 @@ class PurchasesTests: XCTestCase {
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.identityManager.mockIsAnonymous = false
+        let systemInfo: RCSystemInfo = RCSystemInfo(platformFlavor: nil, finishTransactions: true)
+
         purchases = Purchases(appUserID: identityManager.currentAppUserID,
                               requestFetcher: requestFetcher,
                               receiptFetcher: receiptFetcher,
@@ -196,7 +198,7 @@ class PurchasesTests: XCTestCase {
                               storeKitWrapper: storeKitWrapper,
                               notificationCenter: notificationCenter,
                               userDefaults: userDefaults,
-                              observerMode: false,
+                              systemInfo: systemInfo,
                               offeringsFactory: offeringsFactory,
                               deviceCache: deviceCache,
                               identityManager: identityManager,
@@ -208,6 +210,8 @@ class PurchasesTests: XCTestCase {
     func setupAnonPurchases() {
         Purchases.automaticAppleSearchAdsAttributionCollection = false
         self.identityManager.mockIsAnonymous = true
+        let systemInfo: RCSystemInfo = RCSystemInfo(platformFlavor: nil, finishTransactions: true)
+
         purchases = Purchases(appUserID: nil,
                               requestFetcher: requestFetcher,
                               receiptFetcher: receiptFetcher,
@@ -216,7 +220,7 @@ class PurchasesTests: XCTestCase {
                               storeKitWrapper: storeKitWrapper,
                               notificationCenter: notificationCenter,
                               userDefaults: userDefaults,
-                              observerMode: false,
+                              systemInfo: systemInfo,
                               offeringsFactory: offeringsFactory,
                               deviceCache: deviceCache,
                               identityManager: identityManager,
@@ -226,6 +230,8 @@ class PurchasesTests: XCTestCase {
     }
 
     func setupPurchasesObserverModeOn() {
+        let systemInfo: RCSystemInfo = RCSystemInfo(platformFlavor: nil, finishTransactions: false)
+
         purchases = Purchases(appUserID: nil,
                               requestFetcher: requestFetcher,
                               receiptFetcher: receiptFetcher,
@@ -234,7 +240,7 @@ class PurchasesTests: XCTestCase {
                               storeKitWrapper: storeKitWrapper,
                               notificationCenter: notificationCenter,
                               userDefaults: userDefaults,
-                              observerMode: true,
+                              systemInfo: systemInfo,
                               offeringsFactory: offeringsFactory,
                               deviceCache: deviceCache,
                               identityManager: identityManager,
