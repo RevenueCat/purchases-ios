@@ -110,7 +110,7 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
 
         [self deleteAttributesIfSyncedForAppUserID:oldAppUserID];
 
-        [self.userDefaults setObject:newUserID forKey:RCAppUserDefaultsKey];
+        [self cacheAppUserID:newUserID];
     }
 }
 
