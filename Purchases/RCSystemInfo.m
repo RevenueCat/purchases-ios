@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
                     finishTransactions:(BOOL)finishTransactions {
     if (self = [super init]) {
         if (!platformFlavor) {
-            platformFlavor =  @"native";
+            platformFlavor = @"native";
         }
         self.platformFlavor = platformFlavor;
         self.finishTransactions = finishTransactions;
