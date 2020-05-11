@@ -15,7 +15,13 @@ import Purchases
 
 class HTTPClientTests: XCTestCase {
 
-    let client = RCHTTPClient(platformFlavor: nil)
+    let systemInfo = RCSystemInfo(platformFlavor: nil, finishTransactions: true)
+    var client: RCHTTPClient!
+
+    override func setUp() {
+        super.setUp()
+        client = RCHTTPClient(systemInfo: systemInfo)
+    }
 
     override func tearDown() {
         HTTPStubs.removeAllStubs()
@@ -328,7 +334,42 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
-        let client = RCHTTPClient(platformFlavor: "react-native")
+        let systemInfo = RCSystemInfo(platformFlavor: "react-native", finishTransactions: true)
+        let client = RCHTTPClient(systemInfo: systemInfo)
+
+        client.performRequest("POST", path: path, body: Dictionary.init(),
+                                   headers: ["test_header": "value"], completionHandler:nil)
+
+        expect(headerPresent).toEventually(equal(true))
+    }
+
+    func testPassesObserverModeHeaderCorrectlyWhenEnabled() {
+        let path = "/a_random_path"
+        var headerPresent = false
+
+        stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "false")) { request in
+            headerPresent = true
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+        }
+        let systemInfo = RCSystemInfo(platformFlavor: nil, finishTransactions: true)
+        let client = RCHTTPClient(systemInfo: systemInfo)
+
+        client.performRequest("POST", path: path, body: Dictionary.init(),
+                                   headers: ["test_header": "value"], completionHandler:nil)
+
+        expect(headerPresent).toEventually(equal(true))
+    }
+
+    func testPassesObserverModeHeaderCorrectlyWhenDisabled() {
+        let path = "/a_random_path"
+        var headerPresent = false
+
+        stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "true")) { request in
+            headerPresent = true
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+        }
+        let systemInfo = RCSystemInfo(platformFlavor: nil, finishTransactions: false)
+        let client = RCHTTPClient(systemInfo: systemInfo)
 
         client.performRequest("POST", path: path, body: Dictionary.init(),
                                    headers: ["test_header": "value"], completionHandler:nil)

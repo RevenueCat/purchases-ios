@@ -29,6 +29,7 @@
 #import "RCIdentityManager.h"
 #import "NSError+RCExtensions.h"
 #import "RCSubscriberAttributesManager.h"
+#import "RCSystemInfo.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -52,6 +53,7 @@
 @property (nonatomic) RCOfferingsFactory *offeringsFactory;
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCIdentityManager *identityManager;
+@property (nonatomic) RCSystemInfo *systemInfo;
 
 @end
 
@@ -100,7 +102,15 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 + (NSString *)frameworkVersion {
-    return @"3.3.0-SNAPSHOT";
+    return RCSystemInfo.frameworkVersion;
+}
+
+- (BOOL)finishTransactions {
+    return self.systemInfo.finishTransactions;
+}
+
+- (void)setFinishTransactions:(BOOL)finishTransactions {
+    self.systemInfo.finishTransactions = finishTransactions;
 }
 
 + (instancetype)sharedPurchases {
@@ -174,7 +184,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] init];
-    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey platformFlavor:platformFlavor];
+    RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
+                                                         finishTransactions:!observerMode];
+    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey systemInfo:systemInfo];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
     RCOfferingsFactory *offeringsFactory = [[RCOfferingsFactory alloc] init];
 
@@ -196,7 +208,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                    storeKitWrapper:storeKitWrapper
                 notificationCenter:[NSNotificationCenter defaultCenter]
                       userDefaults:userDefaults
-                      observerMode:observerMode
+                        systemInfo:systemInfo
                   offeringsFactory:offeringsFactory
                        deviceCache:deviceCache
                    identityManager:identityManager
@@ -211,7 +223,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                notificationCenter:(NSNotificationCenter *)notificationCenter
                      userDefaults:(NSUserDefaults *)userDefaults
-                     observerMode:(BOOL)observerMode
+                       systemInfo:systemInfo
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
                       deviceCache:(RCDeviceCache *)deviceCache
                   identityManager:(RCIdentityManager *)identityManager
@@ -238,7 +250,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.presentedOfferingsByProductIdentifier = [NSMutableDictionary new];
         self.purchaseCompleteCallbacks = [NSMutableDictionary new];
 
-        self.finishTransactions = !observerMode;
+        self.systemInfo = systemInfo;
         self.subscriberAttributesManager = subscriberAttributesManager;
 
         RCReceivePurchaserInfoBlock callDelegate = ^void(RCPurchaserInfo *info, NSError *error) {
@@ -585,7 +597,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
     [self receiptData:^(NSData * _Nonnull data) {
         if (data.length == 0) {
-            if (RCIsSandbox()) {
+            if (RCSystemInfo.isSandbox) {
                 RCLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless you've purchased before and there is a receipt available.");
             }
             CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);

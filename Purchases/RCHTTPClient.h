@@ -10,13 +10,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class RCSystemInfo;
+
 typedef void(^RCHTTPClientResponseHandler)(NSInteger statusCode,
                                            NSDictionary * _Nullable response,
                                            NSError * _Nullable error);
 
 @interface RCHTTPClient : NSObject
 
-- (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor;
+- (instancetype)initWithSystemInfo:(RCSystemInfo *)systemInfo NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 
 + (NSString *)serverHostName;
 

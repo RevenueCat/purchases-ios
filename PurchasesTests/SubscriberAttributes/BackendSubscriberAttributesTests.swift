@@ -30,8 +30,10 @@ class BackendSubscriberAttributesTests: XCTestCase {
         ]
     ]
 
+    let systemInfo = RCSystemInfo(platformFlavor: "iPhone", finishTransactions: true)
+
     override func setUp() {
-        mockHTTPClient = MockHTTPClient(platformFlavor: "iPhone")
+        mockHTTPClient = MockHTTPClient(systemInfo: systemInfo)
         guard let backend = RCBackend(httpClient: mockHTTPClient, apiKey: "key") else { fatalError() }
         self.backend = backend
         dateProvider = MockDateProvider(stubbedNow: now)

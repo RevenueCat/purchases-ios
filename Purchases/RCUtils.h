@@ -15,6 +15,5 @@ BOOL RCShowDebugLogs(void);
 void RCDebugLog(NSString *format, ...);
 void RCErrorLog(NSString *format, ...);
 void RCLog(NSString *format, ...);
-BOOL RCIsSandbox(void);
 
 NS_ASSUME_NONNULL_END
