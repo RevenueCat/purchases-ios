@@ -60,6 +60,7 @@ class DeviceCacheTests: XCTestCase {
     func testClearCachesForAppUserIDAndSaveNewUserIDUpdatesCachedAppUserID() {
         self.deviceCache.clearCaches(forAppUserID: "cesar", andSaveNewUserID: "newUser")
         expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] as? String) == "newUser"
+        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"]).to(beNil())
     }
 
     func testClearCachesForAppUserIDAndSaveNewUserIDDoesntRemoveCachedSubscriberAttributesIfUnsynced() {
