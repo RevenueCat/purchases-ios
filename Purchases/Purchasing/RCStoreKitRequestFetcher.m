@@ -6,6 +6,7 @@
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
+#import <StoreKit/StoreKit.h>
 #import "RCStoreKitRequestFetcher.h"
 #import "RCLogUtils.h"
 
