@@ -28,8 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
         if (!platformFlavor) {
             platformFlavor = @"native";
         }
-        self.platformFlavor = platformFlavor;
 
+        self.platformFlavor = platformFlavor;
         self.platformFlavorVersion = platformFlavorVersion;
         self.finishTransactions = finishTransactions;
     }
