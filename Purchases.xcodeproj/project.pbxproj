@@ -386,15 +386,15 @@
 		35262A001F7C4B9100C04F2C /* Purchases */ = {
 			isa = PBXGroup;
 			children = (
-				350FBDE61F7EEEDF0065833D /* Public */,
-				2D5033202406E4C7009CAE61 /* SubscriberAttributes */,
 				35262A021F7C4B9100C04F2C /* Info.plist */,
 				37E359927177DF24576FF361 /* Caching */,
 				37E35EF24BD787B115DEAB51 /* FoundationExtensions */,
-				37E351964CD7F8A14A2E6391 /* Networking */,
 				37E35F096CF853E5C61F978A /* Misc */,
+				37E351964CD7F8A14A2E6391 /* Networking */,
 				37E3529AD4F30D0B6D56853B /* ProtectedExtensions */,
+				350FBDE61F7EEEDF0065833D /* Public */,
 				37E35B15D9082D6838722719 /* Purchasing */,
+				2D5033202406E4C7009CAE61 /* SubscriberAttributes */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
