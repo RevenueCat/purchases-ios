@@ -156,7 +156,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                        observerMode:(BOOL)observerMode
                        userDefaults:(nullable NSUserDefaults *)userDefaults
 {
-    return [self configureWithAPIKey:APIKey appUserID:appUserID observerMode:observerMode userDefaults:userDefaults platformFlavor:nil];
+    return [self configureWithAPIKey:APIKey
+                           appUserID:appUserID
+                        observerMode:observerMode
+                        userDefaults:userDefaults
+                      platformFlavor:nil
+               platformFlavorVersion:nil];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
@@ -164,15 +169,26 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                        observerMode:(BOOL)observerMode
                        userDefaults:(nullable NSUserDefaults *)userDefaults
                      platformFlavor:(NSString *)platformFlavor
+              platformFlavorVersion:(NSString *)platformFlavorVersion
 {
-    RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey appUserID:appUserID userDefaults:userDefaults observerMode:observerMode platformFlavor:platformFlavor];
+    RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey
+                                                appUserID:appUserID
+                                             userDefaults:userDefaults
+                                             observerMode:observerMode
+                                           platformFlavor:platformFlavor
+                                    platformFlavorVersion:platformFlavorVersion];
     [self setDefaultInstance:purchases];
     return purchases;
 }
 
 - (instancetype)initWithAPIKey:(NSString *)APIKey appUserID:(nullable NSString *)appUserID
 {
-    return [self initWithAPIKey:APIKey appUserID:appUserID userDefaults:nil observerMode:false platformFlavor:nil];
+    return [self initWithAPIKey:APIKey
+                      appUserID:appUserID
+                   userDefaults:nil
+                   observerMode:false
+                 platformFlavor:nil
+          platformFlavorVersion:nil];
 }
 
 - (instancetype)initWithAPIKey:(NSString *)APIKey
@@ -180,11 +196,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   userDefaults:(nullable NSUserDefaults *)userDefaults
                   observerMode:(BOOL)observerMode
                 platformFlavor:(nullable NSString *)platformFlavor
+         platformFlavorVersion:(nullable NSString *)platformFlavorVersion
 {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] init];
     RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
+                                                      platformFlavorVersion:platformFlavorVersion
                                                          finishTransactions:!observerMode];
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey systemInfo:systemInfo];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
