@@ -23,17 +23,20 @@ func resolveTargets() -> [Target] {
                 dependencies: [],
                 path: ".",
                 exclude: ["Purchases/Info.plist"],
-                sources: ["Purchases", "Purchases/Public"],
+                sources: [
+                    "Purchases",
+                ],
                 publicHeadersPath: "Purchases/Public",
                 cSettings: [
-                    .headerSearchPath("Caching"),
-                    .headerSearchPath("FoundationExtensions"),
-                    .headerSearchPath("Misc"),
-                    .headerSearchPath("Networking"),
-                    .headerSearchPath("Public"),
-                    .headerSearchPath("Purchasing"),
-                    .headerSearchPath("ProtectedExtensions"),
-                    .headerSearchPath("SubscriberAttributes"),
+                    .headerSearchPath("Purchases"),
+                    .headerSearchPath("Purchases/Caching"),
+                    .headerSearchPath("Purchases/FoundationExtensions"),
+                    .headerSearchPath("Purchases/Misc"),
+                    .headerSearchPath("Purchases/Networking"),
+                    .headerSearchPath("Purchases/Public"),
+                    .headerSearchPath("Purchases/Purchasing"),
+                    .headerSearchPath("Purchases/ProtectedExtensions"),
+                    .headerSearchPath("Purchases/SubscriberAttributes"),
     ])]
 
     if shouldTest {
