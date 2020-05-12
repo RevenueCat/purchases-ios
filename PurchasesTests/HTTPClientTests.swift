@@ -345,6 +345,25 @@ class HTTPClientTests: XCTestCase {
         expect(headerPresent).toEventually(equal(true))
     }
 
+    func testPassesPlatformFlavorVersionHeader() {
+        let path = "/a_random_path"
+        var headerPresent = false
+
+        stub(condition: hasHeaderNamed("X-Platform-Flavor-Version", value: "1.2.3")) { request in
+            headerPresent = true
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+        }
+        let systemInfo = RCSystemInfo(platformFlavor: "react-native",
+                                      platformFlavorVersion: "1.2.3",
+                                      finishTransactions: true)
+        let client = RCHTTPClient(systemInfo: systemInfo)
+
+        client.performRequest("POST", path: path, body: Dictionary.init(),
+                                   headers: ["test_header": "value"], completionHandler:nil)
+
+        expect(headerPresent).toEventually(equal(true))
+    }
+
     func testPassesObserverModeHeaderCorrectlyWhenEnabled() {
         let path = "/a_random_path"
         var headerPresent = false

@@ -144,7 +144,7 @@ void RCOverrideServerHost(NSString *hostname) {
 
     NSString * _Nullable platformFlavorVersion = self.systemInfo.platformFlavorVersion;
     if (platformFlavorVersion) {
-        headers[@"X-Platform-Version-Flavor"] = platformFlavorVersion;
+        headers[@"X-Platform-Flavor-Version"] = platformFlavorVersion;
     }
 
     return headers;
