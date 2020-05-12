@@ -24,8 +24,6 @@ Pod::Spec.new do |s|
 
   s.source_files = [
     'Purchases/Public/Purchases.h',
-    'Purchases/SubscriberAttributes/*.h',
-    'Purchases/SubscriberAttributes/*.m',
     'Purchases/Caching/*.h',
     'Purchases/Caching/*.m',
     'Purchases/FoundationExtensions/*.h',
