@@ -131,7 +131,8 @@ void RCOverrideServerHost(NSString *hostname) {
 
 - (NSDictionary *)defaultHeaders {
     NSString *observerMode = [NSString stringWithFormat:@"%@", self.systemInfo.finishTransactions ? @"false" : @"true"];
-    return @{
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    [headers addEntriesFromDictionary: @{
         @"content-type": @"application/json",
         @"X-Version": RCSystemInfo.frameworkVersion,
         @"X-Platform": RCSystemInfo.platformHeader,
@@ -139,7 +140,14 @@ void RCOverrideServerHost(NSString *hostname) {
         @"X-Platform-Flavor": self.systemInfo.platformFlavor,
         @"X-Client-Version": RCSystemInfo.appVersion,
         @"X-Observer-Mode-Enabled": observerMode
-    };
+    }];
+
+    NSString * _Nullable platformFlavorVersion = self.systemInfo.platformFlavorVersion;
+    if (platformFlavorVersion) {
+        headers[@"X-Platform-Version-Flavor"] = platformFlavorVersion;
+    }
+
+    return headers;
 }
 
 

@@ -24,7 +24,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var subscriberAttributeHeight: RCSubscriberAttribute!
     var subscriberAttributeWeight: RCSubscriberAttribute!
     var mockAttributes: [String: RCSubscriberAttribute]!
-    let systemInfo: RCSystemInfo = RCSystemInfo(platformFlavor: nil, finishTransactions: true)
+    let systemInfo: RCSystemInfo = RCSystemInfo(platformFlavor: nil,
+                                                platformFlavorVersion: nil,
+                                                finishTransactions: true)
 
     let purchasesDelegate = MockPurchasesDelegate()
 

@@ -11,11 +11,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCSystemInfo : NSObject
 
 - (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
+                 platformFlavorVersion:(nullable NSString *)platformFlavorVersion
                     finishTransactions:(BOOL)finishTransactions NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 @property(nonatomic, assign) BOOL finishTransactions;
 @property(nonatomic, copy, readonly) NSString *platformFlavor;
+@property(nonatomic, copy, readonly) NSString *platformFlavorVersion;
 
 + (BOOL)isSandbox;
 + (NSString *)frameworkVersion;

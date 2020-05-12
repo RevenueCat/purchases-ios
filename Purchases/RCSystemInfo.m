@@ -12,18 +12,25 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCSystemInfo()
 
 @property(nonatomic, copy, nullable) NSString *platformFlavor;
+@property(nonatomic, copy, nullable) NSString *platformFlavorVersion;
 
 @end
 
 @implementation RCSystemInfo
 
 - (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
+                 platformFlavorVersion:(nullable NSString *)platformFlavorVersion
                     finishTransactions:(BOOL)finishTransactions {
     if (self = [super init]) {
+        NSAssert((platformFlavor && platformFlavorVersion) || (!platformFlavor && !platformFlavorVersion),
+            @"RCSystemInfo initialized with non-matching platform flavor and platform flavor versions!");
+
         if (!platformFlavor) {
             platformFlavor = @"native";
         }
         self.platformFlavor = platformFlavor;
+
+        self.platformFlavorVersion = platformFlavorVersion;
         self.finishTransactions = finishTransactions;
     }
     return self;

@@ -54,7 +54,7 @@ class BackendTests: XCTestCase {
         }
     }
 
-    let systemInfo = RCSystemInfo(platformFlavor: nil, finishTransactions: true)
+    let systemInfo = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
     var httpClient: MockHTTPClient!
     let apiKey = "asharedsecret"
     let bundleID = "com.bundle.id"
