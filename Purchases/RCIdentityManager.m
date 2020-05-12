@@ -4,9 +4,8 @@
 //
 
 #import "RCIdentityManager.h"
-#import "RCUtils.h"
+#import "RCLogUtils.h"
 #import "RCBackend.h"
-#import "RCPurchasesErrorUtils.h"
 
 @interface RCIdentityManager ()
 

@@ -7,10 +7,7 @@
 //
 
 #import "RCStoreKitRequestFetcher.h"
-
-#import <StoreKit/StoreKit.h>
-
-#import "RCUtils.h"
+#import "RCLogUtils.h"
 
 @implementation RCProductsRequestFactory : NSObject
 - (SKProductsRequest *)requestForProductIdentifiers:(NSSet<NSString *> *)identifiers

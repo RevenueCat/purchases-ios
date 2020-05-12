@@ -14,7 +14,7 @@
 #import "RCIntroEligibility+Protected.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCPurchasesErrorUtils+Protected.h"
-#import "RCUtils.h"
+#import "RCLogUtils.h"
 #import "RCPromotionalOffer.h"
 #import "RCSystemInfo.h"
 #import "RCHTTPStatusCodes.h"

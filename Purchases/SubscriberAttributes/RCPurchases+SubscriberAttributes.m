@@ -7,7 +7,7 @@
 #import "RCPurchases+SubscriberAttributes.h"
 #import "RCSubscriberAttributesManager.h"
 #import "RCCrossPlatformSupport.h"
-#import "RCUtils.h"
+#import "RCLogUtils.h"
 #import "NSError+RCExtensions.h"
 
 NS_ASSUME_NONNULL_BEGIN

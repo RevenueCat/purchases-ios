@@ -9,7 +9,7 @@
 #import "RCStoreKitWrapper.h"
 #import "RCCrossPlatformSupport.h"
 
-#import "RCUtils.h"
+#import "RCLogUtils.h"
 
 @interface RCStoreKitWrapper ()
 @property (nonatomic) SKPaymentQueue *paymentQueue;

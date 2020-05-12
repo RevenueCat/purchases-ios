@@ -14,7 +14,7 @@
 #import "RCBackend.h"
 #import "RCStoreKitWrapper.h"
 #import "RCPurchaserInfo+Protected.h"
-#import "RCUtils.h"
+#import "RCLogUtils.h"
 #import "NSLocale+RCExtensions.h"
 #import "RCCrossPlatformSupport.h"
 #import "RCPurchasesErrors.h"
@@ -27,7 +27,6 @@
 #import "RCPackage+Protected.h"
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
-#import "NSError+RCExtensions.h"
 #import "RCSubscriberAttributesManager.h"
 #import "RCSystemInfo.h"
 

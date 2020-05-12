@@ -8,7 +8,7 @@
 
 #import "RCAttributionFetcher.h"
 #import "RCCrossPlatformSupport.h"
-#import "RCUtils.h"
+#import "RCLogUtils.h"
 
 @protocol FakeAdClient <NSObject>
 
