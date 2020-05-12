@@ -26,11 +26,14 @@ func resolveTargets() -> [Target] {
                 sources: ["Purchases", "Purchases/Public"],
                 publicHeadersPath: "Purchases/Public",
                 cSettings: [
-                    .headerSearchPath("Purchases"),
-                    .headerSearchPath("Purchases/Public"),
-                    .headerSearchPath("Purchases/Caching"),
-                    .headerSearchPath("Purchases/SubscriberAttributes")
-                ])]
+                    .headerSearchPath("Caching"),
+                    .headerSearchPath("FoundationExtensions"),
+                    .headerSearchPath("Misc"),
+                    .headerSearchPath("Networking"),
+                    .headerSearchPath("Public"),
+                    .headerSearchPath("Purchasing"),
+                    .headerSearchPath("SubscriberAttributes"),
+    ])]
 
     if shouldTest {
         let testTargets: [Target] = [
