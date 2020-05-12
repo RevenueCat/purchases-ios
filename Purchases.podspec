@@ -36,6 +36,8 @@ Pod::Spec.new do |s|
     'Purchases/Public/*.m',
     'Purchases/Purchasing/*.h',
     'Purchases/Purchasing/*.m',
+    'Purchases/ProtectedExtensions/*.h',
+    'Purchases/ProtectedExtensions/*.m',
     'Purchases/SubscriberAttributes/*.h',
     'Purchases/SubscriberAttributes/*.m',
   ]

@@ -32,6 +32,7 @@ func resolveTargets() -> [Target] {
                     .headerSearchPath("Networking"),
                     .headerSearchPath("Public"),
                     .headerSearchPath("Purchasing"),
+                    .headerSearchPath("ProtectedExtensions"),
                     .headerSearchPath("SubscriberAttributes"),
     ])]
 
