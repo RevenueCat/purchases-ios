@@ -37,63 +37,64 @@ class DeviceCacheTests: XCTestCase {
             .to(equal(userID))
     }
 
-    func testClearCachesRemovesCachedPurchaserInfo() {
-        self.deviceCache.clearCaches(forAppUserID: "cesar")
+    func testClearCachesForAppUserIDAndSaveNewUserIDRemovesCachedPurchaserInfo() {
+        self.deviceCache.clearCaches(forAppUserID: "cesar", andSaveNewUserID: "newUser")
         expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.purchaserInfo.cesar"))
             .to(beTrue())
     }
 
-    func testClearCachesRemovesCachedOfferings() {
+    func testClearCachesForAppUserIDAndSaveNewUserIDRemovesCachedOfferings() {
         let offerings = Purchases.Offerings()
         self.deviceCache.cacheOfferings(offerings)
         expect(self.deviceCache.cachedOfferings).to(equal(offerings))
-        self.deviceCache.clearCaches(forAppUserID: "cesar")
+        self.deviceCache.clearCaches(forAppUserID: "cesar", andSaveNewUserID: "newUser")
         expect(self.deviceCache.cachedOfferings).to(beNil())
     }
 
-    func testClearCachesClearsCachesTimestamp() {
+    func testClearCachesForAppUserIDAndSaveNewUserIDClearsCachesTimestamp() {
         self.deviceCache.setPurchaserInfoCacheTimestampToNow()
-        self.deviceCache.clearCaches(forAppUserID: "cesar")
+        self.deviceCache.clearCaches(forAppUserID: "cesar", andSaveNewUserID: "newUser")
         expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
     }
 
-    func testClearCachesRemovesCachedAppUserIDs() {
-        self.deviceCache.clearCaches(forAppUserID: "cesar")
-        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.appUserID.new"))
-            .to(beTrue())
-        expect(self.mockUserDefaults.removeObjectForKeyCalledValues.contains("com.revenuecat.userdefaults.appUserID"))
-            .to(beTrue())
+    func testClearCachesForAppUserIDAndSaveNewUserIDUpdatesCachedAppUserID() {
+        self.deviceCache.clearCaches(forAppUserID: "cesar", andSaveNewUserID: "newUser")
+        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] as? String) == "newUser"
+        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID"]).to(beNil())
     }
 
-    func testClearCachesDoesntRemoveCachedSubscriberAttributesIfUnsynced() {
+    func testClearCachesForAppUserIDAndSaveNewUserIDDoesntRemoveCachedSubscriberAttributesIfUnsynced() {
         let userID = "andy"
         let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let key = "band"
         let unsyncedSubscriberAttribute = RCSubscriberAttribute(key: key, value: "La Renga",
                                                                 isSynced: false, setTime: Date()).asDictionary()
-        mockUserDefaults.mockValues[attributesKey] = [
+        let mockAttributes: [String: [String: [String: NSObject]]] = [
             userID: [key: unsyncedSubscriberAttribute]
         ]
+        mockUserDefaults.mockValues[attributesKey] = mockAttributes
 
-        self.deviceCache.clearCaches(forAppUserID: userID)
-
-        expect(self.mockUserDefaults.setObjectForKeyCallCount) == 0
+        self.deviceCache.clearCaches(forAppUserID: userID, andSaveNewUserID: "newUser")
+        expect(self.mockUserDefaults.mockValues[attributesKey] as? [String: [String: [String: NSObject]]])
+            == mockAttributes
     }
 
-    func testClearCachesRemovesCachedSubscriberAttributesIfSynced() {
+    func testClearCachesForAppUserIDAndSaveNewUserIDRemovesCachedSubscriberAttributesIfSynced() {
         let userID = "andy"
         let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let key = "band"
         let unsyncedSubscriberAttribute = RCSubscriberAttribute(key: key, value: "La Renga",
                                                                 isSynced: true, setTime: Date()).asDictionary()
+
         mockUserDefaults.mockValues[attributesKey] = [
             userID: [key: unsyncedSubscriberAttribute]
         ]
 
-        self.deviceCache.clearCaches(forAppUserID: userID)
+        expect(self.mockUserDefaults.mockValues[attributesKey] as? [String: NSObject]).notTo(beEmpty())
 
-        expect(self.mockUserDefaults.setObjectForKeyCallCount) == 1
-        expect(self.mockUserDefaults.setObjectForKeyCalledValue?.contains(attributesKey)) == true
+        self.deviceCache.clearCaches(forAppUserID: userID, andSaveNewUserID: "newUser")
+
+        expect(self.mockUserDefaults.mockValues[attributesKey] as? [String: NSObject]).to(beEmpty())
 
     }
 
