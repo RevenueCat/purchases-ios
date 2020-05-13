@@ -1,3 +1,6 @@
+## 3.3.1
+- Fixed version numbers that accidentally included the `-SNAPSHOT` suffix
+
 ## 3.3.0
 - Reorganized file system structure for the project
 	https://github.com/RevenueCat/purchases-ios/pull/242
