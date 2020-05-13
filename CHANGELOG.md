@@ -1,3 +1,28 @@
+## 3.3.0
+- Reorganized file system structure for the project
+	https://github.com/RevenueCat/purchases-ios/pull/242
+- New headers for observer mode and platform version
+    https://github.com/RevenueCat/purchases-ios/pull/237
+    https://github.com/RevenueCat/purchases-ios/pull/240
+    https://github.com/RevenueCat/purchases-ios/pull/241
+- Fixes subscriber attributes migration edge cases
+	https://github.com/RevenueCat/purchases-ios/pull/233
+- Autodetect appUserID deletion
+    https://github.com/RevenueCat/purchases-ios/pull/232
+    https://github.com/RevenueCat/purchases-ios/pull/236
+- Removes old trello link
+    https://github.com/RevenueCat/purchases-ios/pull/231
+- Removes unused functions
+    https://github.com/RevenueCat/purchases-ios/pull/228
+- Removes unnecessary no-op call to RCBackend's postSubscriberAttributes
+	https://github.com/RevenueCat/purchases-ios/pull/227
+- Fixes a bug where subscriber attributes are deleted when an alias is created.
+    https://github.com/RevenueCat/purchases-ios/pull/222
+- Fixes crash when payment.productIdentifier is nil
+    https://github.com/RevenueCat/purchases-ios/pull/226
+- Updates invalidatePurchaserInfoCache docs 
+    https://github.com/RevenueCat/purchases-ios/pull/223
+
 ## 3.2.2
 - Fixed build warnings about nil being passed to callees that require non-null parameters
     https://github.com/RevenueCat/purchases-ios/pull/216
