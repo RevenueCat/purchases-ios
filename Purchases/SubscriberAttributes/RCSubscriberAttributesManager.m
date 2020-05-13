@@ -9,7 +9,7 @@
 #import "RCDeviceCache.h"
 #import "NSError+RCExtensions.h"
 #import "NSData+RCExtensions.h"
-#import "RCUtils.h"
+#import "RCLogUtils.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -8,7 +8,7 @@
 
 #import "RCDeviceCache.h"
 #import "RCDeviceCache+Protected.h"
-#import "RCUtils.h"
+#import "RCLogUtils.h"
 
 
 @interface RCDeviceCache ()

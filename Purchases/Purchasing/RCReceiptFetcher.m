@@ -7,7 +7,7 @@
 //
 
 #import "RCReceiptFetcher.h"
-#import "RCUtils.h"
+#import "RCLogUtils.h"
 
 @implementation RCReceiptFetcher : NSObject
 

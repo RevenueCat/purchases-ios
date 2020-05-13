@@ -1,5 +1,5 @@
 //
-//  RCUtils.h
+//  RCLogUtils.h
 //  Purchases
 //
 //  Created by RevenueCat.

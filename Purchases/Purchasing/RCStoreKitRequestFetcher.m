@@ -6,11 +6,9 @@
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
-#import "RCStoreKitRequestFetcher.h"
-
 #import <StoreKit/StoreKit.h>
-
-#import "RCUtils.h"
+#import "RCStoreKitRequestFetcher.h"
+#import "RCLogUtils.h"
 
 @implementation RCProductsRequestFactory : NSObject
 - (SKProductsRequest *)requestForProductIdentifiers:(NSSet<NSString *> *)identifiers
