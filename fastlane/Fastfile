@@ -33,7 +33,7 @@ platform :ios do
     previous_version_number = get_version_number
     increment_version_number(version_number: new_version_number)
     version_bump_podspec(version_number: new_version_number)
-    increment_build_number(previous_version_number, new_version_number, '../Purchases/RCSystemInfo.m')
+    increment_build_number(previous_version_number, new_version_number, '../Purchases/Misc/RCSystemInfo.m')
     increment_build_number(previous_version_number, new_version_number, '../.jazzy.yaml')
   end
 
