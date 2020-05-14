@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (NSString *)frameworkVersion {
-    return @"3.3.0-SNAPSHOT";
+    return @"3.3.1";
 }
 
 + (NSString *)systemVersion {
