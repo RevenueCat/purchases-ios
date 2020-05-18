@@ -6,7 +6,7 @@
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
-#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_TV
 #define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME UIApplicationDidBecomeActiveNotification
 #define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME UIApplicationWillResignActiveNotification
 #elif TARGET_OS_OSX
@@ -37,7 +37,7 @@
 
 // Should match available platforms in
 // https://developer.apple.com/documentation/uikit/uidevice?language=objc
-#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS || TARGET_OS_TV
 #define UI_DEVICE_AVAILABLE 1
 #else
 #define UI_DEVICE_AVAILABLE 0
@@ -45,7 +45,7 @@
 
 // Should match available platforms in
 // https://developer.apple.com/documentation/iad/adclient?language=objc
-#if TARGET_OS_IOS || TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
 #define AD_CLIENT_AVAILABLE 1
 #else
 #define AD_CLIENT_AVAILABLE 0
@@ -53,9 +53,7 @@
 
 // Should match available platforms in
 // https://developer.apple.com/documentation/storekit/skpaymenttransactionobserver/2877502-paymentqueue?language=objc
-#if TARGET_OS_MACCATALYST
-#define PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE 0
-#elif TARGET_OS_IOS || TARGET_OS_TV
+#if TARGET_OS_TV || (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
 #define PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE 1
 #else
 #define PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE 0
