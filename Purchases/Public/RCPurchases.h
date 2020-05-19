@@ -79,7 +79,11 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
     /**
      Facebook https://developers.facebook.com/
      */
-    RCAttributionNetworkFacebook
+    RCAttributionNetworkFacebook,
+    /**
+    mParticle https://www.mparticle.com/
+    */
+    RCAttributionNetworkMParticle
 };
 
 /**
