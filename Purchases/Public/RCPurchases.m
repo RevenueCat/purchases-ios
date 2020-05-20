@@ -623,7 +623,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
-                            isRestore:YES
+                            isRestore:self.allowSharingAppStoreAccount
                     productIdentifier:nil
                                 price:nil
                           paymentMode:RCPaymentModeNone
