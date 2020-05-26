@@ -14,8 +14,12 @@
 		2D50332B2406EA61009CAE61 /* RCSubscriberAttributesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D5033282406EA61009CAE61 /* RCSubscriberAttributesManager.m */; };
 		2D8DB34B24072AAE00BE3D31 /* SubscriberAttributeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */; };
 		2D8DB3502407333100BE3D31 /* NSError+RCExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3550459807FF5636B2667 /* NSError+RCExtensionsTests.swift */; };
+		2DCC04C324781F4200B55BCF /* ISOPeriodFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCC04C224781F4200B55BCF /* ISOPeriodFormatter.swift */; };
 		2DD448FF24088473002F5694 /* RCPurchases+SubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DD448FD24088473002F5694 /* RCPurchases+SubscriberAttributes.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2DD4490024088473002F5694 /* RCPurchases+SubscriberAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DD448FE24088473002F5694 /* RCPurchases+SubscriberAttributes.m */; };
+		2DEB9767247DB46900A92099 /* RCISOPeriodFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DEB9766247DB46900A92099 /* RCISOPeriodFormatter.h */; };
+		2DEB9769247DB70D00A92099 /* ISOPeriodFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DEB9768247DB70D00A92099 /* ISOPeriodFormatterTests.swift */; };
+		2DEB976B247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DEB976A247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift */; };
 		350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDE71F7EEF070065833D /* RCPurchases.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		350FBDEA1F7EEF070065833D /* RCPurchases.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDE81F7EEF070065833D /* RCPurchases.m */; };
 		350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDEF1F7EFC410065833D /* StoreKitRequestFetcherTests.swift */; };
@@ -161,8 +165,12 @@
 		2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCSubscriberAttributesManager.h; path = Purchases/SubscriberAttributes/RCSubscriberAttributesManager.h; sourceTree = SOURCE_ROOT; };
 		2D5033282406EA61009CAE61 /* RCSubscriberAttributesManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RCSubscriberAttributesManager.m; path = Purchases/SubscriberAttributes/RCSubscriberAttributesManager.m; sourceTree = SOURCE_ROOT; };
 		2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscriberAttributeTests.swift; sourceTree = "<group>"; };
+		2DCC04C224781F4200B55BCF /* ISOPeriodFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISOPeriodFormatter.swift; sourceTree = "<group>"; };
 		2DD448FD24088473002F5694 /* RCPurchases+SubscriberAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "RCPurchases+SubscriberAttributes.h"; path = "Purchases/SubscriberAttributes/RCPurchases+SubscriberAttributes.h"; sourceTree = SOURCE_ROOT; };
 		2DD448FE24088473002F5694 /* RCPurchases+SubscriberAttributes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "RCPurchases+SubscriberAttributes.m"; path = "Purchases/SubscriberAttributes/RCPurchases+SubscriberAttributes.m"; sourceTree = SOURCE_ROOT; };
+		2DEB9766247DB46900A92099 /* RCISOPeriodFormatter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCISOPeriodFormatter.h; sourceTree = "<group>"; };
+		2DEB9768247DB70D00A92099 /* ISOPeriodFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISOPeriodFormatterTests.swift; sourceTree = "<group>"; };
+		2DEB976A247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKProductSubscriptionDurationExtensions.swift; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		350FBDD71F7DF17F0065833D /* OHHTTPStubs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OHHTTPStubs.framework; path = Carthage/Build/iOS/OHHTTPStubs.framework; sourceTree = SOURCE_ROOT; };
 		350FBDDC1F7EA3570065833D /* Nimble.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Nimble.framework; path = Carthage/Build/iOS/Nimble.framework; sourceTree = SOURCE_ROOT; };
@@ -420,6 +428,7 @@
 				37E3550459807FF5636B2667 /* NSError+RCExtensionsTests.swift */,
 				37E3544C8038CB83310C3598 /* NSDate+RCExtensionsTests.swift */,
 				37E35326207CA74A0D5B00B8 /* NSData+RCExtensionsTests.swift */,
+				2DEB9768247DB70D00A92099 /* ISOPeriodFormatterTests.swift */,
 			);
 			path = PurchasesTests;
 			sourceTree = "<group>";
@@ -455,6 +464,7 @@
 				37E357FBA3184BDE6E95DED4 /* MockSKProduct.swift */,
 				37E35838A7FD36982EE14100 /* MockPurchasesDelegate.swift */,
 				37E351D48260D9DC8B1EE360 /* MockSubscriberAttributesManager.swift */,
+				2DEB976A247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -571,6 +581,8 @@
 				37E35A7A70B77C0526EA3A28 /* RCSystemInfo.m */,
 				37E352229DFDDA008BB029C2 /* RCLogUtils.m */,
 				37E35DE721FC2A73255D505E /* RCCrossPlatformSupport.h */,
+				2DCC04C224781F4200B55BCF /* ISOPeriodFormatter.swift */,
+				2DEB9766247DB46900A92099 /* RCISOPeriodFormatter.h */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -589,6 +601,7 @@
 				353AB5E4222F624E003754E6 /* RCPurchasesErrors.h in Headers */,
 				3585D6A322E680E30079E2C5 /* RCPackage.h in Headers */,
 				353AB5E6222F633D003754E6 /* RCPurchasesErrorUtils.h in Headers */,
+				2DEB9767247DB46900A92099 /* RCISOPeriodFormatter.h in Headers */,
 				350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */,
 				354D50DF22E7D014009B870C /* RCOfferings.h in Headers */,
 				351F4FAF1F803D0700F245F4 /* RCPurchaserInfo.h in Headers */,
@@ -687,7 +700,7 @@
 				TargetAttributes = {
 					352629FD1F7C4B9100C04F2C = {
 						CreatedOnToolsVersion = 9.0;
-						LastSwiftMigration = 1140;
+						LastSwiftMigration = 1150;
 						ProvisioningStyle = Automatic;
 					};
 					35262A1D1F7D77E600C04F2C = {
@@ -778,6 +791,7 @@
 				37E35EB1B9FE3F739B8C0D71 /* RCDateProvider.m in Sources */,
 				37E35DC1B42094073EB105AC /* RCSystemInfo.m in Sources */,
 				37E352BAA55C31B1E278CA8A /* RCLogUtils.m in Sources */,
+				2DCC04C324781F4200B55BCF /* ISOPeriodFormatter.swift in Sources */,
 				37E35EACCCC014F719E63D5F /* RCAttributionData.m in Sources */,
 				37E350AAD0BAE521A7F94846 /* RCAttributionFetcher.m in Sources */,
 				37E35889F275514EE3125439 /* RCIdentityManager.m in Sources */,
@@ -803,6 +817,7 @@
 				35E5B1DC1F80026C00B2537C /* StoreKitWrapperTests.swift in Sources */,
 				35B54E4E22ED1FA9005918B1 /* EntitlementInfosTests.swift in Sources */,
 				2D8DB3502407333100BE3D31 /* NSError+RCExtensionsTests.swift in Sources */,
+				2DEB976B247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift in Sources */,
 				350FBDF01F7EFC410065833D /* StoreKitRequestFetcherTests.swift in Sources */,
 				351703CD1F805E5D00EEE27A /* PurchaserInfoTests.swift in Sources */,
 				35B1635223467C10003371A3 /* IdentityManagerTests.swift in Sources */,
@@ -832,6 +847,7 @@
 				37E35B1F34D1624509012749 /* MockSubscriberAttributesManager.swift in Sources */,
 				37E35623114E9172D57D7534 /* NSData+RCExtensionsTests.swift in Sources */,
 				37E35AD3BB8E99D2AA325825 /* DeviceCacheSubscriberAttributesTests.swift in Sources */,
+				2DEB9769247DB70D00A92099 /* ISOPeriodFormatterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1017,6 +1033,7 @@
 		35262A271F7D77E600C04F2C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
@@ -1043,6 +1060,7 @@
 		35262A281F7D77E600C04F2C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;

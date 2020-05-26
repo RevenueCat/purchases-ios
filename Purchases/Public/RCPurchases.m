@@ -29,6 +29,7 @@
 #import "RCIdentityManager.h"
 #import "RCSubscriberAttributesManager.h"
 #import "RCSystemInfo.h"
+#import "RCISOPeriodFormatter.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -1057,11 +1058,17 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
                                   RCPaymentMode paymentMode = RCPaymentModeNone;
                                   NSDecimalNumber *introPrice = nil;
+                                  
+                                  NSString *duration = nil;
 
                                   if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
                                       if (product.introductoryPrice) {
                                           paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
                                           introPrice = product.introductoryPrice.price;
+                                      }
+                                      if (product.subscriptionPeriod) {
+                                          RCISOPeriodFormatter *formatter = [[RCISOPeriodFormatter alloc] init];
+                                          duration = [formatter stringFromProductSubscriptionPeriod:product.subscriptionPeriod];
                                       }
                                   }
 
