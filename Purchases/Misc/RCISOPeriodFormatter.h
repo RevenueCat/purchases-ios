@@ -10,7 +10,9 @@
 #import <StoreKit/StoreKit.h>
 
 
+
 API_AVAILABLE(ios(11.2), macos(10.13.2), tvos(11.2))
+NS_SWIFT_NAME(Purchases.ISOPeriodFormatter)
 @interface RCISOPeriodFormatter: NSObject
 
 - (NSString *)stringFromProductSubscriptionPeriod:(SKProductSubscriptionPeriod *)period;

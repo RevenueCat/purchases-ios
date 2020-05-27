@@ -38,3 +38,4 @@
 #include <Purchases/RCPurchases+SubscriberAttributes.h>
 #include <Purchases/NSData+RCExtensions.h>
 #include <Purchases/RCSystemInfo.h>
+#include <Purchases/RCISOPeriodFormatter.h>
