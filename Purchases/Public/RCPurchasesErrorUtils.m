@@ -72,6 +72,8 @@ static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
             return @"The payment is pending.";
         case RCInvalidSubscriberAttributesError:
             return @"One or more of the attributes sent could not be saved.";
+        case RCMissingAppUserIDError:
+            return @"The appUserID is missing.";
     }
     return @"Something went wrong.";
 }
@@ -127,6 +129,8 @@ static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
             return @"PAYMENT_PENDING_ERROR";
         case RCInvalidSubscriberAttributesError:
             return @"INVALID_SUBSCRIBER_ATTRIBUTES";
+        case RCMissingAppUserIDError:
+            return @"MISSING_APP_USER_ID";
     }
     return @"UNRECOGNIZED_ERROR";
 }
@@ -201,36 +205,31 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
 
 @implementation RCPurchasesErrorUtils
 
-+ (NSError *)errorWithCode:(RCPurchasesErrorCode)code
-{
++ (NSError *)errorWithCode:(RCPurchasesErrorCode)code {
     return [self errorWithCode:code message:nil];
 }
 
 + (NSError *)errorWithCode:(RCPurchasesErrorCode)code
-                   message:(nullable NSString *)message
-{
+                   message:(nullable NSString *)message {
     return [self errorWithCode:code message:message underlyingError:nil];
 }
 
 
 + (NSError *)errorWithCode:(RCPurchasesErrorCode)code
-           underlyingError:(nullable NSError *)underlyingError
-{
+           underlyingError:(nullable NSError *)underlyingError {
     return [self errorWithCode:code message:nil underlyingError:underlyingError extraUserInfo:nil];
 }
 
 + (NSError *)errorWithCode:(RCPurchasesErrorCode)code
                    message:(nullable NSString *)message
-           underlyingError:(nullable NSError *)underlyingError
-{
+           underlyingError:(nullable NSError *)underlyingError {
     return [self errorWithCode:code message:message underlyingError:underlyingError extraUserInfo:nil];
 }
 
 + (NSError *)errorWithCode:(RCPurchasesErrorCode)code
                    message:(nullable NSString *)message
            underlyingError:(nullable NSError *)underlyingError
-             extraUserInfo:(nullable NSDictionary *)extraUserInfo
-{
+             extraUserInfo:(nullable NSDictionary *)extraUserInfo {
 
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:extraUserInfo];
     userInfo[NSLocalizedDescriptionKey] = message ?: RCPurchasesErrorDescription(code);
@@ -242,21 +241,18 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
 }
 
 + (NSError *)errorWithCode:(RCPurchasesErrorCode)code
-                  userInfo:(NSDictionary *)userInfo
-{
+                  userInfo:(NSDictionary *)userInfo {
     RCErrorLog(@"%@", RCPurchasesErrorDescription(code));
     return [NSError errorWithDomain:RCPurchasesErrorDomain code:code userInfo:userInfo];
 }
 
-+ (NSError *)networkErrorWithUnderlyingError:(NSError *)underlyingError
-{
++ (NSError *)networkErrorWithUnderlyingError:(NSError *)underlyingError {
     return [self errorWithCode:RCNetworkError
                underlyingError:underlyingError];
 }
 
 + (NSError *)backendUnderlyingError:(nullable NSNumber *)backendCode
-                     backendMessage:(nullable NSString *)backendMessage
-{
+                     backendMessage:(nullable NSString *)backendMessage {
 
     return [NSError errorWithDomain:RCBackendErrorDomain
                                code:[backendCode integerValue] ?: RCUnknownError
@@ -266,15 +262,13 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
 }
 
 + (NSError *)backendErrorWithBackendCode:(nullable NSNumber *)backendCode
-                          backendMessage:(nullable NSString *)backendMessage
-{
+                          backendMessage:(nullable NSString *)backendMessage {
     return [self backendErrorWithBackendCode:backendCode backendMessage:backendMessage extraUserInfo:nil];
 }
 
 + (NSError *)backendErrorWithBackendCode:(nullable NSNumber *)backendCode
                           backendMessage:(nullable NSString *)backendMessage
-                              finishable:(BOOL)finishable
-{
+                              finishable:(BOOL)finishable {
     return [self backendErrorWithBackendCode:backendCode
                               backendMessage:backendMessage
                                extraUserInfo:@{
@@ -284,8 +278,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
 
 + (NSError *)backendErrorWithBackendCode:(nullable NSNumber *)backendCode
                           backendMessage:(nullable NSString *)backendMessage
-                           extraUserInfo:(nullable NSDictionary *)extraUserInfo
-{
+                           extraUserInfo:(nullable NSDictionary *)extraUserInfo {
     RCPurchasesErrorCode errorCode;
     if (backendCode != nil) {
         errorCode = RCPurchasesErrorCodeFromRCBackendErrorCode((RCBackendErrorCode) [backendCode integerValue]);
@@ -299,18 +292,19 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
                  extraUserInfo:extraUserInfo];
 }
 
-+ (NSError *)unexpectedBackendResponseError
-{
++ (NSError *)unexpectedBackendResponseError {
     return [self errorWithCode:RCUnexpectedBackendResponseError];
 }
 
-+ (NSError *)missingReceiptFileError
-{
++ (NSError *)missingReceiptFileError {
     return [self errorWithCode:RCMissingReceiptFileError];
 }
 
-+ (NSError *)purchasesErrorWithSKError:(NSError *)skError
-{
++ (NSError *)missingAppUserIDError {
+    return [self errorWithCode:RCMissingAppUserIDError];
+}
+
++ (NSError *)purchasesErrorWithSKError:(NSError *)skError {
 
     RCPurchasesErrorCode errorCode = RCPurchasesErrorCodeFromSKError(skError);
     return [self errorWithCode:errorCode

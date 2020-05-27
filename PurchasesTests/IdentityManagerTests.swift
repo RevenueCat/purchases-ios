@@ -61,7 +61,6 @@ class IdentityManagerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        
         self.identityManager = RCIdentityManager(mockDeviceCache, backend: mockBackend)
     }
 
@@ -121,6 +120,23 @@ class IdentityManagerTests: XCTestCase {
         }
 
         expect(self.mockBackend.aliasCalled).toEventually(beFalse())
+    }
+
+    func testCreateAliasCallsCompletionWithErrorIfNilAppUserID() {
+        self.mockBackend.aliasCalled = false
+        self.mockDeviceCache.stubbedAppUserID = nil
+        var completionCalled = false
+        var receivedNSError: NSError?
+        self.identityManager.createAlias("cesar") { (error: Error?) in
+            completionCalled = true
+
+            guard let receivedError = error else { fatalError() }
+            receivedNSError = receivedError as NSError
+            expect(receivedNSError!.code) == Purchases.ErrorCode.missingAppUserIDError.rawValue
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedNSError).toNotEventually(beNil())
     }
 
     func testCreateAliasIdentifiesWhenSuccessful() {
