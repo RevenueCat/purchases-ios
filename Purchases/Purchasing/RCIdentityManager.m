@@ -64,6 +64,10 @@
 }
 
 - (void)createAlias:(NSString *)alias withCompletionBlock:(void (^)(NSError *_Nullable error))completion {
+    if (!self.currentAppUserID) {
+        RCDebugLog(@"Couldn't create an alias because the currentAppUserID is null. This might happen if the entry in UserDefaults is missing.");
+        return;
+    }
     RCDebugLog(@"Creating an alias to %@ from %@", self.currentAppUserID, alias);
     [self.backend createAliasForAppUserID:self.currentAppUserID withNewAppUserID:alias completion:^(NSError *_Nullable error) {
         if (error == nil) {
