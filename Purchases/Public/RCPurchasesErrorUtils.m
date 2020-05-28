@@ -72,8 +72,6 @@ static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
             return @"The payment is pending.";
         case RCInvalidSubscriberAttributesError:
             return @"One or more of the attributes sent could not be saved.";
-        case RCMissingAppUserIDError:
-            return @"The appUserID is missing.";
     }
     return @"Something went wrong.";
 }
@@ -129,8 +127,6 @@ static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
             return @"PAYMENT_PENDING_ERROR";
         case RCInvalidSubscriberAttributesError:
             return @"INVALID_SUBSCRIBER_ATTRIBUTES";
-        case RCMissingAppUserIDError:
-            return @"MISSING_APP_USER_ID";
     }
     return @"UNRECOGNIZED_ERROR";
 }
@@ -301,7 +297,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
 }
 
 + (NSError *)missingAppUserIDError {
-    return [self errorWithCode:RCMissingAppUserIDError];
+    return [self errorWithCode:RCInvalidAppUserIdError];
 }
 
 + (NSError *)purchasesErrorWithSKError:(NSError *)skError {

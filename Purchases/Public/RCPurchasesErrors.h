@@ -53,7 +53,6 @@ typedef NS_ERROR_ENUM(RCPurchasesErrorDomain, RCPurchasesErrorCode) {
     RCInsufficientPermissionsError,
     RCPaymentPendingError,
     RCInvalidSubscriberAttributesError,
-    RCMissingAppUserIDError
 } NS_SWIFT_NAME(Purchases.ErrorCode);
 
 /**

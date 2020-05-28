@@ -72,7 +72,7 @@ NS_SWIFT_NAME(Purchases.ErrorUtils)
 + (NSError *)missingReceiptFileError;
 
 /**
- * Constructs an NSError with the [RCMissingReceiptFileError] code.
+ * Constructs an NSError with the [RCInvalidAppUserIdError] code.
  *
  * @note This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
  * are removed manually or if the OS deletes entries when running out of space.
