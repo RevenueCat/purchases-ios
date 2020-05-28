@@ -105,13 +105,43 @@ class IdentityManagerTests: XCTestCase {
 
     func testCreateAliasCallsBackend() {
         self.mockBackend.aliasCalled = false
+        self.mockDeviceCache.stubbedAppUserID = "appUserID"
+
         self.identityManager.createAlias("cesar") { (error: Error?) in
         }
 
         expect(self.mockBackend.aliasCalled).toEventually(beTrue())
     }
 
+    func testCreateAliasNoOpsIfNilAppUserID() {
+        self.mockBackend.aliasCalled = false
+        self.mockDeviceCache.stubbedAppUserID = nil
+        self.identityManager.createAlias("cesar") { (error: Error?) in
+        }
+
+        expect(self.mockBackend.aliasCalled).toEventually(beFalse())
+    }
+
+    func testCreateAliasCallsCompletionWithErrorIfNilAppUserID() {
+        self.mockBackend.aliasCalled = false
+        self.mockDeviceCache.stubbedAppUserID = nil
+        var completionCalled = false
+        var receivedNSError: NSError?
+        self.identityManager.createAlias("cesar") { (error: Error?) in
+            completionCalled = true
+
+            guard let receivedError = error else { fatalError() }
+            receivedNSError = receivedError as NSError
+            expect(receivedNSError!.code) == Purchases.ErrorCode.invalidAppUserIdError.rawValue
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedNSError).toNotEventually(beNil())
+    }
+
     func testCreateAliasIdentifiesWhenSuccessful() {
+        self.mockDeviceCache.cacheAppUserID("appUserID")
+
         self.identityManager.createAlias("cesar") { (error: Error?) in
         }
         assertCorrectlyIdentified(expectedAppUserID: "cesar")
@@ -128,6 +158,8 @@ class IdentityManagerTests: XCTestCase {
     func testCreateAliasForwardsErrors() {
         self.mockBackend.aliasError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
         var error: Error? = nil
+        self.mockDeviceCache.stubbedAppUserID = "appUserID"
+
         self.identityManager.createAlias("cesar") { (newError: Error?) in
             error = newError
         }
@@ -150,12 +182,15 @@ class IdentityManagerTests: XCTestCase {
     func testIdentifyingWhenUserIsAnonymousCreatesAlias() {
         self.identityManager.configure(withAppUserID: nil)
         self.mockBackend.aliasError = nil
+        self.mockDeviceCache.cacheAppUserID("$RCAnonymousID:5d73fc46744f4e0b99e524c6763dd7fc")
+
         self.identityManager.identifyAppUserID("cesar") { (error: Error?) in  }
         expect(self.mockBackend.aliasCalled).toEventually(beTrue())
     }
 
     func testMigrationFromRandomIDConfiguringAnonymously() {
         self.mockDeviceCache.stubbedLegacyAppUserID = "an_old_random"
+
         self.identityManager.configure(withAppUserID: nil)
         assertCorrectlyIdentifiedWithAnonymous(usingOldID: true)
         expect(self.identityManager.currentAppUserID).to(equal("an_old_random"))
