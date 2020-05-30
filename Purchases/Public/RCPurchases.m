@@ -1059,16 +1059,26 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                   RCPaymentMode paymentMode = RCPaymentModeNone;
                                   NSDecimalNumber *introPrice = nil;
                                   
-                                  NSString *duration = nil;
+                                  NSString *normalDuration = nil;
+                                  NSString *introDuration = nil;
+                                  NSString *trialDuration = nil;
 
                                   if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
+                                      RCISOPeriodFormatter *formatter = [[RCISOPeriodFormatter alloc] init];
+
                                       if (product.introductoryPrice) {
                                           paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
                                           introPrice = product.introductoryPrice.price;
+                                          BOOL isFreeTrial = product.introductoryPrice.paymentMode == SKProductDiscountPaymentModeFreeTrial;
+                                          NSString *introPriceDuration = [formatter stringFromProductSubscriptionPeriod:product.introductoryPrice.subscriptionPeriod];
+                                          if (isFreeTrial) {
+                                              trialDuration = introPriceDuration;
+                                          } else {
+                                              introDuration = introPriceDuration;
+                                          }
                                       }
                                       if (product.subscriptionPeriod) {
-                                          RCISOPeriodFormatter *formatter = [[RCISOPeriodFormatter alloc] init];
-                                          duration = [formatter stringFromProductSubscriptionPeriod:product.subscriptionPeriod];
+                                          normalDuration = [formatter stringFromProductSubscriptionPeriod:product.subscriptionPeriod];
                                       }
                                   }
 
