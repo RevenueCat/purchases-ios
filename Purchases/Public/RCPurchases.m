@@ -30,6 +30,7 @@
 #import "RCSubscriberAttributesManager.h"
 #import "RCSystemInfo.h"
 #import "RCISOPeriodFormatter.h"
+#import "RCProductDuration.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);

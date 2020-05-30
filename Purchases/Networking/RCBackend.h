@@ -11,17 +11,11 @@
 
 #import "RCPurchases.h"
 #import "RCSubscriberAttribute.h"
+#import "RCProductDuration.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCPromotionalOffer, RCSubscriberAttribute, RCSystemInfo;
-
-typedef NS_ENUM(NSInteger, RCPaymentMode) {
-    RCPaymentModeNone = -1,
-    RCPaymentModePayAsYouGo = 0,
-    RCPaymentModePayUpFront = 1,
-    RCPaymentModeFreeTrial = 2
-};
 
 extern NSErrorUserInfoKey const RCSuccessfullySyncedKey;
 extern NSString * const RCAttributeErrorsKey;
