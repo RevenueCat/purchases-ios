@@ -1048,58 +1048,37 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             [self handleReceiptPostWithTransaction:transaction
                                      purchaserInfo:nil
                               subscriberAttributes:nil
-                                             error:[RCPurchasesErrorUtils missingReceiptFileError]];
+                                             error:RCPurchasesErrorUtils.missingReceiptFileError];
         } else {
             [self productsWithIdentifiers:@[transaction.payment.productIdentifier]
                           completionBlock:^(NSArray<SKProduct *> *products) {
                               SKProduct *product = products.lastObject;
                               RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
+                              RCProductInfo *productInfo = nil;
+                              NSString *presentedOffering = nil;
                               if (product) {
                                   RCProductInfoExtractor *productInfoExtractor = [[RCProductInfoExtractor alloc] init];
-                                  RCProductInfo *productInfo = [productInfoExtractor extractInfoFromProduct:product];
+                                  productInfo = [productInfoExtractor extractInfoFromProduct:product];
 
-                                  NSString *presentedOffering = nil;
                                   @synchronized (self) {
                                       presentedOffering = self.presentedOfferingsByProductIdentifier[productInfo.productIdentifier];
                                       [self.presentedOfferingsByProductIdentifier removeObjectForKey:productInfo.productIdentifier];
                                   }
-
-                                  [self.backend postReceiptData:data
-                                                      appUserID:self.appUserID
-                                                      isRestore:self.allowSharingAppStoreAccount
-                                                    productInfo:productInfo
-                                    presentedOfferingIdentifier:presentedOffering
-                                                   observerMode:!self.finishTransactions
-                                           subscriberAttributes:subscriberAttributes
-                                                     completion:^(RCPurchaserInfo *_Nullable info,
-                                                                  NSError *_Nullable error) {
-                                                         [self handleReceiptPostWithTransaction:transaction
-                                                                                  purchaserInfo:info
-                                                                           subscriberAttributes:subscriberAttributes
-                                                                                          error:error];
-                                                     }];
-                              } else {
-                                  [self.backend postReceiptData:data
-                                                      appUserID:self.appUserID
-                                                      isRestore:self.allowSharingAppStoreAccount
-                                              productIdentifier:nil
-                                                          price:nil
-                                                    paymentMode:RCPaymentModeNone
-                                              introductoryPrice:nil
-                                                   currencyCode:nil
-                                              subscriptionGroup:nil
-                                                      discounts:nil
-                                    presentedOfferingIdentifier:nil
-                                                   observerMode:!self.finishTransactions
-                                           subscriberAttributes:subscriberAttributes
-                                                     completion:^(RCPurchaserInfo *_Nullable info,
-                                                                  NSError *_Nullable error) {
-                                                         [self handleReceiptPostWithTransaction:transaction
-                                                                                  purchaserInfo:info
-                                                                           subscriberAttributes:subscriberAttributes
-                                                                                          error:error];
-                                  }];
                               }
+                              [self.backend postReceiptData:data
+                                                  appUserID:self.appUserID
+                                                  isRestore:self.allowSharingAppStoreAccount
+                                                productInfo:productInfo
+                                presentedOfferingIdentifier:presentedOffering
+                                               observerMode:!self.finishTransactions
+                                       subscriberAttributes:subscriberAttributes
+                                                 completion:^(RCPurchaserInfo *_Nullable info,
+                                                              NSError *_Nullable error) {
+                                                     [self handleReceiptPostWithTransaction:transaction
+                                                                              purchaserInfo:info
+                                                                       subscriberAttributes:subscriberAttributes
+                                                                                      error:error];
+                                                 }];
                           }];
         }
     }];
