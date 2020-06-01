@@ -60,7 +60,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 - (void)    postReceiptData:(NSData *)data
                   appUserID:(NSString *)appUserID
                   isRestore:(BOOL)isRestore
-                productInfo:(RCProductInfo *)productInfo
+                productInfo:(nullable RCProductInfo *)productInfo
 presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                observerMode:(BOOL)observerMode
        subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey

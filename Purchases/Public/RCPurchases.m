@@ -339,8 +339,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 #pragma mark Attribution
 
 - (void)postAttributionData:(NSDictionary *)data
-               fromNetwork:(RCAttributionNetwork)network
-          forNetworkUserId:(nullable NSString *)networkUserId
+                fromNetwork:(RCAttributionNetwork)network
+           forNetworkUserId:(nullable NSString *)networkUserId
 {
     if (data[@"rc_appsflyer_id"]) {
         RCErrorLog(@"⚠️ The parameter key rc_appsflyer_id is deprecated. Pass networkUserId to addAttribution instead. ⚠️");
@@ -627,33 +627,37 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
                             isRestore:YES
-                    productIdentifier:nil
-                                price:nil
-                          paymentMode:RCPaymentModeNone
-                    introductoryPrice:nil
-                         currencyCode:nil
-                    subscriptionGroup:nil
-                            discounts:nil
+                          productInfo:nil
           presentedOfferingIdentifier:nil
                          observerMode:!self.finishTransactions
                  subscriberAttributes:subscriberAttributes
                            completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
-                               [self dispatch:^{
-                                   if (error) {
-                                       [self markAttributesAsSyncedIfNeeded:subscriberAttributes
-                                                                  appUserID:self.appUserID
-                                                                      error:error];
-                                       CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
-                                   } else if (info) {
-                                       [self cachePurchaserInfo:info forAppUserID:self.appUserID];
-                                       [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-                                       [self markAttributesAsSyncedIfNeeded:subscriberAttributes
-                                                                  appUserID:self.appUserID
-                                                                      error:nil];
-                                       CALL_IF_SET_ON_MAIN_THREAD(completion, info, nil);
-                                   }
-                               }];
+                               [self handleRestoreReceiptPostWithInfo:info
+                                                                error:error
+                                                 subscriberAttributes:subscriberAttributes
+                                                           completion:completion];
                            }];
+    }];
+}
+
+- (void)handleRestoreReceiptPostWithInfo:(RCPurchaserInfo *)info
+                                   error:(NSError *)error
+                    subscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
+                              completion:(RCReceivePurchaserInfoBlock)completion {
+    [self dispatch:^{
+        if (error) {
+            [self markAttributesAsSyncedIfNeeded:subscriberAttributes
+                                       appUserID:self.appUserID
+                                           error:error];
+            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
+        } else if (info) {
+            [self cachePurchaserInfo:info forAppUserID:self.appUserID];
+            [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
+            [self markAttributesAsSyncedIfNeeded:subscriberAttributes
+                                       appUserID:self.appUserID
+                                           error:nil];
+            CALL_IF_SET_ON_MAIN_THREAD(completion, info, nil);
+        }
     }];
 }
 
