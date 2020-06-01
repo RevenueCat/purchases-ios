@@ -3,12 +3,12 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-#import "RCProductDuration.h"
+#import "RCProductInfo.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 
-@interface RCProductDuration ()
+@interface RCProductInfo ()
 
 @property (nonatomic, nullable, copy) NSString *normalDuration;
 @property (nonatomic, nullable, copy) NSString *introDuration;
@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 
-@implementation RCProductDuration
+@implementation RCProductInfo
 
 - (instancetype)initWithProductIdentifier:(NSString *)productIdentifier
                               paymentMode:(RCPaymentMode)paymentMode

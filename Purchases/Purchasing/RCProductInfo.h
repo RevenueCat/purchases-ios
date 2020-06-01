@@ -21,7 +21,7 @@ typedef NS_ENUM(NSInteger, RCPaymentMode) {
 };
 
 
-@interface RCProductDuration : NSObject
+@interface RCProductInfo : NSObject
 
 @property (nonatomic, nullable, readonly, copy) NSString *normalDuration;
 @property (nonatomic, nullable, readonly, copy) NSString *introDuration;

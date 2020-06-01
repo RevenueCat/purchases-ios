@@ -11,7 +11,7 @@
 
 #import "RCPurchases.h"
 #import "RCSubscriberAttribute.h"
-#import "RCProductDuration.h"
+#import "RCProductInfo.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
