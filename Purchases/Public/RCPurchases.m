@@ -31,6 +31,7 @@
 #import "RCSystemInfo.h"
 #import "RCISOPeriodFormatter.h"
 #import "RCProductInfo.h"
+#import "RCProductInfoExtractor.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -1054,66 +1055,19 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                               SKProduct *product = products.lastObject;
                               RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
                               if (product) {
-                                  NSString *productIdentifier = product.productIdentifier;
-                                  NSDecimalNumber *price = product.price;
-
-                                  RCPaymentMode paymentMode = RCPaymentModeNone;
-                                  NSDecimalNumber *introPrice = nil;
-                                  
-                                  NSString *normalDuration = nil;
-                                  NSString *introDuration = nil;
-                                  NSString *trialDuration = nil;
-
-                                  if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
-                                      RCISOPeriodFormatter *formatter = [[RCISOPeriodFormatter alloc] init];
-
-                                      if (product.introductoryPrice) {
-                                          paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
-                                          introPrice = product.introductoryPrice.price;
-                                          BOOL isFreeTrial = product.introductoryPrice.paymentMode == SKProductDiscountPaymentModeFreeTrial;
-                                          NSString *introPriceDuration = [formatter stringFromProductSubscriptionPeriod:product.introductoryPrice.subscriptionPeriod];
-                                          if (isFreeTrial) {
-                                              trialDuration = introPriceDuration;
-                                          } else {
-                                              introDuration = introPriceDuration;
-                                          }
-                                      }
-                                      if (product.subscriptionPeriod) {
-                                          normalDuration = [formatter stringFromProductSubscriptionPeriod:product.subscriptionPeriod];
-                                      }
-                                  }
-
-                                  NSString *subscriptionGroup = nil;
-                                  if (@available(iOS 12.0, macOS 10.14.0, tvOS 12.0, *)) {
-                                      subscriptionGroup = product.subscriptionGroupIdentifier;
-                                  }
-
-                                  NSMutableArray *discounts = nil;
-                                  if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
-                                      discounts = [NSMutableArray new];
-                                      for (SKProductDiscount *discount in product.discounts) {
-                                          [discounts addObject:[[RCPromotionalOffer alloc] initWithProductDiscount:discount]];
-                                      }
-                                  }
-
-                                  NSString *currencyCode = product.priceLocale.rc_currencyCode;
+                                  RCProductInfoExtractor *productInfoExtractor = [[RCProductInfoExtractor alloc] init];
+                                  RCProductInfo *productInfo = [productInfoExtractor extractInfoFromProduct:product];
 
                                   NSString *presentedOffering = nil;
                                   @synchronized (self) {
-                                      presentedOffering = self.presentedOfferingsByProductIdentifier[productIdentifier];
-                                      [self.presentedOfferingsByProductIdentifier removeObjectForKey:productIdentifier];
+                                      presentedOffering = self.presentedOfferingsByProductIdentifier[productInfo.productIdentifier];
+                                      [self.presentedOfferingsByProductIdentifier removeObjectForKey:productInfo.productIdentifier];
                                   }
 
                                   [self.backend postReceiptData:data
                                                       appUserID:self.appUserID
                                                       isRestore:self.allowSharingAppStoreAccount
-                                              productIdentifier:productIdentifier
-                                                          price:price
-                                                    paymentMode:paymentMode
-                                              introductoryPrice:introPrice
-                                                   currencyCode:currencyCode
-                                              subscriptionGroup:subscriptionGroup
-                                                      discounts:discounts
+                                                    productInfo:productInfo
                                     presentedOfferingIdentifier:presentedOffering
                                                    observerMode:!self.finishTransactions
                                            subscriberAttributes:subscriberAttributes
