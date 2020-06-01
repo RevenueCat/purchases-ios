@@ -39,3 +39,5 @@
 #include <Purchases/NSData+RCExtensions.h>
 #include <Purchases/RCSystemInfo.h>
 #include <Purchases/RCISOPeriodFormatter.h>
+#include <Purchases/RCProductInfo.h>
+#include <Purchases/RCProductInfoExtractor.h>

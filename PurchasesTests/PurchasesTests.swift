@@ -66,13 +66,7 @@ class PurchasesTests: XCTestCase {
         override func postReceiptData(_ data: Data,
                                       appUserID: String,
                                       isRestore: Bool,
-                                      productIdentifier: String?,
-                                      price: NSDecimalNumber?,
-                                      paymentMode: RCPaymentMode,
-                                      introductoryPrice: NSDecimalNumber?,
-                                      currencyCode: String?,
-                                      subscriptionGroup: String?,
-                                      discounts: Array<RCPromotionalOffer>?,
+                                      productInfo: RCProductInfo?,
                                       presentedOfferingIdentifier: String?,
                                       observerMode: Bool,
                                       subscriberAttributes: [String: RCSubscriberAttribute]?,
@@ -81,15 +75,18 @@ class PurchasesTests: XCTestCase {
             postedReceiptData = data
             postedIsRestore = isRestore
 
-            postedProductID = productIdentifier
-            postedPrice = price
+            if let productInfo = productInfo {
+                postedProductID = productInfo.productIdentifier
+                postedPrice = productInfo.price
 
-            postedPaymentMode = paymentMode
-            postedIntroPrice = introductoryPrice
-            postedSubscriptionGroup = subscriptionGroup
+                postedPaymentMode = productInfo.paymentMode
+                postedIntroPrice = productInfo.introPrice
+                postedSubscriptionGroup = productInfo.subscriptionGroup
 
-            postedCurrencyCode = currencyCode
-            postedDiscounts = discounts
+                postedCurrencyCode = productInfo.currencyCode
+                postedDiscounts = productInfo.discounts as? Array<RCPromotionalOffer>
+            }
+
             postedOfferingIdentifier = presentedOfferingIdentifier
             postedObserverMode = observerMode
             completion(postReceiptPurchaserInfo, postReceiptError)
