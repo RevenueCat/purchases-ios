@@ -4,6 +4,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <StoreKit/StoreKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -20,6 +21,8 @@ typedef NS_ENUM(NSInteger, RCPaymentMode) {
     RCPaymentModeFreeTrial = 2
 };
 
+API_AVAILABLE(ios(11.2), macos(10.13.2))
+RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode);
 
 @interface RCProductInfo : NSObject
 
@@ -31,14 +34,17 @@ typedef NS_ENUM(NSInteger, RCPaymentMode) {
 @property (nonatomic, readonly, copy) NSString *subscriptionGroup;
 @property (nonatomic, readonly, copy) NSArray *discounts;
 @property (nonatomic, readonly, copy) NSString *currencyCode;
-@property (nonatomic, readonly, copy) NSString *presentedOfferingIdentifier;
+@property (nonatomic, readonly, copy) NSDecimalNumber *price;
+@property (nonatomic, readonly, copy) NSDecimalNumber *introPrice;
+
 - (instancetype)initWithProductIdentifier:(NSString *)productIdentifier
                               paymentMode:(RCPaymentMode)paymentMode
                              currencyCode:(NSString *)currencyCode
-              presentedOfferingIdentifier:(NSString *_Nullable)presentedOfferingIdentifier
+                                    price:(NSDecimalNumber *)price
                            normalDuration:(NSString *_Nullable)normalDuration
                             introDuration:(NSString *_Nullable)introDuration
                         introDurationType:(RCIntroDurationType)introDurationType
+                               introPrice:(NSDecimalNumber *)introPrice
                         subscriptionGroup:(NSString *_Nullable)subscriptionGroup
                                 discounts:(NSArray *_Nullable)discounts;
 

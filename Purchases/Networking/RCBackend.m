@@ -25,21 +25,6 @@ NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"successfullySynced";
 NSString *const RCAttributeErrorsKey = @"attribute_errors";
 NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
 
-API_AVAILABLE(ios(11.2), macos(10.13.2))
-RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
-{
-    switch (paymentMode) {
-        case SKProductDiscountPaymentModePayUpFront:
-            return RCPaymentModePayUpFront;
-        case SKProductDiscountPaymentModePayAsYouGo:
-            return RCPaymentModePayAsYouGo;
-        case SKProductDiscountPaymentModeFreeTrial:
-            return RCPaymentModeFreeTrial;
-        default:
-            return RCPaymentModeNone;
-    }
-}
-
 @interface RCBackend ()
 
 @property (nonatomic) RCHTTPClient *httpClient;
@@ -149,14 +134,14 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     @synchronized(self) {
         NSMutableArray *callbacks = self.callbacksCache[key];
         BOOL cacheMiss = callbacks == nil;
-        
+
         if (cacheMiss) {
             callbacks = [NSMutableArray new];
             self.callbacksCache[key] = callbacks;
         }
-        
+
         [callbacks addObject:[completion copy]];
-        
+
         BOOL requestAlreadyInFlight = !cacheMiss;
         return requestAlreadyInFlight;
     }
@@ -166,9 +151,9 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     @synchronized(self) {
         NSMutableArray *callbacks = self.callbacksCache[key];
         NSParameterAssert(callbacks);
-        
+
         self.callbacksCache[key] = nil;
-        
+
         return callbacks;
     }
 }
@@ -216,7 +201,7 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             cacheKey = [NSString stringWithFormat:@"%@-%@", cacheKey, discount.offerIdentifier];
         }
     }
-    
+
     if ([self addCallback:completion forKey:cacheKey]) {
         return;
     }

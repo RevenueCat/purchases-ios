@@ -21,9 +21,6 @@ extern NSErrorUserInfoKey const RCSuccessfullySyncedKey;
 extern NSString * const RCAttributeErrorsKey;
 extern NSString * const RCAttributeErrorsResponseKey;
 
-API_AVAILABLE(ios(11.2), macos(10.13.2))
-RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode);
-
 typedef void(^RCBackendPurchaserInfoResponseHandler)(RCPurchaserInfo * _Nullable,
                                         NSError * _Nullable);
 

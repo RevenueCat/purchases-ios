@@ -4,11 +4,15 @@
 //
 
 #import <Foundation/Foundation.h>
+@class SKProduct, RCProductInfo;
 
 NS_ASSUME_NONNULL_BEGIN
 
 
 @interface RCProductInfoExtractor : NSObject
+
+- (RCProductInfo *)extractInfoFromProduct:(SKProduct *)product;
+
 @end
 
 
