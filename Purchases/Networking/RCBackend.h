@@ -45,21 +45,6 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
 - (void)    postReceiptData:(NSData *)data
                   appUserID:(NSString *)appUserID
                   isRestore:(BOOL)isRestore
-          productIdentifier:(nullable NSString *)productIdentifier
-                      price:(nullable NSDecimalNumber *)price
-                paymentMode:(RCPaymentMode)paymentMode
-          introductoryPrice:(nullable NSDecimalNumber *)introductoryPrice
-               currencyCode:(nullable NSString *)currencyCode
-          subscriptionGroup:(nullable NSString *)subscriptionGroup
-                  discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
-presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
-               observerMode:(BOOL)observerMode
-       subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
-                 completion:(RCBackendPurchaserInfoResponseHandler)completion;
-
-- (void)    postReceiptData:(NSData *)data
-                  appUserID:(NSString *)appUserID
-                  isRestore:(BOOL)isRestore
                 productInfo:(nullable RCProductInfo *)productInfo
 presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                observerMode:(BOOL)observerMode

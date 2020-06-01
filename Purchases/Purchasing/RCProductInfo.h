@@ -48,6 +48,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                         subscriptionGroup:(NSString *_Nullable)subscriptionGroup
                                 discounts:(NSArray *_Nullable)discounts;
 
+- (NSDictionary *)asDictionary;
 
 @end
 

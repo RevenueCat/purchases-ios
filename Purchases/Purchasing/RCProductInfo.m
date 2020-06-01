@@ -4,6 +4,7 @@
 //
 
 #import "RCProductInfo.h"
+#import "RCPromotionalOffer.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -67,6 +68,48 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     return self;
 }
 
+- (NSDictionary *)asDictionary {
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+
+    if (self.productIdentifier) {
+        dict[@"product_id"] = self.productIdentifier;
+    }
+
+    if (self.price) {
+        dict[@"price"] = self.price;
+    }
+
+    if (self.currencyCode) {
+        dict[@"currency"] = self.currencyCode;
+    }
+
+    if (self.paymentMode != RCPaymentModeNone) {
+        dict[@"payment_mode"] = @((NSUInteger)self.paymentMode);
+    }
+
+    if (self.introPrice) {
+        dict[@"introductory_price"] = self.introPrice;
+    }
+
+    if (self.subscriptionGroup) {
+        dict[@"subscription_group_id"] = self.subscriptionGroup;
+    }
+
+    if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
+        if (self.discounts) {
+            NSMutableArray *offers = [NSMutableArray array];
+            for (RCPromotionalOffer *discount in self.discounts) {
+                [offers addObject:@{
+                    @"offer_identifier": discount.offerIdentifier,
+                    @"price": discount.price,
+                    @"payment_mode": @((NSUInteger) discount.paymentMode)
+                }];
+            }
+            dict[@"offers"] = offers;
+        }
+    }
+    return dict;
+}
 
 @end
 

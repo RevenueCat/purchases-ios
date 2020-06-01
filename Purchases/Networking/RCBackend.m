@@ -166,37 +166,6 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                observerMode:(BOOL)observerMode
        subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
                  completion:(RCBackendPurchaserInfoResponseHandler)completion {
-    [self   postReceiptData:data
-                  appUserID:appUserID
-                  isRestore:isRestore
-          productIdentifier:productInfo.productIdentifier
-                      price:productInfo.price
-                paymentMode:productInfo.paymentMode
-          introductoryPrice:productInfo.introPrice
-               currencyCode:productInfo.currencyCode
-          subscriptionGroup:productInfo.subscriptionGroup
-                  discounts:productInfo.discounts
-presentedOfferingIdentifier:offeringIdentifier
-               observerMode:observerMode
-       subscriberAttributes:subscriberAttributesByKey
-                 completion:completion];
-}
-
-- (void)    postReceiptData:(NSData *)data
-                  appUserID:(NSString *)appUserID
-                  isRestore:(BOOL)isRestore
-          productIdentifier:(nullable NSString *)productIdentifier
-                      price:(nullable NSDecimalNumber *)price
-                paymentMode:(RCPaymentMode)paymentMode
-          introductoryPrice:(nullable NSDecimalNumber *)introductoryPrice
-               currencyCode:(nullable NSString *)currencyCode
-          subscriptionGroup:(nullable NSString *)subscriptionGroup
-                  discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
-presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
-               observerMode:(BOOL)observerMode
-       subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
-                 completion:(RCBackendPurchaserInfoResponseHandler)completion {
-
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
     NSMutableDictionary *body = [NSMutableDictionary dictionaryWithDictionary:
                                                          @{
@@ -210,18 +179,18 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                     appUserID,
                                                     @(isRestore),
                                                     fetchToken,
-                                                    productIdentifier,
-                                                    price,
-                                                    currencyCode,
-                                                    @((NSUInteger) paymentMode),
-                                                    introductoryPrice,
-                                                    subscriptionGroup,
-                                                    presentedOfferingIdentifier,
+                                                    productInfo.productIdentifier,
+                                                    productInfo.price,
+                                                    productInfo.currencyCode,
+                                                    @((NSUInteger) productInfo.paymentMode),
+                                                    productInfo.introPrice,
+                                                    productInfo.subscriptionGroup,
+                                                    offeringIdentifier,
                                                     @(observerMode),
                                                     subscriberAttributesByKey];
 
     if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
-        for (RCPromotionalOffer *discount in discounts) {
+        for (RCPromotionalOffer *discount in productInfo.discounts) {
             cacheKey = [NSString stringWithFormat:@"%@-%@", cacheKey, discount.offerIdentifier];
         }
     }
@@ -230,28 +199,8 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         return;
     }
 
-    if (productIdentifier) {
-        body[@"product_id"] = productIdentifier;
-    }
-
-    if (price) {
-        body[@"price"] = price;
-    }
-
-    if (currencyCode) {
-        body[@"currency"] = currencyCode;
-    }
-
-    if (paymentMode != RCPaymentModeNone) {
-        body[@"payment_mode"] = @((NSUInteger)paymentMode);
-    }
-
-    if (introductoryPrice) {
-        body[@"introductory_price"] = introductoryPrice;
-    }
-
-    if (subscriptionGroup) {
-        body[@"subscription_group_id"] = subscriptionGroup;
+    if (productInfo) {
+        [body addEntriesFromDictionary:productInfo.asDictionary];
     }
 
     if (subscriberAttributesByKey) {
@@ -259,22 +208,8 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         body[@"attributes"] = attributesInBackendFormat;
     }
 
-    if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
-        if (discounts) {
-            NSMutableArray *offers = [NSMutableArray array];
-            for (RCPromotionalOffer *discount in discounts) {
-                [offers addObject:@{
-                        @"offer_identifier": discount.offerIdentifier,
-                        @"price": discount.price,
-                        @"payment_mode": @((NSUInteger) discount.paymentMode)
-                }];
-            }
-            body[@"offers"] = offers;
-        }
-    }
-
-    if (presentedOfferingIdentifier) {
-        body[@"presented_offering_identifier"] = presentedOfferingIdentifier;
+    if (offeringIdentifier) {
+        body[@"presented_offering_identifier"] = offeringIdentifier;
     }
 
     [self.httpClient performRequest:@"POST"
@@ -282,7 +217,8 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                body:body
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      for (RCBackendPurchaserInfoResponseHandler callback in [self getCallbacksAndClearForKey:cacheKey]) {
+                      for (RCBackendPurchaserInfoResponseHandler
+                          callback in [self getCallbacksAndClearForKey:cacheKey]) {
                           [self handle:status withResponse:response error:error completion:callback];
                       }
                   }];
