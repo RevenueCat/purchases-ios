@@ -46,6 +46,7 @@ class PurchasesTests: XCTestCase {
         }
 
         var postReceiptDataCalled = false
+        var postedReceiptData: Data?
         var postedIsRestore: Bool?
         var postedProductID: String?
         var postedPrice: NSDecimalNumber?
@@ -77,6 +78,7 @@ class PurchasesTests: XCTestCase {
                                       subscriberAttributes: [String: RCSubscriberAttribute]?,
                                       completion: @escaping RCBackendPurchaserInfoResponseHandler) {
             postReceiptDataCalled = true
+            postedReceiptData = data
             postedIsRestore = isRestore
 
             postedProductID = productIdentifier
@@ -577,7 +579,7 @@ class PurchasesTests: XCTestCase {
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
             expect(self.backend.postReceiptDataCalled).to(beTrue())
-            expect(self.backend.postReceiptData).toNot(beNil())
+            expect(self.backend.postedReceiptData).toNot(beNil())
 
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
             expect(self.backend.postedPrice).to(equal(product.price))
@@ -1280,7 +1282,7 @@ class PurchasesTests: XCTestCase {
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
             expect(self.backend.postReceiptDataCalled).to(beTrue())
-            expect(self.backend.postReceiptData).toNot(beNil())
+            expect(self.backend.postedReceiptData).toNot(beNil())
 
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
             expect(self.backend.postedPrice).to(equal(product.price))
@@ -1871,7 +1873,7 @@ class PurchasesTests: XCTestCase {
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
             expect(self.backend.postReceiptDataCalled).to(beTrue())
-            expect(self.backend.postReceiptData).toNot(beNil())
+            expect(self.backend.postedReceiptData).toNot(beNil())
 
             expect(self.backend.postedProductID).to(equal(package.product.productIdentifier))
             expect(self.backend.postedPrice).to(equal(package.product.price))

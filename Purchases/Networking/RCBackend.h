@@ -57,6 +57,15 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
        subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
                  completion:(RCBackendPurchaserInfoResponseHandler)completion;
 
+- (void)    postReceiptData:(NSData *)data
+                  appUserID:(NSString *)appUserID
+                  isRestore:(BOOL)isRestore
+                productInfo:(RCProductInfo *)productInfo
+presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
+               observerMode:(BOOL)observerMode
+       subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
+                 completion:(RCBackendPurchaserInfoResponseHandler)completion;
+
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
                             completion:(RCBackendPurchaserInfoResponseHandler)completion;
 

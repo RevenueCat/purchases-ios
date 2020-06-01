@@ -161,6 +161,30 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
 - (void)    postReceiptData:(NSData *)data
                   appUserID:(NSString *)appUserID
                   isRestore:(BOOL)isRestore
+                productInfo:(RCProductInfo *)productInfo
+presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
+               observerMode:(BOOL)observerMode
+       subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
+                 completion:(RCBackendPurchaserInfoResponseHandler)completion {
+    [self   postReceiptData:data
+                  appUserID:appUserID
+                  isRestore:isRestore
+          productIdentifier:productInfo.productIdentifier
+                      price:productInfo.price
+                paymentMode:productInfo.paymentMode
+          introductoryPrice:productInfo.introPrice
+               currencyCode:productInfo.currencyCode
+          subscriptionGroup:productInfo.subscriptionGroup
+                  discounts:productInfo.discounts
+presentedOfferingIdentifier:offeringIdentifier
+               observerMode:observerMode
+       subscriberAttributes:subscriberAttributesByKey
+                 completion:completion];
+}
+
+- (void)    postReceiptData:(NSData *)data
+                  appUserID:(NSString *)appUserID
+                  isRestore:(BOOL)isRestore
           productIdentifier:(nullable NSString *)productIdentifier
                       price:(nullable NSDecimalNumber *)price
                 paymentMode:(RCPaymentMode)paymentMode
