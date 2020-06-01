@@ -1041,8 +1041,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction
-{
+- (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction {
     [self receiptData:^(NSData * _Nonnull data) {
         if (data.length == 0) {
             [self handleReceiptPostWithTransaction:transaction
@@ -1050,38 +1049,48 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                               subscriberAttributes:nil
                                              error:RCPurchasesErrorUtils.missingReceiptFileError];
         } else {
-            [self productsWithIdentifiers:@[transaction.payment.productIdentifier]
-                          completionBlock:^(NSArray<SKProduct *> *products) {
-                              SKProduct *product = products.lastObject;
-                              RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
-                              RCProductInfo *productInfo = nil;
-                              NSString *presentedOffering = nil;
-                              if (product) {
-                                  RCProductInfoExtractor *productInfoExtractor = [[RCProductInfoExtractor alloc] init];
-                                  productInfo = [productInfoExtractor extractInfoFromProduct:product];
-
-                                  @synchronized (self) {
-                                      presentedOffering = self.presentedOfferingsByProductIdentifier[productInfo.productIdentifier];
-                                      [self.presentedOfferingsByProductIdentifier removeObjectForKey:productInfo.productIdentifier];
-                                  }
-                              }
-                              [self.backend postReceiptData:data
-                                                  appUserID:self.appUserID
-                                                  isRestore:self.allowSharingAppStoreAccount
-                                                productInfo:productInfo
-                                presentedOfferingIdentifier:presentedOffering
-                                               observerMode:!self.finishTransactions
-                                       subscriberAttributes:subscriberAttributes
-                                                 completion:^(RCPurchaserInfo *_Nullable info,
-                                                              NSError *_Nullable error) {
-                                                     [self handleReceiptPostWithTransaction:transaction
-                                                                              purchaserInfo:info
-                                                                       subscriberAttributes:subscriberAttributes
-                                                                                      error:error];
-                                                 }];
-                          }];
+            [self fetchProductsAndPostReceiptWithTransaction:transaction data:data];
         }
     }];
+}
+
+- (void)fetchProductsAndPostReceiptWithTransaction:(SKPaymentTransaction *)transaction data:(NSData *)data {
+    [self productsWithIdentifiers:@[transaction.payment.productIdentifier]
+                  completionBlock:^(NSArray<SKProduct *> *products) {
+                      [self postReceiptWithTransaction:transaction data:data products:products];
+                  }];
+}
+
+- (void)postReceiptWithTransaction:(SKPaymentTransaction *)transaction
+                              data:(NSData *)data
+                          products:(NSArray<SKProduct *> *)products {
+    SKProduct *product = products.lastObject;
+    RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
+    RCProductInfo *productInfo = nil;
+    NSString *presentedOffering = nil;
+    if (product) {
+        RCProductInfoExtractor *productInfoExtractor = [[RCProductInfoExtractor alloc] init];
+        productInfo = [productInfoExtractor extractInfoFromProduct:product];
+
+        @synchronized (self) {
+            presentedOffering = self.presentedOfferingsByProductIdentifier[productInfo.productIdentifier];
+            [self.presentedOfferingsByProductIdentifier removeObjectForKey:productInfo.productIdentifier];
+        }
+    }
+    [self.backend postReceiptData:data
+                        appUserID:self.appUserID
+                        isRestore:self.allowSharingAppStoreAccount
+                      productInfo:productInfo
+      presentedOfferingIdentifier:presentedOffering
+                     observerMode:!self.finishTransactions
+             subscriberAttributes:subscriberAttributes
+                       completion:^(RCPurchaserInfo *_Nullable info,
+                                    NSError *_Nullable error) {
+                           [self handleReceiptPostWithTransaction:transaction
+                                                    purchaserInfo:info
+                                             subscriberAttributes:subscriberAttributes
+                                                            error:error];
+                       }];
 }
 
 @end
