@@ -47,12 +47,12 @@ RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode payme
                               paymentMode:(RCPaymentMode)paymentMode
                              currencyCode:(NSString *)currencyCode
                                     price:(NSDecimalNumber *)price
-                           normalDuration:(nullable NSString *_Nullable)normalDuration
-                            introDuration:(nullable NSString *_Nullable)introDuration
+                           normalDuration:(nullable NSString *)normalDuration
+                            introDuration:(nullable NSString *)introDuration
                         introDurationType:(RCIntroDurationType)introDurationType
                                introPrice:(nullable NSDecimalNumber *)introPrice
-                        subscriptionGroup:(nullable NSString *_Nullable)subscriptionGroup
-                                discounts:(nullable NSArray *_Nullable)discounts {
+                        subscriptionGroup:(nullable NSString *)subscriptionGroup
+                                discounts:(nullable NSArray *)discounts {
     self = [super init];
     if (self) {
         self.productIdentifier = productIdentifier;
