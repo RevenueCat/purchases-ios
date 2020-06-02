@@ -11,16 +11,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCProductInfo ()
 
+@property (nonatomic, copy) NSString *productIdentifier;
+@property (nonatomic, assign) RCPaymentMode paymentMode;
+@property (nonatomic, copy) NSString *currencyCode;
+@property (nonatomic, copy) NSDecimalNumber *price;
 @property (nonatomic, nullable, copy) NSString *normalDuration;
 @property (nonatomic, nullable, copy) NSString *introDuration;
 @property (nonatomic, assign) RCIntroDurationType introDurationType;
-@property (nonatomic, assign) RCPaymentMode paymentMode;
-@property (nonatomic, nullable, copy) NSDecimalNumber *price;
 @property (nonatomic, nullable, copy) NSDecimalNumber *introPrice;
-@property (nonatomic, copy) NSString *productIdentifier;
-@property (nonatomic, copy) NSString *subscriptionGroup;
-@property (nonatomic, copy) NSArray *discounts;
-@property (nonatomic, copy) NSString *currencyCode;
+@property (nonatomic, nullable, copy) NSString *subscriptionGroup;
+@property (nonatomic, nullable, copy) NSArray *discounts;
 
 @end
 
@@ -47,12 +47,12 @@ RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode payme
                               paymentMode:(RCPaymentMode)paymentMode
                              currencyCode:(NSString *)currencyCode
                                     price:(NSDecimalNumber *)price
-                           normalDuration:(NSString *_Nullable)normalDuration
-                            introDuration:(NSString *_Nullable)introDuration
+                           normalDuration:(nullable NSString *_Nullable)normalDuration
+                            introDuration:(nullable NSString *_Nullable)introDuration
                         introDurationType:(RCIntroDurationType)introDurationType
-                               introPrice:(NSDecimalNumber *)introPrice
-                        subscriptionGroup:(NSString *_Nullable)subscriptionGroup
-                                discounts:(NSArray *_Nullable)discounts {
+                               introPrice:(nullable NSDecimalNumber *)introPrice
+                        subscriptionGroup:(nullable NSString *_Nullable)subscriptionGroup
+                                discounts:(nullable NSArray *_Nullable)discounts {
     self = [super init];
     if (self) {
         self.productIdentifier = productIdentifier;

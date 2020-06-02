@@ -26,16 +26,16 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
 @interface RCProductInfo : NSObject
 
+@property (nonatomic, readonly, copy) NSString *productIdentifier;
+@property (nonatomic, readonly, assign) RCPaymentMode paymentMode;
+@property (nonatomic, readonly, copy) NSString *currencyCode;
+@property (nonatomic, readonly, copy) NSDecimalNumber *price;
 @property (nonatomic, nullable, readonly, copy) NSString *normalDuration;
 @property (nonatomic, nullable, readonly, copy) NSString *introDuration;
 @property (nonatomic, readonly, assign) RCIntroDurationType introDurationType;
-@property (nonatomic, readonly, assign) RCPaymentMode paymentMode;
-@property (nonatomic, readonly, copy) NSString *productIdentifier;
+@property (nonatomic, readonly, copy) NSDecimalNumber *introPrice;
 @property (nonatomic, readonly, copy) NSString *subscriptionGroup;
 @property (nonatomic, readonly, copy) NSArray *discounts;
-@property (nonatomic, readonly, copy) NSString *currencyCode;
-@property (nonatomic, readonly, copy) NSDecimalNumber *price;
-@property (nonatomic, readonly, copy) NSDecimalNumber *introPrice;
 
 - (instancetype)initWithProductIdentifier:(NSString *)productIdentifier
                               paymentMode:(RCPaymentMode)paymentMode
@@ -44,7 +44,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                            normalDuration:(nullable NSString *)normalDuration
                             introDuration:(nullable NSString *)introDuration
                         introDurationType:(RCIntroDurationType)introDurationType
-                               introPrice:(NSDecimalNumber *)introPrice
+                               introPrice:(nullable NSDecimalNumber *)introPrice
                         subscriptionGroup:(nullable NSString *)subscriptionGroup
                                 discounts:(nullable NSArray *)discounts;
 

@@ -251,17 +251,20 @@ class BackendTests: XCTestCase {
                                  completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
-
+        let productInfo = RCProductInfo(productIdentifier: "productId",
+                                        paymentMode: .none,
+                                        currencyCode: "USD",
+                                        price: 10.0,
+                                        normalDuration: nil,
+                                        introDuration: nil,
+                                        introDurationType: .none,
+                                        introPrice: nil,
+                                        subscriptionGroup: nil,
+                                        discounts: nil)
         backend?.postReceiptData(receiptData2,
                                  appUserID: userID,
                                  isRestore: isRestore,
-                                 productIdentifier: nil,
-                                 price: nil,
-                                 paymentMode: RCPaymentMode.none,
-                                 introductoryPrice: nil,
-                                 currencyCode: "USD", 
-                                 subscriptionGroup: nil,
-                                 discounts: nil,
+                                 productInfo: productInfo,
                                  presentedOfferingIdentifier: nil,
                                  observerMode: observerMode,
                                  subscriberAttributes: nil,
@@ -347,20 +350,24 @@ class BackendTests: XCTestCase {
 
         let currencyCode = "BFD"
 
-        let paymentMode = RCPaymentMode.none
+        let paymentMode: RCPaymentMode = .none
 
         var completionCalled = false
+        let productInfo = RCProductInfo(productIdentifier: productIdentifier,
+                                        paymentMode: paymentMode,
+                                        currencyCode: currencyCode,
+                                        price: price,
+                                        normalDuration: nil,
+                                        introDuration: nil,
+                                        introDurationType: .none,
+                                        introPrice: nil,
+                                        subscriptionGroup: group,
+                                        discounts: nil)
 
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
                                  isRestore: false,
-                                 productIdentifier: productIdentifier,
-                                 price: price,
-                                 paymentMode: paymentMode,
-                                 introductoryPrice: nil,
-                                 currencyCode: currencyCode,
-                                 subscriptionGroup: group,
-                                 discounts: nil,
+                                 productInfo: productInfo,
                                  presentedOfferingIdentifier: offeringIdentifier,
                                  observerMode: false,
                                  subscriberAttributes: nil,
@@ -405,16 +412,20 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
+        let productInfo = RCProductInfo(productIdentifier: "product_id",
+                                        paymentMode: .none,
+                                        currencyCode: "USD",
+                                        price: 9.99,
+                                        normalDuration: nil,
+                                        introDuration: nil,
+                                        introDurationType: .none,
+                                        introPrice: nil,
+                                        subscriptionGroup: nil,
+                                        discounts: nil)
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
                                  isRestore: false,
-                                 productIdentifier: "product_id", 
-                                 price: 9.99,
-                                 paymentMode: RCPaymentMode.none,
-                                 introductoryPrice: nil,
-                                 currencyCode: nil,
-                                 subscriptionGroup: nil,
-                                 discounts: nil,
+                                 productInfo: productInfo,
                                  presentedOfferingIdentifier: nil,
                                  observerMode: false,
                                  subscriberAttributes: nil,
@@ -432,16 +443,21 @@ class BackendTests: XCTestCase {
     func postPaymentMode(paymentMode: RCPaymentMode) {
         var completionCalled = false
 
+        let productInfo = RCProductInfo(productIdentifier: "product",
+                                        paymentMode: paymentMode,
+                                        currencyCode: "USD",
+                                        price: 2.99,
+                                        normalDuration: nil,
+                                        introDuration: nil,
+                                        introDurationType: .none,
+                                        introPrice: 1.99,
+                                        subscriptionGroup: "group",
+                                        discounts: nil)
+
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
                                  isRestore: false,
-                                 productIdentifier: "product",
-                                 price: 2.99,
-                                 paymentMode: paymentMode,
-                                 introductoryPrice: 1.99,
-                                 currencyCode: "USD",
-                                 subscriptionGroup: "group",
-                                 discounts: nil,
+                                 productInfo: productInfo,
                                  presentedOfferingIdentifier: nil,
                                  observerMode: false,
                                  subscriberAttributes: nil,
@@ -465,21 +481,21 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
-        postPaymentMode(paymentMode: RCPaymentMode.payAsYouGo)
+        postPaymentMode(paymentMode: .payAsYouGo)
         checkCall(expectedValue: 0)
     }
 
     func testPayUpFrontPostsCorrectly() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
-        postPaymentMode(paymentMode: RCPaymentMode.payUpFront)
+        postPaymentMode(paymentMode: .payUpFront)
         checkCall(expectedValue: 1)
     }
 
     func testFreeTrialPostsCorrectly() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
-        postPaymentMode(paymentMode: RCPaymentMode.freeTrial)
+        postPaymentMode(paymentMode: .freeTrial)
         checkCall(expectedValue: 2)
     }
 
@@ -1006,21 +1022,24 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        let discount = RCPromotionalOffer.init()
+        let discount = RCPromotionalOffer()
         discount.offerIdentifier = "offerid"
-        discount.paymentMode = RCPaymentMode.payAsYouGo
+        discount.paymentMode = .payAsYouGo
         discount.price = 12
-
+        let productInfo = RCProductInfo(productIdentifier: "product_id",
+                                        paymentMode: .none,
+                                        currencyCode: "UYU",
+                                        price: 15.99,
+                                        normalDuration: nil,
+                                        introDuration: nil,
+                                        introDurationType: RCIntroDurationType.none,
+                                        introPrice: nil,
+                                        subscriptionGroup: nil,
+                                        discounts: [discount])
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
-                                 productIdentifier: nil,
-                                 price: nil,
-                                 paymentMode: RCPaymentMode.none,
-                                 introductoryPrice: nil,
-                                 currencyCode: nil,
-                                 subscriptionGroup: nil,
-                                 discounts: [discount],
+                                 productInfo: productInfo,
                                  presentedOfferingIdentifier: nil,
                                  observerMode: observerMode,
                                  subscriberAttributes: nil,
@@ -1042,25 +1061,30 @@ class BackendTests: XCTestCase {
         
         let currencyCode = "BFD"
         
-        let paymentMode = RCPaymentMode.none
+        let paymentMode: RCPaymentMode = .none
         
         var completionCalled = false
         
-        let discount = RCPromotionalOffer.init()
+        let discount = RCPromotionalOffer()
         discount.offerIdentifier = "offerid"
-        discount.paymentMode = RCPaymentMode.payAsYouGo
+        discount.paymentMode = .payAsYouGo
         discount.price = 12
+
+        let productInfo = RCProductInfo(productIdentifier: productIdentifier,
+                                        paymentMode: paymentMode,
+                                        currencyCode: currencyCode,
+                                        price: price,
+                                        normalDuration: nil,
+                                        introDuration: nil,
+                                        introDurationType: RCIntroDurationType.none,
+                                        introPrice: nil,
+                                        subscriptionGroup: group,
+                                        discounts: [discount])
 
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
                                  isRestore: false,
-                                 productIdentifier: productIdentifier,
-                                 price: price,
-                                 paymentMode: paymentMode,
-                                 introductoryPrice: nil,
-                                 currencyCode: currencyCode,
-                                 subscriptionGroup: group,
-                                 discounts: [discount],
+                                 productInfo: productInfo,
                                  presentedOfferingIdentifier: nil,
                                  observerMode: false,
                                  subscriberAttributes: nil,
@@ -1362,9 +1386,9 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        let discount = RCPromotionalOffer.init()
+        let discount = RCPromotionalOffer()
         discount.offerIdentifier = "offerid"
-        discount.paymentMode = RCPaymentMode.payAsYouGo
+        discount.paymentMode = .payAsYouGo
         discount.price = 12
 
         backend?.postReceiptData(receiptData,
