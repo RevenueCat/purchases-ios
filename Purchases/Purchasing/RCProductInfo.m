@@ -126,10 +126,10 @@ RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode payme
     if (self.normalDuration) {
         durations[@"normal_duration"] = self.normalDuration;
     }
-    if (self.introDurationType == RCIntroDurationTypeFreeTrial) {
+    if (self.introDurationType == RCIntroDurationTypeIntroPrice) {
         durations[@"intro_duration"] = self.introDuration;
     }
-    if (self.introDurationType == RCIntroDurationTypeIntroPrice) {
+    if (self.introDurationType == RCIntroDurationTypeFreeTrial) {
         durations[@"trial_duration"] = self.introDuration;
     }
 
