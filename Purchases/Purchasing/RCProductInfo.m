@@ -24,9 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+
 API_AVAILABLE(ios(11.2), macos(10.13.2))
-RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
-{
+RCPaymentMode
+RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode) {
     switch (paymentMode) {
         case SKProductDiscountPaymentModePayUpFront:
             return RCPaymentModePayUpFront;
@@ -38,6 +39,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
             return RCPaymentModeNone;
     }
 }
+
 
 @implementation RCProductInfo
 
@@ -84,7 +86,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     }
 
     if (self.paymentMode != RCPaymentModeNone) {
-        dict[@"payment_mode"] = @((NSUInteger)self.paymentMode);
+        dict[@"payment_mode"] = @((NSUInteger) self.paymentMode);
     }
 
     if (self.introPrice) {
@@ -95,6 +97,13 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
         dict[@"subscription_group_id"] = self.subscriptionGroup;
     }
 
+    [dict addEntriesFromDictionary:self.discountsAsDictionary];
+    [dict addEntriesFromDictionary:self.productDurationsAsDictionary];
+    return dict;
+}
+
+- (NSDictionary *)discountsAsDictionary {
+    NSMutableDictionary *discounts = [[NSMutableDictionary alloc] init];
     if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
         if (self.discounts) {
             NSMutableArray *offers = [NSMutableArray array];
@@ -105,10 +114,26 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                     @"payment_mode": @((NSUInteger) discount.paymentMode)
                 }];
             }
-            dict[@"offers"] = offers;
+            discounts[@"offers"] = offers;
         }
     }
-    return dict;
+    return discounts;
+}
+
+- (NSDictionary *)productDurationsAsDictionary {
+    NSMutableDictionary *durations = [[NSMutableDictionary alloc] init];
+
+    if (self.normalDuration) {
+        durations[@"normal_duration"] = self.normalDuration;
+    }
+    if (self.introDurationType == RCIntroDurationTypeFreeTrial) {
+        durations[@"intro_duration"] = self.introDuration;
+    }
+    if (self.introDurationType == RCIntroDurationTypeIntroPrice) {
+        durations[@"trial_duration"] = self.introDuration;
+    }
+
+    return durations;
 }
 
 @end
