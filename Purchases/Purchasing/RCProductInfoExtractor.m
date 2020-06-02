@@ -22,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation RCProductInfoExtractor
 
+# pragma mark - public methods
+
 - (instancetype)init {
     if (self = [super init]) {
         if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
@@ -59,6 +61,8 @@ NS_ASSUME_NONNULL_BEGIN
 
     return productInfo;
 }
+
+# pragma mark - private methods
 
 - (RCIntroDurationType)extractIntroDurationTypeForProduct:(SKProduct *)product {
     RCIntroDurationType introDurationType = RCIntroDurationTypeNone;
