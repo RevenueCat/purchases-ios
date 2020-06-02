@@ -69,12 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
 
     if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
         if (product.introductoryPrice) {
-            BOOL isFreeTrial = [self isFreeTrial:product];
-            if (isFreeTrial) {
-                introDurationType = RCIntroDurationTypeFreeTrial;
-            } else {
-                introDurationType = RCIntroDurationTypeIntroPrice;
-            }
+            introDurationType = [self isFreeTrial:product] ? RCIntroDurationTypeFreeTrial
+                                                           : RCIntroDurationTypeIntroPrice;
         }
     }
     return introDurationType;
