@@ -41,12 +41,12 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                               paymentMode:(RCPaymentMode)paymentMode
                              currencyCode:(NSString *)currencyCode
                                     price:(NSDecimalNumber *)price
-                           normalDuration:(NSString *_Nullable)normalDuration
-                            introDuration:(NSString *_Nullable)introDuration
+                           normalDuration:(nullable NSString *)normalDuration
+                            introDuration:(nullable NSString *)introDuration
                         introDurationType:(RCIntroDurationType)introDurationType
                                introPrice:(NSDecimalNumber *)introPrice
-                        subscriptionGroup:(NSString *_Nullable)subscriptionGroup
-                                discounts:(NSArray *_Nullable)discounts;
+                        subscriptionGroup:(nullable NSString *)subscriptionGroup
+                                discounts:(nullable NSArray *)discounts;
 
 - (NSDictionary *)asDictionary;
 

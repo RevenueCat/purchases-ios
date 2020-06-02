@@ -15,49 +15,80 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCProductInfoExtractor ()
 
+@property (nonatomic) RCISOPeriodFormatter *formatter API_AVAILABLE(ios(11.2), macos(10.13.2), tvos(11.2));
 
 @end
 
 
 @implementation RCProductInfoExtractor
 
+- (instancetype)init {
+    if (self = [super init]) {
+        if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
+            self.formatter = [[RCISOPeriodFormatter alloc] init];
+        }
+    }
+    return self;
+}
+
 - (RCProductInfo *)extractInfoFromProduct:(SKProduct *)product {
     NSString *productIdentifier = product.productIdentifier;
     NSDecimalNumber *price = product.price;
+    NSString *currencyCode = product.priceLocale.rc_currencyCode;
 
-    RCPaymentMode paymentMode = RCPaymentModeNone;
-    NSDecimalNumber *introPrice = nil;
+    RCPaymentMode paymentMode = [self extractPaymentModeForProduct:product];
+    NSDecimalNumber *introPrice = [self extractIntroPriceForProduct:product];
 
-    NSString *normalDuration = nil;
-    NSString *introDuration = nil;
+    NSString *normalDuration = [self extractNormalDurationForProduct:product];
+    NSString *introDuration = [self extractIntroDurationForProduct:product];
+    RCIntroDurationType introDurationType = [self extractIntroDurationTypeForProduct:product];
+
+    NSString *subscriptionGroup = [self extractSubscriptionGroupForProduct:product];
+    NSMutableArray *discounts = [self extractDiscountsForProduct:product];
+
+    RCProductInfo *productInfo = [[RCProductInfo alloc] initWithProductIdentifier:productIdentifier
+                                                                      paymentMode:paymentMode
+                                                                     currencyCode:currencyCode
+                                                                            price:price
+                                                                   normalDuration:normalDuration
+                                                                    introDuration:introDuration
+                                                                introDurationType:introDurationType
+                                                                       introPrice:introPrice
+                                                                subscriptionGroup:subscriptionGroup
+                                                                        discounts:discounts];
+
+    return productInfo;
+}
+
+- (RCIntroDurationType)extractIntroDurationTypeForProduct:(SKProduct *)product {
     RCIntroDurationType introDurationType = RCIntroDurationTypeNone;
 
     if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
-        RCISOPeriodFormatter *formatter = [[RCISOPeriodFormatter alloc] init];
-
         if (product.introductoryPrice) {
-            paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
-            introPrice = product.introductoryPrice.price;
-            BOOL isFreeTrial = product.introductoryPrice.paymentMode == SKProductDiscountPaymentModeFreeTrial;
-            NSString *introPriceDuration = [formatter stringFromProductSubscriptionPeriod:product.introductoryPrice.subscriptionPeriod];
+            BOOL isFreeTrial = [self isFreeTrial:product];
             if (isFreeTrial) {
                 introDurationType = RCIntroDurationTypeFreeTrial;
-                introDuration = introPriceDuration;
             } else {
                 introDurationType = RCIntroDurationTypeIntroPrice;
-                introDuration = introPriceDuration;
             }
         }
-        if (product.subscriptionPeriod) {
-            normalDuration = [formatter stringFromProductSubscriptionPeriod:product.subscriptionPeriod];
-        }
     }
+    return introDurationType;
+}
 
+- (BOOL)isFreeTrial:(SKProduct *)product API_AVAILABLE(ios(11.2), macos(10.13.2), tvos(11.2)) {
+    return product.introductoryPrice.paymentMode == SKProductDiscountPaymentModeFreeTrial;
+}
+
+- (NSString *)extractSubscriptionGroupForProduct:(SKProduct *)product {
     NSString *subscriptionGroup = nil;
     if (@available(iOS 12.0, macOS 10.14.0, tvOS 12.0, *)) {
         subscriptionGroup = product.subscriptionGroupIdentifier;
     }
+    return subscriptionGroup;
+}
 
+- (NSMutableArray *)extractDiscountsForProduct:(SKProduct *)product {
     NSMutableArray *discounts = nil;
     if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
         discounts = [NSMutableArray new];
@@ -65,24 +96,50 @@ NS_ASSUME_NONNULL_BEGIN
             [discounts addObject:[[RCPromotionalOffer alloc] initWithProductDiscount:discount]];
         }
     }
-
-    NSString *currencyCode = product.priceLocale.rc_currencyCode;
-
-    RCProductInfo *productInfo = [[RCProductInfo alloc]
-                                                 initWithProductIdentifier:productIdentifier
-                                                               paymentMode:paymentMode
-                                                              currencyCode:currencyCode
-                                                                     price:price
-                                                            normalDuration:normalDuration
-                                                             introDuration:introDuration
-                                                         introDurationType:introDurationType
-                                                                introPrice:introPrice
-                                                         subscriptionGroup:subscriptionGroup
-                                                                 discounts:discounts];
-
-    return productInfo;
+    return discounts;
 }
 
+- (RCPaymentMode)extractPaymentModeForProduct:(SKProduct *)product {
+    RCPaymentMode paymentMode = RCPaymentModeNone;
+    if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
+        if (product.introductoryPrice) {
+            paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
+        }
+    }
+    return paymentMode;
+}
+
+- (NSDecimalNumber *)extractIntroPriceForProduct:(SKProduct *)product {
+    NSDecimalNumber *introPrice = nil;
+    if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
+        if (product.introductoryPrice) {
+            introPrice = product.introductoryPrice.price;
+        }
+    }
+    return introPrice;
+}
+
+- (NSString *)extractNormalDurationForProduct:(SKProduct *)product {
+    NSString *normalDuration = nil;
+    if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
+        if (product.subscriptionPeriod) {
+            normalDuration = [self.formatter stringFromProductSubscriptionPeriod:product.subscriptionPeriod];
+        }
+    }
+    return normalDuration;
+}
+
+- (NSString *)extractIntroDurationForProduct:(SKProduct *)product {
+    NSString *introDuration = nil;
+    if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
+        if (product.introductoryPrice) {
+            SKProductSubscriptionPeriod *subscriptionPeriod = product.introductoryPrice.subscriptionPeriod;
+            NSString *introPriceDuration = [self.formatter stringFromProductSubscriptionPeriod:subscriptionPeriod];
+            introDuration = introPriceDuration;
+        }
+    }
+    return introDuration;
+}
 
 @end
 
