@@ -24,6 +24,8 @@ typedef NS_ENUM(NSInteger, RCPaymentMode) {
 API_AVAILABLE(ios(11.2), macos(10.13.2))
 RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode);
 
+@class RCPromotionalOffer;
+
 @interface RCProductInfo : NSObject
 
 @property (nonatomic, readonly, copy) NSString *productIdentifier;
