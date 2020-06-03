@@ -17,7 +17,11 @@ class MockRequestFetcher: RCStoreKitRequestFetcher {
         let products = identifiers.map { (identifier) -> MockSKProduct in
             let p = MockSKProduct(mockProductIdentifier: identifier)
             p.mockSubscriptionGroupIdentifier = "1234567"
-            p.mockDiscountIdentifier = "discount_id"
+            if #available(iOS 12.2, *) {
+                let mockDiscount = MockDiscount()
+                mockDiscount.mockIdentifier = "discount_id"
+                p.mockDiscount = mockDiscount
+            }
             return p
         }
         completion(products)

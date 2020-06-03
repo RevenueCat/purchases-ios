@@ -20,26 +20,30 @@ class MockSKProduct: SKProduct {
         return self.mockSubscriptionGroupIdentifier;
     }
 
+    var mockPriceLocale: Locale?
     override var priceLocale: Locale {
-        return Locale.current
+        return mockPriceLocale ?? Locale.current
     }
 
+    var mockPrice: NSDecimalNumber?
     override var price: NSDecimalNumber {
-        return 2.99 as NSDecimalNumber
+        return mockPrice ?? 2.99 as NSDecimalNumber
     }
 
     @available(iOS 11.2, *)
     override var introductoryPrice: SKProductDiscount? {
-        return MockDiscount()
+        if #available(iOS 12.2, *) {
+            return mockDiscount ?? MockDiscount()
+        } else {
+            return MockDiscount()
+        }
     }
 
-    var mockDiscountIdentifier: String?
+    @available(iOS 12.2, *)
+    lazy var mockDiscount: SKProductDiscount? = nil
+
     @available(iOS 12.2, *)
     override var discounts: [SKProductDiscount] {
-        if (mockDiscountIdentifier != nil) {
-            return [MockProductDiscount(mockIdentifier: mockDiscountIdentifier!)];
-        } else {
-            return []
-        }
+        return (mockDiscount != nil) ? [mockDiscount!] : []
     }
 }

@@ -596,8 +596,8 @@ class PurchasesTests: XCTestCase {
             if #available(iOS 12.2, *) {
                 expect(self.backend.postedDiscounts?.count).to(equal(1))
                 expect(self.backend.postedDiscounts?[0].offerIdentifier).to(equal("discount_id"))
-                expect(self.backend.postedDiscounts?[0].price).to(equal(2.99))
-                expect(self.backend.postedDiscounts?[0].paymentMode).to(equal(RCPaymentMode.freeTrial))
+                expect(self.backend.postedDiscounts?[0].price).to(equal(1.99))
+                expect(self.backend.postedDiscounts?[0].paymentMode).to(equal(RCPaymentMode.payAsYouGo))
             }
 
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))

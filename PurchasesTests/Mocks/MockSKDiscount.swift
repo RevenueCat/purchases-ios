@@ -7,11 +7,17 @@ import Foundation
 
 @available(iOS 11.2, *)
 class MockDiscount: SKProductDiscount {
+    var mockPaymentMode: SKProductDiscount.PaymentMode?
     override var paymentMode: SKProductDiscount.PaymentMode {
-        return SKProductDiscount.PaymentMode.payAsYouGo
+        return mockPaymentMode ?? SKProductDiscount.PaymentMode.payAsYouGo
     }
 
     override var price: NSDecimalNumber {
         return 1.99 as NSDecimalNumber
+    }
+
+    var mockIdentifier: String?
+    override var identifier: String {
+        return mockIdentifier ?? "identifier"
     }
 }
