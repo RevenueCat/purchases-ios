@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) RCIntroDurationType introDurationType;
 @property (nonatomic, nullable, copy) NSDecimalNumber *introPrice;
 @property (nonatomic, nullable, copy) NSString *subscriptionGroup;
-@property (nonatomic, nullable, copy) NSArray *discounts;
+@property (nonatomic, nullable, copy) NSArray<RCPromotionalOffer *> *discounts;
 
 @end
 
@@ -52,7 +52,7 @@ RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode payme
                         introDurationType:(RCIntroDurationType)introDurationType
                                introPrice:(nullable NSDecimalNumber *)introPrice
                         subscriptionGroup:(nullable NSString *)subscriptionGroup
-                                discounts:(nullable NSArray *)discounts {
+                                discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts {
     self = [super init];
     if (self) {
         self.productIdentifier = productIdentifier;

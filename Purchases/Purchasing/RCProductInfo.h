@@ -35,7 +35,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 @property (nonatomic, readonly, assign) RCIntroDurationType introDurationType;
 @property (nonatomic, readonly, copy) NSDecimalNumber *introPrice;
 @property (nonatomic, readonly, copy) NSString *subscriptionGroup;
-@property (nonatomic, readonly, copy) NSArray *discounts;
+@property (nonatomic, readonly, copy) NSArray<RCPromotionalOffer *> *discounts;
 
 - (instancetype)initWithProductIdentifier:(NSString *)productIdentifier
                               paymentMode:(RCPaymentMode)paymentMode
@@ -46,7 +46,7 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                         introDurationType:(RCIntroDurationType)introDurationType
                                introPrice:(nullable NSDecimalNumber *)introPrice
                         subscriptionGroup:(nullable NSString *)subscriptionGroup
-                                discounts:(nullable NSArray *)discounts;
+                                discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts;
 
 - (NSDictionary *)asDictionary;
 
