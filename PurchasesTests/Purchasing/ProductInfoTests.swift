@@ -241,4 +241,33 @@ class ProductInfoTests: XCTestCase {
         expect(receivedOffers[2]["price"] as? NSDecimalNumber) == discount3.price
         expect((receivedOffers[2]["payment_mode"] as? NSNumber)?.intValue) == discount3.paymentMode.rawValue
     }
+
+    func testCacheKey() {
+        let discount1 = RCPromotionalOffer()
+        discount1.offerIdentifier = "offerid1"
+        discount1.paymentMode = .payAsYouGo
+        discount1.price = 11
+
+        let discount2 = RCPromotionalOffer()
+        discount2.offerIdentifier = "offerid2"
+        discount2.paymentMode = .payUpFront
+        discount2.price = 12
+
+        let discount3 = RCPromotionalOffer()
+        discount3.offerIdentifier = "offerid3"
+        discount3.paymentMode = .freeTrial
+        discount3.price = 13
+
+        let productInfo = RCProductInfo(productIdentifier: "cool_product",
+                                        paymentMode: .payUpFront,
+                                        currencyCode: "UYU",
+                                        price: 49.99,
+                                        normalDuration: "P3Y",
+                                        introDuration: "P3W",
+                                        introDurationType: .freeTrial,
+                                        introPrice: 0,
+                                        subscriptionGroup: "cool_group",
+                                        discounts: [discount1, discount2, discount3])
+        expect(productInfo.cacheKey()) == "cool_product-49.99-UYU-1-0-cool_group-P3Y-P3W-0-offerid1-offerid2-offerid3"
+    }
 }

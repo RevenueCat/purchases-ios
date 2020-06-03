@@ -175,25 +175,14 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                                                              @"observer_mode": @(observerMode)
                                                          }];
 
-    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@",
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@",
                                                     appUserID,
                                                     @(isRestore),
                                                     fetchToken,
-                                                    productInfo.productIdentifier,
-                                                    productInfo.price,
-                                                    productInfo.currencyCode,
-                                                    @((NSUInteger) productInfo.paymentMode),
-                                                    productInfo.introPrice,
-                                                    productInfo.subscriptionGroup,
+                                                    productInfo.cacheKey,
                                                     offeringIdentifier,
                                                     @(observerMode),
                                                     subscriberAttributesByKey];
-
-    if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
-        for (RCPromotionalOffer *discount in productInfo.discounts) {
-            cacheKey = [NSString stringWithFormat:@"%@-%@", cacheKey, discount.offerIdentifier];
-        }
-    }
 
     if ([self addCallback:completion forKey:cacheKey]) {
         return;

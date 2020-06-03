@@ -136,6 +136,27 @@ RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode payme
     return durations;
 }
 
+- (NSString *)cacheKey {
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%d-%@-%@-%@-%@-%d",
+                     self.productIdentifier,
+                     self.price,
+                     self.currencyCode,
+                     self.paymentMode,
+                     self.introPrice,
+                     self.subscriptionGroup,
+                     self.normalDuration,
+                     self.introDuration,
+                     self.introDurationType];
+
+    if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
+        for (RCPromotionalOffer *discount in self.discounts) {
+            cacheKey = [NSString stringWithFormat:@"%@-%@", cacheKey, discount.offerIdentifier];
+        }
+    }
+
+    return cacheKey;
+}
+
 @end
 
 

@@ -52,6 +52,8 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 
 - (NSDictionary *)asDictionary;
 
+- (NSString *)cacheKey;
+
 @end
 
 
