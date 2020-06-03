@@ -146,8 +146,49 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsSubscriptionGroup() {
+        let product = MockSKProduct(mockProductIdentifier: "cool_product")
+
+        if #available(iOS 12.0, *) {
+            product.mockSubscriptionGroupIdentifier = "mock_group"
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.subscriptionGroup) == "mock_group"
+        } else {
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.subscriptionGroup).to(beNil())
+        }
     }
 
     func testExtractInfoFromProductExtractsDiscounts() {
+        let product = MockSKProduct(mockProductIdentifier: "cool_product")
+
+        if #available(iOS 12.2, *) {
+            let mockDiscount = MockDiscount()
+            mockDiscount.mockPaymentMode = .freeTrial
+            mockDiscount.mockPrice = 10.99
+            mockDiscount.mockIdentifier = "cool_discount"
+
+            product.mockDiscount = mockDiscount
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.discounts.count) == 1
+            let receivedPromotionalOffer = receivedProductInfo.discounts[0]
+            expect(receivedPromotionalOffer.offerIdentifier) == "cool_discount"
+            expect(receivedPromotionalOffer.price) == 10.99
+            expect(receivedPromotionalOffer.paymentMode.rawValue) == RCPaymentMode.freeTrial.rawValue
+        } else {
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.discounts).to(beEmpty())
+        }
     }
 }

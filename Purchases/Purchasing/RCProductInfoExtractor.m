@@ -88,7 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
     return subscriptionGroup;
 }
 
-- (NSMutableArray *)extractDiscountsForProduct:(SKProduct *)product {
+- (NSArray<RCPromotionalOffer *> *)extractDiscountsForProduct:(SKProduct *)product {
     NSMutableArray *discounts = nil;
     if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
         discounts = [NSMutableArray new];
