@@ -200,6 +200,45 @@ class ProductInfoTests: XCTestCase {
     }
 
     func testAsDictionaryConvertsDiscountsCorrectly() {
-        
+        let discount1 = RCPromotionalOffer()
+        discount1.offerIdentifier = "offerid1"
+        discount1.paymentMode = .payAsYouGo
+        discount1.price = 11
+
+        let discount2 = RCPromotionalOffer()
+        discount2.offerIdentifier = "offerid2"
+        discount2.paymentMode = .payUpFront
+        discount2.price = 12
+
+        let discount3 = RCPromotionalOffer()
+        discount3.offerIdentifier = "offerid3"
+        discount3.paymentMode = .freeTrial
+        discount3.price = 13
+
+        let productInfo = RCProductInfo(productIdentifier: "cool_product",
+                                        paymentMode: .none,
+                                        currencyCode: "UYU",
+                                        price: 49.99,
+                                        normalDuration: nil,
+                                        introDuration: nil,
+                                        introDurationType: .none,
+                                        introPrice: nil,
+                                        subscriptionGroup: nil,
+                                        discounts: [discount1, discount2, discount3])
+
+        expect(productInfo.asDictionary()["offers"] as? [[String: NSObject]]).toNot(beNil())
+        guard let receivedOffers = productInfo.asDictionary()["offers"] as? [[String: NSObject]] else { fatalError() }
+
+        expect(receivedOffers[0]["offer_identifier"] as? String) == discount1.offerIdentifier
+        expect(receivedOffers[0]["price"] as? NSDecimalNumber) == discount1.price
+        expect((receivedOffers[0]["payment_mode"] as? NSNumber)?.intValue) == discount1.paymentMode.rawValue
+
+        expect(receivedOffers[1]["offer_identifier"] as? String) == discount2.offerIdentifier
+        expect(receivedOffers[1]["price"] as? NSDecimalNumber) == discount2.price
+        expect((receivedOffers[1]["payment_mode"] as? NSNumber)?.intValue) == discount2.paymentMode.rawValue
+
+        expect(receivedOffers[2]["offer_identifier"] as? String) == discount3.offerIdentifier
+        expect(receivedOffers[2]["price"] as? NSDecimalNumber) == discount3.price
+        expect((receivedOffers[2]["payment_mode"] as? NSNumber)?.intValue) == discount3.paymentMode.rawValue
     }
 }
