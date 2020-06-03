@@ -61,23 +61,93 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsIntroPrice() {
+        let product = MockSKProduct(mockProductIdentifier: "cool_product")
+
+        if #available(iOS 12.2, *) {
+            let mockDiscount = MockDiscount()
+            mockDiscount.mockPrice = 10.99
+
+            product.mockDiscount = mockDiscount
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.introPrice) == 10.99
+        } else {
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.introPrice).to(beNil())
+        }
     }
 
     func testExtractInfoFromProductExtractsNormalDuration() {
+        let product = MockSKProduct(mockProductIdentifier: "cool_product")
+
+        if #available(iOS 11.2, *) {
+            product.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 2, unit: .month)
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.normalDuration) == "P2M"
+        } else {
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.normalDuration).to(beNil())
+        }
     }
 
     func testExtractInfoFromProductExtractsIntroDuration() {
+        let product = MockSKProduct(mockProductIdentifier: "cool_product")
+
+        if #available(iOS 12.2, *) {
+            let mockDiscount = MockDiscount()
+            mockDiscount.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 3, unit: .year)
+
+            product.mockDiscount = mockDiscount
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.introDuration) == "P3Y"
+        } else {
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.introDuration).to(beNil())
+        }
     }
 
     func testExtractInfoFromProductExtractsIntroDurationType() {
+        let product = MockSKProduct(mockProductIdentifier: "cool_product")
+
+        if #available(iOS 12.2, *) {
+            let mockDiscount = MockDiscount()
+            mockDiscount.mockPaymentMode = .freeTrial
+
+            product.mockDiscount = mockDiscount
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.introDurationType.rawValue) == RCIntroDurationType.freeTrial.rawValue
+        } else {
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.introDurationType).to(beNil())
+        }
     }
 
     func testExtractInfoFromProductExtractsSubscriptionGroup() {
     }
 
     func testExtractInfoFromProductExtractsDiscounts() {
-    }
-
-    func testExtractInfoFromProductExtractsProductInfo() {
     }
 }

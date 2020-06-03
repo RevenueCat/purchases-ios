@@ -46,4 +46,12 @@ class MockSKProduct: SKProduct {
     override var discounts: [SKProductDiscount] {
         return (mockDiscount != nil) ? [mockDiscount!] : []
     }
+
+    @available(iOS 11.2, *)
+    lazy var mockSubscriptionPeriod: SKProductSubscriptionPeriod? = nil
+
+    @available(iOS 11.2, *)
+    override var subscriptionPeriod: SKProductSubscriptionPeriod {
+        return mockSubscriptionPeriod ?? SKProductSubscriptionPeriod(numberOfUnits: 1, unit:.month)
+    }
 }
