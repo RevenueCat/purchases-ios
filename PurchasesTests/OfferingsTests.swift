@@ -29,7 +29,7 @@ class OfferingsTests: XCTestCase {
 
     func testPackageIsCreatedIfValidProducts() {
         let productIdentifier = "com.myproduct.monthly"
-        let product = MockSKProduct(mockIdentifier: productIdentifier)
+        let product = MockSKProduct(mockProductIdentifier: productIdentifier)
         let packageIdentifier = "$rc_monthly"
         let package = offeringsFactory.createPackage(withData: [
             "identifier": packageIdentifier,
@@ -62,8 +62,8 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingIsCreatedIfValidPackages() {
         let products = [
-            "com.myproduct.annual": MockSKProduct(mockIdentifier: "com.myproduct.annual"),
-            "com.myproduct.monthly": MockSKProduct(mockIdentifier: "com.myproduct.monthly")
+            "com.myproduct.annual": MockSKProduct(mockProductIdentifier: "com.myproduct.annual"),
+            "com.myproduct.monthly": MockSKProduct(mockProductIdentifier: "com.myproduct.monthly")
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
@@ -119,8 +119,8 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingsIsCreated() {
         let products = [
-            "com.myproduct.annual": MockSKProduct(mockIdentifier: "com.myproduct.annual"),
-            "com.myproduct.monthly": MockSKProduct(mockIdentifier: "com.myproduct.monthly")
+            "com.myproduct.annual": MockSKProduct(mockProductIdentifier: "com.myproduct.annual"),
+            "com.myproduct.monthly": MockSKProduct(mockProductIdentifier: "com.myproduct.monthly")
         ]
         let offerings = offeringsFactory.createOfferings(withProducts: products, data: [
             "offerings": [
@@ -226,7 +226,7 @@ class OfferingsTests: XCTestCase {
         }
         let productIdentifier = "com.myproduct"
         let products = [
-            productIdentifier: MockSKProduct(mockIdentifier: productIdentifier)
+            productIdentifier: MockSKProduct(mockProductIdentifier: productIdentifier)
         ]
         let offerings = offeringsFactory.createOfferings(withProducts: products, data: [
             "offerings": [

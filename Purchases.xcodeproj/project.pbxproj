@@ -137,6 +137,7 @@
 		37E35EDC57C486AC2D66B4B8 /* MockOfferingsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3555B4BE0A4F7222E7B00 /* MockOfferingsFactory.swift */; };
 		37E35F20B49BCE1B6D76B084 /* RCStoreKitRequestFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35804C14F5E6CEAF3909C /* RCStoreKitRequestFetcher.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35F20FB949985BEEB4B58 /* MockRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35609E46E869675A466C1 /* MockRequestFetcher.swift */; };
+		37E35F549AEB655AB6DA83B3 /* MockSKDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35EABF6D7AFE367718784 /* MockSKDiscount.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -294,6 +295,7 @@
 		37E35E282619939718FC7DBE /* RCBackend.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCBackend.m; sourceTree = "<group>"; };
 		37E35E3250FBBB03D92E06EC /* InMemoryCachedObjectTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InMemoryCachedObjectTests.swift; sourceTree = "<group>"; };
 		37E35E5C3D1B1D6814496C89 /* RCProductInfoExtractor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCProductInfoExtractor.m; sourceTree = "<group>"; };
+		37E35EABF6D7AFE367718784 /* MockSKDiscount.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockSKDiscount.swift; sourceTree = "<group>"; };
 		37E35EB9B60477A7AD2C2EB5 /* RCLogUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCLogUtils.h; sourceTree = "<group>"; };
 		37E35EDEA372C1D8E03118FF /* RCHTTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCHTTPClient.m; sourceTree = "<group>"; };
 		37E35F1729999CFCA36E877D /* RCDateProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCDateProvider.m; sourceTree = "<group>"; };
@@ -477,6 +479,7 @@
 				37E35838A7FD36982EE14100 /* MockPurchasesDelegate.swift */,
 				37E351D48260D9DC8B1EE360 /* MockSubscriberAttributesManager.swift */,
 				2DEB976A247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift */,
+				37E35EABF6D7AFE367718784 /* MockSKDiscount.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -876,6 +879,7 @@
 				37E35AD3BB8E99D2AA325825 /* DeviceCacheSubscriberAttributesTests.swift in Sources */,
 				2DEB9769247DB70D00A92099 /* ISOPeriodFormatterTests.swift in Sources */,
 				37E355AEFF2FAC9D0D5EE8EB /* ProductInfoTests.swift in Sources */,
+				37E35F549AEB655AB6DA83B3 /* MockSKDiscount.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

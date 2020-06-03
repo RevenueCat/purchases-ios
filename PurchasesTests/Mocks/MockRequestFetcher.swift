@@ -14,8 +14,8 @@ class MockRequestFetcher: RCStoreKitRequestFetcher {
             return
         }
         requestedProducts = identifiers
-        let products = identifiers.map { (identifier) -> MockProduct in
-            let p = MockProduct(mockProductIdentifier: identifier)
+        let products = identifiers.map { (identifier) -> MockSKProduct in
+            let p = MockSKProduct(mockProductIdentifier: identifier)
             p.mockSubscriptionGroupIdentifier = "1234567"
             p.mockDiscountIdentifier = "discount_id"
             return p

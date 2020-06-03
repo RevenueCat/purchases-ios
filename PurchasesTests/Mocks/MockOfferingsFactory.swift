@@ -24,7 +24,7 @@ class MockOfferingsFactory: RCOfferingsFactory {
                     availablePackages: [
                         Purchases.Package(identifier: "$rc_monthly",
                                           packageType: Purchases.PackageType.monthly,
-                                          product: MockProduct(mockProductIdentifier: "monthly_freetrial"),
+                                          product: MockSKProduct(mockProductIdentifier: "monthly_freetrial"),
                                           offeringIdentifier: "base")
                     ]
                 )],

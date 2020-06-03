@@ -157,8 +157,8 @@ class DeviceCacheTests: XCTestCase {
 
     func testOfferingsAreProperlyCached() {
         let products = [
-            "com.myproduct.annual": MockSKProduct(mockIdentifier: "com.myproduct.annual"),
-            "com.myproduct.monthly": MockSKProduct(mockIdentifier: "com.myproduct.monthly")
+            "com.myproduct.annual": MockSKProduct(mockProductIdentifier: "com.myproduct.annual"),
+            "com.myproduct.monthly": MockSKProduct(mockProductIdentifier: "com.myproduct.monthly")
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"

@@ -190,7 +190,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessful() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
         mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
 
@@ -215,7 +215,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessfullySynced() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
         mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
 
@@ -243,7 +243,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     func testPostReceiptDoesntMarkSubscriberAttributesSyncedIfBackendNotSuccessfullySynced() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
         mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
 
