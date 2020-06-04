@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
     RCIntroDurationType introDurationType = [self extractIntroDurationTypeForProduct:product];
 
     NSString *subscriptionGroup = [self extractSubscriptionGroupForProduct:product];
-    NSMutableArray *discounts = [self extractDiscountsForProduct:product];
+    NSArray *discounts = [self extractDiscountsForProduct:product];
 
     RCProductInfo *productInfo = [[RCProductInfo alloc] initWithProductIdentifier:productIdentifier
                                                                       paymentMode:paymentMode

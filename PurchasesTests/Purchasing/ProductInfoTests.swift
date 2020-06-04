@@ -171,7 +171,7 @@ class ProductInfoTests: XCTestCase {
 
     func testAsDictionaryConvertsIntroPriceCorrectly() {
         let introPrice: NSDecimalNumber = 6.99
-        var productInfo = RCProductInfo(productIdentifier: "cool_product",
+        let productInfo = RCProductInfo(productIdentifier: "cool_product",
                                         paymentMode: .none,
                                         currencyCode: "UYU",
                                         price: 9.99,

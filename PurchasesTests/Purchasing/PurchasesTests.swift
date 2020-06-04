@@ -84,7 +84,7 @@ class PurchasesTests: XCTestCase {
                 postedSubscriptionGroup = productInfo.subscriptionGroup
 
                 postedCurrencyCode = productInfo.currencyCode
-                postedDiscounts = productInfo.discounts as? Array<RCPromotionalOffer>
+                postedDiscounts = productInfo.discounts
             }
 
             postedOfferingIdentifier = presentedOfferingIdentifier
