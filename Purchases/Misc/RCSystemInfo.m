@@ -67,6 +67,10 @@ static NSString * _Nullable proxyURL;
     return proxyURL ?: defaultServerHostName;
 }
 
++ (NSString *)serverProtocol {
+    return @"https";
+}
+
 + (nullable NSString *)proxyURL {
     return proxyURL;
 }

@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)platformHeader;
 
 + (NSString *)serverHostName;
++ (NSString *)serverProtocol;
 + (nullable NSString *)proxyURL;
 + (void)setProxyURL:(nullable NSString *)newProxyURL;
 
