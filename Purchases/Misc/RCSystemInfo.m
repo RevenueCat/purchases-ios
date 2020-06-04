@@ -18,7 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation RCSystemInfo
 
-static NSString *serverHostName = @"api.revenuecat.com";
+NSString *const defaultServerHostName = @"api.revenuecat.com";
+static NSString *serverHostName = defaultServerHostName;
 
 - (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
                  platformFlavorVersion:(nullable NSString *)platformFlavorVersion
@@ -65,8 +66,8 @@ static NSString *serverHostName = @"api.revenuecat.com";
 + (NSString *)serverHostName {
     return serverHostName;
 }
-+ (void)setServerHostName:(NSString *)newServerHostName {
-    serverHostName = newServerHostName;
++ (void)setServerHostName:(nullable NSString *)newServerHostName {
+    serverHostName = newServerHostName ?: defaultServerHostName;
 }
 
 @end
