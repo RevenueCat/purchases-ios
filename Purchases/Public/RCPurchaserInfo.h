@@ -64,7 +64,7 @@ Use this for grandfathering users when migrating to subscriptions.
 @property (nonatomic, readonly) NSString *originalAppUserId;
 
 /// managementURL URL to manage active subscriptions of this user.
-@property (nonatomic, readonly) NSURL *managementURL;
+@property (nonatomic, readonly, nullable) NSURL *managementURL;
 
 /**
  Get the expiration date for a given product identifier. You should use Entitlements though!

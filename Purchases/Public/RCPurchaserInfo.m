@@ -72,7 +72,7 @@ static dispatch_once_t onceToken;
 
     self.originalAppUserId = subscriberData[@"original_app_user_id"];
 
-    self.managementURL = [NSURL URLWithString:subscriberData[@"management_url"]];
+    self.managementURL = [self parseURL:subscriberData[@"management_url"]];
 }
 
 - (void)initializePurchasesAndEntitlementsWithSubscriberData:(NSDictionary *)subscriberData
@@ -113,6 +113,13 @@ static dispatch_once_t onceToken;
 - (nullable NSDate *)parseDate:(id)dateString withDateFormatter:(NSDateFormatter *)dateFormatter {
     if ([dateString isKindOfClass:NSString.class]) {
         return [dateFormatter dateFromString:(NSString *)dateString];
+    }
+    return nil;
+}
+
+- (nullable NSURL *)parseURL:(id)urlString {
+    if ([urlString isKindOfClass:NSString.class]) {
+        return [NSURL URLWithString:urlString];
     }
     return nil;
 }

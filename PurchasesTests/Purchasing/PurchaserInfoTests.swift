@@ -117,9 +117,13 @@ class BasicPurchaserInfoTests: XCTestCase {
         expect(nonConsumables as NSSet).to(contain(["onetime_purchase"]))
     }
 
-    func testOriginalApplicationVersionNull() {
-        // TODO: why this test?
-//        expect(self.purchaserInfo!.originalApplicationVersion).to(beNil())
+    func testOriginalApplicationVersionNullIfNotPresent() {
+        let purchaserInfo = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(purchaserInfo!.originalApplicationVersion).to(beNil())
     }
 
     func testOriginalApplicationVersion() {
@@ -141,6 +145,46 @@ class BasicPurchaserInfoTests: XCTestCase {
                 "other_purchases": [:]
             ]])
         expect(purchaserInfo!.originalPurchaseDate).to(equal(Date(timeIntervalSinceReferenceDate: 562288673)))
+    }
+
+
+    func testManagementURLNullIfNotPresent() {
+        let purchaserInfo = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(purchaserInfo!.managementURL).to(beNil())
+    }
+
+    func testManagementURLIsPresentWithValidURL() {
+        let purchaserInfo = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "management_url": "https://apple.com/manage_subscription",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(purchaserInfo!.managementURL).toNot(beNil())
+        expect(purchaserInfo!.managementURL!.absoluteString) == "https://apple.com/manage_subscription"
+    }
+
+    func testManagementURLIsNullWithInvalidURL() {
+        var purchaserInfo = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "management_url": "this isnt' a URL!",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(purchaserInfo!.managementURL).to(beNil())
+
+        purchaserInfo = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "management_url": 68546984,
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(purchaserInfo!.managementURL).to(beNil())
+
     }
 
     func testPreservesOriginalJSONSerializableObject() {
