@@ -104,11 +104,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 + (NSString *)proxyURL {
-    return RCSystemInfo.serverHostName;
+    return RCSystemInfo.proxyURL;
 }
 
 + (void)setProxyURL:(NSString *)proxyURL {
-    RCSystemInfo.serverHostName = proxyURL;
+    RCSystemInfo.proxyURL = proxyURL;
 }
 
 + (NSString *)frameworkVersion {
