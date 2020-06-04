@@ -24,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)systemVersion;
 + (NSString *)appVersion;
 + (NSString *)platformHeader;
++ (NSString *)serverHostName;
++ (void)setServerHostName:(NSString *)serverHostName;
 
 @end
 

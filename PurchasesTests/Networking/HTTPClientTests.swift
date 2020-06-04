@@ -45,7 +45,7 @@ class HTTPClientTests: XCTestCase {
         let path = "/a_random_path"
         var hostCorrect = false
 
-        stub(condition: isHost(RCHTTPClient.serverHostName())) { _ in
+        stub(condition: isHost(RCSystemInfo.serverHostName())) { _ in
             hostCorrect = true
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
