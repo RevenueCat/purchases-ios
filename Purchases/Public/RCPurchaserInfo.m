@@ -25,6 +25,7 @@
 @property (nonatomic) RCEntitlementInfos *entitlements;
 @property (nonatomic) NSString *originalAppUserId;
 @property (nonatomic, nullable) NSString *schemaVersion;
+@property (nonatomic, nullable) NSURL *managementURL;
 
 @end
 
@@ -71,6 +72,7 @@ static dispatch_once_t onceToken;
 
     self.originalAppUserId = subscriberData[@"original_app_user_id"];
 
+    self.managementURL = [NSURL URLWithString:subscriberData[@"management_url"]];
 }
 
 - (void)initializePurchasesAndEntitlementsWithSubscriberData:(NSDictionary *)subscriberData
