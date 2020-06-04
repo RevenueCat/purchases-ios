@@ -1984,6 +1984,23 @@ class PurchasesTests: XCTestCase {
         expect(self.deviceCache.clearOfferingsCacheTimestampCount) == 0
     }
 
+    func testProxyURL() {
+        expect(RCSystemInfo.proxyURL()).to(beNil())
+        let defaultHostName = "api.revenuecat.com"
+        expect(RCSystemInfo.serverHostName()) == defaultHostName
+
+        let testURL = "test_url"
+        Purchases.proxyURL = testURL
+
+        expect(RCSystemInfo.proxyURL()) == testURL
+        expect(RCSystemInfo.serverHostName()) == testURL
+
+        Purchases.proxyURL = nil
+
+        expect(RCSystemInfo.proxyURL()).to(beNil())
+        expect(RCSystemInfo.serverHostName()) == defaultHostName
+    }
+
     private func verifyUpdatedCaches(newAppUserID: String) {
         expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
         expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(2))
