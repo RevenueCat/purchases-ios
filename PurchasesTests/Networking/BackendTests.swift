@@ -251,16 +251,8 @@ class BackendTests: XCTestCase {
                                  completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
-        let productInfo = RCProductInfo(productIdentifier: "productId",
-                                        paymentMode: .none,
-                                        currencyCode: "USD",
-                                        price: 10.0,
-                                        normalDuration: nil,
-                                        introDuration: nil,
-                                        introDurationType: .none,
-                                        introPrice: nil,
-                                        subscriptionGroup: nil,
-                                        discounts: nil)
+        let productInfo = createMockProductInfo(currencyCode: "USD")
+
         backend?.postReceiptData(receiptData2,
                                  appUserID: userID,
                                  isRestore: isRestore,
@@ -353,16 +345,11 @@ class BackendTests: XCTestCase {
         let paymentMode: RCPaymentMode = .none
 
         var completionCalled = false
-        let productInfo = RCProductInfo(productIdentifier: productIdentifier,
-                                        paymentMode: paymentMode,
-                                        currencyCode: currencyCode,
-                                        price: price,
-                                        normalDuration: nil,
-                                        introDuration: nil,
-                                        introDurationType: .none,
-                                        introPrice: nil,
-                                        subscriptionGroup: group,
-                                        discounts: nil)
+        let productInfo = createMockProductInfo(productIdentifier: productIdentifier,
+                                                paymentMode: paymentMode,
+                                                currencyCode: currencyCode,
+                                                price: price,
+                                                subscriptionGroup: group)
 
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
@@ -412,16 +399,7 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
-        let productInfo = RCProductInfo(productIdentifier: "product_id",
-                                        paymentMode: .none,
-                                        currencyCode: "USD",
-                                        price: 9.99,
-                                        normalDuration: nil,
-                                        introDuration: nil,
-                                        introDurationType: .none,
-                                        introPrice: nil,
-                                        subscriptionGroup: nil,
-                                        discounts: nil)
+        let productInfo = createMockProductInfo()
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
                                  isRestore: false,
@@ -443,16 +421,7 @@ class BackendTests: XCTestCase {
     func postPaymentMode(paymentMode: RCPaymentMode) {
         var completionCalled = false
 
-        let productInfo = RCProductInfo(productIdentifier: "product",
-                                        paymentMode: paymentMode,
-                                        currencyCode: "USD",
-                                        price: 2.99,
-                                        normalDuration: nil,
-                                        introDuration: nil,
-                                        introDurationType: .none,
-                                        introPrice: 1.99,
-                                        subscriptionGroup: "group",
-                                        discounts: nil)
+        let productInfo = createMockProductInfo(paymentMode: paymentMode)
 
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
@@ -1026,16 +995,7 @@ class BackendTests: XCTestCase {
         discount.offerIdentifier = "offerid"
         discount.paymentMode = .payAsYouGo
         discount.price = 12
-        let productInfo = RCProductInfo(productIdentifier: "product_id",
-                                        paymentMode: .none,
-                                        currencyCode: "UYU",
-                                        price: 15.99,
-                                        normalDuration: nil,
-                                        introDuration: nil,
-                                        introDurationType: RCIntroDurationType.none,
-                                        introPrice: nil,
-                                        subscriptionGroup: nil,
-                                        discounts: [discount])
+        let productInfo = createMockProductInfo(discounts: [discount])
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
@@ -1050,7 +1010,7 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count).to(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
-    
+
     func testPostsReceiptDataWithDiscountInfoCorrectly() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
@@ -1070,16 +1030,12 @@ class BackendTests: XCTestCase {
         discount.paymentMode = .payAsYouGo
         discount.price = 12
 
-        let productInfo = RCProductInfo(productIdentifier: productIdentifier,
-                                        paymentMode: paymentMode,
-                                        currencyCode: currencyCode,
-                                        price: price,
-                                        normalDuration: nil,
-                                        introDuration: nil,
-                                        introDurationType: RCIntroDurationType.none,
-                                        introPrice: nil,
-                                        subscriptionGroup: group,
-                                        discounts: [discount])
+        let productInfo = createMockProductInfo(productIdentifier: productIdentifier,
+                                                paymentMode: paymentMode,
+                                                currencyCode: currencyCode,
+                                                price: price,
+                                                subscriptionGroup: group,
+                                                discounts: [discount])
 
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
@@ -1405,5 +1361,28 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count).to(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
+}
 
+private extension BackendTests {
+    func createMockProductInfo(productIdentifier: String = "product_id",
+                               paymentMode: RCPaymentMode = .none,
+                               currencyCode: String = "UYU",
+                               price: NSDecimalNumber = 15.99,
+                               normalDuration: String? = nil,
+                               introDuration: String? = nil,
+                               introDurationType: RCIntroDurationType = .none,
+                               introPrice: NSDecimalNumber? = nil,
+                               subscriptionGroup: String? = nil,
+                               discounts: [RCPromotionalOffer]? = nil) -> RCProductInfo {
+        RCProductInfo(productIdentifier: productIdentifier,
+                      paymentMode: paymentMode,
+                      currencyCode: currencyCode,
+                      price: price,
+                      normalDuration: normalDuration,
+                      introDuration: introDuration,
+                      introDurationType: introDurationType,
+                      introPrice: introPrice,
+                      subscriptionGroup: subscriptionGroup,
+                      discounts: discounts)
+    }
 }

@@ -48,7 +48,9 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
                         introDurationType:(RCIntroDurationType)introDurationType
                                introPrice:(nullable NSDecimalNumber *)introPrice
                         subscriptionGroup:(nullable NSString *)subscriptionGroup
-                                discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts;
+                                discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 - (NSDictionary *)asDictionary;
 
