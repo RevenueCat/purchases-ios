@@ -67,7 +67,7 @@ Use this for grandfathering users when migrating to subscriptions.
 /// If this user has an active iOS subscription, this will point to the App Store,
 /// if the user has an active Play Store subscription it will point there.
 /// If there are no active subscriptions it will be null.
-/// If there are multiple for different platforms, it will point to the App Store"
+/// If there are multiple for different platforms, it will point to the App Store
 @property (nonatomic, readonly, nullable) NSURL *managementURL;
 
 /**
