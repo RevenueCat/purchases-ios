@@ -6,22 +6,24 @@ import Purchases
 class ProductInfoExtractorTests: XCTestCase {
 
     func testExtractInfoFromProductExtractsProductIdentifier() {
-        let product = MockSKProduct(mockProductIdentifier: "cool_product")
+        let productID = "cool_product"
+        let product = MockSKProduct(mockProductIdentifier: productID)
         let productInfoExtractor = RCProductInfoExtractor()
 
         let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-        expect(receivedProductInfo.productIdentifier) == "cool_product"
+        expect(receivedProductInfo.productIdentifier) == productID
     }
 
     func testExtractInfoFromProductExtractsPrice() {
         let product = MockSKProduct(mockProductIdentifier: "cool_product")
-        product.mockPrice = NSDecimalNumber(decimal: 10.99)
+        let price: NSDecimalNumber = 10.99
+        product.mockPrice = price
         let productInfoExtractor = RCProductInfoExtractor()
 
         let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-        expect(receivedProductInfo.price) == 10.99
+        expect(receivedProductInfo.price) == price
     }
 
     func testExtractInfoFromProductExtractsCurrencyCode() {
@@ -149,12 +151,13 @@ class ProductInfoExtractorTests: XCTestCase {
         let product = MockSKProduct(mockProductIdentifier: "cool_product")
 
         if #available(iOS 12.0, *) {
-            product.mockSubscriptionGroupIdentifier = "mock_group"
+            let group = "mock_group"
+            product.mockSubscriptionGroupIdentifier = group
             let productInfoExtractor = RCProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.subscriptionGroup) == "mock_group"
+            expect(receivedProductInfo.subscriptionGroup) == group
         } else {
             let productInfoExtractor = RCProductInfoExtractor()
 
@@ -169,9 +172,12 @@ class ProductInfoExtractorTests: XCTestCase {
 
         if #available(iOS 12.2, *) {
             let mockDiscount = MockDiscount()
-            mockDiscount.mockPaymentMode = .freeTrial
-            mockDiscount.mockPrice = 10.99
-            mockDiscount.mockIdentifier = "cool_discount"
+            let paymentMode: SKProductDiscount.PaymentMode = .freeTrial
+            mockDiscount.mockPaymentMode = paymentMode
+            let price: NSDecimalNumber = 10.99
+            mockDiscount.mockPrice = price
+            let discountID = "cool_discount"
+            mockDiscount.mockIdentifier = discountID
 
             product.mockDiscount = mockDiscount
             let productInfoExtractor = RCProductInfoExtractor()
@@ -180,9 +186,9 @@ class ProductInfoExtractorTests: XCTestCase {
 
             expect(receivedProductInfo.discounts.count) == 1
             let receivedPromotionalOffer = receivedProductInfo.discounts[0]
-            expect(receivedPromotionalOffer.offerIdentifier) == "cool_discount"
-            expect(receivedPromotionalOffer.price) == 10.99
-            expect(receivedPromotionalOffer.paymentMode.rawValue) == RCPaymentMode.freeTrial.rawValue
+            expect(receivedPromotionalOffer.offerIdentifier) == discountID
+            expect(receivedPromotionalOffer.price) == price
+            expect(receivedPromotionalOffer.paymentMode.rawValue) == Int(paymentMode.rawValue)
         } else {
             let productInfoExtractor = RCProductInfoExtractor()
 

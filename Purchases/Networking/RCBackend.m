@@ -206,8 +206,8 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                                body:body
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      for (RCBackendPurchaserInfoResponseHandler
-                          callback in [self getCallbacksAndClearForKey:cacheKey]) {
+                      NSArray *callbacks = [self getCallbacksAndClearForKey:cacheKey];
+                      for (RCBackendPurchaserInfoResponseHandler callback in callbacks) {
                           [self handle:status withResponse:response error:error completion:callback];
                       }
                   }];
