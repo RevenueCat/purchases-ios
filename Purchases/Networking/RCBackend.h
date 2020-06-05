@@ -11,24 +11,15 @@
 
 #import "RCPurchases.h"
 #import "RCSubscriberAttribute.h"
+#import "RCProductInfo.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCPromotionalOffer, RCSubscriberAttribute, RCSystemInfo;
 
-typedef NS_ENUM(NSInteger, RCPaymentMode) {
-    RCPaymentModeNone = -1,
-    RCPaymentModePayAsYouGo = 0,
-    RCPaymentModePayUpFront = 1,
-    RCPaymentModeFreeTrial = 2
-};
-
 extern NSErrorUserInfoKey const RCSuccessfullySyncedKey;
 extern NSString * const RCAttributeErrorsKey;
 extern NSString * const RCAttributeErrorsResponseKey;
-
-API_AVAILABLE(ios(11.2), macos(10.13.2))
-RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode);
 
 typedef void(^RCBackendPurchaserInfoResponseHandler)(RCPurchaserInfo * _Nullable,
                                         NSError * _Nullable);
@@ -54,13 +45,7 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
 - (void)    postReceiptData:(NSData *)data
                   appUserID:(NSString *)appUserID
                   isRestore:(BOOL)isRestore
-          productIdentifier:(nullable NSString *)productIdentifier
-                      price:(nullable NSDecimalNumber *)price
-                paymentMode:(RCPaymentMode)paymentMode
-          introductoryPrice:(nullable NSDecimalNumber *)introductoryPrice
-               currencyCode:(nullable NSString *)currencyCode
-          subscriptionGroup:(nullable NSString *)subscriptionGroup
-                  discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
+                productInfo:(nullable RCProductInfo *)productInfo
 presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                observerMode:(BOOL)observerMode
        subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey

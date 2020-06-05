@@ -46,6 +46,7 @@ class PurchasesTests: XCTestCase {
         }
 
         var postReceiptDataCalled = false
+        var postedReceiptData: Data?
         var postedIsRestore: Bool?
         var postedProductID: String?
         var postedPrice: NSDecimalNumber?
@@ -65,29 +66,27 @@ class PurchasesTests: XCTestCase {
         override func postReceiptData(_ data: Data,
                                       appUserID: String,
                                       isRestore: Bool,
-                                      productIdentifier: String?,
-                                      price: NSDecimalNumber?,
-                                      paymentMode: RCPaymentMode,
-                                      introductoryPrice: NSDecimalNumber?,
-                                      currencyCode: String?,
-                                      subscriptionGroup: String?,
-                                      discounts: Array<RCPromotionalOffer>?,
+                                      productInfo: RCProductInfo?,
                                       presentedOfferingIdentifier: String?,
                                       observerMode: Bool,
                                       subscriberAttributes: [String: RCSubscriberAttribute]?,
                                       completion: @escaping RCBackendPurchaserInfoResponseHandler) {
             postReceiptDataCalled = true
+            postedReceiptData = data
             postedIsRestore = isRestore
 
-            postedProductID = productIdentifier
-            postedPrice = price
+            if let productInfo = productInfo {
+                postedProductID = productInfo.productIdentifier
+                postedPrice = productInfo.price
 
-            postedPaymentMode = paymentMode
-            postedIntroPrice = introductoryPrice
-            postedSubscriptionGroup = subscriptionGroup
+                postedPaymentMode = productInfo.paymentMode
+                postedIntroPrice = productInfo.introPrice
+                postedSubscriptionGroup = productInfo.subscriptionGroup
 
-            postedCurrencyCode = currencyCode
-            postedDiscounts = discounts
+                postedCurrencyCode = productInfo.currencyCode
+                postedDiscounts = productInfo.discounts
+            }
+
             postedOfferingIdentifier = presentedOfferingIdentifier
             postedObserverMode = observerMode
             completion(postReceiptPurchaserInfo, postReceiptError)
@@ -271,7 +270,7 @@ class PurchasesTests: XCTestCase {
         let purchaserInfo = Purchases.PurchaserInfo()
         self.backend.postReceiptPurchaserInfo = purchaserInfo
 
-        let product = MockProduct(mockProductIdentifier: "product")
+        let product = MockSKProduct(mockProductIdentifier: "product")
         let payment = SKPayment(product: product)
 
         let transaction = MockTransaction()
@@ -301,7 +300,7 @@ class PurchasesTests: XCTestCase {
 
         let purchaserInfo2 = purchaserInfo1
 
-        let product = MockProduct(mockProductIdentifier: "product")
+        let product = MockSKProduct(mockProductIdentifier: "product")
         let payment = SKPayment(product: product)
 
         let transaction = MockTransaction()
@@ -342,7 +341,7 @@ class PurchasesTests: XCTestCase {
             ]
         ])
 
-        let product = MockProduct(mockProductIdentifier: "product")
+        let product = MockSKProduct(mockProductIdentifier: "product")
         let payment = SKPayment(product: product)
 
         let transaction = MockTransaction()
@@ -366,7 +365,7 @@ class PurchasesTests: XCTestCase {
 
     func testDelegateIsNotCalledIfBlockPassed() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -404,7 +403,7 @@ class PurchasesTests: XCTestCase {
 
     func testAddsPaymentToWrapper() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -415,7 +414,7 @@ class PurchasesTests: XCTestCase {
 
     func testTransitioningToPurchasing() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -431,7 +430,7 @@ class PurchasesTests: XCTestCase {
 
     func testTransitioningToPurchasedSendsToBackend() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -451,7 +450,7 @@ class PurchasesTests: XCTestCase {
 
     func testReceiptsSendsAsRestoreWhenAnon() {
         setupAnonPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -472,7 +471,7 @@ class PurchasesTests: XCTestCase {
     func testReceiptsSendsAsNotRestoreWhenAnonymousAndNotAllowingSharingAppStoreAccount() {
         setupAnonPurchases()
         self.purchases.allowSharingAppStoreAccount = false
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -493,7 +492,7 @@ class PurchasesTests: XCTestCase {
     func testReceiptsSendsAsRestoreWhenNotAnonymousAndAllowingSharingAppStoreAccount() {
         setupPurchases()
         self.purchases.allowSharingAppStoreAccount = true
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -513,7 +512,7 @@ class PurchasesTests: XCTestCase {
 
     func testFinishesTransactionsIfSentToBackendCorrectly() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -536,7 +535,7 @@ class PurchasesTests: XCTestCase {
     func testDoesntFinishTransactionsIfFinishingDisabled() {
         setupPurchases()
         self.purchases?.finishTransactions = false
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -577,7 +576,7 @@ class PurchasesTests: XCTestCase {
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
             expect(self.backend.postReceiptDataCalled).to(beTrue())
-            expect(self.backend.postReceiptData).toNot(beNil())
+            expect(self.backend.postedReceiptData).toNot(beNil())
 
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
             expect(self.backend.postedPrice).to(equal(product.price))
@@ -597,8 +596,8 @@ class PurchasesTests: XCTestCase {
             if #available(iOS 12.2, *) {
                 expect(self.backend.postedDiscounts?.count).to(equal(1))
                 expect(self.backend.postedDiscounts?[0].offerIdentifier).to(equal("discount_id"))
-                expect(self.backend.postedDiscounts?[0].price).to(equal(2.99))
-                expect(self.backend.postedDiscounts?[0].paymentMode).to(equal(RCPaymentMode.freeTrial))
+                expect(self.backend.postedDiscounts?[0].price).to(equal(1.99))
+                expect(self.backend.postedDiscounts?[0].paymentMode).to(equal(RCPaymentMode.payAsYouGo))
             }
 
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))
@@ -609,7 +608,7 @@ class PurchasesTests: XCTestCase {
 
     func testFetchesProductInfoIfNotCached() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
         let transaction = MockTransaction()
         storeKitWrapper.payment = SKPayment(product: product);
@@ -637,7 +636,7 @@ class PurchasesTests: XCTestCase {
 
     func testAfterSendingDoesntFinishTransactionIfBackendError() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -655,7 +654,7 @@ class PurchasesTests: XCTestCase {
 
     func testAfterSendingFinishesFromBackendErrorIfAppropriate() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -674,7 +673,7 @@ class PurchasesTests: XCTestCase {
 
     func testNotifiesIfTransactionFailsFromBackend() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -693,7 +692,7 @@ class PurchasesTests: XCTestCase {
 
     func testNotifiesIfTransactionFailsFromStoreKit() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         var receivedError: Error?
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
             receivedError = error
@@ -715,7 +714,7 @@ class PurchasesTests: XCTestCase {
 
     func testCallsDelegateAfterBackendResponse() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         
         var purchaserInfo: Purchases.PurchaserInfo?
         var receivedError: Error?
@@ -743,7 +742,7 @@ class PurchasesTests: XCTestCase {
 
     func testCompletionBlockOnlyCalledOnce() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
         var callCount = 0
 
@@ -766,8 +765,8 @@ class PurchasesTests: XCTestCase {
 
     func testCompletionBlockNotCalledForDifferentProducts() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
-        let otherProduct = MockProduct(mockProductIdentifier: "com.product.id2")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+        let otherProduct = MockSKProduct(mockProductIdentifier: "com.product.id2")
 
         var callCount = 0
 
@@ -789,7 +788,7 @@ class PurchasesTests: XCTestCase {
 
     func testCallingPurchaseWhileSameProductPendingIssuesError() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
         // First one "works"
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
@@ -938,7 +937,7 @@ class PurchasesTests: XCTestCase {
 
     func testCallsShouldAddPromoPaymentDelegateMethod() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "mock_product")
+        let product = MockSKProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init()
 
         storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
@@ -948,7 +947,7 @@ class PurchasesTests: XCTestCase {
 
     func testShouldAddPromoPaymentDelegateMethodReturnsFalse() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "mock_product")
+        let product = MockSKProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init()
 
         let result = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
@@ -958,7 +957,7 @@ class PurchasesTests: XCTestCase {
 
     func testShouldCacheProductsFromPromoPaymentDelegateMethod() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "mock_product")
+        let product = MockSKProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init(product: product)
 
         storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
@@ -979,7 +978,7 @@ class PurchasesTests: XCTestCase {
 
     func testDeferBlockMakesPayment() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "mock_product")
+        let product = MockSKProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init(product: product)
 
         storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
@@ -1071,7 +1070,7 @@ class PurchasesTests: XCTestCase {
                 "other_purchases": [:]
             ]]);
 
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -1280,7 +1279,7 @@ class PurchasesTests: XCTestCase {
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
             expect(self.backend.postReceiptDataCalled).to(beTrue())
-            expect(self.backend.postReceiptData).toNot(beNil())
+            expect(self.backend.postedReceiptData).toNot(beNil())
 
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
             expect(self.backend.postedPrice).to(equal(product.price))
@@ -1558,7 +1557,7 @@ class PurchasesTests: XCTestCase {
 
     func testUserCancelledFalseIfPurchaseSuccessful() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         var receivedUserCancelled: Bool?
 
         // Second one issues an error
@@ -1576,7 +1575,7 @@ class PurchasesTests: XCTestCase {
 
     func testUserCancelledTrueIfPurchaseCancelled() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         var receivedUserCancelled: Bool?
         var receivedError: NSError?
         var receivedUnderlyingError: NSError?
@@ -1605,7 +1604,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = false
 
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         var receivedUserCancelled: Bool?
         var receivedError: NSError?
 
@@ -1626,7 +1625,7 @@ class PurchasesTests: XCTestCase {
 
     func testDeferBlockCallsCompletionBlockAfterPurchaseCompletes() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "mock_product")
+        let product = MockSKProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init(product: product)
 
         storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
@@ -1652,7 +1651,7 @@ class PurchasesTests: XCTestCase {
     func testAddsDiscountToWrapper() {
         if #available(iOS 12.2, *) {
             setupPurchases()
-            let product = MockProduct(mockProductIdentifier: "com.product.id1")
+            let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
             let discount = SKPaymentDiscount.init(identifier: "discount", keyIdentifier: "TIKAMASALA1", nonce: UUID(), signature: "Base64 encoded signature", timestamp: 123413232131)
 
             self.purchases?.purchaseProduct(product, discount: discount) { (tx, info, error, userCancelled) in
@@ -1668,7 +1667,7 @@ class PurchasesTests: XCTestCase {
     func testPaymentDiscountForProductDiscountCreatesDiscount() {
         if #available(iOS 12.2, *) {
             setupPurchases()
-            let product = MockProduct(mockProductIdentifier: "com.product.id1")
+            let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
             let discountIdentifier = "id"
             let signature = "firma"
@@ -1780,7 +1779,7 @@ class PurchasesTests: XCTestCase {
 
     func testObserverModeSetToFalseSetFinishTransactions() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -1802,7 +1801,7 @@ class PurchasesTests: XCTestCase {
 
     func testDoesntFinishTransactionsIfObserverModeIsSet() {
         setupPurchasesObserverModeOn()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -1824,7 +1823,7 @@ class PurchasesTests: XCTestCase {
 
     func testRestoredPurchasesArePosted() {
         setupPurchasesObserverModeOn()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -1871,7 +1870,7 @@ class PurchasesTests: XCTestCase {
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
             expect(self.backend.postReceiptDataCalled).to(beTrue())
-            expect(self.backend.postReceiptData).toNot(beNil())
+            expect(self.backend.postedReceiptData).toNot(beNil())
 
             expect(self.backend.postedProductID).to(equal(package.product.productIdentifier))
             expect(self.backend.postedPrice).to(equal(package.product.price))
@@ -1908,7 +1907,7 @@ class PurchasesTests: XCTestCase {
         let purchaserInfo = Purchases.PurchaserInfo()
         self.backend.postReceiptPurchaserInfo = purchaserInfo
 
-        let product = MockProduct(mockProductIdentifier: "product")
+        let product = MockSKProduct(mockProductIdentifier: "product")
         let payment = SKPayment(product: product)
 
         let transaction = MockTransaction()
@@ -1927,7 +1926,7 @@ class PurchasesTests: XCTestCase {
     
     func testReceiptsSendsObserverModeWhenObserverMode() {
         setupPurchasesObserverModeOn()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }
@@ -1947,7 +1946,7 @@ class PurchasesTests: XCTestCase {
     
     func testReceiptsSendsObserverModeOffWhenObserverModeOff() {
         setupPurchases()
-        let product = MockProduct(mockProductIdentifier: "com.product.id1")
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
 
         }

@@ -18,26 +18,12 @@
 #import "RCPromotionalOffer.h"
 #import "RCSystemInfo.h"
 #import "RCHTTPStatusCodes.h"
+#import "RCProductInfo.h"
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
 NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"successfullySynced";
 NSString *const RCAttributeErrorsKey = @"attribute_errors";
 NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
-
-API_AVAILABLE(ios(11.2), macos(10.13.2))
-RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPaymentMode paymentMode)
-{
-    switch (paymentMode) {
-        case SKProductDiscountPaymentModePayUpFront:
-            return RCPaymentModePayUpFront;
-        case SKProductDiscountPaymentModePayAsYouGo:
-            return RCPaymentModePayAsYouGo;
-        case SKProductDiscountPaymentModeFreeTrial:
-            return RCPaymentModeFreeTrial;
-        default:
-            return RCPaymentModeNone;
-    }
-}
 
 @interface RCBackend ()
 
@@ -148,14 +134,14 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     @synchronized(self) {
         NSMutableArray *callbacks = self.callbacksCache[key];
         BOOL cacheMiss = callbacks == nil;
-        
+
         if (cacheMiss) {
             callbacks = [NSMutableArray new];
             self.callbacksCache[key] = callbacks;
         }
-        
+
         [callbacks addObject:[completion copy]];
-        
+
         BOOL requestAlreadyInFlight = !cacheMiss;
         return requestAlreadyInFlight;
     }
@@ -165,9 +151,9 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
     @synchronized(self) {
         NSMutableArray *callbacks = self.callbacksCache[key];
         NSParameterAssert(callbacks);
-        
+
         self.callbacksCache[key] = nil;
-        
+
         return callbacks;
     }
 }
@@ -175,18 +161,11 @@ RCPaymentMode RCPaymentModeFromSKProductDiscountPaymentMode(SKProductDiscountPay
 - (void)    postReceiptData:(NSData *)data
                   appUserID:(NSString *)appUserID
                   isRestore:(BOOL)isRestore
-          productIdentifier:(nullable NSString *)productIdentifier
-                      price:(nullable NSDecimalNumber *)price
-                paymentMode:(RCPaymentMode)paymentMode
-          introductoryPrice:(nullable NSDecimalNumber *)introductoryPrice
-               currencyCode:(nullable NSString *)currencyCode
-          subscriptionGroup:(nullable NSString *)subscriptionGroup
-                  discounts:(nullable NSArray<RCPromotionalOffer *> *)discounts
-presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
+                productInfo:(nullable RCProductInfo *)productInfo
+presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                observerMode:(BOOL)observerMode
        subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
                  completion:(RCBackendPurchaserInfoResponseHandler)completion {
-
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
     NSMutableDictionary *body = [NSMutableDictionary dictionaryWithDictionary:
                                                          @{
@@ -196,52 +175,21 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                              @"observer_mode": @(observerMode)
                                                          }];
 
-    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@-%@",
+    NSString *cacheKey = [NSString stringWithFormat:@"%@-%@-%@-%@-%@-%@-%@",
                                                     appUserID,
                                                     @(isRestore),
                                                     fetchToken,
-                                                    productIdentifier,
-                                                    price,
-                                                    currencyCode,
-                                                    @((NSUInteger) paymentMode),
-                                                    introductoryPrice,
-                                                    subscriptionGroup,
-                                                    presentedOfferingIdentifier,
+                                                    productInfo.cacheKey,
+                                                    offeringIdentifier,
                                                     @(observerMode),
                                                     subscriberAttributesByKey];
 
-    if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
-        for (RCPromotionalOffer *discount in discounts) {
-            cacheKey = [NSString stringWithFormat:@"%@-%@", cacheKey, discount.offerIdentifier];
-        }
-    }
-    
     if ([self addCallback:completion forKey:cacheKey]) {
         return;
     }
 
-    if (productIdentifier) {
-        body[@"product_id"] = productIdentifier;
-    }
-
-    if (price) {
-        body[@"price"] = price;
-    }
-
-    if (currencyCode) {
-        body[@"currency"] = currencyCode;
-    }
-
-    if (paymentMode != RCPaymentModeNone) {
-        body[@"payment_mode"] = @((NSUInteger)paymentMode);
-    }
-
-    if (introductoryPrice) {
-        body[@"introductory_price"] = introductoryPrice;
-    }
-
-    if (subscriptionGroup) {
-        body[@"subscription_group_id"] = subscriptionGroup;
+    if (productInfo) {
+        [body addEntriesFromDictionary:productInfo.asDictionary];
     }
 
     if (subscriberAttributesByKey) {
@@ -249,22 +197,8 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         body[@"attributes"] = attributesInBackendFormat;
     }
 
-    if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
-        if (discounts) {
-            NSMutableArray *offers = [NSMutableArray array];
-            for (RCPromotionalOffer *discount in discounts) {
-                [offers addObject:@{
-                        @"offer_identifier": discount.offerIdentifier,
-                        @"price": discount.price,
-                        @"payment_mode": @((NSUInteger) discount.paymentMode)
-                }];
-            }
-            body[@"offers"] = offers;
-        }
-    }
-
-    if (presentedOfferingIdentifier) {
-        body[@"presented_offering_identifier"] = presentedOfferingIdentifier;
+    if (offeringIdentifier) {
+        body[@"presented_offering_identifier"] = offeringIdentifier;
     }
 
     [self.httpClient performRequest:@"POST"
@@ -272,7 +206,8 @@ presentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                body:body
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      for (RCBackendPurchaserInfoResponseHandler callback in [self getCallbacksAndClearForKey:cacheKey]) {
+                      NSArray *callbacks = [self getCallbacksAndClearForKey:cacheKey];
+                      for (RCBackendPurchaserInfoResponseHandler callback in callbacks) {
                           [self handle:status withResponse:response error:error completion:callback];
                       }
                   }];
