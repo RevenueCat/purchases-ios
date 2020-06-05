@@ -5,8 +5,8 @@ import Purchases
 
 class ProductInfoTests: XCTestCase {
     func testAsDictionaryConvertsProductIdentifierCorrectly() {
-        let product_identifier = "cool_product"
-        let productInfo = RCProductInfo(productIdentifier: product_identifier,
+        let productIdentifier = "cool_product"
+        let productInfo = RCProductInfo(productIdentifier: productIdentifier,
                                         paymentMode: .none,
                                         currencyCode: "UYU",
                                         price: 9.99,
@@ -16,7 +16,7 @@ class ProductInfoTests: XCTestCase {
                                         introPrice: nil,
                                         subscriptionGroup: nil,
                                         discounts: nil)
-        expect(productInfo.asDictionary()["product_id"] as? String) == product_identifier
+        expect(productInfo.asDictionary()["product_id"] as? String) == productIdentifier
     }
 
     func testAsDictionaryConvertsPaymentModeCorrectly() {
@@ -166,7 +166,7 @@ class ProductInfoTests: XCTestCase {
                                         subscriptionGroup: nil,
                                         discounts: nil)
         expect(productInfo.asDictionary()["trial_duration"]).to(beNil())
-        expect(productInfo.asDictionary()["trial_duration"]).to(beNil())
+        expect(productInfo.asDictionary()["intro_duration"]).to(beNil())
     }
 
     func testAsDictionaryConvertsIntroPriceCorrectly() {
