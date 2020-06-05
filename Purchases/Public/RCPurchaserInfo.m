@@ -63,7 +63,10 @@ static dispatch_once_t onceToken;
 }
 
 - (void)initializeMetadataWithSubscriberData:(NSDictionary *)subscriberData {
-    self.originalApplicationVersion = subscriberData[@"original_application_version"];
+    NSObject *originalApplicationVersionOrNull = subscriberData[@"original_application_version"];
+    self.originalApplicationVersion = [originalApplicationVersionOrNull isKindOfClass:[NSNull class]]
+                                      ? nil
+                                      : (NSString *)originalApplicationVersionOrNull;
 
     self.originalPurchaseDate = [self parseDate:subscriberData[@"original_purchase_date"]
                               withDateFormatter:dateFormatter];

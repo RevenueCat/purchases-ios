@@ -117,11 +117,21 @@ class BasicPurchaserInfoTests: XCTestCase {
         expect(nonConsumables as NSSet).to(contain(["onetime_purchase"]))
     }
 
-    func testOriginalApplicationVersionNullIfNotPresent() {
+    func testOriginalApplicationVersionNilIfNotPresent() {
         let purchaserInfo = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:]
+            ]])
+        expect(purchaserInfo!.originalApplicationVersion).to(beNil())
+    }
+
+    func testOriginalApplicationVersionNilIfNull() {
+        let purchaserInfo = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": NSNull()
             ]])
         expect(purchaserInfo!.originalApplicationVersion).to(beNil())
     }
