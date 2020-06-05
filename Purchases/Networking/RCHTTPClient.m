@@ -96,11 +96,10 @@ NS_ASSUME_NONNULL_BEGIN
                                             path:(NSString *)path
                                      requestBody:(NSDictionary *)requestBody
                                          headers:(NSMutableDictionary *)defaultHeaders {
-    NSString *urlString = [NSString stringWithFormat:@"%@://%@/v1%@",
-                                                     RCSystemInfo.serverProtocol,
-                                                     RCSystemInfo.serverHostName,
-                                                     path];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+    NSString *relativeURLString = [NSString stringWithFormat:@"/v1%@", path];
+    NSURL *requestURL = [NSURL URLWithString:relativeURLString relativeToURL:RCSystemInfo.serverHostURL];
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL];
 
     request.HTTPMethod = HTTPMethod;
     request.allHTTPHeaderFields = defaultHeaders;

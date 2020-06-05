@@ -5,24 +5,20 @@ import Purchases
 
 class SystemInfoTests: XCTestCase {
     func testProxyURL() {
-        let defaultURL = "api.revenuecat.com"
-        expect(RCSystemInfo.serverHostName()) == defaultURL
+        let defaultURL = URL(string: "https://api.revenuecat.com")
+        expect(RCSystemInfo.serverHostURL()) == defaultURL
         expect(RCSystemInfo.proxyURL()).to(beNil())
 
-        let url = "my_url"
+        let url = URL(string: "https://my_url")
         RCSystemInfo.setProxyURL(url)
 
-        expect(RCSystemInfo.serverHostName()) == url
+        expect(RCSystemInfo.serverHostURL()) == url
         expect(RCSystemInfo.proxyURL()) == url
 
         RCSystemInfo.setProxyURL(nil)
         expect(RCSystemInfo.proxyURL()).to(beNil())
 
-        expect(RCSystemInfo.serverHostName()) == defaultURL
-    }
-
-    func testServerProtocol() {
-        expect(RCSystemInfo.serverProtocol()) == "https"
+        expect(RCSystemInfo.serverHostURL()) == defaultURL
     }
 
     func testSystemVersion() {

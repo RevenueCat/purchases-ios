@@ -103,7 +103,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     return RCShowDebugLogs();
 }
 
-+ (NSString *)proxyURL {
++ (NSURL *)proxyURL {
     return RCSystemInfo.proxyURL;
 }
 

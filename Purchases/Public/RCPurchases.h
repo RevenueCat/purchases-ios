@@ -107,7 +107,7 @@ NS_SWIFT_NAME(Purchases)
 /**
 Override to use your own proxy. BEWARE
 */
-@property (class, nonatomic, copy, nullable) NSString *proxyURL;
+@property (class, nonatomic, copy, nullable) NSURL *proxyURL;
 
 /**
  Configures an instance of the Purchases SDK with a specified API key. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]

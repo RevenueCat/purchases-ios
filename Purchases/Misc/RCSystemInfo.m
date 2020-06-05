@@ -18,8 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation RCSystemInfo
 
-NSString *const defaultServerHostName = @"api.revenuecat.com";
-static NSString * _Nullable proxyURL;
+NSString *const defaultServerHostName = @"https://api.revenuecat.com";
+static NSURL * _Nullable proxyURL;
 
 - (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
                  platformFlavorVersion:(nullable NSString *)platformFlavorVersion
@@ -63,18 +63,18 @@ static NSString * _Nullable proxyURL;
     return PLATFORM_HEADER;
 }
 
-+ (NSString *)serverHostName {
-    return proxyURL ?: defaultServerHostName;
++ (NSURL *)defaultServerHostURL {
+    return [NSURL URLWithString:defaultServerHostName];
 }
 
-+ (NSString *)serverProtocol {
-    return @"https";
++ (NSURL *)serverHostURL {
+    return proxyURL ?: self.defaultServerHostURL;
 }
 
-+ (nullable NSString *)proxyURL {
++ (nullable NSURL *)proxyURL {
     return proxyURL;
 }
-+ (void)setProxyURL:(nullable NSString *)newProxyURL {
++ (void)setProxyURL:(nullable NSURL *)newProxyURL {
     proxyURL = newProxyURL;
 }
 
