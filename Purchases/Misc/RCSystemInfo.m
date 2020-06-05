@@ -5,6 +5,7 @@
 
 #import "RCSystemInfo.h"
 #import "RCCrossPlatformSupport.h"
+#import "RCLogUtils.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -76,6 +77,9 @@ static NSURL * _Nullable proxyURL;
 }
 + (void)setProxyURL:(nullable NSURL *)newProxyURL {
     proxyURL = newProxyURL;
+    if (newProxyURL) {
+        RCLog(@"Purchases is being configured using a proxy for RevenueCat with URL: %@", newProxyURL);
+    }
 }
 
 @end
