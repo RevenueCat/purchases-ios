@@ -251,7 +251,7 @@ class BackendTests: XCTestCase {
                                  completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
-        let productInfo = createMockProductInfo(currencyCode: "USD")
+        let productInfo: RCProductInfo = .createMockProductInfo(currencyCode: "USD")
 
         backend?.postReceiptData(receiptData2,
                                  appUserID: userID,
@@ -345,11 +345,11 @@ class BackendTests: XCTestCase {
         let paymentMode: RCPaymentMode = .none
 
         var completionCalled = false
-        let productInfo = createMockProductInfo(productIdentifier: productIdentifier,
-                                                paymentMode: paymentMode,
-                                                currencyCode: currencyCode,
-                                                price: price,
-                                                subscriptionGroup: group)
+        let productInfo: RCProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
+                                                                paymentMode: paymentMode,
+                                                                currencyCode: currencyCode,
+                                                                price: price,
+                                                                subscriptionGroup: group)
 
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
@@ -399,7 +399,7 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
-        let productInfo = createMockProductInfo()
+        let productInfo: RCProductInfo = .createMockProductInfo()
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
                                  isRestore: false,
@@ -421,7 +421,7 @@ class BackendTests: XCTestCase {
     func postPaymentMode(paymentMode: RCPaymentMode) {
         var completionCalled = false
 
-        let productInfo = createMockProductInfo(paymentMode: paymentMode)
+        let productInfo: RCProductInfo = .createMockProductInfo(paymentMode: paymentMode)
 
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
@@ -995,7 +995,7 @@ class BackendTests: XCTestCase {
         discount.offerIdentifier = "offerid"
         discount.paymentMode = .payAsYouGo
         discount.price = 12
-        let productInfo = createMockProductInfo(discounts: [discount])
+        let productInfo: RCProductInfo = .createMockProductInfo(discounts: [discount])
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
@@ -1030,12 +1030,12 @@ class BackendTests: XCTestCase {
         discount.paymentMode = .payAsYouGo
         discount.price = 12
 
-        let productInfo = createMockProductInfo(productIdentifier: productIdentifier,
-                                                paymentMode: paymentMode,
-                                                currencyCode: currencyCode,
-                                                price: price,
-                                                subscriptionGroup: group,
-                                                discounts: [discount])
+        let productInfo: RCProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
+                                                                paymentMode: paymentMode,
+                                                                currencyCode: currencyCode,
+                                                                price: price,
+                                                                subscriptionGroup: group,
+                                                                discounts: [discount])
 
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
@@ -1360,29 +1360,5 @@ class BackendTests: XCTestCase {
 
         expect(self.httpClient.calls.count).to(equal(2))
         expect(completionCalled).toEventually(equal(2))
-    }
-}
-
-private extension BackendTests {
-    func createMockProductInfo(productIdentifier: String = "product_id",
-                               paymentMode: RCPaymentMode = .none,
-                               currencyCode: String = "UYU",
-                               price: NSDecimalNumber = 15.99,
-                               normalDuration: String? = nil,
-                               introDuration: String? = nil,
-                               introDurationType: RCIntroDurationType = .none,
-                               introPrice: NSDecimalNumber? = nil,
-                               subscriptionGroup: String? = nil,
-                               discounts: [RCPromotionalOffer]? = nil) -> RCProductInfo {
-        RCProductInfo(productIdentifier: productIdentifier,
-                      paymentMode: paymentMode,
-                      currencyCode: currencyCode,
-                      price: price,
-                      normalDuration: normalDuration,
-                      introDuration: introDuration,
-                      introDurationType: introDurationType,
-                      introPrice: introPrice,
-                      subscriptionGroup: subscriptionGroup,
-                      discounts: discounts)
     }
 }
