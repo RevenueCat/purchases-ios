@@ -105,7 +105,7 @@ NS_SWIFT_NAME(Purchases)
 @property (class, nonatomic, assign) BOOL debugLogsEnabled;
 
 /**
-Override to use your own proxy. BEWARE
+ Set this property to your proxy URL before configuring Purchases *only* if you've received a proxy key value from your RevenueCat contact.
 */
 @property (class, nonatomic, copy, nullable) NSURL *proxyURL;
 
