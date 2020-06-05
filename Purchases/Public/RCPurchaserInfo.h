@@ -63,7 +63,11 @@ Use this for grandfathering users when migrating to subscriptions.
 /// The original App User Id recorded for this user.
 @property (nonatomic, readonly) NSString *originalAppUserId;
 
-/// managementURL URL to manage active subscriptions of this user.
+/// URL to manage the active subscription of the user.
+/// If this user has an active iOS subscription, this will point to the App Store,
+/// if the user has an active Play Store subscription it will point there.
+/// If there are no active subscriptions it will be null.
+/// If there are multiple for different platforms, it will point to the App Store"
 @property (nonatomic, readonly, nullable) NSURL *managementURL;
 
 /**
