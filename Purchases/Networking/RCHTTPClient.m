@@ -13,13 +13,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSString *overrideHostName = nil;
-
-void RCOverrideServerHost(NSString *hostname) {
-    overrideHostName = hostname;
-}
-
-
 @interface RCHTTPClient ()
 
 @property (nonatomic) NSURLSession *session;
@@ -29,10 +22,6 @@ void RCOverrideServerHost(NSString *hostname) {
 
 
 @implementation RCHTTPClient
-
-+ (NSString *)serverHostName {
-    return (overrideHostName) ? overrideHostName : @"api.revenuecat.com";
-}
 
 - (instancetype)initWithSystemInfo:(RCSystemInfo *)systemInfo {
     if (self = [super init]) {
@@ -107,8 +96,10 @@ void RCOverrideServerHost(NSString *hostname) {
                                             path:(NSString *)path
                                      requestBody:(NSDictionary *)requestBody
                                          headers:(NSMutableDictionary *)defaultHeaders {
-    NSString *urlString = [NSString stringWithFormat:@"https://%@/v1%@", self.class.serverHostName, path];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+    NSString *relativeURLString = [NSString stringWithFormat:@"/v1%@", path];
+    NSURL *requestURL = [NSURL URLWithString:relativeURLString relativeToURL:RCSystemInfo.serverHostURL];
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL];
 
     request.HTTPMethod = HTTPMethod;
     request.allHTTPHeaderFields = defaultHeaders;
