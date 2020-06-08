@@ -1,3 +1,20 @@
+## 3.4.0
+- Added `proxyKey`, useful for kids category apps, so that they can set up a proxy to send requests through. **Do not use this** unless you've talked to RevenueCat support about it. 
+https://github.com/RevenueCat/purchases-ios/pull/258
+- Added `managementURL` to purchaserInfo. This provides an easy way for apps to create Manage Subscription buttons that will correctly redirect users to the corresponding subscription management page on all platforms. 
+https://github.com/RevenueCat/purchases-ios/pull/259
+- Extra fields sent to the post receipt endpoint: `normal_duration`, `intro_duration` and `trial_duration`. These will feed into the LTV model for more accurate LTV values. 
+https://github.com/RevenueCat/purchases-ios/pull/256
+- Fixed a bug where if the `appUserID` was not found in `NSUserDefaults` and `createAlias` was called, the SDK would create an alias to `(null)`. 
+https://github.com/RevenueCat/purchases-ios/pull/255
+- Added [mParticle](https://www.mparticle.com/) as an option for attribution. 
+https://github.com/RevenueCat/purchases-ios/pull/251
+- Fixed build warnings for Mac Catalyst
+https://github.com/RevenueCat/purchases-ios/pull/247
+- Simplified Podspec and minor cleanup
+https://github.com/RevenueCat/purchases-ios/pull/248
+
+
 ## 3.3.1
 - Fixed version numbers that accidentally included the `-SNAPSHOT` suffix
 
