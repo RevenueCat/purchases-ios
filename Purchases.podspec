@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "Purchases"
-  s.version          = "3.4.0"
+  s.version          = "3.5.0-SNAPSHOT"
   s.summary          = "Subscription and in-app-purchase backend service."
 
   s.description      = <<-DESC
