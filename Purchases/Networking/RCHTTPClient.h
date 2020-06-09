@@ -21,8 +21,6 @@ typedef void(^RCHTTPClientResponseHandler)(NSInteger statusCode,
 - (instancetype)initWithSystemInfo:(RCSystemInfo *)systemInfo NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
-+ (NSString *)serverHostName;
-
 - (void)performRequest:(NSString *)HTTPMethod
                   path:(NSString *)path
                   body:(nullable NSDictionary *)requestBody

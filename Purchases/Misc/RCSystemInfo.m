@@ -5,6 +5,7 @@
 
 #import "RCSystemInfo.h"
 #import "RCCrossPlatformSupport.h"
+#import "RCLogUtils.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,6 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @implementation RCSystemInfo
+
+NSString *const defaultServerHostName = @"https://api.revenuecat.com";
+static NSURL * _Nullable proxyURL;
 
 - (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
                  platformFlavorVersion:(nullable NSString *)platformFlavorVersion
@@ -43,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (NSString *)frameworkVersion {
-    return @"3.3.1";
+    return @"3.4.0";
 }
 
 + (NSString *)systemVersion {
@@ -58,6 +62,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)platformHeader {
     return PLATFORM_HEADER;
+}
+
++ (NSURL *)defaultServerHostURL {
+    return [NSURL URLWithString:defaultServerHostName];
+}
+
++ (NSURL *)serverHostURL {
+    return proxyURL ?: self.defaultServerHostURL;
+}
+
++ (nullable NSURL *)proxyURL {
+    return proxyURL;
+}
++ (void)setProxyURL:(nullable NSURL *)newProxyURL {
+    proxyURL = newProxyURL;
+    if (newProxyURL) {
+        RCLog(@"Purchases is being configured using a proxy for RevenueCat with URL: %@", newProxyURL);
+    }
 }
 
 @end

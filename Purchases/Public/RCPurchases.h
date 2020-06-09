@@ -79,7 +79,11 @@ typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
     /**
      Facebook https://developers.facebook.com/
      */
-    RCAttributionNetworkFacebook
+    RCAttributionNetworkFacebook,
+    /**
+    mParticle https://www.mparticle.com/
+    */
+    RCAttributionNetworkMParticle
 };
 
 /**
@@ -99,6 +103,11 @@ NS_SWIFT_NAME(Purchases)
  Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat
 */
 @property (class, nonatomic, assign) BOOL debugLogsEnabled;
+
+/**
+ Set this property to your proxy URL before configuring Purchases *only* if you've received a proxy key value from your RevenueCat contact.
+*/
+@property (class, nonatomic, copy, nullable) NSURL *proxyURL;
 
 /**
  Configures an instance of the Purchases SDK with a specified API key. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
@@ -266,7 +275,7 @@ NS_SWIFT_NAME(purchaserInfo(_:));
  @param completion An @escaping callback that is called with the loaded products. If the fetch fails for any reason it will return an empty array.
  */
 - (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
-                     completionBlock:(RCReceiveProductsBlock)completion
+                completionBlock:(RCReceiveProductsBlock)completion
 NS_SWIFT_NAME(products(_:_:));
 
 /**

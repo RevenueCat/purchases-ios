@@ -29,6 +29,9 @@
 #import "RCIdentityManager.h"
 #import "RCSubscriberAttributesManager.h"
 #import "RCSystemInfo.h"
+#import "RCISOPeriodFormatter.h"
+#import "RCProductInfo.h"
+#import "RCProductInfoExtractor.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -98,6 +101,14 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 + (BOOL)debugLogsEnabled
 {
     return RCShowDebugLogs();
+}
+
++ (NSURL *)proxyURL {
+    return RCSystemInfo.proxyURL;
+}
+
++ (void)setProxyURL:(nullable NSURL *)proxyURL {
+    RCSystemInfo.proxyURL = proxyURL;
 }
 
 + (NSString *)frameworkVersion {
@@ -336,8 +347,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 #pragma mark Attribution
 
 - (void)postAttributionData:(NSDictionary *)data
-               fromNetwork:(RCAttributionNetwork)network
-          forNetworkUserId:(nullable NSString *)networkUserId
+                fromNetwork:(RCAttributionNetwork)network
+           forNetworkUserId:(nullable NSString *)networkUserId
 {
     if (data[@"rc_appsflyer_id"]) {
         RCErrorLog(@"⚠️ The parameter key rc_appsflyer_id is deprecated. Pass networkUserId to addAttribution instead. ⚠️");
@@ -624,33 +635,37 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
                             isRestore:YES
-                    productIdentifier:nil
-                                price:nil
-                          paymentMode:RCPaymentModeNone
-                    introductoryPrice:nil
-                         currencyCode:nil
-                    subscriptionGroup:nil
-                            discounts:nil
+                          productInfo:nil
           presentedOfferingIdentifier:nil
                          observerMode:!self.finishTransactions
                  subscriberAttributes:subscriberAttributes
                            completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
-                               [self dispatch:^{
-                                   if (error) {
-                                       [self markAttributesAsSyncedIfNeeded:subscriberAttributes
-                                                                  appUserID:self.appUserID
-                                                                      error:error];
-                                       CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
-                                   } else if (info) {
-                                       [self cachePurchaserInfo:info forAppUserID:self.appUserID];
-                                       [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-                                       [self markAttributesAsSyncedIfNeeded:subscriberAttributes
-                                                                  appUserID:self.appUserID
-                                                                      error:nil];
-                                       CALL_IF_SET_ON_MAIN_THREAD(completion, info, nil);
-                                   }
-                               }];
+                               [self handleRestoreReceiptPostWithInfo:info
+                                                                error:error
+                                                 subscriberAttributes:subscriberAttributes
+                                                           completion:completion];
                            }];
+    }];
+}
+
+- (void)handleRestoreReceiptPostWithInfo:(RCPurchaserInfo *)info
+                                   error:(NSError *)error
+                    subscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
+                              completion:(RCReceivePurchaserInfoBlock)completion {
+    [self dispatch:^{
+        if (error) {
+            [self markAttributesAsSyncedIfNeeded:subscriberAttributes
+                                       appUserID:self.appUserID
+                                           error:error];
+            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
+        } else if (info) {
+            [self cachePurchaserInfo:info forAppUserID:self.appUserID];
+            [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
+            [self markAttributesAsSyncedIfNeeded:subscriberAttributes
+                                       appUserID:self.appUserID
+                                           error:nil];
+            CALL_IF_SET_ON_MAIN_THREAD(completion, info, nil);
+        }
     }];
 }
 
@@ -1038,99 +1053,56 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction
-{
+- (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction {
     [self receiptData:^(NSData * _Nonnull data) {
         if (data.length == 0) {
             [self handleReceiptPostWithTransaction:transaction
                                      purchaserInfo:nil
                               subscriberAttributes:nil
-                                             error:[RCPurchasesErrorUtils missingReceiptFileError]];
+                                             error:RCPurchasesErrorUtils.missingReceiptFileError];
         } else {
-            [self productsWithIdentifiers:@[transaction.payment.productIdentifier]
-                          completionBlock:^(NSArray<SKProduct *> *products) {
-                              SKProduct *product = products.lastObject;
-                              RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
-                              if (product) {
-                                  NSString *productIdentifier = product.productIdentifier;
-                                  NSDecimalNumber *price = product.price;
-
-                                  RCPaymentMode paymentMode = RCPaymentModeNone;
-                                  NSDecimalNumber *introPrice = nil;
-
-                                  if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
-                                      if (product.introductoryPrice) {
-                                          paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
-                                          introPrice = product.introductoryPrice.price;
-                                      }
-                                  }
-
-                                  NSString *subscriptionGroup = nil;
-                                  if (@available(iOS 12.0, macOS 10.14.0, tvOS 12.0, *)) {
-                                      subscriptionGroup = product.subscriptionGroupIdentifier;
-                                  }
-
-                                  NSMutableArray *discounts = nil;
-                                  if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
-                                      discounts = [NSMutableArray new];
-                                      for (SKProductDiscount *discount in product.discounts) {
-                                          [discounts addObject:[[RCPromotionalOffer alloc] initWithProductDiscount:discount]];
-                                      }
-                                  }
-
-                                  NSString *currencyCode = product.priceLocale.rc_currencyCode;
-
-                                  NSString *presentedOffering = nil;
-                                  @synchronized (self) {
-                                      presentedOffering = self.presentedOfferingsByProductIdentifier[productIdentifier];
-                                      [self.presentedOfferingsByProductIdentifier removeObjectForKey:productIdentifier];
-                                  }
-
-                                  [self.backend postReceiptData:data
-                                                      appUserID:self.appUserID
-                                                      isRestore:self.allowSharingAppStoreAccount
-                                              productIdentifier:productIdentifier
-                                                          price:price
-                                                    paymentMode:paymentMode
-                                              introductoryPrice:introPrice
-                                                   currencyCode:currencyCode
-                                              subscriptionGroup:subscriptionGroup
-                                                      discounts:discounts
-                                    presentedOfferingIdentifier:presentedOffering
-                                                   observerMode:!self.finishTransactions
-                                           subscriberAttributes:subscriberAttributes
-                                                     completion:^(RCPurchaserInfo *_Nullable info,
-                                                                  NSError *_Nullable error) {
-                                                         [self handleReceiptPostWithTransaction:transaction
-                                                                                  purchaserInfo:info
-                                                                           subscriberAttributes:subscriberAttributes
-                                                                                          error:error];
-                                                     }];
-                              } else {
-                                  [self.backend postReceiptData:data
-                                                      appUserID:self.appUserID
-                                                      isRestore:self.allowSharingAppStoreAccount
-                                              productIdentifier:nil
-                                                          price:nil
-                                                    paymentMode:RCPaymentModeNone
-                                              introductoryPrice:nil
-                                                   currencyCode:nil
-                                              subscriptionGroup:nil
-                                                      discounts:nil
-                                    presentedOfferingIdentifier:nil
-                                                   observerMode:!self.finishTransactions
-                                           subscriberAttributes:subscriberAttributes
-                                                     completion:^(RCPurchaserInfo *_Nullable info,
-                                                                  NSError *_Nullable error) {
-                                                         [self handleReceiptPostWithTransaction:transaction
-                                                                                  purchaserInfo:info
-                                                                           subscriberAttributes:subscriberAttributes
-                                                                                          error:error];
-                                  }];
-                              }
-                          }];
+            [self fetchProductsAndPostReceiptWithTransaction:transaction data:data];
         }
     }];
+}
+
+- (void)fetchProductsAndPostReceiptWithTransaction:(SKPaymentTransaction *)transaction data:(NSData *)data {
+    [self productsWithIdentifiers:@[transaction.payment.productIdentifier]
+                  completionBlock:^(NSArray<SKProduct *> *products) {
+                      [self postReceiptWithTransaction:transaction data:data products:products];
+                  }];
+}
+
+- (void)postReceiptWithTransaction:(SKPaymentTransaction *)transaction
+                              data:(NSData *)data
+                          products:(NSArray<SKProduct *> *)products {
+    SKProduct *product = products.lastObject;
+    RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
+    RCProductInfo *productInfo = nil;
+    NSString *presentedOffering = nil;
+    if (product) {
+        RCProductInfoExtractor *productInfoExtractor = [[RCProductInfoExtractor alloc] init];
+        productInfo = [productInfoExtractor extractInfoFromProduct:product];
+
+        @synchronized (self) {
+            presentedOffering = self.presentedOfferingsByProductIdentifier[productInfo.productIdentifier];
+            [self.presentedOfferingsByProductIdentifier removeObjectForKey:productInfo.productIdentifier];
+        }
+    }
+    [self.backend postReceiptData:data
+                        appUserID:self.appUserID
+                        isRestore:self.allowSharingAppStoreAccount
+                      productInfo:productInfo
+      presentedOfferingIdentifier:presentedOffering
+                     observerMode:!self.finishTransactions
+             subscriberAttributes:subscriberAttributes
+                       completion:^(RCPurchaserInfo *_Nullable info,
+                                    NSError *_Nullable error) {
+                           [self handleReceiptPostWithTransaction:transaction
+                                                    purchaserInfo:info
+                                             subscriberAttributes:subscriberAttributes
+                                                            error:error];
+                       }];
 }
 
 @end
