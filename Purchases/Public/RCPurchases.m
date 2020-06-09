@@ -107,7 +107,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     return RCSystemInfo.proxyURL;
 }
 
-+ (void)setProxyURL:(NSString *)proxyURL {
++ (void)setProxyURL:(nullable NSURL *)proxyURL {
     RCSystemInfo.proxyURL = proxyURL;
 }
 
