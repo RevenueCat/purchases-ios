@@ -11,9 +11,20 @@
 
 @implementation RCReceiptFetcher : NSObject
 
-- (NSData *)receiptData
-{
+- (NSData *)receiptData {
     NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
+    
+#if TARGET_OS_WATCH
+    // as of watchOS 6.2.8, there's a bug where the receipt is stored in the sandbox receipt location,
+    // but the appStoreReceiptURL method returns the URL for the production receipt.
+    // This code replaces "sandbox" with "receipt" as the last component of the receiptURL so that we get the
+    // correct receipt.
+    // This has been filed as radar FB7699277. More info in https://github.com/RevenueCat/purchases-ios/issues/207.
+    NSString *receiptURLFolder = [[receiptURL absoluteString] stringByDeletingLastPathComponent];
+    NSURL *productionReceiptURL = [NSURL URLWithString:[receiptURLFolder stringByAppendingPathComponent:@"receipt"]];
+    receiptURL = productionReceiptURL;
+#endif
+    
     NSData *data = [NSData dataWithContentsOfURL:receiptURL];
     RCDebugLog(@"Loaded receipt from %@", receiptURL);
     return data;
