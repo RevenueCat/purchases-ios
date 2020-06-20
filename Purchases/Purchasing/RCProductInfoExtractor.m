@@ -80,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
     return product.introductoryPrice.paymentMode == SKProductDiscountPaymentModeFreeTrial;
 }
 
-- (NSString *)extractSubscriptionGroupForProduct:(SKProduct *)product {
+- (nullable NSString *)extractSubscriptionGroupForProduct:(SKProduct *)product {
     NSString *subscriptionGroup = nil;
     if (@available(iOS 12.0, macOS 10.14.0, tvOS 12.0, *)) {
         subscriptionGroup = product.subscriptionGroupIdentifier;
@@ -88,7 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
     return subscriptionGroup;
 }
 
-- (NSArray<RCPromotionalOffer *> *)extractDiscountsForProduct:(SKProduct *)product {
+- (nullable NSArray<RCPromotionalOffer *> *)extractDiscountsForProduct:(SKProduct *)product {
     NSMutableArray *discounts = nil;
     if (@available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *)) {
         discounts = [NSMutableArray new];
@@ -109,7 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
     return paymentMode;
 }
 
-- (NSDecimalNumber *)extractIntroPriceForProduct:(SKProduct *)product {
+- (nullable NSDecimalNumber *)extractIntroPriceForProduct:(SKProduct *)product {
     NSDecimalNumber *introPrice = nil;
     if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
         if (product.introductoryPrice) {
@@ -119,7 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
     return introPrice;
 }
 
-- (NSString *)extractNormalDurationForProduct:(SKProduct *)product {
+- (nullable NSString *)extractNormalDurationForProduct:(SKProduct *)product {
     NSString *normalDuration = nil;
     if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
         if (product.subscriptionPeriod) {
@@ -129,7 +129,7 @@ NS_ASSUME_NONNULL_BEGIN
     return normalDuration;
 }
 
-- (NSString *)extractIntroDurationForProduct:(SKProduct *)product {
+- (nullable NSString *)extractIntroDurationForProduct:(SKProduct *)product {
     NSString *introDuration = nil;
     if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
         if (product.introductoryPrice) {
