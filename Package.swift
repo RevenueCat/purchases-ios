@@ -20,9 +20,9 @@ func resolveDependencies() -> [Package.Dependency] {
 func resolveTargets() -> [Target] {
     let baseTargets: [Target] = [
         .target(name: "Purchases",
-                dependencies: [],
+                dependencies: ["PurchasesSwift"],
                 path: ".",
-                exclude: ["Purchases/Info.plist"],
+                exclude: ["Purchases/Info.plist", "Purchases/SwiftSources"],
                 sources: ["Purchases"],
                 publicHeadersPath: "Purchases/Public",
                 cSettings: [
@@ -35,7 +35,21 @@ func resolveTargets() -> [Target] {
                     .headerSearchPath("Purchases/Purchasing"),
                     .headerSearchPath("Purchases/ProtectedExtensions"),
                     .headerSearchPath("Purchases/SubscriberAttributes"),
-    ])]
+    ]),
+        .target(name: "PurchasesSwift",
+                dependencies: [],
+                path: ".",
+                exclude: ["Purchases/Info.plist",
+                          "Purchases/Caching",
+                          "Purchases/FoundationExtensions",
+                          "Purchases/Misc",
+                          "Purchases/Networking",
+                          "Purchases/Public",
+                          "Purchases/Purchasing",
+                          "Purchases/ProtectedExtensions",
+                          "Purchases/SubscriberAttributes"],
+                sources: ["Purchases"],
+                publicHeadersPath: "Purchases/SwiftSources")]
 
     if shouldTest {
         let testTargets: [Target] = [

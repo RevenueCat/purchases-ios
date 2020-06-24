@@ -17,6 +17,7 @@
 		2DD4490024088473002F5694 /* RCPurchases+SubscriberAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DD448FE24088473002F5694 /* RCPurchases+SubscriberAttributes.m */; };
 		2DEB9767247DB46900A92099 /* RCISOPeriodFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DEB9766247DB46900A92099 /* RCISOPeriodFormatter.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2DEB976B247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DEB976A247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift */; };
+		2DEC0CFA24A2A18800B0E5BB /* MyClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DEC0CF924A2A18800B0E5BB /* MyClass.swift */; };
 		350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDE71F7EEF070065833D /* RCPurchases.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		350FBDEA1F7EEF070065833D /* RCPurchases.m in Sources */ = {isa = PBXBuildFile; fileRef = 350FBDE81F7EEF070065833D /* RCPurchases.m */; };
 		351F4FAF1F803D0700F245F4 /* RCPurchaserInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 351F4FAD1F803D0700F245F4 /* RCPurchaserInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -178,6 +179,8 @@
 		2DD448FE24088473002F5694 /* RCPurchases+SubscriberAttributes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "RCPurchases+SubscriberAttributes.m"; path = "Purchases/SubscriberAttributes/RCPurchases+SubscriberAttributes.m"; sourceTree = SOURCE_ROOT; };
 		2DEB9766247DB46900A92099 /* RCISOPeriodFormatter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCISOPeriodFormatter.h; sourceTree = "<group>"; };
 		2DEB976A247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKProductSubscriptionDurationExtensions.swift; sourceTree = "<group>"; };
+		2DEC0CF924A2A18800B0E5BB /* MyClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyClass.swift; sourceTree = "<group>"; };
+		2DEC0CFB24A2A1B100B0E5BB /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = SOURCE_ROOT; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		350FBDD71F7DF17F0065833D /* OHHTTPStubs.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OHHTTPStubs.framework; path = Carthage/Build/iOS/OHHTTPStubs.framework; sourceTree = SOURCE_ROOT; };
 		350FBDDC1F7EA3570065833D /* Nimble.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Nimble.framework; path = Carthage/Build/iOS/Nimble.framework; sourceTree = SOURCE_ROOT; };
@@ -308,7 +311,6 @@
 		37E35F1729999CFCA36E877D /* RCDateProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCDateProvider.m; sourceTree = "<group>"; };
 		37E35F19DF256C1D0125CC76 /* RCPurchaserInfo+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCPurchaserInfo+Protected.h"; sourceTree = "<group>"; };
 		37E35FDC209D3F4C38791BDE /* RCProductInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCProductInfo.m; sourceTree = "<group>"; };
-		EF6FBB49E6D96DCADBA269A8 /* IdentityManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IdentityManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -345,6 +347,14 @@
 			);
 			name = SubscriberAttributes;
 			path = Public/SubscriberAttributes;
+			sourceTree = "<group>";
+		};
+		2D9AF7B124A2B2F000E1D023 /* SwiftSources */ = {
+			isa = PBXGroup;
+			children = (
+				2DEC0CF924A2A18800B0E5BB /* MyClass.swift */,
+			);
+			path = SwiftSources;
 			sourceTree = "<group>";
 		};
 		2DCB85BF2406EC3F003C1260 /* Recovered References */ = {
@@ -393,6 +403,7 @@
 		352629F41F7C4B9100C04F2C = {
 			isa = PBXGroup;
 			children = (
+				2DEC0CFB24A2A1B100B0E5BB /* Package.swift */,
 				35262A001F7C4B9100C04F2C /* Purchases */,
 				35262A1F1F7D77E600C04F2C /* PurchasesTests */,
 				352629FF1F7C4B9100C04F2C /* Products */,
@@ -413,6 +424,7 @@
 		35262A001F7C4B9100C04F2C /* Purchases */ = {
 			isa = PBXGroup;
 			children = (
+				2D9AF7B124A2B2F000E1D023 /* SwiftSources */,
 				35262A021F7C4B9100C04F2C /* Info.plist */,
 				37E359927177DF24576FF361 /* Caching */,
 				37E35EF24BD787B115DEAB51 /* FoundationExtensions */,
@@ -859,6 +871,7 @@
 				37E358DB4F4016AC297D6B00 /* RCOfferingsFactory.m in Sources */,
 				37E35DD8BE40E352311AC2C1 /* RCPromotionalOffer.m in Sources */,
 				37E358250B07BF2DA06EA27B /* RCReceiptFetcher.m in Sources */,
+				2DEC0CFA24A2A18800B0E5BB /* MyClass.swift in Sources */,
 				37E35BDDC331C3A5FF72CFFF /* RCStoreKitRequestFetcher.m in Sources */,
 				37E35A299524507A480956D5 /* RCStoreKitWrapper.m in Sources */,
 				37E35A7ED3312F10B80FFE2B /* RCDeviceCache.m in Sources */,
@@ -1043,6 +1056,7 @@
 		35262A131F7C4B9100C04F2C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -1063,6 +1077,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Purchases";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4";
@@ -1073,6 +1088,7 @@
 		35262A141F7C4B9100C04F2C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -1093,6 +1109,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Purchases";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
@@ -1102,6 +1119,7 @@
 		35262A271F7D77E600C04F2C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
@@ -1128,6 +1146,7 @@
 		35262A281F7D77E600C04F2C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
