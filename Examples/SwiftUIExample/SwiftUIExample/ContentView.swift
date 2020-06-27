@@ -26,6 +26,12 @@ struct ContentView: View {
                             .padding()
                     }
                     OfferingsView().padding()
+                    Text("Includes a 14-day free trial. Cancel before July 10 and nothing will be billed.")
+                        .font(.caption)
+                        .foregroundColor(.white)
+                        .padding()
+                        .multilineTextAlignment(.center)
+                    
                     Spacer()
                     Group {
                         ContinueButtonView()
@@ -47,7 +53,7 @@ struct ContentView: View {
                     }
                 }
                 .edgesIgnoringSafeArea(.all)
-                .frame(maxWidth: .infinity, minHeight: geometry.size.height * 1.3, maxHeight: .infinity, alignment: .bottom)
+                .frame(maxWidth: .infinity, minHeight: geometry.size.height * 1.25, maxHeight: .infinity)
                 .background(Color.revenueCatRed)
             }
             .edgesIgnoringSafeArea(.all)
@@ -102,6 +108,7 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             ContentView()
+                .previewDevice("iPhone 11 Pro")
             ContentView()
                 .previewDevice("iPhone SE (2nd generation)")
             ContentView()
@@ -118,6 +125,7 @@ struct ContinueButtonView: View {
                 HStack {
                     Spacer()
                     Text("Continue")
+                        .font(.title3)
                         .bold()
                         .foregroundColor(.revenueCatRed)
                         .padding()
