@@ -14,6 +14,7 @@
 		2D54BF772437DED900FF4EE4 /* NotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D54BF762437DED900FF4EE4 /* NotificationController.swift */; };
 		2D54BF792437DEDA00FF4EE4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D54BF782437DEDA00FF4EE4 /* Assets.xcassets */; };
 		2D54BF7E2437DEDA00FF4EE4 /* WatchExample.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 2D54BF612437DED800FF4EE4 /* WatchExample.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2D5D9A8224A7FBF000EA7366 /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2D5D9A8124A7FBF000EA7366 /* Configuration.storekit */; };
 		2D6FCB222437E56200C398CF /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6FCB212437E56200C398CF /* StoreKit.framework */; };
 		2D6FCB232437E5F100C398CF /* WatchExample Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 2D54BF6D2437DED900FF4EE4 /* WatchExample Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2D6FCB282437E8FA00C398CF /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6FCB272437E8F900C398CF /* StoreKit.framework */; };
@@ -346,6 +347,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3493336B21E69360007AAAB9 /* LaunchScreen.storyboard in Resources */,
+				2D5D9A8224A7FBF000EA7366 /* Configuration.storekit in Resources */,
 				3493336821E69360007AAAB9 /* Assets.xcassets in Resources */,
 				3493336621E6935F007AAAB9 /* Main.storyboard in Resources */,
 			);
