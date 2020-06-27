@@ -53,34 +53,47 @@ struct ContentView: View {
             .edgesIgnoringSafeArea(.all)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .background(Color.revenueCatRed)
     }
 }
 
 struct OfferingView: View {
+    @State var selected: Bool
+    
     var body: some View {
-        Button(action: {}, label: {
-            VStack {
-                VStack {
-                    Text("1")
-                    Text("YEAR")
-                }
-                .padding()
-                .frame(minWidth: 0, maxWidth: .infinity)
+        Button(action: {
+            selected.toggle()
+        }, label: {
+            ZStack(alignment: .top) {
                 
-                .background(Color.gray.opacity(0.5))
+                let backgroundColor = selected ? Color.white : Color.black.opacity(0.1)
+                let foregroundColor = selected ? Color.black : Color.white.opacity(0.5)
                 
                 VStack {
-                    Text("$29.49")
-                        .bold()
-                    Text("$2.46 / mo")
-                        .font(.caption)
+                    VStack {
+                        Text("1")
+                        Text("YEAR")
+                    }
+                    .padding()
+                    .frame(minWidth: 0, maxWidth: .infinity)
+                    
+                    .background(Color.black.opacity(0.1))
+                    
+                    VStack {
+                        Text("$29.49")
+                            .bold()
+                        Text("$2.46 / mo")
+                            .font(.caption)
+                    }
+                    .padding()
                 }
-                .padding()
-                .background(Color.white)
+                .background(backgroundColor)
+                .cornerRadius(12)
+                .foregroundColor(foregroundColor)
+                
+                DiscountBadge()
             }
-            .background(Color.white)
-            .cornerRadius(16)
-            .foregroundColor(Color.black)
+            
         })
     }
 }
@@ -92,6 +105,7 @@ struct ContentView_Previews: PreviewProvider {
             ContentView()
                 .previewDevice("iPhone SE (2nd generation)")
             ContentView()
+                .previewDevice("iPad Pro (11-inch) (2nd generation)")
         }
     }
 }
@@ -107,7 +121,7 @@ struct ContinueButtonView: View {
                         .bold()
                         .foregroundColor(.revenueCatRed)
                         .padding()
-                        
+                    
                     Spacer()
                 }
             })
@@ -121,9 +135,23 @@ struct ContinueButtonView: View {
 struct OfferingsView: View {
     var body: some View {
         HStack {
-            OfferingView()
-            OfferingView()
-            OfferingView()
+            OfferingView(selected: false)
+            OfferingView(selected: true)
+            OfferingView(selected: false)
         }.padding()
+    }
+}
+
+struct DiscountBadge: View {
+    var body: some View {
+        Text("SAVE 98%")
+            .bold()
+            .padding(.vertical, 3.0)
+            .padding(.horizontal, 9.0)
+            .foregroundColor(.white)
+            .background(Color.discountBadge)
+            .font(.caption2)
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .offset(x: 0, y: -10)
     }
 }
