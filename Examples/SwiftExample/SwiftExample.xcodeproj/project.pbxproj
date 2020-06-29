@@ -87,6 +87,7 @@
 		2D54BF782437DEDA00FF4EE4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2D54BF7A2437DEDA00FF4EE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2D54BF7B2437DEDA00FF4EE4 /* PushNotificationPayload.apns */ = {isa = PBXFileReference; lastKnownFileType = text; path = PushNotificationPayload.apns; sourceTree = "<group>"; };
+		2D5D9A8424AA5C2000EA7366 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
 		2D6FCB212437E56200C398CF /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		2D6FCB272437E8F900C398CF /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS6.2.sdk/System/Library/Frameworks/StoreKit.framework; sourceTree = DEVELOPER_DIR; };
 		2D95540E240EF9F100289461 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
@@ -161,6 +162,7 @@
 		3493335421E6935E007AAAB9 = {
 			isa = PBXGroup;
 			children = (
+				2D5D9A8424AA5C2000EA7366 /* Configuration.storekit */,
 				3493335F21E6935F007AAAB9 /* SwiftExample */,
 				2D54BF622437DED800FF4EE4 /* WatchExample */,
 				2D54BF712437DED900FF4EE4 /* WatchExample Extension */,
