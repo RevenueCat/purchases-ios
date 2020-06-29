@@ -24,7 +24,8 @@ Pod::Spec.new do |s|
 
   s.source_files = [
     'Purchases/**/*.h',
-    'Purchases/**/*.m'
+    'Purchases/**/*.m',
+    'Purchases/**/*.swift'
   ]
 
 
