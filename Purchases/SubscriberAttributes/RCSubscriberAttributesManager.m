@@ -11,11 +11,6 @@
 #import "NSData+RCExtensions.h"
 #import "RCLogUtils.h"
 
-#if SWIFT_PACKAGE
-@import PurchasesSwift;
-#else
-#import <Purchases/Purchases-Swift.h>
-#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -111,8 +106,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma MARK - Private methods
 
 - (void)setAttributeWithKey:(NSString *)key value:(nullable NSString *)value appUserID:(NSString *)appUserID {
-    NSString *myThing = [[[MyClass alloc] init] myThing];
-    NSLog(@"%@", myThing);
     [self storeAttributeLocallyIfNeededWithKey:key value:value appUserID:appUserID];
 }
 

@@ -32,6 +32,11 @@
 #import "RCISOPeriodFormatter.h"
 #import "RCProductInfo.h"
 #import "RCProductInfoExtractor.h"
+#if SWIFT_PACKAGE
+@import PurchasesSwift;
+#else
+#import <Purchases/Purchases-Swift.h>
+#endif
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -673,12 +678,24 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                  completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
     [self receiptData:^(NSData * _Nonnull data) {
-        [self.backend getIntroEligibilityForAppUserID:self.appUserID
-                                          receiptData:data
-                                   productIdentifiers:productIdentifiers
-                                           completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
-                                               CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
-                                           }];
+        LocalReceiptParser *receiptParser = [[LocalReceiptParser alloc] init];
+        [receiptParser checkTrialOrIntroductoryPriceEligibilityWithData:data
+                                                     productIdentifiers:productIdentifiers
+                                                             completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull receivedElegilibity,
+                                                                          NSError * _Nullable error) {
+            if (!error) {
+                NSLog(@"There was an error when trying to parse the receipt locally, details: %@", error.localizedDescription);
+                CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, receivedElegilibity);
+            } else {
+                [self.backend getIntroEligibilityForAppUserID:self.appUserID
+                                                  receiptData:data
+                                           productIdentifiers:productIdentifiers
+                                                   completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
+                    CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+                }];
+            }
+        }];
+        
     }];
 }
 
