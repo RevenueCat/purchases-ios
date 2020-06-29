@@ -684,9 +684,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                              completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull receivedElegilibity,
                                                                           NSError * _Nullable error) {
             if (!error) {
-                NSLog(@"There was an error when trying to parse the receipt locally, details: %@", error.localizedDescription);
                 CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, receivedElegilibity);
             } else {
+                NSLog(@"There was an error when trying to parse the receipt locally, details: %@", error.localizedDescription);
                 [self.backend getIntroEligibilityForAppUserID:self.appUserID
                                                   receiptData:data
                                            productIdentifiers:productIdentifiers
