@@ -12,17 +12,17 @@ import Foundation
          UnknownError
 }
 
+private enum IntroEligibilityStatus: Int {
+    case unknown,
+         eligible,
+         ineligible
+}
+
 @objc public class LocalReceiptParser: NSObject {
-    
-    @objc public static let RC_INTRO_ELIGIBILITY_UNKNOWN = 0
-    @objc public static let RC_INTRO_ELIGIBILITY_ELIGIBLE = 1
-    @objc public static let RC_INTRO_ELIGIBILITY_INELIGIBLE = 2
     
     @objc public func checkTrialOrIntroductoryPriceEligibility(withData data: Data,
                                                                productIdentifiers: [String],
                                                                completion: ([String : NSNumber], Error?) -> Void) {
-        completion([:], NSError(domain: "This method hasn't been implemented yet",
-                                code: LocalReceiptParserErrorCode.UnknownError.rawValue,
-                                userInfo: nil))
+        completion(["test": NSNumber(value: IntroEligibilityStatus.unknown.rawValue)], nil)
     }
 }
