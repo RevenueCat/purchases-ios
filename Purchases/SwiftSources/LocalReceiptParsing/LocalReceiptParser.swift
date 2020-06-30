@@ -23,6 +23,8 @@ private enum IntroEligibilityStatus: Int {
     @objc public func checkTrialOrIntroductoryPriceEligibility(withData data: Data,
                                                                productIdentifiers: [String],
                                                                completion: ([String : NSNumber], Error?) -> Void) {
-        completion(["test": NSNumber(value: IntroEligibilityStatus.unknown.rawValue)], nil)
+        completion([:], NSError(domain: "This method hasn't been implemented yet",
+                                code: LocalReceiptParserErrorCode.UnknownError.rawValue,
+                                userInfo: nil))
     }
 }
