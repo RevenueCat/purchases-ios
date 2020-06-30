@@ -16,16 +16,18 @@
 
 @implementation RCIntroEligibility
 
-- (instancetype)initWithEligibilityStatus:(RCIntroEligibilityStatus)status
-{
+- (instancetype)initWithEligibilityStatus:(RCIntroEligibilityStatus)status {
     if (self = [super init]) {
         self.status = status;
     }
     return self;
 }
 
-- (NSString *)description
-{
+- (instancetype)initWithEligibilityStatusCode:(int)statusCode {
+    return [self initWithEligibilityStatus:(RCIntroEligibilityStatus)statusCode];
+}
+
+- (NSString *)description {
     switch (self.status) {
         case RCIntroEligibilityStatusEligible:
             return @"Eligible for trial or introductory price.";

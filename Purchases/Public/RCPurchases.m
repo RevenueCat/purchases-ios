@@ -32,6 +32,7 @@
 #import "RCISOPeriodFormatter.h"
 #import "RCProductInfo.h"
 #import "RCProductInfoExtractor.h"
+#import "RCIntroEligibility+Protected.h"
 #if SWIFT_PACKAGE
 @import PurchasesSwift;
 #else
@@ -681,10 +682,16 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         LocalReceiptParser *receiptParser = [[LocalReceiptParser alloc] init];
         [receiptParser checkTrialOrIntroductoryPriceEligibilityWithData:data
                                                      productIdentifiers:productIdentifiers
-                                                             completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull receivedElegilibity,
+                                                             completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedElegilibity,
                                                                           NSError * _Nullable error) {
             if (!error) {
-                CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, receivedElegilibity);
+                NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
+                
+                for (NSString *key in receivedElegilibity.allKeys) {
+                    convertedEligibility[key] = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedElegilibity[key].intValue];
+                }
+                
+                CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
             } else {
                 NSLog(@"There was an error when trying to parse the receipt locally, details: %@", error.localizedDescription);
                 [self.backend getIntroEligibilityForAppUserID:self.appUserID
