@@ -33,11 +33,7 @@
 #import "RCProductInfo.h"
 #import "RCProductInfoExtractor.h"
 #import "RCIntroEligibility+Protected.h"
-#if SWIFT_PACKAGE
-@import PurchasesSwift;
-#else
-#import <Purchases/Purchases-Swift.h>
-#endif
+#import "RCPurchasesSwiftImport.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
