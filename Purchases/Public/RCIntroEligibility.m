@@ -23,8 +23,10 @@
     return self;
 }
 
-- (instancetype)initWithEligibilityStatusCode:(int)statusCode {
-    return [self initWithEligibilityStatus:(RCIntroEligibilityStatus)statusCode];
+- (instancetype)initWithEligibilityStatusCode:(NSNumber *)statusCode {
+    RCIntroEligibilityStatus status = (RCIntroEligibilityStatus)statusCode.intValue;
+    NSParameterAssert(status >= RCIntroEligibilityStatusUnknown && status <= RCIntroEligibilityStatusEligible);
+    return [self initWithEligibilityStatus:status];
 }
 
 - (NSString *)description {

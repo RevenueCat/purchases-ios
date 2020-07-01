@@ -12,7 +12,7 @@ import Foundation
          UnknownError
 }
 
-private enum IntroEligibilityStatus: Int {
+internal enum IntroEligibilityStatus: Int {
     case unknown,
          ineligible,
          eligible

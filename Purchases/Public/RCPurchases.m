@@ -684,7 +684,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                 NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
                 
                 for (NSString *key in receivedElegilibity.allKeys) {
-                    convertedEligibility[key] = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedElegilibity[key].intValue];
+                    convertedEligibility[key] = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedElegilibity[key]];
                 }
                 
                 CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
