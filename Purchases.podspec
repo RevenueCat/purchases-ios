@@ -22,11 +22,7 @@ Pod::Spec.new do |s|
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
-  s.source_files = [
-    'Purchases/**/*.h',
-    'Purchases/**/*.m',
-    'Purchases/**/*.swift'
-  ]
+  s.source_files = ['Purchases/**/*.{swift,h,m}']
 
 
   s.public_header_files = [

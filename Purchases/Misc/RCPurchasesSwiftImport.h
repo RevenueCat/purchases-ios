@@ -8,6 +8,8 @@
 
 #if SWIFT_PACKAGE
 @import PurchasesSwift;
+#elif __has_include("Purchases-Swift.h")
+#import "Purchases-Swift.h"
 #else
 #import <Purchases/Purchases-Swift.h>
 #endif
