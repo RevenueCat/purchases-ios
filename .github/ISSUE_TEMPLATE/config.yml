@@ -1,0 +1,21 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Our online community
+    url: https://spectrum.chat/revenuecat
+    about: Please ask and answer questions here
+  - name: Our Help Center
+    url: https://support.revenuecat.com/hc/en-us
+    about: Get help from our support team
+  - name: Feature Request
+    url: https://support.revenuecat.com/hc/en-us/articles/360046422033-Feature-Requests 
+    about: Please use this instead of opening an issue. This is best channel that allows us to keep track of feature requests.
+  - name: Offerings, products, or available packages are empty
+    url: https://support.revenuecat.com/hc/en-us/articles/360041793174
+    about: Why are my products, offerings, or available packages empty?
+  - name: Invalid Play Store credentials errors
+    url: https://support.revenuecat.com/hc/en-us/articles/360046398913
+    about: How to solve Play Store credentials errors
+  - name: Unable to connect to the App Store (STORE_PROBLEM) errors
+    url: https://support.revenuecat.com/hc/en-us/articles/360046399333
+    about: Why I get STORE_PROBLEM errors
+    
