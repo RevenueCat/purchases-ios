@@ -678,13 +678,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         LocalReceiptParser *receiptParser = [[LocalReceiptParser alloc] init];
         [receiptParser checkTrialOrIntroductoryPriceEligibilityWithData:data
                                                      productIdentifiers:productIdentifiers
-                                                             completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedElegilibity,
+                                                             completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,
                                                                           NSError * _Nullable error) {
             if (!error) {
                 NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
                 
-                for (NSString *key in receivedElegilibity.allKeys) {
-                    convertedEligibility[key] = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedElegilibity[key]];
+                for (NSString *key in receivedEligibility.allKeys) {
+                    convertedEligibility[key] = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedEligibility[key]];
                 }
                 
                 CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
