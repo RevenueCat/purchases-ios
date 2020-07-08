@@ -73,7 +73,7 @@
         completion(RCPurchasesErrorUtils.missingAppUserIDError);
         return;
     }
-    RCDebugLog(@"Creating an alias to %@ from %@", currentAppUserID, alias);
+    RCDebugLog(@"Creating an alias from %@ to %@", currentAppUserID, alias);
     [self.backend createAliasForAppUserID:currentAppUserID withNewAppUserID:alias completion:^(NSError *_Nullable error) {
         if (error == nil) {
             RCDebugLog(@"Alias created");
