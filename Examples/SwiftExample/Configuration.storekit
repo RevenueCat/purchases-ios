@@ -31,7 +31,7 @@
           "adHocOffers" : [
 
           ],
-          "displayPrice" : "8.99",
+          "displayPrice" : "4.99",
           "familyShareable" : true,
           "groupNumber" : 1,
           "internalID" : "E5E51B92",
@@ -47,7 +47,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "monthly_freetrial",
+          "productID" : "com.revenuecat.monthly_4.99.1_week_intro",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "monthly free trial",
           "subscriptionGroupID" : "7096FF06",
@@ -57,7 +57,7 @@
           "adHocOffers" : [
 
           ],
-          "displayPrice" : "6.99",
+          "displayPrice" : "39.99",
           "familyShareable" : true,
           "groupNumber" : 1,
           "internalID" : "F04B58DC",
@@ -73,7 +73,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "annual_freetrial",
+          "productID" : "com.revenuecat.annual_39.99.2_week_intro",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "annual free trial",
           "subscriptionGroupID" : "7096FF06",
