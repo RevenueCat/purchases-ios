@@ -1,3 +1,14 @@
+## 3.5.0
+- Added a sample watchOS app to illustrate how to integrate in-app purchases on watchOS with RevenueCat
+https://github.com/RevenueCat/purchases-ios/pull/263
+- Fixed build warnings from Clang Static Analyzer
+https://github.com/RevenueCat/purchases-ios/pull/265
+- Added StoreKit Configuration files for local testing + new schemes configured to use them. 
+https://github.com/RevenueCat/purchases-ios/pull/267
+https://github.com/RevenueCat/purchases-ios/pull/270
+- Added GitHub Issue Templates
+https://github.com/RevenueCat/purchases-ios/pull/269
+
 ## 3.4.0
 - Added `proxyKey`, useful for kids category apps, so that they can set up a proxy to send requests through. **Do not use this** unless you've talked to RevenueCat support about it. 
 https://github.com/RevenueCat/purchases-ios/pull/258
