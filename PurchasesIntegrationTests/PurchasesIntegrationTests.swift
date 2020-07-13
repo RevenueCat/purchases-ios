@@ -33,7 +33,7 @@ class PurchasesIntegrationTests: XCTestCase {
     }
     
     func testGetOfferings() {
-        Purchases.configure(withAPIKey: apiKey, appUserID: "andyIntegrationTests", observerMode: false, userDefaults: userDefaults)
+        Purchases.configure(withAPIKey: apiKey, appUserID: "integrationTestsGetOfferings", observerMode: false, userDefaults: userDefaults)
         let expectation = XCTestExpectation(description: "finish all async calls")
         
         Purchases.shared.offerings { offerings, error in
@@ -78,7 +78,7 @@ class PurchasesIntegrationTests: XCTestCase {
     }
     
     
-    func testParseReceipt2() {
+    func testIntroEligibility() {
         testSession = try! SKTestSession(configurationFileNamed: "Configuration")
         
         testSession.disableDialogs = true
@@ -86,7 +86,7 @@ class PurchasesIntegrationTests: XCTestCase {
         let productId = "com.revenuecat.annual_39.99.2_week_intro"
         try! testSession.buyProduct(productIdentifier: productId)
         let userDefaults: UserDefaults = .standard
-        Purchases.configure(withAPIKey: "VtDdmbdWBySmqJeeQUTyrNxETUVkhuaJ", appUserID: "andyIntegrationTests", observerMode: false, userDefaults: userDefaults)
+        Purchases.configure(withAPIKey: apiKey, appUserID: "integrationTestsIntroEligibility", observerMode: false, userDefaults: userDefaults)
         let expectation = XCTestExpectation(description: "finish all async calls")
         
         Purchases.shared.checkTrialOrIntroductoryPriceEligibility([productId, "lalala"]) { introEligibility in
