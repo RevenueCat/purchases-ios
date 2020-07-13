@@ -16,16 +16,20 @@
 
 @implementation RCIntroEligibility
 
-- (instancetype)initWithEligibilityStatus:(RCIntroEligibilityStatus)status
-{
+- (instancetype)initWithEligibilityStatus:(RCIntroEligibilityStatus)status {
     if (self = [super init]) {
         self.status = status;
     }
     return self;
 }
 
-- (NSString *)description
-{
+- (instancetype)initWithEligibilityStatusCode:(NSNumber *)statusCode {
+    RCIntroEligibilityStatus status = (RCIntroEligibilityStatus)statusCode.intValue;
+    NSParameterAssert(status >= RCIntroEligibilityStatusUnknown && status <= RCIntroEligibilityStatusEligible);
+    return [self initWithEligibilityStatus:status];
+}
+
+- (NSString *)description {
     switch (self.status) {
         case RCIntroEligibilityStatusEligible:
             return @"Eligible for trial or introductory price.";

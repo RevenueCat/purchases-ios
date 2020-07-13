@@ -11,6 +11,7 @@
 @interface RCIntroEligibility (Protected)
 
 - (instancetype)initWithEligibilityStatus:(RCIntroEligibilityStatus)status;
+- (instancetype)initWithEligibilityStatusCode:(NSNumber *)statusCode;
 
 @end
 

@@ -41,3 +41,4 @@
 #include <Purchases/RCISOPeriodFormatter.h>
 #include <Purchases/RCProductInfo.h>
 #include <Purchases/RCProductInfoExtractor.h>
+#include <Purchases/RCPurchasesSwiftImport.h>
