@@ -14,6 +14,11 @@
 		2D50332A2406EA61009CAE61 /* RCSubscriberAttributesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D50332B2406EA61009CAE61 /* RCSubscriberAttributesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D5033282406EA61009CAE61 /* RCSubscriberAttributesManager.m */; };
 		2D8DB34B24072AAE00BE3D31 /* SubscriberAttributeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */; };
+		2D97457E24BCE001006245E9 /* PurchasesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D97457D24BCE001006245E9 /* PurchasesIntegrationTests.swift */; };
+		2D97458324BCE00D006245E9 /* Purchases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; };
+		2D97458424BCE039006245E9 /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
+		2D97458824BCE04A006245E9 /* StoreKitTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D97458724BCE04A006245E9 /* StoreKitTest.framework */; };
+		2D97458924BCE068006245E9 /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2D97457424B920E1006245E9 /* Configuration.storekit */; };
 		2DD02D5524AD011600419CD9 /* RCPurchasesSwiftImport.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DD02D5424AD00ED00419CD9 /* RCPurchasesSwiftImport.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2DD02D5724AD0B0500419CD9 /* RCIntroEligibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD02D5624AD0B0500419CD9 /* RCIntroEligibilityTests.swift */; };
 		2DD02D5B24AD129A00419CD9 /* LocalReceiptParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD02D5A24AD129A00419CD9 /* LocalReceiptParserTests.swift */; };
@@ -182,6 +187,13 @@
 		2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCSubscriberAttributesManager.h; path = Purchases/SubscriberAttributes/RCSubscriberAttributesManager.h; sourceTree = SOURCE_ROOT; };
 		2D5033282406EA61009CAE61 /* RCSubscriberAttributesManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RCSubscriberAttributesManager.m; path = Purchases/SubscriberAttributes/RCSubscriberAttributesManager.m; sourceTree = SOURCE_ROOT; };
 		2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscriberAttributeTests.swift; sourceTree = "<group>"; };
+		2D97456D24B91E03006245E9 /* StoreKitTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKitTest.framework; path = Platforms/MacOSX.platform/Developer/Library/Frameworks/StoreKitTest.framework; sourceTree = DEVELOPER_DIR; };
+		2D97457424B920E1006245E9 /* Configuration.storekit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
+		2D97457B24BCE001006245E9 /* PurchasesIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PurchasesIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D97457D24BCE001006245E9 /* PurchasesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesIntegrationTests.swift; sourceTree = "<group>"; };
+		2D97457F24BCE001006245E9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2D97458524BCE03E006245E9 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		2D97458724BCE04A006245E9 /* StoreKitTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKitTest.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/Developer/Library/Frameworks/StoreKitTest.framework; sourceTree = DEVELOPER_DIR; };
 		2DD02D5424AD00ED00419CD9 /* RCPurchasesSwiftImport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPurchasesSwiftImport.h; sourceTree = "<group>"; };
 		2DD02D5624AD0B0500419CD9 /* RCIntroEligibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCIntroEligibilityTests.swift; sourceTree = "<group>"; };
 		2DD02D5A24AD129A00419CD9 /* LocalReceiptParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReceiptParserTests.swift; sourceTree = "<group>"; };
@@ -326,6 +338,16 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2D97457824BCE001006245E9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D97458824BCE04A006245E9 /* StoreKitTest.framework in Frameworks */,
+				2D97458424BCE039006245E9 /* Nimble.framework in Frameworks */,
+				2D97458324BCE00D006245E9 /* Purchases.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		352629FA1F7C4B9100C04F2C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -367,6 +389,24 @@
 			);
 			name = SubscriberAttributes;
 			path = Public/SubscriberAttributes;
+			sourceTree = "<group>";
+		};
+		2D97457624B920EA006245E9 /* StoreKit Configuration Files */ = {
+			isa = PBXGroup;
+			children = (
+				2D97457424B920E1006245E9 /* Configuration.storekit */,
+			);
+			path = "StoreKit Configuration Files";
+			sourceTree = "<group>";
+		};
+		2D97457C24BCE001006245E9 /* PurchasesIntegrationTests */ = {
+			isa = PBXGroup;
+			children = (
+				2D97457624B920EA006245E9 /* StoreKit Configuration Files */,
+				2D97457D24BCE001006245E9 /* PurchasesIntegrationTests.swift */,
+				2D97457F24BCE001006245E9 /* Info.plist */,
+			);
+			path = PurchasesIntegrationTests;
 			sourceTree = "<group>";
 		};
 		2D9AF7B124A2B2F000E1D023 /* SwiftSources */ = {
@@ -442,6 +482,7 @@
 				2DEC0CFB24A2A1B100B0E5BB /* Package.swift */,
 				35262A001F7C4B9100C04F2C /* Purchases */,
 				35262A1F1F7D77E600C04F2C /* PurchasesTests */,
+				2D97457C24BCE001006245E9 /* PurchasesIntegrationTests */,
 				352629FF1F7C4B9100C04F2C /* Products */,
 				3530C18722653E8F00D6DF52 /* Frameworks */,
 				2DCB85BF2406EC3F003C1260 /* Recovered References */,
@@ -453,6 +494,7 @@
 			children = (
 				352629FE1F7C4B9100C04F2C /* Purchases.framework */,
 				35262A1E1F7D77E600C04F2C /* PurchasesTests.xctest */,
+				2D97457B24BCE001006245E9 /* PurchasesIntegrationTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -495,6 +537,9 @@
 		3530C18722653E8F00D6DF52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2D97458724BCE04A006245E9 /* StoreKitTest.framework */,
+				2D97458524BCE03E006245E9 /* XCTest.framework */,
+				2D97456D24B91E03006245E9 /* StoreKitTest.framework */,
 				357C9BC022725CFA006BC624 /* iAd.framework */,
 				350A1B84226E3E8700CCA10F /* AppKit.framework */,
 				3530C18822653E8F00D6DF52 /* AdSupport.framework */,
@@ -768,6 +813,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		2D97457A24BCE001006245E9 /* PurchasesIntegrationTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2D97458224BCE001006245E9 /* Build configuration list for PBXNativeTarget "PurchasesIntegrationTests" */;
+			buildPhases = (
+				2D97457724BCE001006245E9 /* Sources */,
+				2D97457824BCE001006245E9 /* Frameworks */,
+				2D97457924BCE001006245E9 /* Resources */,
+				2D97458B24BCE399006245E9 /* Carthage Copy Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PurchasesIntegrationTests;
+			productName = PurchasesIntegrationTests;
+			productReference = 2D97457B24BCE001006245E9 /* PurchasesIntegrationTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		352629FD1F7C4B9100C04F2C /* Purchases */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 35262A121F7C4B9100C04F2C /* Build configuration list for PBXNativeTarget "Purchases" */;
@@ -793,7 +856,7 @@
 				35262A1A1F7D77E600C04F2C /* Sources */,
 				35262A1B1F7D77E600C04F2C /* Frameworks */,
 				35262A1C1F7D77E600C04F2C /* Resources */,
-				35DFC68420B875B6004584CC /* Copy Frameworks */,
+				35DFC68420B875B6004584CC /* Carthage Copy Frameworks */,
 				350FBDD91F7DFD900065833D /* Copy Frameworks */,
 			);
 			buildRules = (
@@ -812,10 +875,14 @@
 		352629F51F7C4B9100C04F2C /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0900;
+				LastSwiftUpdateCheck = 1200;
 				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = Purchases;
 				TargetAttributes = {
+					2D97457A24BCE001006245E9 = {
+						CreatedOnToolsVersion = 12.0;
+						ProvisioningStyle = Automatic;
+					};
 					352629FD1F7C4B9100C04F2C = {
 						CreatedOnToolsVersion = 9.0;
 						LastSwiftMigration = 1200;
@@ -843,11 +910,20 @@
 			targets = (
 				352629FD1F7C4B9100C04F2C /* Purchases */,
 				35262A1D1F7D77E600C04F2C /* PurchasesTests */,
+				2D97457A24BCE001006245E9 /* PurchasesIntegrationTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		2D97457924BCE001006245E9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D97458924BCE068006245E9 /* Configuration.storekit in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		352629FC1F7C4B9100C04F2C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -865,7 +941,27 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		35DFC68420B875B6004584CC /* Copy Frameworks */ = {
+		2D97458B24BCE399006245E9 /* Carthage Copy Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/iOS/Nimble.framework",
+			);
+			name = "Carthage Copy Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/NImble.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
+		};
+		35DFC68420B875B6004584CC /* Carthage Copy Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -874,8 +970,10 @@
 				"$(SRCROOT)/Carthage/Build/iOS/Nimble.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/OHHTTPStubs.framework",
 			);
-			name = "Copy Frameworks";
+			name = "Carthage Copy Frameworks";
 			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/Nimble.framework",
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/OHHTTPStubs.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -884,6 +982,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2D97457724BCE001006245E9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D97457E24BCE001006245E9 /* PurchasesIntegrationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		352629F91F7C4B9100C04F2C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -992,6 +1098,55 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		2D97458024BCE001006245E9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				INFOPLIST_FILE = PurchasesIntegrationTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesIntegrationTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2D97458124BCE001006245E9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				INFOPLIST_FILE = PurchasesIntegrationTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesIntegrationTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		35262A101F7C4B9100C04F2C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1115,9 +1270,13 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = Purchases/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
@@ -1147,9 +1306,13 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = Purchases/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
@@ -1220,6 +1383,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		2D97458224BCE001006245E9 /* Build configuration list for PBXNativeTarget "PurchasesIntegrationTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2D97458024BCE001006245E9 /* Debug */,
+				2D97458124BCE001006245E9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		352629F81F7C4B9100C04F2C /* Build configuration list for PBXProject "Purchases" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
