@@ -14,7 +14,7 @@ import StoreKit
 
 
 class PurchasesIntegrationTests: XCTestCase {
-
+    
     var testSession: SKTestSession!
     var apiKey: String!
     var integrationTestsURL: URL?
@@ -28,7 +28,7 @@ class PurchasesIntegrationTests: XCTestCase {
         
         apiKey = <api_key_for_integration_tests_here>
         userDefaults = .standard
-
+        
         Purchases.proxyURL = integrationTestsURL
     }
     
@@ -66,7 +66,7 @@ class PurchasesIntegrationTests: XCTestCase {
                 print("purchaserInfo: \(String(describing: purchaserInfo))")
                 print("userCancelled: \(cancelled)")
                 let productId = currentPackage.product.productIdentifier
-                Purchases.shared.checkTrialOrIntroductoryPriceEligibility([productId, "lalala"]) { introEligibility in
+                Purchases.shared.checkTrialOrIntroductoryPriceEligibility([productId, "unknown product id"]) { introEligibility in
                     print("finished")
                     print("intro eligibility: \(introEligibility)")
                     expectation.fulfill()
@@ -89,43 +89,11 @@ class PurchasesIntegrationTests: XCTestCase {
         Purchases.configure(withAPIKey: "VtDdmbdWBySmqJeeQUTyrNxETUVkhuaJ", appUserID: "andyIntegrationTests", observerMode: false, userDefaults: userDefaults)
         let expectation = XCTestExpectation(description: "finish all async calls")
         
-//        Purchases.shared.offerings { offerings, error in
-//            if let error = error {
-//                print("error found while fetching offerings: \(error.localizedDescription)")
-//                expectation.fulfill()
-//                return
-//            }
-//
-//            guard let offerings = offerings,
-//                  let currentOffering = offerings.current else {
-//                print("couldn't unpack package")
-//                expectation.fulfill()
-//                return
-//            }
-//            let packages = currentOffering.availablePackages
-//            guard let currentPackage = packages.first else {
-//                print("packages is empty")
-//                expectation.fulfill()
-//                return
-//            }
-//
-//            Purchases.shared.purchasePackage(currentPackage) { (transaction, purchaserInfo, error, cancelled) in
-//                if let error = error {
-//                    print("error found while purchasing package: \(error.localizedDescription)")
-//                    expectation.fulfill()
-//                    return
-//                }
-//                print("transaction: \(String(describing: transaction))")
-//                print("purchaserInfo: \(String(describing: purchaserInfo))")
-//                print("userCancelled: \(cancelled)")
-//                let productId = currentPackage.product.productIdentifier
-                Purchases.shared.checkTrialOrIntroductoryPriceEligibility([productId, "lalala"]) { introEligibility in
-                    print("finished")
-                    print("intro eligibility: \(introEligibility)")
-                    expectation.fulfill()
-                }
-//            }
-//        }
+        Purchases.shared.checkTrialOrIntroductoryPriceEligibility([productId, "lalala"]) { introEligibility in
+            print("finished")
+            print("intro eligibility: \(introEligibility)")
+            expectation.fulfill()
+        }
         
         wait(for: [expectation], timeout: 30.0)
         
