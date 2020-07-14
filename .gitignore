@@ -30,3 +30,4 @@ CarthageUploads
 *.bck
 fastlane/report.xml
 CHANGELOG.latest.md
+Pods/

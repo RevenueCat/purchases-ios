@@ -4,6 +4,10 @@ PODS:
 DEPENDENCIES:
   - Purchases (from `../../`)
 
+SPEC REPOS:
+  trunk:
+    - TPInAppReceipt
+
 EXTERNAL SOURCES:
   Purchases:
     :path: "../../"

@@ -7,24 +7,32 @@
 //
 
 import Foundation
-@objc public enum LocalReceiptParserErrorCode: Int {
+import TPInAppReceipt
+
+internal enum LocalReceiptParserErrorCode: Int {
     case ReceiptNotFound,
          UnknownError
 }
 
-internal enum IntroEligibilityStatus: Int {
-    case unknown,
-         ineligible,
-         eligible
-}
-
-@objc public class LocalReceiptParser: NSObject {
+internal class LocalReceiptParser {
+    private let receiptData: Data
     
-    @objc public func checkTrialOrIntroductoryPriceEligibility(withData data: Data,
-                                                               productIdentifiers: [String],
-                                                               completion: ([String : Int], Error?) -> Void) {
-        completion([:], NSError(domain: "This method hasn't been implemented yet",
-                                code: LocalReceiptParserErrorCode.UnknownError.rawValue,
-                                userInfo: nil))
+    init(receiptData: Data) {
+        self.receiptData = receiptData
+    }
+    
+    func purchasedIntroOfferProductIdentifiers() -> Set<String> {
+        do {
+            let receipt = try TPInAppReceipt.InAppReceipt(receiptData: receiptData)
+            
+            let productIdentifiers = receipt.purchases
+                .filter { $0.subscriptionTrialPeriod || $0.subscriptionIntroductoryPricePeriod }
+                .map{ $0.productIdentifier }
+            return productIdentifiers
+        } catch let error {
+            print("couldn't parse the receipt, error: \(error.localizedDescription)")
+        }
+        
+        return [:]
     }
 }

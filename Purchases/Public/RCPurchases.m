@@ -688,11 +688,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                  completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
     [self receiptData:^(NSData * _Nonnull data) {
-        LocalReceiptParser *receiptParser = [[LocalReceiptParser alloc] init];
-        [receiptParser checkTrialOrIntroductoryPriceEligibilityWithData:data
-                                                     productIdentifiers:productIdentifiers
-                                                             completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,
-                                                                          NSError * _Nullable error) {
+        IntroEligibilityCalculator *introCalculator = [[IntroEligibilityCalculator alloc] init];
+        [introCalculator checkTrialOrIntroductoryPriceEligibilityWithData:data
+                                                       productIdentifiers:productIdentifiers
+                                                               completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,
+                                                                            NSError * _Nullable error) {
             if (!error) {
                 NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
                 

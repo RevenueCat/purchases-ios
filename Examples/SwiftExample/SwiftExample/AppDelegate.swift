@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
         Purchases.debugLogsEnabled = true
-        Purchases.configure(withAPIKey: <your_public_sdk_key_here>)
+        Purchases.configure(withAPIKey: "VtDdmbdWBySmqJeeQUTyrNxETUVkhuaJ")
 
         // set attributes to store additional, structured information for a user in RevenueCat.
         // More info: https://docs.revenuecat.com/docs/user-attributes
@@ -27,6 +27,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // we're requesting push notifications on app start only to showcase how to set the push token in RevenueCat
         requestPushNotificationsPermissions()
+        
+        Purchases.shared.checkTrialOrIntroductoryPriceEligibility(["com.revenuecat.monthly_4.99.1_week_intro"]) { introEligibilityDict in
+            print(introEligibilityDict)
+        }
 
         return true
     }
