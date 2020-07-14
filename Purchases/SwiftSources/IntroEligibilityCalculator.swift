@@ -16,6 +16,8 @@ internal enum IntroEligibilityStatus: Int {
 
 @available(iOS 12.0, *)
 public class IntroEligibilityCalculator: NSObject {
+    private let productsManager = ProductsManager()
+    private var localReceiptParser : LocalReceiptParser!
     
     @objc public func checkTrialOrIntroductoryPriceEligibility(withData receiptData: Data,
                                                                productIdentifiers candidateProductIdentifiers: [String],
@@ -24,21 +26,18 @@ public class IntroEligibilityCalculator: NSObject {
             resultDict[productId] = IntroEligibilityStatus.unknown.rawValue
         }
         
-        let productsManager = ProductsManager()
-        let localReceiptParser = LocalReceiptParser(receiptData: receiptData)
+        localReceiptParser = LocalReceiptParser(receiptData: receiptData)
         
         let transactionsByProductIdentifier = localReceiptParser.purchasedIntroOfferProductIdentifiers()
-        productsManager.products(withIdentifiers: Set(candidateProductIdentifiers)) { [weak self] candidateProducts in
-            productsManager.products(withIdentifiers: transactionsByProductIdentifier) { [weak self] purchasedProductsWithIntroOffers in
-                guard let `self` = self else { return }
+        productsManager.products(withIdentifiers: Set(candidateProductIdentifiers)) { [self] candidateProducts in
+            self.productsManager.products(withIdentifiers: transactionsByProductIdentifier) { [self] purchasedProductsWithIntroOffers in
+//                guard let `self` = self else { return }
                 
                 let eligibility: [String: Int] = self.checkIntroEligibility(candidateProducts: candidateProducts,
                                                                             purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffers)
                 result.merge(eligibility) { (_, new) in new }
                 
-                completion(result, NSError(domain: "This method hasn't been implemented yet",
-                                           code: LocalReceiptParserErrorCode.UnknownError.rawValue,
-                                           userInfo: nil))
+                completion(result, nil)
             }
         }
     }
