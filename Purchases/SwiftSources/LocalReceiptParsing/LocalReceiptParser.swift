@@ -28,11 +28,11 @@ internal class LocalReceiptParser {
             let productIdentifiers = receipt.purchases
                 .filter { $0.subscriptionTrialPeriod || $0.subscriptionIntroductoryPricePeriod }
                 .map{ $0.productIdentifier }
-            return productIdentifiers
+            return Set(productIdentifiers)
         } catch let error {
             print("couldn't parse the receipt, error: \(error.localizedDescription)")
         }
         
-        return [:]
+        return Set()
     }
 }

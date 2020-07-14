@@ -688,29 +688,38 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                  completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
     [self receiptData:^(NSData * _Nonnull data) {
-        IntroEligibilityCalculator *introCalculator = [[IntroEligibilityCalculator alloc] init];
-        [introCalculator checkTrialOrIntroductoryPriceEligibilityWithData:data
-                                                       productIdentifiers:productIdentifiers
-                                                               completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,
-                                                                            NSError * _Nullable error) {
-            if (!error) {
-                NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
-                
-                for (NSString *key in receivedEligibility.allKeys) {
-                    convertedEligibility[key] = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedEligibility[key]];
+        if (@available(iOS 12.0, *)) {
+            IntroEligibilityCalculator *introCalculator = [[IntroEligibilityCalculator alloc] init];
+            [introCalculator checkTrialOrIntroductoryPriceEligibilityWithData:data
+                                                           productIdentifiers:productIdentifiers
+                                                                   completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,
+                                                                                NSError * _Nullable error) {
+                if (!error) {
+                    NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
+                    
+                    for (NSString *key in receivedEligibility.allKeys) {
+                        convertedEligibility[key] = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedEligibility[key]];
+                    }
+                    
+                    CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
+                } else {
+                    NSLog(@"There was an error when trying to parse the receipt locally, details: %@", error.localizedDescription);
+                    [self.backend getIntroEligibilityForAppUserID:self.appUserID
+                                                      receiptData:data
+                                               productIdentifiers:productIdentifiers
+                                                       completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
+                        CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+                    }];
                 }
-                
-                CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
-            } else {
-                NSLog(@"There was an error when trying to parse the receipt locally, details: %@", error.localizedDescription);
-                [self.backend getIntroEligibilityForAppUserID:self.appUserID
-                                                  receiptData:data
-                                           productIdentifiers:productIdentifiers
-                                                   completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
-                    CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
-                }];
-            }
-        }];
+            }];
+        } else {
+            [self.backend getIntroEligibilityForAppUserID:self.appUserID
+                                              receiptData:data
+                                       productIdentifiers:productIdentifiers
+                                               completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
+                CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+            }];
+        }
         
     }];
 }

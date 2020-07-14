@@ -14,44 +14,54 @@ internal enum IntroEligibilityStatus: Int {
          eligible
 }
 
+@available(iOS 12.0, *)
 public class IntroEligibilityCalculator: NSObject {
-
+    
     @objc public func checkTrialOrIntroductoryPriceEligibility(withData receiptData: Data,
                                                                productIdentifiers candidateProductIdentifiers: [String],
-                                                               completion: ([String: Int], Error?) -> Void) {
-        if #available(iOS 12.0, *) {
-
-            var result: [String: Int] = candidateProductIdentifiers.reduce(into: [:]) { resultDict, productId in
-                resultDict[productId] = IntroEligibilityStatus.unknown.rawValue
+                                                               completion: @escaping ([String: Int], Error?) -> Void) {
+        var result: [String: Int] = candidateProductIdentifiers.reduce(into: [:]) { resultDict, productId in
+            resultDict[productId] = IntroEligibilityStatus.unknown.rawValue
+        }
+        
+        let productsManager = ProductsManager()
+        let localReceiptParser = LocalReceiptParser(receiptData: receiptData)
+        
+        let transactionsByProductIdentifier = localReceiptParser.purchasedIntroOfferProductIdentifiers()
+        productsManager.products(withIdentifiers: Set(candidateProductIdentifiers)) { [weak self] candidateProducts in
+            productsManager.products(withIdentifiers: transactionsByProductIdentifier) { [weak self] purchasedProductsWithIntroOffers in
+                guard let `self` = self else { return }
+                
+                let eligibility: [String: Int] = self.checkIntroEligibility(candidateProducts: candidateProducts,
+                                                                            purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffers)
+                result.merge(eligibility) { (_, new) in new }
+                
+                completion(result, NSError(domain: "This method hasn't been implemented yet",
+                                           code: LocalReceiptParserErrorCode.UnknownError.rawValue,
+                                           userInfo: nil))
             }
+        }
+    }
+}
 
-            let productsManager = ProductsManager()
-            let localReceiptParser = LocalReceiptParser(receiptData: receiptData)
-
-            let transactionsByProductIdentifier = localReceiptParser.introPricingTransactionsByProductIdentifier()
-            let candidateProducts = productsManager.products(withIdentifiers: Set(candidateProductIdentifiers))
-            let purchasedProductsWithIntroOffers = productsManager.products(withIdentifiers:
-                                                                           transactionsByProductIdentifier.keys)
-
-            for candidate in candidateProducts {
-                let usedIntroForProductIdentifier = purchasedProductsWithIntroOffers
-                    .contains { purchased in
+@available(iOS 12.0, *)
+private extension IntroEligibilityCalculator {
+    
+    func checkIntroEligibility(candidateProducts: Set<SKProduct>,
+                               purchasedProductsWithIntroOffers: Set<SKProduct>) -> [String: Int] {
+        var result: [String: Int] = [:]
+        for candidate in candidateProducts {
+            let usedIntroForProductIdentifier = purchasedProductsWithIntroOffers
+                .contains { purchased in
                     let foundByProductId = candidate.productIdentifier == purchased.productIdentifier
                     let foundByGroupId = candidate.subscriptionGroupIdentifier == purchased.subscriptionGroupIdentifier
+                        && candidate.subscriptionGroupIdentifier != nil
                     return foundByProductId || foundByGroupId
                 }
-                result[candidate.productIdentifier] = usedIntroForProductIdentifier
-                                                             ? IntroEligibilityStatus.ineligible.rawValue
-                                                             : IntroEligibilityStatus.eligible.rawValue
-            }
-
-            completion(result, NSError(domain: "This method hasn't been implemented yet",
-                                       code: LocalReceiptParserErrorCode.UnknownError.rawValue,
-                                       userInfo: nil))
-        } else {
-            completion([:], NSError(domain: "intro availability isn't available",
-                                    code: LocalReceiptParserErrorCode.UnknownError.rawValue,
-                                    userInfo: nil))
+            result[candidate.productIdentifier] = usedIntroForProductIdentifier
+                ? IntroEligibilityStatus.ineligible.rawValue
+                : IntroEligibilityStatus.eligible.rawValue
         }
+        return result
     }
 }
