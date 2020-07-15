@@ -25,22 +25,31 @@ public class IntroEligibilityCalculator: NSObject {
     }
     
     @objc public func checkTrialOrIntroductoryPriceEligibility(withData receiptData: Data,
-                                                               productIdentifiers candidateProductIdentifiers: [String],
+                                                               productIdentifiers candidateProductIdentifiers: Set<String>,
                                                                completion: @escaping ([String: Int], Error?) -> Void) {
+        guard candidateProductIdentifiers.count > 0 else {
+            completion([:], nil)
+            return
+        }
+        
         var result: [String: Int] = candidateProductIdentifiers.reduce(into: [:]) { resultDict, productId in
             resultDict[productId] = IntroEligibilityStatus.unknown.rawValue
         }
-                
-        let transactionsByProductIdentifier = localReceiptParser.purchasedIntroOfferProductIdentifiers(receiptData: receiptData)
-        productsManager.products(withIdentifiers: Set(candidateProductIdentifiers)) { [self] candidateProducts in
-            self.productsManager.products(withIdentifiers: transactionsByProductIdentifier) { [self] purchasedProductsWithIntroOffers in
-                
-                let eligibility: [String: Int] = self.checkIntroEligibility(candidateProducts: candidateProducts,
-                                                                            purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffers)
-                result.merge(eligibility) { (_, new) in new }
-                
-                completion(result, nil)
-            }
+        
+        let purchasedProductIdsWithIntroOffers = localReceiptParser.purchasedIntroOfferProductIdentifiers(receiptData: receiptData)
+        
+        let allProductIdentifiers = candidateProductIdentifiers.union(purchasedProductIdsWithIntroOffers)
+        
+        productsManager.products(withIdentifiers: allProductIdentifiers) { allProducts in
+            let purchasedProductsWithIntroOffers = allProducts.filter { purchasedProductIdsWithIntroOffers.contains($0.productIdentifier) }
+            let candidateProducts = allProducts.filter { candidateProductIdentifiers.contains($0.productIdentifier) }
+            
+            
+            let eligibility: [String: Int] = self.checkIntroEligibility(candidateProducts: candidateProducts,
+                                                                        purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffers)
+            result.merge(eligibility) { (_, new) in new }
+            
+            completion(result, nil)
         }
     }
 }

@@ -690,8 +690,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     [self receiptData:^(NSData * _Nonnull data) {
         if (@available(iOS 12.0, *)) {
             IntroEligibilityCalculator *introCalculator = [[IntroEligibilityCalculator alloc] init];
+            NSSet *productIdentifiersSet = [[NSSet alloc] initWithArray:productIdentifiers];
             [introCalculator checkTrialOrIntroductoryPriceEligibilityWithData:data
-                                                           productIdentifiers:productIdentifiers
+                                                           productIdentifiers:productIdentifiersSet
                                                                    completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,
                                                                                 NSError * _Nullable error) {
                 if (!error) {
