@@ -10,16 +10,21 @@ import Foundation
 import StoreKit
 
 internal class ProductsManager: NSObject {
-    private let cachedProductsByIdentifier: [String: SKProduct] = [:]
-    private var requestsByProducts: [Set<String>: SKRequest] = [:]
+    private var cachedProductsByIdentifier: [String: SKProduct] = [:]
     private var productsByRequests: [SKRequest: Set<String>] = [:]
     private var completionHandlers: [Set<String>: (Set<SKProduct>) -> Void] = [:]
 
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping (Set<SKProduct>) -> Void) {
+        let productsAlreadyCached = cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
+        if productsAlreadyCached.count == identifiers.count {
+            let productsAlreadyCachedSet = Set(productsAlreadyCached.values)
+            completion(productsAlreadyCachedSet)
+            return
+        }
+        
         let request = SKProductsRequest(productIdentifiers: identifiers)
         request.delegate = self
         
-        requestsByProducts[identifiers] = request
         productsByRequests[request] = identifiers
         completionHandlers[identifiers] = completion
         
@@ -28,13 +33,15 @@ internal class ProductsManager: NSObject {
 }
 
 extension ProductsManager: SKProductsRequestDelegate {
+    
     func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         NSLog("products request received response")
-        guard let products = productsByRequests[request] else { fatalError("couldn't find request") }
-        guard let completion = completionHandlers[products] else { fatalError("couldn't find completion") }
-        completionHandlers.removeValue(forKey: products)
+        guard let requestProducts = productsByRequests[request] else { fatalError("couldn't find request") }
+        guard let completion = completionHandlers[requestProducts] else { fatalError("couldn't find completion") }
+        completionHandlers.removeValue(forKey: requestProducts)
         productsByRequests.removeValue(forKey: request)
-
+        
+        cacheProducts(response.products)
         completion(Set(response.products))
     }
 
@@ -48,5 +55,16 @@ extension ProductsManager: SKProductsRequestDelegate {
         
         completionHandlers.removeValue(forKey: products)
         productsByRequests.removeValue(forKey: request)
+    }
+}
+
+private extension ProductsManager {
+    
+    func cacheProducts(_ products: [SKProduct]) {
+        let productsByIdentifier = products.reduce(into: [:]) { resultDict, product in
+            resultDict[product.productIdentifier] = product
+        }
+        
+        cachedProductsByIdentifier.merge(productsByIdentifier) { (_, new) in new }
     }
 }

@@ -44,7 +44,6 @@ public class IntroEligibilityCalculator: NSObject {
             let purchasedProductsWithIntroOffers = allProducts.filter { purchasedProductIdsWithIntroOffers.contains($0.productIdentifier) }
             let candidateProducts = allProducts.filter { candidateProductIdentifiers.contains($0.productIdentifier) }
             
-            
             let eligibility: [String: Int] = self.checkIntroEligibility(candidateProducts: candidateProducts,
                                                                         purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffers)
             result.merge(eligibility) { (_, new) in new }
