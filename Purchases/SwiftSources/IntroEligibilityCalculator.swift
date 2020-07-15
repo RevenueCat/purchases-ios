@@ -8,7 +8,6 @@
 
 import Foundation
 
-@available(iOS 12.0, *)
 public class IntroEligibilityCalculator: NSObject {
     private let productsManager: ProductsManager
     private let localReceiptParser: LocalReceiptParser
@@ -24,6 +23,7 @@ public class IntroEligibilityCalculator: NSObject {
         self.localReceiptParser = localReceiptParser
     }
     
+    @available(iOS 12.0, *)
     @objc public func checkTrialOrIntroductoryPriceEligibility(withData receiptData: Data,
                                                                productIdentifiers candidateProductIdentifiers: Set<String>,
                                                                completion: @escaping ([String: Int], Error?) -> Void) {
