@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import TPInAppReceipt
 
 internal enum LocalReceiptParserErrorCode: Int {
     case ReceiptNotFound,
@@ -23,7 +22,7 @@ internal class LocalReceiptParser {
     
     func purchasedIntroOfferProductIdentifiers() -> Set<String> {
         do {
-            let receipt = try TPInAppReceipt.InAppReceipt(receiptData: receiptData)
+            let receipt = try InAppReceipt(receiptData: receiptData)
             
             let productIdentifiers = receipt.purchases
                 .filter { $0.subscriptionTrialPeriod || $0.subscriptionIntroductoryPricePeriod }
