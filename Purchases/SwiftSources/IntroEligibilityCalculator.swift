@@ -8,16 +8,21 @@
 
 import Foundation
 
-internal enum IntroEligibilityStatus: Int {
-    case unknown,
-         ineligible,
-         eligible
-}
-
 @available(iOS 12.0, *)
 public class IntroEligibilityCalculator: NSObject {
-    private let productsManager = ProductsManager()
-    private var localReceiptParser : LocalReceiptParser!
+    private let productsManager: ProductsManager
+    private let localReceiptParser: LocalReceiptParser
+    
+    public override init() {
+        self.productsManager = ProductsManager()
+        self.localReceiptParser = LocalReceiptParser()
+    }
+    
+    internal init(productsManager: ProductsManager,
+                  localReceiptParser: LocalReceiptParser) {
+        self.productsManager = productsManager
+        self.localReceiptParser = localReceiptParser
+    }
     
     @objc public func checkTrialOrIntroductoryPriceEligibility(withData receiptData: Data,
                                                                productIdentifiers candidateProductIdentifiers: [String],
@@ -25,13 +30,10 @@ public class IntroEligibilityCalculator: NSObject {
         var result: [String: Int] = candidateProductIdentifiers.reduce(into: [:]) { resultDict, productId in
             resultDict[productId] = IntroEligibilityStatus.unknown.rawValue
         }
-        
-        localReceiptParser = LocalReceiptParser(receiptData: receiptData)
-        
-        let transactionsByProductIdentifier = localReceiptParser.purchasedIntroOfferProductIdentifiers()
+                
+        let transactionsByProductIdentifier = localReceiptParser.purchasedIntroOfferProductIdentifiers(receiptData: receiptData)
         productsManager.products(withIdentifiers: Set(candidateProductIdentifiers)) { [self] candidateProducts in
             self.productsManager.products(withIdentifiers: transactionsByProductIdentifier) { [self] purchasedProductsWithIntroOffers in
-//                guard let `self` = self else { return }
                 
                 let eligibility: [String: Int] = self.checkIntroEligibility(candidateProducts: candidateProducts,
                                                                             purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffers)
@@ -63,4 +65,10 @@ private extension IntroEligibilityCalculator {
         }
         return result
     }
+}
+
+internal enum IntroEligibilityStatus: Int {
+    case unknown,
+         ineligible,
+         eligible
 }
