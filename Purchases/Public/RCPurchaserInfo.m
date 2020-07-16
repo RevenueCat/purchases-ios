@@ -11,12 +11,15 @@
 #import "RCEntitlementInfos.h"
 #import "RCEntitlementInfos+Protected.h"
 #import "RCEntitlementInfo.h"
+#import "RCPurchasesSwiftImport.h"
 
 @interface RCPurchaserInfo ()
 
 @property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDatesByProduct;
 @property (nonatomic) NSDictionary<NSString *, NSDate *> *purchaseDatesByProduct;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
+@property (nonatomic) NSArray<RCTransaction *> *nonConsumableTransactionsList;
+@property (nonatomic) NSDictionary<NSString *, RCTransaction *> *nonConsumableTransactionsByProduct;
 @property (nonatomic, nullable) NSString *originalApplicationVersion;
 @property (nonatomic, nullable) NSDate *originalPurchaseDate;
 @property (nonatomic) NSDictionary *originalData;
@@ -82,7 +85,8 @@ static dispatch_once_t onceToken;
                                                subscriptions:(NSDictionary *)subscriptions {
     NSDictionary<NSString *, NSArray *> *nonSubscriptions = subscriberData[@"non_subscriptions"];
     self.nonConsumablePurchases = [NSSet setWithArray:[nonSubscriptions allKeys]];
-
+    self.nonConsumableTransactionsByProduct = [PurchaserInfoHelper nonConsumableTransactionsMapWithNonSubscriptionsDictionary:subscriberData dateFormatter:dateFormatter];
+    self.nonConsumableTransactionsList = [PurchaserInfoHelper nonConsumableTransactionsListWithNonSubscriptionsTransactionsDictionary:self.nonConsumableTransactionsByProduct];
     NSMutableDictionary<NSString *, id> *nonSubscriptionsLatestPurchases = [[NSMutableDictionary alloc] init];
     for (NSString* productId in nonSubscriptions) {
         NSArray *arrayOfPurchases = nonSubscriptions[productId];

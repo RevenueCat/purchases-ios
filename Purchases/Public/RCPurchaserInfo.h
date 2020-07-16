@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class RCEntitlementInfos;
+@class RCEntitlementInfos, RCTransaction;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -32,6 +32,12 @@ NS_SWIFT_NAME(Purchases.PurchaserInfo)
 
 /// Returns all the non-consumable purchases a user has made.
 @property (nonatomic, readonly) NSSet<NSString *> *nonConsumablePurchases;
+
+/// Returns all the non-consumable purchases a user has made.
+@property (nonatomic, readonly) NSArray<RCTransaction *> *nonConsumableTransactionsList;
+
+/// Returns all the non-consumable purchases a user has made.
+@property (nonatomic, readonly) NSDictionary<NSString *, RCTransaction *> *nonConsumableTransactionsByProduct;
 
 /**
 Returns the build number (in iOS) or the marketing version (in macOS) for the version of the application when the user bought the app.
