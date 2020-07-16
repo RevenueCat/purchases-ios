@@ -372,9 +372,8 @@
 		2D9AF7B124A2B2F000E1D023 /* SwiftSources */ = {
 			isa = PBXGroup;
 			children = (
+				354235D524C11138008C84EE /* Purchasing */,
 				2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */,
-				35A6DC1824BE5FF100C3983D /* Transaction.swift */,
-				3597020F24BF6A710010506E /* PurchaserInfoHelper.swift */,
 			);
 			path = SwiftSources;
 			sourceTree = "<group>";
@@ -389,8 +388,8 @@
 		2DD02D5824AD128000419CD9 /* SwiftSources */ = {
 			isa = PBXGroup;
 			children = (
+				354235D624C11160008C84EE /* Purchasing */,
 				2DD02D5924AD128A00419CD9 /* LocalReceiptParsing */,
-				3597021124BF6AAC0010506E /* PurchaserInfoHelperTests.swift */,
 			);
 			path = SwiftSources;
 			sourceTree = "<group>";
@@ -503,6 +502,23 @@
 				3530C18822653E8F00D6DF52 /* AdSupport.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		354235D524C11138008C84EE /* Purchasing */ = {
+			isa = PBXGroup;
+			children = (
+				3597020F24BF6A710010506E /* PurchaserInfoHelper.swift */,
+				35A6DC1824BE5FF100C3983D /* Transaction.swift */,
+			);
+			path = Purchasing;
+			sourceTree = "<group>";
+		};
+		354235D624C11160008C84EE /* Purchasing */ = {
+			isa = PBXGroup;
+			children = (
+				3597021124BF6AAC0010506E /* PurchaserInfoHelperTests.swift */,
+			);
+			path = Purchasing;
 			sourceTree = "<group>";
 		};
 		37E35081077192045E3A8080 /* Mocks */ = {
