@@ -50,19 +50,9 @@ class PurchaserInfoHelperTests: XCTestCase {
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
     }
 
-    func testNonSubscriptionsList() {
-        let list = PurchaserInfoHelper.nonConsumableTransactionsList(withNonSubscriptionsDictionary: dict, dateFormatter: dateFormatter)
+    func testNonSubscriptions() {
+        let list = PurchaserInfoHelper.initNonSubscriptionTransactions(with: dict, dateFormatter: dateFormatter)
         expect { list.count }.to(equal(4))
     }
 
-    func testNonSubscriptionsMap() {
-        let list = PurchaserInfoHelper.nonConsumableTransactionsMap(withNonSubscriptionsDictionary: dict, dateFormatter: dateFormatter)
-        expect { list.count }.to(equal(2))
-    }
-
-    func testNonSubscriptionsMapTwo() {
-        let list = PurchaserInfoHelper.nonConsumableTransactionsMap(withNonSubscriptionsDictionary: dict, dateFormatter: dateFormatter)
-        let transactionsList = PurchaserInfoHelper.nonConsumableTransactionsList(withNonSubscriptionsTransactionsDictionary: list)
-        expect { transactionsList.count }.to(equal(4))
-    }
 }
