@@ -50,9 +50,28 @@ class PurchaserInfoHelperTests: XCTestCase {
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
     }
 
-    func testNonSubscriptions() {
-        let list = PurchaserInfoHelper.initNonSubscriptionTransactions(with: dict, dateFormatter: dateFormatter)
+    func testNonSubscriptionsIsCorrectlyCreated() {
+        let list: Array<Transaction> = PurchaserInfoHelper.initNonSubscriptionTransactions(with: dict, dateFormatter: dateFormatter)
         expect { list.count }.to(equal(4))
+
+        dict.forEach { productId, transactionsData in
+            let filteredTransactions: Array<Transaction> = list.filter { (transaction: Transaction) in
+                transaction.productId == productId
+            }
+            expect { filteredTransactions.count }.to(equal(transactionsData.count))
+            transactionsData.forEach { dictionary in
+                let containsTransaction: Bool = filteredTransactions.contains { (transaction: Transaction) in
+                    transaction.revenuecatId == dictionary["id"] as! String
+                }
+                expect { containsTransaction }.to(beTrue())
+            }
+        }
+
+    }
+
+    func testNonSubscriptionsIsEmptyIfThereAreNoNonSubscriptions() {
+        let list = PurchaserInfoHelper.initNonSubscriptionTransactions(with: [:], dateFormatter: dateFormatter)
+        expect { list.count }.to(equal(0))
     }
 
 }

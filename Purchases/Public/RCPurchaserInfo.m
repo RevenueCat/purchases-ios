@@ -18,8 +18,7 @@
 @property (nonatomic) NSDictionary<NSString *, NSDate *> *expirationDatesByProduct;
 @property (nonatomic) NSDictionary<NSString *, NSDate *> *purchaseDatesByProduct;
 @property (nonatomic) NSSet<NSString *> *nonConsumablePurchases;
-@property (nonatomic) NSArray<RCTransaction *> *nonConsumableTransactionsList;
-@property (nonatomic) NSDictionary<NSString *, RCTransaction *> *nonConsumableTransactionsByProduct;
+@property (nonatomic) NSArray<RCTransaction *> *nonSubscriptionTransactions;
 @property (nonatomic, nullable) NSString *originalApplicationVersion;
 @property (nonatomic, nullable) NSDate *originalPurchaseDate;
 @property (nonatomic) NSDictionary *originalData;
@@ -83,13 +82,12 @@ static dispatch_once_t onceToken;
 
 - (void)initializePurchasesAndEntitlementsWithSubscriberData:(NSDictionary *)subscriberData
                                                subscriptions:(NSDictionary *)subscriptions {
-    NSDictionary<NSString *, NSArray *> *nonSubscriptions = subscriberData[@"non_subscriptions"];
-    self.nonConsumablePurchases = [NSSet setWithArray:[nonSubscriptions allKeys]];
-    self.nonConsumableTransactionsByProduct = [PurchaserInfoHelper nonConsumableTransactionsMapWithNonSubscriptionsDictionary:subscriberData dateFormatter:dateFormatter];
-    self.nonConsumableTransactionsList = [PurchaserInfoHelper nonConsumableTransactionsListWithNonSubscriptionsTransactionsDictionary:self.nonConsumableTransactionsByProduct];
+    NSDictionary<NSString *, NSArray *> *nonSubscriptionsData = subscriberData[@"non_subscriptions"];
+    self.nonConsumablePurchases = [NSSet setWithArray:[nonSubscriptionsData allKeys]];
+    self.nonSubscriptionTransactions = [PurchaserInfoHelper initNonSubscriptionTransactionsWith:nonSubscriptionsData dateFormatter:dateFormatter];
     NSMutableDictionary<NSString *, id> *nonSubscriptionsLatestPurchases = [[NSMutableDictionary alloc] init];
-    for (NSString* productId in nonSubscriptions) {
-        NSArray *arrayOfPurchases = nonSubscriptions[productId];
+    for (NSString* productId in nonSubscriptionsData) {
+        NSArray *arrayOfPurchases = nonSubscriptionsData[productId];
         if (arrayOfPurchases.count > 0) {
             nonSubscriptionsLatestPurchases[productId] = arrayOfPurchases[arrayOfPurchases.count - 1];
         }
