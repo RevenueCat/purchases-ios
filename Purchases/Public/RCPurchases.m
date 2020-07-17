@@ -625,7 +625,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
-    [self receiptData:^(NSData * _Nonnull data) {
+    [self receiptDataWithForceRefresh:YES completion:^(NSData * _Nonnull data) {
         if (data.length == 0) {
             if (RCSystemInfo.isSandbox) {
                 RCLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless you've purchased before and there is a receipt available.");
@@ -910,11 +910,17 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
 }
 
-- (void)receiptData:(void (^ _Nonnull)(NSData * _Nonnull data))completion
-{
+- (void)receiptData:(void (^ _Nonnull)(NSData * _Nonnull data))completion {
+    [self receiptDataWithForceRefresh:false completion:completion];
+}
+
+- (void)receiptDataWithForceRefresh:(BOOL)forceRefresh completion:(void (^ _Nonnull)(NSData * _Nonnull data))completion  {
     NSData *receiptData = [self.receiptFetcher receiptData];
     if (receiptData == nil) {
         RCDebugLog(@"Receipt empty, fetching");
+        [self refreshReceipt:completion];
+    } else if (forceRefresh) {
+        RCDebugLog(@"Forced receipt refresh");
         [self refreshReceipt:completion];
     } else {
         completion(receiptData);
