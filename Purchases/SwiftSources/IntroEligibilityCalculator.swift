@@ -23,7 +23,7 @@ public class IntroEligibilityCalculator: NSObject {
         self.localReceiptParser = localReceiptParser
     }
     
-    @available(iOS 12.0, *)
+    @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
     @objc public func checkTrialOrIntroductoryPriceEligibility(withData receiptData: Data,
                                                                productIdentifiers candidateProductIdentifiers: Set<String>,
                                                                completion: @escaping ([String: Int], Error?) -> Void) {
@@ -53,7 +53,7 @@ public class IntroEligibilityCalculator: NSObject {
     }
 }
 
-@available(iOS 12.0, *)
+@available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
 private extension IntroEligibilityCalculator {
     
     func checkIntroEligibility(candidateProducts: Set<SKProduct>,
