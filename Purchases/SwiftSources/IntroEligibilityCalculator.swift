@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import StoreKit
 
 public class IntroEligibilityCalculator: NSObject {
     private let productsManager: ProductsManager
