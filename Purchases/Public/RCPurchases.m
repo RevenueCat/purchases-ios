@@ -692,31 +692,33 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
                                  completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
-    [self receiptData:^(NSData * _Nonnull data) {
-        if (@available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)) {
-            NSSet *productIdentifiersSet = [[NSSet alloc] initWithArray:productIdentifiers];
-            [self.introEligibilityCalculator checkTrialOrIntroductoryPriceEligibilityWithData:data
-                                                                           productIdentifiers:productIdentifiersSet
-                                                                                   completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,
-                                                                                                NSError * _Nullable error) {
-                if (!error) {
-                    NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
-                    
-                    for (NSString *key in receivedEligibility.allKeys) {
-                        convertedEligibility[key] = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedEligibility[key]];
+    [self receiptData:^(NSData *data) {
+        if (data != nil) {
+            if (@available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)) {
+                NSSet *productIdentifiersSet = [[NSSet alloc] initWithArray:productIdentifiers];
+                [self.introEligibilityCalculator checkTrialOrIntroductoryPriceEligibilityWithData:data
+                                                                               productIdentifiers:productIdentifiersSet
+                                                                                       completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,
+                                                                                                    NSError * _Nullable error) {
+                    if (!error) {
+                        NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
+                        
+                        for (NSString *key in receivedEligibility.allKeys) {
+                            convertedEligibility[key] = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedEligibility[key]];
+                        }
+                        
+                        CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
+                    } else {
+                        NSLog(@"There was an error when trying to parse the receipt locally, details: %@", error.localizedDescription);
+                        [self.backend getIntroEligibilityForAppUserID:self.appUserID
+                                                          receiptData:data
+                                                   productIdentifiers:productIdentifiers
+                                                           completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
+                            CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+                        }];
                     }
-                    
-                    CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
-                } else {
-                    NSLog(@"There was an error when trying to parse the receipt locally, details: %@", error.localizedDescription);
-                    [self.backend getIntroEligibilityForAppUserID:self.appUserID
-                                                      receiptData:data
-                                               productIdentifiers:productIdentifiers
-                                                       completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
-                        CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
-                    }];
-                }
-            }];
+                }];
+            }
         } else {
             [self.backend getIntroEligibilityForAppUserID:self.appUserID
                                               receiptData:data
@@ -725,7 +727,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                 CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
             }];
         }
-        
     }];
 }
 
