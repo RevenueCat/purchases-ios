@@ -83,8 +83,8 @@ static NSURL * _Nullable proxyURL;
     }
 }
 
-+ (BOOL)isApplicationActive {
-    return IS_APPLICATION_ACTIVE;
++ (BOOL)isApplicationBackgrounded {
+    return IS_APPLICATION_BACKGROUNDED;
 }
 
 @end

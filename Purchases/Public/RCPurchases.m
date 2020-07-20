@@ -290,7 +290,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         };
 
         [self.identityManager configureWithAppUserID:appUserID];
-        if (RCSystemInfo.isApplicationActive) {
+        if (!RCSystemInfo.isApplicationBackgrounded) {
             [self updateAllCachesWithCompletionBlock:callDelegate];
         }
         

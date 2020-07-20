@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)systemVersion;
 + (NSString *)appVersion;
 + (NSString *)platformHeader;
-+ (BOOL)isApplicationActive;
++ (BOOL)isApplicationBackgrounded;
 
 + (NSURL *)serverHostURL;
 + (nullable NSURL *)proxyURL;
