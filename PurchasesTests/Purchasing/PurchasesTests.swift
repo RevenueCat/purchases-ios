@@ -179,7 +179,8 @@ class PurchasesTests: XCTestCase {
     let deviceCache = MockDeviceCache()
     let subscriberAttributesManager = MockSubscriberAttributesManager()
     let identityManager = MockUserManager(mockAppUserID: "app_user");
-
+    let systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+    
     let purchasesDelegate = MockPurchasesDelegate()
 
     var purchases: Purchases!
@@ -187,8 +188,7 @@ class PurchasesTests: XCTestCase {
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.identityManager.mockIsAnonymous = false
-        let systemInfo = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
-
+        
         purchases = Purchases(appUserID: identityManager.currentAppUserID,
                               requestFetcher: requestFetcher,
                               receiptFetcher: receiptFetcher,
@@ -209,8 +209,7 @@ class PurchasesTests: XCTestCase {
     func setupAnonPurchases() {
         Purchases.automaticAppleSearchAdsAttributionCollection = false
         self.identityManager.mockIsAnonymous = true
-        let systemInfo = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
-
+        
         purchases = Purchases(appUserID: nil,
                               requestFetcher: requestFetcher,
                               receiptFetcher: receiptFetcher,
@@ -259,9 +258,45 @@ class PurchasesTests: XCTestCase {
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
     }
 
-    func testFirstInitializationCallDelegateForAnon() {
-        setupAnonPurchases()
+    func testFirstInitializationFromForegroundDelegateForAnonIfNothingCached() {
+        systemInfo.stubbedIsApplicationBackgrounded = false
+        setupPurchases()
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
+    }
+    
+    func testFirstInitializationFromBackgroundDoesntCallDelegateForAnonIfNothingCached() {
+        systemInfo.stubbedIsApplicationBackgrounded = true
+        setupPurchases()
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(0))
+    }
+    
+    func testFirstInitializationFromBackgroundDoesntCallDelegateForAnonIfInfoCached() {
+        systemInfo.stubbedIsApplicationBackgrounded = true
+        let info = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]]);
+
+        let jsonObject = info!.jsonObject()
+
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        
+        setupPurchases()
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
+    }
+    
+    func testFirstInitializationFromBackgroundDoesntUpdatePurchaserInfoCache() {
+        systemInfo.stubbedIsApplicationBackgrounded = true
+        setupPurchases()
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(0))
+    }
+    
+    func testFirstInitializationFromForegroundUpdatesPurchaserInfoCache() {
+        systemInfo.stubbedIsApplicationBackgrounded = false
+        setupPurchases()
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
     }
 
     func testDelegateIsCalledForRandomPurchaseSuccess() {
@@ -606,7 +641,7 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    func testFetchesProductInfoIfNotCached() {
+    func testFetchesProductInfoIfNotCachedAndAppActive() {
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
@@ -1256,6 +1291,18 @@ class PurchasesTests: XCTestCase {
         expect(offerings!["base"]).toNot(beNil())
         expect(offerings!["base"]!.monthly).toNot(beNil())
         expect(offerings!["base"]!.monthly?.product).toNot(beNil())
+    }
+
+    func testFirstInitializationGetsOfferingsIfAppActive() {
+        systemInfo.stubbedIsApplicationBackgrounded = false
+        setupPurchases()
+        expect(self.backend.gotOfferings).toEventually(equal(1))
+    }
+
+    func testFirstInitializationDoesntProductInfoFromOfferingsIfAppBackgrounded() {
+        systemInfo.stubbedIsApplicationBackgrounded = true
+        setupPurchases()
+        expect(self.backend.gotOfferings).toEventually(equal(0))
     }
 
     func testProductInfoIsCachedForOfferings() {

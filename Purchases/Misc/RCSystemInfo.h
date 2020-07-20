@@ -19,12 +19,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, readonly) NSString *platformFlavor;
 @property(nonatomic, copy, readonly) NSString *platformFlavorVersion;
 
+
+- (BOOL)isApplicationBackgrounded;
+
 + (BOOL)isSandbox;
 + (NSString *)frameworkVersion;
 + (NSString *)systemVersion;
 + (NSString *)appVersion;
 + (NSString *)platformHeader;
-+ (BOOL)isApplicationBackgrounded;
 
 + (NSURL *)serverHostURL;
 + (nullable NSURL *)proxyURL;
