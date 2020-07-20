@@ -911,7 +911,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)receiptData:(void (^ _Nonnull)(NSData * _Nonnull data))completion {
-    [self receiptDataWithForceRefresh:false completion:completion];
+    [self receiptDataWithForceRefresh:NO completion:completion];
 }
 
 - (void)receiptDataWithForceRefresh:(BOOL)forceRefresh completion:(void (^ _Nonnull)(NSData * _Nonnull data))completion  {
