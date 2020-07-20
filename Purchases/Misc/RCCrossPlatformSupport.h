@@ -17,10 +17,13 @@
 #define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME NSExtensionHostWillResignActiveNotification
 #endif
 
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_MACCATALYST
 #import <UIKit/UIKit.h>
 #elif TARGET_OS_OSX
 #import <AppKit/AppKit.h>
+#elif TARGET_OS_WATCH
+#import <UIKit/UIKit.h>
+#import <WatchKit/WatchKit.h>
 #endif
 
 #if TARGET_OS_MACCATALYST
@@ -57,4 +60,12 @@
 #define PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE 1
 #else
 #define PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE 0
+#endif
+
+#if TARGET_OS_IOS || TARGET_OS_TV
+#define IS_APPLICATION_ACTIVE UIApplication.sharedApplication.applicationState == UIApplicationStateActive
+#elif TARGET_OS_OSX
+#define IS_APPLICATION_ACTIVE NSApplication.sharedApplication.isActive
+#elif TARGET_OS_WATCH
+#define IS_APPLICATION_ACTIVE WKExtension.sharedExtension.applicationState == WKApplicationStateActive
 #endif

@@ -290,7 +290,10 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         };
 
         [self.identityManager configureWithAppUserID:appUserID];
-        [self updateAllCachesWithCompletionBlock:callDelegate];
+        if (RCSystemInfo.isApplicationActive) {
+            [self updateAllCachesWithCompletionBlock:callDelegate];
+        }
+        
         [self configureSubscriberAttributesManager];
 
         self.storeKitWrapper.delegate = self;
@@ -758,6 +761,10 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif
 {
+    [self updateAllCachesIfNeeded];
+}
+
+- (void)updateAllCachesIfNeeded {
     RCDebugLog(@"applicationDidBecomeActive");
     if ([self.deviceCache isPurchaserInfoCacheStale]) {
         RCDebugLog(@"PurchaserInfo cache is stale, updating caches");

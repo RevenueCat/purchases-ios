@@ -75,11 +75,16 @@ static NSURL * _Nullable proxyURL;
 + (nullable NSURL *)proxyURL {
     return proxyURL;
 }
+
 + (void)setProxyURL:(nullable NSURL *)newProxyURL {
     proxyURL = newProxyURL;
     if (newProxyURL) {
         RCLog(@"Purchases is being configured using a proxy for RevenueCat with URL: %@", newProxyURL);
     }
+}
+
++ (BOOL)isApplicationActive {
+    return IS_APPLICATION_ACTIVE;
 }
 
 @end
