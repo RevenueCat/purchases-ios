@@ -910,11 +910,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
 }
 
-- (void)receiptData:(void (^ _Nonnull)(NSData * _Nonnull data))completion {
+- (void)receiptData:(RCReceiveReceiptDataBlock)completion {
     [self receiptDataWithForceRefresh:NO completion:completion];
 }
 
-- (void)receiptDataWithForceRefresh:(BOOL)forceRefresh completion:(void (^ _Nonnull)(NSData * _Nonnull data))completion  {
+- (void)receiptDataWithForceRefresh:(BOOL)forceRefresh completion:(RCReceiveReceiptDataBlock)completion  {
     NSData *receiptData = [self.receiptFetcher receiptData];
     if (receiptData == nil) {
         RCDebugLog(@"Receipt empty, fetching");
@@ -927,7 +927,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)refreshReceipt:(void (^ _Nonnull)(NSData * _Nonnull data))completion
+- (void)refreshReceipt:(RCReceiveReceiptDataBlock)completion
 {
     [self.requestFetcher fetchReceiptData:^{
         NSData *newReceiptData = [self.receiptFetcher receiptData];
