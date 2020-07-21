@@ -920,12 +920,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)receiptDataWithForceRefresh:(BOOL)forceRefresh completion:(RCReceiveReceiptDataBlock)completion  {
+    if (forceRefresh) {
+        [self refreshReceipt:completion];
+        return;
+    }
     NSData *receiptData = [self.receiptFetcher receiptData];
     if (receiptData == nil || receiptData.length == 0) {
         RCDebugLog(@"Receipt empty, fetching");
-        [self refreshReceipt:completion];
-    } else if (forceRefresh) {
-        RCDebugLog(@"Forced receipt refresh");
         [self refreshReceipt:completion];
     } else {
         completion(receiptData);
