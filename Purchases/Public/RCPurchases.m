@@ -921,6 +921,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)receiptDataWithForceRefresh:(BOOL)forceRefresh completion:(RCReceiveReceiptDataBlock)completion  {
     if (forceRefresh) {
+        RCDebugLog(@"Forced receipt refresh");
         [self refreshReceipt:completion];
         return;
     }
