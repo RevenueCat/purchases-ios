@@ -103,6 +103,25 @@ class ProductInfoExtractorTests: XCTestCase {
         }
     }
 
+    func testExtractInfoFromProductDoesNotExtractNormalDurationIfSubscriptionPeriodIsZero() {
+        let product = MockSKProduct(mockProductIdentifier: "cool_product")
+
+        if #available(iOS 11.2, *) {
+            product.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 0, unit: .month)
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.normalDuration).to(beNil())
+        } else {
+            let productInfoExtractor = RCProductInfoExtractor()
+
+            let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
+
+            expect(receivedProductInfo.normalDuration).to(beNil())
+        }
+    }
+
     func testExtractInfoFromProductExtractsIntroDuration() {
         let product = MockSKProduct(mockProductIdentifier: "cool_product")
 
