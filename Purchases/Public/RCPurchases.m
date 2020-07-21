@@ -916,7 +916,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)receiptDataWithForceRefresh:(BOOL)forceRefresh completion:(RCReceiveReceiptDataBlock)completion  {
     NSData *receiptData = [self.receiptFetcher receiptData];
-    if (receiptData == nil) {
+    if (receiptData == nil || receiptData.length == 0) {
         RCDebugLog(@"Receipt empty, fetching");
         [self refreshReceipt:completion];
     } else if (forceRefresh) {
@@ -931,7 +931,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 {
     [self.requestFetcher fetchReceiptData:^{
         NSData *newReceiptData = [self.receiptFetcher receiptData];
-        if (newReceiptData == nil) {
+        if (newReceiptData == nil || newReceiptData.length == 0) {
             RCLog(@"Unable to load receipt, ensure you are logged in to the correct iTunes account.");
         }
         completion(newReceiptData ?: [NSData data]);
