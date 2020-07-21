@@ -53,11 +53,6 @@ API_AVAILABLE(ios(12.2), macos(10.14.4))
 typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PaymentDiscountBlock);
 
 /**
- * Completion block for calls that send back receipt data
- */
-typedef void (^RCReceiveReceiptDataBlock)(NSData *);
-
-/**
  Enum of supported attribution networks
  */
 typedef NS_ENUM(NSInteger, RCAttributionNetwork) {

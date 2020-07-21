@@ -42,6 +42,11 @@
     NSNumber * _Nullable _allowSharingAppStoreAccount;
 }
 
+/**
+ * Completion block for calls that send back receipt data
+ */
+typedef void (^RCReceiveReceiptDataBlock)(NSData *);
+
 @property (nonatomic) RCStoreKitRequestFetcher *requestFetcher;
 @property (nonatomic) RCReceiptFetcher *receiptFetcher;
 @property (nonatomic) RCBackend *backend;
