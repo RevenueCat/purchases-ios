@@ -65,7 +65,7 @@
 #if TARGET_OS_IOS || TARGET_OS_TV
 #define IS_APPLICATION_BACKGROUNDED UIApplication.sharedApplication.applicationState == UIApplicationStateBackground
 #elif TARGET_OS_OSX
-#define IS_APPLICATION_BACKGROUNDED !NSApplication.sharedApplication.isActive
+#define IS_APPLICATION_BACKGROUNDED NO
 #elif TARGET_OS_WATCH
 #define IS_APPLICATION_BACKGROUNDED WKExtension.sharedExtension.applicationState == WKApplicationStateBackground
 #endif
