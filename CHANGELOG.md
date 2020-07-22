@@ -1,3 +1,9 @@
+## 3.5.1
+- Removes all references to ASIdentifierManager and advertisingIdentifier. This should help with some Kids apps being rejected 
+https://github.com/RevenueCat/purchases-ios/pull/286
+- Fix for posting wrong duration P0D on consumables
+https://github.com/RevenueCat/purchases-ios/pull/289
+
 ## 3.5.0
 - Added a sample watchOS app to illustrate how to integrate in-app purchases on watchOS with RevenueCat
 https://github.com/RevenueCat/purchases-ios/pull/263
