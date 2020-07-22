@@ -10,22 +10,29 @@ import Foundation
 
 @objc(RCTransaction) public class Transaction: NSObject {
 
-    let revenuecatId: String
+    required override init() { fatalError("init() has not been implemented") }
+
+    let revenueCatId: String
     let productId: String
     let purchaseDate: Date
 
-    internal init(transactionId: String, productId: String, purchaseDate: Date) {
-        self.revenuecatId = transactionId
+    init(transactionId: String, productId: String, purchaseDate: Date) {
+        self.revenueCatId = transactionId
         self.productId = productId
         self.purchaseDate = purchaseDate
         super.init()
     }
 
-    internal init(with data: Dictionary<String, Any>, productId: String, dateFormatter: DateFormatter) {
-        self.revenuecatId = data["id"] as! String
+    internal init(with data: [String: Any], productId: String, dateFormatter: DateFormatter) {
+        guard let revenueCatId = data["id"] as? String,
+              let dateString = data["purchase_date"] as? String,
+              let purchaseDate = dateFormatter.date(from: dateString) else {
+            fatalError("couldn't initialize Transaction from dictionary. Reason: unexpected format. Dictionary: \(data).")
+        }
+
+        self.revenueCatId = revenueCatId
+        self.purchaseDate = purchaseDate
         self.productId = productId
-        let dateString = data["purchase_date"] as! String
-        self.purchaseDate = dateFormatter.date(from: dateString)!
         super.init()
     }
 

@@ -51,7 +51,7 @@ class PurchaserInfoHelperTests: XCTestCase {
     }
 
     func testNonSubscriptionsIsCorrectlyCreated() {
-        let list: Array<Transaction> = PurchaserInfoHelper.initNonSubscriptionTransactions(with: dict, dateFormatter: dateFormatter)
+        let list = PurchaserInfoHelper.initNonSubscriptionTransactions(with: dict, dateFormatter: dateFormatter)
         expect { list.count }.to(equal(4))
 
         dict.forEach { productId, transactionsData in
@@ -61,7 +61,7 @@ class PurchaserInfoHelperTests: XCTestCase {
             expect { filteredTransactions.count }.to(equal(transactionsData.count))
             transactionsData.forEach { dictionary in
                 let containsTransaction: Bool = filteredTransactions.contains { (transaction: Transaction) in
-                    transaction.revenuecatId == dictionary["id"] as! String
+                    transaction.revenueCatId == dictionary["id"] as! String
                 }
                 expect { containsTransaction }.to(beTrue())
             }
