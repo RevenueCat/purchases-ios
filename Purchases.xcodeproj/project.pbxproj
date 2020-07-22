@@ -422,8 +422,8 @@
 				2D1A296D24BF7B29007BE4BD /* PKCS7Helper.swift */,
 				2D1A296E24BF7B29007BE4BD /* Asn1Coder.swift */,
 				2D1A296F24BF7B29007BE4BD /* ASN1Object+Helper.swift */,
-				2D1A297024BF7B29007BE4BD /* Vendor */,
 				2D1A297324BF7B29007BE4BD /* ASN1Object+ValueReading.swift */,
+				2D1A297024BF7B29007BE4BD /* Vendor */,
 			);
 			path = TPInAppReceipt;
 			sourceTree = "<group>";

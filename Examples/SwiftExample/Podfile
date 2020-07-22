@@ -12,5 +12,4 @@ target 'WatchExample Extension' do
 
   # Pods for SwiftExample
   pod 'Purchases', :path => '../../'
-  pod 'TPInAppReceipt', :path => `/Users/andresboedo/Downloads/TPInAppReceipt-master/`
 end

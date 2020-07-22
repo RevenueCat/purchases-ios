@@ -4,10 +4,6 @@ PODS:
 DEPENDENCIES:
   - Purchases (from `../../`)
 
-SPEC REPOS:
-  trunk:
-    - TPInAppReceipt
-
 EXTERNAL SOURCES:
   Purchases:
     :path: "../../"
@@ -15,6 +11,6 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Purchases: 3ed4a8d10503120cceb9b44ae794d150d4e57d45
 
-PODFILE CHECKSUM: 0b953383523796d33de4db49d07a5c6e3a56c27e
+PODFILE CHECKSUM: c1884b3d6aed05575571a4d1cf3ca70cd9f6f7d5
 
 COCOAPODS: 1.9.3
