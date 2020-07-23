@@ -38,6 +38,8 @@
 		3597021024BF6A710010506E /* TransactionsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597020F24BF6A710010506E /* TransactionsFactory.swift */; };
 		3597021224BF6AAC0010506E /* PurchaserInfoHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597021124BF6AAC0010506E /* PurchaserInfoHelperTests.swift */; };
 		35A6DC1924BE5FF100C3983D /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A6DC1824BE5FF100C3983D /* Transaction.swift */; };
+		3589D15424C219BE00A65CBB /* AttributionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3589D15324C219BE00A65CBB /* AttributionFetcherTests.swift */; };
+		3589D15624C21DBD00A65CBB /* RCAttributionFetcher+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 3589D15524C21DBD00A65CBB /* RCAttributionFetcher+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35B54E4622EA6F11005918B1 /* RCEntitlementInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B54E4522EA6F11005918B1 /* RCEntitlementInfo.m */; };
 		35B54E4822EA6F4E005918B1 /* RCEntitlementInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4722EA6F4E005918B1 /* RCEntitlementInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35B54E4A22EA6FBD005918B1 /* RCEntitlementInfos.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -212,6 +214,8 @@
 		357C9BC022725CFA006BC624 /* iAd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = iAd.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/iAd.framework; sourceTree = DEVELOPER_DIR; };
 		3585D6A122E680E30079E2C5 /* RCPackage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPackage.h; sourceTree = "<group>"; };
 		3585D6A222E680E30079E2C5 /* RCPackage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPackage.m; sourceTree = "<group>"; };
+		3589D15324C219BE00A65CBB /* AttributionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionFetcherTests.swift; sourceTree = "<group>"; };
+		3589D15524C21DBD00A65CBB /* RCAttributionFetcher+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCAttributionFetcher+Protected.h"; sourceTree = "<group>"; };
 		3597020F24BF6A710010506E /* TransactionsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactory.swift; sourceTree = "<group>"; };
 		3597021124BF6AAC0010506E /* PurchaserInfoHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaserInfoHelperTests.swift; sourceTree = "<group>"; };
 		35A6DC1824BE5FF100C3983D /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
@@ -576,6 +580,7 @@
 				37E35C1DFC68AC9E58E868F2 /* RCSubscriberAttribute+Protected.h */,
 				37E35DF0786134609B68FA23 /* RCPackage+Protected.h */,
 				37E35DCFDBDCD33B531395A6 /* RCDeviceCache+Protected.h */,
+				3589D15524C21DBD00A65CBB /* RCAttributionFetcher+Protected.h */,
 			);
 			path = ProtectedExtensions;
 			sourceTree = "<group>";
@@ -711,6 +716,7 @@
 		37E35FF455726D96C243B1B7 /* Misc */ = {
 			isa = PBXGroup;
 			children = (
+				3589D15324C219BE00A65CBB /* AttributionFetcherTests.swift */,
 				37E35B9AC7A350CA2437049D /* ISOPeriodFormatterTests.swift */,
 				37E35EEE7783629CDE41B70C /* SystemInfoTests.swift */,
 			);
@@ -776,6 +782,7 @@
 				37E35C1B3C0170F15FC920F5 /* RCPackage+Protected.h in Headers */,
 				37E35010ECA71A4CE6E16307 /* RCDeviceCache+Protected.h in Headers */,
 				37E35312E13F08FD8C7CC275 /* RCProductInfo.h in Headers */,
+				3589D15624C21DBD00A65CBB /* RCAttributionFetcher+Protected.h in Headers */,
 				37E357301A5D15C0E90C9BD3 /* RCProductInfoExtractor.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -948,6 +955,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D8DB34B24072AAE00BE3D31 /* SubscriberAttributeTests.swift in Sources */,
+				3589D15424C219BE00A65CBB /* AttributionFetcherTests.swift in Sources */,
 				2DEB976B247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift in Sources */,
 				37E354BE25CE61E55E4FD89C /* MockDeviceCache.swift in Sources */,
 				37E3585E0B39722838F235BD /* MockUserDefaults.swift in Sources */,
@@ -1127,7 +1135,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 8SXR2327BM;
+				DEVELOPMENT_TEAM = "";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -1159,7 +1167,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 8SXR2327BM;
+				DEVELOPMENT_TEAM = "";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";

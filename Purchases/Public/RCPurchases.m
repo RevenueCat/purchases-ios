@@ -359,11 +359,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         RCErrorLog(@"⚠️ The parameter networkUserId is REQUIRED for AppsFlyer. ⚠️");
     }
     NSString *networkKey = [NSString stringWithFormat:@"%ld",(long)network];
-    NSString *advertisingIdentifier = [self.attributionFetcher advertisingIdentifier];
+    NSString *identifierForAdvertisers = [self.attributionFetcher identifierForAdvertisers];
     NSString *cacheKey = [self attributionDataUserDefaultCacheKeyForAppUserID:self.identityManager.currentAppUserID];
     NSDictionary *dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks = [self.userDefaults objectForKey:cacheKey];
     NSString *latestSentToNetwork = dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks[networkKey];
-    NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", advertisingIdentifier, networkUserId];
+    NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", identifierForAdvertisers, networkUserId];
     
     if ([latestSentToNetwork isEqualToString:newValueForNetwork]) {
         RCDebugLog(@"Attribution data is the same as latest. Skipping.");
@@ -372,7 +372,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         newDictToCache[networkKey] = newValueForNetwork;
 
         NSMutableDictionary *newData = [NSMutableDictionary dictionaryWithDictionary:data];
-        newData[@"rc_idfa"] = advertisingIdentifier;
+        newData[@"rc_idfa"] = identifierForAdvertisers;
         newData[@"rc_idfv"] = [self.attributionFetcher identifierForVendor];
         newData[@"rc_attribution_network_id"] = networkUserId;
         

@@ -122,7 +122,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString *)extractNormalDurationForProduct:(SKProduct *)product {
     NSString *normalDuration = nil;
     if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
-        if (product.subscriptionPeriod) {
+        if (product.subscriptionPeriod && product.subscriptionPeriod.numberOfUnits != 0) {
             normalDuration = [self.formatter stringFromProductSubscriptionPeriod:product.subscriptionPeriod];
         }
     }

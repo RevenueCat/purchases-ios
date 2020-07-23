@@ -11,13 +11,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *_Nullable, NSError *_Nullable);
+
 @interface RCAttributionFetcher : NSObject
 
-- (nullable NSString *)advertisingIdentifier;
+- (nullable NSString *)identifierForAdvertisers;
 
 - (nullable NSString *)identifierForVendor;
 
-- (void)adClientAttributionDetailsWithCompletionBlock:(void (^)(NSDictionary<NSString *, NSObject *> * _Nullable attributionDetails, NSError * _Nullable error))completionHandler;
+- (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler;
 
 @end
 
