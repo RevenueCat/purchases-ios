@@ -6,12 +6,16 @@
 class MockReceiptFetcher: RCReceiptFetcher {
     var receiptDataCalled = false
     var shouldReturnReceipt = true
+    var shouldReturnZeroBytesReceipt = false
     var receiptDataTimesCalled = 0
 
     override func receiptData() -> Data? {
         receiptDataCalled = true
         receiptDataTimesCalled += 1
         if (shouldReturnReceipt) {
+            if (shouldReturnZeroBytesReceipt) {
+                return Data()
+            }
             return Data(1...3)
         } else {
             return nil
