@@ -81,7 +81,7 @@ class TransactionsFactoryTests: XCTestCase {
 
     func testNonSubscriptionsIsEmptyIfThereAreNoNonSubscriptions() {
         let list = transactionsFactory.nonSubscriptionTransactions(with: [:], dateFormatter: dateFormatter)
-        expect { list.count }.to(equal(0))
+        expect { list }.to(beEmpty())
     }
 
 }
