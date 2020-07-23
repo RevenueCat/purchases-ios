@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class RCEntitlementInfos;
+@class RCEntitlementInfos, RCTransaction;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,8 +30,12 @@ NS_SWIFT_NAME(Purchases.PurchaserInfo)
 /// Returns the latest expiration date of all products, nil if there are none
 @property (readonly, nullable) NSDate *latestExpirationDate;
 
-/// Returns all the non-consumable purchases a user has made.
-@property (nonatomic, readonly) NSSet<NSString *> *nonConsumablePurchases;
+/// Returns all product IDs of the non-subscription purchases a user has made.
+@property (nonatomic, readonly) NSSet<NSString *> *nonConsumablePurchases DEPRECATED_MSG_ATTRIBUTE("use nonSubscriptionTransactions");
+
+/// Returns all the non-subscription purchases a user has made.
+/// The purchases are ordered by purchase date in ascending order.
+@property (nonatomic, readonly) NSArray<RCTransaction *> *nonSubscriptionTransactions;
 
 /**
 Returns the build number (in iOS) or the marketing version (in macOS) for the version of the application when the user bought the app.

@@ -31,8 +31,11 @@ class BasicPurchaserInfoTests: XCTestCase {
             "non_subscriptions": [
                 "onetime_purchase": [
                     [
+                        "id": "d6c007ba74",
+                        "is_sandbox": true,
                         "original_purchase_date": "1990-08-30T02:40:36Z",
-                        "purchase_date": "1990-08-30T02:40:36Z"
+                        "purchase_date": "1990-08-30T02:40:36Z",
+                        "store": "play_store"
                     ]
                 ]
             ],
@@ -247,14 +250,20 @@ class BasicPurchaserInfoTests: XCTestCase {
                 "non_subscriptions": [
                     "onetime_purchase": [
                         [
+                            "id": "d6c007ba74",
                             "original_purchase_date": "1990-08-30T02:40:36Z",
-                            "purchase_date": "1990-08-30T02:40:36Z"
+                            "purchase_date": "1990-08-30T02:40:36Z", 
+                            "is_sandbox": true,
+                            "store": "play_store"
                         ]
                     ],
                     "pro.3": [
                         [
+                            "id": "d6c007ba75",
                             "original_purchase_date": "1990-08-30T02:40:36Z",
-                            "purchase_date": "1990-08-30T02:40:36Z"
+                            "purchase_date": "1990-08-30T02:40:36Z",
+                            "is_sandbox": true,
+                            "store": "play_store"
                         ]
                     ]
                 ],

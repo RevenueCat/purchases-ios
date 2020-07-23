@@ -38,6 +38,9 @@
 		3585D6A422E680E30079E2C5 /* RCPackage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3585D6A222E680E30079E2C5 /* RCPackage.m */; };
 		3589D15424C219BE00A65CBB /* AttributionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3589D15324C219BE00A65CBB /* AttributionFetcherTests.swift */; };
 		3589D15624C21DBD00A65CBB /* RCAttributionFetcher+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 3589D15524C21DBD00A65CBB /* RCAttributionFetcher+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		3597021024BF6A710010506E /* TransactionsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597020F24BF6A710010506E /* TransactionsFactory.swift */; };
+		3597021224BF6AAC0010506E /* TransactionsFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */; };
+		35A6DC1924BE5FF100C3983D /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A6DC1824BE5FF100C3983D /* Transaction.swift */; };
 		35B54E4622EA6F11005918B1 /* RCEntitlementInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B54E4522EA6F11005918B1 /* RCEntitlementInfo.m */; };
 		35B54E4822EA6F4E005918B1 /* RCEntitlementInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4722EA6F4E005918B1 /* RCEntitlementInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35B54E4A22EA6FBD005918B1 /* RCEntitlementInfos.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -215,6 +218,9 @@
 		3585D6A222E680E30079E2C5 /* RCPackage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPackage.m; sourceTree = "<group>"; };
 		3589D15324C219BE00A65CBB /* AttributionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionFetcherTests.swift; sourceTree = "<group>"; };
 		3589D15524C21DBD00A65CBB /* RCAttributionFetcher+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCAttributionFetcher+Protected.h"; sourceTree = "<group>"; };
+		3597020F24BF6A710010506E /* TransactionsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactory.swift; sourceTree = "<group>"; };
+		3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactoryTests.swift; sourceTree = "<group>"; };
+		35A6DC1824BE5FF100C3983D /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		35B54E4522EA6F11005918B1 /* RCEntitlementInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfo.m; sourceTree = "<group>"; };
 		35B54E4722EA6F4E005918B1 /* RCEntitlementInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfo.h; sourceTree = "<group>"; };
 		35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfos.h; sourceTree = "<group>"; };
@@ -372,6 +378,7 @@
 		2D9AF7B124A2B2F000E1D023 /* SwiftSources */ = {
 			isa = PBXGroup;
 			children = (
+				354235D524C11138008C84EE /* Purchasing */,
 				2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */,
 			);
 			path = SwiftSources;
@@ -387,6 +394,7 @@
 		2DD02D5824AD128000419CD9 /* SwiftSources */ = {
 			isa = PBXGroup;
 			children = (
+				354235D624C11160008C84EE /* Purchasing */,
 				2DD02D5924AD128A00419CD9 /* LocalReceiptParsing */,
 			);
 			path = SwiftSources;
@@ -500,6 +508,23 @@
 				3530C18822653E8F00D6DF52 /* AdSupport.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		354235D524C11138008C84EE /* Purchasing */ = {
+			isa = PBXGroup;
+			children = (
+				3597020F24BF6A710010506E /* TransactionsFactory.swift */,
+				35A6DC1824BE5FF100C3983D /* Transaction.swift */,
+			);
+			path = Purchasing;
+			sourceTree = "<group>";
+		};
+		354235D624C11160008C84EE /* Purchasing */ = {
+			isa = PBXGroup;
+			children = (
+				3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */,
+			);
+			path = Purchasing;
 			sourceTree = "<group>";
 		};
 		37E35081077192045E3A8080 /* Mocks */ = {
@@ -914,9 +939,11 @@
 				37E350AAD0BAE521A7F94846 /* RCAttributionFetcher.m in Sources */,
 				37E35889F275514EE3125439 /* RCIdentityManager.m in Sources */,
 				37E358DB4F4016AC297D6B00 /* RCOfferingsFactory.m in Sources */,
+				35A6DC1924BE5FF100C3983D /* Transaction.swift in Sources */,
 				37E35DD8BE40E352311AC2C1 /* RCPromotionalOffer.m in Sources */,
 				37E358250B07BF2DA06EA27B /* RCReceiptFetcher.m in Sources */,
 				37E35BDDC331C3A5FF72CFFF /* RCStoreKitRequestFetcher.m in Sources */,
+				3597021024BF6A710010506E /* TransactionsFactory.swift in Sources */,
 				37E35A299524507A480956D5 /* RCStoreKitWrapper.m in Sources */,
 				37E35A7ED3312F10B80FFE2B /* RCDeviceCache.m in Sources */,
 				37E353437E49AA49D6ECC03F /* RCInMemoryCachedObject.m in Sources */,
@@ -948,6 +975,7 @@
 				37E35DD380900220C34BB222 /* MockTransaction.swift in Sources */,
 				37E3554836D4DA9336B9FA70 /* MockProductDiscount.swift in Sources */,
 				37E35398FCB4931573C56CAF /* MockReceiptFetcher.swift in Sources */,
+				3597021224BF6AAC0010506E /* TransactionsFactoryTests.swift in Sources */,
 				37E35F20FB949985BEEB4B58 /* MockRequestFetcher.swift in Sources */,
 				37E35AD0B0D9EF0CDA29DAC2 /* MockStoreKitWrapper.swift in Sources */,
 				37E35EBDFC5CD3068E1792A3 /* MockNotificationCenter.swift in Sources */,
