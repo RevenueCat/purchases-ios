@@ -15,7 +15,7 @@ class TransactionsFactoryTests: XCTestCase {
     let dateFormatter = DateFormatter()
     let transactionsFactory = TransactionsFactory()
 
-    let dict = [
+    let sampleTransactions = [
         "100_coins": [
             [
                 "id": "72c26cc69c",
@@ -61,19 +61,16 @@ class TransactionsFactoryTests: XCTestCase {
     }
 
     func testNonSubscriptionsIsCorrectlyCreated() {
-        let list = transactionsFactory.nonSubscriptionTransactions(with: dict, dateFormatter: dateFormatter)
-        expect { list.count }.to(equal(5))
+        let nonSubscriptionTransactions = transactionsFactory.nonSubscriptionTransactions(with: sampleTransactions, dateFormatter: dateFormatter)
+        expect(nonSubscriptionTransactions.count) == 5
 
-        dict.forEach { productId, transactionsData in
-            let filteredTransactions: Array<Transaction> = list.filter { (transaction: Transaction) in
-                transaction.productId == productId
-            }
-            expect { filteredTransactions.count }.to(equal(transactionsData.count))
+        sampleTransactions.forEach { productId, transactionsData in
+            let filteredTransactions = nonSubscriptionTransactions.filter { $0.productId == productId }
+            expect(filteredTransactions.count) == transactionsData.count
             transactionsData.forEach { dictionary in
-                let containsTransaction: Bool = filteredTransactions.contains { (transaction: Transaction) in
-                    transaction.revenueCatId == dictionary["id"] as! String
-                }
-                expect { containsTransaction }.to(beTrue())
+                guard let transactionId = dictionary["id"] as? String else { fatalError("incorrect dict format") }
+                let containsTransaction = filteredTransactions.contains { $0.revenueCatId == transactionId }
+                expect(containsTransaction) == true
             }
         }
 
@@ -81,7 +78,7 @@ class TransactionsFactoryTests: XCTestCase {
 
     func testNonSubscriptionsIsEmptyIfThereAreNoNonSubscriptions() {
         let list = transactionsFactory.nonSubscriptionTransactions(with: [:], dateFormatter: dateFormatter)
-        expect { list }.to(beEmpty())
+        expect(list).to(beEmpty())
     }
 
 }
