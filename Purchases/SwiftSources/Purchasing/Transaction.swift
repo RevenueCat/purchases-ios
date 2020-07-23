@@ -10,7 +10,10 @@ import Foundation
 
 @objc(RCTransaction) public class Transaction: NSObject {
 
-    required override init() { fatalError("init() has not been implemented") }
+    @available(*, unavailable, message: "Use init(transactionId, productId, purchaseDate) instead")
+    override init() {
+        fatalError("init() has not been implemented")
+    }
 
     let revenueCatId: String
     let productId: String
@@ -23,11 +26,14 @@ import Foundation
         super.init()
     }
 
-    internal init(with data: [String: Any], productId: String, dateFormatter: DateFormatter) {
-        guard let revenueCatId = data["id"] as? String,
-              let dateString = data["purchase_date"] as? String,
+    init(with serverResponse: [String: Any], productId: String, dateFormatter: DateFormatter) {
+        guard let revenueCatId = serverResponse["id"] as? String,
+              let dateString = serverResponse["purchase_date"] as? String,
               let purchaseDate = dateFormatter.date(from: dateString) else {
-            fatalError("couldn't initialize Transaction from dictionary. Reason: unexpected format. Dictionary: \(data).")
+            fatalError("""
+                       Couldn't initialize Transaction from dictionary. 
+                       Reason: unexpected format. Dictionary: \(serverResponse).
+                       """)
         }
 
         self.revenueCatId = revenueCatId

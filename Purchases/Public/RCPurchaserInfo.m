@@ -84,7 +84,10 @@ static dispatch_once_t onceToken;
                                                subscriptions:(NSDictionary *)subscriptions {
     NSDictionary<NSString *, NSArray *> *nonSubscriptionsData = subscriberData[@"non_subscriptions"];
     self.nonConsumablePurchases = [NSSet setWithArray:[nonSubscriptionsData allKeys]];
-    self.nonSubscriptionTransactions = [PurchaserInfoHelper initNonSubscriptionTransactionsWith:nonSubscriptionsData dateFormatter:dateFormatter];
+    
+    RCTransactionsFactory *transactionsFactory = [[RCTransactionsFactory alloc] init];
+    self.nonSubscriptionTransactions = [transactionsFactory nonSubscriptionTransactionsWith:nonSubscriptionsData dateFormatter:dateFormatter];
+
     NSMutableDictionary<NSString *, id> *nonSubscriptionsLatestPurchases = [[NSMutableDictionary alloc] init];
     for (NSString* productId in nonSubscriptionsData) {
         NSArray *arrayOfPurchases = nonSubscriptionsData[productId];

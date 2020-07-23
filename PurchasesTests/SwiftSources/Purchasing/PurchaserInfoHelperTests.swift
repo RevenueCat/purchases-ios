@@ -11,7 +11,9 @@ import XCTest
 @testable import Purchases
 
 class PurchaserInfoHelperTests: XCTestCase {
+
     let dateFormatter = DateFormatter()
+    let transactionsFactory = TransactionsFactory()
 
     let dict = [
         "100_coins": [
@@ -51,7 +53,7 @@ class PurchaserInfoHelperTests: XCTestCase {
     }
 
     func testNonSubscriptionsIsCorrectlyCreated() {
-        let list = PurchaserInfoHelper.initNonSubscriptionTransactions(with: dict, dateFormatter: dateFormatter)
+        let list = transactionsFactory.nonSubscriptionTransactions(with: dict, dateFormatter: dateFormatter)
         expect { list.count }.to(equal(4))
 
         dict.forEach { productId, transactionsData in
@@ -70,7 +72,7 @@ class PurchaserInfoHelperTests: XCTestCase {
     }
 
     func testNonSubscriptionsIsEmptyIfThereAreNoNonSubscriptions() {
-        let list = PurchaserInfoHelper.initNonSubscriptionTransactions(with: [:], dateFormatter: dateFormatter)
+        let list = transactionsFactory.nonSubscriptionTransactions(with: [:], dateFormatter: dateFormatter)
         expect { list.count }.to(equal(0))
     }
 

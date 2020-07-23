@@ -8,10 +8,10 @@
 
 import Foundation
 
-@objc public class PurchaserInfoHelper: NSObject {
+@objc(RCTransactionsFactory) public class TransactionsFactory: NSObject {
 
-    @objc public class func initNonSubscriptionTransactions(with data: [String: [[String: Any]]], dateFormatter: DateFormatter) -> [Transaction] {
-        data.flatMap { (productId: String, transactionData: [[String: Any]]) -> [Transaction] in
+    @objc public func nonSubscriptionTransactions(with subscriptionsData: [String: [[String: Any]]], dateFormatter: DateFormatter) -> [Transaction] {
+        subscriptionsData.flatMap { (productId: String, transactionData: [[String: Any]]) -> [Transaction] in
             transactionData.map {
                 Transaction(with: $0, productId: productId, dateFormatter: dateFormatter)
             }
