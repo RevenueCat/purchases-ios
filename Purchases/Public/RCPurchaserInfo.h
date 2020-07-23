@@ -33,8 +33,8 @@ NS_SWIFT_NAME(Purchases.PurchaserInfo)
 /// Returns all product IDs of the non-subscription purchases a user has made.
 @property (nonatomic, readonly) NSSet<NSString *> *nonConsumablePurchases DEPRECATED_MSG_ATTRIBUTE("use nonSubscriptionTransactions");
 
-/// Returns all the non-subscription purchases a user has made. The purchases are ordered being the most recent purchase
-/// the last item of the array.
+/// Returns all the non-subscription purchases a user has made.
+/// The purchases are ordered by purchase date in ascending order.
 @property (nonatomic, readonly) NSArray<RCTransaction *> *nonSubscriptionTransactions;
 
 /**
