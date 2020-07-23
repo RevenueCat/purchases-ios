@@ -10,7 +10,7 @@ import Nimble
 import XCTest
 @testable import Purchases
 
-class PurchaserInfoHelperTests: XCTestCase {
+class TransactionsFactoryTests: XCTestCase {
 
     let dateFormatter = DateFormatter()
     let transactionsFactory = TransactionsFactory()
@@ -43,6 +43,14 @@ class PurchaserInfoHelperTests: XCTestCase {
                 "original_purchase_date": "2019-07-26T22:10:27Z",
                 "purchase_date": "2019-07-26T22:10:27Z",
                 "store": "app_store"
+            ]],
+        "lifetime_access": [
+            [
+                "id": "d6c097ba74",
+                "is_sandbox": true,
+                "original_purchase_date": "2018-07-11T18:36:20Z",
+                "purchase_date": "2018-07-11T18:36:20Z",
+                "store": "app_store"
             ]]
     ]
 
@@ -54,7 +62,7 @@ class PurchaserInfoHelperTests: XCTestCase {
 
     func testNonSubscriptionsIsCorrectlyCreated() {
         let list = transactionsFactory.nonSubscriptionTransactions(with: dict, dateFormatter: dateFormatter)
-        expect { list.count }.to(equal(4))
+        expect { list.count }.to(equal(5))
 
         dict.forEach { productId, transactionsData in
             let filteredTransactions: Array<Transaction> = list.filter { (transaction: Transaction) in
