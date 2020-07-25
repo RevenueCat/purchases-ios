@@ -174,7 +174,7 @@ class SwiftPaywall: UIViewController {
                         self.showAlert(title: "Error", message: error.localizedDescription)
                     }
                 }
-            } else  {
+            } else {
                 if let purchaseCompletedHandler = self.delegate?.purchaseCompleted {
                     purchaseCompletedHandler(self, trans!, info!)
                 } else {
