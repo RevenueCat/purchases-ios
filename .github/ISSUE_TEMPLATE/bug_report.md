@@ -26,7 +26,7 @@ A clear and concise description of what the bug is. The more detail you can prov
     1. Platform:
     2. SDK version:
     3. OS version:
-    4. XCode/Android Studio version:
+    4. Xcode/Android Studio version:
     5. How widespread is the issue. Percentage of devices affected.
 2. [Debug logs](https://docs.revenuecat.com/docs/debugging) that reproduce the issue
 3. Steps to reproduce, with a description of expected vs. actual behavior
