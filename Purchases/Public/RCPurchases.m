@@ -1039,7 +1039,26 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             }
             break;
         }
-        case SKPaymentTransactionStateDeferred:
+        case SKPaymentTransactionStateDeferred: {
+            RCPurchaseCompletedBlock completion = nil;
+            @synchronized (self) {
+                completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
+            }
+            NSError *pendingError = [NSError errorWithDomain:RCPurchasesErrorDomain
+                                                        code:RCPaymentPendingError
+                                                    userInfo:@{
+                                                        NSLocalizedDescriptionKey: @"The payment is deferred."
+                                                    }];
+            CALL_IF_SET_ON_MAIN_THREAD(completion,
+                                       transaction,
+                                       nil,
+                                       pendingError,
+                                       transaction.error.code == SKErrorPaymentCancelled);
+            @synchronized (self) {
+                self.purchaseCompleteCallbacks[transaction.payment.productIdentifier] = nil;
+            }
+            break;
+        }
         case SKPaymentTransactionStatePurchasing:
             break;
     }
