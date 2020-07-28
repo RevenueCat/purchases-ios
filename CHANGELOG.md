@@ -1,3 +1,7 @@
+## 3.5.2
+- Feature/defer cache updates if woken from push notification
+https://github.com/RevenueCat/purchases-ios/pull/288
+
 ## 3.5.1
 - Removes all references to ASIdentifierManager and advertisingIdentifier. This should help with some Kids apps being rejected 
 https://github.com/RevenueCat/purchases-ios/pull/286

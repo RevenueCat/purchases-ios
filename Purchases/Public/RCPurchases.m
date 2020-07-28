@@ -288,7 +288,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         };
 
         [self.identityManager configureWithAppUserID:appUserID];
-        [self updateAllCachesWithCompletionBlock:callDelegate];
+        if (!self.systemInfo.isApplicationBackgrounded) {
+            [self updateAllCachesWithCompletionBlock:callDelegate];
+        } else {
+            [self sendCachedPurchaserInfoIfAvailable];
+        }
+        
         [self configureSubscriberAttributesManager];
 
         self.storeKitWrapper.delegate = self;
@@ -335,11 +340,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 {
     _delegate = delegate;
     RCDebugLog(@"Delegate set");
-    
-    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
-    if (infoFromCache) {
-        [self sendUpdatedPurchaserInfoToDelegateIfChanged:infoFromCache];
-    }
+
+    [self sendCachedPurchaserInfoIfAvailable];
 }
 
 #pragma mark - Public Methods
@@ -738,6 +740,17 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif
 {
+    [self updateAllCachesIfNeeded];
+}
+
+- (void)sendCachedPurchaserInfoIfAvailable {
+    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
+    if (infoFromCache) {
+        [self sendUpdatedPurchaserInfoToDelegateIfChanged:infoFromCache];
+    }
+}
+
+- (void)updateAllCachesIfNeeded {
     RCDebugLog(@"applicationDidBecomeActive");
     if ([self.deviceCache isPurchaserInfoCacheStale]) {
         RCDebugLog(@"PurchaserInfo cache is stale, updating caches");
