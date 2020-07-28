@@ -1539,32 +1539,34 @@ class PurchasesTests: XCTestCase {
 
     func testWhenNoReceiptReceiptIsRefreshed() {
         setupPurchases()
-        self.receiptFetcher.shouldReturnReceipt = false
+        receiptFetcher.shouldReturnReceipt = false
         
         makeAPurchase()
         
-        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
+        expect(requestFetcher.refreshReceiptCalled).to(beTrue())
     }
 
     func testWhenNoReceiptDataReceiptIsRefreshed() {
         setupPurchases()
-        self.receiptFetcher.shouldReturnReceipt = true
-        self.receiptFetcher.shouldReturnZeroBytesReceipt = true
+        receiptFetcher.shouldReturnReceipt = true
+        receiptFetcher.shouldReturnZeroBytesReceipt = true
         
         makeAPurchase()
         
-        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
+        expect(requestFetcher.refreshReceiptCalled).to(beTrue())
     }
     
     private func makeAPurchase() {
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         
-        self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
-
+        guard let purchases = purchases else { fatalError("purchases is not initialized") }
+        purchases.purchaseProduct(product) { }
+        
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
         transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
     }
 
     func testRestoresDontPostMissingReceipts() {
