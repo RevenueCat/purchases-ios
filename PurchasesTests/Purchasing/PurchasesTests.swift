@@ -1543,7 +1543,7 @@ class PurchasesTests: XCTestCase {
         
         makeAPurchase()
         
-        expect(requestFetcher.refreshReceiptCalled).to(beTrue())
+        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
     }
 
     func testWhenNoReceiptDataReceiptIsRefreshed() {
@@ -1553,14 +1553,14 @@ class PurchasesTests: XCTestCase {
         
         makeAPurchase()
         
-        expect(requestFetcher.refreshReceiptCalled).to(beTrue())
+        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
     }
     
     private func makeAPurchase() {
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         
         guard let purchases = purchases else { fatalError("purchases is not initialized") }
-        purchases.purchaseProduct(product) { }
+        purchases.purchaseProduct(product) { _,_,_,_ in }
         
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
