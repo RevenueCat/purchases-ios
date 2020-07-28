@@ -1559,7 +1559,6 @@ class PurchasesTests: XCTestCase {
     private func makeAPurchase() {
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         
-        // Second one issues an error
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
 
         let transaction = MockTransaction()
@@ -1584,7 +1583,6 @@ class PurchasesTests: XCTestCase {
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         var receivedUserCancelled: Bool?
 
-        // Second one issues an error
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
             receivedUserCancelled = userCancelled
         }
