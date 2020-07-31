@@ -1044,11 +1044,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             @synchronized (self) {
                 completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
             }
-            NSError *pendingError = [NSError errorWithDomain:RCPurchasesErrorDomain
-                                                        code:RCPaymentPendingError
-                                                    userInfo:@{
-                                                        NSLocalizedDescriptionKey: @"The payment is deferred."
-                                                    }];
+            NSError *pendingError = [RCPurchasesErrorUtils paymentDeferredError];
             CALL_IF_SET_ON_MAIN_THREAD(completion,
                                        transaction,
                                        nil,
