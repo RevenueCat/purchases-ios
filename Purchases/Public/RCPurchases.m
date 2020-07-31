@@ -42,6 +42,11 @@
     NSNumber * _Nullable _allowSharingAppStoreAccount;
 }
 
+/**
+ * Completion block for calls that send back receipt data
+ */
+typedef void (^RCReceiveReceiptDataBlock)(NSData *);
+
 @property (nonatomic) RCStoreKitRequestFetcher *requestFetcher;
 @property (nonatomic) RCReceiptFetcher *receiptFetcher;
 @property (nonatomic) RCBackend *backend;
@@ -627,7 +632,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
-    [self receiptData:^(NSData * _Nonnull data) {
+    [self receiptDataWithForceRefresh:YES completion:^(NSData * _Nonnull data) {
         if (data.length == 0) {
             if (RCSystemInfo.isSandbox) {
                 RCLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless you've purchased before and there is a receipt available.");
@@ -923,10 +928,18 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
 }
 
-- (void)receiptData:(void (^ _Nonnull)(NSData * _Nonnull data))completion
-{
+- (void)receiptData:(RCReceiveReceiptDataBlock)completion {
+    [self receiptDataWithForceRefresh:NO completion:completion];
+}
+
+- (void)receiptDataWithForceRefresh:(BOOL)forceRefresh completion:(RCReceiveReceiptDataBlock)completion  {
+    if (forceRefresh) {
+        RCDebugLog(@"Forced receipt refresh");
+        [self refreshReceipt:completion];
+        return;
+    }
     NSData *receiptData = [self.receiptFetcher receiptData];
-    if (receiptData == nil) {
+    if (receiptData == nil || receiptData.length == 0) {
         RCDebugLog(@"Receipt empty, fetching");
         [self refreshReceipt:completion];
     } else {
@@ -934,11 +947,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)refreshReceipt:(void (^ _Nonnull)(NSData * _Nonnull data))completion
+- (void)refreshReceipt:(RCReceiveReceiptDataBlock)completion
 {
     [self.requestFetcher fetchReceiptData:^{
         NSData *newReceiptData = [self.receiptFetcher receiptData];
-        if (newReceiptData == nil) {
+        if (newReceiptData == nil || newReceiptData.length == 0) {
             RCLog(@"Unable to load receipt, ensure you are logged in to the correct iTunes account.");
         }
         completion(newReceiptData ?: [NSData data]);

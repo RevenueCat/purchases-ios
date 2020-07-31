@@ -922,7 +922,7 @@ class PurchasesTests: XCTestCase {
         purchases!.restoreTransactions()
 
         expect(self.receiptFetcher.receiptDataTimesCalled).to(equal(1))
-        expect(self.requestFetcher.refreshReceiptCalled).to(beFalse())
+        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
     }
 
     func testRestoringPurchasesSetsIsRestore() {
@@ -1584,11 +1584,36 @@ class PurchasesTests: XCTestCase {
         expect(info).toEventuallyNot(beNil())
     }
 
+    func testWhenNoReceiptReceiptIsRefreshed() {
+        setupPurchases()
+        receiptFetcher.shouldReturnReceipt = false
+        
+        makeAPurchase()
+        
+        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
+    }
+
     func testWhenNoReceiptDataReceiptIsRefreshed() {
         setupPurchases()
-        self.receiptFetcher.shouldReturnReceipt = false
-        self.purchases?.restoreTransactions()
+        receiptFetcher.shouldReturnReceipt = true
+        receiptFetcher.shouldReturnZeroBytesReceipt = true
+        
+        makeAPurchase()
+        
         expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
+    }
+    
+    private func makeAPurchase() {
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+        
+        guard let purchases = purchases else { fatalError("purchases is not initialized") }
+        purchases.purchaseProduct(product) { _,_,_,_ in }
+        
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockState = SKPaymentTransactionState.purchased
+        
+        storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
     }
 
     func testRestoresDontPostMissingReceipts() {
@@ -1607,7 +1632,6 @@ class PurchasesTests: XCTestCase {
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         var receivedUserCancelled: Bool?
 
-        // Second one issues an error
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
             receivedUserCancelled = userCancelled
         }
