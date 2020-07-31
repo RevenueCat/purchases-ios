@@ -1018,10 +1018,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             break;
         }
         case SKPaymentTransactionStateFailed: {
-            RCPurchaseCompletedBlock completion = nil;
-            @synchronized (self) {
-                completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
-            }
+            _Nullable RCPurchaseCompletedBlock completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
 
             CALL_IF_SET_ON_MAIN_THREAD(
                     completion,
@@ -1033,31 +1030,34 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
-            
-            @synchronized (self) {
-                self.purchaseCompleteCallbacks[transaction.payment.productIdentifier] = nil;
-            }
             break;
         }
         case SKPaymentTransactionStateDeferred: {
-            RCPurchaseCompletedBlock completion = nil;
-            @synchronized (self) {
-                completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
-            }
+            _Nullable RCPurchaseCompletedBlock completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
+
             NSError *pendingError = [RCPurchasesErrorUtils paymentDeferredError];
             CALL_IF_SET_ON_MAIN_THREAD(completion,
                                        transaction,
                                        nil,
                                        pendingError,
                                        transaction.error.code == SKErrorPaymentCancelled);
-            @synchronized (self) {
-                self.purchaseCompleteCallbacks[transaction.payment.productIdentifier] = nil;
-            }
             break;
         }
         case SKPaymentTransactionStatePurchasing:
             break;
     }
+}
+
+- (nullable RCPurchaseCompletedBlock)getAndRemovePurchaseCompletedBlockFor:(SKPaymentTransaction *)transaction
+{
+    RCPurchaseCompletedBlock completion = nil;
+    if (transaction.payment.productIdentifier) {
+        @synchronized (self) {
+            completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
+            self.purchaseCompleteCallbacks[transaction.payment.productIdentifier] = nil;
+        }
+    }
+    return completion;
 }
 
 - (void)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
