@@ -206,12 +206,14 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, responseError) in
-            guard let responseNSError = responseError as? NSError else { successFailed = false }
-            successFailed = (status >= 500
-                             && data == nil
-                             && error.domain == responseNSError.domain
-                             && error.code == responseNSError.code
-                             && error.userInfo == responseNSError.userInfo)
+            if let responseNSError = responseError as? NSError {
+                successFailed = (status >= 500
+                                 && data == nil
+                                 && error.domain == responseNSError.domain
+                                 && error.code == responseNSError.code)
+            } else {
+                successFailed = false
+            }
         }
 
         expect(successFailed).toEventually(equal(true))
