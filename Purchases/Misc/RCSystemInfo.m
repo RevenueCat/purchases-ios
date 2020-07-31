@@ -83,6 +83,13 @@ static NSURL * _Nullable proxyURL;
     }
 }
 
+- (void)isApplicationBackgroundedWithCompletion:(void(^)(BOOL))completion {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        BOOL isApplicationBackgrounded = self.isApplicationBackgrounded;
+        completion(isApplicationBackgrounded);
+    });
+}
+
 - (BOOL)isApplicationBackgrounded {
 #if TARGET_OS_IOS
     return self.isApplicationBackgroundedIOS;

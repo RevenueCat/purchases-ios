@@ -295,12 +295,18 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         };
 
         [self.identityManager configureWithAppUserID:appUserID];
-        if (!self.systemInfo.isApplicationBackgrounded) {
-            [self updateAllCachesWithCompletionBlock:callDelegate];
-        } else {
-            [self sendCachedPurchaserInfoIfAvailable];
-        }
-        
+
+        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isBackgrounded) {
+            if (!isBackgrounded) {
+                dispatch_queue_t backgroundQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+                dispatch_async(backgroundQueue, ^{
+                    [self updateAllCachesWithCompletionBlock:callDelegate];
+                });
+            } else {
+                [self sendCachedPurchaserInfoIfAvailable];
+            }
+        }];
+
         [self configureSubscriberAttributesManager];
 
         self.storeKitWrapper.delegate = self;
