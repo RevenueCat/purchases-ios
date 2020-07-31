@@ -12,6 +12,8 @@ class PurchasesTests: XCTestCase {
 
     override func setUp() {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        requestFetcher = MockRequestFetcher()
+        systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
     }
 
     override func tearDown() {
@@ -169,7 +171,7 @@ class PurchasesTests: XCTestCase {
 
 
     let receiptFetcher = MockReceiptFetcher()
-    let requestFetcher = MockRequestFetcher()
+    var requestFetcher: MockRequestFetcher!
     let backend = MockBackend()
     let storeKitWrapper = MockStoreKitWrapper()
     let notificationCenter = MockNotificationCenter()
@@ -179,7 +181,7 @@ class PurchasesTests: XCTestCase {
     let deviceCache = MockDeviceCache()
     let subscriberAttributesManager = MockSubscriberAttributesManager()
     let identityManager = MockUserManager(mockAppUserID: "app_user");
-    let systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+    var systemInfo: MockSystemInfo!
     
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -641,7 +643,8 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    func testFetchesProductInfoIfNotCachedAndAppActive() {
+    func testFetchesProductInfoIfNotCached() {
+        systemInfo.stubbedIsApplicationBackgrounded = true
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
