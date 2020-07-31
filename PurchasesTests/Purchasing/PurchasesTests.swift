@@ -657,7 +657,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        expect(self.requestFetcher.requestedProducts! as NSSet).to(contain([product.productIdentifier]))
+        expect(self.requestFetcher.requestedProducts! as NSSet).toEventually(contain([product.productIdentifier]))
 
         expect(self.backend.postedProductID).toNot(beNil())
         expect(self.backend.postedPrice).toNot(beNil())
@@ -2074,7 +2074,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
         expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(2))
         expect(self.deviceCache.cachedPurchaserInfo[newAppUserID]).toNot(beNil())
-        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2), timeout: .seconds(3))
         expect(self.deviceCache.setPurchaserInfoCacheTimestampToNowCount).toEventually(equal(2))
         expect(self.deviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(2))
         expect(self.backend.gotOfferings).toEventually(equal(2))
