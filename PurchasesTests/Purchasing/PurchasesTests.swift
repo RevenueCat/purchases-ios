@@ -2074,7 +2074,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
         expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(2))
         expect(self.deviceCache.cachedPurchaserInfo[newAppUserID]).toNot(beNil())
-        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2), timeout: .seconds(3))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2), timeout: 3.0)
         expect(self.deviceCache.setPurchaserInfoCacheTimestampToNowCount).toEventually(equal(2))
         expect(self.deviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(2))
         expect(self.backend.gotOfferings).toEventually(equal(2))
