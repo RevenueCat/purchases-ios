@@ -1273,7 +1273,7 @@ class PurchasesTests: XCTestCase {
 
         setupPurchases()
 
-        expect(self.backend.getSubscriberCallCount).to(equal(1))
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
 
         purchases!.purchaserInfo { (info, error) in
         }

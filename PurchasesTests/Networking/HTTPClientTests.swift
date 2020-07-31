@@ -206,10 +206,15 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, responseError) in
-            successFailed = (status >= 500) && (data == nil) && (error == responseError as NSError?)
+            guard let responseNSError = responseError as? NSError else { successFailed = false }
+            successFailed = (status >= 500
+                             && data == nil
+                             && error.domain == responseNSError.domain
+                             && error.code == responseNSError.code
+                             && error.userInfo == responseNSError.userInfo)
         }
 
-        expect(successFailed).toEventually(equal(true), timeout: 1.0)
+        expect(successFailed).toEventually(equal(true))
     }
 
     func testServerSide400s() {
