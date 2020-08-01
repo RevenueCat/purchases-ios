@@ -2070,6 +2070,27 @@ class PurchasesTests: XCTestCase {
         expect(RCSystemInfo.serverHostURL()) == defaultHostURL
     }
 
+    func testNotifiesIfTransactionIsDeferredFromStoreKit() {
+        setupPurchases()
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+        var receivedError: NSError?
+        self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
+            receivedError = error as NSError?
+        }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+
+        transaction.mockState = SKPaymentTransactionState.deferred
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled).to(beFalse())
+        expect(self.storeKitWrapper.finishCalled).to(beFalse())
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
+        expect(receivedError?.code).toEventually(equal(Purchases.ErrorCode.paymentPendingError.rawValue))
+    }
+
     private func verifyUpdatedCaches(newAppUserID: String) {
         expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
         expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(2))

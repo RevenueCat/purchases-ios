@@ -210,7 +210,6 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
     return [self errorWithCode:code message:message underlyingError:nil];
 }
 
-
 + (NSError *)errorWithCode:(RCPurchasesErrorCode)code
            underlyingError:(nullable NSError *)underlyingError {
     return [self errorWithCode:code message:nil underlyingError:underlyingError extraUserInfo:nil];
@@ -298,6 +297,11 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
 
 + (NSError *)missingAppUserIDError {
     return [self errorWithCode:RCInvalidAppUserIdError];
+}
+
++ (NSError *)paymentDeferredError {
+    return [self errorWithCode:RCPaymentPendingError
+                       message:@"The payment is deferred."];
 }
 
 + (NSError *)purchasesErrorWithSKError:(NSError *)skError {
