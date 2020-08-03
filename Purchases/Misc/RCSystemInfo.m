@@ -103,7 +103,9 @@ static NSURL * _Nullable proxyURL;
 }
 
 #if TARGET_OS_IOS
-
+// iOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
+// it are made. There are no pre-processor macros available to check if the code is running in an app extension,
+// so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication. 
 - (BOOL)isApplicationBackgroundedIOS {
     if (self.isAppExtension) {
         return YES;
