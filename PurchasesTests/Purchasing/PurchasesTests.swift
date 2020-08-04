@@ -2095,14 +2095,16 @@ class PurchasesTests: XCTestCase {
     }
 
     private func verifyUpdatedCaches(newAppUserID: String) {
-        expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
-        expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(2))
-        expect(self.deviceCache.cachedPurchaserInfo[newAppUserID]).toNot(beNil())
-        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2), timeout: 3.0)
-        expect(self.deviceCache.setPurchaserInfoCacheTimestampToNowCount).toEventually(equal(2))
-        expect(self.deviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(2))
-        expect(self.backend.gotOfferings).toEventually(equal(2))
-        expect(self.deviceCache.cachedOfferingsCount).toEventually(equal(2))
+        let expectedCallCount = 2
+        let timeout = 5.0
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(expectedCallCount), timeout: timeout)
+        expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(expectedCallCount), timeout: timeout)
+        expect(self.deviceCache.cachedPurchaserInfo[newAppUserID]).toEventuallyNot(beNil(), timeout: timeout)
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(expectedCallCount), timeout: timeout)
+        expect(self.deviceCache.setPurchaserInfoCacheTimestampToNowCount).toEventually(equal(expectedCallCount), timeout: timeout)
+        expect(self.deviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount), timeout: timeout)
+        expect(self.backend.gotOfferings).toEventually(equal(expectedCallCount), timeout: timeout)
+        expect(self.deviceCache.cachedOfferingsCount).toEventually(equal(expectedCallCount), timeout: timeout)
     }
 
 }
