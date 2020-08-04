@@ -304,6 +304,10 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
                        message:@"The payment is deferred."];
 }
 
++ (NSError *)unknownError {
+    return [self errorWithCode:RCUnknownError];
+}
+
 + (NSError *)purchasesErrorWithSKError:(NSError *)skError {
 
     RCPurchasesErrorCode errorCode = RCPurchasesErrorCodeFromSKError(skError);
