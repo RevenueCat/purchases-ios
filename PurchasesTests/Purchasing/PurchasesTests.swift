@@ -12,6 +12,8 @@ class PurchasesTests: XCTestCase {
 
     override func setUp() {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        requestFetcher = MockRequestFetcher()
+        systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
     }
 
     override func tearDown() {
@@ -169,7 +171,7 @@ class PurchasesTests: XCTestCase {
 
 
     let receiptFetcher = MockReceiptFetcher()
-    let requestFetcher = MockRequestFetcher()
+    var requestFetcher: MockRequestFetcher!
     let backend = MockBackend()
     let storeKitWrapper = MockStoreKitWrapper()
     let notificationCenter = MockNotificationCenter()
@@ -179,7 +181,7 @@ class PurchasesTests: XCTestCase {
     let deviceCache = MockDeviceCache()
     let subscriberAttributesManager = MockSubscriberAttributesManager()
     let identityManager = MockUserManager(mockAppUserID: "app_user");
-    let systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+    var systemInfo: MockSystemInfo!
     
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -641,7 +643,8 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    func testFetchesProductInfoIfNotCachedAndAppActive() {
+    func testFetchesProductInfoIfNotCached() {
+        systemInfo.stubbedIsApplicationBackgrounded = true
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
@@ -657,7 +660,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        expect(self.requestFetcher.requestedProducts! as NSSet).to(contain([product.productIdentifier]))
+        expect(self.requestFetcher.requestedProducts! as NSSet).toEventually(contain([product.productIdentifier]))
 
         expect(self.backend.postedProductID).toNot(beNil())
         expect(self.backend.postedPrice).toNot(beNil())
@@ -1270,7 +1273,7 @@ class PurchasesTests: XCTestCase {
 
         setupPurchases()
 
-        expect(self.backend.getSubscriberCallCount).to(equal(1))
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
 
         purchases!.purchaserInfo { (info, error) in
         }
@@ -2095,7 +2098,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
         expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(2))
         expect(self.deviceCache.cachedPurchaserInfo[newAppUserID]).toNot(beNil())
-        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2))
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(2), timeout: 3.0)
         expect(self.deviceCache.setPurchaserInfoCacheTimestampToNowCount).toEventually(equal(2))
         expect(self.deviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(2))
         expect(self.backend.gotOfferings).toEventually(equal(2))

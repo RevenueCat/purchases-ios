@@ -83,9 +83,44 @@ static NSURL * _Nullable proxyURL;
     }
 }
 
-- (BOOL)isApplicationBackgrounded {
-    return IS_APPLICATION_BACKGROUNDED;
+- (void)isApplicationBackgroundedWithCompletion:(void(^)(BOOL))completion {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        BOOL isApplicationBackgrounded = self.isApplicationBackgrounded;
+        completion(isApplicationBackgrounded);
+    });
 }
+
+- (BOOL)isApplicationBackgrounded {
+#if TARGET_OS_IOS
+    return self.isApplicationBackgroundedIOS;
+#elif TARGET_OS_TV
+    return  UIApplication.sharedApplication.applicationState == UIApplicationStateBackground;
+#elif TARGET_OS_OSX
+    return  NO;
+#elif TARGET_OS_WATCH
+    return  WKExtension.sharedExtension.applicationState == WKApplicationStateBackground;
+#endif
+}
+
+#if TARGET_OS_IOS
+// iOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
+// it are made. There are no pre-processor macros available to check if the code is running in an app extension,
+// so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication. 
+- (BOOL)isApplicationBackgroundedIOS {
+    if (self.isAppExtension) {
+        return YES;
+    }
+    NSString *sharedApplicationPropertyName = @"sharedApplication";
+
+    UIApplication *sharedApplication = [UIApplication valueForKey:sharedApplicationPropertyName];
+    return sharedApplication.applicationState == UIApplicationStateBackground;
+}
+
+- (BOOL)isAppExtension {
+    return [NSBundle.mainBundle.bundlePath hasSuffix:@".appex"];
+}
+
+#endif
 
 @end
 

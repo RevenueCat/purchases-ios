@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, readonly) NSString *platformFlavorVersion;
 
 
-- (BOOL)isApplicationBackgrounded;
+- (void)isApplicationBackgroundedWithCompletion:(void(^)(BOOL))completion; // calls completion on the main thread
 
 + (BOOL)isSandbox;
 + (NSString *)frameworkVersion;

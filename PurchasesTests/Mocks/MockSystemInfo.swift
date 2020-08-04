@@ -11,7 +11,7 @@ import Foundation
 class MockSystemInfo: RCSystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?
 
-    override func isApplicationBackgrounded() -> Bool {
-        return stubbedIsApplicationBackgrounded ?? super.isApplicationBackgrounded()
+    override func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
+        completion(stubbedIsApplicationBackgrounded ?? false)
     }
 }
