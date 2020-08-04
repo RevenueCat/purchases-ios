@@ -8,7 +8,9 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          keys: 
+            - carthage-cache-{{ checksum "Cartfile.resolved" }}
+            - gem-cache-{{ checksum "Gemfile.lock" }}
       - run:
           name: Carthage Bootstrap
           command: |
@@ -17,7 +19,11 @@ jobs:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
             - Carthage
-      - run: bundle install
+      - run: bundle install --path vendor/bundle
+      - save_cache:
+          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
       - run:
           name: Run tests
           command: fastlane scan
