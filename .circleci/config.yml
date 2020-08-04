@@ -7,9 +7,16 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
+      - restore_cache:
+          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
           name: Carthage Bootstrap
-          command: carthage bootstrap
+          command: |
+              carthage bootstrap --cache-builds
+      - save_cache:
+          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          paths:
+            - Carthage
       - run: bundle install
       - run:
           name: Run tests
