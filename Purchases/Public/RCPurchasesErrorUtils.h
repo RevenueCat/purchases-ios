@@ -87,6 +87,11 @@ NS_SWIFT_NAME(Purchases.ErrorUtils)
 + (NSError *)paymentDeferredError;
 
 /**
+ * Constructs an NSError with the [RCUnknownError] code.
+ */
++ (NSError *)unknownError;
+
+/**
  * Maps an SKErrorCode code to a RCPurchasesErrorCode code. Constructs an NSError with the mapped code and adds a
  * [RCUnderlyingErrorKey] in the NSError.userInfo dictionary. The SKErrorCode code will be mapped using
  * [RCPurchasesErrorCodeFromSKError].

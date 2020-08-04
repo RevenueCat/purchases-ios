@@ -1922,6 +1922,21 @@ class PurchasesTests: XCTestCase {
         
         expect(receivedError).toNot(beNil())
     }
+    
+    func testNoCrashIfPaymentIsMissing() {
+        setupPurchases()
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
+        }
+
+        let transaction = SKPaymentTransaction()
+
+        transaction.setValue(SKPaymentTransactionState.purchasing.rawValue, forKey: "transactionState")
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        transaction.setValue(SKPaymentTransactionState.purchased.rawValue, forKey: "transactionState")
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+    }
 
     func testPostsOfferingIfPurchasingPackage() {
         setupPurchases()

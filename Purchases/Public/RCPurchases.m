@@ -74,8 +74,7 @@ static RCPurchases *_sharedPurchases = nil;
 
 #pragma mark - Configuration
 
-- (BOOL)allowSharingAppStoreAccount
-{
+- (BOOL)allowSharingAppStoreAccount {
     if (_allowSharingAppStoreAccount == nil) {
         return self.isAnonymous;
     }
@@ -83,30 +82,25 @@ static RCPurchases *_sharedPurchases = nil;
     return [_allowSharingAppStoreAccount boolValue];
 }
 
-- (void)setAllowSharingAppStoreAccount:(BOOL)allow
-{
+- (void)setAllowSharingAppStoreAccount:(BOOL)allow {
     _allowSharingAppStoreAccount = @(allow);
 }
 
 static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
-+ (void)setAutomaticAppleSearchAdsAttributionCollection:(BOOL)automaticAppleSearchAdsAttributionCollection
-{
++ (void)setAutomaticAppleSearchAdsAttributionCollection:(BOOL)automaticAppleSearchAdsAttributionCollection {
     _automaticAppleSearchAdsAttributionCollection = automaticAppleSearchAdsAttributionCollection;
 }
 
-+ (BOOL)automaticAppleSearchAdsAttributionCollection
-{
++ (BOOL)automaticAppleSearchAdsAttributionCollection {
     return _automaticAppleSearchAdsAttributionCollection;
 }
 
-+ (void)setDebugLogsEnabled:(BOOL)enabled
-{
++ (void)setDebugLogsEnabled:(BOOL)enabled {
     RCSetShowDebugLogs(enabled);
 }
 
-+ (BOOL)debugLogsEnabled
-{
++ (BOOL)debugLogsEnabled {
     return RCShowDebugLogs();
 }
 
@@ -146,33 +140,28 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-+ (BOOL)canMakePayments
-{
++ (BOOL)canMakePayments {
     return [SKPaymentQueue canMakePayments];
 }
 
-+ (instancetype)configureWithAPIKey:(NSString *)APIKey
-{
++ (instancetype)configureWithAPIKey:(NSString *)APIKey {
     return [self configureWithAPIKey:APIKey appUserID:nil];
 }
 
-+ (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(nullable NSString *)appUserID
-{
++ (instancetype)configureWithAPIKey:(NSString *)APIKey appUserID:(nullable NSString *)appUserID {
     return [self configureWithAPIKey:APIKey appUserID:appUserID observerMode:false];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
                           appUserID:(nullable NSString *)appUserID
-                       observerMode:(BOOL)observerMode
-{
+                       observerMode:(BOOL)observerMode {
     return [self configureWithAPIKey:APIKey appUserID:appUserID observerMode:observerMode userDefaults:nil];
 }
 
 + (instancetype)configureWithAPIKey:(NSString *)APIKey
                           appUserID:(nullable NSString *)appUserID
                        observerMode:(BOOL)observerMode
-                       userDefaults:(nullable NSUserDefaults *)userDefaults
-{
+                       userDefaults:(nullable NSUserDefaults *)userDefaults {
     return [self configureWithAPIKey:APIKey
                            appUserID:appUserID
                         observerMode:observerMode
@@ -186,8 +175,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                        observerMode:(BOOL)observerMode
                        userDefaults:(nullable NSUserDefaults *)userDefaults
                      platformFlavor:(NSString *)platformFlavor
-              platformFlavorVersion:(NSString *)platformFlavorVersion
-{
+              platformFlavorVersion:(NSString *)platformFlavorVersion {
     RCPurchases *purchases = [[self alloc] initWithAPIKey:APIKey
                                                 appUserID:appUserID
                                              userDefaults:userDefaults
@@ -198,8 +186,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     return purchases;
 }
 
-- (instancetype)initWithAPIKey:(NSString *)APIKey appUserID:(nullable NSString *)appUserID
-{
+- (instancetype)initWithAPIKey:(NSString *)APIKey appUserID:(nullable NSString *)appUserID {
     return [self initWithAPIKey:APIKey
                       appUserID:appUserID
                    userDefaults:nil
@@ -213,8 +200,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   userDefaults:(nullable NSUserDefaults *)userDefaults
                   observerMode:(BOOL)observerMode
                 platformFlavor:(nullable NSString *)platformFlavor
-         platformFlavorVersion:(nullable NSString *)platformFlavorVersion
-{
+         platformFlavorVersion:(nullable NSString *)platformFlavorVersion {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] init];
@@ -232,8 +218,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWith:userDefaults];
     RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWith:deviceCache backend:backend];
     RCSubscriberAttributesManager *subscriberAttributesManager =
-        [[RCSubscriberAttributesManager alloc] initWithBackend:backend
-                                                   deviceCache:deviceCache];
+            [[RCSubscriberAttributesManager alloc] initWithBackend:backend
+                                                       deviceCache:deviceCache];
 
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
@@ -262,8 +248,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
                       deviceCache:(RCDeviceCache *)deviceCache
                   identityManager:(RCIdentityManager *)identityManager
-      subscriberAttributesManager:(RCSubscriberAttributesManager *)subscriberAttributesManager
-{
+      subscriberAttributesManager:(RCSubscriberAttributesManager *)subscriberAttributesManager {
     if (self = [super init]) {
         RCDebugLog(@"Debug logging enabled.");
         RCDebugLog(@"SDK Version - %@", self.class.frameworkVersion);
@@ -340,17 +325,15 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     return self;
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
     self.storeKitWrapper.delegate = nil;
     [self.notificationCenter removeObserver:self];
     self.delegate = nil;
 }
 
-@synthesize delegate=_delegate;
+@synthesize delegate = _delegate;
 
-- (void)setDelegate:(id<RCPurchasesDelegate>)delegate
-{
+- (void)setDelegate:(id <RCPurchasesDelegate>)delegate {
     _delegate = delegate;
     RCDebugLog(@"Delegate set");
 
@@ -363,8 +346,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
-           forNetworkUserId:(nullable NSString *)networkUserId
-{
+           forNetworkUserId:(nullable NSString *)networkUserId {
     if (data[@"rc_appsflyer_id"]) {
         RCErrorLog(@"⚠️ The parameter key rc_appsflyer_id is deprecated. Pass networkUserId to addAttribution instead. ⚠️");
     }
@@ -377,7 +359,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     NSDictionary *dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks = [self.userDefaults objectForKey:cacheKey];
     NSString *latestSentToNetwork = dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks[networkKey];
     NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", identifierForAdvertisers, networkUserId];
-    
+
     if ([latestSentToNetwork isEqualToString:newValueForNetwork]) {
         RCDebugLog(@"Attribution data is the same as latest. Skipping.");
     } else {
@@ -388,7 +370,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         newData[@"rc_idfa"] = identifierForAdvertisers;
         newData[@"rc_idfv"] = [self.attributionFetcher identifierForVendor];
         newData[@"rc_attribution_network_id"] = networkUserId;
-        
+
         if (newData.count > 0) {
             [self.backend postAttributionData:newData
                                   fromNetwork:network
@@ -404,15 +386,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 + (void)addAttributionData:(NSDictionary *)data
-               fromNetwork:(RCAttributionNetwork)network
-{
+               fromNetwork:(RCAttributionNetwork)network {
     [self addAttributionData:data fromNetwork:network forNetworkUserId:nil];
 }
 
 + (void)addAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
-          forNetworkUserId:(nullable NSString *)networkUserId
-{
+          forNetworkUserId:(nullable NSString *)networkUserId {
     if (_sharedPurchases) {
         RCLog(@"There is an instance configured, posting attribution.");
         [_sharedPurchases postAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
@@ -427,18 +407,15 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 #pragma mark Identity
 
-- (NSString *)appUserID
-{
+- (NSString *)appUserID {
     return [self.identityManager currentAppUserID];
 }
 
-- (BOOL)isAnonymous
-{
+- (BOOL)isAnonymous {
     return [self.identityManager currentUserIsAnonymous];
 }
 
-- (void)createAlias:(NSString *)alias completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-{
+- (void)createAlias:(NSString *)alias completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     if ([alias isEqualToString:self.identityManager.currentAppUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];
     } else {
@@ -452,8 +429,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)identify:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-{
+- (void)identify:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     if ([appUserID isEqualToString:self.identityManager.currentAppUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];
     } else {
@@ -468,15 +444,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-{
+- (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     [self.userDefaults removeObjectForKey:[self attributionDataUserDefaultCacheKeyForAppUserID:self.appUserID]];
     [self.identityManager resetAppUserID];
     [self updateAllCachesWithCompletionBlock:completion];
 }
 
-- (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
-{
+- (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion {
     RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
     if (infoFromCache) {
         RCDebugLog(@"Vending purchaserInfo from cache");
@@ -494,8 +468,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 #pragma mark Purchasing
 
 - (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
-                completionBlock:(RCReceiveProductsBlock)completion
-{
+                completionBlock:(RCReceiveProductsBlock)completion {
     NSMutableArray<SKProduct *> *products = [NSMutableArray array];
     NSMutableSet<NSString *> *missingProductIdentifiers = [NSMutableSet set];
     
@@ -509,13 +482,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             }
         }
     }
-    
+
     if (missingProductIdentifiers.count > 0) {
         [self.requestFetcher fetchProducts:missingProductIdentifiers
                                 completion:^(NSArray<SKProduct *> * _Nonnull newProducts) {
                                     @synchronized (self) {
-                                        for (SKProduct *p in newProducts)
-                                        {
+                                        for (SKProduct *p in newProducts) {
                                             if (p.productIdentifier) {
                                                 self.productsByIdentifier[p.productIdentifier] = p;
                                             }
@@ -529,23 +501,20 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)purchaseProduct:(SKProduct *)product
-    withCompletionBlock:(RCPurchaseCompletedBlock)completion
-{
+    withCompletionBlock:(RCPurchaseCompletedBlock)completion {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
     [self purchaseProduct:product withPayment:payment withPresentedOfferingIdentifier:nil completion:completion];
 }
 
 - (void)purchasePackage:(RCPackage *)package
-    withCompletionBlock:(RCPurchaseCompletedBlock)completion
-{
+    withCompletionBlock:(RCPurchaseCompletedBlock)completion {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:package.product];
     [self purchaseProduct:package.product withPayment:payment withPresentedOfferingIdentifier:package.offeringIdentifier completion:completion];
 }
 
 - (void)purchaseProduct:(SKProduct *)product
            withDiscount:(SKPaymentDiscount *)discount
-        completionBlock:(RCPurchaseCompletedBlock)completion
-{
+        completionBlock:(RCPurchaseCompletedBlock)completion {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
     payment.paymentDiscount = discount;
     [self purchaseProduct:product withPayment:payment withPresentedOfferingIdentifier:nil completion:completion];
@@ -553,15 +522,16 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)purchasePackage:(RCPackage *)package
            withDiscount:(SKPaymentDiscount *)discount
-        completionBlock:(RCPurchaseCompletedBlock)completion
-{
+        completionBlock:(RCPurchaseCompletedBlock)completion {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:package.product];
     payment.paymentDiscount = discount;
     [self purchaseProduct:package.product withPayment:payment withPresentedOfferingIdentifier:package.offeringIdentifier completion:completion];
 }
 
-- (void)purchaseProduct:(SKProduct *)product withPayment:(SKMutablePayment *)payment withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier completion:(RCPurchaseCompletedBlock)completion
-{
+- (void)        purchaseProduct:(SKProduct *)product
+                    withPayment:(SKMutablePayment *)payment
+withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
+                     completion:(RCPurchaseCompletedBlock)completion {
     RCDebugLog(@"makePurchase");
 
     if (!product || !payment) {
@@ -569,10 +539,10 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         RCLog(@"makePurchase - Ensure your products are correctly configured in App Store Connect");
         RCLog(@"makePurchase - See https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard");
         completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
-            code:RCProductNotAvailableForPurchaseError
-        userInfo:@{
-                   NSLocalizedDescriptionKey: @"There was problem purchasing the product."
-                   }], false);
+                                                 code:RCProductNotAvailableForPurchaseError
+                                             userInfo:@{
+                                                     NSLocalizedDescriptionKey: @"There was problem purchasing the product."
+                                             }], false);
         return;
     }
 
@@ -586,7 +556,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
                                                  code:RCUnknownError
                                              userInfo:@{
-                                                 NSLocalizedDescriptionKey: @"There was problem purchasing the product."
+                                                     NSLocalizedDescriptionKey: @"There was problem purchasing the product."
                                              }], false);
         return;
     }
@@ -620,19 +590,18 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
                                                      code:RCOperationAlreadyInProgressError
                                                  userInfo:@{
-                                                            NSLocalizedDescriptionKey: @"Purchase already in progress for this product."
-                                                            }], false);
+                                                         NSLocalizedDescriptionKey: @"Purchase already in progress for this product."
+                                                 }], false);
             return;
         }
         self.purchaseCompleteCallbacks[productIdentifier] = [completion copy];
     }
-    
+
     [self.storeKitWrapper addPayment:[payment copy]];
 }
 
 
-- (void)restoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-{
+- (void)restoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     if (!self.allowSharingAppStoreAccount) {
         RCDebugLog(@"allowSharingAppStoreAccount is set to false and restoreTransactions has been called. Are you sure you want to do this?");
     }
@@ -685,8 +654,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
-                                 completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
-{
+                                 completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility {
     [self receiptData:^(NSData * _Nonnull data) {
         LocalReceiptParser *receiptParser = [[LocalReceiptParser alloc] init];
         [receiptParser checkTrialOrIntroductoryPriceEligibilityWithData:data
@@ -717,8 +685,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)paymentDiscountForProductDiscount:(SKProductDiscount *)discount
                                   product:(SKProduct *)product
-                               completion:(RCPaymentDiscountBlock)completion
-{
+                               completion:(RCPaymentDiscountBlock)completion {
     [self receiptData:^(NSData *data) {
         [self.backend postOfferForSigning:discount.identifier
                     withProductIdentifier:product.productIdentifier
@@ -769,8 +736,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 #pragma mark - Private Methods
 
-- (void)applicationDidBecomeActive:(__unused NSNotification *)notif
-{
+- (void)applicationDidBecomeActive:(__unused NSNotification *)notif {
     [self updateAllCachesIfNeeded];
 }
 
@@ -828,14 +794,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     [self updateAllCachesWithCompletionBlock:nil];
 }
 
-- (void)updateAllCachesWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-{
+- (void)updateAllCachesWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     [self fetchAndCachePurchaserInfoWithCompletion:completion];
     [self updateOfferingsCache:nil];
 }
 
-- (void)fetchAndCachePurchaserInfoWithCompletion:(nullable RCReceivePurchaserInfoBlock)completion
-{
+- (void)fetchAndCachePurchaserInfoWithCompletion:(nullable RCReceivePurchaserInfoBlock)completion {
     [self.deviceCache setPurchaserInfoCacheTimestampToNow];
     NSString *appUserID = self.identityManager.currentAppUserID;
     [self.backend getSubscriberDataWithAppUserID:appUserID
@@ -847,13 +811,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                           } else {
                                               [self.deviceCache clearPurchaserInfoCacheTimestamp];
                                           }
-                                          
+
                                           CALL_IF_SET_ON_MAIN_THREAD(completion, info, error);
                                       }];
 }
 
-- (void)performOnEachProductIdentifierInOfferings:(NSDictionary *)offeringsData block:(void (^)(NSString *productIdentifier))block
-{
+- (void)performOnEachProductIdentifierInOfferings:(NSDictionary *)offeringsData
+                                            block:(void (^)(NSString *productIdentifier))block {
     for (NSDictionary *offering in offeringsData[@"offerings"]) {
         for (NSDictionary *package in offering[@"packages"]) {
             block(package[@"platform_product_identifier"]);
@@ -861,8 +825,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)offeringsWithCompletionBlock:(RCReceiveOfferingsBlock)completion
-{
+- (void)offeringsWithCompletionBlock:(RCReceiveOfferingsBlock)completion {
     if (self.deviceCache.cachedOfferings) {
         RCDebugLog(@"Vending offerings from cache");
         CALL_IF_SET_ON_MAIN_THREAD(completion, self.deviceCache.cachedOfferings, nil);
@@ -876,8 +839,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)updateOfferingsCache:(nullable RCReceiveOfferingsBlock)completion
-{
+- (void)updateOfferingsCache:(nullable RCReceiveOfferingsBlock)completion {
     [self.deviceCache setOfferingsCacheTimestampToNow];
     __weak typeof(self) weakSelf = self;
     [self.backend getOfferingsForAppUserID:self.appUserID
@@ -938,7 +900,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     [self receiptDataWithForceRefresh:NO completion:completion];
 }
 
-- (void)receiptDataWithForceRefresh:(BOOL)forceRefresh completion:(RCReceiveReceiptDataBlock)completion  {
+- (void)receiptDataWithForceRefresh:(BOOL)forceRefresh completion:(RCReceiveReceiptDataBlock)completion {
     if (forceRefresh) {
         RCDebugLog(@"Forced receipt refresh");
         [self refreshReceipt:completion];
@@ -953,8 +915,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)refreshReceipt:(RCReceiveReceiptDataBlock)completion
-{
+- (void)refreshReceipt:(RCReceiveReceiptDataBlock)completion {
     [self.requestFetcher fetchReceiptData:^{
         NSData *newReceiptData = [self.receiptFetcher receiptData];
         if (newReceiptData == nil || newReceiptData.length == 0) {
@@ -972,8 +933,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         [self markAttributesAsSyncedIfNeeded:subscriberAttributes appUserID:self.appUserID error:error];
 
         RCPurchaseCompletedBlock completion = nil;
+        NSString * _Nullable productIdentifier = [self productIdentifierFrom:transaction];
         @synchronized (self) {
-            completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
+            if (productIdentifier) {
+                completion = self.purchaseCompleteCallbacks[productIdentifier];
+            }
         }
 
         if (info) {
@@ -997,15 +961,17 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             RCLog(@"Unexpected error from backend");
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
         }
-        
+
         @synchronized (self) {
-            self.purchaseCompleteCallbacks[transaction.payment.productIdentifier] = nil;
+            if (productIdentifier) {
+                self.purchaseCompleteCallbacks[productIdentifier] = nil;
+            }
         }
     }];
 }
 
 - (void)sendUpdatedPurchaserInfoToDelegateIfChanged:(RCPurchaserInfo *)info {
-    
+
     if ([self.delegate respondsToSelector:@selector(purchases:didReceiveUpdatedPurchaserInfo:)]) {
         @synchronized (self) {
             if (![self.lastSentPurchaserInfo isEqual:info]) {
@@ -1028,8 +994,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
  */
 
 - (void)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
-     updatedTransaction:(SKPaymentTransaction *)transaction
-{
+     updatedTransaction:(SKPaymentTransaction *)transaction {
     switch (transaction.transactionState) {
         case SKPaymentTransactionStateRestored: // For observer mode
         case SKPaymentTransactionStatePurchased: {
@@ -1045,7 +1010,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                     nil,
                     [RCPurchasesErrorUtils purchasesErrorWithSKError:transaction.error],
                     transaction.error.code == SKErrorPaymentCancelled);
-            
+
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
@@ -1067,10 +1032,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (nullable RCPurchaseCompletedBlock)getAndRemovePurchaseCompletedBlockFor:(SKPaymentTransaction *)transaction
-{
+- (nullable RCPurchaseCompletedBlock)getAndRemovePurchaseCompletedBlockFor:(SKPaymentTransaction *)transaction {
     RCPurchaseCompletedBlock completion = nil;
-    if (transaction.payment.productIdentifier) {
+    if ([self productIdentifierFrom:transaction]) {
         @synchronized (self) {
             completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
             self.purchaseCompleteCallbacks[transaction.payment.productIdentifier] = nil;
@@ -1080,8 +1044,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
-     removedTransaction:(SKPaymentTransaction *)transaction
-{}
+     removedTransaction:(SKPaymentTransaction *)transaction {
+}
 
 - (BOOL)storeKitWrapper:(nonnull RCStoreKitWrapper *)storeKitWrapper shouldAddStorePayment:(nonnull SKPayment *)payment forProduct:(nonnull SKProduct *)product {
     @synchronized(self) {
@@ -1100,8 +1064,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     return NO;
 }
 
-- (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network
-{
+- (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network {
     NSString *cacheKey = [NSString stringWithFormat:@"%ld", (long)network];
     NSDictionary *cachedDict = [self.userDefaults objectForKey:[self attributionDataUserDefaultCacheKeyForAppUserID:self.appUserID]];
     return cachedDict[cacheKey];
@@ -1111,8 +1074,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     return [RCAttributionDataDefaultsKeyBase stringByAppendingString:appUserID];
 }
 
-- (void)dispatch:(void (^ _Nonnull)(void))block
-{
+- (void)dispatch:(void (^ _Nonnull)(void))block {
     if ([NSThread isMainThread]) {
         block();
     } else {
@@ -1134,10 +1096,17 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)fetchProductsAndPostReceiptWithTransaction:(SKPaymentTransaction *)transaction data:(NSData *)data {
-    [self productsWithIdentifiers:@[transaction.payment.productIdentifier]
-                  completionBlock:^(NSArray<SKProduct *> *products) {
-                      [self postReceiptWithTransaction:transaction data:data products:products];
-                  }];
+    if ([self productIdentifierFrom:transaction]) {
+        [self productsWithIdentifiers:@[[self productIdentifierFrom:transaction]]
+                      completionBlock:^(NSArray<SKProduct *> *products) {
+                          [self postReceiptWithTransaction:transaction data:data products:products];
+                      }];
+    } else {
+        [self handleReceiptPostWithTransaction:transaction
+                                 purchaserInfo:nil
+                          subscriberAttributes:nil
+                                         error:RCPurchasesErrorUtils.unknownError];
+    }
 }
 
 - (void)postReceiptWithTransaction:(SKPaymentTransaction *)transaction
@@ -1164,12 +1133,21 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                      observerMode:!self.finishTransactions
              subscriberAttributes:subscriberAttributes
                        completion:^(RCPurchaserInfo *_Nullable info,
-                                    NSError *_Nullable error) {
+                               NSError *_Nullable error) {
                            [self handleReceiptPostWithTransaction:transaction
                                                     purchaserInfo:info
                                              subscriberAttributes:subscriberAttributes
                                                             error:error];
                        }];
+}
+
+- (nullable NSString *)productIdentifierFrom:(SKPaymentTransaction *)transaction {
+    if (transaction.payment == nil) {
+        RCLog(@"There is a problem with the payment. Couldn't find the payment. This is possibly an App Store quirk.");
+    } else if (transaction.payment.productIdentifier == nil) {
+        RCLog(@"There is a problem with the payment. Couldn't find its product identifier. This is possibly an App Store quirk.");
+    }
+    return transaction.payment.productIdentifier;
 }
 
 @end
