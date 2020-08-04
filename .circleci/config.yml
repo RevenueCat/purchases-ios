@@ -7,10 +7,30 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
+      
+      # Carthage
+      - restore_cache:
+          keys: 
+            - carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
           name: Carthage Bootstrap
-          command: carthage bootstrap
-      - run: bundle install
+          command: |
+              carthage bootstrap --cache-builds
+      - save_cache:
+          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          paths:
+            - Carthage
+      
+      # Bundler
+      - restore_cache:
+          keys: 
+            - gem-cache-{{ checksum "Gemfile.lock" }}
+      - run: bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+      
       - run:
           name: Run tests
           command: fastlane scan
