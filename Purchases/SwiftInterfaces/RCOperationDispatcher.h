@@ -10,6 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NS_SWIFT_NAME(OperationDispatcher)
 @interface RCOperationDispatcher : NSObject
 
 - (void)dispatchOnMainThreadIfSet:(void (^ _Nullable)(void))block;

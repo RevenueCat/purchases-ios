@@ -237,7 +237,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   offeringsFactory:offeringsFactory
                        deviceCache:deviceCache
                    identityManager:identityManager
-       subscriberAttributesManager:subscriberAttributesManager];
+       subscriberAttributesManager:subscriberAttributesManager
+               operationDispatcher:operationDispatcher];
 }
 
 - (instancetype)initWithAppUserID:(nullable NSString *)appUserID

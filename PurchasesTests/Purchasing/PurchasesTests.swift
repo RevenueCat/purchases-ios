@@ -6,7 +6,7 @@
 import XCTest
 import Nimble
 
-import Purchases
+@testable import Purchases
 
 class PurchasesTests: XCTestCase {
 
@@ -14,6 +14,7 @@ class PurchasesTests: XCTestCase {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
         requestFetcher = MockRequestFetcher()
         systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+        mockOperationDispatcher = MockOperationDispatcher()
     }
 
     override func tearDown() {
@@ -182,6 +183,7 @@ class PurchasesTests: XCTestCase {
     let subscriberAttributesManager = MockSubscriberAttributesManager()
     let identityManager = MockUserManager(mockAppUserID: "app_user");
     var systemInfo: MockSystemInfo!
+    var mockOperationDispatcher: MockOperationDispatcher!
     
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -203,7 +205,8 @@ class PurchasesTests: XCTestCase {
                               offeringsFactory: offeringsFactory,
                               deviceCache: deviceCache,
                               identityManager: identityManager,
-                              subscriberAttributesManager: subscriberAttributesManager)
+                              subscriberAttributesManager: subscriberAttributesManager,
+                              operationDispatcher: OperationDispatcher())
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
@@ -224,7 +227,8 @@ class PurchasesTests: XCTestCase {
                               offeringsFactory: offeringsFactory,
                               deviceCache: deviceCache,
                               identityManager: identityManager,
-                              subscriberAttributesManager: subscriberAttributesManager)
+                              subscriberAttributesManager: subscriberAttributesManager,
+                              operationDispatcher: OperationDispatcher())
 
         purchases!.delegate = purchasesDelegate
     }
@@ -244,7 +248,8 @@ class PurchasesTests: XCTestCase {
                               offeringsFactory: offeringsFactory,
                               deviceCache: deviceCache,
                               identityManager: identityManager,
-                              subscriberAttributesManager: subscriberAttributesManager)
+                              subscriberAttributesManager: subscriberAttributesManager,
+                              operationDispatcher: OperationDispatcher())
 
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -2111,15 +2116,14 @@ class PurchasesTests: XCTestCase {
 
     private func verifyUpdatedCaches(newAppUserID: String) {
         let expectedCallCount = 2
-        let timeout = 5.0
-        expect(self.backend.getSubscriberCallCount).toEventually(equal(expectedCallCount), timeout: timeout)
-        expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(expectedCallCount), timeout: timeout)
-        expect(self.deviceCache.cachedPurchaserInfo[newAppUserID]).toEventuallyNot(beNil(), timeout: timeout)
-        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(expectedCallCount), timeout: timeout)
-        expect(self.deviceCache.setPurchaserInfoCacheTimestampToNowCount).toEventually(equal(expectedCallCount), timeout: timeout)
-        expect(self.deviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount), timeout: timeout)
-        expect(self.backend.gotOfferings).toEventually(equal(expectedCallCount), timeout: timeout)
-        expect(self.deviceCache.cachedOfferingsCount).toEventually(equal(expectedCallCount), timeout: timeout)
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(expectedCallCount))
+        expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(expectedCallCount))
+        expect(self.deviceCache.cachedPurchaserInfo[newAppUserID]).toEventuallyNot(beNil())
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(expectedCallCount))
+        expect(self.deviceCache.setPurchaserInfoCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
+        expect(self.deviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
+        expect(self.backend.gotOfferings).toEventually(equal(expectedCallCount))
+        expect(self.deviceCache.cachedOfferingsCount).toEventually(equal(expectedCallCount))
     }
 
 }
