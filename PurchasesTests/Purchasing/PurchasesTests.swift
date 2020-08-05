@@ -206,7 +206,7 @@ class PurchasesTests: XCTestCase {
                               deviceCache: deviceCache,
                               identityManager: identityManager,
                               subscriberAttributesManager: subscriberAttributesManager,
-                              operationDispatcher: OperationDispatcher())
+                              operationDispatcher: mockOperationDispatcher)
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
@@ -228,7 +228,7 @@ class PurchasesTests: XCTestCase {
                               deviceCache: deviceCache,
                               identityManager: identityManager,
                               subscriberAttributesManager: subscriberAttributesManager,
-                              operationDispatcher: OperationDispatcher())
+                              operationDispatcher: mockOperationDispatcher)
 
         purchases!.delegate = purchasesDelegate
     }
@@ -249,7 +249,7 @@ class PurchasesTests: XCTestCase {
                               deviceCache: deviceCache,
                               identityManager: identityManager,
                               subscriberAttributesManager: subscriberAttributesManager,
-                              operationDispatcher: OperationDispatcher())
+                              operationDispatcher: mockOperationDispatcher)
 
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
