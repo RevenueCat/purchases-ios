@@ -206,7 +206,7 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.client.performRequest("GET", path: path, body: nil, headers: nil) { (status, data, responseError) in
-            if let responseNSError = responseError as? NSError {
+            if let responseNSError = responseError as NSError? {
                 successFailed = (status >= 500
                                  && data == nil
                                  && error.domain == responseNSError.domain
