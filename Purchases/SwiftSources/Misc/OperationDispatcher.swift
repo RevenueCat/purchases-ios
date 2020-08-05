@@ -18,14 +18,6 @@ import Foundation
         workerQueue = DispatchQueue(label: "OperationDispatcherWorkerQueue")
     }
     
-    @objc func dispatchOnMainThreadIfSet(_ block: (() -> Void)?) {
-        if let block = block {
-            dispatch(onMainThread: {
-                block()
-            })
-        }
-    }
-    
     @objc func dispatch(onMainThread block: @escaping () -> Void) {
         if Thread.isMainThread {
             block()
@@ -34,7 +26,7 @@ import Foundation
         }
     }
 
-    @objc func dispatchOnSameThreadIfSet(_ block: () -> Void) {
+    @objc func dispatch(onSameThread block: () -> Void) {
         block()
     }
 

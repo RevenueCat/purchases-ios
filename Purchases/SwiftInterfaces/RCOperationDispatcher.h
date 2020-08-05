@@ -13,9 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 NS_SWIFT_NAME(OperationDispatcher)
 @interface RCOperationDispatcher : NSObject
 
-- (void)dispatchOnMainThreadIfSet:(void (^ _Nullable)(void))block;
 - (void)dispatchOnMainThread:(void (^)(void))block;
-- (void)dispatchOnSameThreadIfSet:(void (^ _Nullable)(void))block;
+- (void)dispatchOnSameThread:(void (^)(void))block;
 - (void)dispatchOnWorkerThread:(void (^)(void))block;
 
 @end
