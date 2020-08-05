@@ -12,6 +12,7 @@
 #import "RCEntitlementInfos+Protected.h"
 #import "RCEntitlementInfo.h"
 #import "RCPurchasesSwiftImport.h"
+#import "RCTransactionsFactory.h"
 
 @interface RCPurchaserInfo ()
 
@@ -86,7 +87,7 @@ static dispatch_once_t onceToken;
     self.nonConsumablePurchases = [NSSet setWithArray:[nonSubscriptionsData allKeys]];
     
     RCTransactionsFactory *transactionsFactory = [[RCTransactionsFactory alloc] init];
-    self.nonSubscriptionTransactions = [transactionsFactory nonSubscriptionTransactionsWith:nonSubscriptionsData dateFormatter:dateFormatter];
+    self.nonSubscriptionTransactions = [transactionsFactory nonSubscriptionTransactionsWithSubscriptionsData:nonSubscriptionsData dateFormatter:dateFormatter];
 
     NSMutableDictionary<NSString *, id> *nonSubscriptionsLatestPurchases = [[NSMutableDictionary alloc] init];
     for (NSString* productId in nonSubscriptionsData) {
