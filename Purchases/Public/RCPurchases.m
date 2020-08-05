@@ -223,6 +223,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCSubscriberAttributesManager *subscriberAttributesManager =
             [[RCSubscriberAttributesManager alloc] initWithBackend:backend
                                                        deviceCache:deviceCache];
+    RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
 
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
@@ -251,7 +252,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
                       deviceCache:(RCDeviceCache *)deviceCache
                   identityManager:(RCIdentityManager *)identityManager
-      subscriberAttributesManager:(RCSubscriberAttributesManager *)subscriberAttributesManager {
+      subscriberAttributesManager:(RCSubscriberAttributesManager *)subscriberAttributesManager
+              operationDispatcher:(RCOperationDispatcher *)operationDispatcher {
+    
     if (self = [super init]) {
         RCDebugLog(@"Debug logging enabled.");
         RCDebugLog(@"SDK Version - %@", self.class.frameworkVersion);
@@ -275,7 +278,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
         self.systemInfo = systemInfo;
         self.subscriberAttributesManager = subscriberAttributesManager;
-        self.operationDispatcher = [[RCOperationDispatcher alloc] init];
+        self.operationDispatcher = operationDispatcher;
 
         RCReceivePurchaserInfoBlock callDelegate = ^void(RCPurchaserInfo *info, NSError *error) {
             if (info) {
