@@ -34,6 +34,7 @@
 #import "RCProductInfoExtractor.h"
 #import "RCIntroEligibility+Protected.h"
 #import "RCPurchasesSwiftImport.h"
+#import "RCLocalReceiptParser.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -656,7 +657,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
                                  completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility {
     [self receiptData:^(NSData * _Nonnull data) {
-        LocalReceiptParser *receiptParser = [[LocalReceiptParser alloc] init];
+        RCLocalReceiptParser *receiptParser = [[RCLocalReceiptParser alloc] init];
         [receiptParser checkTrialOrIntroductoryPriceEligibilityWithData:data
                                                      productIdentifiers:productIdentifiers
                                                              completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,

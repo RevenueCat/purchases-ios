@@ -8,7 +8,7 @@
 
 import Foundation
 
-@objc(RCTransaction) public class Transaction: NSObject {
+@objc(RCTransaction) internal class Transaction: NSObject {
 
     @available(*, unavailable, message: "Use init(transactionId, productId, purchaseDate) instead")
     override init() {

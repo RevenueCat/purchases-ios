@@ -13,6 +13,8 @@
 		2D5033262406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033232406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D50332A2406EA61009CAE61 /* RCSubscriberAttributesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D50332B2406EA61009CAE61 /* RCSubscriberAttributesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D5033282406EA61009CAE61 /* RCSubscriberAttributesManager.m */; };
+		2D59D15B24DAEA1D0057BB58 /* RCTransactionsFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D59D15A24DAEA1D0057BB58 /* RCTransactionsFactory.h */; };
+		2D59D15D24DAEA620057BB58 /* RCLocalReceiptParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D59D15C24DAEA620057BB58 /* RCLocalReceiptParser.h */; };
 		2D8DB34B24072AAE00BE3D31 /* SubscriberAttributeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */; };
 		2DD02D5524AD011600419CD9 /* RCPurchasesSwiftImport.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DD02D5424AD00ED00419CD9 /* RCPurchasesSwiftImport.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2DD02D5724AD0B0500419CD9 /* RCIntroEligibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD02D5624AD0B0500419CD9 /* RCIntroEligibilityTests.swift */; };
@@ -184,6 +186,8 @@
 		2D5033232406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCSpecialSubscriberAttributes.h; path = Purchases/SubscriberAttributes/RCSpecialSubscriberAttributes.h; sourceTree = SOURCE_ROOT; };
 		2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCSubscriberAttributesManager.h; path = Purchases/SubscriberAttributes/RCSubscriberAttributesManager.h; sourceTree = SOURCE_ROOT; };
 		2D5033282406EA61009CAE61 /* RCSubscriberAttributesManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RCSubscriberAttributesManager.m; path = Purchases/SubscriberAttributes/RCSubscriberAttributesManager.m; sourceTree = SOURCE_ROOT; };
+		2D59D15A24DAEA1D0057BB58 /* RCTransactionsFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTransactionsFactory.h; sourceTree = "<group>"; };
+		2D59D15C24DAEA620057BB58 /* RCLocalReceiptParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCLocalReceiptParser.h; sourceTree = "<group>"; };
 		2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscriberAttributeTests.swift; sourceTree = "<group>"; };
 		2DD02D5424AD00ED00419CD9 /* RCPurchasesSwiftImport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPurchasesSwiftImport.h; sourceTree = "<group>"; };
 		2DD02D5624AD0B0500419CD9 /* RCIntroEligibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCIntroEligibilityTests.swift; sourceTree = "<group>"; };
@@ -375,11 +379,21 @@
 			path = Public/SubscriberAttributes;
 			sourceTree = "<group>";
 		};
+		2D59D15724DAE7690057BB58 /* SwiftInterfaces */ = {
+			isa = PBXGroup;
+			children = (
+				2D59D15A24DAEA1D0057BB58 /* RCTransactionsFactory.h */,
+				2D59D15C24DAEA620057BB58 /* RCLocalReceiptParser.h */,
+			);
+			path = SwiftInterfaces;
+			sourceTree = "<group>";
+		};
 		2D9AF7B124A2B2F000E1D023 /* SwiftSources */ = {
 			isa = PBXGroup;
 			children = (
 				354235D524C11138008C84EE /* Purchasing */,
 				2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */,
+				37E35E82A21BCF3EDC9E6057 /* Misc */,
 			);
 			path = SwiftSources;
 			sourceTree = "<group>";
@@ -468,6 +482,7 @@
 		35262A001F7C4B9100C04F2C /* Purchases */ = {
 			isa = PBXGroup;
 			children = (
+				2D59D15724DAE7690057BB58 /* SwiftInterfaces */,
 				2D9AF7B124A2B2F000E1D023 /* SwiftSources */,
 				35262A021F7C4B9100C04F2C /* Info.plist */,
 				37E359927177DF24576FF361 /* Caching */,
@@ -743,6 +758,7 @@
 				350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */,
 				354D50DF22E7D014009B870C /* RCOfferings.h in Headers */,
 				351F4FAF1F803D0700F245F4 /* RCPurchaserInfo.h in Headers */,
+				2D59D15B24DAEA1D0057BB58 /* RCTransactionsFactory.h in Headers */,
 				2DD02D5524AD011600419CD9 /* RCPurchasesSwiftImport.h in Headers */,
 				35262A0F1F7C4B9100C04F2C /* Purchases.h in Headers */,
 				37E3598A1AAA3D70EA01C82D /* RCInMemoryCachedObject.h in Headers */,
@@ -764,6 +780,7 @@
 				37E354159288DE3D23212382 /* RCCrossPlatformSupport.h in Headers */,
 				37E35E9CEC36E93AF682D012 /* RCPromotionalOffer+Protected.h in Headers */,
 				37E352E86A182E92130B823C /* RCIntroEligibility+Protected.h in Headers */,
+				2D59D15D24DAEA620057BB58 /* RCLocalReceiptParser.h in Headers */,
 				37E35C5A53AC7CF63B240FEC /* RCEntitlementInfos+Protected.h in Headers */,
 				37E3575B0FFDD90D01861D81 /* RCPurchasesErrorUtils+Protected.h in Headers */,
 				37E35D04747C56E85F1B9679 /* RCPurchaserInfo+Protected.h in Headers */,
