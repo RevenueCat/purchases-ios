@@ -26,7 +26,8 @@ func resolveTargets() -> [Target] {
                        "Purchases/Public",
                        "Purchases/Purchasing",
                        "Purchases/ProtectedExtensions",
-                       "Purchases/SubscriberAttributes"]
+                       "Purchases/SubscriberAttributes",
+                       "Purchases/SwiftInterfaces"]
     let infoPlist = "Purchases/Info.plist"
     let swiftSources = "Purchases/SwiftSources"
     

@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class RCTransaction;
 
 @interface RCTransactionsFactory: NSObject
@@ -16,3 +18,5 @@
                                                                    dateFormatter:(NSDateFormatter *)dateFormatter;
 
 @end
+
+NS_ASSUME_NONNULL_END

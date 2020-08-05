@@ -7,7 +7,7 @@
 //
 
 import Foundation
-@objc public enum LocalReceiptParserErrorCode: Int {
+@objc internal enum LocalReceiptParserErrorCode: Int {
     case ReceiptNotFound,
          UnknownError
 }
@@ -18,9 +18,9 @@ internal enum IntroEligibilityStatus: Int {
          eligible
 }
 
-@objc public class LocalReceiptParser: NSObject {
+@objc(RCLocalReceiptParser) internal class LocalReceiptParser: NSObject {
     
-    @objc public func checkTrialOrIntroductoryPriceEligibility(withData data: Data,
+    @objc internal func checkTrialOrIntroductoryPriceEligibility(withData data: Data,
                                                                productIdentifiers: [String],
                                                                completion: ([String : Int], Error?) -> Void) {
         completion([:], NSError(domain: "This method hasn't been implemented yet",
