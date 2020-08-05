@@ -35,6 +35,7 @@
 #import "RCIntroEligibility+Protected.h"
 #import "RCPurchasesSwiftImport.h"
 #import "RCLocalReceiptParser.h"
+#import "RCOperationDispatcher.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -64,6 +65,7 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCIdentityManager *identityManager;
 @property (nonatomic) RCSystemInfo *systemInfo;
+@property (nonatomic) RCOperationDispatcher *operationDispatcher;
 
 @end
 
@@ -273,6 +275,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
         self.systemInfo = systemInfo;
         self.subscriberAttributesManager = subscriberAttributesManager;
+        self.operationDispatcher = [[RCOperationDispatcher alloc] init];
 
         RCReceivePurchaserInfoBlock callDelegate = ^void(RCPurchaserInfo *info, NSError *error) {
             if (info) {
@@ -284,10 +287,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
         [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isBackgrounded) {
             if (!isBackgrounded) {
-                dispatch_queue_t backgroundQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-                dispatch_async(backgroundQueue, ^{
+                [self.operationDispatcher dispatchOnWorkerThread:^{
                     [self updateAllCachesWithCompletionBlock:callDelegate];
-                });
+                }];
             } else {
                 [self sendCachedPurchaserInfoIfAvailable];
             }
