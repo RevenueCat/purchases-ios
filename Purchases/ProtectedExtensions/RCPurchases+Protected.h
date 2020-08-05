@@ -17,7 +17,8 @@
     RCDeviceCache,
     RCIdentityManager,
     RCSubscriberAttributesManager,
-    RCSystemInfo;
+    RCSystemInfo,
+    RCOperationDispatcher;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,7 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
                       deviceCache:(RCDeviceCache *)deviceCache
                   identityManager:(RCIdentityManager *)identityManager
-      subscriberAttributesManager:(RCSubscriberAttributesManager *)subscriberAttributesManager;
+      subscriberAttributesManager:(RCSubscriberAttributesManager *)subscriberAttributesManager
+              operationDispatcher:(RCOperationDispatcher *)operationDispatcher;
 
 + (void)setDefaultInstance:(nullable RCPurchases *)instance;
 
