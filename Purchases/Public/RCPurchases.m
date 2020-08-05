@@ -37,8 +37,6 @@
 #import "RCLocalReceiptParser.h"
 #import "RCOperationDispatcher.h"
 
-#define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
-
 @interface RCPurchases () <RCStoreKitWrapperDelegate> {
     NSNumber * _Nullable _allowSharingAppStoreAccount;
 }
@@ -666,7 +664,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                    error:(NSError *)error
                     subscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
                               completion:(RCReceivePurchaserInfoBlock)completion {
-    [self dispatch:^{
+    [self.operationDispatcher dispatchOnMainThread:^{
         if (error) {
             [self markAttributesAsSyncedIfNeeded:subscriberAttributes
                                        appUserID:self.appUserID
@@ -822,7 +820,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)cachePurchaserInfo:(RCPurchaserInfo *)info forAppUserID:(NSString *)appUserID {
     if (info) {
-        [self dispatch:^{
+        [self.operationDispatcher dispatchOnMainThread:^{
             if (info.JSONObject) {
                 NSError *jsonError = nil;
                 NSData *jsonData = [NSJSONSerialization dataWithJSONObject:info.JSONObject
@@ -992,7 +990,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                            purchaserInfo:(nullable RCPurchaserInfo *)info
                     subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributes
                                    error:(nullable NSError *)error {
-    [self dispatch:^{
+    [self.operationDispatcher dispatchOnMainThread:^{
         [self markAttributesAsSyncedIfNeeded:subscriberAttributes appUserID:self.appUserID error:error];
 
         RCPurchaseCompletedBlock _Nullable completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
@@ -1000,22 +998,29 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             [self cachePurchaserInfo:info forAppUserID:self.appUserID];
 
             [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-
-            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, info, nil, false);
-
+            if (completion) {
+                completion(transaction, info, nil, false);
+            }
+            
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if ([error.userInfo[RCFinishableKey] boolValue]) {
-            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
+            if (completion) {
+                completion(transaction, nil, error, false);
+            }
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if (![error.userInfo[RCFinishableKey] boolValue]) {
-            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
+            if (completion) {
+                completion(transaction, nil, error, false);
+            }
         } else {
             RCLog(@"Unexpected error from backend");
-            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
+            if (completion) {
+                completion(transaction, nil, error, false);
+            }
         }
     }];
 }
@@ -1031,7 +1036,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                     RCDebugLog(@"Sending latest purchaser info to delegate");
                 }
                 self.lastSentPurchaserInfo = info;
-                [self dispatch:^{
+                [self.operationDispatcher dispatchOnMainThread:^{
                     [self.delegate purchases:self didReceiveUpdatedPurchaserInfo:info];
                 }];
             }
@@ -1125,14 +1130,6 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (NSString *)attributionDataUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {
     return [RCAttributionDataDefaultsKeyBase stringByAppendingString:appUserID];
-}
-
-- (void)dispatch:(void (^ _Nonnull)(void))block {
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_async(dispatch_get_main_queue(), block);
-    }
 }
 
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction {

@@ -26,12 +26,7 @@ import Foundation
         }
     }
 
-    @objc func dispatch(onSameThread block: () -> Void) {
-        block()
-    }
-
     @objc func dispatch(onWorkerThread block: @escaping () -> Void) {
         workerQueue.async { block() }
     }
-
 }
