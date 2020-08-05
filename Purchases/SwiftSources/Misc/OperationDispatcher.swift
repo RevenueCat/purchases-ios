@@ -20,12 +20,13 @@ import Foundation
     
     @objc func dispatchOnMainThreadIfSet(_ block: (() -> Void)?) {
         if let block = block {
-            dispatchOnMainThread {
+            dispatch(onMainThread: {
                 block()
-            }
+            })
         }
     }
-    @objc func dispatchOnMainThread(_ block: @escaping () -> Void) {
+    
+    @objc func dispatch(onMainThread block: @escaping () -> Void) {
         if Thread.isMainThread {
             block()
         } else {
@@ -37,7 +38,7 @@ import Foundation
         block()
     }
 
-    @objc func dispatchOnWorkerThread(_ block: @escaping () -> Void) {
+    @objc func dispatch(onWorkerThread block: @escaping () -> Void) {
         workerQueue.async { block() }
     }
 
