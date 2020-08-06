@@ -1,3 +1,15 @@
+## 3.6.0
+- Fix crash when productIdentifier or payment is nil.
+    https://github.com/RevenueCat/purchases-ios/pull/297
+- Fixes ask-to-buy flow and will now send an error indicating there's a deferred payment.
+    https://github.com/RevenueCat/purchases-ios/pull/296
+- Fixes application state check on app extensions, which threw a compilation error.
+    https://github.com/RevenueCat/purchases-ios/pull/303
+- Restores will now always refresh the receipt.
+    https://github.com/RevenueCat/purchases-ios/pull/287
+- New properties added to the PurchaserInfo to better manage non-subscriptions.
+    https://github.com/RevenueCat/purchases-ios/pull/281
+
 ## 3.5.2
 - Feature/defer cache updates if woken from push notification
 https://github.com/RevenueCat/purchases-ios/pull/288
