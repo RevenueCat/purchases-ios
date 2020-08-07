@@ -14,6 +14,7 @@ Pod::Spec.new do |s|
   s.documentation_url = "https://docs.revenuecat.com/"
 
   s.framework      = 'StoreKit'
+  s.swift_version       = '5.0'
 
   s.ios.deployment_target = '9.0'
   s.osx.deployment_target = '10.12'
