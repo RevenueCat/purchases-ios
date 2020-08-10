@@ -939,14 +939,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self dispatch:^{
         [self markAttributesAsSyncedIfNeeded:subscriberAttributes appUserID:self.appUserID error:error];
 
-        RCPurchaseCompletedBlock completion = nil;
-        NSString * _Nullable productIdentifier = [self productIdentifierFrom:transaction];
-        @synchronized (self) {
-            if (productIdentifier) {
-                completion = self.purchaseCompleteCallbacks[productIdentifier];
-            }
-        }
-
+        RCPurchaseCompletedBlock _Nullable completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
         if (info) {
             [self cachePurchaserInfo:info forAppUserID:self.appUserID];
 
@@ -967,12 +960,6 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         } else {
             RCLog(@"Unexpected error from backend");
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
-        }
-
-        @synchronized (self) {
-            if (productIdentifier) {
-                self.purchaseCompleteCallbacks[productIdentifier] = nil;
-            }
         }
     }];
 }
@@ -1041,10 +1028,11 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (nullable RCPurchaseCompletedBlock)getAndRemovePurchaseCompletedBlockFor:(SKPaymentTransaction *)transaction {
     RCPurchaseCompletedBlock completion = nil;
-    if ([self productIdentifierFrom:transaction]) {
+    NSString * _Nullable productIdentifier = [self productIdentifierFrom:transaction];
+    if (productIdentifier) {
         @synchronized (self) {
-            completion = self.purchaseCompleteCallbacks[transaction.payment.productIdentifier];
-            self.purchaseCompleteCallbacks[transaction.payment.productIdentifier] = nil;
+            completion = self.purchaseCompleteCallbacks[productIdentifier];
+            self.purchaseCompleteCallbacks[productIdentifier] = nil;
         }
     }
     return completion;
