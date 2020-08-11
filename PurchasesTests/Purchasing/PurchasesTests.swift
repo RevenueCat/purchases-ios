@@ -15,6 +15,7 @@ class PurchasesTests: XCTestCase {
         requestFetcher = MockRequestFetcher()
         systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockOperationDispatcher = MockOperationDispatcher()
+        mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
     }
 
     override func tearDown() {
@@ -184,6 +185,7 @@ class PurchasesTests: XCTestCase {
     let identityManager = MockUserManager(mockAppUserID: "app_user");
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
+    var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
     
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -206,7 +208,8 @@ class PurchasesTests: XCTestCase {
                               deviceCache: deviceCache,
                               identityManager: identityManager,
                               subscriberAttributesManager: subscriberAttributesManager,
-                              operationDispatcher: mockOperationDispatcher)
+                              operationDispatcher: mockOperationDispatcher,
+                              introEligibilityCalculator: mockIntroEligibilityCalculator)
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
@@ -228,7 +231,8 @@ class PurchasesTests: XCTestCase {
                               deviceCache: deviceCache,
                               identityManager: identityManager,
                               subscriberAttributesManager: subscriberAttributesManager,
-                              operationDispatcher: mockOperationDispatcher)
+                              operationDispatcher: mockOperationDispatcher,
+                              introEligibilityCalculator: mockIntroEligibilityCalculator)
 
         purchases!.delegate = purchasesDelegate
     }
@@ -249,7 +253,8 @@ class PurchasesTests: XCTestCase {
                               deviceCache: deviceCache,
                               identityManager: identityManager,
                               subscriberAttributesManager: subscriberAttributesManager,
-                              operationDispatcher: mockOperationDispatcher)
+                              operationDispatcher: mockOperationDispatcher,
+                              introEligibilityCalculator: mockIntroEligibilityCalculator)
 
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)

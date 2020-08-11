@@ -6,8 +6,9 @@
 class MockSKProduct: SKProduct {
     var mockProductIdentifier: String
 
-    init(mockProductIdentifier: String) {
+    init(mockProductIdentifier: String, mockSubscriptionGroupIdentifier: String? = nil) {
         self.mockProductIdentifier = mockProductIdentifier
+        self.mockSubscriptionGroupIdentifier = mockSubscriptionGroupIdentifier
         super.init()
     }
 
