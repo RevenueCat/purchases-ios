@@ -1972,6 +1972,37 @@ class PurchasesTests: XCTestCase {
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }
     }
+    
+    func testPurchasingPackageDoesntThrowPurchaseAlreadyInProgressIfCallbackMakesANewPurchase() {
+        setupPurchases()
+        var receivedError: NSError? = nil
+        var secondCompletionCalled = false
+        self.purchases!.offerings { (newOfferings, _) in
+            let package = newOfferings!["base"]!.monthly!
+            self.purchases!.purchasePackage(package) { _,_,_,_  in
+                self.purchases!.purchasePackage(package) { (tx, info, error, userCancelled) in
+                    receivedError = error as NSError?
+                    secondCompletionCalled = true
+                }
+            }
+
+            self.performTransaction()
+            self.performTransaction()
+        }
+        expect(secondCompletionCalled).toEventually(beTrue(), timeout: 10)
+        expect(receivedError).to(beNil())
+    }
+    
+    func performTransaction() {
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        self.backend.postReceiptPurchaserInfo = Purchases.PurchaserInfo()
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+    }
 
     func testFetchPurchaserInfoWhenCacheStale() {
         setupPurchases()
