@@ -27,8 +27,7 @@ Pod::Spec.new do |s|
 
 
   s.public_header_files = [
-    'Purchases/Public/*.h',
-    'Purchases/Purchases-swift.h'
+    'Purchases/Public/*.h'
   ]
 
 end
