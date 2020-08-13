@@ -6,7 +6,7 @@
 //  Copyright © 2020 Purchases. All rights reserved.
 //
 
-#if SWIFT_PACKAGE
+#ifndef EXPORTS_PUBLIC_SWIFT_FILES
 
 #import <Foundation/Foundation.h>
 
