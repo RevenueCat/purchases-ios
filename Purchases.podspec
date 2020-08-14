@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = '9.0'
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
-  
+
   s.source_files = ['Purchases/**/*.{swift,h,m}']
   s.exclude_files = ['Purchases/Public/SPMSwiftInterfaces']
 
