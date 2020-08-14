@@ -6,8 +6,6 @@
 //  Copyright © 2020 Purchases. All rights reserved.
 //
 
-#ifndef EXPORTS_PUBLIC_SWIFT_FILES
-
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -28,5 +26,3 @@ NS_SWIFT_NAME(Purchases.Transaction)
 @end
 
 NS_ASSUME_NONNULL_END
-
-#endif

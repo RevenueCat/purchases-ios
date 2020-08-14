@@ -22,9 +22,9 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = '9.0'
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
-  s.xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => 'EXPORTS_PUBLIC_SWIFT_FILES=1' }
   
   s.source_files = ['Purchases/**/*.{swift,h,m}']
+  s.exclude_files = ['Purchases/Public/SPMSwiftInterfaces']
 
   s.public_header_files = [
     'Purchases/Public/*.h'
