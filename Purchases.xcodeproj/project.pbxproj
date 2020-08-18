@@ -21,13 +21,16 @@
 		2DC5623124EC63730031F69B /* LocalReceiptParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1A28CC24AA6F81006BE931 /* LocalReceiptParser.swift */; };
 		2DC5623224EC63730031F69B /* TransactionsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597020F24BF6A710010506E /* TransactionsFactory.swift */; };
 		2DC5623324EC639A0031F69B /* PurchasesCoreSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* PurchasesCoreSwift.framework */; };
+		2DC5623624EC68090031F69B /* LocalReceiptParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD02D5A24AD129A00419CD9 /* LocalReceiptParserTests.swift */; };
+		2DC5623724EC68090031F69B /* TransactionsFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */; };
 		2DD02D5524AD011600419CD9 /* RCPurchasesSwiftImport.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DD02D5424AD00ED00419CD9 /* RCPurchasesSwiftImport.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2DD02D5724AD0B0500419CD9 /* RCIntroEligibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD02D5624AD0B0500419CD9 /* RCIntroEligibilityTests.swift */; };
-		2DD02D5B24AD129A00419CD9 /* LocalReceiptParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD02D5A24AD129A00419CD9 /* LocalReceiptParserTests.swift */; };
 		2DD448FF24088473002F5694 /* RCPurchases+SubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DD448FD24088473002F5694 /* RCPurchases+SubscriberAttributes.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2DD4490024088473002F5694 /* RCPurchases+SubscriberAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DD448FE24088473002F5694 /* RCPurchases+SubscriberAttributes.m */; };
 		2DD7BA4D24C63A830066B4C2 /* MockSystemInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD7BA4C24C63A830066B4C2 /* MockSystemInfo.swift */; };
 		2DDA3E4824DB101C00EDFE5B /* MockOperationDispatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35659EB530A5109AFAB50 /* MockOperationDispatcher.swift */; };
+		2DE63BB124EC7080001288D6 /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
+		2DE63BB224EC7080001288D6 /* OHHTTPStubs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDD71F7DF17F0065833D /* OHHTTPStubs.framework */; };
 		2DEB9767247DB46900A92099 /* RCISOPeriodFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DEB9766247DB46900A92099 /* RCISOPeriodFormatter.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2DEB976B247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DEB976A247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift */; };
 		350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */ = {isa = PBXBuildFile; fileRef = 350FBDE71F7EEF070065833D /* RCPurchases.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -46,7 +49,6 @@
 		3585D6A422E680E30079E2C5 /* RCPackage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3585D6A222E680E30079E2C5 /* RCPackage.m */; };
 		3589D15424C219BE00A65CBB /* AttributionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3589D15324C219BE00A65CBB /* AttributionFetcherTests.swift */; };
 		3589D15624C21DBD00A65CBB /* RCAttributionFetcher+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 3589D15524C21DBD00A65CBB /* RCAttributionFetcher+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		3597021224BF6AAC0010506E /* TransactionsFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */; };
 		35B54E4622EA6F11005918B1 /* RCEntitlementInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B54E4522EA6F11005918B1 /* RCEntitlementInfo.m */; };
 		35B54E4822EA6F4E005918B1 /* RCEntitlementInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4722EA6F4E005918B1 /* RCEntitlementInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35B54E4A22EA6FBD005918B1 /* RCEntitlementInfos.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -373,6 +375,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				2DC5621F24EC63430031F69B /* PurchasesCoreSwift.framework in Frameworks */,
+				2DE63BB124EC7080001288D6 /* Nimble.framework in Frameworks */,
+				2DE63BB224EC7080001288D6 /* OHHTTPStubs.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -443,6 +447,8 @@
 		2DC5622224EC63430031F69B /* PurchasesCoreSwiftTests */ = {
 			isa = PBXGroup;
 			children = (
+				354235D624C11160008C84EE /* Purchasing */,
+				2DD02D5924AD128A00419CD9 /* LocalReceiptParsing */,
 				2DC5622324EC63430031F69B /* PurchasesCoreSwiftTests.swift */,
 				2DC5622524EC63430031F69B /* Info.plist */,
 			);
@@ -459,8 +465,6 @@
 		2DD02D5824AD128000419CD9 /* SwiftSources */ = {
 			isa = PBXGroup;
 			children = (
-				354235D624C11160008C84EE /* Purchasing */,
-				2DD02D5924AD128A00419CD9 /* LocalReceiptParsing */,
 			);
 			path = SwiftSources;
 			sourceTree = "<group>";
@@ -903,6 +907,7 @@
 				2DC5621A24EC63430031F69B /* Sources */,
 				2DC5621B24EC63430031F69B /* Frameworks */,
 				2DC5621C24EC63430031F69B /* Resources */,
+				2DE63BB024EC700E001288D6 /* Copy Carthage Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1036,6 +1041,26 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		2DE63BB024EC700E001288D6 /* Copy Carthage Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/iOS/Nimble.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/OHHTTPStubs.framework",
+			);
+			name = "Copy Carthage Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
+		};
 		35DFC68420B875B6004584CC /* Copy Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1070,7 +1095,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2DC5623724EC68090031F69B /* TransactionsFactoryTests.swift in Sources */,
 				2DC5622424EC63430031F69B /* PurchasesCoreSwiftTests.swift in Sources */,
+				2DC5623624EC68090031F69B /* LocalReceiptParserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1137,7 +1164,6 @@
 				37E35DD380900220C34BB222 /* MockTransaction.swift in Sources */,
 				37E3554836D4DA9336B9FA70 /* MockProductDiscount.swift in Sources */,
 				37E35398FCB4931573C56CAF /* MockReceiptFetcher.swift in Sources */,
-				3597021224BF6AAC0010506E /* TransactionsFactoryTests.swift in Sources */,
 				37E35F20FB949985BEEB4B58 /* MockRequestFetcher.swift in Sources */,
 				37E35AD0B0D9EF0CDA29DAC2 /* MockStoreKitWrapper.swift in Sources */,
 				37E35EBDFC5CD3068E1792A3 /* MockNotificationCenter.swift in Sources */,
@@ -1168,7 +1194,6 @@
 				37E35F0387D0ADE014186924 /* ProductInfoExtractorTests.swift in Sources */,
 				37E351505CB4764821451E27 /* ProductInfoExtensions.swift in Sources */,
 				37E3599326581376E0142EEC /* SystemInfoTests.swift in Sources */,
-				2DD02D5B24AD129A00419CD9 /* LocalReceiptParserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1196,6 +1221,7 @@
 		2DC5622824EC63430031F69B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -1206,24 +1232,28 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = PurchasesCoreSwift/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesCoreSwift;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
 			name = Debug;
 		};
 		2DC5622924EC63430031F69B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -1234,15 +1264,18 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = PurchasesCoreSwift/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesCoreSwift;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
 			name = Release;
 		};
@@ -1254,9 +1287,14 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = PurchasesCoreSwiftTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesCoreSwiftTests;
@@ -1266,6 +1304,8 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 6.2;
 			};
 			name = Debug;
 		};
@@ -1277,15 +1317,22 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = PurchasesCoreSwiftTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesCoreSwiftTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 6.2;
 			};
 			name = Release;
 		};
@@ -1427,6 +1474,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 6.2;
 			};
 			name = Debug;
 		};
@@ -1458,6 +1506,7 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 6.2;
 			};
 			name = Release;
 		};
@@ -1472,8 +1521,9 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				INFOPLIST_FILE = PurchasesTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.purchases.PurchasesTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -1484,6 +1534,8 @@
 				SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 6.2;
 			};
 			name = Debug;
 		};
@@ -1498,8 +1550,9 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				INFOPLIST_FILE = PurchasesTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = com.purchases.PurchasesTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -1509,6 +1562,8 @@
 				SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 6.2;
 			};
 			name = Release;
 		};
