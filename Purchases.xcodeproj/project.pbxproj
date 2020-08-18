@@ -22,6 +22,7 @@
 		2DC5623224EC63730031F69B /* TransactionsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597020F24BF6A710010506E /* TransactionsFactory.swift */; };
 		2DC5623624EC68090031F69B /* LocalReceiptParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD02D5A24AD129A00419CD9 /* LocalReceiptParserTests.swift */; };
 		2DC5623724EC68090031F69B /* TransactionsFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */; };
+		2DC5623824EC7DF70031F69B /* RCTransaction.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D604CA224E5BF37004821DC /* RCTransaction.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2DD02D5524AD011600419CD9 /* RCPurchasesSwiftImport.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DD02D5424AD00ED00419CD9 /* RCPurchasesSwiftImport.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2DD02D5724AD0B0500419CD9 /* RCIntroEligibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD02D5624AD0B0500419CD9 /* RCIntroEligibilityTests.swift */; };
 		2DD448FF24088473002F5694 /* RCPurchases+SubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DD448FD24088473002F5694 /* RCPurchases+SubscriberAttributes.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -421,14 +422,6 @@
 			path = LocalReceiptParsing;
 			sourceTree = "<group>";
 		};
-		2D39A9FD24E7053300F067E6 /* SPMSwiftInterfaces */ = {
-			isa = PBXGroup;
-			children = (
-				2D604CA224E5BF37004821DC /* RCTransaction.h */,
-			);
-			path = SPMSwiftInterfaces;
-			sourceTree = "<group>";
-		};
 		2D5033202406E4C7009CAE61 /* SubscriberAttributes */ = {
 			isa = PBXGroup;
 			children = (
@@ -529,7 +522,7 @@
 				35B54E4722EA6F4E005918B1 /* RCEntitlementInfo.h */,
 				35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */,
 				35B54E4B22EA6FD3005918B1 /* RCEntitlementInfos.m */,
-				2D39A9FD24E7053300F067E6 /* SPMSwiftInterfaces */,
+				2D604CA224E5BF37004821DC /* RCTransaction.h */,
 			);
 			path = Public;
 			sourceTree = "<group>";
@@ -872,6 +865,7 @@
 				37E3500156786798CB166571 /* RCPurchases+Protected.h in Headers */,
 				37E35D757DE82291BFFCFB91 /* RCOfferings+Protected.h in Headers */,
 				37E35E3CFED4426C0EE1302C /* RCOffering+Protected.h in Headers */,
+				2DC5623824EC7DF70031F69B /* RCTransaction.h in Headers */,
 				37E354AFE06A9723230E47B8 /* RCInMemoryCachedObject+Protected.h in Headers */,
 				37E35C7C3BADD6D1BBAE7129 /* RCSubscriberAttribute+Protected.h in Headers */,
 				37E353E6011160108235023C /* RCAttributionData.h in Headers */,
