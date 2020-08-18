@@ -33,9 +33,8 @@
 #import "RCProductInfo.h"
 #import "RCProductInfoExtractor.h"
 #import "RCIntroEligibility+Protected.h"
-#import "RCPurchasesSwiftImport.h"
-#import "RCLocalReceiptParser.h"
-#import "RCOperationDispatcher.h"
+@import PurchasesCoreSwift;
+
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self dispatch:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);

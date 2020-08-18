@@ -18,9 +18,9 @@ internal enum IntroEligibilityStatus: Int {
          eligible
 }
 
-@objc(RCLocalReceiptParser) internal class LocalReceiptParser: NSObject {
+@objc(RCLocalReceiptParser) public class LocalReceiptParser: NSObject {
     
-    @objc internal func checkTrialOrIntroductoryPriceEligibility(withData data: Data,
+    @objc public func checkTrialOrIntroductoryPriceEligibility(withData data: Data,
                                                                  productIdentifiers: [String],
                                                                  completion: ([String : Int], Error?) -> Void) {
         completion([:], NSError(domain: "This method hasn't been implemented yet",

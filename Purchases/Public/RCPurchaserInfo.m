@@ -11,8 +11,7 @@
 #import "RCEntitlementInfos.h"
 #import "RCEntitlementInfos+Protected.h"
 #import "RCEntitlementInfo.h"
-#import "RCPurchasesSwiftImport.h"
-#import "RCTransactionsFactory.h"
+@import PurchasesCoreSwift;
 
 @interface RCPurchaserInfo ()
 

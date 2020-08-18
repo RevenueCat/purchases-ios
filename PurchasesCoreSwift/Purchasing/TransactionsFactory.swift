@@ -8,9 +8,9 @@
 
 import Foundation
 
-@objc(RCTransactionsFactory) internal class TransactionsFactory: NSObject {
+@objc(RCTransactionsFactory) public class TransactionsFactory: NSObject {
     
-    @objc internal func nonSubscriptionTransactions(withSubscriptionsData subscriptionsData: [String: [[String: Any]]],
+    @objc public func nonSubscriptionTransactions(withSubscriptionsData subscriptionsData: [String: [[String: Any]]],
                                                     dateFormatter: DateFormatter) -> [Transaction] {
         subscriptionsData.flatMap { (productId: String, transactionData: [[String: Any]]) -> [Transaction] in
             transactionData.map {
