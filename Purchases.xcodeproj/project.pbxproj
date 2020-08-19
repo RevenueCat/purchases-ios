@@ -1246,7 +1246,6 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesCoreSwift;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -1277,7 +1276,6 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesCoreSwift;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
 				SWIFT_VERSION = 5.0;
