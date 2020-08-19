@@ -55,8 +55,10 @@
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES"
       notificationPayloadFile = "WatchExample Extension/PushNotificationPayload.apns">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <RemoteRunnable
+         runnableDebuggingMode = "2"
+         BundleIdentifier = "com.apple.Carousel"
+         RemotePath = "/SwiftExample">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
@@ -64,7 +66,7 @@
             BlueprintName = "WatchExample"
             ReferencedContainer = "container:SwiftExample.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </RemoteRunnable>
       <StoreKitConfigurationFileReference
          identifier = "../Configuration.storekit">
       </StoreKitConfigurationFileReference>
@@ -75,8 +77,10 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <RemoteRunnable
+         runnableDebuggingMode = "2"
+         BundleIdentifier = "com.apple.Carousel"
+         RemotePath = "/SwiftExample">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
@@ -84,7 +88,16 @@
             BlueprintName = "WatchExample"
             ReferencedContainer = "container:SwiftExample.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </RemoteRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
+            BuildableName = "WatchExample.app"
+            BlueprintName = "WatchExample"
+            ReferencedContainer = "container:SwiftExample.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
