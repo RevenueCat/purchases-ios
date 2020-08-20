@@ -18,23 +18,12 @@ import Foundation
         workerQueue = DispatchQueue(label: "OperationDispatcherWorkerQueue")
     }
     
-    @objc public func dispatchOnMainThreadIfSet(_ block: (() -> Void)?) {
-        if let block = block {
-            dispatchOnMainThread {
-                block()
-            }
-        }
-    }
     @objc public func dispatchOnMainThread(_ block: @escaping () -> Void) {
         if Thread.isMainThread {
             block()
         } else {
             mainQueue.async { block() }
         }
-    }
-
-    @objc public func dispatchOnSameThreadIfSet(_ block: () -> Void) {
-        block()
     }
 
     @objc public func dispatchOnWorkerThread(_ block: @escaping () -> Void) {
