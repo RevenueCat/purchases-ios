@@ -83,19 +83,24 @@ platform :ios do
   desc "Make build"
   lane :make_build do |options|
     platforms = [
-      "appletvos",
-      "appletvsimulator",
-      "watchos",
-      "watchsimulator",
-      "iphoneos",
-      "appletvos",
-      "iphonesimulator",
-      "macosx"
-    ]
-    for platform in platforms do
-      gym(archive_path: "./builds/archives/" + platform,
-          sdk: platform)
-    end
+        'iOS',
+        'macOS',
+        'tvOS',
+        'watchOS'
+      ]
+    output_directory = './builds/xcframeworks'
+
+    create_xcframework(
+      destinations: platforms,
+      scheme: 'PurchasesCoreSwift',
+      xcframework_output_directory: output_directory
+    )
+
+    create_xcframework(
+      destinations: platforms,
+      scheme: 'Purchases',
+      xcframework_output_directory: output_directory
+    )
   end
 
 end

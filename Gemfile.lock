@@ -109,6 +109,7 @@ GEM
       xcodeproj (>= 1.8.1, < 2.0.0)
       xcpretty (~> 0.3.0)
       xcpretty-travis-formatter (>= 0.0.3)
+    fastlane-plugin-create_xcframework (1.0.0)
     ffi (1.12.2)
     fourflusher (2.3.1)
     fuzzy_match (2.0.4)
@@ -231,6 +232,7 @@ PLATFORMS
 DEPENDENCIES
   cocoapods
   fastlane
+  fastlane-plugin-create_xcframework
   jazzy
 
 BUNDLED WITH
