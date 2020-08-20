@@ -53,9 +53,9 @@ extension ProductsManager: SKProductsRequestDelegate {
         queue.async { [self] in
             NSLog("products request received response")
             guard let requestProducts = self.productsByRequests[request] else { fatalError("couldn't find request") }
-            guard let completionBlocks = self.completionHandlers[
-                requestProducts
-                ] else { fatalError("couldn't find completion") }
+            guard let completionBlocks = self.completionHandlers[requestProducts] else {
+                fatalError("couldn't find completion")
+            }
             self.completionHandlers.removeValue(forKey: requestProducts)
             self.productsByRequests.removeValue(forKey: request)
 
