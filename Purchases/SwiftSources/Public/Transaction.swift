@@ -8,18 +8,13 @@
 
 import Foundation
 
-@objc(RCTransaction) internal class Transaction: NSObject {
+@objc(RCTransaction) public class Transaction: NSObject {
 
-    @available(*, unavailable, message: "Use init(transactionId, productId, purchaseDate) instead")
-    override init() {
-        fatalError("init() has not been implemented")
-    }
+    @objc public let revenueCatId: String
+    @objc public let productId: String
+    @objc public let purchaseDate: Date
 
-    let revenueCatId: String
-    let productId: String
-    let purchaseDate: Date
-
-    init(transactionId: String, productId: String, purchaseDate: Date) {
+    @objc public init(transactionId: String, productId: String, purchaseDate: Date) {
         self.revenueCatId = transactionId
         self.productId = productId
         self.purchaseDate = purchaseDate
