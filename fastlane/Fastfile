@@ -54,9 +54,7 @@ platform :ios do
       fail "please add a CHANGELOG.latest.md file before calling this lane"
     end
 
-    xcframeworks_zip_path = "builds/xcframeworks.zip"
-
-    export_xcframeworks()
+    xcframeworks_zip_path = export_xcframeworks(output_directory: "builds/xcframeworks")
 
     set_github_release(
       repository_name: "revenuecat/purchases-ios",
@@ -86,14 +84,15 @@ platform :ios do
 
   desc "Export XCFrameworks"
   lane :export_xcframeworks do |options|
+    output_directory = options[:output_directory]
+    fail ArgumentError, "missing output directory" unless output_directory
+
     platforms = [
         'iOS',
         'macOS',
         'tvOS',
         'watchOS'
       ]
-    output_directory = './builds/xcframeworks'
-
     create_xcframework(
       destinations: platforms,
       scheme: 'PurchasesCoreSwift',
@@ -106,10 +105,10 @@ platform :ios do
       xcframework_output_directory: output_directory
     )
 
-    xcframeworks_zip_path = "builds/xcframeworks.zip"
-    zip(path: "builds/xcframeworks/",
+    xcframeworks_zip_path = output_directory + ".zip"
+    zip(path: output_directory,
         output_path: xcframeworks_zip_path)
-
+    return xcframeworks_zip_path
   end
 
 end
