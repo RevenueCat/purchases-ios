@@ -257,7 +257,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   identityManager:(RCIdentityManager *)identityManager
       subscriberAttributesManager:(RCSubscriberAttributesManager *)subscriberAttributesManager
               operationDispatcher:(RCOperationDispatcher *)operationDispatcher
-       introEligibilityCalculator:(RCIntroEligibilityCalculator *)introEligibilityCalculator  {
+       introEligibilityCalculator:(RCIntroEligibilityCalculator *)introEligibilityCalculator {
     if (self = [super init]) {
         RCDebugLog(@"Debug logging enabled.");
         RCDebugLog(@"SDK Version - %@", self.class.frameworkVersion);

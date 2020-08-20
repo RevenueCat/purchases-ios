@@ -10,7 +10,7 @@ enum ASN1Class: UInt8 {
 }
 
 enum ASN1Identifier: UInt8, CaseIterable {
-    case endOfContent = 0x00
+    case endOfContent = 0
     case boolean = 1
     case integer = 2
     case bitString = 3

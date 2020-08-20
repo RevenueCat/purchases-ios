@@ -38,16 +38,18 @@ import StoreKit
         }
         do {
             let receipt = try receiptParser.parse(from: receiptData)
-            let purchasedProductIdsWithIntroOffers = receipt.purchasedIntroOfferOrFreeTrialProductIdentifiers()
+            let purchasedProductIdsWithIntroOffersOrFreeTrials = receipt.purchasedIntroOfferOrFreeTrialProductIdentifiers()
             
-            let allProductIdentifiers = candidateProductIdentifiers.union(purchasedProductIdsWithIntroOffers)
+            let allProductIdentifiers = candidateProductIdentifiers.union(purchasedProductIdsWithIntroOffersOrFreeTrials)
             
             productsManager.products(withIdentifiers: allProductIdentifiers) { allProducts in
-                let purchasedProductsWithIntroOffers = allProducts.filter { purchasedProductIdsWithIntroOffers.contains($0.productIdentifier) }
+                let purchasedProductsWithIntroOffersOrFreeTrials = allProducts.filter {
+                    purchasedProductIdsWithIntroOffersOrFreeTrials.contains($0.productIdentifier)
+                }
                 let candidateProducts = allProducts.filter { candidateProductIdentifiers.contains($0.productIdentifier) }
                 
                 let eligibility: [String: NSNumber] = self.checkIntroEligibility(candidateProducts: candidateProducts,
-                                                                                 purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffers)
+                                                                                 purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffersOrFreeTrials)
                 result.merge(eligibility) { (_, new) in new }
                 
                 completion(result, nil)

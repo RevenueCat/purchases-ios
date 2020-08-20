@@ -84,13 +84,15 @@ private extension ASN1ContainerBuilder {
 
         let firstByteValue = Int(firstByte.valueInRange(from: 1, to: 7))
 
+        var bytesUsedForLength = 1
         if isShortLength {
-            return ASN1Length(value: firstByteValue, bytesUsedForLength: 1)
+            return ASN1Length(value: firstByteValue, bytesUsedForLength: bytesUsedForLength)
         } else {
-            let totalLengthOctets = firstByteValue
-            let lengthBytes = data.dropFirst().prefix(totalLengthOctets)
+            let totalLengthBytes = firstByteValue
+            bytesUsedForLength += totalLengthBytes
+            let lengthBytes = data.dropFirst().prefix(totalLengthBytes)
             let lengthValue = lengthBytes.toInt()
-            return ASN1Length(value: lengthValue, bytesUsedForLength: totalLengthOctets + 1)
+            return ASN1Length(value: lengthValue, bytesUsedForLength: bytesUsedForLength)
         }
     }
 }
