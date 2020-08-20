@@ -35,7 +35,7 @@ jobs:
           name: Run tests
           command: fastlane scan
           environment:
-            SCAN_SCHEME: All tests
+            SCAN_SCHEME: All Tests
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
