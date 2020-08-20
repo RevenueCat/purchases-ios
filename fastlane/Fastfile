@@ -80,6 +80,24 @@ platform :ios do
     Spaceship::Tunes::SandboxTester.create!(email: email, password: password)
   end
 
+  desc "Make build"
+  lane :make_build do |options|
+    platforms = [
+      "appletvos",
+      "appletvsimulator",
+      "watchos",
+      "watchsimulator",
+      "iphoneos",
+      "appletvos",
+      "iphonesimulator",
+      "macosx"
+    ]
+    for platform in platforms do
+      gym(archive_path: "./builds/archives/" + platform,
+          sdk: platform)
+    end
+  end
+
 end
 
 def increment_build_number(previous_version_number, new_version_number, file_path)
