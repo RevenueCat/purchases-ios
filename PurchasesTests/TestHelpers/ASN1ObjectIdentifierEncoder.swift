@@ -36,7 +36,7 @@ private extension ASN1ObjectIdentifierEncoder {
     func encodeNumber(_ number: Int) -> [UInt8] {
         let numberAsBinaryString = String(number, radix: 2)
         let numberAsListOfBinaryStrings = splitNumbersStringIntoGroups(ofLength: 7, string: numberAsBinaryString)
-        let bytes = convertStringArrayToBytes(numberAsListOfBinaryStrings)
+        let bytes = stringArrayToBytes(numberAsListOfBinaryStrings)
         let encodedBytes = listByAddingOneToTheFirstBitOfAllButLast(numbers: bytes)
         return encodedBytes
     }
@@ -64,7 +64,7 @@ private extension ASN1ObjectIdentifierEncoder {
         return numbers.dropLast().map { $0 | (1 << 7) } + [lastNumber]
     }
 
-    func convertStringArrayToBytes(_ stringArray: [String]) -> [UInt8] {
+    func stringArrayToBytes(_ stringArray: [String]) -> [UInt8] {
         stringArray.map { stringToBytes($0) }
     }
 
