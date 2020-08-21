@@ -27,4 +27,9 @@ class ISO3601DateFormatterTests: XCTestCase {
         guard let stringAsBytes = "some string that isn't a date".data(using: .ascii) else { fatalError() }
         expect(ISO3601DateFormatter.shared.date(fromBytes: ArraySlice(stringAsBytes))).to(beNil())
     }
+    
+    func testDateFromBytesReturnsNilIfEmptyData() {
+        expect(ISO3601DateFormatter.shared.date(fromBytes: ArraySlice(Data()))).to(beNil())
+    }
+
 }
