@@ -62,12 +62,12 @@ class AppleReceiptBuilderTests: XCTestCase {
 
     func testBuildGetsExpiresDate() {
         let expirationDate = Date.from(year: 2020, month: 7, day: 4, hour: 5, minute: 3, second: 2)
-        let expirationDateContainer = containerFactory
-            .receiptAttributeContainer(attributeType: ReceiptAttributeType.expirationDate,
-                                            expirationDate)
+        let expirationDateContainer =
+            containerFactory.receiptAttributeContainer(attributeType: ReceiptAttributeType.expirationDate,
+                                                       expirationDate)
+        let receiptContainer =
+            containerFactory.receiptContainerFromContainers(containers: minimalAttributes() + [expirationDateContainer])
 
-        let receiptContainer = containerFactory
-            .receiptContainerFromContainers(containers: minimalAttributes() + [expirationDateContainer])
         let receipt = try! self.appleReceiptBuilder.build(fromContainer: receiptContainer)
         expect(receipt.expirationDate) == expirationDate
     }

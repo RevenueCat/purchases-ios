@@ -169,10 +169,10 @@ class ASN1ContainerBuilderTests: XCTestCase {
         let subContainer1InternalPayload = Array(repeating: UInt8(0b1), count: 4)
         let subContainer2InternalPayload = Array(repeating: UInt8(0b1), count: 6)
         let subContainer1Payload: [UInt8] = [UInt8(0b1),
-                                             UInt8(UInt8(subContainer1InternalPayload.count))]
+                                             UInt8(subContainer1InternalPayload.count)]
                                              + subContainer1InternalPayload
         let subContainer2Payload: [UInt8] = [UInt8(0b1),
-                                             UInt8(UInt8(subContainer2InternalPayload.count))]
+                                             UInt8(subContainer2InternalPayload.count)]
                                              + subContainer2InternalPayload
 
         let containerPayload: [UInt8] = [constructedEncodingByte, // id byte
