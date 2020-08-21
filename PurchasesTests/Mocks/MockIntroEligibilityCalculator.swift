@@ -24,11 +24,8 @@ class MockIntroEligibilityCalculator: Purchases.IntroEligibilityCalculator {
                                                            completion: @escaping ([String: NSNumber], Error?) -> ()) {
         invokedCheckTrialOrIntroductoryPriceEligibility = true
         invokedCheckTrialOrIntroductoryPriceEligibilityCount += 1
-        invokedCheckTrialOrIntroductoryPriceEligibilityParameters = (
-            receiptData,
-            candidateProductIdentifiers)
-        invokedCheckTrialOrIntroductoryPriceEligibilityParametersList.append(
-            (receiptData, candidateProductIdentifiers))
+        invokedCheckTrialOrIntroductoryPriceEligibilityParameters = (receiptData, candidateProductIdentifiers)
+        invokedCheckTrialOrIntroductoryPriceEligibilityParametersList.append((receiptData, candidateProductIdentifiers))
         if let result = stubbedCheckTrialOrIntroductoryPriceEligibilityCompletionResult {
             completion(result.0, result.1)
         }

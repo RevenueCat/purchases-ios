@@ -9,10 +9,11 @@ class UInt8ExtensionsTests: XCTestCase {
         expect(UInt8(0b10000000).bitAtIndex(0)) == 1
         expect(UInt8(0b10000000).bitAtIndex(1)) == 0
         expect(UInt8(0b00100000).bitAtIndex(2)) == 1
-        expect(UInt8(0b11111111).bitAtIndex(3)) == 1
+        expect(UInt8(0b00010100).bitAtIndex(3)) == 1
         expect(UInt8(0b01100000).bitAtIndex(4)) == 0
         expect(UInt8(0b10001111).bitAtIndex(5)) == 1
         expect(UInt8(0b10000000).bitAtIndex(6)) == 0
+        expect(UInt8(0b10000001).bitAtIndex(7)) == 1
     }
 
     func testBitAtIndexRaisesIfInvalidIndex() {
