@@ -10,7 +10,7 @@ import Foundation
 import XCTest
 import Nimble
 
-@testable import Purchases
+@testable import PurchasesCoreSwift
 
 class ReceiptParsingRealReceiptTests: XCTestCase {
     
@@ -25,6 +25,8 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(receipt.originalApplicationVersion) == "1.0"
         expect(receipt.creationDate) == Date(timeIntervalSince1970: 1595439548)
         expect(receipt.expirationDate).to(beNil())
+        
+        
     }
     
     func testInAppPurchasesAttributesForSample1() {

@@ -1,7 +1,8 @@
 import XCTest
 import Nimble
+import StoreKit
 
-@testable import Purchases
+@testable import PurchasesCoreSwift
 
 class ProductsManagerTests: XCTestCase {
     var productsRequestFactory: MockProductsRequestFactory!

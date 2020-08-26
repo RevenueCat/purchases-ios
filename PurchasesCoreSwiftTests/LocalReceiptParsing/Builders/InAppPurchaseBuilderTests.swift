@@ -7,7 +7,7 @@ import Foundation
 import XCTest
 import Nimble
 
-@testable import Purchases
+@testable import PurchasesCoreSwift
 
 class InAppPurchaseBuilderTests: XCTestCase {
     let quantity = 2

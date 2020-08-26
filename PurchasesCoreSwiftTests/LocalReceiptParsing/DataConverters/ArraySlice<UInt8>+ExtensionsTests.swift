@@ -1,7 +1,7 @@
 import XCTest
 import Nimble
 
-@testable import Purchases
+@testable import PurchasesCoreSwift
 
 class ArraySliceUInt8ExtensionsTests: XCTestCase {
     func testToUIntReturnsCorrectValue() {

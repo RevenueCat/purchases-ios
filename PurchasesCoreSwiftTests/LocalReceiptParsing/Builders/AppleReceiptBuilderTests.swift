@@ -1,7 +1,7 @@
 import XCTest
 import Nimble
 
-@testable import Purchases
+@testable import PurchasesCoreSwift
 
 class AppleReceiptBuilderTests: XCTestCase {
     let containerFactory = ContainerFactory()
