@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@testable import Purchases
+@testable import PurchasesCoreSwift
 
 class MockASN1ContainerBuilder: ASN1ContainerBuilder {
 

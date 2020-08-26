@@ -9,15 +9,12 @@
 /* Begin PBXBuildFile section */
 		2D0B060324D0C8F8007BB162 /* base64encodedreceiptsample1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2DDE559B24C8B5E300DCB087 /* base64encodedreceiptsample1.txt */; };
 		2D0B060524D0C8FF007BB162 /* verifyReceiptSample1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2DDE559A24C8B5E300DCB087 /* verifyReceiptSample1.txt */; };
-		2D33A66124D899AD00893BD4 /* UInt8+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3569FAC5F05C94DB5FE3B /* UInt8+ExtensionsTests.swift */; };
-		2D33A66224D8B67400893BD4 /* ASN1ContainerBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35CB72101C1CA642C101C /* ASN1ContainerBuilderTests.swift */; };
 		2D4C18A924F47E5000F268CD /* Purchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C18A824F47E4400F268CD /* Purchases.swift */; };
 		2D5033242406E4E8009CAE61 /* RCSubscriberAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033212406E4E8009CAE61 /* RCSubscriberAttribute.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D5033252406E4E8009CAE61 /* RCSubscriberAttribute.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D5033222406E4E8009CAE61 /* RCSubscriberAttribute.m */; };
 		2D5033262406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033232406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D50332A2406EA61009CAE61 /* RCSubscriberAttributesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D50332B2406EA61009CAE61 /* RCSubscriberAttributesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D5033282406EA61009CAE61 /* RCSubscriberAttributesManager.m */; };
-		2D8D134824DE0AE900B7EAE9 /* InAppPurchaseBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357B400D3028BC970DAC1 /* InAppPurchaseBuilderTests.swift */; };
 		2D8DB34B24072AAE00BE3D31 /* SubscriberAttributeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */; };
 		2DC5621F24EC63430031F69B /* PurchasesCoreSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* PurchasesCoreSwift.framework */; };
 		2DC5622624EC63430031F69B /* PurchasesCoreSwift.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DC5621824EC63430031F69B /* PurchasesCoreSwift.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -48,6 +45,27 @@
 		2DDF41BA24F6F392005BC22D /* ISO3601DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41B724F6F392005BC22D /* ISO3601DateFormatter.swift */; };
 		2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41B824F6F392005BC22D /* UInt8+Extensions.swift */; };
 		2DDF41BC24F6F392005BC22D /* ArraySlice<UInt8>+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41B924F6F392005BC22D /* ArraySlice<UInt8>+Extensions.swift */; };
+		2DDF41C824F6F4C3005BC22D /* ISO3601DateFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41BE24F6F4C3005BC22D /* ISO3601DateFormatterTests.swift */; };
+		2DDF41C924F6F4C3005BC22D /* UInt8+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41BF24F6F4C3005BC22D /* UInt8+ExtensionsTests.swift */; };
+		2DDF41CA24F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C024F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift */; };
+		2DDF41CB24F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C224F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift */; };
+		2DDF41CC24F6F4C3005BC22D /* AppleReceiptBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C324F6F4C3005BC22D /* AppleReceiptBuilderTests.swift */; };
+		2DDF41CD24F6F4C3005BC22D /* ASN1ContainerBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C424F6F4C3005BC22D /* ASN1ContainerBuilderTests.swift */; };
+		2DDF41CE24F6F4C3005BC22D /* InAppPurchaseBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C524F6F4C3005BC22D /* InAppPurchaseBuilderTests.swift */; };
+		2DDF41CF24F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C724F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift */; };
+		2DDF41DA24F6F4DB005BC22D /* ReceiptParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E351D0EBC4698E1D3585A6 /* ReceiptParserTests.swift */; };
+		2DDF41DB24F6F4DB005BC22D /* IntroEligibilityCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */; };
+		2DDF41DC24F6F4DB005BC22D /* ProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E351F0E21361EAEC078A0D /* ProductsManagerTests.swift */; };
+		2DDF41DE24F6F527005BC22D /* MockAppleReceiptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C1554F296F7F1317747 /* MockAppleReceiptBuilder.swift */; };
+		2DDF41DF24F6F527005BC22D /* MockProductsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C9439E087F63ECC4F59 /* MockProductsManager.swift */; };
+		2DDF41E024F6F527005BC22D /* MockInAppPurchaseBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E355744D64075AA91342DE /* MockInAppPurchaseBuilder.swift */; };
+		2DDF41E124F6F527005BC22D /* MockReceiptParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B13440508B46C9A530 /* MockReceiptParser.swift */; };
+		2DDF41E224F6F527005BC22D /* MockProductsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35B08709090FBBFB16EBD /* MockProductsRequest.swift */; };
+		2DDF41E324F6F527005BC22D /* MockASN1ContainerBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E351EB3689AF304E5B1031 /* MockASN1ContainerBuilder.swift */; };
+		2DDF41E424F6F527005BC22D /* MockProductsRequestFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35F783903362B65FB7AF3 /* MockProductsRequestFactory.swift */; };
+		2DDF41E624F6F5DC005BC22D /* MockSKProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E524F6F5DC005BC22D /* MockSKProduct.swift */; };
+		2DDF41E824F6F61B005BC22D /* MockSKDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E724F6F61B005BC22D /* MockSKDiscount.swift */; };
+		2DDF41EA24F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E924F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift */; };
 		2DE63BB124EC7080001288D6 /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
 		2DE63BB224EC7080001288D6 /* OHHTTPStubs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDD71F7DF17F0065833D /* OHHTTPStubs.framework */; };
 		2DE63BB324EC73F3001288D6 /* PurchasesCoreSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* PurchasesCoreSwift.framework */; };
@@ -80,17 +98,13 @@
 		35DFC68620B87646004584CC /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
 		35DFC68720B87646004584CC /* OHHTTPStubs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDD71F7DF17F0065833D /* OHHTTPStubs.framework */; };
 		37E3500156786798CB166571 /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E352DAD631B3A45C041148 /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		37E350064866FDD37B6E6BA9 /* MockAppleReceiptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C1554F296F7F1317747 /* MockAppleReceiptBuilder.swift */; };
 		37E35010ECA71A4CE6E16307 /* RCDeviceCache+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35DCFDBDCD33B531395A6 /* RCDeviceCache+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35024A14FBDD9A5DF0B7C /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E35548F15DE7CFFCE3AA8A /* NSLocale+RCExtensions.m */; };
 		37E3503FD7AB94A85A397EF3 /* RCHTTPStatusCodes.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35331DBA29B3C17D0F507 /* RCHTTPStatusCodes.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E3506DF4FDFCE5CA75B057 /* RCProductInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E35FDC209D3F4C38791BDE /* RCProductInfo.m */; };
-		37E350940C1C75D6DFFB3F94 /* ISO3601DateFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E352A24623FB706B93D9F1 /* ISO3601DateFormatterTests.swift */; };
-		37E35096F00109F827375249 /* MockProductsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C9439E087F63ECC4F59 /* MockProductsManager.swift */; };
 		37E3509E9E39B1FFE93351B1 /* NSError+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35D12020065BE7D6E473D /* NSError+RCExtensions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E350AAD0BAE521A7F94846 /* RCAttributionFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E35166EE0877FCCD3C0C2D /* RCAttributionFetcher.m */; };
 		37E351505CB4764821451E27 /* ProductInfoExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3583675928C01D92E3166 /* ProductInfoExtensions.swift */; };
-		37E3515B3BCEADD0C3B07470 /* MockASN1ContainerBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E351EB3689AF304E5B1031 /* MockASN1ContainerBuilder.swift */; };
 		37E351A24D613F0DFE6AF05F /* MockBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35645928A0009F4C105A7 /* MockBackend.swift */; };
 		37E351AB03EE37534CA10B59 /* MockInMemoryCachedOfferings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C5A65AAF701DED59800 /* MockInMemoryCachedOfferings.swift */; };
 		37E351B84EBE06E2F370A835 /* RCISOPeriodFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E35CC6289D46E544F5F006 /* RCISOPeriodFormatter.m */; };
@@ -98,7 +112,6 @@
 		37E351F90612047842AFF1A6 /* ProductInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E350E57B0A393455A72B40 /* ProductInfoTests.swift */; };
 		37E3524628A1D7568679FEE2 /* SusbcriberAttributesManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3567E972B9B04FE079ABA /* SusbcriberAttributesManagerTests.swift */; };
 		37E3524CB70618E6C5F3DB49 /* MockPurchasesDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35838A7FD36982EE14100 /* MockPurchasesDelegate.swift */; };
-		37E352554834F52537E5704F /* ReceiptParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E351D0EBC4698E1D3585A6 /* ReceiptParserTests.swift */; };
 		37E352897F7CB3A122F9739F /* PurchasesSubscriberAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3508E52201122137D4B4A /* PurchasesSubscriberAttributesTests.swift */; };
 		37E352BAA55C31B1E278CA8A /* RCLogUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E352229DFDDA008BB029C2 /* RCLogUtils.m */; };
 		37E352E86A182E92130B823C /* RCIntroEligibility+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E359D128E667D950598853 /* RCIntroEligibility+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -116,18 +129,14 @@
 		37E354AFE06A9723230E47B8 /* RCInMemoryCachedObject+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35A6246A6969C7236B29B /* RCInMemoryCachedObject+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E354BE25CE61E55E4FD89C /* MockDeviceCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354BEB8FDE39CAB7C4D69 /* MockDeviceCache.swift */; };
 		37E354C46A8A3C2DC861C224 /* MockHTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35292137BBF2810CE4F4B /* MockHTTPClient.swift */; };
-		37E354D42DC8EEA3D195CD2C /* MockProductsRequestFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35F783903362B65FB7AF3 /* MockProductsRequestFactory.swift */; };
 		37E354E0A9A371481540B2B0 /* MockAttributionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E351CD1EE6B897F434EA40 /* MockAttributionFetcher.swift */; };
 		37E354F65C32F553F4697C0E /* RCBackend.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35A6E091B8CD9C967383C /* RCBackend.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E3554836D4DA9336B9FA70 /* MockProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3572040A16F10B957563A /* MockProductDiscount.swift */; };
 		37E3555F3FB596CAB8F46868 /* BackendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E358BF58C99AC39073B96C /* BackendTests.swift */; };
 		37E3556DD7FB5317A43086CC /* NSDate+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E3521D9235DD78BFEE8AC4 /* NSDate+RCExtensions.m */; };
-		37E355DF6C7226308E3B0BD0 /* ArraySlice<UInt8>+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E352E5B4549BB61C286B0D /* ArraySlice<UInt8>+ExtensionsTests.swift */; };
 		37E355E7EB509047724841F4 /* BackendSubscriberAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357F69438004E1F443C03 /* BackendSubscriberAttributesTests.swift */; };
-		37E3560FE1D909EA2559FF5B /* ProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E351F0E21361EAEC078A0D /* ProductsManagerTests.swift */; };
 		37E35616A3D5D204B8BB2503 /* RCStoreKitWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E359B77C1E588C9C009D2B /* RCStoreKitWrapper.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E356538C6A9A05887CAE12 /* NSError+RCExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E353AF2CAD3CEDE6D9B368 /* NSError+RCExtensionsTests.swift */; };
-		37E3566468428D32D732D625 /* MockReceiptParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B13440508B46C9A530 /* MockReceiptParser.swift */; };
 		37E3567EAB98594B4912E305 /* RCLogUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35EB9B60477A7AD2C2EB5 /* RCLogUtils.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E356E4DA9961A36D16F6E3 /* NSLocale+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3528315F4F007250F62B2 /* NSLocale+RCExtensions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E357301A5D15C0E90C9BD3 /* RCProductInfoExtractor.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35BC489985F613020035D /* RCProductInfoExtractor.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -158,7 +167,6 @@
 		37E35AF213F2F79CB067FDC2 /* InMemoryCachedObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35E3250FBBB03D92E06EC /* InMemoryCachedObjectTests.swift */; };
 		37E35B1F34D1624509012749 /* MockSubscriberAttributesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E351D48260D9DC8B1EE360 /* MockSubscriberAttributesManager.swift */; };
 		37E35B4BDE7D7B1EFB3EE800 /* NSError+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E35088AB7C4F7A242D3ED5 /* NSError+RCExtensions.m */; };
-		37E35BD808CF7DE8960ACFBE /* ASN1ObjectIdentifierBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C8542B5C9C2749040D0 /* ASN1ObjectIdentifierBuilderTests.swift */; };
 		37E35BDDC331C3A5FF72CFFF /* RCStoreKitRequestFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E351CDC94FE0A49A3DAAB3 /* RCStoreKitRequestFetcher.m */; };
 		37E35BE05E2A8BB2BD310CB0 /* RCHTTPClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E356C39D29EB6C8EC2D6BD /* RCHTTPClient.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35C1B3C0170F15FC920F5 /* RCPackage+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35DF0786134609B68FA23 /* RCPackage+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -177,13 +185,11 @@
 		37E35E3A834982B03BC633BC /* StoreKitRequestFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35A6260C44FCBFF4CBB49 /* StoreKitRequestFetcherTests.swift */; };
 		37E35E3CFED4426C0EE1302C /* RCOffering+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E357C8623F79A4F0BEE213 /* RCOffering+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35E41EAB29106B74B5FB3 /* NSDate+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E355AE6CB674484555D1AC /* NSDate+RCExtensions.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		37E35E835B0D043B78CCFBD3 /* MockProductsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35B08709090FBBFB16EBD /* MockProductsRequest.swift */; };
 		37E35E9CEC36E93AF682D012 /* RCPromotionalOffer+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35D29AD7BE9B81DBF6907 /* RCPromotionalOffer+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35EA1E0F41A8A53236C4B /* RCSystemInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E353471F474D9092560033 /* RCSystemInfo.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35EA8EA9D49FD95778CC9 /* NSData+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35097C6785A4A89DEBB18 /* NSData+RCExtensions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35EACCCC014F719E63D5F /* RCAttributionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E351D1C68CCD8A82FB105D /* RCAttributionData.m */; };
 		37E35EB1B9FE3F739B8C0D71 /* RCDateProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E35F1729999CFCA36E877D /* RCDateProvider.m */; };
-		37E35EB2CCADA3EA3BCAEBA5 /* MockInAppPurchaseBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E355744D64075AA91342DE /* MockInAppPurchaseBuilder.swift */; };
 		37E35EB7B35C86140B96C58B /* MockUserManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3571B552018D47A6ED7C6 /* MockUserManager.swift */; };
 		37E35EBDFC5CD3068E1792A3 /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35A0D4A561C51185F82EB /* MockNotificationCenter.swift */; };
 		37E35EDA5BAF7112FC2EAFC2 /* ContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35092F0E41512E0D610BA /* ContainerFactory.swift */; };
@@ -193,7 +199,6 @@
 		37E35F20B49BCE1B6D76B084 /* RCStoreKitRequestFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35804C14F5E6CEAF3909C /* RCStoreKitRequestFetcher.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35F20FB949985BEEB4B58 /* MockRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35609E46E869675A466C1 /* MockRequestFetcher.swift */; };
 		37E35F549AEB655AB6DA83B3 /* MockSKDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35EABF6D7AFE367718784 /* MockSKDiscount.swift */; };
-		37E35F89A7F467364EAF5640 /* AppleReceiptBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3553A641AADCAFE25AB3D /* AppleReceiptBuilderTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -247,7 +252,6 @@
 		2D8F622224D30F9D00F993AA /* ReceiptParsingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptParsingError.swift; sourceTree = "<group>"; };
 		2D97458E24BDFCEF006245E9 /* IntroEligibilityCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroEligibilityCalculator.swift; sourceTree = "<group>"; };
 		2DA0068E24E2E515002C59D3 /* MockIntroEligibilityCalculator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockIntroEligibilityCalculator.swift; sourceTree = "<group>"; };
-		2DA5A4B024DC8AD1000D2932 /* ReceiptParsing+TestsWithRealReceipts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReceiptParsing+TestsWithRealReceipts.swift"; sourceTree = "<group>"; };
 		2DC5621624EC63420031F69B /* PurchasesCoreSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PurchasesCoreSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DC5621824EC63430031F69B /* PurchasesCoreSwift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PurchasesCoreSwift.h; sourceTree = "<group>"; };
 		2DC5621924EC63430031F69B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -271,6 +275,17 @@
 		2DDF41B724F6F392005BC22D /* ISO3601DateFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ISO3601DateFormatter.swift; sourceTree = "<group>"; };
 		2DDF41B824F6F392005BC22D /* UInt8+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UInt8+Extensions.swift"; sourceTree = "<group>"; };
 		2DDF41B924F6F392005BC22D /* ArraySlice<UInt8>+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ArraySlice<UInt8>+Extensions.swift"; sourceTree = "<group>"; };
+		2DDF41BE24F6F4C3005BC22D /* ISO3601DateFormatterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ISO3601DateFormatterTests.swift; sourceTree = "<group>"; };
+		2DDF41BF24F6F4C3005BC22D /* UInt8+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UInt8+ExtensionsTests.swift"; sourceTree = "<group>"; };
+		2DDF41C024F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ArraySlice<UInt8>+ExtensionsTests.swift"; sourceTree = "<group>"; };
+		2DDF41C224F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASN1ObjectIdentifierBuilderTests.swift; sourceTree = "<group>"; };
+		2DDF41C324F6F4C3005BC22D /* AppleReceiptBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppleReceiptBuilderTests.swift; sourceTree = "<group>"; };
+		2DDF41C424F6F4C3005BC22D /* ASN1ContainerBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASN1ContainerBuilderTests.swift; sourceTree = "<group>"; };
+		2DDF41C524F6F4C3005BC22D /* InAppPurchaseBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InAppPurchaseBuilderTests.swift; sourceTree = "<group>"; };
+		2DDF41C724F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ReceiptParsing+TestsWithRealReceipts.swift"; sourceTree = "<group>"; };
+		2DDF41E524F6F5DC005BC22D /* MockSKProduct.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockSKProduct.swift; sourceTree = "<group>"; };
+		2DDF41E724F6F61B005BC22D /* MockSKDiscount.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockSKDiscount.swift; sourceTree = "<group>"; };
+		2DDF41E924F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SKProductSubscriptionDurationExtensions.swift; sourceTree = "<group>"; };
 		2DEB9766247DB46900A92099 /* RCISOPeriodFormatter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCISOPeriodFormatter.h; sourceTree = "<group>"; };
 		2DEB976A247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKProductSubscriptionDurationExtensions.swift; sourceTree = "<group>"; };
 		2DEC0CFB24A2A1B100B0E5BB /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = SOURCE_ROOT; };
@@ -334,11 +349,9 @@
 		37E3524E3032ABC72467AA43 /* RCDeviceCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCDeviceCache.h; sourceTree = "<group>"; };
 		37E3528315F4F007250F62B2 /* NSLocale+RCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSLocale+RCExtensions.h"; sourceTree = "<group>"; };
 		37E35292137BBF2810CE4F4B /* MockHTTPClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockHTTPClient.swift; sourceTree = "<group>"; };
-		37E352A24623FB706B93D9F1 /* ISO3601DateFormatterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ISO3601DateFormatterTests.swift; sourceTree = "<group>"; };
 		37E352B11676F7DC51559E84 /* MockReceiptFetcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockReceiptFetcher.swift; sourceTree = "<group>"; };
 		37E352CB6BD9FE3D1F4946C5 /* RCOfferingsFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCOfferingsFactory.h; sourceTree = "<group>"; };
 		37E352DAD631B3A45C041148 /* RCPurchases+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCPurchases+Protected.h"; sourceTree = "<group>"; };
-		37E352E5B4549BB61C286B0D /* ArraySlice<UInt8>+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ArraySlice<UInt8>+ExtensionsTests.swift"; sourceTree = "<group>"; };
 		37E352F86A0A8EB05BAD77C4 /* StoreKitWrapperTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoreKitWrapperTests.swift; sourceTree = "<group>"; };
 		37E352FDEEAD2E4EA0D2C16B /* RCDateProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCDateProvider.h; sourceTree = "<group>"; };
 		37E35331DBA29B3C17D0F507 /* RCHTTPStatusCodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCHTTPStatusCodes.h; sourceTree = "<group>"; };
@@ -355,7 +368,6 @@
 		37E354E2E660D610B9CD4FA2 /* RCReceiptFetcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCReceiptFetcher.h; sourceTree = "<group>"; };
 		37E354FA06E2FDFB81EE3937 /* RCProductInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCProductInfo.h; sourceTree = "<group>"; };
 		37E3550C031F1FD95B366998 /* MockTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockTransaction.swift; sourceTree = "<group>"; };
-		37E3553A641AADCAFE25AB3D /* AppleReceiptBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppleReceiptBuilderTests.swift; sourceTree = "<group>"; };
 		37E35548F15DE7CFFCE3AA8A /* NSLocale+RCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSLocale+RCExtensions.m"; sourceTree = "<group>"; };
 		37E3555B4BE0A4F7222E7B00 /* MockOfferingsFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockOfferingsFactory.swift; sourceTree = "<group>"; };
 		37E355744D64075AA91342DE /* MockInAppPurchaseBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockInAppPurchaseBuilder.swift; sourceTree = "<group>"; };
@@ -367,14 +379,12 @@
 		37E3567189CF6A746EE3CCC2 /* DateExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateExtensions.swift; sourceTree = "<group>"; };
 		37E3567271C2172DA3ED1B16 /* RCAttributionData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCAttributionData.h; sourceTree = "<group>"; };
 		37E3567E972B9B04FE079ABA /* SusbcriberAttributesManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SusbcriberAttributesManagerTests.swift; sourceTree = "<group>"; };
-		37E3569FAC5F05C94DB5FE3B /* UInt8+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UInt8+ExtensionsTests.swift"; sourceTree = "<group>"; };
 		37E356C39D29EB6C8EC2D6BD /* RCHTTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCHTTPClient.h; sourceTree = "<group>"; };
 		37E356F4B9FCED933CD9C1CA /* RCDeviceCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCDeviceCache.m; sourceTree = "<group>"; };
 		37E3571B552018D47A6ED7C6 /* MockUserManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockUserManager.swift; sourceTree = "<group>"; };
 		37E3572040A16F10B957563A /* MockProductDiscount.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockProductDiscount.swift; sourceTree = "<group>"; };
 		37E3578BD602C7B8E2274279 /* MockDateProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockDateProvider.swift; sourceTree = "<group>"; };
 		37E357AE7E003DACF1635491 /* RCPromotionalOffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPromotionalOffer.h; sourceTree = "<group>"; };
-		37E357B400D3028BC970DAC1 /* InAppPurchaseBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InAppPurchaseBuilderTests.swift; sourceTree = "<group>"; };
 		37E357C2D977BBB081216B5F /* OfferingsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingsTests.swift; sourceTree = "<group>"; };
 		37E357C8623F79A4F0BEE213 /* RCOffering+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCOffering+Protected.h"; sourceTree = "<group>"; };
 		37E357D16038F07915D7825D /* MockUserDefaults.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockUserDefaults.swift; sourceTree = "<group>"; };
@@ -407,9 +417,7 @@
 		37E35C5A65AAF701DED59800 /* MockInMemoryCachedOfferings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockInMemoryCachedOfferings.swift; sourceTree = "<group>"; };
 		37E35C6CBB3229AA53ECEB58 /* RCInMemoryCachedObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCInMemoryCachedObject.h; sourceTree = "<group>"; };
 		37E35C7060D7E486F5958BED /* ProductsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProductsManager.swift; sourceTree = "<group>"; };
-		37E35C8542B5C9C2749040D0 /* ASN1ObjectIdentifierBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASN1ObjectIdentifierBuilderTests.swift; sourceTree = "<group>"; };
 		37E35C9439E087F63ECC4F59 /* MockProductsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockProductsManager.swift; sourceTree = "<group>"; };
-		37E35CB72101C1CA642C101C /* ASN1ContainerBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASN1ContainerBuilderTests.swift; sourceTree = "<group>"; };
 		37E35CC6289D46E544F5F006 /* RCISOPeriodFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCISOPeriodFormatter.m; sourceTree = "<group>"; };
 		37E35CE6628D07BD2C4A07C0 /* RCStoreKitWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCStoreKitWrapper.m; sourceTree = "<group>"; };
 		37E35CF71E13B58F4AC8998F /* RCPurchasesErrorUtils+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCPurchasesErrorUtils+Protected.h"; sourceTree = "<group>"; };
@@ -501,14 +509,6 @@
 			path = SubscriberAttributes;
 			sourceTree = "<group>";
 		};
-		2DA5A4AF24DC8AAD000D2932 /* TestsAgainstRealReceipts */ = {
-			isa = PBXGroup;
-			children = (
-				2DA5A4B024DC8AD1000D2932 /* ReceiptParsing+TestsWithRealReceipts.swift */,
-			);
-			path = TestsAgainstRealReceipts;
-			sourceTree = "<group>";
-		};
 		2DC5621724EC63420031F69B /* PurchasesCoreSwift */ = {
 			isa = PBXGroup;
 			children = (
@@ -526,6 +526,7 @@
 		2DC5622224EC63430031F69B /* PurchasesCoreSwiftTests */ = {
 			isa = PBXGroup;
 			children = (
+				2DDF41DD24F6F4F9005BC22D /* Mocks */,
 				2DC5622524EC63430031F69B /* Info.plist */,
 				354235D624C11160008C84EE /* Purchasing */,
 				2DD02D5924AD128A00419CD9 /* LocalReceiptParsing */,
@@ -544,9 +545,9 @@
 		2DD02D5924AD128A00419CD9 /* LocalReceiptParsing */ = {
 			isa = PBXGroup;
 			children = (
-				2DA5A4AF24DC8AAD000D2932 /* TestsAgainstRealReceipts */,
-				37E354D3E31C6FDB3073641A /* DataConverters */,
-				37E35C3FD4A36981CEBFD229 /* Builders */,
+				2DDF41C124F6F4C3005BC22D /* Builders */,
+				2DDF41BD24F6F4C3005BC22D /* DataConverters */,
+				2DDF41C624F6F4C3005BC22D /* TestsAgainstRealReceipts */,
 				37E351D0EBC4698E1D3585A6 /* ReceiptParserTests.swift */,
 			);
 			path = LocalReceiptParsing;
@@ -576,6 +577,52 @@
 				2DDE559B24C8B5E300DCB087 /* base64encodedreceiptsample1.txt */,
 			);
 			path = receipts;
+			sourceTree = "<group>";
+		};
+		2DDF41BD24F6F4C3005BC22D /* DataConverters */ = {
+			isa = PBXGroup;
+			children = (
+				2DDF41BE24F6F4C3005BC22D /* ISO3601DateFormatterTests.swift */,
+				2DDF41BF24F6F4C3005BC22D /* UInt8+ExtensionsTests.swift */,
+				2DDF41C024F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift */,
+			);
+			path = DataConverters;
+			sourceTree = "<group>";
+		};
+		2DDF41C124F6F4C3005BC22D /* Builders */ = {
+			isa = PBXGroup;
+			children = (
+				2DDF41C224F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift */,
+				2DDF41C324F6F4C3005BC22D /* AppleReceiptBuilderTests.swift */,
+				2DDF41C424F6F4C3005BC22D /* ASN1ContainerBuilderTests.swift */,
+				2DDF41C524F6F4C3005BC22D /* InAppPurchaseBuilderTests.swift */,
+			);
+			path = Builders;
+			sourceTree = "<group>";
+		};
+		2DDF41C624F6F4C3005BC22D /* TestsAgainstRealReceipts */ = {
+			isa = PBXGroup;
+			children = (
+				2DDF41C724F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift */,
+			);
+			path = TestsAgainstRealReceipts;
+			sourceTree = "<group>";
+		};
+		2DDF41DD24F6F4F9005BC22D /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				2DDF41E924F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift */,
+				2DDF41E724F6F61B005BC22D /* MockSKDiscount.swift */,
+				2DDF41E524F6F5DC005BC22D /* MockSKProduct.swift */,
+				37E355744D64075AA91342DE /* MockInAppPurchaseBuilder.swift */,
+				37E35C1554F296F7F1317747 /* MockAppleReceiptBuilder.swift */,
+				37E351EB3689AF304E5B1031 /* MockASN1ContainerBuilder.swift */,
+				37E35C9439E087F63ECC4F59 /* MockProductsManager.swift */,
+				37E354B13440508B46C9A530 /* MockReceiptParser.swift */,
+				37E35F783903362B65FB7AF3 /* MockProductsRequestFactory.swift */,
+				37E35B08709090FBBFB16EBD /* MockProductsRequest.swift */,
+			);
+			path = Mocks;
 			sourceTree = "<group>";
 		};
 		350FBDD61F7DF1640065833D /* Frameworks */ = {
@@ -733,13 +780,6 @@
 				37E35EABF6D7AFE367718784 /* MockSKDiscount.swift */,
 				2DD7BA4C24C63A830066B4C2 /* MockSystemInfo.swift */,
 				37E35659EB530A5109AFAB50 /* MockOperationDispatcher.swift */,
-				37E355744D64075AA91342DE /* MockInAppPurchaseBuilder.swift */,
-				37E35C1554F296F7F1317747 /* MockAppleReceiptBuilder.swift */,
-				37E351EB3689AF304E5B1031 /* MockASN1ContainerBuilder.swift */,
-				37E35C9439E087F63ECC4F59 /* MockProductsManager.swift */,
-				37E354B13440508B46C9A530 /* MockReceiptParser.swift */,
-				37E35F783903362B65FB7AF3 /* MockProductsRequestFactory.swift */,
-				37E35B08709090FBBFB16EBD /* MockProductsRequest.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -785,16 +825,6 @@
 				37E35ABEE9FD79CCA64E4F8B /* NSData+RCExtensionsTests.swift */,
 			);
 			path = FoundationExtensions;
-			sourceTree = "<group>";
-		};
-		37E354D3E31C6FDB3073641A /* DataConverters */ = {
-			isa = PBXGroup;
-			children = (
-				37E3569FAC5F05C94DB5FE3B /* UInt8+ExtensionsTests.swift */,
-				37E352E5B4549BB61C286B0D /* ArraySlice<UInt8>+ExtensionsTests.swift */,
-				37E352A24623FB706B93D9F1 /* ISO3601DateFormatterTests.swift */,
-			);
-			path = DataConverters;
 			sourceTree = "<group>";
 		};
 		37E35555C264F76E6CFFC2C8 /* Purchasing */ = {
@@ -890,17 +920,6 @@
 				37E35BC489985F613020035D /* RCProductInfoExtractor.h */,
 			);
 			path = Purchasing;
-			sourceTree = "<group>";
-		};
-		37E35C3FD4A36981CEBFD229 /* Builders */ = {
-			isa = PBXGroup;
-			children = (
-				37E35CB72101C1CA642C101C /* ASN1ContainerBuilderTests.swift */,
-				37E3553A641AADCAFE25AB3D /* AppleReceiptBuilderTests.swift */,
-				37E357B400D3028BC970DAC1 /* InAppPurchaseBuilderTests.swift */,
-				37E35C8542B5C9C2749040D0 /* ASN1ObjectIdentifierBuilderTests.swift */,
-			);
-			path = Builders;
 			sourceTree = "<group>";
 		};
 		37E35E77A60AC8D3F0E1A23D /* SubscriberAttributes */ = {
@@ -1282,7 +1301,28 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2DDF41E824F6F61B005BC22D /* MockSKDiscount.swift in Sources */,
+				2DDF41CB24F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift in Sources */,
+				2DDF41CF24F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift in Sources */,
+				2DDF41C924F6F4C3005BC22D /* UInt8+ExtensionsTests.swift in Sources */,
+				2DDF41CA24F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift in Sources */,
+				2DDF41DB24F6F4DB005BC22D /* IntroEligibilityCalculatorTests.swift in Sources */,
+				2DDF41E124F6F527005BC22D /* MockReceiptParser.swift in Sources */,
+				2DDF41E224F6F527005BC22D /* MockProductsRequest.swift in Sources */,
+				2DDF41CC24F6F4C3005BC22D /* AppleReceiptBuilderTests.swift in Sources */,
+				2DDF41CD24F6F4C3005BC22D /* ASN1ContainerBuilderTests.swift in Sources */,
+				2DDF41DC24F6F4DB005BC22D /* ProductsManagerTests.swift in Sources */,
+				2DDF41C824F6F4C3005BC22D /* ISO3601DateFormatterTests.swift in Sources */,
+				2DDF41E624F6F5DC005BC22D /* MockSKProduct.swift in Sources */,
+				2DDF41DE24F6F527005BC22D /* MockAppleReceiptBuilder.swift in Sources */,
+				2DDF41E324F6F527005BC22D /* MockASN1ContainerBuilder.swift in Sources */,
+				2DDF41DA24F6F4DB005BC22D /* ReceiptParserTests.swift in Sources */,
+				2DDF41DF24F6F527005BC22D /* MockProductsManager.swift in Sources */,
 				2DC5623724EC68090031F69B /* TransactionsFactoryTests.swift in Sources */,
+				2DDF41EA24F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift in Sources */,
+				2DDF41CE24F6F4C3005BC22D /* InAppPurchaseBuilderTests.swift in Sources */,
+				2DDF41E424F6F527005BC22D /* MockProductsRequestFactory.swift in Sources */,
+				2DDF41E024F6F527005BC22D /* MockInAppPurchaseBuilder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1334,7 +1374,6 @@
 			files = (
 				2D8DB34B24072AAE00BE3D31 /* SubscriberAttributeTests.swift in Sources */,
 				3589D15424C219BE00A65CBB /* AttributionFetcherTests.swift in Sources */,
-				2D33A66224D8B67400893BD4 /* ASN1ContainerBuilderTests.swift in Sources */,
 				2DEB976B247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift in Sources */,
 				37E354BE25CE61E55E4FD89C /* MockDeviceCache.swift in Sources */,
 				37E3585E0B39722838F235BD /* MockUserDefaults.swift in Sources */,
@@ -1342,7 +1381,6 @@
 				37E351E3AC0B5F67305B4CB6 /* DeviceCacheTests.swift in Sources */,
 				37E35AF213F2F79CB067FDC2 /* InMemoryCachedObjectTests.swift in Sources */,
 				37E353851D42047D5B0A57D0 /* MockDateProvider.swift in Sources */,
-				2D33A66124D899AD00893BD4 /* UInt8+ExtensionsTests.swift in Sources */,
 				37E355E7EB509047724841F4 /* BackendSubscriberAttributesTests.swift in Sources */,
 				2DD02D5724AD0B0500419CD9 /* RCIntroEligibilityTests.swift in Sources */,
 				37E354C46A8A3C2DC861C224 /* MockHTTPClient.swift in Sources */,
@@ -1352,7 +1390,6 @@
 				37E35DD380900220C34BB222 /* MockTransaction.swift in Sources */,
 				37E3554836D4DA9336B9FA70 /* MockProductDiscount.swift in Sources */,
 				37E35398FCB4931573C56CAF /* MockReceiptFetcher.swift in Sources */,
-				2D8D134824DE0AE900B7EAE9 /* InAppPurchaseBuilderTests.swift in Sources */,
 				37E35F20FB949985BEEB4B58 /* MockRequestFetcher.swift in Sources */,
 				37E35AD0B0D9EF0CDA29DAC2 /* MockStoreKitWrapper.swift in Sources */,
 				37E35EBDFC5CD3068E1792A3 /* MockNotificationCenter.swift in Sources */,
@@ -1383,21 +1420,8 @@
 				37E35F0387D0ADE014186924 /* ProductInfoExtractorTests.swift in Sources */,
 				37E351505CB4764821451E27 /* ProductInfoExtensions.swift in Sources */,
 				37E3599326581376E0142EEC /* SystemInfoTests.swift in Sources */,
-				37E355DF6C7226308E3B0BD0 /* ArraySlice<UInt8>+ExtensionsTests.swift in Sources */,
-				37E350940C1C75D6DFFB3F94 /* ISO3601DateFormatterTests.swift in Sources */,
-				37E35F89A7F467364EAF5640 /* AppleReceiptBuilderTests.swift in Sources */,
-				37E35BD808CF7DE8960ACFBE /* ASN1ObjectIdentifierBuilderTests.swift in Sources */,
-				37E35EB2CCADA3EA3BCAEBA5 /* MockInAppPurchaseBuilder.swift in Sources */,
-				37E352554834F52537E5704F /* ReceiptParserTests.swift in Sources */,
-				37E350064866FDD37B6E6BA9 /* MockAppleReceiptBuilder.swift in Sources */,
-				37E3515B3BCEADD0C3B07470 /* MockASN1ContainerBuilder.swift in Sources */,
 				37E35AB21E374E375F60E92A /* ASN1ObjectIdentifierEncoder.swift in Sources */,
 				37E35EDA5BAF7112FC2EAFC2 /* ContainerFactory.swift in Sources */,
-				37E35096F00109F827375249 /* MockProductsManager.swift in Sources */,
-				37E3566468428D32D732D625 /* MockReceiptParser.swift in Sources */,
-				37E354D42DC8EEA3D195CD2C /* MockProductsRequestFactory.swift in Sources */,
-				37E3560FE1D909EA2559FF5B /* ProductsManagerTests.swift in Sources */,
-				37E35E835B0D043B78CCFBD3 /* MockProductsRequest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

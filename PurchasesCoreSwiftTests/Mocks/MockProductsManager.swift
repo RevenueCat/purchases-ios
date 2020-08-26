@@ -4,8 +4,8 @@
 //
 
 import Foundation
-
-@testable import Purchases
+import StoreKit
+@testable import PurchasesCoreSwift
 
 class MockProductsManager: ProductsManager {
 

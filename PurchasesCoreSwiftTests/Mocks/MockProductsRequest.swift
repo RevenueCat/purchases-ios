@@ -4,6 +4,8 @@
 //
 
 import Foundation
+import StoreKit
+@testable import PurchasesCoreSwift
 
 class MockProductResponse: SKProductsResponse {
     var mockProducts: [MockSKProduct]
