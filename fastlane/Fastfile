@@ -54,6 +54,8 @@ platform :ios do
       fail "please add a CHANGELOG.latest.md file before calling this lane"
     end
 
+    xcframeworks_zip_path = export_xcframeworks(output_directory: "builds/xcframeworks")
+
     set_github_release(
       repository_name: "revenuecat/purchases-ios",
       api_token: ENV["GITHUB_TOKEN"],
@@ -61,8 +63,8 @@ platform :ios do
       tag_name: "#{release_version}",
       description: changelog,
       commitish: "master",
-      upload_assets: ["CarthageUploads/Purchases.framework.zip"],
-      is_draft: true
+      upload_assets: ["CarthageUploads/Purchases.framework.zip", xcframeworks_zip_path],
+      is_draft: false
   )
   end
 
@@ -78,6 +80,35 @@ platform :ios do
     Spaceship::Tunes.login()
     
     Spaceship::Tunes::SandboxTester.create!(email: email, password: password)
+  end
+
+  desc "Export XCFrameworks"
+  lane :export_xcframeworks do |options|
+    output_directory = options[:output_directory]
+    fail ArgumentError, "missing output directory" unless output_directory
+
+    platforms = [
+        'iOS',
+        'macOS',
+        'tvOS',
+        'watchOS'
+      ]
+    create_xcframework(
+      destinations: platforms,
+      scheme: 'PurchasesCoreSwift',
+      xcframework_output_directory: output_directory
+    )
+
+    create_xcframework(
+      destinations: platforms,
+      scheme: 'Purchases',
+      xcframework_output_directory: output_directory
+    )
+
+    xcframeworks_zip_path = output_directory + ".zip"
+    zip(path: output_directory,
+        output_path: xcframeworks_zip_path)
+    return xcframeworks_zip_path
   end
 
 end

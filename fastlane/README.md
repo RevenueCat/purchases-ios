@@ -12,7 +12,7 @@ Install _fastlane_ using
 ```
 [sudo] gem install fastlane -NV
 ```
-or alternatively using `brew install fastlane`
+or alternatively using `brew cask install fastlane`
 
 # Available Actions
 ## iOS
@@ -41,6 +41,11 @@ Make github release
 fastlane ios create_sandbox_account
 ```
 Create sandbox account
+### ios export_xcframeworks
+```
+fastlane ios export_xcframeworks
+```
+Export XCFrameworks
 
 ----
 
