@@ -670,10 +670,10 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         if (data != nil && data.length > 0) {
             if (@available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)) {
                 NSSet *productIdentifiersSet = [[NSSet alloc] initWithArray:productIdentifiers];
-                [self.introEligibilityCalculator checkTrialOrIntroductoryPriceEligibilityWithData:data
-                                                                               productIdentifiers:productIdentifiersSet
-                                                                                       completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,
-                                                                                                    NSError * _Nullable error) {
+                [self.introEligibilityCalculator checkTrialOrIntroductoryPriceEligibilityWith:data
+                                                                           productIdentifiers:productIdentifiersSet
+                                                                                   completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,
+                                                                                                NSError * _Nullable error) {
                     if (!error) {
                         NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
                         

@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import StoreKit
 
 class ProductsRequestFactory {
     func request(productIdentifiers: Set<String>) -> SKProductsRequest {

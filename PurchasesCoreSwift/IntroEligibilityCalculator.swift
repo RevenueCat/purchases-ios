@@ -9,11 +9,11 @@
 import Foundation
 import StoreKit
 
-@objc(RCIntroEligibilityCalculator) class IntroEligibilityCalculator: NSObject {
+@objc(RCIntroEligibilityCalculator) public class IntroEligibilityCalculator: NSObject {
     private let productsManager: ProductsManager
     private let receiptParser: ReceiptParser
     
-    override init() {
+    @objc public override init() {
         self.productsManager = ProductsManager()
         self.receiptParser = ReceiptParser()
     }
@@ -25,9 +25,9 @@ import StoreKit
     }
     
     @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
-    @objc func checkTrialOrIntroductoryPriceEligibility(with receiptData: Data,
-                                                        productIdentifiers candidateProductIdentifiers: Set<String>,
-                                                        completion: @escaping ([String: NSNumber], Error?) -> Void) {
+    @objc public func checkTrialOrIntroductoryPriceEligibility(with receiptData: Data,
+                                                               productIdentifiers candidateProductIdentifiers: Set<String>,
+                                                               completion: @escaping ([String: NSNumber], Error?) -> Void) {
         guard candidateProductIdentifiers.count > 0 else {
             completion([:], nil)
             return
