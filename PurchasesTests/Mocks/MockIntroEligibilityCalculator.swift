@@ -8,8 +8,9 @@
 
 import Foundation
 @testable import Purchases
+@testable import PurchasesCoreSwift
 
-class MockIntroEligibilityCalculator: Purchases.IntroEligibilityCalculator {
+class MockIntroEligibilityCalculator: PurchasesCoreSwift.IntroEligibilityCalculator {
 
     var invokedCheckTrialOrIntroductoryPriceEligibility = false
     var invokedCheckTrialOrIntroductoryPriceEligibilityCount = 0

@@ -20,6 +20,20 @@
                ReferencedContainer = "container:Purchases.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "2DC5621D24EC63430031F69B"
+               BuildableName = "PurchasesCoreSwiftTests.xctest"
+               BlueprintName = "PurchasesCoreSwiftTests"
+               ReferencedContainer = "container:Purchases.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction

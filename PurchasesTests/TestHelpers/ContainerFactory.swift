@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@testable import Purchases
+@testable import PurchasesCoreSwift
 
 class ContainerFactory {
     private let objectIdentifierEncoder = ASN1ObjectIdentifierEncoder()

@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@testable import Purchases
+@testable import PurchasesCoreSwift
 
 class ASN1ObjectIdentifierEncoder {
     func objectIdentifierPayload(_ objectIdentifier: ASN1ObjectIdentifier) -> ArraySlice<UInt8> {
