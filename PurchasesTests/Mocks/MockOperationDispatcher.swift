@@ -5,14 +5,14 @@
 
 import Foundation
 
-import Purchases
+@testable import PurchasesCoreSwift
 
 class MockOperationDispatcher: OperationDispatcher {
-    override func dispatch(onMainThread block: @escaping () -> ()) {
+    override func dispatchOnMainThread(_ block: @escaping () -> Void) {
         block()
     }
 
-    override func dispatch(onWorkerThread block: @escaping () -> ()) {
+    override func dispatchOnWorkerThread(_ block: @escaping () -> Void) {
         block()
     }
 }

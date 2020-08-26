@@ -92,16 +92,17 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
         expect(self.updatedTransactions).to(contain(transaction))
     }
     
+    @available(iOS 11.0, *)
     func testCallsDelegateWhenPromoPurchaseIsAvailable() {
         let product = SKProduct.init();
         let payment = SKPayment.init(product: product)
         
         wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
-        
         expect(self.promoPayment).to(be(payment));
         expect(self.promoProduct).to(be(product))
     }
     
+    @available(iOS 11.0, *)
     func testPromoDelegateMethodPassesBackReturnValueFromOwnDelegate() {
         let product = SKProduct.init();
         let payment = SKPayment.init(product: product)

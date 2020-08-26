@@ -8,7 +8,8 @@
 
 import XCTest
 import Nimble
-@testable import Purchases
+import Purchases
+@testable import PurchasesCoreSwift
 
 class RCIntroEligibilityTests: XCTestCase {
     func testInitWithEligibilityStatusCodeUnknown() {

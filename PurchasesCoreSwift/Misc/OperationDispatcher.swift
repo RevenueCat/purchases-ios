@@ -8,24 +8,24 @@
 
 import Foundation
 
-@objc(RCOperationDispatcher) class OperationDispatcher: NSObject {
+@objc(RCOperationDispatcher) public class OperationDispatcher: NSObject {
     
     private let mainQueue: DispatchQueue
     private let workerQueue: DispatchQueue
     
-    override init() {
+    @objc public override init() {
         mainQueue = DispatchQueue.main
         workerQueue = DispatchQueue(label: "OperationDispatcherWorkerQueue")
     }
     
-    @objc func dispatchOnMainThreadIfSet(_ block: (() -> Void)?) {
+    @objc public func dispatchOnMainThreadIfSet(_ block: (() -> Void)?) {
         if let block = block {
             dispatchOnMainThread {
                 block()
             }
         }
     }
-    @objc func dispatchOnMainThread(_ block: @escaping () -> Void) {
+    @objc public func dispatchOnMainThread(_ block: @escaping () -> Void) {
         if Thread.isMainThread {
             block()
         } else {
@@ -33,11 +33,11 @@ import Foundation
         }
     }
 
-    @objc func dispatchOnSameThreadIfSet(_ block: () -> Void) {
+    @objc public func dispatchOnSameThreadIfSet(_ block: () -> Void) {
         block()
     }
 
-    @objc func dispatchOnWorkerThread(_ block: @escaping () -> Void) {
+    @objc public func dispatchOnWorkerThread(_ block: @escaping () -> Void) {
         workerQueue.async { block() }
     }
 

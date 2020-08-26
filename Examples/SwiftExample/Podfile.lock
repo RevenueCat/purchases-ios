@@ -1,16 +1,22 @@
 PODS:
-  - Purchases (3.6.0-SNAPSHOT)
+  - Purchases (3.6.0-SNAPSHOT):
+    - PurchasesCoreSwift
+  - PurchasesCoreSwift (3.6.0-SNAPSHOT)
 
 DEPENDENCIES:
   - Purchases (from `../../`)
+  - PurchasesCoreSwift (from `../../`)
 
 EXTERNAL SOURCES:
   Purchases:
     :path: "../../"
+  PurchasesCoreSwift:
+    :path: "../../"
 
 SPEC CHECKSUMS:
-  Purchases: 3ed4a8d10503120cceb9b44ae794d150d4e57d45
+  Purchases: e3fcd9abe9f62befdd27e01d80507f5c2abfb090
+  PurchasesCoreSwift: 9d3843b7ce1032835428e0b5cb08296c6a74acb5
 
-PODFILE CHECKSUM: 0b953383523796d33de4db49d07a5c6e3a56c27e
+PODFILE CHECKSUM: abf85a7b493b4247cdd1f63fcaee462b025a5eed
 
 COCOAPODS: 1.9.3
