@@ -40,21 +40,21 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testInitializerCrashesIfNilParams() {
         expect(expression: {
             RCSubscriberAttributesManager(backend: nil,
-                    deviceCache: self.mockDeviceCache,
-                    attributionFetcher: self.mockAttributionFetcher)
+                                          deviceCache: self.mockDeviceCache,
+                                          attributionFetcher: self.mockAttributionFetcher)
         }
         ).to(raiseException())
 
         expect(expression: {
             RCSubscriberAttributesManager(backend: self.mockBackend,
-                    deviceCache: nil,
-                    attributionFetcher: self.mockAttributionFetcher)
+                                          deviceCache: nil,
+                                          attributionFetcher: self.mockAttributionFetcher)
         }).to(raiseException())
 
         expect(expression: {
             RCSubscriberAttributesManager(backend: self.mockBackend,
-                    deviceCache: self.mockDeviceCache,
-                    attributionFetcher: nil)
+                                          deviceCache: self.mockDeviceCache,
+                                          attributionFetcher: nil)
         }).to(raiseException())
     }
 
@@ -604,9 +604,9 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let adjustID = "adjustID"
 
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$adjustId",
-                value: "old_id",
-                isSynced: true,
-                setTime: oldSyncTime)
+                                                                                      value: "old_id",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
 
         self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
 

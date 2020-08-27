@@ -244,7 +244,8 @@ NS_SWIFT_NAME(reset(_:));
  */
 + (void)addAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
-          forNetworkUserId:(nullable NSString *)networkUserId NS_SWIFT_NAME(addAttributionData(_:from:forNetworkUserId:)) __attribute((deprecated("Use the set<NetworkId> functions instead.")));
+          forNetworkUserId:(nullable NSString *)networkUserId NS_SWIFT_NAME(addAttributionData(_:from:forNetworkUserId:))
+__attribute((deprecated("Use the set<NetworkId> functions instead.")));
 
 #pragma mark Purchases
 
