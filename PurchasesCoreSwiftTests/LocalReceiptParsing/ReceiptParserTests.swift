@@ -14,7 +14,8 @@ class ReceiptParserTests: XCTestCase {
         super.setUp()
         mockAppleReceiptBuilder = MockAppleReceiptBuilder()
         mockASN1ContainerBuilder = MockASN1ContainerBuilder()
-        receiptParser = ReceiptParser(containerBuilder: mockASN1ContainerBuilder,
+        receiptParser = ReceiptParser(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder(),
+                                      containerBuilder: mockASN1ContainerBuilder,
                                       receiptBuilder: mockAppleReceiptBuilder)
     }
 

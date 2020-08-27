@@ -628,7 +628,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         
         RCPurchaserInfo * _Nullable cachedPurchaserInfo = [self readPurchaserInfoFromCache];
         BOOL hasOriginalPurchaseDate = cachedPurchaserInfo != nil && cachedPurchaserInfo.originalPurchaseDate != nil;
-        BOOL receiptHasTransactions = NO; // TODO
+        BOOL receiptHasTransactions = [[[RCReceiptParser alloc] init] receiptHasTransactionsWithReceiptData:data];
         if (!receiptHasTransactions && hasOriginalPurchaseDate) {
             CALL_IF_SET_ON_MAIN_THREAD(completion, cachedPurchaserInfo, nil);
             return;
