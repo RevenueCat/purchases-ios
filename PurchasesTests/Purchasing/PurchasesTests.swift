@@ -16,6 +16,7 @@ class PurchasesTests: XCTestCase {
         systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockOperationDispatcher = MockOperationDispatcher()
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
+        mockReceiptParser = MockReceiptParser()
     }
 
     override func tearDown() {
@@ -186,7 +187,8 @@ class PurchasesTests: XCTestCase {
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
-    
+    var mockReceiptParser: MockReceiptParser!
+
     let purchasesDelegate = MockPurchasesDelegate()
 
     var purchases: Purchases!
@@ -194,53 +196,23 @@ class PurchasesTests: XCTestCase {
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.identityManager.mockIsAnonymous = false
-        
-        purchases = Purchases(appUserID: identityManager.currentAppUserID,
-                              requestFetcher: requestFetcher,
-                              receiptFetcher: receiptFetcher,
-                              attributionFetcher: attributionFetcher,
-                              backend: backend,
-                              storeKitWrapper: storeKitWrapper,
-                              notificationCenter: notificationCenter,
-                              userDefaults: userDefaults,
-                              systemInfo: systemInfo,
-                              offeringsFactory: offeringsFactory,
-                              deviceCache: deviceCache,
-                              identityManager: identityManager,
-                              subscriberAttributesManager: subscriberAttributesManager,
-                              operationDispatcher: mockOperationDispatcher,
-                              introEligibilityCalculator: mockIntroEligibilityCalculator)
-        purchases!.delegate = purchasesDelegate
-        Purchases.setDefaultInstance(purchases!)
+
+        initializePurchasesInstance(appUserId: identityManager.currentAppUserID)
     }
 
     func setupAnonPurchases() {
         Purchases.automaticAppleSearchAdsAttributionCollection = false
         self.identityManager.mockIsAnonymous = true
-        
-        purchases = Purchases(appUserID: nil,
-                              requestFetcher: requestFetcher,
-                              receiptFetcher: receiptFetcher,
-                              attributionFetcher: attributionFetcher,
-                              backend: backend,
-                              storeKitWrapper: storeKitWrapper,
-                              notificationCenter: notificationCenter,
-                              userDefaults: userDefaults,
-                              systemInfo: systemInfo,
-                              offeringsFactory: offeringsFactory,
-                              deviceCache: deviceCache,
-                              identityManager: identityManager,
-                              subscriberAttributesManager: subscriberAttributesManager,
-                              operationDispatcher: mockOperationDispatcher,
-                              introEligibilityCalculator: mockIntroEligibilityCalculator)
-
-        purchases!.delegate = purchasesDelegate
+        initializePurchasesInstance(appUserId: nil)
     }
 
     func setupPurchasesObserverModeOn() {
-        let systemInfo = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
+        systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
+        initializePurchasesInstance(appUserId: nil)
+    }
 
-        purchases = Purchases(appUserID: nil,
+    private func initializePurchasesInstance(appUserId: String?) {
+        purchases = Purchases(appUserID: appUserId,
                               requestFetcher: requestFetcher,
                               receiptFetcher: receiptFetcher,
                               attributionFetcher: attributionFetcher,
@@ -254,7 +226,8 @@ class PurchasesTests: XCTestCase {
                               identityManager: identityManager,
                               subscriberAttributesManager: subscriberAttributesManager,
                               operationDispatcher: mockOperationDispatcher,
-                              introEligibilityCalculator: mockIntroEligibilityCalculator)
+                              introEligibilityCalculator: mockIntroEligibilityCalculator,
+                              receiptParser: mockReceiptParser)
 
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)

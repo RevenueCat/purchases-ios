@@ -27,6 +27,7 @@ class MockReceiptParser: ReceiptParser {
                   containerBuilder: MockASN1ContainerBuilder(),
                   receiptBuilder: MockAppleReceiptBuilder())
     }
+
     override func parse(from receiptData: Data) throws -> AppleReceipt {
         invokedParse = true
         invokedParseCount += 1
