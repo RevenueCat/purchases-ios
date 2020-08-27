@@ -6,7 +6,7 @@
 import XCTest
 import Nimble
 
-import Purchases
+@testable import Purchases
 
 class PurchasesSubscriberAttributesTests: XCTestCase {
 
@@ -29,6 +29,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                 finishTransactions: true)
     
     var mockOperationDispatcher: MockOperationDispatcher!
+    var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
 
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -45,6 +46,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             subscriberAttributeWeight.key: subscriberAttributeWeight
         ]
         self.mockOperationDispatcher = MockOperationDispatcher()
+        self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
     }
 
     override func tearDown() {
@@ -70,7 +72,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               deviceCache: mockDeviceCache,
                               identityManager: mockIdentityManager,
                               subscriberAttributesManager: mockSubscriberAttributesManager,
-                              operationDispatcher: mockOperationDispatcher)
+                              operationDispatcher: mockOperationDispatcher,
+                              introEligibilityCalculator: mockIntroEligibilityCalculator)
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
