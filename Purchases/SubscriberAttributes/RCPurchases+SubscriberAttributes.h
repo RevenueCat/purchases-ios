@@ -14,25 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCPurchases (SubscriberAttributes)
 
-- (void)_setAttributes:(NSDictionary<NSString *, NSString *> *)attributes;
-- (void)_setEmail:(nullable NSString *)email;
-- (void)_setPhoneNumber:(nullable NSString *)phoneNumber;
-- (void)_setDisplayName:(nullable NSString *)displayName;
-- (void)_setPushToken:(nullable NSData *)pushToken;
-- (void)_setPushTokenString:(nullable NSString *)pushToken;
-- (void)_setAdjustID:(nullable NSString *)adjustID;
-- (void)_setAppsflyerID:(nullable NSString *)appsflyerID;
-- (void)_setFBAnonymousID:(nullable NSString *)fbAnonymousID;
-- (void)_setMparticleID:(nullable NSString *)mparticleID;
-- (void)_setOnesignalID:(nullable NSString *)onesignalID;
-- (void)_setMediaSource:(nullable NSString *)mediaSource;
-- (void)_setCampaign:(nullable NSString *)campaign;
-- (void)_setAdGroup:(nullable NSString *)adGroup;
-- (void)_setAd:(nullable NSString *)ad;
-- (void)_setKeyword:(nullable NSString *)keyword;
-- (void)_setCreative:(nullable NSString *)creative;
-- (void)_collectDeviceIdentifiers;
-
 - (void)configureSubscriberAttributesManager;
 - (RCSubscriberAttributeDict)unsyncedAttributesByKey;
 - (void)markAttributesAsSyncedIfNeeded:(nullable RCSubscriberAttributeDict)syncedAttributes
