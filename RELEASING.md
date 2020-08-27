@@ -22,7 +22,7 @@ This will do all of the other steps in the manual process.
 1. `git tag -a x.y.z -m "Version x.y.z"`
 1. `git push origin bump/x.y.z && git push --tags`
 1. `pod trunk push Purchases.podspec`
-1. `carthage build --archive
+1. `carthage build --archive`
 1. Create a [new github release](https://github.com/revenuecat/purchases-ios/releases)
 1. Upload to the new release `Purchases.framework.zip`
 1. Create a branch bump/a.b.c, where a.b.c is the next version of the app after this release.
