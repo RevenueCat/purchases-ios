@@ -629,19 +629,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 3
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
 
-        guard let idfvReceived = invokedParams.first(where: { attribute, id in
-            attribute.key == "$idfv" 
-        })?.attribute else { fatalError("idfv missing") }
-
-        expect(idfvReceived.value) == "rc_idfv"
-        expect(idfvReceived.isSynced) == false
-
-        guard let idfaReceived = invokedParams.first(where: { attribute, id in
-            attribute.key == "$idfa"
-        })?.attribute else { fatalError("$idfa missing") }
-
-        expect(idfaReceived.value) == "rc_idfa"
-        expect(idfaReceived.isSynced) == false
+        checkDeviceIdentifiersAreSet()
     }
     // endregion
     // region AppsflyerID
@@ -716,19 +704,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 3
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
 
-        guard let idfvReceived = invokedParams.first(where: { attribute, id in
-            attribute.key == "$idfv"
-        })?.attribute else { fatalError("idfv missing") }
-
-        expect(idfvReceived.value) == "rc_idfv"
-        expect(idfvReceived.isSynced) == false
-
-        guard let idfaReceived = invokedParams.first(where: { attribute, id in
-            attribute.key == "$idfa"
-        })?.attribute else { fatalError("$idfa missing") }
-
-        expect(idfaReceived.value) == "rc_idfa"
-        expect(idfaReceived.isSynced) == false
+        checkDeviceIdentifiersAreSet()
     }
     // endregion
     // region FBAnonymousID
@@ -803,19 +779,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 3
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
 
-        guard let idfvReceived = invokedParams.first(where: { attribute, id in
-            attribute.key == "$idfv"
-        })?.attribute else { fatalError("idfv missing") }
-
-        expect(idfvReceived.value) == "rc_idfv"
-        expect(idfvReceived.isSynced) == false
-
-        guard let idfaReceived = invokedParams.first(where: { attribute, id in
-            attribute.key == "$idfa"
-        })?.attribute else { fatalError("$idfa missing") }
-
-        expect(idfaReceived.value) == "rc_idfa"
-        expect(idfaReceived.isSynced) == false
+        checkDeviceIdentifiersAreSet()
     }
     // endregion
     // region mParticle
@@ -890,19 +854,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 3
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
 
-        guard let idfvReceived = invokedParams.first(where: { attribute, id in
-            attribute.key == "$idfv"
-        })?.attribute else { fatalError("idfv missing") }
-
-        expect(idfvReceived.value) == "rc_idfv"
-        expect(idfvReceived.isSynced) == false
-
-        guard let idfaReceived = invokedParams.first(where: { attribute, id in
-            attribute.key == "$idfa"
-        })?.attribute else { fatalError("$idfa missing") }
-
-        expect(idfaReceived.value) == "rc_idfa"
-        expect(idfaReceived.isSynced) == false
+        checkDeviceIdentifiersAreSet()
     }
     // endregion
     // region OnesignalID
@@ -977,19 +929,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 3
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
 
-        guard let idfvReceived = invokedParams.first(where: { attribute, id in
-            attribute.key == "$idfv"
-        })?.attribute else { fatalError("idfv missing") }
-
-        expect(idfvReceived.value) == "rc_idfv"
-        expect(idfvReceived.isSynced) == false
-
-        guard let idfaReceived = invokedParams.first(where: { attribute, id in
-            attribute.key == "$idfa"
-        })?.attribute else { fatalError("$idfa missing") }
-
-        expect(idfaReceived.value) == "rc_idfa"
-        expect(idfaReceived.isSynced) == false
+        checkDeviceIdentifiersAreSet()
     }
     // endregion
     // region Media source
@@ -1401,5 +1341,23 @@ private extension SubscriberAttributesManagerTests {
             .toEventually(equal(subscriberAttributeWeight.value))
         expect(attributesByKey[self.subscriberAttributeWeight.key]?.isSynced)
             .toEventually(equal(true))
+    }
+
+    func findInvokedAttribute(withName name: String) -> RCSubscriberAttribute {
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        guard let params = invokedParams.first(where: { $0.attribute.key == name }) else { fatalError() }
+        return params.attribute
+    }
+
+    func checkDeviceIdentifiersAreSet() {
+        let idfvReceived = findInvokedAttribute(withName: "$idfv")
+
+        expect(idfvReceived.value) == "rc_idfv"
+        expect(idfvReceived.isSynced) == false
+
+        let idfaReceived = findInvokedAttribute(withName: "$idfa")
+
+        expect(idfaReceived.value) == "rc_idfa"
+        expect(idfaReceived.isSynced) == false
     }
 }
