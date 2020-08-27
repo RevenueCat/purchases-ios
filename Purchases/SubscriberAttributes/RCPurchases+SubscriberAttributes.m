@@ -47,6 +47,66 @@ NS_ASSUME_NONNULL_BEGIN
     [self.subscriberAttributesManager setPushTokenString:pushToken appUserID:self.appUserID];
 }
 
+- (void)_setAdjustID:(nullable NSString *)adjustID {
+    RCDebugLog(@"setAdjustID called");
+    [self.subscriberAttributesManager setAdjustID:adjustID appUserID:self.appUserID];
+}
+
+- (void)_setAppsflyerID:(nullable NSString *)appsflyerID {
+    RCDebugLog(@"setAppsflyerID called");
+    [self.subscriberAttributesManager setAppsflyerID:appsflyerID appUserID:self.appUserID];
+}
+
+- (void)_setFBAnonymousID:(nullable NSString *)fbAnonymousID {
+    RCDebugLog(@"setFBAnonymousID called");
+    [self.subscriberAttributesManager setFBAnonymousID:fbAnonymousID appUserID:self.appUserID];
+}
+
+- (void)_setMparticleID:(nullable NSString *)mparticleID {
+    RCDebugLog(@"setMparticleID called");
+    [self.subscriberAttributesManager setMparticleID:mparticleID appUserID:self.appUserID];
+}
+
+- (void)_setOnesignalID:(nullable NSString *)onesignalID {
+    RCDebugLog(@"setOnesignalID called");
+    [self.subscriberAttributesManager setOnesignalID:onesignalID appUserID:self.appUserID];
+}
+
+- (void)_setMediaSource:(nullable NSString *)mediaSource {
+    RCDebugLog(@"setMediaSource called");
+    [self.subscriberAttributesManager setMediaSource:mediaSource appUserID:self.appUserID];
+}
+
+- (void)_setCampaign:(nullable NSString *)campaign {
+    RCDebugLog(@"setCampaign called");
+    [self.subscriberAttributesManager setCampaign:campaign appUserID:self.appUserID];
+}
+
+- (void)_setAdGroup:(nullable NSString *)adGroup {
+    RCDebugLog(@"setAdGroup called");
+    [self.subscriberAttributesManager setAdGroup:adGroup appUserID:self.appUserID];
+}
+
+- (void)_setAd:(nullable NSString *)ad {
+    RCDebugLog(@"setAd called");
+    [self.subscriberAttributesManager setAd:ad appUserID:self.appUserID];
+}
+
+- (void)_setKeyword:(nullable NSString *)keyword {
+    RCDebugLog(@"setKeyword called");
+    [self.subscriberAttributesManager setKeyword:keyword appUserID:self.appUserID];
+}
+
+- (void)_setCreative:(nullable NSString *)creative {
+    RCDebugLog(@"setCreative called");
+    [self.subscriberAttributesManager setCreative:creative appUserID:self.appUserID];
+}
+
+- (void)_collectDeviceIdentifiers {
+    RCDebugLog(@"collectDeviceIdentifiers called");
+    [self.subscriberAttributesManager collectDeviceIdentifiersForAppUserID:self.appUserID];
+}
+
 - (void)configureSubscriberAttributesManager {
     [self subscribeToAppDidBecomeActiveNotifications];
     [self subscribeToAppBackgroundedNotifications];

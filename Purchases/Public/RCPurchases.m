@@ -221,7 +221,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWith:deviceCache backend:backend];
     RCSubscriberAttributesManager *subscriberAttributesManager =
             [[RCSubscriberAttributesManager alloc] initWithBackend:backend
-                                                       deviceCache:deviceCache];
+                                                       deviceCache:deviceCache
+                                                attributionFetcher:attributionFetcher];
     RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
 
     return [self initWithAppUserID:appUserID
@@ -738,6 +739,54 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)setPushToken:(nullable NSData *)pushToken {
     [self _setPushToken:pushToken];
+}
+
+- (void)setAdjustID:(nullable NSString *)adjustID {
+    [self _setAdjustID:adjustID];
+}
+
+- (void)setAppsflyerID:(nullable NSString *)appsflyerID {
+    [self _setAppsflyerID:appsflyerID];
+}
+
+- (void)setFBAnonymousID:(nullable NSString *)fbAnonymousID {
+    [self _setFBAnonymousID:fbAnonymousID];
+}
+
+- (void)setMparticleID:(nullable NSString *)mparticleID {
+    [self _setMparticleID:mparticleID];
+}
+
+- (void)setOnesignalID:(nullable NSString *)onesignalID {
+    [self _setOnesignalID:onesignalID];
+}
+
+- (void)setMediaSource:(nullable NSString *)mediaSource {
+    [self _setMediaSource:mediaSource];
+}
+
+- (void)setCampaign:(nullable NSString *)campaign {
+    [self _setCampaign:campaign];
+}
+
+- (void)setAdGroup:(nullable NSString *)adGroup {
+    [self _setAdGroup:adGroup];
+}
+
+- (void)setAd:(nullable NSString *)ad {
+    [self _setAd:ad];
+}
+
+- (void)setKeyword:(nullable NSString *)keyword {
+    [self _setKeyword:keyword];
+}
+
+- (void)setCreative:(nullable NSString *)creative {
+    [self _setCreative:creative];
+}
+
+- (void)collectDeviceIdentifiers {
+    [self _collectDeviceIdentifiers];
 }
 
 #pragma mark - Private Methods
