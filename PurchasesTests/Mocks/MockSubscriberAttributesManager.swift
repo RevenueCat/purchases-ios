@@ -190,7 +190,7 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
     var invokedSetKeywordParameters: (keyword: String?, appUserID: String?)?
     var invokedSetKeywordParametersList = [(keyword: String?, appUserID: String?)]()
 
-    override func setKeyword(_ creative: String?, appUserID: String) {
+    override func setKeyword(_ keyword: String?, appUserID: String) {
         invokedSetKeyword = true
         invokedSetKeywordCount += 1
         invokedSetKeywordParameters = (keyword, appUserID)

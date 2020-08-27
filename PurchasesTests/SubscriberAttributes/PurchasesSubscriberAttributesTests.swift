@@ -304,8 +304,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         setupPurchases()
 
         Purchases.shared.collectDeviceIdentifiers()
-        expect(self.mockSubscriberAttributesManager.invokedCollectDeviceIdentifiers) == 1
-        expect(self.mockSubscriberAttributesManager.invokedCollectDeviceIdentifiers?.appUserID) == mockIdentityManager
+        expect(self.mockSubscriberAttributesManager.invokedCollectDeviceIdentifiersCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedCollectDeviceIdentifiersParameters?.appUserID) == mockIdentityManager
                 .currentAppUserID
     }
 
