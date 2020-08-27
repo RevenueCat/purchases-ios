@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCPurchases (SubscriberAttributes)
 
+- (void)_setPushTokenString:(nullable NSString *)pushToken;
+
 - (void)configureSubscriberAttributesManager;
 - (RCSubscriberAttributeDict)unsyncedAttributesByKey;
 - (void)markAttributesAsSyncedIfNeeded:(nullable RCSubscriberAttributeDict)syncedAttributes
