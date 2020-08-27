@@ -625,6 +625,15 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
             return;
         }
+        
+        RCPurchaserInfo * _Nullable cachedPurchaserInfo = [self readPurchaserInfoFromCache];
+        BOOL hasOriginalPurchaseDate = cachedPurchaserInfo != nil && cachedPurchaserInfo.originalPurchaseDate != nil;
+        BOOL receiptHasTransactions = NO; // TODO
+        if (!receiptHasTransactions && hasOriginalPurchaseDate) {
+            CALL_IF_SET_ON_MAIN_THREAD(completion, cachedPurchaserInfo, nil);
+            return;
+        }
+            
         RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
