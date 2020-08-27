@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_setPhoneNumber:(nullable NSString *)phoneNumber;
 - (void)_setDisplayName:(nullable NSString *)displayName;
 - (void)_setPushToken:(nullable NSData *)pushToken;
+- (void)_setPushTokenString:(nullable NSString *)pushToken;
 - (void)_setAdjustID:(nullable NSString *)adjustID;
 - (void)_setAppsflyerID:(nullable NSString *)appsflyerID;
 - (void)_setFBAnonymousID:(nullable NSString *)fbAnonymousID;
