@@ -590,8 +590,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetAdjustIDSkipsIfSameValue() {
         let adjustID = "adjustID"
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$adjustId",
-                value: adjustID)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$adjustId", value: adjustID)
 
         self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
 
@@ -661,30 +660,29 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetAppsflyerIDSkipsIfSameValue() {
         let appsflyerID = "appsflyerID"
-
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$appsflyerId",
-                value: appsflyerID)
-
+        
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$appsflyerId", value: appsflyerID)
+        
         self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
-
-
+        
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 2
     }
-
+    
     func testSetAppsflyerIDOverwritesIfNewValue() {
         let oldSyncTime = Date()
         let appsflyerID = "appsflyerID"
-
+        
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$appsflyerId",
-                value: "old_id",
-                isSynced: true,
-                setTime: oldSyncTime)
-
+                                                                                      value: "old_id",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+        
         self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 3
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -695,15 +693,15 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.isSynced) == false
         expect(receivedAttribute.setTime) > oldSyncTime
     }
-
+    
     func testSetAppsflyerIDSetsDeviceIdentifiers() {
         let appsflyerID = "appsflyerID"
         self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 3
-
+        
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 3
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
-
+        
         checkDeviceIdentifiersAreSet()
     }
     // endregion
@@ -720,13 +718,13 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == fbAnonID
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetFBAnonymousIDSetsEmptyIfNil() {
         let fbAnonID = "fbAnonID"
         self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
-
+        
         self.subscriberAttributesManager.setFBAnonymousID(nil, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 6
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -736,30 +734,28 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetFBAnonymousIDSkipsIfSameValue() {
         let fbAnonID = "fbAnonID"
-
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$fbAnonId",
-                value: fbAnonID)
-
+        
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$fbAnonId", value: fbAnonID)
+        
         self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
-
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 2
     }
-
+    
     func testSetFBAnonymousIDOverwritesIfNewValue() {
         let oldSyncTime = Date()
         let fbAnonID = "fbAnonID"
-
+        
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$fbAnonId",
-                value: "old_adjust_id",
-                isSynced: true,
-                setTime: oldSyncTime)
-
+                                                                                      value: "old_adjust_id",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+        
         self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 3
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -770,15 +766,15 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.isSynced) == false
         expect(receivedAttribute.setTime) > oldSyncTime
     }
-
+    
     func testSetFBAnonymousIDSetsDeviceIdentifiers() {
         let fbAnonID = "fbAnonID"
         self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 3
-
+        
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 3
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
-
+        
         checkDeviceIdentifiersAreSet()
     }
     // endregion
@@ -795,13 +791,13 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == mparticleID
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetMparticleIDSetsEmptyIfNil() {
         let mparticleID = "mparticleID"
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
-
+        
         self.subscriberAttributesManager.setMparticleID(nil, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 6
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -811,30 +807,29 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetMparticleIDSkipsIfSameValue() {
         let mparticleID = "mparticleID"
-
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$mparticleId",
-                value: mparticleID)
-
+        
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$mparticleId", value: mparticleID)
+        
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
-
-
+        
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 2
     }
-
+    
     func testSetMparticleIDOverwritesIfNewValue() {
         let oldSyncTime = Date()
         let mparticleID = "mparticleID"
-
+        
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$mparticleId",
-                value: "old_id",
-                isSynced: true,
-                setTime: oldSyncTime)
-
+                                                                                      value: "old_id",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+        
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 3
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -845,15 +840,15 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.isSynced) == false
         expect(receivedAttribute.setTime) > oldSyncTime
     }
-
+    
     func testSetMparticleIDSetsDeviceIdentifiers() {
         let mparticleID = "mparticleID"
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 3
-
+        
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 3
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
-
+        
         checkDeviceIdentifiersAreSet()
     }
     // endregion
@@ -870,13 +865,13 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == onesignalID
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetOnesignalIDSetsEmptyIfNil() {
         let onesignalID = "onesignalID"
         self.subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: "kratos")
-
+        
         self.subscriberAttributesManager.setOnesignalID(nil, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 6
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -886,30 +881,29 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetOnesignalIDSkipsIfSameValue() {
         let onesignalID = "onesignalID"
-
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$onesignalId",
-                value: onesignalID)
-
+        
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$onesignalId", value: onesignalID)
+        
         self.subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: "kratos")
-
-
+        
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 2
     }
-
+    
     func testSetOnesignalIDOverwritesIfNewValue() {
         let oldSyncTime = Date()
         let onesignalID = "onesignalID"
-
+        
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$onesignalId",
-                value: "old_id",
-                isSynced: true,
-                setTime: oldSyncTime)
-
+                                                                                      value: "old_id",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+        
         self.subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 3
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -920,15 +914,15 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.isSynced) == false
         expect(receivedAttribute.setTime) > oldSyncTime
     }
-
+    
     func testSetOnesignalIDSetsDeviceIdentifiers() {
         let onesignalID = "onesignalID"
         self.subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 3
-
+        
         expect(self.mockDeviceCache.invokedStoreParametersList.count) == 3
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
-
+        
         checkDeviceIdentifiersAreSet()
     }
     // endregion
@@ -945,13 +939,13 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == mediaSource
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetMediaSourceSetsEmptyIfNil() {
         let mediaSource = "mediaSource"
         self.subscriberAttributesManager.setMediaSource(mediaSource, appUserID: "kratos")
-
+        
         self.subscriberAttributesManager.setMediaSource(nil, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 2
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -961,30 +955,29 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetMediaSourceSkipsIfSameValue() {
         let mediaSource = "mediaSource"
-
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$mediaSource",
-                value: mediaSource)
-
+        
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$mediaSource", value: mediaSource)
+        
         self.subscriberAttributesManager.setMediaSource(mediaSource, appUserID: "kratos")
-
-
+        
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
-
+    
     func testSetMediaSourceOverwritesIfNewValue() {
         let oldSyncTime = Date()
         let mediaSource = "mediaSource"
-
+        
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$mediaSource",
-                value: "old_id",
-                isSynced: true,
-                setTime: oldSyncTime)
-
+                                                                                      value: "old_id",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+        
         self.subscriberAttributesManager.setMediaSource(mediaSource, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -1009,13 +1002,13 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == campaign
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetCampaignSetsEmptyIfNil() {
         let campaign = "campaign"
         self.subscriberAttributesManager.setCampaign(campaign, appUserID: "kratos")
-
+        
         self.subscriberAttributesManager.setCampaign(nil, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 2
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -1025,30 +1018,29 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetCampaignSkipsIfSameValue() {
         let campaign = "campaign"
-
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$campaign",
-                value: campaign)
-
+        
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$campaign", value: campaign)
+        
         self.subscriberAttributesManager.setCampaign(campaign, appUserID: "kratos")
-
-
+        
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
-
+    
     func testSetCampaignOverwritesIfNewValue() {
         let oldSyncTime = Date()
         let campaign = "campaign"
-
+        
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$campaign",
-                value: "old_id",
-                isSynced: true,
-                setTime: oldSyncTime)
-
+                                                                                      value: "old_id",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+        
         self.subscriberAttributesManager.setCampaign(campaign, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -1073,13 +1065,13 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == adGroup
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetAdGroupSetsEmptyIfNil() {
         let adGroup = "adGroup"
         self.subscriberAttributesManager.setAdGroup(adGroup, appUserID: "kratos")
-
+        
         self.subscriberAttributesManager.setAdGroup(nil, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 2
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -1089,30 +1081,29 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetAdGroupSkipsIfSameValue() {
         let adGroup = "adGroup"
-
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$adGroup",
-                value: adGroup)
-
+        
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$adGroup", value: adGroup)
+        
         self.subscriberAttributesManager.setAdGroup(adGroup, appUserID: "kratos")
-
-
+        
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
-
+    
     func testSetAdGroupOverwritesIfNewValue() {
         let oldSyncTime = Date()
         let adGroup = "adGroup"
-
+        
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$adGroup",
-                value: "old_id",
-                isSynced: true,
-                setTime: oldSyncTime)
-
+                                                                                      value: "old_id",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+        
         self.subscriberAttributesManager.setAdGroup(adGroup, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -1137,13 +1128,13 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == ad
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetAdSetsEmptyIfNil() {
         let ad = "ad"
         self.subscriberAttributesManager.setAd(ad, appUserID: "kratos")
-
+        
         self.subscriberAttributesManager.setAd(nil, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 2
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -1153,30 +1144,29 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetAdSkipsIfSameValue() {
         let ad = "ad"
-
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$ad",
-                value: ad)
-
+        
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$ad", value: ad)
+        
         self.subscriberAttributesManager.setAd(ad, appUserID: "kratos")
-
-
+        
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
-
+    
     func testSetAdOverwritesIfNewValue() {
         let oldSyncTime = Date()
         let ad = "ad"
-
+        
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$ad",
-                value: "old_id",
-                isSynced: true,
-                setTime: oldSyncTime)
-
+                                                                                      value: "old_id",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+        
         self.subscriberAttributesManager.setAd(ad, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -1201,13 +1191,13 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == keyword
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetKeywordSetsEmptyIfNil() {
         let keyword = "keyword"
         self.subscriberAttributesManager.setKeyword(keyword, appUserID: "kratos")
-
+        
         self.subscriberAttributesManager.setKeyword(nil, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 2
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -1217,30 +1207,29 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetKeywordSkipsIfSameValue() {
         let keyword = "keyword"
-
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$keyword",
-                value: keyword)
-
+        
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$keyword", value: keyword)
+        
         self.subscriberAttributesManager.setKeyword(keyword, appUserID: "kratos")
-
-
+        
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
-
+    
     func testSetKeywordOverwritesIfNewValue() {
         let oldSyncTime = Date()
         let keyword = "keyword"
-
+        
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$keyword",
-                value: "old_id",
-                isSynced: true,
-                setTime: oldSyncTime)
-
+                                                                                      value: "old_id",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+        
         self.subscriberAttributesManager.setKeyword(keyword, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -1265,13 +1254,13 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == creative
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetCreativeSetsEmptyIfNil() {
         let creative = "creative"
         self.subscriberAttributesManager.setCreative(creative, appUserID: "kratos")
-
+        
         self.subscriberAttributesManager.setCreative(nil, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 2
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -1281,30 +1270,29 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
-
+    
     func testSetCreativeSkipsIfSameValue() {
         let creative = "creative"
-
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$creative",
-                value: creative)
-
+        
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$creative", value: creative)
+        
         self.subscriberAttributesManager.setCreative(creative, appUserID: "kratos")
-
-
+        
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
-
+    
     func testSetCreativeOverwritesIfNewValue() {
         let oldSyncTime = Date()
         let creative = "creative"
-
+        
         self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$creative",
-                value: "old_id",
-                isSynced: true,
-                setTime: oldSyncTime)
-
+                                                                                      value: "old_id",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+        
         self.subscriberAttributesManager.setCreative(creative, appUserID: "kratos")
-
+        
         expect(self.mockDeviceCache.invokedStoreCount) == 1
         guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
             fatalError("no attributes received")
@@ -1321,20 +1309,20 @@ class SubscriberAttributesManagerTests: XCTestCase {
 private extension SubscriberAttributesManagerTests {
     func assertMockAttributesSynced() {
         expect(self.mockDeviceCache.invokedStoreSubscriberAttributesCount).toEventually(equal(1))
-
+        
         guard let invokedParams = self.mockDeviceCache.invokedStoreSubscriberAttributesParameters else {
             fatalError("no parameters for storeSubscriberAttributes found")
         }
         expect(invokedParams.attributesByKey).toNot(beEmpty())
         let attributesByKey = invokedParams.attributesByKey
-
+        
         expect(attributesByKey[self.subscriberAttributeHeight.key]?.key)
             .toEventually(equal(subscriberAttributeHeight.key))
         expect(attributesByKey[self.subscriberAttributeHeight.key]?.value)
             .toEventually(equal(subscriberAttributeHeight.value))
         expect(attributesByKey[self.subscriberAttributeHeight.key]?.isSynced)
             .toEventually(equal(true))
-
+        
         expect(attributesByKey[self.subscriberAttributeWeight.key]?.key)
             .toEventually(equal(subscriberAttributeWeight.key))
         expect(attributesByKey[self.subscriberAttributeWeight.key]?.value)
