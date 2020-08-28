@@ -479,7 +479,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 - (NSDictionary *)attributesUserInfoFromResponse:(NSDictionary *)response statusCode:(NSInteger)statusCode {
     NSMutableDictionary *resultDict = [[NSMutableDictionary alloc] init];
     BOOL isInternalServerError = statusCode >= RC_INTERNAL_SERVER_ERROR;
-    resultDict[RCSuccessfullySyncedKey] = @(!isInternalServerError);
+    BOOL isNotFoundError = statusCode == 404;
+    BOOL successfullySynced = !(isInternalServerError || isNotFoundError);
+    resultDict[RCSuccessfullySyncedKey] = @(successfullySynced);
 
     BOOL hasAttributesResponseContainerKey = (response[RCAttributeErrorsResponseKey] != nil);
     NSDictionary *attributesResponseDict = hasAttributesResponseContainerKey
