@@ -902,6 +902,68 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
 
+    func testRestoringPurchasesDoesntPostIfReceiptEmptyAndPurchaserInfoLoaded() {
+        let info = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0",
+                "original_purchase_date": "2018-10-26T23:17:53Z"
+            ]]);
+
+        let jsonObject = info!.jsonObject()
+
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+
+        mockReceiptParser.stubbedReceiptHasTransactionsResult = false
+
+        setupPurchases()
+        purchases!.restoreTransactions()
+
+        expect(self.backend.postReceiptDataCalled) == false
+    }
+
+    func testRestoringPurchasesPostsIfReceiptEmptyAndPurchaserInfoNotLoaded() {
+        mockReceiptParser.stubbedReceiptHasTransactionsResult = false
+
+        setupPurchases()
+        purchases!.restoreTransactions()
+
+        expect(self.backend.postReceiptDataCalled) == true
+    }
+
+    func testRestoringPurchasesPostsIfReceiptHasTransactionsAndPurchaserInfoLoaded() {
+        let info = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0",
+                "original_purchase_date": "2018-10-26T23:17:53Z"
+            ]]);
+
+        let jsonObject = info!.jsonObject()
+
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+
+        mockReceiptParser.stubbedReceiptHasTransactionsResult = true
+
+        setupPurchases()
+        purchases!.restoreTransactions()
+
+        expect(self.backend.postReceiptDataCalled) == true
+    }
+
+    func testRestoringPurchasesPostsIfReceiptHasTransactionsAndPurchaserInfoNotLoaded() {
+        mockReceiptParser.stubbedReceiptHasTransactionsResult = true
+
+        setupPurchases()
+        purchases!.restoreTransactions()
+
+        expect(self.backend.postReceiptDataCalled) == true
+    }
+
     func testRestoringPurchasesAlwaysRefreshesAndPostsTheReceipt() {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = true
