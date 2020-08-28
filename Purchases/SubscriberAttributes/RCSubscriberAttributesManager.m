@@ -118,6 +118,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *identifierForVendor = [self.attributionFetcher identifierForVendor];
     [self setAttributeWithKey:SPECIAL_ATTRIBUTE_IDFA value:identifierForAdvertisers appUserID:appUserID];
     [self setAttributeWithKey:SPECIAL_ATTRIBUTE_IDFV value:identifierForVendor appUserID:appUserID];
+    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_IP value:@"true" appUserID:appUserID];
 }
 
 - (void)syncAttributesForAllUsersWithCurrentAppUserID:(NSString *)currentAppUserID {

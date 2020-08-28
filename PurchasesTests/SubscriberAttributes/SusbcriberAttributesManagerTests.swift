@@ -1359,5 +1359,10 @@ private extension SubscriberAttributesManagerTests {
 
         expect(idfaReceived.value) == "rc_idfa"
         expect(idfaReceived.isSynced) == false
+
+        let ipReceived = findInvokedAttribute(withName: "$ip")
+
+        expect(ipReceived.value) == "true"
+        expect(ipReceived.isSynced) == false
     }
 }
