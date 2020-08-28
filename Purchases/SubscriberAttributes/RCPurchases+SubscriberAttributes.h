@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCPurchases ()
 
 @property (nonatomic) RCSubscriberAttributesManager *subscriberAttributesManager;
+@property (nonatomic) RCOperationDispatcher *operationDispatcher;
 
 @end
 
