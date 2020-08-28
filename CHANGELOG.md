@@ -1,4 +1,20 @@
-## 3.6.0
+## 3.6.0-beta-2
+- Fixed a race condition with purchase completed callbacks
+	https://github.com/RevenueCat/purchases-ios/pull/313
+- Made RCTransaction public to fix compiling issues on Swift Package Manager
+	https://github.com/RevenueCat/purchases-ios/pull/315
+- Added ability to export XCFrameworks
+	https://github.com/RevenueCat/purchases-ios/pull/317
+- Cleaned up dispatch calls
+	https://github.com/RevenueCat/purchases-ios/pull/318
+- Created a separate module and framework for the Swift code
+	https://github.com/RevenueCat/purchases-ios/pull/319
+- Updated release scripts to be able to release the new Pod as well
+	https://github.com/RevenueCat/purchases-ios/pull/320
+- Added a local receipt parser, updated intro eligibility calculation to perform on device first
+	https://github.com/RevenueCat/purchases-ios/pull/302
+
+## 3.6.0-beta-1
 - Fix crash when productIdentifier or payment is nil.
     https://github.com/RevenueCat/purchases-ios/pull/297
 - Fixes ask-to-buy flow and will now send an error indicating there's a deferred payment.
