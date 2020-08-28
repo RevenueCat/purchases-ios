@@ -32,7 +32,8 @@ import Foundation
         if let receipt = try? parse(from: receiptData) {
             return receipt.inAppPurchases.count > 0
         }
-        return false
+        // if the receipt can't be parsed, conservatively return true
+        return true
     }
 
     func parse(from receiptData: Data) throws -> AppleReceipt {

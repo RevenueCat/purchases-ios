@@ -119,9 +119,9 @@ class ReceiptParserTests: XCTestCase {
         expect(self.receiptParser.receiptHasTransactions(receiptData: Data())) == false
     }
 
-    func testReceiptHasTransactionsFalseIfReceiptCantBeParsed() {
+    func testReceiptHasTransactionsTrueIfReceiptCantBeParsed() {
         mockASN1ContainerBuilder.stubbedBuildError = ReceiptReadingError.receiptParsingError
-        expect(self.receiptParser.receiptHasTransactions(receiptData: Data())) == false
+        expect(self.receiptParser.receiptHasTransactions(receiptData: Data())) == true
     }
 }
 
