@@ -126,7 +126,6 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
     }
 
-
     func testSubscriberAttributesSyncIsPerformedAfterPurchaserInfoSync() {
         mockBackend.stubbedGetSubscriberDataPurchaserInfo = Purchases.PurchaserInfo(data: [
             "subscriber": [
@@ -140,6 +139,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         setupPurchases()
 
         expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThreadCount) == 1
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
         expect(self.mockDeviceCache.cachedPurchaserInfo.count) == 1
 
@@ -147,6 +147,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
         expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThreadCount) == 3
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
+        expect(self.mockDeviceCache.cachedPurchaserInfo.count) == 1
     }
 
     // Mark: Set attributes
