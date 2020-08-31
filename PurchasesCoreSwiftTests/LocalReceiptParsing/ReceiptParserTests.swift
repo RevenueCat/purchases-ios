@@ -14,7 +14,8 @@ class ReceiptParserTests: XCTestCase {
         super.setUp()
         mockAppleReceiptBuilder = MockAppleReceiptBuilder()
         mockASN1ContainerBuilder = MockASN1ContainerBuilder()
-        receiptParser = ReceiptParser(containerBuilder: mockASN1ContainerBuilder,
+        receiptParser = ReceiptParser(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder(),
+                                      containerBuilder: mockASN1ContainerBuilder,
                                       receiptBuilder: mockAppleReceiptBuilder)
     }
 
@@ -27,7 +28,7 @@ class ReceiptParserTests: XCTestCase {
         ])
 
         mockASN1ContainerBuilder.stubbedBuildResult = constructedContainer
-        let expectedReceipt = mockAppleReceipt()
+        let expectedReceipt = mockAppleReceiptWithoutPurchases()
         mockAppleReceiptBuilder.stubbedBuildResult = expectedReceipt
 
         let receivedReceipt = try! self.receiptParser.parse(from: Data())
@@ -63,7 +64,7 @@ class ReceiptParserTests: XCTestCase {
         ])
 
         mockASN1ContainerBuilder.stubbedBuildResult = complexContainer
-        let expectedReceipt = mockAppleReceipt()
+        let expectedReceipt = mockAppleReceiptWithoutPurchases()
         mockAppleReceiptBuilder.stubbedBuildResult = expectedReceipt
 
         let receivedReceipt = try! self.receiptParser.parse(from: Data())
@@ -105,6 +106,23 @@ class ReceiptParserTests: XCTestCase {
         expect { try self.receiptParser.parse(from: Data()) }
             .to(throwError(ReceiptReadingError.dataObjectIdentifierMissing))
     }
+
+    func testReceiptHasTransactionsTrueIfReceiptHasTransactions() {
+        mockASN1ContainerBuilder.stubbedBuildResult = containerWithDataObjectIdentifier()
+        mockAppleReceiptBuilder.stubbedBuildResult = mockAppleReceiptWithPurchases()
+        expect(self.receiptParser.receiptHasTransactions(receiptData: Data())) == true
+    }
+
+    func testReceiptHasTransactionsFalseIfNoIAPsInReceipt() {
+        mockASN1ContainerBuilder.stubbedBuildResult = containerWithDataObjectIdentifier()
+        mockAppleReceiptBuilder.stubbedBuildResult = mockAppleReceiptWithoutPurchases()
+        expect(self.receiptParser.receiptHasTransactions(receiptData: Data())) == false
+    }
+
+    func testReceiptHasTransactionsTrueIfReceiptCantBeParsed() {
+        mockASN1ContainerBuilder.stubbedBuildError = ReceiptReadingError.receiptParsingError
+        expect(self.receiptParser.receiptHasTransactions(receiptData: Data())) == true
+    }
 }
 
 private extension ReceiptParserTests {
@@ -118,7 +136,7 @@ private extension ReceiptParserTests {
         return constructedContainer
     }
 
-    func mockAppleReceipt() -> AppleReceipt {
+    func mockAppleReceiptWithoutPurchases() -> AppleReceipt {
         return AppleReceipt(bundleId: "com.revenuecat.testapp",
                             applicationVersion: "3.2.3",
                             originalApplicationVersion: "3.1.1",
@@ -127,5 +145,43 @@ private extension ReceiptParserTests {
                             creationDate: Date(),
                             expirationDate: nil,
                             inAppPurchases: [])
+    }
+
+    func mockAppleReceiptWithPurchases() -> AppleReceipt {
+        return AppleReceipt(bundleId: "com.revenuecat.testapp",
+                            applicationVersion: "3.2.3",
+                            originalApplicationVersion: "3.1.1",
+                            opaqueValue: Data(),
+                            sha1Hash: Data(),
+                            creationDate: Date(),
+                            expirationDate: nil,
+                            inAppPurchases: [
+                                InAppPurchase(quantity: 1,
+                                              productId: "com.revenuecat.test",
+                                              transactionId: "892398531",
+                                              originalTransactionId: "892398531",
+                                              productType: .autoRenewableSubscription,
+                                              purchaseDate: Date(),
+                                              originalPurchaseDate: Date(),
+                                              expiresDate: nil,
+                                              cancellationDate: Date(),
+                                              isInTrialPeriod: false,
+                                              isInIntroOfferPeriod: false,
+                                              webOrderLineItemId: 79238531,
+                                              promotionalOfferIdentifier: nil),
+                                InAppPurchase(quantity: 1,
+                                              productId: "com.revenuecat.test",
+                                              transactionId: "892398532",
+                                              originalTransactionId: "892398531",
+                                              productType: .autoRenewableSubscription,
+                                              purchaseDate: Date(),
+                                              originalPurchaseDate: Date(),
+                                              expiresDate: nil,
+                                              cancellationDate: Date(),
+                                              isInTrialPeriod: false,
+                                              isInIntroOfferPeriod: false,
+                                              webOrderLineItemId: 79238532,
+                                              promotionalOfferIdentifier: nil)
+                            ])
     }
 }

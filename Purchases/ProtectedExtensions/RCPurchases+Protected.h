@@ -19,7 +19,8 @@
     RCSubscriberAttributesManager,
     RCSystemInfo,
     RCOperationDispatcher,
-    RCIntroEligibilityCalculator;
+    RCIntroEligibilityCalculator,
+    RCReceiptParser;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,7 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
                   identityManager:(RCIdentityManager *)identityManager
       subscriberAttributesManager:(RCSubscriberAttributesManager *)subscriberAttributesManager
               operationDispatcher:(RCOperationDispatcher *)operationDispatcher
-       introEligibilityCalculator:(RCIntroEligibilityCalculator *)introEligibilityCalculator;
+       introEligibilityCalculator:(RCIntroEligibilityCalculator *)introEligibilityCalculator
+                    receiptParser:(RCReceiptParser *)receiptParser;
 
 + (void)setDefaultInstance:(nullable RCPurchases *)instance;
 

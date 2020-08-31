@@ -22,6 +22,12 @@ class MockReceiptParser: ReceiptParser {
                                           expirationDate: nil,
                                           inAppPurchases: [])
 
+    convenience init() {
+        self.init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder(),
+                  containerBuilder: MockASN1ContainerBuilder(),
+                  receiptBuilder: MockAppleReceiptBuilder())
+    }
+
     override func parse(from receiptData: Data) throws -> AppleReceipt {
         invokedParse = true
         invokedParseCount += 1
