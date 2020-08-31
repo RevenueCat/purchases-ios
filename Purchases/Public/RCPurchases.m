@@ -64,7 +64,6 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCIdentityManager *identityManager;
 @property (nonatomic) RCSystemInfo *systemInfo;
-@property (nonatomic) RCOperationDispatcher *operationDispatcher;
 @property (nonatomic) RCIntroEligibilityCalculator *introEligibilityCalculator;
 @property (nonatomic) RCReceiptParser *receiptParser;
 
