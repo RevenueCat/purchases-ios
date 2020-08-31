@@ -479,9 +479,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 - (NSDictionary *)attributesUserInfoFromResponse:(NSDictionary *)response statusCode:(NSInteger)statusCode {
     NSMutableDictionary *resultDict = [[NSMutableDictionary alloc] init];
     BOOL isInternalServerError = statusCode >= RC_INTERNAL_SERVER_ERROR;
-    BOOL isSubscriberNotFound = statusCode == RC_NOT_FOUND;
-    BOOL successfullySynced = !isInternalServerError && !isSubscriberNotFound
-    resultDict[RCSuccessfullySyncedKey] = @(successfullySynced);
+    resultDict[RCSuccessfullySyncedKey] = @(!isInternalServerError);
 
     BOOL hasAttributesResponseContainerKey = (response[RCAttributeErrorsResponseKey] != nil);
     NSDictionary *attributesResponseDict = hasAttributesResponseContainerKey
