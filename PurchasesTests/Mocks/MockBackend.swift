@@ -61,12 +61,17 @@ class MockBackend: RCBackend {
     var invokedGetSubscriberDataParametersList = [(appUserID: String?,
         completion: RCBackendPurchaserInfoResponseHandler?)]()
 
+    var stubbedGetSubscriberDataPurchaserInfo: Purchases.PurchaserInfo? = nil
+    var stubbedGetSubscriberDataError: Error? = nil
+
+
     override func getSubscriberData(withAppUserID appUserID: String,
                                     completion: @escaping RCBackendPurchaserInfoResponseHandler) {
         invokedGetSubscriberData = true
         invokedGetSubscriberDataCount += 1
         invokedGetSubscriberDataParameters = (appUserID, completion)
         invokedGetSubscriberDataParametersList.append((appUserID, completion))
+        completion(stubbedGetSubscriberDataPurchaserInfo, stubbedGetSubscriberDataError)
     }
 
     var invokedGetIntroEligibility = false
