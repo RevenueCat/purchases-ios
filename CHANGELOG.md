@@ -1,3 +1,7 @@
+## 3.5.3
+- Addresses an issue where subscriber attributes might not sync correctly if subscriber info for the user hadn't been synced before the subscriber attributes sync was performed.
+    https://github.com/RevenueCat/purchases-ios/pull/327
+
 ## 3.5.2
 - Feature/defer cache updates if woken from push notification
 https://github.com/RevenueCat/purchases-ios/pull/288
