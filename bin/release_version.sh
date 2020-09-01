@@ -45,7 +45,8 @@ pod trunk push Purchases.podspec
 
 echo "Preparing Carthage release"
 echo "building..."
-carthage build --archive
+carthage build --no-skip-current
+carthage archive Purchases
 
 echo "creating uploads folder if needed"
 mkdir $CARTHAGE_UPLOADS_PATH
