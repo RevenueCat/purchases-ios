@@ -9,6 +9,7 @@
 #import "RCCrossPlatformSupport.h"
 #import "RCLogUtils.h"
 #import "NSError+RCExtensions.h"
+@import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -86,7 +87,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)syncSubscriberAttributesIfNeeded {
-    [self.subscriberAttributesManager syncAttributesForAllUsersWithCurrentAppUserID:self.appUserID];
+    [self.operationDispatcher dispatchOnWorkerThread:^{
+        [self.subscriberAttributesManager syncAttributesForAllUsersWithCurrentAppUserID:self.appUserID];
+    }];
 }
 
 @end
