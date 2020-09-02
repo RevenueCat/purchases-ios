@@ -2,8 +2,7 @@
 1. Start a git-flow release/x.y.z
 1. Create a CHANGELOG.latest.md with the changes for the current 
 version (to be used by Fastlane for the github release notes)
-1. Update the version number in `RCPurchases.m`, `Purchases.podspec` and in 
-`Purchases/Info.plist` by running `fastlane bump_and_update_changelog version:x.y.z`
+1. Update the version number by running `fastlane bump_and_update_changelog version:x.y.z`
 1. Commit the changes `git commit -am "Version x.y.z"`
 1. Make a PR, merge when approved
 1. `cd bin`
@@ -23,7 +22,7 @@ This will do all of the other steps in the manual process.
 1. `git tag -a x.y.z -m "Version x.y.z"`
 1. `git push origin bump/x.y.z && git push --tags`
 1. `pod trunk push Purchases.podspec`
-1. `carthage build --archive
+1. `carthage build --archive`
 1. Create a [new github release](https://github.com/revenuecat/purchases-ios/releases)
 1. Upload to the new release `Purchases.framework.zip`
 1. Create a branch bump/a.b.c, where a.b.c is the next version of the app after this release.

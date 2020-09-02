@@ -7,7 +7,7 @@
 #import "RCPurchases.h"
 #import "RCSubscriberAttribute.h"
 
-@class RCSubscriberAttribute, RCSubscriberAttributesManager;
+@class RCSubscriberAttribute, RCSubscriberAttributesManager, RCOperationDispatcher;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCPurchases ()
 
 @property (nonatomic) RCSubscriberAttributesManager *subscriberAttributesManager;
+@property (nonatomic) RCOperationDispatcher *operationDispatcher;
 
 @end
 

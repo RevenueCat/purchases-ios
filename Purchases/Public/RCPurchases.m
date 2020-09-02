@@ -64,7 +64,8 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCIdentityManager *identityManager;
 @property (nonatomic) RCSystemInfo *systemInfo;
-@property (nonatomic) RCOperationDispatcher *operationDispatcher;
+@property (nonatomic) RCIntroEligibilityCalculator *introEligibilityCalculator;
+@property (nonatomic) RCReceiptParser *receiptParser;
 
 @end
 
@@ -224,7 +225,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                        deviceCache:deviceCache
                                                 attributionFetcher:attributionFetcher];
     RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
-
+    RCIntroEligibilityCalculator *introCalculator = [[RCIntroEligibilityCalculator alloc] init];
+    RCReceiptParser *receiptParser = [[RCReceiptParser alloc] init];
+    
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher
@@ -238,7 +241,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                        deviceCache:deviceCache
                    identityManager:identityManager
        subscriberAttributesManager:subscriberAttributesManager
-               operationDispatcher:operationDispatcher];
+               operationDispatcher:operationDispatcher
+        introEligibilityCalculator:introCalculator
+                     receiptParser:receiptParser];
 }
 
 - (instancetype)initWithAppUserID:(nullable NSString *)appUserID
@@ -249,13 +254,14 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                notificationCenter:(NSNotificationCenter *)notificationCenter
                      userDefaults:(NSUserDefaults *)userDefaults
-                       systemInfo:systemInfo
+                       systemInfo:(RCSystemInfo *)systemInfo
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
                       deviceCache:(RCDeviceCache *)deviceCache
                   identityManager:(RCIdentityManager *)identityManager
       subscriberAttributesManager:(RCSubscriberAttributesManager *)subscriberAttributesManager
-              operationDispatcher:(RCOperationDispatcher *)operationDispatcher {
-    
+              operationDispatcher:(RCOperationDispatcher *)operationDispatcher
+       introEligibilityCalculator:(RCIntroEligibilityCalculator *)introEligibilityCalculator
+                    receiptParser:(RCReceiptParser *)receiptParser {
     if (self = [super init]) {
         RCDebugLog(@"Debug logging enabled.");
         RCDebugLog(@"SDK Version - %@", self.class.frameworkVersion);
@@ -280,6 +286,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.systemInfo = systemInfo;
         self.subscriberAttributesManager = subscriberAttributesManager;
         self.operationDispatcher = operationDispatcher;
+        self.introEligibilityCalculator = introEligibilityCalculator;
+        self.receiptParser = receiptParser;
 
         RCReceivePurchaserInfoBlock callDelegate = ^void(RCPurchaserInfo *info, NSError *error) {
             if (info) {
@@ -622,6 +630,15 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
             return;
         }
+
+        RCPurchaserInfo * _Nullable cachedPurchaserInfo = [self readPurchaserInfoFromCache];
+        BOOL hasOriginalPurchaseDate = cachedPurchaserInfo != nil && cachedPurchaserInfo.originalPurchaseDate != nil;
+        BOOL receiptHasTransactions = [self.receiptParser receiptHasTransactionsWithReceiptData:data];
+        if (!receiptHasTransactions && hasOriginalPurchaseDate) {
+            CALL_IF_SET_ON_MAIN_THREAD(completion, cachedPurchaserInfo, nil);
+            return;
+        }
+
         RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
@@ -661,32 +678,43 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
-                                 completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility {
-    [self receiptData:^(NSData * _Nonnull data) {
-        RCLocalReceiptParser *receiptParser = [[RCLocalReceiptParser alloc] init];
-        [receiptParser checkTrialOrIntroductoryPriceEligibilityWithData:data
-                                                     productIdentifiers:productIdentifiers
-                                                             completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,
-                                                                          NSError * _Nullable error) {
-            if (!error) {
-                NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
-                
-                for (NSString *key in receivedEligibility.allKeys) {
-                    convertedEligibility[key] = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedEligibility[key]];
-                }
-                
-                CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
-            } else {
-                NSLog(@"There was an error when trying to parse the receipt locally, details: %@", error.localizedDescription);
-                [self.backend getIntroEligibilityForAppUserID:self.appUserID
-                                                  receiptData:data
-                                           productIdentifiers:productIdentifiers
-                                                   completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
-                    CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+                                 completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
+{
+    [self receiptData:^(NSData *data) {
+        if (data != nil && data.length > 0) {
+            if (@available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)) {
+                NSSet *productIdentifiersSet = [[NSSet alloc] initWithArray:productIdentifiers];
+                [self.introEligibilityCalculator checkTrialOrIntroductoryPriceEligibilityWith:data
+                                                                           productIdentifiers:productIdentifiersSet
+                                                                                   completion:^(NSDictionary<NSString *, NSNumber *> * _Nonnull receivedEligibility,
+                                                                                                NSError * _Nullable error) {
+                    if (!error) {
+                        NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
+                        
+                        for (NSString *key in receivedEligibility.allKeys) {
+                            convertedEligibility[key] = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedEligibility[key]];
+                        }
+                        
+                        CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
+                    } else {
+                        NSLog(@"There was an error when trying to parse the receipt locally, details: %@", error.localizedDescription);
+                        [self.backend getIntroEligibilityForAppUserID:self.appUserID
+                                                          receiptData:data
+                                                   productIdentifiers:productIdentifiers
+                                                           completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
+                            CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+                        }];
+                    }
                 }];
             }
-        }];
-        
+        } else {
+            [self.backend getIntroEligibilityForAppUserID:self.appUserID
+                                              receiptData:data
+                                       productIdentifiers:productIdentifiers
+                                               completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
+                CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+            }];
+        }
     }];
 }
 

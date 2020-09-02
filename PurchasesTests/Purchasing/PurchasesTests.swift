@@ -15,6 +15,8 @@ class PurchasesTests: XCTestCase {
         requestFetcher = MockRequestFetcher()
         systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockOperationDispatcher = MockOperationDispatcher()
+        mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
+        mockReceiptParser = MockReceiptParser()
     }
 
     override func tearDown() {
@@ -184,7 +186,9 @@ class PurchasesTests: XCTestCase {
     let identityManager = MockUserManager(mockAppUserID: "app_user");
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
-    
+    var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
+    var mockReceiptParser: MockReceiptParser!
+
     let purchasesDelegate = MockPurchasesDelegate()
 
     var purchases: Purchases!
@@ -192,51 +196,23 @@ class PurchasesTests: XCTestCase {
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.identityManager.mockIsAnonymous = false
-        
-        purchases = Purchases(appUserID: identityManager.currentAppUserID,
-                              requestFetcher: requestFetcher,
-                              receiptFetcher: receiptFetcher,
-                              attributionFetcher: attributionFetcher,
-                              backend: backend,
-                              storeKitWrapper: storeKitWrapper,
-                              notificationCenter: notificationCenter,
-                              userDefaults: userDefaults,
-                              systemInfo: systemInfo,
-                              offeringsFactory: offeringsFactory,
-                              deviceCache: deviceCache,
-                              identityManager: identityManager,
-                              subscriberAttributesManager: subscriberAttributesManager,
-                              operationDispatcher: mockOperationDispatcher)
-        purchases!.delegate = purchasesDelegate
-        Purchases.setDefaultInstance(purchases!)
+
+        initializePurchasesInstance(appUserId: identityManager.currentAppUserID)
     }
 
     func setupAnonPurchases() {
         Purchases.automaticAppleSearchAdsAttributionCollection = false
         self.identityManager.mockIsAnonymous = true
-        
-        purchases = Purchases(appUserID: nil,
-                              requestFetcher: requestFetcher,
-                              receiptFetcher: receiptFetcher,
-                              attributionFetcher: attributionFetcher,
-                              backend: backend,
-                              storeKitWrapper: storeKitWrapper,
-                              notificationCenter: notificationCenter,
-                              userDefaults: userDefaults,
-                              systemInfo: systemInfo,
-                              offeringsFactory: offeringsFactory,
-                              deviceCache: deviceCache,
-                              identityManager: identityManager,
-                              subscriberAttributesManager: subscriberAttributesManager,
-                              operationDispatcher: mockOperationDispatcher)
-
-        purchases!.delegate = purchasesDelegate
+        initializePurchasesInstance(appUserId: nil)
     }
 
     func setupPurchasesObserverModeOn() {
-        let systemInfo = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
+        systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
+        initializePurchasesInstance(appUserId: nil)
+    }
 
-        purchases = Purchases(appUserID: nil,
+    private func initializePurchasesInstance(appUserId: String?) {
+        purchases = Purchases(appUserID: appUserId,
                               requestFetcher: requestFetcher,
                               receiptFetcher: receiptFetcher,
                               attributionFetcher: attributionFetcher,
@@ -249,7 +225,9 @@ class PurchasesTests: XCTestCase {
                               deviceCache: deviceCache,
                               identityManager: identityManager,
                               subscriberAttributesManager: subscriberAttributesManager,
-                              operationDispatcher: mockOperationDispatcher)
+                              operationDispatcher: mockOperationDispatcher,
+                              introEligibilityCalculator: mockIntroEligibilityCalculator,
+                              receiptParser: mockReceiptParser)
 
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -922,6 +900,68 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         purchases!.restoreTransactions()
         expect(self.backend.postReceiptDataCalled).to(beTrue())
+    }
+
+    func testRestoringPurchasesDoesntPostIfReceiptEmptyAndPurchaserInfoLoaded() {
+        let info = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0",
+                "original_purchase_date": "2018-10-26T23:17:53Z"
+            ]]);
+
+        let jsonObject = info!.jsonObject()
+
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+
+        mockReceiptParser.stubbedReceiptHasTransactionsResult = false
+
+        setupPurchases()
+        purchases!.restoreTransactions()
+
+        expect(self.backend.postReceiptDataCalled) == false
+    }
+
+    func testRestoringPurchasesPostsIfReceiptEmptyAndPurchaserInfoNotLoaded() {
+        mockReceiptParser.stubbedReceiptHasTransactionsResult = false
+
+        setupPurchases()
+        purchases!.restoreTransactions()
+
+        expect(self.backend.postReceiptDataCalled) == true
+    }
+
+    func testRestoringPurchasesPostsIfReceiptHasTransactionsAndPurchaserInfoLoaded() {
+        let info = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0",
+                "original_purchase_date": "2018-10-26T23:17:53Z"
+            ]]);
+
+        let jsonObject = info!.jsonObject()
+
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+
+        mockReceiptParser.stubbedReceiptHasTransactionsResult = true
+
+        setupPurchases()
+        purchases!.restoreTransactions()
+
+        expect(self.backend.postReceiptDataCalled) == true
+    }
+
+    func testRestoringPurchasesPostsIfReceiptHasTransactionsAndPurchaserInfoNotLoaded() {
+        mockReceiptParser.stubbedReceiptHasTransactionsResult = true
+
+        setupPurchases()
+        purchases!.restoreTransactions()
+
+        expect(self.backend.postReceiptDataCalled) == true
     }
 
     func testRestoringPurchasesAlwaysRefreshesAndPostsTheReceipt() {

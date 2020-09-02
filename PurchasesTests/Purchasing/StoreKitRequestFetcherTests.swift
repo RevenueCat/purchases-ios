@@ -16,46 +16,6 @@ import Purchases
 
 class StoreKitRequestFetcher: XCTestCase {
 
-    class MockProductResponse: SKProductsResponse {
-        var mockProducts: [MockSKProduct]
-        init(productIdentifiers: Set<String>) {
-            self.mockProducts = productIdentifiers.map { identifier in
-                return MockSKProduct(mockProductIdentifier: identifier)
-            }
-            super.init()
-        }
-
-        override var products: [SKProduct] {
-            return self.mockProducts
-        }
-    }
-
-    enum StoreKitError: Error {
-        case unknown
-    }
-
-    class MockProductRequest: SKProductsRequest {
-        var startCalled = false
-        var requestedIdentifiers: Set<String>
-        var fails = false
-
-        override init(productIdentifiers: Set<String>) {
-            self.requestedIdentifiers = productIdentifiers
-            super.init()
-        }
-
-        override func start() {
-            startCalled = true
-            DispatchQueue.main.async {
-                if (self.fails) {
-                    self.delegate?.request!(self, didFailWithError: StoreKitError.unknown)
-                } else {
-                    self.delegate?.productsRequest(self, didReceive: MockProductResponse(productIdentifiers: self.requestedIdentifiers))
-                }
-            }
-        }
-    }
-
     class MockReceiptRequest: SKReceiptRefreshRequest {
         var startCalled = false
         var fails = false
@@ -71,7 +31,6 @@ class StoreKitRequestFetcher: XCTestCase {
         }
     }
 
-
     class MockRequestsFactory: RCProductsRequestFactory {
         let fails: Bool
 
@@ -81,7 +40,7 @@ class StoreKitRequestFetcher: XCTestCase {
 
         var requests: [SKRequest] = []
         override func request(forProductIdentifiers identifiers: Set<String>) -> SKProductsRequest {
-            let r = MockProductRequest(productIdentifiers:identifiers)
+            let r = MockProductsRequest(productIdentifiers:identifiers)
             requests.append(r)
             r.fails = self.fails
             return r
@@ -135,7 +94,7 @@ class StoreKitRequestFetcher: XCTestCase {
 
     func testCallsStartOnRequest() {
         setupFetcher(fails: false)
-        expect((self.factory!.requests[0] as! MockProductRequest).startCalled).toEventually(beTrue(), timeout: 1.0)
+        expect((self.factory!.requests[0] as! MockProductsRequest).startCalled).toEventually(beTrue(), timeout: 1.0)
     }
 
     func testReturnsProducts() {
