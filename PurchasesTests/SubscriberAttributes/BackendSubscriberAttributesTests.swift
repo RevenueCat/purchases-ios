@@ -230,6 +230,35 @@ class BackendSubscriberAttributesTests: XCTestCase {
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 0
     }
 
+    func testPostSubscriberAttributesCallsCompletionWithErrorInNotFoundCase() {
+       var completionCallCount = 0
+       mockHTTPClient.shouldInvokeCompletion = true
+       mockHTTPClient.stubbedCompletionStatusCode = 404
+       mockHTTPClient.stubbedCompletionError = nil
+
+       var receivedError: Error? = nil
+       backend.postSubscriberAttributes([
+                                            subscriberAttribute1.key: subscriberAttribute1,
+                                            subscriberAttribute2.key: subscriberAttribute2
+                                        ],
+                                        appUserID: appUserID,
+                                        completion: { (error: Error!) in
+                                            completionCallCount += 1
+                                            receivedError = error
+                                        })
+
+       expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
+       expect(completionCallCount).toEventually(equal(1))
+       expect(receivedError).toNot(beNil())
+       expect(receivedError).to(beAKindOf(Error.self))
+
+       let receivedNSError = receivedError! as NSError
+       expect(receivedNSError.code) == Purchases.ErrorCode.unknownBackendError.rawValue
+       expect(receivedNSError.successfullySynced()) == false
+       expect(receivedNSError.userInfo[RCSuccessfullySyncedKey]).toNot(beNil())
+       expect((receivedNSError.userInfo[RCSuccessfullySyncedKey] as! NSNumber).boolValue) == false
+    }
+    
     // MARK: PostReceipt with subscriberAttributes
 
     func testPostReceiptWithSubscriberAttributesSendsThemCorrectly() {
