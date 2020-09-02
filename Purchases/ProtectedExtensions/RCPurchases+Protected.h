@@ -46,6 +46,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)setDefaultInstance:(nullable RCPurchases *)instance;
 
+- (void)_setPushTokenString:(nullable NSString *)pushToken;
+
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCBackend *backend;
 @property (nonatomic) NSNotificationCenter *notificationCenter;

@@ -482,7 +482,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     BOOL isNotFoundError = statusCode == RC_NOT_FOUND_ERROR;
     BOOL successfullySynced = !(isInternalServerError || isNotFoundError);
     resultDict[RCSuccessfullySyncedKey] = @(successfullySynced);
-    
+
     BOOL hasAttributesResponseContainerKey = (response[RCAttributeErrorsResponseKey] != nil);
     NSDictionary *attributesResponseDict = hasAttributesResponseContainerKey
                                            ? response[RCAttributeErrorsResponseKey]

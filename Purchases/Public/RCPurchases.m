@@ -222,7 +222,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWith:deviceCache backend:backend];
     RCSubscriberAttributesManager *subscriberAttributesManager =
             [[RCSubscriberAttributesManager alloc] initWithBackend:backend
-                                                       deviceCache:deviceCache];
+                                                       deviceCache:deviceCache
+                                                attributionFetcher:attributionFetcher];
     RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
     RCIntroEligibilityCalculator *introCalculator = [[RCIntroEligibilityCalculator alloc] init];
     RCReceiptParser *receiptParser = [[RCReceiptParser alloc] init];
@@ -749,23 +750,93 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 #pragma mark Subcriber Attributes
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
-    [self _setAttributes:attributes];
+    RCDebugLog(@"setAttributes called");
+    [self.subscriberAttributesManager setAttributes:attributes appUserID:self.appUserID];
 }
 
 - (void)setEmail:(nullable NSString *)email {
-    [self _setEmail:email];
+    RCDebugLog(@"setEmail called");
+    [self.subscriberAttributesManager setEmail:email appUserID:self.appUserID];
 }
 
 - (void)setPhoneNumber:(nullable NSString *)phoneNumber {
-    [self _setPhoneNumber:phoneNumber];
+    RCDebugLog(@"setPhoneNumber called");
+    [self.subscriberAttributesManager setPhoneNumber:phoneNumber appUserID:self.appUserID];
 }
 
 - (void)setDisplayName:(nullable NSString *)displayName {
-    [self _setDisplayName:displayName];
+    RCDebugLog(@"setDisplayName called");
+    [self.subscriberAttributesManager setDisplayName:displayName appUserID:self.appUserID];
 }
 
 - (void)setPushToken:(nullable NSData *)pushToken {
-    [self _setPushToken:pushToken];
+    RCDebugLog(@"setPushToken called");
+    [self.subscriberAttributesManager setPushToken:pushToken appUserID:self.appUserID];
+}
+
+- (void)_setPushTokenString:(nullable NSString *)pushToken {
+    RCDebugLog(@"setPushTokenString called");
+    [self.subscriberAttributesManager setPushTokenString:pushToken appUserID:self.appUserID];
+}
+
+- (void)setAdjustID:(nullable NSString *)adjustID {
+    RCDebugLog(@"setAdjustID called");
+    [self.subscriberAttributesManager setAdjustID:adjustID appUserID:self.appUserID];
+}
+
+- (void)setAppsflyerID:(nullable NSString *)appsflyerID {
+    RCDebugLog(@"setAppsflyerID called");
+    [self.subscriberAttributesManager setAppsflyerID:appsflyerID appUserID:self.appUserID];
+}
+
+- (void)setFBAnonymousID:(nullable NSString *)fbAnonymousID {
+    RCDebugLog(@"setFBAnonymousID called");
+    [self.subscriberAttributesManager setFBAnonymousID:fbAnonymousID appUserID:self.appUserID];
+}
+
+- (void)setMparticleID:(nullable NSString *)mparticleID {
+    RCDebugLog(@"setMparticleID called");
+    [self.subscriberAttributesManager setMparticleID:mparticleID appUserID:self.appUserID];
+}
+
+- (void)setOnesignalID:(nullable NSString *)onesignalID {
+    RCDebugLog(@"setOnesignalID called");
+    [self.subscriberAttributesManager setOnesignalID:onesignalID appUserID:self.appUserID];
+}
+
+- (void)setMediaSource:(nullable NSString *)mediaSource {
+    RCDebugLog(@"setMediaSource called");
+    [self.subscriberAttributesManager setMediaSource:mediaSource appUserID:self.appUserID];
+}
+
+- (void)setCampaign:(nullable NSString *)campaign {
+    RCDebugLog(@"setCampaign called");
+    [self.subscriberAttributesManager setCampaign:campaign appUserID:self.appUserID];
+}
+
+- (void)setAdGroup:(nullable NSString *)adGroup {
+    RCDebugLog(@"setAdGroup called");
+    [self.subscriberAttributesManager setAdGroup:adGroup appUserID:self.appUserID];
+}
+
+- (void)setAd:(nullable NSString *)ad {
+    RCDebugLog(@"setAd called");
+    [self.subscriberAttributesManager setAd:ad appUserID:self.appUserID];
+}
+
+- (void)setKeyword:(nullable NSString *)keyword {
+    RCDebugLog(@"setKeyword called");
+    [self.subscriberAttributesManager setKeyword:keyword appUserID:self.appUserID];
+}
+
+- (void)setCreative:(nullable NSString *)creative {
+    RCDebugLog(@"setCreative called");
+    [self.subscriberAttributesManager setCreative:creative appUserID:self.appUserID];
+}
+
+- (void)collectDeviceIdentifiers {
+    RCDebugLog(@"collectDeviceIdentifiers called");
+    [self.subscriberAttributesManager collectDeviceIdentifiersForAppUserID:self.appUserID];
 }
 
 #pragma mark - Private Methods

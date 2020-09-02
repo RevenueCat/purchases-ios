@@ -18,36 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark protected methods
 
-- (void)_setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
-    RCDebugLog(@"setAttributes called");
-    [self.subscriberAttributesManager setAttributes:attributes appUserID:self.appUserID];
-}
-
-- (void)_setEmail:(nullable NSString *)email {
-    RCDebugLog(@"setEmail called");
-    [self.subscriberAttributesManager setEmail:email appUserID:self.appUserID];
-}
-
-- (void)_setPhoneNumber:(nullable NSString *)phoneNumber {
-    RCDebugLog(@"setPhoneNumber called");
-    [self.subscriberAttributesManager setPhoneNumber:phoneNumber appUserID:self.appUserID];
-}
-
-- (void)_setDisplayName:(nullable NSString *)displayName {
-    RCDebugLog(@"setDisplayName called");
-    [self.subscriberAttributesManager setDisplayName:displayName appUserID:self.appUserID];
-}
-
-- (void)_setPushToken:(nullable NSData *)pushToken {
-    RCDebugLog(@"setPushToken called");
-    [self.subscriberAttributesManager setPushToken:pushToken appUserID:self.appUserID];
-}
-
-- (void)_setPushTokenString:(nullable NSString *)pushToken {
-    RCDebugLog(@"setPushTokenString called");
-    [self.subscriberAttributesManager setPushTokenString:pushToken appUserID:self.appUserID];
-}
-
 - (void)configureSubscriberAttributesManager {
     [self subscribeToAppDidBecomeActiveNotifications];
     [self subscribeToAppBackgroundedNotifications];

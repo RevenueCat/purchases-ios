@@ -76,6 +76,138 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
         invokedSetPushTokenStringParameters = (pushToken, appUserID)
         invokedSetPushTokenStringParametersList.append((pushToken, appUserID))
     }
+    
+    var invokedSetAdjustID = false
+    var invokedSetAdjustIDCount = 0
+    var invokedSetAdjustIDParameters: (adjustID: String?, appUserID: String?)?
+    var invokedSetAdjustIDParametersList = [(pushToken: String?, appUserID: String?)]()
+    
+    override func setAdjustID(_ adjustID: String?, appUserID: String) {
+        invokedSetAdjustID = true
+        invokedSetAdjustIDCount += 1
+        invokedSetAdjustIDParameters = (adjustID, appUserID)
+        invokedSetAdjustIDParametersList.append((adjustID, appUserID))
+    }
+
+    var invokedSetAppsflyerID = false
+    var invokedSetAppsflyerIDCount = 0
+    var invokedSetAppsflyerIDParameters: (appsflyerID: String?, appUserID: String?)?
+    var invokedSetAppsflyerIDParametersList = [(appsflyerID: String?, appUserID: String?)]()
+
+    override func setAppsflyerID(_ appsflyerID: String?, appUserID: String) {
+        invokedSetAppsflyerID = true
+        invokedSetAppsflyerIDCount += 1
+        invokedSetAppsflyerIDParameters = (appsflyerID, appUserID)
+        invokedSetAppsflyerIDParametersList.append((appsflyerID, appUserID))
+    }
+
+    var invokedSetFBAnonymousID = false
+    var invokedSetFBAnonymousIDCount = 0
+    var invokedSetFBAnonymousIDParameters: (fbAnonymousID: String?, appUserID: String?)?
+    var invokedSetFBAnonymousIDParametersList = [(fbAnonymousID: String?, appUserID: String?)]()
+
+    override func setFBAnonymousID(_ fbAnonymousID: String?, appUserID: String) {
+        invokedSetFBAnonymousID = true
+        invokedSetFBAnonymousIDCount += 1
+        invokedSetFBAnonymousIDParameters = (fbAnonymousID, appUserID)
+        invokedSetFBAnonymousIDParametersList.append((fbAnonymousID, appUserID))
+    }
+
+    var invokedSetMparticleID = false
+    var invokedSetMparticleIDCount = 0
+    var invokedSetMparticleIDParameters: (mparticleID: String?, appUserID: String?)?
+    var invokedSetMparticleIDParametersList = [(mparticleID: String?, appUserID: String?)]()
+
+    override func setMparticleID(_ mparticleID: String?, appUserID: String) {
+        invokedSetMparticleID = true
+        invokedSetMparticleIDCount += 1
+        invokedSetMparticleIDParameters = (mparticleID, appUserID)
+        invokedSetMparticleIDParametersList.append((mparticleID, appUserID))
+    }
+
+    var invokedSetOnesignalID = false
+    var invokedSetOnesignalIDCount = 0
+    var invokedSetOnesignalIDParameters: (onesignalID: String?, appUserID: String?)?
+    var invokedSetOnesignalIDParametersList = [(onesignalID: String?, appUserID: String?)]()
+
+    override func setOnesignalID(_ onesignalID: String?, appUserID: String) {
+        invokedSetOnesignalID = true
+        invokedSetOnesignalIDCount += 1
+        invokedSetOnesignalIDParameters = (onesignalID, appUserID)
+        invokedSetOnesignalIDParametersList.append((onesignalID, appUserID))
+    }
+
+    var invokedSetMediaSource = false
+    var invokedSetMediaSourceCount = 0
+    var invokedSetMediaSourceParameters: (mediaSource: String?, appUserID: String?)?
+    var invokedSetMediaSourceParametersList = [(mediaSource: String?, appUserID: String?)]()
+
+    override func setMediaSource(_ mediaSource: String?, appUserID: String) {
+        invokedSetMediaSource = true
+        invokedSetMediaSourceCount += 1
+        invokedSetMediaSourceParameters = (mediaSource, appUserID)
+        invokedSetMediaSourceParametersList.append((mediaSource, appUserID))
+    }
+
+    var invokedSetCampaign = false
+    var invokedSetCampaignCount = 0
+    var invokedSetCampaignParameters: (campaign: String?, appUserID: String?)?
+    var invokedSetCampaignParametersList = [(campaign: String?, appUserID: String?)]()
+
+    override func setCampaign(_ campaign: String?, appUserID: String) {
+        invokedSetCampaign = true
+        invokedSetCampaignCount += 1
+        invokedSetCampaignParameters = (campaign, appUserID)
+        invokedSetCampaignParametersList.append((campaign, appUserID))
+    }
+
+    var invokedSetAdGroup = false
+    var invokedSetAdGroupCount = 0
+    var invokedSetAdGroupParameters: (adGroup: String?, appUserID: String?)?
+    var invokedSetAdGroupParametersList = [(adGroup: String?, appUserID: String?)]()
+
+    override func setAdGroup(_ adGroup: String?, appUserID: String) {
+        invokedSetAdGroup = true
+        invokedSetAdGroupCount += 1
+        invokedSetAdGroupParameters = (adGroup, appUserID)
+        invokedSetAdGroupParametersList.append((adGroup, appUserID))
+    }
+
+    var invokedSetAd = false
+    var invokedSetAdCount = 0
+    var invokedSetAdParameters: (ad: String?, appUserID: String?)?
+    var invokedSetAdParametersList = [(ad: String?, appUserID: String?)]()
+
+    override func setAd(_ ad: String?, appUserID: String) {
+        invokedSetAd = true
+        invokedSetAdCount += 1
+        invokedSetAdParameters = (ad, appUserID)
+        invokedSetAdParametersList.append((ad, appUserID))
+    }
+
+    var invokedSetKeyword = false
+    var invokedSetKeywordCount = 0
+    var invokedSetKeywordParameters: (keyword: String?, appUserID: String?)?
+    var invokedSetKeywordParametersList = [(keyword: String?, appUserID: String?)]()
+
+    override func setKeyword(_ keyword: String?, appUserID: String) {
+        invokedSetKeyword = true
+        invokedSetKeywordCount += 1
+        invokedSetKeywordParameters = (keyword, appUserID)
+        invokedSetKeywordParametersList.append((keyword, appUserID))
+    }
+
+    var invokedSetCreative = false
+    var invokedSetCreativeCount = 0
+    var invokedSetCreativeParameters: (creative: String?, appUserID: String?)?
+    var invokedSetCreativeParametersList = [(creative: String?, appUserID: String?)]()
+
+    override func setCreative(_ creative: String?, appUserID: String) {
+        invokedSetCreative = true
+        invokedSetCreativeCount += 1
+        invokedSetCreativeParameters = (creative, appUserID)
+        invokedSetCreativeParametersList.append((creative, appUserID))
+    }
 
     var invokedUnsyncedAttributesByKey = false
     var invokedUnsyncedAttributesByKeyCount = 0
@@ -114,5 +246,17 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
         invokedSyncAttributesForAllUsersCount += 1
         invokedSyncAttributesForAllUsersParameters = (currentAppUserID, ())
         invokedSyncAttributesForAllUsersParametersList.append((currentAppUserID, ()))
+    }
+    
+    var invokedCollectDeviceIdentifiers = false
+    var invokedCollectDeviceIdentifiersCount = 0
+    var invokedCollectDeviceIdentifiersParameters: (appUserID: String?, Void)?
+    var invokedCollectDeviceIdentifiersParametersList = [(appUserID: String?, Void)]()
+    
+    override func collectDeviceIdentifiers(forAppUserID appUserID: String) {
+        invokedCollectDeviceIdentifiers = true
+        invokedCollectDeviceIdentifiersCount += 1
+        invokedCollectDeviceIdentifiersParameters = (appUserID, ())
+        invokedCollectDeviceIdentifiersParametersList.append((appUserID, ()))
     }
 }

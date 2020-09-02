@@ -220,6 +220,125 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             mockIdentityManager.currentAppUserID
     }
 
+    func testSetAdjustIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setAdjustID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetAdjustIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetAdjustIDParameters?.adjustID) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetAdjustIDParameters?.appUserID) == mockIdentityManager
+                .currentAppUserID
+    }
+
+    func testSetAppsflyerIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setAppsflyerID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetAppsflyerIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetAppsflyerIDParameters?.appsflyerID) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetAppsflyerIDParameters?.appUserID) == mockIdentityManager
+                .currentAppUserID
+    }
+
+    func testSetFBAnonymousIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setFBAnonymousID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetFBAnonymousIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetFBAnonymousIDParameters?.fbAnonymousID) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetFBAnonymousIDParameters?.appUserID) == mockIdentityManager
+                .currentAppUserID
+    }
+
+    func testSetMparticleIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setMparticleID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetMparticleIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetMparticleIDParameters?.mparticleID) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetMparticleIDParameters?.appUserID) == mockIdentityManager
+                .currentAppUserID
+    }
+
+    func testSetOnesignalIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setOnesignalID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDParameters?.onesignalID) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDParameters?.appUserID) == mockIdentityManager
+                .currentAppUserID
+    }
+
+    func testSetMediaSourceMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setMediaSource("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetMediaSourceCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetMediaSourceParameters?.mediaSource) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetMediaSourceParameters?.appUserID) == mockIdentityManager
+                .currentAppUserID
+    }
+
+    func testSetCampaignMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setCampaign("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetCampaignCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetCampaignParameters?.campaign) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetCampaignParameters?.appUserID) == mockIdentityManager
+                .currentAppUserID
+    }
+
+    func testSetAdGroupMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setAdGroup("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetAdGroupCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetAdGroupParameters?.adGroup) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetAdGroupParameters?.appUserID) == mockIdentityManager
+                .currentAppUserID
+    }
+
+    func testSetAdMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setAd("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetAdCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetAdParameters?.ad) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetAdParameters?.appUserID) == mockIdentityManager
+                .currentAppUserID
+    }
+
+    func testSetKeywordMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setKeyword("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetKeywordCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetKeywordParameters?.keyword) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetKeywordParameters?.appUserID) == mockIdentityManager
+                .currentAppUserID
+    }
+
+    func testSetCreativeMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.setCreative("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetCreativeCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetCreativeParameters?.creative) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetCreativeParameters?.appUserID) == mockIdentityManager
+                .currentAppUserID
+    }
+
+    func testCollectDeviceIdentifiersMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.collectDeviceIdentifiers()
+        expect(self.mockSubscriberAttributesManager.invokedCollectDeviceIdentifiersCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedCollectDeviceIdentifiersParameters?.appUserID) == mockIdentityManager
+                .currentAppUserID
+    }
+
     // MARK: Post receipt with attributes
 
     func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessful() {

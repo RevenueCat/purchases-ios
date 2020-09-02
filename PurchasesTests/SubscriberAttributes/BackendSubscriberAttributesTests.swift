@@ -258,7 +258,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
        expect(receivedNSError.userInfo[RCSuccessfullySyncedKey]).toNot(beNil())
        expect((receivedNSError.userInfo[RCSuccessfullySyncedKey] as! NSNumber).boolValue) == false
     }
-    
+
     // MARK: PostReceipt with subscriberAttributes
 
     func testPostReceiptWithSubscriberAttributesSendsThemCorrectly() {
