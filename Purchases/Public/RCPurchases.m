@@ -49,7 +49,6 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 @property (nonatomic) RCBackend *backend;
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
-@property (nonatomic) NSUserDefaults *userDefaults;
 
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
 @property (nonatomic) NSMutableDictionary<NSString *, NSString *> *presentedOfferingsByProductIdentifier;
@@ -65,7 +64,6 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 
 @end
 
-static NSString * const RCAttributionDataDefaultsKeyBase = @"com.revenuecat.userdefaults.attribution.";
 static NSMutableArray<RCAttributionData *> * _Nullable postponedAttributionData;
 static RCPurchases *_sharedPurchases = nil;
 
@@ -273,7 +271,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.identityManager = identityManager;
 
         self.notificationCenter = notificationCenter;
-        self.userDefaults = userDefaults;
 
         self.productsByIdentifier = [NSMutableDictionary new];
         self.presentedOfferingsByProductIdentifier = [NSMutableDictionary new];
@@ -364,10 +361,10 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     if (network == RCAttributionNetworkAppsFlyer && networkUserId == nil) {
         RCErrorLog(@"⚠️ The parameter networkUserId is REQUIRED for AppsFlyer. ⚠️");
     }
+    NSString *appUserID = self.identityManager.currentAppUserID;
     NSString *networkKey = [NSString stringWithFormat:@"%ld",(long)network];
     NSString *identifierForAdvertisers = [self.attributionFetcher identifierForAdvertisers];
-    NSString *cacheKey = [self attributionDataUserDefaultCacheKeyForAppUserID:self.identityManager.currentAppUserID];
-    NSDictionary *dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks = [self.userDefaults objectForKey:cacheKey];
+    NSDictionary *dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks = [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:appUserID];
     NSString *latestSentToNetwork = dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks[networkKey];
     NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", identifierForAdvertisers, networkUserId];
 
@@ -385,11 +382,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         if (newData.count > 0) {
             [self.backend postAttributionData:newData
                                   fromNetwork:network
-                                 forAppUserID:self.identityManager.currentAppUserID
+                                 forAppUserID:appUserID
                                    completion:^(NSError * _Nullable error) {
                                        if (error == nil) {
-                                           [self.userDefaults setObject:newDictToCache
-                                                                 forKey:cacheKey];
+                                           [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newData
+                                                                                      forAppUserID:appUserID];
                                        }
                                    }];
         }
@@ -456,7 +453,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    [self.userDefaults removeObjectForKey:[self attributionDataUserDefaultCacheKeyForAppUserID:self.appUserID]];
+    [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:nil
+                                               forAppUserID:self.identityManager.currentAppUserID];
     [self.identityManager resetAppUserID];
     [self updateAllCachesWithCompletionBlock:completion];
 }
@@ -1154,13 +1152,9 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network {
-    NSString *cacheKey = [NSString stringWithFormat:@"%ld", (long)network];
-    NSDictionary *cachedDict = [self.userDefaults objectForKey:[self attributionDataUserDefaultCacheKeyForAppUserID:self.appUserID]];
-    return cachedDict[cacheKey];
-}
-
-- (NSString *)attributionDataUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {
-    return [RCAttributionDataDefaultsKeyBase stringByAppendingString:appUserID];
+    NSString *networkID = [NSString stringWithFormat:@"%ld", (long)network];
+    NSDictionary *cachedDict = [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:self.identityManager.currentAppUserID];
+    return cachedDict[networkID];
 }
 
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction {

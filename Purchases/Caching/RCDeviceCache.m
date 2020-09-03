@@ -28,6 +28,7 @@ NSString *RCAppUserDefaultsKey = RC_CACHE_KEY_PREFIX @".appUserID.new";
 NSString *RCPurchaserInfoAppUserDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".purchaserInfo.";
 NSString *RCLegacySubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttributes.";
 NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttributes";
+NSString *RCAttributionDataDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".attribution.";
 #define CACHE_DURATION_IN_SECONDS 60 * 5
 
 
@@ -369,6 +370,24 @@ NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttribute
 - (NSString *)legacySubscriberAttributesCacheKeyForAppUserID:(NSString *)appUserID {
     NSString *attributeKey = [NSString stringWithFormat:@"%@", appUserID];
     return [RCLegacySubscriberAttributesKeyBase stringByAppendingString:attributeKey];
+}
+
+#pragma mark - attribution
+
+- (nullable NSDictionary *)latestNetworkAndAdvertisingIdsSentForAppUserID:(NSString *)appUserID {
+    NSString *cacheKey = [self attributionDataCacheKeyForAppForAppUserID:appUserID];
+    return [self.userDefaults objectForKey:cacheKey];
+}
+
+- (void)setLatestNetworkAndAdvertisingIdsSent:(nullable NSDictionary *)latestNetworkAndAdvertisingIdsSent
+                                 forAppUserID:(nullable NSString *)appUserID {
+    NSString *cacheKey = [self attributionDataCacheKeyForAppForAppUserID:appUserID];
+    [self.userDefaults setObject:latestNetworkAndAdvertisingIdsSent
+                          forKey:cacheKey];
+}
+
+- (NSString *)attributionDataCacheKeyForAppForAppUserID:(NSString *)appUserID {
+    return [RCAttributionDataDefaultsKeyBase stringByAppendingString:appUserID];
 }
 
 @end

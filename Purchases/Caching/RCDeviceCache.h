@@ -70,6 +70,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)deleteAttributesIfSyncedForAppUserID:(NSString *)appUserID;
 
+#pragma mark - attribution
+
+- (nullable NSDictionary *)latestNetworkAndAdvertisingIdsSentForAppUserID:(NSString *)appUserID;
+
+- (void)setLatestNetworkAndAdvertisingIdsSent:(nullable NSDictionary *)latestNetworkAndAdvertisingIdsSent
+                                 forAppUserID:(nullable NSString *)appUserID;
+
 @end
 
 NS_ASSUME_NONNULL_END
