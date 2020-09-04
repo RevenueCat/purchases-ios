@@ -17,7 +17,9 @@ class PurchasesTests: XCTestCase {
         mockOperationDispatcher = MockOperationDispatcher()
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockReceiptParser = MockReceiptParser()
-        attributionFetcher = MockAttributionFetcher(deviceCache: deviceCache, identityManager: identityManager)
+        attributionFetcher = MockAttributionFetcher(deviceCache: deviceCache,
+                                                    identityManager: identityManager,
+                                                    backend: backend)
     }
 
     override func tearDown() {

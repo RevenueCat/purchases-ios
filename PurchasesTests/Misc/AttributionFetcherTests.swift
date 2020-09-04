@@ -21,7 +21,9 @@ class AttributionFetcherTests: XCTestCase {
         super.setUp()
         deviceCache = MockDeviceCache()
         identityManager = MockIdentityManager(mockAppUserID: "userID")
-        attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache, identityManager: identityManager)
+        attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
+                                                  identityManager: identityManager,
+                                                  backend: MockBackend())
     }
 
     func testCanRotateASIdentifierManager() {

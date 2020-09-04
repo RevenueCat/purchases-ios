@@ -215,7 +215,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWith:deviceCache backend:backend];
     RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc]
                                                                       initWithDeviceCache:deviceCache
-                                                                          identityManager:identityManager];
+                                                                          identityManager:identityManager
+                                                                                  backend:backend];
     RCSubscriberAttributesManager *subscriberAttributesManager =
             [[RCSubscriberAttributesManager alloc] initWithBackend:backend
                                                        deviceCache:deviceCache
@@ -358,42 +359,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
            forNetworkUserId:(nullable NSString *)networkUserId {
-    if (data[@"rc_appsflyer_id"]) {
-        RCErrorLog(@"⚠️ The parameter key rc_appsflyer_id is deprecated. Pass networkUserId to addAttribution instead. ⚠️");
-    }
-    if (network == RCAttributionNetworkAppsFlyer && networkUserId == nil) {
-        RCErrorLog(@"⚠️ The parameter networkUserId is REQUIRED for AppsFlyer. ⚠️");
-    }
-    NSString *appUserID = self.identityManager.currentAppUserID;
-    NSString *networkKey = [NSString stringWithFormat:@"%ld",(long)network];
-    NSString *identifierForAdvertisers = [self.attributionFetcher identifierForAdvertisers];
-    NSDictionary *dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks = [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:appUserID];
-    NSString *latestSentToNetwork = dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks[networkKey];
-    NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", identifierForAdvertisers, networkUserId];
-
-    if ([latestSentToNetwork isEqualToString:newValueForNetwork]) {
-        RCDebugLog(@"Attribution data is the same as latest. Skipping.");
-    } else {
-        NSMutableDictionary<NSString *, NSString *> *newDictToCache = [NSMutableDictionary dictionaryWithDictionary:dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks];
-        newDictToCache[networkKey] = newValueForNetwork;
-
-        NSMutableDictionary *newData = [NSMutableDictionary dictionaryWithDictionary:data];
-        newData[@"rc_idfa"] = identifierForAdvertisers;
-        newData[@"rc_idfv"] = [self.attributionFetcher identifierForVendor];
-        newData[@"rc_attribution_network_id"] = networkUserId;
-
-        if (newData.count > 0) {
-            [self.backend postAttributionData:newData
-                                  fromNetwork:network
-                                 forAppUserID:appUserID
-                                   completion:^(NSError * _Nullable error) {
-                                       if (error == nil) {
-                                           [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newData
-                                                                                      forAppUserID:appUserID];
-                                       }
-                                   }];
-        }
-    }
+    [self.attributionFetcher postAttributionData:data
+                                     fromNetwork:network
+                                forNetworkUserId:networkUserId];
 }
 
 + (void)addAttributionData:(NSDictionary *)data

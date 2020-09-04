@@ -12,14 +12,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCDeviceCache, RCIdentityManager;
+@class RCDeviceCache, RCIdentityManager, RCBackend;
 
 typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *_Nullable, NSError *_Nullable);
 
 @interface RCAttributionFetcher : NSObject
 
 - (instancetype)initWithDeviceCache:(RCDeviceCache *)deviceCache
-                    identityManager:(RCIdentityManager *)identityManager NS_DESIGNATED_INITIALIZER;
+                    identityManager:(RCIdentityManager *)identityManager
+                            backend:(RCBackend *)backend NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -30,6 +31,10 @@ typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *
 - (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler;
 
 - (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network;
+
+- (void)postAttributionData:(NSDictionary *)data
+                fromNetwork:(RCAttributionNetwork)network
+           forNetworkUserId:(nullable NSString *)networkUserId;
 
 @end
 
