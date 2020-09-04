@@ -47,6 +47,16 @@ NS_ASSUME_NONNULL_BEGIN
     return copy;
 }
 
+- (NSString *)description {
+    NSMutableString *description = [NSMutableString stringWithFormat:@"<%@: ", NSStringFromClass([self class])];
+    [description appendFormat:@"httpMethod=%@\n", self.httpMethod];
+    [description appendFormat:@"path=%@\n", self.path];
+    [description appendFormat:@"requestBody=%@\n", self.requestBody];
+    [description appendFormat:@"headers=%@\n", self.headers];
+    [description appendString:@">"];
+    return description;
+}
+
 
 @end
 
