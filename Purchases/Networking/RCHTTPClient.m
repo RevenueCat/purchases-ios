@@ -36,23 +36,40 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (void)performSerialRequest:(NSString *)httpMethod
-                        path:(NSString *)path
-                        body:(nullable NSDictionary *)requestBody
-                     headers:(nullable NSDictionary<NSString *, NSString *> *)headers
-           completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler {
-    RCHTTPRequest *rcRequest = [[RCHTTPRequest alloc] initWithHTTPMethod:httpMethod
-                                                                  path:path
-                                                                  body:requestBody
-                                                               headers:headers
-                                                     completionHandler:completionHandler];
-    NSInteger queuedRequestsTotal = -1;
-    @synchronized (self) {
-        queuedRequestsTotal = self.queuedRequests.count;
-        [self.queuedRequests addObject:rcRequest];
-    }
-    if (queuedRequestsTotal == 0) {
+- (void)performRequest:(NSString *)httpMethod
+                  path:(NSString *)path
+                  body:(nullable NSDictionary *)requestBody
+               headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+     completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler {
+    [self performRequest:httpMethod
+                    path:path
+                    body:requestBody
+                 headers:headers
+       completionHandler:completionHandler
+         performSerially:NO];
+}
 
+- (void)performRequest:(NSString *)httpMethod
+                  path:(NSString *)path
+                  body:(nullable NSDictionary *)requestBody
+               headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+     completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler
+       performSerially:(BOOL)performSerially {
+    NSInteger queuedRequestsTotal = 0;
+
+    if (performSerially) {
+        RCHTTPRequest *rcRequest = [[RCHTTPRequest alloc] initWithHTTPMethod:httpMethod
+                                                                        path:path
+                                                                        body:requestBody
+                                                                     headers:headers
+                                                           completionHandler:completionHandler];
+        @synchronized (self) {
+            queuedRequestsTotal = self.queuedRequests.count;
+            [self.queuedRequests addObject:rcRequest];
+        }
+    }
+    if (performSerially && queuedRequestsTotal > 0) {
+        return;
     }
 
     [self assertIsValidRequestWithMethod:httpMethod body:requestBody];
@@ -75,46 +92,11 @@ NS_ASSUME_NONNULL_BEGIN
                        error:error
                      request:urlRequest
            completionHandler:completionHandler
-beginNextRequestWhenFinished:NO];
+beginNextRequestWhenFinished:performSerially];
     };
 
     RCDebugLog(@"%@ %@", urlRequest.HTTPMethod, urlRequest.URL.path);
     NSURLSessionTask *task = [self.session dataTaskWithRequest:urlRequest
-                                             completionHandler:block];
-    [task resume];
-}
-
-
-- (void)performRequest:(NSString *)HTTPMethod
-                  path:(NSString *)path
-                  body:(nullable NSDictionary *)requestBody
-               headers:(nullable NSDictionary<NSString *, NSString *> *)headers
-     completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler {
-    [self assertIsValidRequestWithMethod:HTTPMethod body:requestBody];
-
-    NSMutableDictionary *defaultHeaders = self.defaultHeaders.mutableCopy;
-    [defaultHeaders addEntriesFromDictionary:headers];
-
-    NSMutableURLRequest *request = [self createRequestWithMethod:HTTPMethod
-                                                            path:path
-                                                     requestBody:requestBody
-                                                         headers:defaultHeaders];
-
-    typedef void (^SessionCompletionBlock)(NSData *_Nullable, NSURLResponse *_Nullable, NSError *_Nullable);
-
-    SessionCompletionBlock block = ^void(NSData *_Nullable data,
-                                         NSURLResponse *_Nullable response,
-                                         NSError *_Nullable error) {
-        [self handleResponse:response
-                        data:data
-                       error:error
-                     request:request
-           completionHandler:completionHandler
-beginNextRequestWhenFinished:NO];
-    };
-
-    RCDebugLog(@"%@ %@", request.HTTPMethod, request.URL.path);
-    NSURLSessionTask *task = [self.session dataTaskWithRequest:request
                                              completionHandler:block];
     [task resume];
 }
@@ -147,6 +129,24 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
 
     if (completionHandler != nil) {
         completionHandler(statusCode, responseObject, error);
+    }
+
+    RCHTTPRequest * _Nullable nextRequest;
+    if (beginNextRequestWhenFinished) {
+        @synchronized (self) {
+            if (self.queuedRequests.count > 0) {
+                nextRequest = [self.queuedRequests.firstObject copy];
+                [self.queuedRequests removeObjectAtIndex:0];
+            }
+        }
+        if (nextRequest) {
+            [self performRequest:nextRequest.httpMethod
+                            path:nextRequest.path
+                            body:nextRequest.requestBody
+                         headers:nextRequest.headers
+               completionHandler:nextRequest.completionHandler
+                 performSerially:YES];
+        }
     }
 }
 
