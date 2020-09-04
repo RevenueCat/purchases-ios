@@ -10,6 +10,7 @@
 #import "RCLogUtils.h"
 #import "RCHTTPStatusCodes.h"
 #import "RCSystemInfo.h"
+#import "RCHTTPRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) NSURLSession *session;
 @property (nonatomic, weak) RCSystemInfo *systemInfo;
+@property(nonatomic, copy) NSMutableArray<RCHTTPRequest *> *queuedRequests;
 
 @end
 
@@ -29,9 +31,59 @@ NS_ASSUME_NONNULL_BEGIN
         config.HTTPMaximumConnectionsPerHost = 1;
         self.session = [NSURLSession sessionWithConfiguration:config];
         self.systemInfo = systemInfo;
+        self.queuedRequests = [[NSMutableArray alloc] init];
     }
     return self;
 }
+
+- (void)performSerialRequest:(NSString *)httpMethod
+                        path:(NSString *)path
+                        body:(nullable NSDictionary *)requestBody
+                     headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+           completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler {
+    RCHTTPRequest *rcRequest = [[RCHTTPRequest alloc] initWithHTTPMethod:httpMethod
+                                                                  path:path
+                                                                  body:requestBody
+                                                               headers:headers
+                                                     completionHandler:completionHandler];
+    NSInteger queuedRequestsTotal = -1;
+    @synchronized (self) {
+        queuedRequestsTotal = self.queuedRequests.count;
+        [self.queuedRequests addObject:rcRequest];
+    }
+    if (queuedRequestsTotal == 0) {
+
+    }
+
+    [self assertIsValidRequestWithMethod:httpMethod body:requestBody];
+
+    NSMutableDictionary *defaultHeaders = self.defaultHeaders.mutableCopy;
+    [defaultHeaders addEntriesFromDictionary:headers];
+
+    NSMutableURLRequest *urlRequest = [self createRequestWithMethod:httpMethod
+                                                               path:path
+                                                        requestBody:requestBody
+                                                            headers:defaultHeaders];
+
+    typedef void (^SessionCompletionBlock)(NSData *_Nullable, NSURLResponse *_Nullable, NSError *_Nullable);
+
+    SessionCompletionBlock block = ^void(NSData *_Nullable data,
+                                         NSURLResponse *_Nullable response,
+                                         NSError *_Nullable error) {
+        [self handleResponse:response
+                        data:data
+                       error:error
+                     request:urlRequest
+           completionHandler:completionHandler
+beginNextRequestWhenFinished:NO];
+    };
+
+    RCDebugLog(@"%@ %@", urlRequest.HTTPMethod, urlRequest.URL.path);
+    NSURLSessionTask *task = [self.session dataTaskWithRequest:urlRequest
+                                             completionHandler:block];
+    [task resume];
+}
+
 
 - (void)performRequest:(NSString *)HTTPMethod
                   path:(NSString *)path
@@ -53,7 +105,12 @@ NS_ASSUME_NONNULL_BEGIN
     SessionCompletionBlock block = ^void(NSData *_Nullable data,
                                          NSURLResponse *_Nullable response,
                                          NSError *_Nullable error) {
-        [self handleResponse:response data:data error:error request:request completionHandler:completionHandler];
+        [self handleResponse:response
+                        data:data
+                       error:error
+                     request:request
+           completionHandler:completionHandler
+beginNextRequestWhenFinished:NO];
     };
 
     RCDebugLog(@"%@ %@", request.HTTPMethod, request.URL.path);
@@ -62,11 +119,12 @@ NS_ASSUME_NONNULL_BEGIN
     [task resume];
 }
 
-- (void)handleResponse:(NSURLResponse *)response
-                  data:(NSData *)data
-                 error:(NSError *)error
-               request:(NSMutableURLRequest *)request
-     completionHandler:(RCHTTPClientResponseHandler)completionHandler {
+- (void)      handleResponse:(NSURLResponse *)response
+                        data:(NSData *)data
+                       error:(NSError *)error
+                     request:(NSMutableURLRequest *)request
+           completionHandler:(RCHTTPClientResponseHandler)completionHandler
+beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
     NSInteger statusCode = RC_NETWORK_CONNECT_TIMEOUT_ERROR;
     NSDictionary *responseObject = nil;
 

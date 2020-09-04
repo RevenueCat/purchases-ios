@@ -27,6 +27,12 @@ typedef void(^RCHTTPClientResponseHandler)(NSInteger statusCode,
                headers:(nullable NSDictionary<NSString *, NSString *> *)headers
      completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler;
 
+- (void)performSerialRequest:(NSString *)httpMethod
+                        path:(NSString *)path
+                        body:(nullable NSDictionary *)requestBody
+                     headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+           completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler;
+
 @end
 
 NS_ASSUME_NONNULL_END
