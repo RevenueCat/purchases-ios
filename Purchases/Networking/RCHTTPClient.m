@@ -69,8 +69,10 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
     if (performSerially && queuedRequestsTotal > 0) {
+        RCDebugLog(@"there are %@ requests left in the queue, queueing request", queuedRequestsTotal);
         return;
     }
+    RCDebugLog(@"there are no requests left in the queue, starting request");
 
     [self assertIsValidRequestWithMethod:httpMethod body:requestBody];
 
