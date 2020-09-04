@@ -10,13 +10,14 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-@interface RCHTTPRequest : NSObject
+@interface RCHTTPRequest : NSObject <NSCopying, NSCopying>
 
 - (instancetype)initWithHTTPMethod:(NSString *)httpMethod
                               path:(NSString *)path
                               body:(nullable NSDictionary *)requestBody
                            headers:(nullable NSDictionary<NSString *, NSString *> *)headers
                  completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler;
+- (id)copyWithZone:(NSZone *)zone;
 
 @property(readonly, copy, nonatomic) NSString *httpMethod;
 @property(readonly, copy, nonatomic) NSString *path;

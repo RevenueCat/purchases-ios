@@ -17,8 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCHTTPClient ()
 
 @property (nonatomic) NSURLSession *session;
-@property (nonatomic, weak) RCSystemInfo *systemInfo;
-@property(nonatomic, copy) NSMutableArray<RCHTTPRequest *> *queuedRequests;
+@property (nonatomic) RCSystemInfo *systemInfo;
+@property (nonatomic) NSMutableArray<RCHTTPRequest *> *queuedRequests;
 
 @end
 

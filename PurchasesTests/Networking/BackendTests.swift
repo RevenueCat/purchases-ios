@@ -16,6 +16,7 @@ import Purchases
 class BackendTests: XCTestCase {
     struct HTTPRequest {
         let HTTPMethod: String
+        let serially: Bool
         let path: String
         let body: [AnyHashable : Any]?
         let headers: [String: String]?
@@ -34,11 +35,20 @@ class BackendTests: XCTestCase {
 
         var shouldFinish = true
 
-        override func performRequest(_ HTTPMethod: String, path: String, body requestBody: [AnyHashable : Any]?, headers: [String : String]?, completionHandler: RCHTTPClientResponseHandler? = nil) {
+        override func performRequest(_ HTTPMethod: String,
+                                     serially: Bool,
+                                     path: String,
+                                     body requestBody: [AnyHashable : Any]?,
+                                     headers: [String : String]?,
+                                     completionHandler: RCHTTPClientResponseHandler? = nil) {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
 
-            calls.append(HTTPRequest(HTTPMethod: HTTPMethod, path: path, body: requestBody, headers: headers))
+            calls.append(HTTPRequest(HTTPMethod: HTTPMethod,
+                                     serially: serially,
+                                     path: path,
+                                     body: requestBody,
+                                     headers: headers))
 
             if shouldFinish {
                 DispatchQueue.main.async {
@@ -105,7 +115,7 @@ class BackendTests: XCTestCase {
             completionCalled = true
         })
 
-        let expectedCall = HTTPRequest(HTTPMethod: "POST", path: "/receipts", body: [
+        let expectedCall = HTTPRequest(HTTPMethod: "POST", serially: true, path: "/receipts", body: [
             "app_user_id": userID,
             "fetch_token": receiptData.base64EncodedString(),
             "is_restore": isRestore,
@@ -374,7 +384,7 @@ class BackendTests: XCTestCase {
             "observer_mode": false
         ]
 
-        let expectedCall = HTTPRequest(HTTPMethod: "POST", path: "/receipts",
+        let expectedCall = HTTPRequest(HTTPMethod: "POST", serially: true, path: "/receipts",
                                        body: body , headers: ["Authorization": "Bearer " + apiKey])
 
         expect(self.httpClient.calls.count).to(equal(1))
@@ -1064,7 +1074,7 @@ class BackendTests: XCTestCase {
             ]
         ]
         
-        let expectedCall = HTTPRequest(HTTPMethod: "POST", path: "/receipts",
+        let expectedCall = HTTPRequest(HTTPMethod: "POST", serially: true, path: "/receipts",
                                        body: body , headers: ["Authorization": "Bearer " + apiKey])
         
         expect(self.httpClient.calls.count).to(equal(1))
@@ -1128,7 +1138,7 @@ class BackendTests: XCTestCase {
             ]
         ]
 
-        let expectedCall = HTTPRequest(HTTPMethod: "POST", path: "/offers",
+        let expectedCall = HTTPRequest(HTTPMethod: "POST", serially: true, path: "/offers",
                 body: body, headers: ["Authorization": "Bearer " + apiKey])
 
         expect(self.httpClient.calls.count).to(equal(1))

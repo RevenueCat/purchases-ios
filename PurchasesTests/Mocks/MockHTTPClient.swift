@@ -11,24 +11,29 @@ class MockHTTPClient: RCHTTPClient {
     var stubbedCompletionError: Error? = nil
 
     var invokedPerformRequestParameters: (HTTPMethod: String,
+                                          serially: Bool,
                                           path: String,
                                           requestBody: [AnyHashable: Any]?,
                                           headers: [String: String]?,
                                           completionHandler: RCHTTPClientResponseHandler?)?
     var invokedPerformRequestParametersList = [
         (HTTPMethod: String,
+            serially: Bool,
             path: String,
             requestBody: [AnyHashable: Any]?,
             headers: [String: String]?,
             completionHandler: RCHTTPClientResponseHandler?)]()
 
-    override func performRequest(_ HTTPMethod: String, path: String, body requestBody: [AnyHashable: Any]?,
+    override func performRequest(_ HTTPMethod: String,
+                                 serially: Bool,
+                                 path: String,
+                                 body requestBody: [AnyHashable: Any]?,
                                  headers: [String: String]?,
                                  completionHandler: RCHTTPClientResponseHandler?) {
         invokedPerformRequest = true
         invokedPerformRequestCount += 1
-        invokedPerformRequestParameters = (HTTPMethod, path, requestBody, headers, completionHandler)
-        invokedPerformRequestParametersList.append((HTTPMethod, path, requestBody, headers, completionHandler))
+        invokedPerformRequestParameters = (HTTPMethod, serially, path, requestBody, headers, completionHandler)
+        invokedPerformRequestParametersList.append((HTTPMethod, serially, path, requestBody, headers, completionHandler))
         if (shouldInvokeCompletion) {
             completionHandler?(stubbedCompletionStatusCode,
                                stubbedCompletionResponse,
