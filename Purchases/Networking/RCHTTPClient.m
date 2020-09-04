@@ -42,19 +42,19 @@ NS_ASSUME_NONNULL_BEGIN
                headers:(nullable NSDictionary<NSString *, NSString *> *)headers
      completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler {
     [self performRequest:httpMethod
+                serially:NO
                     path:path
                     body:requestBody
                  headers:headers
-       completionHandler:completionHandler
-         performSerially:NO];
+       completionHandler:completionHandler];
 }
 
 - (void)performRequest:(NSString *)httpMethod
+              serially:(BOOL)performSerially
                   path:(NSString *)path
                   body:(nullable NSDictionary *)requestBody
                headers:(nullable NSDictionary<NSString *, NSString *> *)headers
-     completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler
-       performSerially:(BOOL)performSerially {
+     completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler {
     NSInteger queuedRequestsTotal = 0;
 
     if (performSerially) {
@@ -141,11 +141,11 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
         }
         if (nextRequest) {
             [self performRequest:nextRequest.httpMethod
+                        serially:YES
                             path:nextRequest.path
                             body:nextRequest.requestBody
                          headers:nextRequest.headers
-               completionHandler:nextRequest.completionHandler
-                 performSerially:YES];
+               completionHandler:nextRequest.completionHandler];
         }
     }
 }
