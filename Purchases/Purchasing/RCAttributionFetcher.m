@@ -12,6 +12,7 @@
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
+#import "RCAttributionData.h"
 
 
 @protocol FakeAdClient <NSObject>
@@ -27,6 +28,9 @@
 + (instancetype)sharedManager;
 
 @end
+
+
+static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
 
 @interface RCAttributionFetcher ()
@@ -165,7 +169,7 @@
         latestNetworkIdAndAdvertisingIdentifierSentForNetwork:RCAttributionNetworkAppleSearchAds];
     if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds == nil) {
         [self adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails,
-                                                                            NSError *_Nullable error) {
+                                                              NSError *_Nullable error) {
             NSArray *values = [attributionDetails allValues];
 
             bool hasIadAttribution = values.count != 0 && [values[0][@"iad-attribution"] boolValue];
@@ -177,5 +181,31 @@
         }];
     }
 }
+
+- (void)postPostponedAttributionDataIfNeeded {
+    if (postponedAttributionData) {
+        for (RCAttributionData *attributionData in postponedAttributionData) {
+            [self postAttributionData:attributionData.data
+                          fromNetwork:attributionData.network
+                     forNetworkUserId:attributionData.networkUserId];
+        }
+    }
+
+    postponedAttributionData = nil;
+}
+
+static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
+
++ (void)storePostponedAttributionData:(NSDictionary *)data
+                          fromNetwork:(RCAttributionNetwork)network
+                     forNetworkUserId:(nullable NSString *)networkUserId {
+    if (postponedAttributionData == nil) {
+        postponedAttributionData = [NSMutableArray array];
+    }
+    [postponedAttributionData addObject:[[RCAttributionData alloc] initWithData:data
+                                                                    fromNetwork:network
+                                                               forNetworkUserId:networkUserId]];
+}
+
 @end
 

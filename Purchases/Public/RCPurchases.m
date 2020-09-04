@@ -64,7 +64,6 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 
 @end
 
-static NSMutableArray<RCAttributionData *> * _Nullable postponedAttributionData;
 static RCPurchases *_sharedPurchases = nil;
 
 @implementation RCPurchases
@@ -310,14 +309,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                     selector:@selector(applicationDidBecomeActive:)
                                         name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
 
-        if (postponedAttributionData) {
-            for (RCAttributionData *attributionData in postponedAttributionData) {
-                [self postAttributionData:attributionData.data fromNetwork:attributionData.network forNetworkUserId:attributionData.networkUserId];
-            }
-        }
-
-        postponedAttributionData = nil;
-
+        [self.attributionFetcher postPostponedAttributionDataIfNeeded];
         if (_automaticAppleSearchAdsAttributionCollection) {
             [self.attributionFetcher postAppleSearchAdsAttributionCollection];
         }
@@ -366,10 +358,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         [_sharedPurchases postAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
     } else {
         RCLog(@"There is no instance configured, caching attribution.");
-        if (postponedAttributionData == nil) {
-            postponedAttributionData = [NSMutableArray array];
-        }
-        [postponedAttributionData addObject:[[RCAttributionData alloc] initWithData:data fromNetwork:network forNetworkUserId:networkUserId]];
+        [RCAttributionFetcher storePostponedAttributionData:data
+                                                fromNetwork:network
+                                           forNetworkUserId:networkUserId];
     }
 }
 

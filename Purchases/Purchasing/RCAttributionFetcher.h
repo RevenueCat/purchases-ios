@@ -12,7 +12,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCDeviceCache, RCIdentityManager, RCBackend;
+@class RCDeviceCache, RCIdentityManager, RCBackend, RCAttributionData;
 
 typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *_Nullable, NSError *_Nullable);
 
@@ -35,6 +35,12 @@ typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *
            forNetworkUserId:(nullable NSString *)networkUserId;
 
 - (void)postAppleSearchAdsAttributionCollection;
+
+- (void)postPostponedAttributionDataIfNeeded;
+
++ (void)storePostponedAttributionData:(NSDictionary *)data
+                          fromNetwork:(RCAttributionNetwork)network
+                     forNetworkUserId:(nullable NSString *)networkUserId;
 
 @end
 
