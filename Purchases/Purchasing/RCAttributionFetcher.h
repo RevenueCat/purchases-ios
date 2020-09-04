@@ -8,18 +8,28 @@
 
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
+#import "RCAttributionNetwork.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class RCDeviceCache, RCIdentityManager;
 
 typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *_Nullable, NSError *_Nullable);
 
 @interface RCAttributionFetcher : NSObject
+
+- (instancetype)initWithDeviceCache:(RCDeviceCache *)deviceCache
+                    identityManager:(RCIdentityManager *)identityManager NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 - (nullable NSString *)identifierForAdvertisers;
 
 - (nullable NSString *)identifierForVendor;
 
 - (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler;
+
+- (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network;
 
 @end
 

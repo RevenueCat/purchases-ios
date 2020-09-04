@@ -9,6 +9,9 @@
 #import "RCAttributionFetcher.h"
 #import "RCCrossPlatformSupport.h"
 #import "RCLogUtils.h"
+#import "RCDeviceCache.h"
+#import "RCIdentityManager.h"
+
 
 @protocol FakeAdClient <NSObject>
 
@@ -23,7 +26,24 @@
 
 @end
 
+@interface RCAttributionFetcher()
+
+@property(strong, nonatomic) RCDeviceCache *deviceCache;
+@property(strong, nonatomic) RCIdentityManager *identityManager;
+
+@end
+
+
 @implementation RCAttributionFetcher : NSObject
+
+- (instancetype)initWithDeviceCache:(RCDeviceCache *)deviceCache
+                    identityManager:(RCIdentityManager *)identityManager {
+    if (self = [super init]) {
+        self.deviceCache = deviceCache;
+        self.identityManager = identityManager;
+    }
+    return self;
+}
 
 - (NSString *)rot13:(NSString *)string {
     NSMutableString *rotatedString = [NSMutableString string];
@@ -82,6 +102,12 @@
         [[adClientClass sharedClient] requestAttributionDetailsWithBlock:completionHandler];
     }
 #endif
+}
+
+- (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network {
+    NSString *networkID = [NSString stringWithFormat:@"%ld", (long)network];
+    NSDictionary *cachedDict = [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:self.identityManager.currentAppUserID];
+    return cachedDict[networkID];
 }
 
 @end

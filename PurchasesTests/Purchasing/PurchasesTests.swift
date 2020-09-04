@@ -17,6 +17,7 @@ class PurchasesTests: XCTestCase {
         mockOperationDispatcher = MockOperationDispatcher()
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockReceiptParser = MockReceiptParser()
+        attributionFetcher = MockAttributionFetcher(deviceCache: deviceCache, identityManager: identityManager)
     }
 
     override func tearDown() {
@@ -179,15 +180,15 @@ class PurchasesTests: XCTestCase {
     let storeKitWrapper = MockStoreKitWrapper()
     let notificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
-    let attributionFetcher = MockAttributionFetcher()
     let offeringsFactory = MockOfferingsFactory()
     let deviceCache = MockDeviceCache()
     let subscriberAttributesManager = MockSubscriberAttributesManager()
-    let identityManager = MockUserManager(mockAppUserID: "app_user");
+    let identityManager = MockIdentityManager(mockAppUserID: "app_user");
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
     var mockReceiptParser: MockReceiptParser!
+    var attributionFetcher: MockAttributionFetcher!
 
     let purchasesDelegate = MockPurchasesDelegate()
 

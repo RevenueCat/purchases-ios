@@ -200,7 +200,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
          platformFlavorVersion:(nullable NSString *)platformFlavorVersion {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
-    RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] init];
     RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
                                                       platformFlavorVersion:platformFlavorVersion
                                                          finishTransactions:!observerMode];
@@ -214,6 +213,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
     RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWith:userDefaults];
     RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWith:deviceCache backend:backend];
+    RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc]
+                                                                      initWithDeviceCache:deviceCache
+                                                                          identityManager:identityManager];
     RCSubscriberAttributesManager *subscriberAttributesManager =
             [[RCSubscriberAttributesManager alloc] initWithBackend:backend
                                                        deviceCache:deviceCache
@@ -316,7 +318,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         postponedAttributionData = nil;
 
         if (_automaticAppleSearchAdsAttributionCollection) {
-            NSString *latestNetworkIdAndAdvertisingIdSentToAppleSearchAds = [self latestNetworkIdAndAdvertisingIdentifierSentForNetwork:RCAttributionNetworkAppleSearchAds];
+            NSString *latestNetworkIdAndAdvertisingIdSentToAppleSearchAds = [self.attributionFetcher
+                latestNetworkIdAndAdvertisingIdentifierSentForNetwork:RCAttributionNetworkAppleSearchAds];
             if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds == nil) {
                 [attributionFetcher adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails, NSError *_Nullable error) {
                     NSArray *values = [attributionDetails allValues];
