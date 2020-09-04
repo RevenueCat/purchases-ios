@@ -21,17 +21,19 @@
 
 @end
 
+
 @protocol FakeASIdentifierManager <NSObject>
 
 + (instancetype)sharedManager;
 
 @end
 
-@interface RCAttributionFetcher()
 
-@property(strong, nonatomic) RCDeviceCache *deviceCache;
-@property(strong, nonatomic) RCIdentityManager *identityManager;
-@property(strong, nonatomic) RCBackend *backend;
+@interface RCAttributionFetcher ()
+
+@property (strong, nonatomic) RCDeviceCache *deviceCache;
+@property (strong, nonatomic) RCIdentityManager *identityManager;
+@property (strong, nonatomic) RCBackend *backend;
 
 @end
 
@@ -75,7 +77,8 @@
         NSString *mangledIdentifierPropertyName = @"nqiregvfvatVqragvsvre";
 
         NSString *className = [self rot13:mangledClassName];
-        id <FakeASIdentifierManager> asIdentifierManagerClass = (id <FakeASIdentifierManager>) NSClassFromString(className);
+        id <FakeASIdentifierManager>
+            asIdentifierManagerClass = (id <FakeASIdentifierManager>) NSClassFromString(className);
         if (asIdentifierManagerClass) {
             NSString *identifierPropertyName = [self rot13:mangledIdentifierPropertyName];
             id sharedManager = [asIdentifierManagerClass sharedManager];
@@ -87,7 +90,6 @@
     }
     return nil;
 }
-
 
 - (nullable NSString *)identifierForVendor {
 #if UI_DEVICE_AVAILABLE
@@ -109,8 +111,9 @@
 }
 
 - (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network {
-    NSString *networkID = [NSString stringWithFormat:@"%ld", (long)network];
-    NSDictionary *cachedDict = [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:self.identityManager.currentAppUserID];
+    NSString *networkID = [NSString stringWithFormat:@"%ld", (long) network];
+    NSDictionary *cachedDict =
+        [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:self.identityManager.currentAppUserID];
     return cachedDict[networkID];
 }
 
@@ -124,16 +127,18 @@
         RCErrorLog(@"⚠️ The parameter networkUserId is REQUIRED for AppsFlyer. ⚠️");
     }
     NSString *appUserID = self.identityManager.currentAppUserID;
-    NSString *networkKey = [NSString stringWithFormat:@"%ld",(long)network];
+    NSString *networkKey = [NSString stringWithFormat:@"%ld", (long) network];
     NSString *identifierForAdvertisers = [self identifierForAdvertisers];
-    NSDictionary *dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks = [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:appUserID];
+    NSDictionary *dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks =
+        [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:appUserID];
     NSString *latestSentToNetwork = dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks[networkKey];
     NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", identifierForAdvertisers, networkUserId];
 
     if ([latestSentToNetwork isEqualToString:newValueForNetwork]) {
         RCDebugLog(@"Attribution data is the same as latest. Skipping.");
     } else {
-        NSMutableDictionary<NSString *, NSString *> *newDictToCache = [NSMutableDictionary dictionaryWithDictionary:dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks];
+        NSMutableDictionary<NSString *, NSString *> *newDictToCache =
+            [NSMutableDictionary dictionaryWithDictionary:dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks];
         newDictToCache[networkKey] = newValueForNetwork;
 
         NSMutableDictionary *newData = [NSMutableDictionary dictionaryWithDictionary:data];
@@ -145,7 +150,7 @@
             [self.backend postAttributionData:newData
                                   fromNetwork:network
                                  forAppUserID:appUserID
-                                   completion:^(NSError * _Nullable error) {
+                                   completion:^(NSError *_Nullable error) {
                                        if (error == nil) {
                                            [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newData
                                                                                       forAppUserID:appUserID];
@@ -155,6 +160,22 @@
     }
 }
 
+- (void)postAppleSearchAdsAttributionCollection {
+    NSString *latestNetworkIdAndAdvertisingIdSentToAppleSearchAds = [self
+        latestNetworkIdAndAdvertisingIdentifierSentForNetwork:RCAttributionNetworkAppleSearchAds];
+    if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds == nil) {
+        [self adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails,
+                                                                            NSError *_Nullable error) {
+            NSArray *values = [attributionDetails allValues];
 
+            bool hasIadAttribution = values.count != 0 && [values[0][@"iad-attribution"] boolValue];
+            if (hasIadAttribution) {
+                [self postAttributionData:attributionDetails
+                              fromNetwork:RCAttributionNetworkAppleSearchAds
+                         forNetworkUserId:nil];
+            }
+        }];
+    }
+}
 @end
 

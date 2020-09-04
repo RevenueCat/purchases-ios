@@ -319,18 +319,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         postponedAttributionData = nil;
 
         if (_automaticAppleSearchAdsAttributionCollection) {
-            NSString *latestNetworkIdAndAdvertisingIdSentToAppleSearchAds = [self.attributionFetcher
-                latestNetworkIdAndAdvertisingIdentifierSentForNetwork:RCAttributionNetworkAppleSearchAds];
-            if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds == nil) {
-                [attributionFetcher adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails, NSError *_Nullable error) {
-                    NSArray *values = [attributionDetails allValues];
-
-                    bool hasIadAttribution = values.count != 0 && [values[0][@"iad-attribution"] boolValue];
-                    if (hasIadAttribution) {
-                        [self postAttributionData:attributionDetails fromNetwork:RCAttributionNetworkAppleSearchAds forNetworkUserId:nil];
-                    }
-                }];
-            }
+            [self.attributionFetcher postAppleSearchAdsAttributionCollection];
         }
     }
 
@@ -1120,12 +1109,6 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }
 
     return NO;
-}
-
-- (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network {
-    NSString *networkID = [NSString stringWithFormat:@"%ld", (long)network];
-    NSDictionary *cachedDict = [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:self.identityManager.currentAppUserID];
-    return cachedDict[networkID];
 }
 
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction {
