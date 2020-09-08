@@ -685,7 +685,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)invalidatePurchaserInfoCache {
     RCDebugLog(@"Purchaser info cache is invalidated");
-    [self.deviceCache clearPurchaserInfoCache];
+    [self.deviceCache clearPurchaserInfoCacheForAppUserID:self.appUserID];
 }
 
 #pragma mark Subcriber Attributes

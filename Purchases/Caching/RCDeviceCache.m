@@ -138,10 +138,10 @@ NSString *RCAttributionDataDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".attribution.
     self.purchaserInfoCachesLastUpdated = nil;
 }
 
-- (void)clearPurchaserInfoCache {
+- (void)clearPurchaserInfoCacheForAppUserID:(NSString *)appUserID {
     @synchronized (self) {
         [self clearPurchaserInfoCacheTimestamp];
-        [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:self.cachedAppUserID]];
+        [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
     }
 }
 

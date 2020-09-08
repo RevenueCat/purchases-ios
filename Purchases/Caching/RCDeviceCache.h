@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)clearPurchaserInfoCacheTimestamp;
 
-- (void)clearPurchaserInfoCache;
+- (void)clearPurchaserInfoCacheForAppUserID:(NSString *)appUserID;
 
 - (void)setPurchaserInfoCacheTimestampToNow;
 
