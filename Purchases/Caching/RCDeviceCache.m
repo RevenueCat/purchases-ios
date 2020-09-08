@@ -232,10 +232,6 @@ NSString *RCAttributionDataDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".attribution.
                 unsyncedAttributesByKey[attribute.key] = attribute;
             }
         }
-        RCLog(@"found %lu unsynced attributes for appUserID: %@", unsyncedAttributesByKey.count, appUserID);
-        if (unsyncedAttributesByKey.count > 0) {
-            RCLog(@"unsynced attributes: %@", unsyncedAttributesByKey);
-        }
         return unsyncedAttributesByKey;
     }
 }

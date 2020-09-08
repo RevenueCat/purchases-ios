@@ -24,7 +24,15 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (RCSubscriberAttributeDict)unsyncedAttributesByKey {
-    return [self.subscriberAttributesManager unsyncedAttributesByKeyForAppUserID:self.appUserID];
+    NSString *appUserID = self.appUserID;
+    RCSubscriberAttributeDict unsyncedAttributes = [self.subscriberAttributesManager
+                                                    unsyncedAttributesByKeyForAppUserID:appUserID];
+    RCLog(@"found %lu unsynced attributes for appUserID: %@", unsyncedAttributes.count, appUserID);
+    if (unsyncedAttributes.count > 0) {
+        RCLog(@"unsynced attributes: %@", unsyncedAttributes);
+    }
+
+    return unsyncedAttributes;
 }
 
 - (void)markAttributesAsSyncedIfNeeded:(nullable RCSubscriberAttributeDict)syncedAttributes

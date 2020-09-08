@@ -65,10 +65,12 @@ NS_ASSUME_NONNULL_BEGIN
                                                            completionHandler:completionHandler];
         @synchronized (self) {
             if (self.isPerformingSerialRequest) {
-                RCDebugLog(@"there are %ld requests left in the queue, queueing request", self.queuedRequests.count);
+                RCDebugLog(@"there are %ld requests left in the queue, queueing %@ %@",
+                           self.queuedRequests.count,
+                           httpMethod, path);
                 return;
             } else {
-                RCDebugLog(@"there are no requests left in the queue, starting request");
+                RCDebugLog(@"there are no requests left in the queue, starting request %@ %@", httpMethod, path);
                 self.isPerformingSerialRequest = YES;
             }
             [self.queuedRequests addObject:rcRequest];
