@@ -298,13 +298,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                 [self sendCachedPurchaserInfoIfAvailable];
             }
         }];
-
-        [self configureSubscriberAttributesManager];
-
         self.storeKitWrapper.delegate = self;
-        [self.notificationCenter addObserver:self
-                                    selector:@selector(applicationDidBecomeActive:)
-                                        name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
+
+        [self subscribeToAppStateNotifications];
 
         [self.attributionFetcher postPostponedAttributionDataIfNeeded];
         if (_automaticAppleSearchAdsAttributionCollection) {
@@ -313,6 +309,16 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 
     return self;
+}
+
+- (void)subscribeToAppStateNotifications {
+    [self.notificationCenter addObserver:self
+                                selector:@selector(applicationDidBecomeActive:)
+                                    name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
+    [self.notificationCenter addObserver:self
+                                selector:@selector(syncSubscriberAttributesIfNeeded)
+                                    name:APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME
+                                  object:nil];
 }
 
 - (void)dealloc {
@@ -784,6 +790,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif {
     [self updateAllCachesIfNeeded];
+    [self syncSubscriberAttributesIfNeeded];
 }
 
 - (void)sendCachedPurchaserInfoIfAvailable {

@@ -139,9 +139,11 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
     RCHTTPRequest * _Nullable nextRequest;
     if (beginNextRequestWhenFinished) {
         @synchronized (self) {
+            RCHTTPRequest *request = self.queuedRequests[0];
             [self.queuedRequests removeObjectAtIndex:0];
             self.isPerformingSerialRequest = NO;
-            RCDebugLog(@"serial request done, %ld requests left in the queue", self.queuedRequests.count);
+            RCDebugLog(@"serial request done: %@ %@, %ld requests left in the queue",
+                       request.httpMethod, request.path, self.queuedRequests.count);
             if (self.queuedRequests.count > 0) {
                 nextRequest = self.queuedRequests[0];
             }
