@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSURLSession *session;
 @property (nonatomic) RCSystemInfo *systemInfo;
 @property (nonatomic) NSMutableArray<RCHTTPRequest *> *queuedRequests;
-@property (atomic) BOOL isPerformingSerialRequest;
+@property (nonatomic, nullable) RCHTTPRequest *currentSerialRequest;
 
 @end
 
@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.session = [NSURLSession sessionWithConfiguration:config];
         self.systemInfo = systemInfo;
         self.queuedRequests = [[NSMutableArray alloc] init];
-        self.isPerformingSerialRequest = NO;
+        self.currentSerialRequest = nil;
     }
     return self;
 }
@@ -64,16 +64,16 @@ NS_ASSUME_NONNULL_BEGIN
                                                                      headers:headers
                                                            completionHandler:completionHandler];
         @synchronized (self) {
-            if (self.isPerformingSerialRequest) {
-                RCDebugLog(@"there are %ld requests left in the queue, queueing %@ %@",
+            if (self.currentSerialRequest) {
+                RCDebugLog(@"There's a request currently running and %ld requests left in the queue, queueing %@ %@",
                            self.queuedRequests.count,
                            httpMethod, path);
+                [self.queuedRequests addObject:rcRequest];
                 return;
             } else {
-                RCDebugLog(@"there are no requests left in the queue, starting request %@ %@", httpMethod, path);
-                self.isPerformingSerialRequest = YES;
+                RCDebugLog(@"there are no requests currently running, starting request %@ %@", httpMethod, path);
+                self.currentSerialRequest = rcRequest;
             }
-            [self.queuedRequests addObject:rcRequest];
         }
     }
 
@@ -136,26 +136,25 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
         completionHandler(statusCode, responseObject, error);
     }
 
-    RCHTTPRequest * _Nullable nextRequest;
     if (beginNextRequestWhenFinished) {
         @synchronized (self) {
-            RCHTTPRequest *request = self.queuedRequests[0];
-            [self.queuedRequests removeObjectAtIndex:0];
-            self.isPerformingSerialRequest = NO;
             RCDebugLog(@"serial request done: %@ %@, %ld requests left in the queue",
-                       request.httpMethod, request.path, self.queuedRequests.count);
+                       self.currentSerialRequest.httpMethod, self.currentSerialRequest.path, self.queuedRequests.count);
+            RCHTTPRequest *nextRequest = nil;
+            self.currentSerialRequest = nil;
             if (self.queuedRequests.count > 0) {
                 nextRequest = self.queuedRequests[0];
+                [self.queuedRequests removeObjectAtIndex:0];
             }
-        }
-        if (nextRequest) {
-            RCDebugLog(@"starting the next request in the queue, %@", nextRequest);
-            [self performRequest:nextRequest.httpMethod
-                        serially:YES
-                            path:nextRequest.path
-                            body:nextRequest.requestBody
-                         headers:nextRequest.headers
-               completionHandler:nextRequest.completionHandler];
+            if (nextRequest) {
+                RCDebugLog(@"starting the next request in the queue, %@", nextRequest);
+                [self performRequest:nextRequest.httpMethod
+                            serially:YES
+                                path:nextRequest.path
+                                body:nextRequest.requestBody
+                             headers:nextRequest.headers
+                   completionHandler:nextRequest.completionHandler];
+            }
         }
     }
 }
