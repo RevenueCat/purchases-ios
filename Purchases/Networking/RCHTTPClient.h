@@ -13,8 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 @class RCSystemInfo;
 
 typedef void(^RCHTTPClientResponseHandler)(NSInteger statusCode,
-                                           NSDictionary * _Nullable response,
-                                           NSError * _Nullable error);
+                                           NSDictionary *_Nullable response,
+                                           NSError *_Nullable error);
+
 
 @interface RCHTTPClient : NSObject
 
@@ -28,6 +29,7 @@ typedef void(^RCHTTPClientResponseHandler)(NSInteger statusCode,
                headers:(nullable NSDictionary<NSString *, NSString *> *)headers
      completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler;
 
-    @end
+@end
+
 
 NS_ASSUME_NONNULL_END
