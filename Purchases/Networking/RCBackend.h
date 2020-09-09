@@ -9,9 +9,10 @@
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
 
-#import "RCPurchases.h"
 #import "RCSubscriberAttribute.h"
 #import "RCProductInfo.h"
+#import "RCAttributionNetwork.h"
+
 
 NS_ASSUME_NONNULL_BEGIN
 

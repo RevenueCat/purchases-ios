@@ -10,6 +10,7 @@
 
 #import "RCOffering.h"
 #import "RCOfferings.h"
+#import "RCAttributionNetwork.h"
 
 @class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility;
 @protocol RCPurchasesDelegate;
@@ -51,40 +52,6 @@ typedef void (^RCDeferredPromotionalPurchaseBlock)(RCPurchaseCompletedBlock);
  */
 API_AVAILABLE(ios(12.2), macos(10.14.4))
 typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PaymentDiscountBlock);
-
-/**
- Enum of supported attribution networks
- */
-typedef NS_ENUM(NSInteger, RCAttributionNetwork) {
-    /**
-     Apple's search ads
-     */
-    RCAttributionNetworkAppleSearchAds = 0,
-    /**
-     Adjust https://www.adjust.com/
-     */
-    RCAttributionNetworkAdjust,
-    /**
-     AppsFlyer https://www.appsflyer.com/
-     */
-    RCAttributionNetworkAppsFlyer,
-    /**
-     Branch https://www.branch.io/
-     */
-    RCAttributionNetworkBranch,
-    /**
-     Tenjin https://www.tenjin.io/
-     */
-    RCAttributionNetworkTenjin,
-    /**
-     Facebook https://developers.facebook.com/
-     */
-    RCAttributionNetworkFacebook,
-    /**
-    mParticle https://www.mparticle.com/
-    */
-    RCAttributionNetworkMParticle
-};
 
 /**
  `RCPurchases` is the entry point for Purchases.framework. It should be instantiated as soon as your app has a unique user id for your user. This can be when a user logs in if you have accounts or on launch if you can generate a random user identifier.

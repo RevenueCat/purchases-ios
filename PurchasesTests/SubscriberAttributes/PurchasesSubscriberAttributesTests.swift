@@ -16,10 +16,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     let mockStoreKitWrapper = MockStoreKitWrapper()
     let mockNotificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
-    let mockAttributionFetcher = MockAttributionFetcher()
     let mockOfferingsFactory = MockOfferingsFactory()
     let mockDeviceCache = MockDeviceCache()
-    let mockIdentityManager = MockUserManager(mockAppUserID: "app_user");
+    let mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user");
     let mockSubscriberAttributesManager = MockSubscriberAttributesManager()
     var subscriberAttributeHeight: RCSubscriberAttribute!
     var subscriberAttributeWeight: RCSubscriberAttribute!
@@ -28,6 +27,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                   platformFlavorVersion: nil,
                                                   finishTransactions: true)
     var mockReceiptParser: MockReceiptParser!
+    var mockAttributionFetcher: MockAttributionFetcher!
 
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
@@ -49,6 +49,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         self.mockReceiptParser = MockReceiptParser()
+        self.mockAttributionFetcher = MockAttributionFetcher(deviceCache: mockDeviceCache,
+                                                             identityManager: mockIdentityManager,
+                                                             backend: mockBackend)
     }
 
     override func tearDown() {
@@ -68,7 +71,6 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               backend: mockBackend,
                               storeKitWrapper: mockStoreKitWrapper,
                               notificationCenter: mockNotificationCenter,
-                              userDefaults: userDefaults,
                               systemInfo: systemInfo,
                               offeringsFactory: mockOfferingsFactory,
                               deviceCache: mockDeviceCache,

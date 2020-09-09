@@ -13,39 +13,47 @@ import Purchases
 
 class AttributionFetcherTests: XCTestCase {
 
+    var attributionFetcher: RCAttributionFetcher!
+    var deviceCache: MockDeviceCache!
+    var identityManager: MockIdentityManager!
+
+    override func setUp() {
+        super.setUp()
+        deviceCache = MockDeviceCache()
+        identityManager = MockIdentityManager(mockAppUserID: "userID")
+        attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
+                                                  identityManager: identityManager,
+                                                  backend: MockBackend())
+    }
+
     func testCanRotateASIdentifierManager() {
-        let attributionFetcher = RCAttributionFetcher()
-        
         let expected = "ASIdentifierManager"
         let randomized = attributionFetcher.rot13(expected)
         
         expect { randomized } .notTo(equal(expected))
-        expect { attributionFetcher.rot13(randomized) } .to(equal(expected))
+        expect { self.attributionFetcher.rot13(randomized) } .to(equal(expected))
     }
     
     func testCanRotateASIdentifierManagerBack() {
-        let attributionFetcher = RCAttributionFetcher()
         let expected = "ASIdentifierManager"
         let randomized = "NFVqragvsvreZnantre"
         
-        expect { attributionFetcher.rot13(randomized) } .to(equal(expected))
+        expect { self.attributionFetcher.rot13(randomized) } .to(equal(expected))
     }
     
     func testCanRotateAdvertisingIdentifier() {
-        let attributionFetcher = RCAttributionFetcher()
         let expected = "advertisingIdentifier"
         
         let randomized = attributionFetcher.rot13(expected)
         expect { randomized } .notTo(equal(expected))
-        expect { attributionFetcher.rot13(randomized) } .to(equal(expected))
+        expect { self.attributionFetcher.rot13(randomized) } .to(equal(expected))
     }
     
     func testCanRotateAdvertisingIdentifierBack() {
-        let attributionFetcher = RCAttributionFetcher()
         let expected = "advertisingIdentifier"
         let randomized = "nqiregvfvatVqragvsvre"
         
-        expect { attributionFetcher.rot13(randomized) } .to(equal(expected))
+        expect { self.attributionFetcher.rot13(randomized) } .to(equal(expected))
     }
 
 }

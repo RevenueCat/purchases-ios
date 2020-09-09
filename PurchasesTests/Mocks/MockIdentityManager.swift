@@ -3,7 +3,7 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-class MockUserManager: RCIdentityManager {
+class MockIdentityManager: RCIdentityManager {
 
     var configurationCalled = false
     var identifyError: Error?
