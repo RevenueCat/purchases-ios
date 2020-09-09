@@ -77,6 +77,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setLatestNetworkAndAdvertisingIdsSent:(nullable NSDictionary *)latestNetworkAndAdvertisingIdsSent
                                  forAppUserID:(nullable NSString *)appUserID;
 
+- (void)clearLatestNetworkAndAdvertisingIdsSentForAppUserID:(nullable NSString *)appUserID;
+
 @end
 
 NS_ASSUME_NONNULL_END

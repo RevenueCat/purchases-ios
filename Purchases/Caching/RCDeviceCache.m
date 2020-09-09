@@ -386,6 +386,11 @@ NSString *RCAttributionDataDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".attribution.
                           forKey:cacheKey];
 }
 
+- (void)clearLatestNetworkAndAdvertisingIdsSentForAppUserID:(nullable NSString *)appUserID {
+    NSString *cacheKey = [self attributionDataCacheKeyForAppForAppUserID:appUserID];
+    [self.userDefaults removeObjectForKey:cacheKey];
+}
+
 - (NSString *)attributionDataCacheKeyForAppForAppUserID:(NSString *)appUserID {
     return [RCAttributionDataDefaultsKeyBase stringByAppendingString:appUserID];
 }
