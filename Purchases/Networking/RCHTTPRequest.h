@@ -20,11 +20,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)copyWithZone:(NSZone *)zone;
 - (NSString *)description;
 
-@property(readonly, copy, nonatomic) NSString *httpMethod;
-@property(readonly, copy, nonatomic) NSString *path;
-@property(readonly, copy, nonatomic, nullable)  NSDictionary *requestBody;
-@property(readonly, copy, nonatomic, nullable)  NSDictionary<NSString *, NSString *> *headers;
-@property(readonly, copy, nonatomic, nullable)  RCHTTPClientResponseHandler completionHandler;
+@property (readonly, copy, nonatomic) NSString *httpMethod;
+@property (readonly, copy, nonatomic) NSString *path;
+@property (readonly, copy, nonatomic, nullable) NSDictionary *requestBody;
+@property (readonly, copy, nonatomic, nullable) NSDictionary<NSString *, NSString *> *headers;
+@property (readonly, copy, nonatomic, nullable) RCHTTPClientResponseHandler completionHandler;
 
 @end
 
