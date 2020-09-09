@@ -67,7 +67,8 @@ NS_ASSUME_NONNULL_BEGIN
             if (self.currentSerialRequest) {
                 RCDebugLog(@"There's a request currently running and %ld requests left in the queue, queueing %@ %@",
                            self.queuedRequests.count,
-                           httpMethod, path);
+                           httpMethod,
+                           path);
                 [self.queuedRequests addObject:rcRequest];
                 return;
             } else {
