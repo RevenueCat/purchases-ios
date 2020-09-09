@@ -173,7 +173,8 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(RCBackend
 
 static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
     if ([[skError domain] isEqualToString:SKErrorDomain]) {
-        switch ((SKErrorCode) skError.code) {
+        NSInteger code = (SKErrorCode) skError.code;
+        switch (code) {
             case SKErrorUnknown:
             case CODE_IF_TARGET_IPHONE(SKErrorCloudServiceNetworkConnectionFailed, 7): // Available on iOS 9.3
             case CODE_IF_TARGET_IPHONE(SKErrorCloudServiceRevoked, 8): // Available on iOS 10.3
@@ -194,6 +195,15 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
                 return RCPurchaseInvalidError;
             case CODE_IF_TARGET_IPHONE(SKErrorStoreProductNotAvailable, 5):
                 return RCProductNotAvailableForPurchaseError;
+        #ifdef __IPHONE_14_0
+            case SKErrorOverlayCancelled:
+                return RCPurchaseCancelledError;
+            case SKErrorOverlayInvalidConfiguration:
+            case SKErrorIneligibleForOffer:
+                return RCPurchaseNotAllowedError;
+            case SKErrorOverlayTimeout:
+                return RCStoreProblemError;
+        #endif
         }
     }
     return RCUnknownError;
