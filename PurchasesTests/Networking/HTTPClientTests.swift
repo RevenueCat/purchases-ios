@@ -405,5 +405,33 @@ class HTTPClientTests: XCTestCase {
 
         expect(headerPresent).toEventually(equal(true))
     }
+
+    func testPerformSerialRequestPerformsAllRequestsInTheCorrectOrder() {
+        let path = "/a_random_path"
+        var completionCallCount = 0
+
+        stub(condition: isPath("/v1" + path)) { request in
+            let requestData = request.ohhttpStubs_httpBody!
+            let requestBodyDict = try! JSONSerialization.jsonObject(with: requestData, options: []) as! [String: Any]
+
+            let requestNumber = requestBodyDict["requestNumber"] as! Int
+            expect(requestNumber) == completionCallCount
+
+            let json = "{\"message\": \"something is great up in the cloud\"}"
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
+        }
+
+        let totalRequests = Int.random(in: 50..<100)
+        for requestNumber in 0..<totalRequests {
+            self.client.performRequest("POST",
+                                       serially: true,
+                                       path: path,
+                                       body: ["requestNumber": requestNumber],
+                                       headers: nil) { (status, data, error) in
+                completionCallCount += 1
+            }
+        }
+        expect(completionCallCount).toEventually(equal(totalRequests))
+    }
 }
 
