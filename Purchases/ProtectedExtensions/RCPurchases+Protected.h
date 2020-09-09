@@ -34,7 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
                           backend:(RCBackend *)backend
                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                notificationCenter:(NSNotificationCenter *)notificationCenter
-                     userDefaults:(NSUserDefaults *)userDefaults
                        systemInfo:(RCSystemInfo *)systemInfo
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
                       deviceCache:(RCDeviceCache *)deviceCache

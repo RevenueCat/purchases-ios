@@ -212,10 +212,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
     RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWith:userDefaults];
     RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWith:deviceCache backend:backend];
-    RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc]
-                                                                      initWithDeviceCache:deviceCache
-                                                                          identityManager:identityManager
-                                                                                  backend:backend];
+    RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] initWithDeviceCache:deviceCache
+                                                                                 identityManager:identityManager
+                                                                                         backend:backend];
     RCSubscriberAttributesManager *subscriberAttributesManager =
             [[RCSubscriberAttributesManager alloc] initWithBackend:backend
                                                        deviceCache:deviceCache
@@ -231,7 +230,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                            backend:backend
                    storeKitWrapper:storeKitWrapper
                 notificationCenter:[NSNotificationCenter defaultCenter]
-                      userDefaults:userDefaults
                         systemInfo:systemInfo
                   offeringsFactory:offeringsFactory
                        deviceCache:deviceCache
@@ -249,7 +247,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                           backend:(RCBackend *)backend
                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                notificationCenter:(NSNotificationCenter *)notificationCenter
-                     userDefaults:(NSUserDefaults *)userDefaults
                        systemInfo:(RCSystemInfo *)systemInfo
                  offeringsFactory:(RCOfferingsFactory *)offeringsFactory
                       deviceCache:(RCDeviceCache *)deviceCache

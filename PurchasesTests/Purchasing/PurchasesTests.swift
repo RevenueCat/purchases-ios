@@ -222,7 +222,6 @@ class PurchasesTests: XCTestCase {
                               backend: backend,
                               storeKitWrapper: storeKitWrapper,
                               notificationCenter: notificationCenter,
-                              userDefaults: userDefaults,
                               systemInfo: systemInfo,
                               offeringsFactory: offeringsFactory,
                               deviceCache: deviceCache,

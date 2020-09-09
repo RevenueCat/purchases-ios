@@ -71,7 +71,6 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               backend: mockBackend,
                               storeKitWrapper: mockStoreKitWrapper,
                               notificationCenter: mockNotificationCenter,
-                              userDefaults: userDefaults,
                               systemInfo: systemInfo,
                               offeringsFactory: mockOfferingsFactory,
                               deviceCache: mockDeviceCache,

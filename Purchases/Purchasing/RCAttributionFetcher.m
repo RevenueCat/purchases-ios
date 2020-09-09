@@ -81,8 +81,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         NSString *mangledIdentifierPropertyName = @"nqiregvfvatVqragvsvre";
 
         NSString *className = [self rot13:mangledClassName];
-        id <FakeASIdentifierManager>
-            asIdentifierManagerClass = (id <FakeASIdentifierManager>) NSClassFromString(className);
+        id <FakeASIdentifierManager> asIdentifierManagerClass = (id <FakeASIdentifierManager>) NSClassFromString(className);
         if (asIdentifierManagerClass) {
             NSString *identifierPropertyName = [self rot13:mangledIdentifierPropertyName];
             id sharedManager = [asIdentifierManagerClass sharedManager];
