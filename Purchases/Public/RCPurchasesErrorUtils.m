@@ -198,11 +198,14 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
         #ifdef __IPHONE_14_0
             case SKErrorOverlayCancelled:
                 return RCPurchaseCancelledError;
-            case SKErrorOverlayInvalidConfiguration:
             case SKErrorIneligibleForOffer:
+                return RCPurchaseNotAllowedError;
+            #if !TARGET_OS_TV
+            case SKErrorOverlayInvalidConfiguration:
                 return RCPurchaseNotAllowedError;
             case SKErrorOverlayTimeout:
                 return RCStoreProblemError;
+            #endif
         #endif
         }
     }
