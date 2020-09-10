@@ -513,5 +513,83 @@ class HTTPClientTests: XCTestCase {
         expect(firstRequestFinished).toEventually(beTrue())
         expect(secondRequestFinished).toEventually(beTrue())
     }
+
+    func testPerformConcurrentRequestDoesntWaitForSerialRequestsBeforeStarting() {
+        let path = "/a_random_path"
+        var firstRequestFinished = false
+        var secondRequestFinished = false
+
+        stub(condition: isPath("/v1" + path)) { request in
+            let requestData = request.ohhttpStubs_httpBody!
+            let requestBodyDict = try! JSONSerialization.jsonObject(with: requestData, options: []) as! [String: Any]
+
+            let requestNumber = requestBodyDict["requestNumber"] as! Int
+            if requestNumber == 2 {
+                expect(firstRequestFinished) == false
+            }
+
+            let json = "{\"message\": \"something is great up in the cloud\"}"
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
+                .responseTime(0.1)
+        }
+
+        self.client.performRequest("POST",
+                                   serially: true,
+                                   path: path,
+                                   body: ["requestNumber": 1],
+                                   headers: nil) { (status, data, error) in
+            firstRequestFinished = true
+        }
+
+        self.client.performRequest("POST",
+                                   serially: false,
+                                   path: path,
+                                   body: ["requestNumber": 2],
+                                   headers: nil) { (status, data, error) in
+            secondRequestFinished = true
+        }
+
+        expect(firstRequestFinished).toEventually(beTrue())
+        expect(secondRequestFinished).toEventually(beTrue())
+    }
+
+    func testPerformSerialRequestDoesntWaitForConcurrentRequestsBeforeStarting() {
+        let path = "/a_random_path"
+        var firstRequestFinished = false
+        var secondRequestFinished = false
+
+        stub(condition: isPath("/v1" + path)) { request in
+            let requestData = request.ohhttpStubs_httpBody!
+            let requestBodyDict = try! JSONSerialization.jsonObject(with: requestData, options: []) as! [String: Any]
+
+            let requestNumber = requestBodyDict["requestNumber"] as! Int
+            if requestNumber == 2 {
+                expect(firstRequestFinished) == false
+            }
+
+            let json = "{\"message\": \"something is great up in the cloud\"}"
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
+                .responseTime(0.1)
+        }
+
+        self.client.performRequest("POST",
+                                   serially: false,
+                                   path: path,
+                                   body: ["requestNumber": 1],
+                                   headers: nil) { (status, data, error) in
+            firstRequestFinished = true
+        }
+
+        self.client.performRequest("POST",
+                                   serially: true,
+                                   path: path,
+                                   body: ["requestNumber": 2],
+                                   headers: nil) { (status, data, error) in
+            secondRequestFinished = true
+        }
+
+        expect(firstRequestFinished).toEventually(beTrue())
+        expect(secondRequestFinished).toEventually(beTrue())
+    }
 }
 
