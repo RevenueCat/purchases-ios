@@ -316,7 +316,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                 selector:@selector(applicationDidBecomeActive:)
                                     name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
     [self.notificationCenter addObserver:self
-                                selector:@selector(syncSubscriberAttributesIfNeeded)
+                                selector:@selector(applicationWillResignActive:)
                                     name:APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME
                                   object:nil];
 }
@@ -790,6 +790,10 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif {
     [self updateAllCachesIfNeeded];
+    [self syncSubscriberAttributesIfNeeded];
+}
+
+- (void)applicationWillResignActive:(__unused NSNotification *)notif {
     [self syncSubscriberAttributesIfNeeded];
 }
 
