@@ -419,6 +419,7 @@ class HTTPClientTests: XCTestCase {
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
             return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
+                .responseTime(0.003)
         }
 
         let totalRequests = Int.random(in: 50..<100)
@@ -451,7 +452,7 @@ class HTTPClientTests: XCTestCase {
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
             return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
-                .requestTime(0.1, responseTime: 0)
+                .responseTime(0.1)
         }
 
         self.client.performRequest("POST",
@@ -490,7 +491,7 @@ class HTTPClientTests: XCTestCase {
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
             return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
-                .requestTime(0.1, responseTime: 0)
+                .responseTime(0.1)
         }
 
         self.client.performRequest("POST",
