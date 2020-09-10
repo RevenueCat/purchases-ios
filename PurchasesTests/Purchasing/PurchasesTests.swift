@@ -35,6 +35,7 @@ class PurchasesTests: XCTestCase {
         var originalPurchaseDate: Date?
         var timeout = false
         var getSubscriberCallCount = 0
+        var overridePurchaserInfoError: Error? = nil
         var overridePurchaserInfo = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
@@ -46,9 +47,9 @@ class PurchasesTests: XCTestCase {
             userID = appUserID
 
             if (!timeout) {
-                let info = self.overridePurchaserInfo!
+                let info = self.overridePurchaserInfo
                 DispatchQueue.main.async {
-                    completion(info, nil)
+                    completion(info, self.overridePurchaserInfoError)
                 }
             }
         }
@@ -2131,14 +2132,80 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedObserverMode).to(beFalse())
     }
 
-    func testInvalidatePurchaserInfoCacheClearsPurchaserInfoCache() {
+    func testInvalidatePurchaserInfoCacheRemovesCachedPurchaserInfo() {
+        setupPurchases()
+        guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
+        let appUserID = self.identityManager.currentAppUserID
+        self.deviceCache.cachePurchaserInfo(Data(), forAppUserID: appUserID)
+        expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: appUserID)).toNot(beNil())
+        expect(self.deviceCache.invokedClearPurchaserInfoCacheCount) == 0
+
+        nonOptionalPurchases.invalidatePurchaserInfoCache()
+        expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: appUserID)).to(beNil())
+        expect(self.deviceCache.invokedClearPurchaserInfoCacheCount) == 1
+    }
+
+    func testGetPurchaserInfoAfterInvalidatingDoesntReturnCachedVersion() {
         setupPurchases()
         guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
 
-        expect(self.deviceCache.clearPurchaserInfoCacheTimestampCount) == 0
+        let appUserID = self.identityManager.currentAppUserID
+        let oldAppUserInfo = Data()
+        self.deviceCache.cachePurchaserInfo(oldAppUserInfo, forAppUserID: appUserID)
+        let overridePurchaserInfo = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        self.backend.overridePurchaserInfo = overridePurchaserInfo
+
+        var receivedPurchaserInfo: Purchases.PurchaserInfo? = nil
+        var completionCallCount = 0
+        var receivedError: Error? = nil
+        nonOptionalPurchases.purchaserInfo { (purchaserInfo, error) in
+            completionCallCount += 1
+            receivedError = error
+            receivedPurchaserInfo = purchaserInfo
+        }
 
         nonOptionalPurchases.invalidatePurchaserInfoCache()
-        expect(self.deviceCache.clearPurchaserInfoCacheTimestampCount) == 1
+
+        expect(completionCallCount).toEventually(equal(1))
+        expect(receivedError).to(beNil())
+        expect(receivedPurchaserInfo) == overridePurchaserInfo
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount) == 1
+    }
+
+    func testGetPurchaserInfoAfterInvalidatingCallsCompletionWithErrorIfBackendError() {
+        let backendError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber,
+                                                             backendMessage: "Invalid credentials", finishable: true)
+        self.backend.overridePurchaserInfoError = backendError
+        self.backend.overridePurchaserInfo = nil
+
+        setupPurchases()
+        guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount) == 0
+
+        let appUserID = self.identityManager.currentAppUserID
+        let oldAppUserInfo = Data()
+        self.deviceCache.cachePurchaserInfo(oldAppUserInfo, forAppUserID: appUserID)
+
+
+        var receivedPurchaserInfo: Purchases.PurchaserInfo? = nil
+        var completionCallCount = 0
+        var receivedError: Error? = nil
+        nonOptionalPurchases.purchaserInfo { (purchaserInfo, error) in
+            completionCallCount += 1
+            receivedError = error
+            receivedPurchaserInfo = purchaserInfo
+        }
+
+        nonOptionalPurchases.invalidatePurchaserInfoCache()
+
+        expect(completionCallCount).toEventually(equal(1))
+        expect(receivedError).toNot(beNil())
+        expect(receivedPurchaserInfo).to(beNil())
+        expect(self.purchasesDelegate.purchaserInfoReceivedCount) == 0
     }
 
     func testInvalidatePurchaserInfoCacheDoesntClearOfferingsCache() {

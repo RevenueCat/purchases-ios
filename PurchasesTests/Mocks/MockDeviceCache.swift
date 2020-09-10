@@ -197,4 +197,18 @@ class MockDeviceCache: RCDeviceCache {
         invokedDeleteAttributesIfSyncedParameters = (appUserID, ())
         invokedDeleteAttributesIfSyncedParametersList.append(appUserID)
     }
+
+
+    var invokedClearPurchaserInfoCache = false
+    var invokedClearPurchaserInfoCacheCount = 0
+    var invokedClearPurchaserInfoCacheParameters: (appUserID: String, Void)?
+    var invokedClearPurchaserInfoCacheParametersList = [(appUserID: String, Void)]()
+
+    override func clearPurchaserInfoCache(forAppUserID appUserID: String) {
+        cachedPurchaserInfo.removeValue(forKey: appUserID)
+        invokedClearPurchaserInfoCache = true
+        invokedClearPurchaserInfoCacheCount += 1
+        invokedClearPurchaserInfoCacheParameters = (appUserID, ())
+        invokedClearPurchaserInfoCacheParametersList.append((appUserID, ()))
+    }
 }
