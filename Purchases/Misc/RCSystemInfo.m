@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 NSString *const defaultServerHostName = @"https://api.revenuecat.com";
 static NSURL * _Nullable proxyURL;
+static BOOL _forceUniversalAppStore = NO;
 
 - (instancetype)initWithPlatformFlavor:(nullable NSString *)platformFlavor
                  platformFlavorVersion:(nullable NSString *)platformFlavorVersion
@@ -61,7 +62,7 @@ static NSURL * _Nullable proxyURL;
 }
 
 + (NSString *)platformHeader {
-    return PLATFORM_HEADER;
+    return self.forceUniversalAppStore ? @"iOS" : PLATFORM_HEADER;
 }
 
 + (NSURL *)defaultServerHostURL {
@@ -74,6 +75,14 @@ static NSURL * _Nullable proxyURL;
 
 + (nullable NSURL *)proxyURL {
     return proxyURL;
+}
+
++ (BOOL)forceUniversalAppStore {
+    return _forceUniversalAppStore;
+}
+
++ (void)setForceUniversalAppStore:(BOOL)forceUniversalAppStore {
+    _forceUniversalAppStore = forceUniversalAppStore;
 }
 
 + (void)setProxyURL:(nullable NSURL *)newProxyURL {

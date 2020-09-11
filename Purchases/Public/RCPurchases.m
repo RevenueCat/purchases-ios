@@ -108,6 +108,14 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCSystemInfo.proxyURL = proxyURL;
 }
 
++ (BOOL)forceUniversalAppStore {
+    return RCSystemInfo.forceUniversalAppStore;
+}
+
++ (void)setForceUniversalAppStore:(BOOL)forceUniversalAppStore {
+    RCSystemInfo.forceUniversalAppStore = forceUniversalAppStore;
+}
+
 + (NSString *)frameworkVersion {
     return RCSystemInfo.frameworkVersion;
 }

@@ -77,6 +77,12 @@ NS_SWIFT_NAME(Purchases)
 @property (class, nonatomic, copy, nullable) NSURL *proxyURL;
 
 /**
+ Set this property to true *only* if you're transitioning an existing Mac app from the Legacy Mac App Store
+ into the Universal Store, and you've configured your RevenueCat app accordingly. Contact support before using this.
+*/
+@property (class, nonatomic, assign) BOOL forceUniversalAppStore;
+
+/**
  Configures an instance of the Purchases SDK with a specified API key. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
 
  @note Use this initializer if your app does not have an account system. `RCPurchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`. This also affects the behavior of `restoreTransactionsForAppStoreAccount`.
