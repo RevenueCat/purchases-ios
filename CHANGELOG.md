@@ -1,4 +1,4 @@
-## 3.6.0-beta-2
+## 3.6.0
 - Fixed a race condition with purchase completed callbacks
 	https://github.com/RevenueCat/purchases-ios/pull/313
 - Made RCTransaction public to fix compiling issues on Swift Package Manager
@@ -13,8 +13,6 @@
 	https://github.com/RevenueCat/purchases-ios/pull/320
 - Added a local receipt parser, updated intro eligibility calculation to perform on device first
 	https://github.com/RevenueCat/purchases-ios/pull/302
-
-## 3.6.0-beta-1
 - Fix crash when productIdentifier or payment is nil.
     https://github.com/RevenueCat/purchases-ios/pull/297
 - Fixes ask-to-buy flow and will now send an error indicating there's a deferred payment.
@@ -25,6 +23,10 @@
     https://github.com/RevenueCat/purchases-ios/pull/287
 - New properties added to the PurchaserInfo to better manage non-subscriptions.
     https://github.com/RevenueCat/purchases-ios/pull/281
+- Bypass workaround in watchOS 7 that fixes watchOS 6.2 bug where devices report wrong `appStoreReceiptURL`
+	https://github.com/RevenueCat/purchases-ios/pull/330
+- Fix bug where 404s in subscriber attributes POST would mark them as synced
+    https://github.com/RevenueCat/purchases-ios/pull/328
 
 ## 3.5.2
 - Feature/defer cache updates if woken from push notification
