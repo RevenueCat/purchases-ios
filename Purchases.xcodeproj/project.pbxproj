@@ -201,6 +201,7 @@
 		37E35F20B49BCE1B6D76B084 /* RCStoreKitRequestFetcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35804C14F5E6CEAF3909C /* RCStoreKitRequestFetcher.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35F20FB949985BEEB4B58 /* MockRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35609E46E869675A466C1 /* MockRequestFetcher.swift */; };
 		37E35F549AEB655AB6DA83B3 /* MockSKDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35EABF6D7AFE367718784 /* MockSKDiscount.swift */; };
+		37E35F67255A87BD86B39D43 /* MockReceiptParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3558F697A939D2BBD7FEC /* MockReceiptParser.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -374,6 +375,7 @@
 		37E35548F15DE7CFFCE3AA8A /* NSLocale+RCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSLocale+RCExtensions.m"; sourceTree = "<group>"; };
 		37E3555B4BE0A4F7222E7B00 /* MockOfferingsFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockOfferingsFactory.swift; sourceTree = "<group>"; };
 		37E355744D64075AA91342DE /* MockInAppPurchaseBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockInAppPurchaseBuilder.swift; sourceTree = "<group>"; };
+		37E3558F697A939D2BBD7FEC /* MockReceiptParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockReceiptParser.swift; sourceTree = "<group>"; };
 		37E355AE6CB674484555D1AC /* NSDate+RCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+RCExtensions.h"; sourceTree = "<group>"; };
 		37E355CBB3F3A31A32687B14 /* Transaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		37E35609E46E869675A466C1 /* MockRequestFetcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockRequestFetcher.swift; sourceTree = "<group>"; };
@@ -784,6 +786,7 @@
 				2DD7BA4C24C63A830066B4C2 /* MockSystemInfo.swift */,
 				37E35659EB530A5109AFAB50 /* MockOperationDispatcher.swift */,
 				2D4D6AF224F7172900B656BE /* MockProductsRequest.swift */,
+				37E3558F697A939D2BBD7FEC /* MockReceiptParser.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -1428,6 +1431,7 @@
 				37E35F0387D0ADE014186924 /* ProductInfoExtractorTests.swift in Sources */,
 				37E351505CB4764821451E27 /* ProductInfoExtensions.swift in Sources */,
 				37E3599326581376E0142EEC /* SystemInfoTests.swift in Sources */,
+				37E35F67255A87BD86B39D43 /* MockReceiptParser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

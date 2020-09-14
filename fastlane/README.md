@@ -41,11 +41,6 @@ Make github release
 fastlane ios create_sandbox_account
 ```
 Create sandbox account
-### ios export_xcframeworks
-```
-fastlane ios export_xcframeworks
-```
-Export XCFrameworks
 
 ----
 

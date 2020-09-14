@@ -8,11 +8,38 @@ import Foundation
 @testable import PurchasesCoreSwift
 
 class MockOperationDispatcher: OperationDispatcher {
+
+    var invokedDispatchOnMainThread = false
+    var invokedDispatchOnMainThreadCount = 0
+    var shouldInvokeDispatchOnMainThreadBlock = true
+    var forwardToOriginalDispatchOnMainThread = false
+
     override func dispatchOnMainThread(_ block: @escaping () -> Void) {
-        block()
+        invokedDispatchOnMainThread = true
+        invokedDispatchOnMainThreadCount += 1
+        if forwardToOriginalDispatchOnMainThread {
+            super.dispatchOnMainThread(block)
+            return
+        }
+        if shouldInvokeDispatchOnMainThreadBlock {
+            block()
+        }
     }
 
+    var invokedDispatchOnWorkerThread = false
+    var invokedDispatchOnWorkerThreadCount = 0
+    var shouldInvokeDispatchOnWorkerThreadBlock = true
+    var forwardToOriginalDispatchOnWorkerThread = false
+
     override func dispatchOnWorkerThread(_ block: @escaping () -> Void) {
-        block()
+        invokedDispatchOnWorkerThread = true
+        invokedDispatchOnWorkerThreadCount += 1
+        if forwardToOriginalDispatchOnWorkerThread {
+            super.dispatchOnWorkerThread(block)
+            return
+        }
+        if shouldInvokeDispatchOnWorkerThreadBlock {
+            block()
+        }
     }
 }

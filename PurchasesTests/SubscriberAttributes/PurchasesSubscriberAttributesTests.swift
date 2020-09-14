@@ -24,10 +24,11 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var subscriberAttributeHeight: RCSubscriberAttribute!
     var subscriberAttributeWeight: RCSubscriberAttribute!
     var mockAttributes: [String: RCSubscriberAttribute]!
-    let systemInfo: RCSystemInfo = RCSystemInfo(platformFlavor: nil,
-                                                platformFlavorVersion: nil,
-                                                finishTransactions: true)
-    
+    let systemInfo: RCSystemInfo = MockSystemInfo(platformFlavor: nil,
+                                                  platformFlavorVersion: nil,
+                                                  finishTransactions: true)
+    var mockReceiptParser: MockReceiptParser!
+
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
 
@@ -47,6 +48,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         ]
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
+        self.mockReceiptParser = MockReceiptParser()
     }
 
     override func tearDown() {
@@ -73,7 +75,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               identityManager: mockIdentityManager,
                               subscriberAttributesManager: mockSubscriberAttributesManager,
                               operationDispatcher: mockOperationDispatcher,
-                              introEligibilityCalculator: mockIntroEligibilityCalculator)
+                              introEligibilityCalculator: mockIntroEligibilityCalculator,
+                              receiptParser: mockReceiptParser)
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
@@ -121,6 +124,30 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
         self.mockNotificationCenter.fireNotifications()
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
+    }
+
+    func testSubscriberAttributesSyncIsPerformedAfterPurchaserInfoSync() {
+        mockBackend.stubbedGetSubscriberDataPurchaserInfo = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0",
+                "original_purchase_date": "2018-10-26T23:17:53Z"
+            ]
+        ])
+
+        setupPurchases()
+
+        expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThreadCount) == 1
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
+        expect(self.mockDeviceCache.cachedPurchaserInfo.count) == 1
+
+        self.mockNotificationCenter.fireNotifications()
+
+        expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThreadCount) == 3
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
+        expect(self.mockDeviceCache.cachedPurchaserInfo.count) == 1
     }
 
     // Mark: Set attributes

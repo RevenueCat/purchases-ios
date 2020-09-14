@@ -8,17 +8,32 @@
 
 import Foundation
 
-class ReceiptParser {
-    private let objectIdentifierParser: ASN1ObjectIdentifierBuilder
+@objc(RCReceiptParser) public class ReceiptParser: NSObject {
+    private let objectIdentifierBuilder: ASN1ObjectIdentifierBuilder
     private let containerBuilder: ASN1ContainerBuilder
     private let receiptBuilder: AppleReceiptBuilder
 
-    init(objectIdentifierParser: ASN1ObjectIdentifierBuilder = ASN1ObjectIdentifierBuilder(),
-         containerBuilder: ASN1ContainerBuilder = ASN1ContainerBuilder(),
-         receiptBuilder: AppleReceiptBuilder = AppleReceiptBuilder()) {
-        self.objectIdentifierParser = objectIdentifierParser
+    @objc public convenience override init() {
+        self.init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder(),
+                  containerBuilder: ASN1ContainerBuilder(),
+                  receiptBuilder: AppleReceiptBuilder())
+    }
+    
+    init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder,
+         containerBuilder: ASN1ContainerBuilder,
+         receiptBuilder: AppleReceiptBuilder) {
+        self.objectIdentifierBuilder = objectIdentifierBuilder
         self.containerBuilder = containerBuilder
         self.receiptBuilder = receiptBuilder
+        super.init()
+    }
+    
+    @objc public func receiptHasTransactions(receiptData: Data) -> Bool {
+        if let receipt = try? parse(from: receiptData) {
+            return receipt.inAppPurchases.count > 0
+        }
+        // if the receipt can't be parsed, conservatively return true
+        return true
     }
 
     func parse(from receiptData: Data) throws -> AppleReceipt {
@@ -40,7 +55,7 @@ private extension ReceiptParser {
         if container.encodingType == .constructed {
             for (index, internalContainer) in container.internalContainers.enumerated() {
                 if internalContainer.containerIdentifier == .objectIdentifier {
-                    let objectIdentifier = objectIdentifierParser.build(fromPayload: internalContainer.internalPayload)
+                    let objectIdentifier = objectIdentifierBuilder.build(fromPayload: internalContainer.internalPayload)
                     if objectIdentifier == objectId && index < container.internalContainers.count - 1 {
                         // the container that holds the data comes right after the one with the object identifier
                         return container.internalContainers[index + 1]

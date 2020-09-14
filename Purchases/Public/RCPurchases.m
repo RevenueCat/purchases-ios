@@ -64,8 +64,8 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCIdentityManager *identityManager;
 @property (nonatomic) RCSystemInfo *systemInfo;
-@property (nonatomic) RCOperationDispatcher *operationDispatcher;
 @property (nonatomic) RCIntroEligibilityCalculator *introEligibilityCalculator;
+@property (nonatomic) RCReceiptParser *receiptParser;
 
 @end
 
@@ -225,6 +225,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                        deviceCache:deviceCache];
     RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
     RCIntroEligibilityCalculator *introCalculator = [[RCIntroEligibilityCalculator alloc] init];
+    RCReceiptParser *receiptParser = [[RCReceiptParser alloc] init];
     
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
@@ -240,7 +241,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                    identityManager:identityManager
        subscriberAttributesManager:subscriberAttributesManager
                operationDispatcher:operationDispatcher
-        introEligibilityCalculator:introCalculator];
+        introEligibilityCalculator:introCalculator
+                     receiptParser:receiptParser];
 }
 
 - (instancetype)initWithAppUserID:(nullable NSString *)appUserID
@@ -257,7 +259,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   identityManager:(RCIdentityManager *)identityManager
       subscriberAttributesManager:(RCSubscriberAttributesManager *)subscriberAttributesManager
               operationDispatcher:(RCOperationDispatcher *)operationDispatcher
-       introEligibilityCalculator:(RCIntroEligibilityCalculator *)introEligibilityCalculator {
+       introEligibilityCalculator:(RCIntroEligibilityCalculator *)introEligibilityCalculator
+                    receiptParser:(RCReceiptParser *)receiptParser {
     if (self = [super init]) {
         RCDebugLog(@"Debug logging enabled.");
         RCDebugLog(@"SDK Version - %@", self.class.frameworkVersion);
@@ -283,6 +286,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.subscriberAttributesManager = subscriberAttributesManager;
         self.operationDispatcher = operationDispatcher;
         self.introEligibilityCalculator = introEligibilityCalculator;
+        self.receiptParser = receiptParser;
 
         RCReceivePurchaserInfoBlock callDelegate = ^void(RCPurchaserInfo *info, NSError *error) {
             if (info) {
@@ -625,6 +629,15 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
             return;
         }
+
+        RCPurchaserInfo * _Nullable cachedPurchaserInfo = [self readPurchaserInfoFromCache];
+        BOOL hasOriginalPurchaseDate = cachedPurchaserInfo != nil && cachedPurchaserInfo.originalPurchaseDate != nil;
+        BOOL receiptHasTransactions = [self.receiptParser receiptHasTransactionsWithReceiptData:data];
+        if (!receiptHasTransactions && hasOriginalPurchaseDate) {
+            CALL_IF_SET_ON_MAIN_THREAD(completion, cachedPurchaserInfo, nil);
+            return;
+        }
+
         RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
