@@ -200,12 +200,10 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
                 return RCPurchaseCancelledError;
             case SKErrorIneligibleForOffer:
                 return RCPurchaseNotAllowedError;
-            #if TARGET_OS
             case CODE_IF_TARGET_IPHONE(SKErrorOverlayInvalidConfiguration, 16):
                 return RCPurchaseNotAllowedError;
             case CODE_IF_TARGET_IPHONE(SKErrorOverlayTimeout, 17):
                 return RCStoreProblemError;
-            #endif
         #endif
         }
     }
