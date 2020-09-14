@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = '9.0'
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
-  s.dependency 'PurchasesCoreSwift', '3.6.0'
+  s.dependency 'PurchasesCoreSwift'
 
   s.source_files = ['Purchases/**/*.{h,m}']
   s.public_header_files = [
