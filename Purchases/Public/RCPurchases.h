@@ -414,63 +414,91 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 - (void)setPushToken:(nullable NSData *)pushToken;
 
 /**
- * TODO
- * @param adjustID
+ * Subscriber attribute associated with the Adjust Id for the user
+ * Required for the RevenueCat Adjust integration
+ *
+ * @param adjustID nil will delete the subscriber attribute
  */
 - (void)setAdjustID:(nullable NSString *)adjustID;
 
 /**
- * TODO
+ * Subscriber attribute associated with the Appsflyer Id for the user
+ * Required for the RevenueCat Appsflyer integration
+ *
+ * @param appsflyerID nil will delete the subscriber attribute
  */
 - (void)setAppsflyerID:(nullable NSString *)appsflyerID;
 
 /**
- * TODO
+ * Subscriber attribute associated with the Facebook SDK Anonymous Id for the user
+ * Recommended for the RevenueCat Facebook integration
+ *
+ * @param fbAnonymousID nil will delete the subscriber attribute
  */
 - (void)setFBAnonymousID:(nullable NSString *)fbAnonymousID;
 
 /**
- * TODO
+ * Subscriber attribute associated with the mParticle Id for the user
+ * Recommended for the RevenueCat mParticle integration
+ *
+ * @param mparticleID nil will delete the subscriber attribute
  */
 - (void)setMparticleID:(nullable NSString *)mparticleID;
 
 /**
- * TODO
+ * Subscriber attribute associated with the OneSignal Player Id for the user
+ * Required for the RevenueCat OneSignal integration
+ *
+ * @param onesignalID nil will delete the subscriber attribute
  */
 - (void)setOnesignalID:(nullable NSString *)onesignalID;
 
 /**
- * TODO
+ * Subscriber attribute associated with the install media source for the user
+ *
+ *  @param mediaSource nil will delete the subscriber attribute.
  */
 - (void)setMediaSource:(nullable NSString *)mediaSource;
 
 /**
- * TODO
+ * Subscriber attribute associated with the install campaign for the user
+ *
+ *  @param campaign nil will delete the subscriber attribute.
  */
 - (void)setCampaign:(nullable NSString *)campaign;
 
 /**
- * TODO
+ * Subscriber attribute associated with the install ad group for the user
+ *
+ *  @param adGroup nil will delete the subscriber attribute.
  */
 - (void)setAdGroup:(nullable NSString *)adGroup;
 
 /**
- * TODO
+ * Subscriber attribute associated with the install ad for the user
+ *
+ *  @param ad nil will delete the subscriber attribute.
  */
 - (void)setAd:(nullable NSString *)ad;
 
 /**
- * TODO
+ * Subscriber attribute associated with the install keyword for the user
+ *
+ *  @param keyword nil will delete the subscriber attribute.
  */
 - (void)setKeyword:(nullable NSString *)keyword;
 
 /**
- * TODO
+ * Subscriber attribute associated with the install ad creative for the user
+ *
+ *  @param creative nil will delete the subscriber attribute.
  */
 - (void)setCreative:(nullable NSString *)creative;
 
 /**
- * TODO
+ * Automatically collect subscriber attributes associated with the device identifiers
+ * $idfa, $idfv, $ip
+ *
  */
 - (void)collectDeviceIdentifiers;
 
