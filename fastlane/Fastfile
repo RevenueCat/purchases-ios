@@ -32,10 +32,15 @@ platform :ios do
     fail ArgumentError, "missing version" unless new_version_number
     previous_version_number = get_version_number(target: "Purchases")
     increment_version_number(version_number: new_version_number)
-    version_bump_podspec(version_number: new_version_number, path: "Purchases.podspec")
-    version_bump_podspec(version_number: new_version_number, path: "PurchasesCoreSwift.podspec")
-    increment_build_number(previous_version_number, new_version_number, '../Purchases/Misc/RCSystemInfo.m')
-    increment_build_number(previous_version_number, new_version_number, '../.jazzy.yaml')
+    files_to_update = [
+      '../PurchasesCoreSwift.podspec',
+      '../Purchases.podspec',
+      '../Purchases/Misc/RCSystemInfo.m',
+      '../.jazzy.yaml'
+    ]
+    for file_to_update in files_to_update
+      increment_build_number(previous_version_number, new_version_number, file_to_update)
+    end
   end
 
   desc "Increment build number and update changelog"
