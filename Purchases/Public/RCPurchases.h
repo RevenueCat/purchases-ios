@@ -388,28 +388,28 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 /**
  * Subscriber attribute associated with the email address for the user
  *
- *  @param email Empty String or nil will delete the subscriber attribute.
+ * @param email Empty String or nil will delete the subscriber attribute.
  */
 - (void)setEmail:(nullable NSString *)email;
 
 /**
  * Subscriber attribute associated with the phone number for the user
  *
- *  @param phoneNumber Empty String or nil will delete the subscriber attribute.
+ * @param phoneNumber Empty String or nil will delete the subscriber attribute.
  */
 - (void)setPhoneNumber:(nullable NSString *)phoneNumber;
 
 /**
  * Subscriber attribute associated with the display name for the user
  *
- *  @param displayName Empty String or nil will delete the subscriber attribute.
+ * @param displayName Empty String or nil will delete the subscriber attribute.
  */
 - (void)setDisplayName:(nullable NSString *)displayName;
 
 /**
  * Subscriber attribute associated with the push token for the user
  *
- *  @param pushToken nil will delete the subscriber attribute.
+ * @param pushToken nil will delete the subscriber attribute.
  */
 - (void)setPushToken:(nullable NSData *)pushToken;
 
@@ -456,42 +456,42 @@ NS_SWIFT_NAME(restoreTransactions(_:));
 /**
  * Subscriber attribute associated with the install media source for the user
  *
- *  @param mediaSource nil will delete the subscriber attribute.
+ * @param mediaSource nil will delete the subscriber attribute.
  */
 - (void)setMediaSource:(nullable NSString *)mediaSource;
 
 /**
  * Subscriber attribute associated with the install campaign for the user
  *
- *  @param campaign nil will delete the subscriber attribute.
+ * @param campaign nil will delete the subscriber attribute.
  */
 - (void)setCampaign:(nullable NSString *)campaign;
 
 /**
  * Subscriber attribute associated with the install ad group for the user
  *
- *  @param adGroup nil will delete the subscriber attribute.
+ * @param adGroup nil will delete the subscriber attribute.
  */
 - (void)setAdGroup:(nullable NSString *)adGroup;
 
 /**
  * Subscriber attribute associated with the install ad for the user
  *
- *  @param ad nil will delete the subscriber attribute.
+ * @param ad nil will delete the subscriber attribute.
  */
 - (void)setAd:(nullable NSString *)ad;
 
 /**
  * Subscriber attribute associated with the install keyword for the user
  *
- *  @param keyword nil will delete the subscriber attribute.
+ * @param keyword nil will delete the subscriber attribute.
  */
 - (void)setKeyword:(nullable NSString *)keyword;
 
 /**
  * Subscriber attribute associated with the install ad creative for the user
  *
- *  @param creative nil will delete the subscriber attribute.
+ * @param creative nil will delete the subscriber attribute.
  */
 - (void)setCreative:(nullable NSString *)creative;
 
