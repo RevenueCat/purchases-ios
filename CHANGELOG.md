@@ -1,3 +1,7 @@
+## 3.6.1
+- Fixed a bug where checkIntroTrialEligibility wouldn't return when calling it from an OS version that didn't support intro offers
+    https://github.com/RevenueCat/purchases-ios/pull/343
+
 ## 3.6.0
 - Fixed a race condition with purchase completed callbacks
 	https://github.com/RevenueCat/purchases-ios/pull/313
