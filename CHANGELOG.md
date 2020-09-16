@@ -1,3 +1,22 @@
+## 3.7.0
+- Attribution V2
+    https://github.com/RevenueCat/purchases-ios/pull/321
+    https://github.com/RevenueCat/purchases-ios/pull/340
+    https://github.com/RevenueCat/purchases-ios/pull/331
+- Prevent unnecessary receipt posts
+    https://github.com/RevenueCat/purchases-ios/pull/323
+- Improved migration process for legacy Mac App Store apps moving to Universal Store 
+    https://github.com/RevenueCat/purchases-ios/pull/336
+- Added new SKError codes for Xcode 12
+    https://github.com/RevenueCat/purchases-ios/pull/334
+    https://github.com/RevenueCat/purchases-ios/pull/338
+- Renamed StoreKitConfig schemes
+    https://github.com/RevenueCat/purchases-ios/pull/329
+- Fixed an issue where cached purchaserInfo would be returned after invalidating purchaserInfo cache
+    https://github.com/RevenueCat/purchases-ios/pull/333
+- Fix cocoapods and carthage release scripts 
+    https://github.com/RevenueCat/purchases-ios/pull/324
+
 ## 3.6.0
 - Fixed a race condition with purchase completed callbacks
 	https://github.com/RevenueCat/purchases-ios/pull/313
