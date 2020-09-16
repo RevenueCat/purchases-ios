@@ -1,5 +1,8 @@
 ## 3.7.0
-- Attribution V2
+- Attribution V2:
+        - Deprecated `addAttributionData:fromNetwork:` and `addAttributionData:fromNetwork:forNetworkUserId:` in favor of `setAdjustId`, `setAppsflyerId`, `setFbAnonymousId`, `setMparticleId`
+        - Added support for OneSignal via `setOnesignalId`
+        - Added `setMediaSource`, `setCampaign`, `setAdGroup`, `setAd`, `setKeyword`, `setCreative`, and `collectDeviceIdentifiers`
     https://github.com/RevenueCat/purchases-ios/pull/321
     https://github.com/RevenueCat/purchases-ios/pull/340
     https://github.com/RevenueCat/purchases-ios/pull/331
