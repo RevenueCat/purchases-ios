@@ -365,10 +365,10 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                fromNetwork:(RCAttributionNetwork)network
           forNetworkUserId:(nullable NSString *)networkUserId {
     if (_sharedPurchases) {
-        RCLog(@"There is an instance configured, posting attribution.");
+        RCLog(RCStrings.attribution.instance_configured_posting_attribution);
         [_sharedPurchases postAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
     } else {
-        RCLog(@"There is no instance configured, caching attribution.");
+        RCLog(RCStrings.attribution.no_instance_configured_caching_attribution);
         [RCAttributionFetcher storePostponedAttributionData:data
                                                 fromNetwork:network
                                            forNetworkUserId:networkUserId];
