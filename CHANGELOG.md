@@ -1,3 +1,7 @@
+## 3.6.2
+-  Fix 'Invalid bundle' validation error when uploading builds to App Store using Carthage or binary
+    https://github.com/RevenueCat/purchases-ios/pull/346
+
 ## 3.6.1
 - Fixed a bug where checkIntroTrialEligibility wouldn't return when calling it from an OS version that didn't support intro offers
     https://github.com/RevenueCat/purchases-ios/pull/343

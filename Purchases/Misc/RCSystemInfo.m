@@ -47,7 +47,7 @@ static NSURL * _Nullable proxyURL;
 }
 
 + (NSString *)frameworkVersion {
-    return @"3.6.1";
+    return @"3.6.2";
 }
 
 + (NSString *)systemVersion {
