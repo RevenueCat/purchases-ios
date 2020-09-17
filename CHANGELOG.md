@@ -1,3 +1,7 @@
+## 3.7.1
+-  Fix 'Invalid bundle' validation error when uploading builds to App Store using Carthage or binary
+    https://github.com/RevenueCat/purchases-ios/pull/346
+
 ## 3.7.0
 - Attribution V2:
         - Deprecated `addAttributionData:fromNetwork:` and `addAttributionData:fromNetwork:forNetworkUserId:` in favor of `setAdjustId`, `setAppsflyerId`, `setFbAnonymousId`, `setMparticleId`
