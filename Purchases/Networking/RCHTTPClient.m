@@ -10,13 +10,16 @@
 #import "RCLogUtils.h"
 #import "RCHTTPStatusCodes.h"
 #import "RCSystemInfo.h"
+#import "RCHTTPRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface RCHTTPClient ()
 
 @property (nonatomic) NSURLSession *session;
-@property (nonatomic, weak) RCSystemInfo *systemInfo;
+@property (nonatomic) RCSystemInfo *systemInfo;
+@property (nonatomic) NSMutableArray<RCHTTPRequest *> *queuedRequests;
+@property (nonatomic, nullable) RCHTTPRequest *currentSerialRequest;
 
 @end
 
@@ -29,44 +32,87 @@ NS_ASSUME_NONNULL_BEGIN
         config.HTTPMaximumConnectionsPerHost = 1;
         self.session = [NSURLSession sessionWithConfiguration:config];
         self.systemInfo = systemInfo;
+        self.queuedRequests = [[NSMutableArray alloc] init];
+        self.currentSerialRequest = nil;
     }
     return self;
 }
 
-- (void)performRequest:(NSString *)HTTPMethod
+- (void)performRequest:(NSString *)httpMethod
                   path:(NSString *)path
                   body:(nullable NSDictionary *)requestBody
                headers:(nullable NSDictionary<NSString *, NSString *> *)headers
      completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler {
-    [self assertIsValidRequestWithMethod:HTTPMethod body:requestBody];
+    [self performRequest:httpMethod
+                serially:NO
+                    path:path
+                    body:requestBody
+                 headers:headers
+       completionHandler:completionHandler];
+}
+
+- (void)performRequest:(NSString *)httpMethod
+              serially:(BOOL)performSerially
+                  path:(NSString *)path
+                  body:(nullable NSDictionary *)requestBody
+               headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+     completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler {
+    if (performSerially) {
+        RCHTTPRequest *rcRequest = [[RCHTTPRequest alloc] initWithHTTPMethod:httpMethod
+                                                                        path:path
+                                                                        body:requestBody
+                                                                     headers:headers
+                                                           completionHandler:completionHandler];
+        @synchronized (self) {
+            if (self.currentSerialRequest) {
+                RCDebugLog(@"There's a request currently running and %ld requests left in the queue, queueing %@ %@",
+                           self.queuedRequests.count,
+                           httpMethod,
+                           path);
+                [self.queuedRequests addObject:rcRequest];
+                return;
+            } else {
+                RCDebugLog(@"there are no requests currently running, starting request %@ %@", httpMethod, path);
+                self.currentSerialRequest = rcRequest;
+            }
+        }
+    }
+
+    [self assertIsValidRequestWithMethod:httpMethod body:requestBody];
 
     NSMutableDictionary *defaultHeaders = self.defaultHeaders.mutableCopy;
     [defaultHeaders addEntriesFromDictionary:headers];
 
-    NSMutableURLRequest *request = [self createRequestWithMethod:HTTPMethod
-                                                            path:path
-                                                     requestBody:requestBody
-                                                         headers:defaultHeaders];
+    NSMutableURLRequest *urlRequest = [self createRequestWithMethod:httpMethod
+                                                               path:path
+                                                        requestBody:requestBody
+                                                            headers:defaultHeaders];
 
     typedef void (^SessionCompletionBlock)(NSData *_Nullable, NSURLResponse *_Nullable, NSError *_Nullable);
 
     SessionCompletionBlock block = ^void(NSData *_Nullable data,
                                          NSURLResponse *_Nullable response,
                                          NSError *_Nullable error) {
-        [self handleResponse:response data:data error:error request:request completionHandler:completionHandler];
+        [self handleResponse:response
+                        data:data
+                       error:error
+                     request:urlRequest
+           completionHandler:completionHandler
+beginNextRequestWhenFinished:performSerially];
     };
 
-    RCDebugLog(@"%@ %@", request.HTTPMethod, request.URL.path);
-    NSURLSessionTask *task = [self.session dataTaskWithRequest:request
+    RCDebugLog(@"%@ %@", urlRequest.HTTPMethod, urlRequest.URL.path);
+    NSURLSessionTask *task = [self.session dataTaskWithRequest:urlRequest
                                              completionHandler:block];
     [task resume];
 }
 
-- (void)handleResponse:(NSURLResponse *)response
-                  data:(NSData *)data
-                 error:(NSError *)error
-               request:(NSMutableURLRequest *)request
-     completionHandler:(RCHTTPClientResponseHandler)completionHandler {
+- (void)      handleResponse:(NSURLResponse *)response
+                        data:(NSData *)data
+                       error:(NSError *)error
+                     request:(NSMutableURLRequest *)request
+           completionHandler:(RCHTTPClientResponseHandler)completionHandler
+beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
     NSInteger statusCode = RC_NETWORK_CONNECT_TIMEOUT_ERROR;
     NSDictionary *responseObject = nil;
 
@@ -89,6 +135,28 @@ NS_ASSUME_NONNULL_BEGIN
 
     if (completionHandler != nil) {
         completionHandler(statusCode, responseObject, error);
+    }
+
+    if (beginNextRequestWhenFinished) {
+        @synchronized (self) {
+            RCDebugLog(@"serial request done: %@ %@, %ld requests left in the queue",
+                       self.currentSerialRequest.httpMethod, self.currentSerialRequest.path, self.queuedRequests.count);
+            RCHTTPRequest *nextRequest = nil;
+            self.currentSerialRequest = nil;
+            if (self.queuedRequests.count > 0) {
+                nextRequest = self.queuedRequests[0];
+                [self.queuedRequests removeObjectAtIndex:0];
+            }
+            if (nextRequest) {
+                RCDebugLog(@"starting the next request in the queue, %@", nextRequest);
+                [self performRequest:nextRequest.httpMethod
+                            serially:YES
+                                path:nextRequest.path
+                                body:nextRequest.requestBody
+                             headers:nextRequest.headers
+                   completionHandler:nextRequest.completionHandler];
+            }
+        }
     }
 }
 
