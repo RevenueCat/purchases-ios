@@ -8,18 +8,11 @@ jobs:
     steps:
       - checkout
       
-      # Carthage
-      - restore_cache:
-          keys: 
-            - carthage-cache-{{ checksum "Cartfile.resolved" }}
+      # CocoaPods
       - run:
-          name: Carthage Bootstrap
+          name: Pod Install
           command: |
-              carthage bootstrap --cache-builds
-      - save_cache:
-          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
-          paths:
-            - Carthage
+              pod install
       
       # Bundler
       - restore_cache:
@@ -43,7 +36,7 @@ jobs:
           destination: test_report.html
   docs-deploy:
     macos:
-      xcode: "11.4.0"
+      xcode: "12.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
