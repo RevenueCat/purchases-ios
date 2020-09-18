@@ -1685,7 +1685,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A73D931703B18CC8CFC0BD5D /* Pods-PurchasesCoreSwift-PurchasesCoreSwiftTests.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -1713,7 +1713,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 488CEC02043D082069115512 /* Pods-PurchasesCoreSwift-PurchasesCoreSwiftTests.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -1914,7 +1914,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4BC7004A9B67E9EF5E510A90 /* Pods-Purchases-PurchasesTests.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
@@ -1942,7 +1942,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4D383526428661EF319345E7 /* Pods-Purchases-PurchasesTests.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
