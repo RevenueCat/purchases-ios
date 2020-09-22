@@ -200,7 +200,9 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
                 return RCPurchaseCancelledError;
             case SKErrorIneligibleForOffer:
                 return RCPurchaseNotAllowedError;
-            #if TARGET_OS_IOS
+            #if TARGET_OS_MACCATALYST
+                // left intentionally blank
+            #elif TARGET_OS_IOS
             case SKErrorOverlayInvalidConfiguration:
                 return RCPurchaseNotAllowedError;
             case SKErrorOverlayTimeout:
