@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
                               body:(nullable NSDictionary *)requestBody
                            headers:(nullable NSDictionary<NSString *, NSString *> *)headers
                  completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler;
-- (id)copyWithZone:(NSZone *)zone;
+- (id)copyWithZone:(nullable NSZone *)zone;
 - (NSString *)description;
 
 @property (readonly, copy, nonatomic) NSString *httpMethod;
