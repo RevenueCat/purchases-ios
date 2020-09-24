@@ -20,6 +20,7 @@ Pod::Spec.new do |s|
   s.osx.deployment_target = '10.12'
   s.watchos.deployment_target = '6.2'
   s.tvos.deployment_target = '9.0'
+  s.static_framework = true
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 

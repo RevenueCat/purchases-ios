@@ -23,6 +23,8 @@ Pod::Spec.new do |s|
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
   s.dependency 'PurchasesCoreSwift', '3.8.0-SNAPSHOT'
+  s.static_framework = true
+
 
   s.source_files = ['Purchases/**/*.{h,m}']
   s.public_header_files = [
