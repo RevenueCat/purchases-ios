@@ -8,11 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-#import "RCOffering.h"
-#import "RCOfferings.h"
 #import "RCAttributionNetwork.h"
 
-@class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility;
+@class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility, RCOfferings, RCOffering, RCPackage;
 @protocol RCPurchasesDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
