@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (id)copyWithZone:(NSZone *)zone {
+- (id)copyWithZone:(nullable NSZone *)zone {
     RCHTTPRequest *copy = [[RCHTTPRequest allocWithZone:zone]
                                           initWithHTTPMethod:self.httpMethod
                                                         path:self.path
