@@ -1,3 +1,10 @@
+## 3.7.2
+- Updates the Pod to make it compile as a static framework, fixing build issues on hybrid SDKs. Cleans up imports in `RCPurchases.h`.
+    https://github.com/RevenueCat/purchases-ios/pull/353
+- Fixes Catalyst builds and build warnings
+    https://github.com/RevenueCat/purchases-ios/pull/352
+    https://github.com/RevenueCat/purchases-ios/pull/351
+
 ## 3.7.1
 -  Fix 'Invalid bundle' validation error when uploading builds to App Store using Carthage or binary
     https://github.com/RevenueCat/purchases-ios/pull/346
