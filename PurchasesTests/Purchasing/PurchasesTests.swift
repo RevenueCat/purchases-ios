@@ -2032,7 +2032,7 @@ class PurchasesTests: XCTestCase {
             self.performTransaction()
             self.performTransaction()
         }
-        expect(secondCompletionCalled).toEventually(beTrue(), timeout: 10)
+        expect(secondCompletionCalled).toEventually(beTrue(), timeout: .seconds(10))
         expect(receivedError).to(beNil())
     }
     

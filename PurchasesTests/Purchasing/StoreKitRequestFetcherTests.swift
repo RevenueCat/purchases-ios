@@ -89,18 +89,18 @@ class StoreKitRequestFetcher: XCTestCase {
 
     func testSetsTheRequestDelegate() {
         setupFetcher(fails: false)
-        expect(self.factory!.requests[0].delegate).toEventually(be(self.fetcher), timeout: 1.0)
+        expect(self.factory!.requests[0].delegate).toEventually(be(self.fetcher), timeout: .seconds(1))
     }
 
     func testCallsStartOnRequest() {
         setupFetcher(fails: false)
-        expect((self.factory!.requests[0] as! MockProductsRequest).startCalled).toEventually(beTrue(), timeout: 1.0)
+        expect((self.factory!.requests[0] as! MockProductsRequest).startCalled).toEventually(beTrue(), timeout: .seconds(1))
     }
 
     func testReturnsProducts() {
         setupFetcher(fails: false)
-        expect(self.products).toEventuallyNot(beNil(), timeout: 1.0)
-        expect(self.products?.count).toEventually(be(1), timeout: 1.0)
+        expect(self.products).toEventuallyNot(beNil(), timeout: .seconds(1))
+        expect(self.products?.count).toEventually(be(1), timeout: .seconds(1))
     }
     
     func testReusesRequestsForSameProducts() {

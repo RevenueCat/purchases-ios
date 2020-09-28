@@ -1,0 +1,32 @@
+PODS:
+  - Nimble (9.0.0-rc.3)
+  - OHHTTPStubs/Core (9.0.0)
+  - OHHTTPStubs/Default (9.0.0):
+    - OHHTTPStubs/Core
+    - OHHTTPStubs/JSON
+    - OHHTTPStubs/NSURLSession
+    - OHHTTPStubs/OHPathHelpers
+  - OHHTTPStubs/JSON (9.0.0):
+    - OHHTTPStubs/Core
+  - OHHTTPStubs/NSURLSession (9.0.0):
+    - OHHTTPStubs/Core
+  - OHHTTPStubs/OHPathHelpers (9.0.0)
+  - OHHTTPStubs/Swift (9.0.0):
+    - OHHTTPStubs/Default
+
+DEPENDENCIES:
+  - Nimble (~> 9.0.0-rc.3)
+  - OHHTTPStubs/Swift
+
+SPEC REPOS:
+  trunk:
+    - Nimble
+    - OHHTTPStubs
+
+SPEC CHECKSUMS:
+  Nimble: 1b5fa99320d0d87ed72bb0add38dc696aa77f556
+  OHHTTPStubs: cb29d2a9d09a828ecb93349a2b0c64f99e0db89f
+
+PODFILE CHECKSUM: 9e00924d906b2f0ddcc9016d4ad4760415494575
+
+COCOAPODS: 1.9.3

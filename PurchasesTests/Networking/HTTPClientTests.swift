@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import OHHTTPStubs
+import OHHTTPStubs.Swift
 import Nimble
 
 import Purchases
@@ -54,7 +54,7 @@ class HTTPClientTests: XCTestCase {
         self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
                                    headers: nil, completionHandler:nil)
 
-        expect(hostCorrect).toEventually(equal(true), timeout: 1.0)
+        expect(hostCorrect).toEventually(equal(true), timeout: .seconds(1))
     }
 
     func testPassesHeaders() {
@@ -69,7 +69,7 @@ class HTTPClientTests: XCTestCase {
         self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
                                    headers: ["test_header": "value"], completionHandler:nil)
 
-        expect(headerPresent).toEventually(equal(true), timeout: 1.0)
+        expect(headerPresent).toEventually(equal(true), timeout: .seconds(1))
     }
 
     func testAlwaysSetsContentTypeHeader() {
@@ -84,7 +84,7 @@ class HTTPClientTests: XCTestCase {
         self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
                                    headers: ["test_header": "value"], completionHandler:nil)
 
-        expect(headerPresent).toEventually(equal(true), timeout: 1.0)
+        expect(headerPresent).toEventually(equal(true), timeout: .seconds(1))
     }
 
     func testAlwaysPassesPlatformHeader() {
@@ -144,7 +144,7 @@ class HTTPClientTests: XCTestCase {
         self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
                                    headers: nil, completionHandler:nil)
 
-        expect(pathHit).toEventually(equal(true), timeout: 1.0)
+        expect(pathHit).toEventually(equal(true), timeout: .seconds(1))
     }
 
     func testCallsWithCorrectMethod() {
@@ -159,7 +159,7 @@ class HTTPClientTests: XCTestCase {
 
         self.client.performRequest(method, serially: true, path: path, body: body, headers: nil, completionHandler:nil)
 
-        expect(pathHit).toEventually(equal(true), timeout: 1.0)
+        expect(pathHit).toEventually(equal(true), timeout: .seconds(1))
     }
 
     func testSendsBodyData() {
@@ -191,7 +191,7 @@ class HTTPClientTests: XCTestCase {
             completionCalled = true
         }
 
-        expect(completionCalled).toEventually(equal(true), timeout: 1.0)
+        expect(completionCalled).toEventually(equal(true), timeout: .seconds(1))
     }
 
     func testHandlesRealErrorConditions() {
@@ -237,8 +237,8 @@ class HTTPClientTests: XCTestCase {
             }
         }
 
-        expect(message).toEventually(equal("something is broken up in the cloud"), timeout: 1.0)
-        expect(correctResponse).toEventually(beTrue(), timeout: 1.0)
+        expect(message).toEventually(equal("something is broken up in the cloud"), timeout: .seconds(1))
+        expect(correctResponse).toEventually(beTrue(), timeout: .seconds(1))
     }
 
     func testServerSide500s()  {
@@ -259,8 +259,8 @@ class HTTPClientTests: XCTestCase {
             }
         }
 
-        expect(message).toEventually(equal("something is broken up in the cloud"), timeout: 1.0)
-        expect(correctResponse).toEventually(beTrue(), timeout: 1.0)
+        expect(message).toEventually(equal("something is broken up in the cloud"), timeout: .seconds(1))
+        expect(correctResponse).toEventually(beTrue(), timeout: .seconds(1))
     }
 
     func testParseError() {
@@ -277,7 +277,7 @@ class HTTPClientTests: XCTestCase {
             correctResponse = (status == errorCode) && (data == nil) && (error != nil);
         }
 
-        expect(correctResponse).toEventually(beTrue(), timeout: 1.0)
+        expect(correctResponse).toEventually(beTrue(), timeout: .seconds(1))
     }
 
     func testServerSide200s() {
@@ -298,8 +298,8 @@ class HTTPClientTests: XCTestCase {
             }
         }
 
-        expect(message).toEventually(equal("something is great up in the cloud"), timeout: 1.0)
-        expect(successIsTrue).toEventually(beTrue(), timeout: 1.0)
+        expect(message).toEventually(equal("something is great up in the cloud"), timeout: .seconds(1))
+        expect(successIsTrue).toEventually(beTrue(), timeout: .seconds(1))
     }
     
     func testAlwaysPassesClientVersion() {
