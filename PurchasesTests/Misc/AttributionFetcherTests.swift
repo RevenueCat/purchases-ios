@@ -55,5 +55,17 @@ class AttributionFetcherTests: XCTestCase {
         
         expect { self.attributionFetcher.rot13(randomized) } .to(equal(expected))
     }
+    
+    func testCanAcceptNSNullValues() {
+        let backend = MockBackend()
+        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
+        attributionFetcher = RCAttributionFetcher(deviceCache: RCDeviceCache(.standard),
+                                                  identityManager: identityManager,
+                                                  backend: backend)
 
+        expect { self.attributionFetcher.postAttributionData(["something": NSNull()],
+                                                             from: .adjust,
+                                                             forNetworkUserId: "user")}.toNot(raiseException())
+    }
+    
 }
