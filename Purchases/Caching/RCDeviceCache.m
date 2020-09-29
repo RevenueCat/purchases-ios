@@ -9,7 +9,7 @@
 #import "RCDeviceCache.h"
 #import "RCDeviceCache+Protected.h"
 #import "RCLogUtils.h"
-
+#import "NSDictionary+RCExtensions.h"
 
 @interface RCDeviceCache ()
 
@@ -385,7 +385,7 @@ NSString *RCAttributionDataDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".attribution.
 - (void)setLatestNetworkAndAdvertisingIdsSent:(nullable NSDictionary *)latestNetworkAndAdvertisingIdsSent
                                  forAppUserID:(nullable NSString *)appUserID {
     NSString *cacheKey = [self attributionDataCacheKeyForAppForAppUserID:appUserID];
-    [self.userDefaults setObject:latestNetworkAndAdvertisingIdsSent
+    [self.userDefaults setObject:[latestNetworkAndAdvertisingIdsSent removingNSNullValues]
                           forKey:cacheKey];
 }
 
