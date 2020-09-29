@@ -385,7 +385,7 @@ NSString *RCAttributionDataDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".attribution.
 - (void)setLatestNetworkAndAdvertisingIdsSent:(nullable NSDictionary *)latestNetworkAndAdvertisingIdsSent
                                  forAppUserID:(nullable NSString *)appUserID {
     NSString *cacheKey = [self attributionDataCacheKeyForAppForAppUserID:appUserID];
-    [self.userDefaults setObject:[latestNetworkAndAdvertisingIdsSent removingNSNullValues]
+    [self.userDefaults setObject:latestNetworkAndAdvertisingIdsSent
                           forKey:cacheKey];
 }
 

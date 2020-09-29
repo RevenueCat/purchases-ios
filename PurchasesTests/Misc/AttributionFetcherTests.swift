@@ -17,13 +17,23 @@ class AttributionFetcherTests: XCTestCase {
     var deviceCache: MockDeviceCache!
     var identityManager: MockIdentityManager!
 
+    let userDefaultsSuiteName = "testUserDefaults"
+    
     override func setUp() {
         super.setUp()
-        deviceCache = MockDeviceCache()
-        identityManager = MockIdentityManager(mockAppUserID: "userID")
+        deviceCache = MockDeviceCache(UserDefaults(suiteName: userDefaultsSuiteName)!)
+        let userID = "userID"
+        deviceCache.cacheAppUserID(userID)
+
+        identityManager = MockIdentityManager(mockAppUserID: userID)
         attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
                                                   identityManager: identityManager,
                                                   backend: MockBackend())
+    }
+    
+    override func tearDown() {
+        UserDefaults.standard.removePersistentDomain(forName: userDefaultsSuiteName)
+        UserDefaults.standard.synchronize()
     }
 
     func testCanRotateASIdentifierManager() {
@@ -56,18 +66,63 @@ class AttributionFetcherTests: XCTestCase {
         expect { self.attributionFetcher.rot13(randomized) } .to(equal(expected))
     }
     
-    func testCanAcceptNSNullValues() {
+    func testPostAttributionDataSkipsIfAlreadySent() {
+        let userID = "userID"
         let backend = MockBackend()
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
-        let deviceCache = RCDeviceCache(.standard)
-        deviceCache.cacheAppUserID("testUser")
+        
         attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
                                                   identityManager: identityManager,
                                                   backend: backend)
+        attributionFetcher.postAttributionData(["something": "here"],
+                                               from: .adjust,
+                                               forNetworkUserId: userID)
+        expect(backend.invokedPostAttributionDataCount) == 1
 
-        expect { self.attributionFetcher.postAttributionData(["something": NSNull()],
-                                                             from: .adjust,
-                                                             forNetworkUserId: "testUser")}.toNot(raiseException())
+        attributionFetcher.postAttributionData(["something": "else"],
+                                               from: .adjust,
+                                               forNetworkUserId: userID)
+
+        expect(backend.invokedPostAttributionDataCount) == 1
+
     }
-    
+
+    func testPostAttributionDataDoesntSkipIfNetworkUserIdChanged() {
+        let userID = "userID"
+        let backend = MockBackend()
+        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
+        
+        attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
+                                                  identityManager: identityManager,
+                                                  backend: backend)
+        attributionFetcher.postAttributionData(["something": "here"],
+                                               from: .adjust,
+                                               forNetworkUserId: userID)
+        expect(backend.invokedPostAttributionDataCount) == 1
+
+        attributionFetcher.postAttributionData(["something": "else"],
+                                               from: .facebook,
+                                               forNetworkUserId: userID)
+
+        expect(backend.invokedPostAttributionDataCount) == 2
+    }
+
+    func testPostAttributionDataDoesntSkipIfSameUserIdButDifferentNetwork() {
+        let backend = MockBackend()
+        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
+        
+        attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
+                                                  identityManager: identityManager,
+                                                  backend: backend)
+        attributionFetcher.postAttributionData(["something": "here"],
+                                               from: .adjust,
+                                               forNetworkUserId: "attributionUser1")
+        expect(backend.invokedPostAttributionDataCount) == 1
+
+        attributionFetcher.postAttributionData(["something": "else"],
+                                               from: .facebook,
+                                               forNetworkUserId: "attributionUser2")
+
+        expect(backend.invokedPostAttributionDataCount) == 2
+    }
 }
