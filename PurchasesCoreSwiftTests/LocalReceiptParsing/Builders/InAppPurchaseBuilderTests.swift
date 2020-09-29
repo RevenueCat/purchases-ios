@@ -148,7 +148,7 @@ class InAppPurchaseBuilderTests: XCTestCase {
         ])
         expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.to(throwError())
     }
-    
+
     func testBuildThrowsIfProductIdIsMissing() {
         let inAppPurchaseContainer = containerFactory.inAppPurchaseContainerFromContainers(containers: [
             quantityContainer(),
