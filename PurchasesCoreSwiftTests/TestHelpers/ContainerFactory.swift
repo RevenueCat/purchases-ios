@@ -117,10 +117,10 @@ class ContainerFactory {
         let typeContainer = intContainer(int: attributeType.rawValue)
         let versionContainer = intContainer(int: 1)
         let valueContainer = constructedContainer(containers: [stringContainer(string: string)])
-        
+
         return constructedContainer(containers: [typeContainer, versionContainer, valueContainer])
     }
-    
+
     func receiptContainerFromContainers(containers: [ASN1Container]) -> ASN1Container {
         let attributesContainer = constructedContainer(containers: containers)
 
