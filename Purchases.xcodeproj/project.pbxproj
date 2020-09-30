@@ -56,7 +56,7 @@
 		2DDF41BC24F6F392005BC22D /* ArraySlice_UInt8+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41B924F6F392005BC22D /* ArraySlice_UInt8+Extensions.swift */; };
 		2DDF41C824F6F4C3005BC22D /* ISO3601DateFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41BE24F6F4C3005BC22D /* ISO3601DateFormatterTests.swift */; };
 		2DDF41C924F6F4C3005BC22D /* UInt8+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41BF24F6F4C3005BC22D /* UInt8+ExtensionsTests.swift */; };
-		2DDF41CA24F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C024F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift */; };
+		2DDF41CA24F6F4C3005BC22D /* ArraySlice_UInt8+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C024F6F4C3005BC22D /* ArraySlice_UInt8+ExtensionsTests.swift */; };
 		2DDF41CB24F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C224F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift */; };
 		2DDF41CC24F6F4C3005BC22D /* AppleReceiptBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C324F6F4C3005BC22D /* AppleReceiptBuilderTests.swift */; };
 		2DDF41CD24F6F4C3005BC22D /* ASN1ContainerBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C424F6F4C3005BC22D /* ASN1ContainerBuilderTests.swift */; };
@@ -294,7 +294,7 @@
 		2DDF41B924F6F392005BC22D /* ArraySlice_UInt8+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ArraySlice_UInt8+Extensions.swift"; sourceTree = "<group>"; };
 		2DDF41BE24F6F4C3005BC22D /* ISO3601DateFormatterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ISO3601DateFormatterTests.swift; sourceTree = "<group>"; };
 		2DDF41BF24F6F4C3005BC22D /* UInt8+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UInt8+ExtensionsTests.swift"; sourceTree = "<group>"; };
-		2DDF41C024F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ArraySlice<UInt8>+ExtensionsTests.swift"; sourceTree = "<group>"; };
+		2DDF41C024F6F4C3005BC22D /* ArraySlice_UInt8+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ArraySlice_UInt8+ExtensionsTests.swift"; sourceTree = "<group>"; };
 		2DDF41C224F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASN1ObjectIdentifierBuilderTests.swift; sourceTree = "<group>"; };
 		2DDF41C324F6F4C3005BC22D /* AppleReceiptBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppleReceiptBuilderTests.swift; sourceTree = "<group>"; };
 		2DDF41C424F6F4C3005BC22D /* ASN1ContainerBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASN1ContainerBuilderTests.swift; sourceTree = "<group>"; };
@@ -650,7 +650,7 @@
 			children = (
 				2DDF41BE24F6F4C3005BC22D /* ISO3601DateFormatterTests.swift */,
 				2DDF41BF24F6F4C3005BC22D /* UInt8+ExtensionsTests.swift */,
-				2DDF41C024F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift */,
+				2DDF41C024F6F4C3005BC22D /* ArraySlice_UInt8+ExtensionsTests.swift */,
 			);
 			path = DataConverters;
 			sourceTree = "<group>";
@@ -1482,7 +1482,7 @@
 				2DDF41CF24F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift in Sources */,
 				2DDF41C924F6F4C3005BC22D /* UInt8+ExtensionsTests.swift in Sources */,
 				2D4D6AF524F717B800B656BE /* ContainerFactory.swift in Sources */,
-				2DDF41CA24F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift in Sources */,
+				2DDF41CA24F6F4C3005BC22D /* ArraySlice_UInt8+ExtensionsTests.swift in Sources */,
 				2DDF41DB24F6F4DB005BC22D /* IntroEligibilityCalculatorTests.swift in Sources */,
 				2DDF41E124F6F527005BC22D /* MockReceiptParser.swift in Sources */,
 				2DDF41E224F6F527005BC22D /* MockProductsRequest.swift in Sources */,
