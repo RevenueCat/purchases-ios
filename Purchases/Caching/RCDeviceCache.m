@@ -9,7 +9,7 @@
 #import "RCDeviceCache.h"
 #import "RCDeviceCache+Protected.h"
 #import "RCLogUtils.h"
-
+#import "NSDictionary+RCExtensions.h"
 
 @interface RCDeviceCache ()
 

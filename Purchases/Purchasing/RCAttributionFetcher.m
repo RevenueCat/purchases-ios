@@ -155,7 +155,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
                                  forAppUserID:appUserID
                                    completion:^(NSError *_Nullable error) {
                                        if (error == nil) {
-                                           [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newData
+                                           [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newDictToCache
                                                                                       forAppUserID:appUserID];
                                        }
                                    }];
