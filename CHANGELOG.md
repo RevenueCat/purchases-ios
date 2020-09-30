@@ -1,9 +1,21 @@
+## 3.7.3
+- Renames files with names that caused issues when building on Windows
+    https://github.com/RevenueCat/purchases-ios/pull/362
+- Fixes crash when parsing receipts with an unexpected number of internal containers in an IAP ASN.1 Container
+    https://github.com/RevenueCat/purchases-ios/pull/360
+- Fixes crash when sending `NSNull` attributes to `addAttributionData:fromNetwork:`
+	https://github.com/RevenueCat/purchases-ios/pull/359
+
 ## 3.7.2
 - Updates the Pod to make it compile as a static framework, fixing build issues on hybrid SDKs. Cleans up imports in `RCPurchases.h`.
     https://github.com/RevenueCat/purchases-ios/pull/353
 - Fixes Catalyst builds and build warnings
     https://github.com/RevenueCat/purchases-ios/pull/352
     https://github.com/RevenueCat/purchases-ios/pull/351
+- Made backend requests run serially when needed
+    https://github.com/RevenueCat/purchases-ios/pull/332
+- Added starter string constants file for logging
+    https://github.com/RevenueCat/purchases-ios/pull/339
 
 ## 3.7.1
 -  Fix 'Invalid bundle' validation error when uploading builds to App Store using Carthage or binary

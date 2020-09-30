@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "Purchases"
-  s.version          = "3.7.2"
+  s.version          = "3.7.3"
   s.summary          = "Subscription and in-app-purchase backend service."
 
   s.description      = <<-DESC
@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = '9.0'
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
-  s.dependency 'PurchasesCoreSwift', '3.7.2'
+  s.dependency 'PurchasesCoreSwift', '3.7.3'
   s.static_framework = true
 
 
