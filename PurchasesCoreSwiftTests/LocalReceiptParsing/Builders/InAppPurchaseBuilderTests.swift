@@ -36,6 +36,17 @@ class InAppPurchaseBuilderTests: XCTestCase {
         let sampleReceiptContainer = sampleInAppPurchaseContainerWithMinimalAttributes()
         expect { try self.inAppPurchaseBuilder.build(fromContainer: sampleReceiptContainer) }.notTo(throwError())
     }
+    
+    func testBuildThrowsIfUnexpectedNumberOfInternalContainers() {
+        let typeContainer = containerFactory.intContainer(int: 1)
+        let versionContainer = containerFactory.intContainer(int: 1)
+        let valueContainer = containerFactory.constructedContainer(containers: [containerFactory.stringContainer(string: "test")])
+        let unexpectedContainer = containerFactory.intContainer(int: 2)
+        
+        let inAppPurchaseContainer = containerFactory.constructedContainer(containers: [typeContainer, versionContainer, valueContainer, unexpectedContainer])
+        
+        expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.to(throwError())
+    }
 
     func testBuildGetsCorrectQuantity() {
         let sampleInAppPurchaseContainer = sampleInAppPurchaseContainerWithMinimalAttributes()

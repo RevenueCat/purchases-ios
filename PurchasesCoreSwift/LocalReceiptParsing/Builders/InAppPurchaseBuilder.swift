@@ -35,7 +35,9 @@ class InAppPurchaseBuilder {
         var promotionalOfferIdentifier: String?
 
         for internalContainer in container.internalContainers {
-            guard internalContainer.internalContainers.count == expectedInternalContainersCount else { fatalError() }
+            guard internalContainer.internalContainers.count == expectedInternalContainersCount else {
+                throw ReceiptReadingError.inAppPurchaseParsingError
+            }
             let typeContainer = internalContainer.internalContainers[typeContainerIndex]
             let valueContainer = internalContainer.internalContainers[attributeTypeContainerIndex]
 

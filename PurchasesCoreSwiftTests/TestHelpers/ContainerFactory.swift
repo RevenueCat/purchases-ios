@@ -125,14 +125,14 @@ class ContainerFactory {
         let attributesContainer = constructedContainer(containers: containers)
 
         let receiptWrapper = constructedContainer(containers: [attributesContainer],
-                                                       encodingType: .primitive)
+                                                  encodingType: .primitive)
         return constructedContainer(containers: [receiptWrapper],
-                                         encodingType: .constructed)
+                                    encodingType: .constructed)
     }
 
     func inAppPurchaseContainerFromContainers(containers: [ASN1Container]) -> ASN1Container {
         return constructedContainer(containers: containers,
-                                         encodingType: .constructed)
+                                    encodingType: .constructed)
     }
 
     func objectIdentifierContainer(_ objectIdentifier: ASN1ObjectIdentifier) -> ASN1Container {
@@ -157,8 +157,8 @@ private extension ContainerFactory {
 
     func headerBytes(forContainer container: ASN1Container) -> [UInt8] {
         let identifierHeader = (container.containerClass.rawValue << 6
-            | container.encodingType.rawValue << 5
-            | container.containerIdentifier.rawValue)
+                                    | container.encodingType.rawValue << 5
+                                    | container.containerIdentifier.rawValue)
         if container.length.value < 128 {
             return [identifierHeader] + [UInt8(container.length.value)]
         } else {
