@@ -53,7 +53,7 @@
 		2DDF41B624F6F387005BC22D /* ASN1ObjectIdentifierBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41B224F6F387005BC22D /* ASN1ObjectIdentifierBuilder.swift */; };
 		2DDF41BA24F6F392005BC22D /* ISO3601DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41B724F6F392005BC22D /* ISO3601DateFormatter.swift */; };
 		2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41B824F6F392005BC22D /* UInt8+Extensions.swift */; };
-		2DDF41BC24F6F392005BC22D /* ArraySlice<UInt8>+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41B924F6F392005BC22D /* ArraySlice<UInt8>+Extensions.swift */; };
+		2DDF41BC24F6F392005BC22D /* ArraySlice_UInt8+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41B924F6F392005BC22D /* ArraySlice_UInt8+Extensions.swift */; };
 		2DDF41C824F6F4C3005BC22D /* ISO3601DateFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41BE24F6F4C3005BC22D /* ISO3601DateFormatterTests.swift */; };
 		2DDF41C924F6F4C3005BC22D /* UInt8+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41BF24F6F4C3005BC22D /* UInt8+ExtensionsTests.swift */; };
 		2DDF41CA24F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C024F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift */; };
@@ -291,7 +291,7 @@
 		2DDF41B224F6F387005BC22D /* ASN1ObjectIdentifierBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASN1ObjectIdentifierBuilder.swift; sourceTree = "<group>"; };
 		2DDF41B724F6F392005BC22D /* ISO3601DateFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ISO3601DateFormatter.swift; sourceTree = "<group>"; };
 		2DDF41B824F6F392005BC22D /* UInt8+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UInt8+Extensions.swift"; sourceTree = "<group>"; };
-		2DDF41B924F6F392005BC22D /* ArraySlice<UInt8>+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ArraySlice<UInt8>+Extensions.swift"; sourceTree = "<group>"; };
+		2DDF41B924F6F392005BC22D /* ArraySlice_UInt8+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ArraySlice_UInt8+Extensions.swift"; sourceTree = "<group>"; };
 		2DDF41BE24F6F4C3005BC22D /* ISO3601DateFormatterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ISO3601DateFormatterTests.swift; sourceTree = "<group>"; };
 		2DDF41BF24F6F4C3005BC22D /* UInt8+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UInt8+ExtensionsTests.swift"; sourceTree = "<group>"; };
 		2DDF41C024F6F4C3005BC22D /* ArraySlice<UInt8>+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ArraySlice<UInt8>+ExtensionsTests.swift"; sourceTree = "<group>"; };
@@ -920,7 +920,7 @@
 		37E35556F2D7B8B28B169C77 /* DataConverters */ = {
 			isa = PBXGroup;
 			children = (
-				2DDF41B924F6F392005BC22D /* ArraySlice<UInt8>+Extensions.swift */,
+				2DDF41B924F6F392005BC22D /* ArraySlice_UInt8+Extensions.swift */,
 				2DDF41B724F6F392005BC22D /* ISO3601DateFormatter.swift */,
 				2DDF41B824F6F392005BC22D /* UInt8+Extensions.swift */,
 			);
@@ -1466,7 +1466,7 @@
 				2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */,
 				2DDF41AD24F6F37C005BC22D /* ASN1ObjectIdentifier.swift in Sources */,
 				2DC5622E24EC636C0031F69B /* Transaction.swift in Sources */,
-				2DDF41BC24F6F392005BC22D /* ArraySlice<UInt8>+Extensions.swift in Sources */,
+				2DDF41BC24F6F392005BC22D /* ArraySlice_UInt8+Extensions.swift in Sources */,
 				2DDF41A224F6F331005BC22D /* ProductsManager.swift in Sources */,
 				2DDF41B324F6F387005BC22D /* InAppPurchaseBuilder.swift in Sources */,
 				37E35C8515C5E2D01B0AF5C1 /* Strings.swift in Sources */,
