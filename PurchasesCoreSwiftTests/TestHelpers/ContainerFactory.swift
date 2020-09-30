@@ -129,7 +129,7 @@ class ContainerFactory {
         return constructedContainer(containers: [receiptWrapper],
                                     encodingType: .constructed)
     }
-    
+
     func inAppPurchaseContainerFromContainers(containers: [ASN1Container]) -> ASN1Container {
         return constructedContainer(containers: containers,
                                     encodingType: .constructed)
