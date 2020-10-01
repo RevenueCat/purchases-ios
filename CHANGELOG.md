@@ -4,7 +4,7 @@
 - Fixes crash when parsing receipts with an unexpected number of internal containers in an IAP ASN.1 Container
     https://github.com/RevenueCat/purchases-ios/pull/360
 - Fixes crash when sending `NSNull` attributes to `addAttributionData:fromNetwork:`
-	https://github.com/RevenueCat/purchases-ios/pull/359
+    https://github.com/RevenueCat/purchases-ios/pull/359
 
 ## 3.7.2
 - Updates the Pod to make it compile as a static framework, fixing build issues on hybrid SDKs. Cleans up imports in `RCPurchases.h`.
