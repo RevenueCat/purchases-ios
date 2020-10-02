@@ -54,7 +54,7 @@ class DeviceCacheTests: XCTestCase {
     func testClearCachesForAppUserIDAndSaveNewUserIDClearsCachesTimestamp() {
         self.deviceCache.setPurchaserInfoCacheTimestampToNow()
         self.deviceCache.clearCaches(forAppUserID: "cesar", andSaveNewUserID: "newUser")
-        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
+        expect(self.deviceCache.isPurchaserInfoCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
     }
 
     func testClearCachesForAppUserIDAndSaveNewUserIDUpdatesCachedAppUserID() {
@@ -99,23 +99,23 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testSetPurchaserInfoCacheTimestampToNow() {
-        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
+        expect(self.deviceCache.isPurchaserInfoCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
         self.deviceCache.setPurchaserInfoCacheTimestampToNow()
-        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beFalse())
+        expect(self.deviceCache.isPurchaserInfoCacheStale(withIsAppBackgrounded: nil)).to(beFalse())
     }
 
     func testPurchaserInfoCacheIsStaleIfNoCaches() {
-        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
+        expect(self.deviceCache.isPurchaserInfoCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
     }
 
     func testSetOfferingsCacheTimestampToNow() {
-        expect(self.deviceCache.isOfferingsCacheStale()).to(beTrue())
+        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
         self.deviceCache.setOfferingsCacheTimestampToNow()
-        expect(self.deviceCache.isOfferingsCacheStale()).to(beFalse())
+        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: nil)).to(beFalse())
     }
 
     func testOfferingsCacheIsStaleIfNoCaches() {
-        expect(self.deviceCache.isOfferingsCacheStale()).to(beTrue())
+        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
     }
 
     func testPurchaserInfoCacheIsStaleIfLongerThanFiveMinutes() {
@@ -124,10 +124,10 @@ class DeviceCacheTests: XCTestCase {
         self.deviceCache.cachePurchaserInfo(Data(), forAppUserID: "waldo")
 
         self.deviceCache.purchaserInfoCachesLastUpdated = oldDate
-        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beTrue())
+        expect(self.deviceCache.isPurchaserInfoCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
 
         self.deviceCache.purchaserInfoCachesLastUpdated = Date()
-        expect(self.deviceCache.isPurchaserInfoCacheStale()).to(beFalse())
+        expect(self.deviceCache.isPurchaserInfoCacheStale(withIsAppBackgrounded: nil)).to(beFalse())
     }
 
     func testOfferingsCacheIsStaleIfCachedObjectIsStale() {
@@ -139,10 +139,10 @@ class DeviceCacheTests: XCTestCase {
         self.deviceCache.cacheOfferings(offerings)
 
         mockCachedObject.stubbedIsCacheStaleResult = false
-        expect(self.deviceCache.isOfferingsCacheStale()).to(beFalse())
+        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: nil)).to(beFalse())
 
         mockCachedObject.stubbedIsCacheStaleResult = true
-        expect(self.deviceCache.isOfferingsCacheStale()).to(beTrue())
+        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
     }
 
     func testPurchaserInfoIsProperlyCached() {

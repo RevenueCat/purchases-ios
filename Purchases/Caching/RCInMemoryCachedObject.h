@@ -10,7 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCInMemoryCachedObject<ObjectType: id<NSObject>> : NSObject
 
-- (BOOL)isCacheStale;
+- (BOOL)isCacheStaleWithDurationInSeconds:(int)durationInSeconds;
 
 - (void)clearCacheTimestamp;
 
@@ -21,10 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)cacheInstance:(ObjectType)instance;
 
 - (nullable ObjectType)cachedInstance;
-
-- (instancetype)init NS_UNAVAILABLE;
-
-- (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds;
 
 @end
 

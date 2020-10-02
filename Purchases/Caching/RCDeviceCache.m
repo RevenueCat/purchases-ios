@@ -29,8 +29,8 @@ NSString *RCPurchaserInfoAppUserDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".purchas
 NSString *RCLegacySubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttributes.";
 NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttributes";
 NSString *RCAttributionDataDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".attribution.";
-#define CACHE_DURATION_IN_SECONDS 60 * 5
-
+int cacheDurationInSecondsInForeground = 60 * 5;
+int cacheDurationInSecondsInBackground = 60 * 60 * 24;
 
 @implementation RCDeviceCache
 
@@ -44,8 +44,7 @@ NSString *RCAttributionDataDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".attribution.
     self = [super init];
     if (self) {
         if (offeringsCachedObject == nil) {
-            offeringsCachedObject =
-                [[RCInMemoryCachedObject alloc] initWithCacheDurationInSeconds:CACHE_DURATION_IN_SECONDS];
+            offeringsCachedObject = [[RCInMemoryCachedObject alloc] init];
         }
         self.offeringsCachedObject = offeringsCachedObject;
 
@@ -129,9 +128,15 @@ NSString *RCAttributionDataDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".attribution.
     }
 }
 
-- (BOOL)isPurchaserInfoCacheStale {
+- (BOOL)isPurchaserInfoCacheStaleWithIsAppBackgrounded:(BOOL)isAppBackgrounded {
     NSTimeInterval timeSinceLastCheck = -[self.purchaserInfoCachesLastUpdated timeIntervalSinceNow];
-    return !(self.purchaserInfoCachesLastUpdated != nil && timeSinceLastCheck < CACHE_DURATION_IN_SECONDS);
+    int cacheDurationInSeconds = [self cacheDurationInSecondsWithIsAppBackgrounded:isAppBackgrounded];
+    return !(self.purchaserInfoCachesLastUpdated != nil && timeSinceLastCheck < cacheDurationInSeconds);
+}
+
+- (int)cacheDurationInSecondsWithIsAppBackgrounded:(BOOL)isAppBackgrounded {
+    return (isAppBackgrounded ? cacheDurationInSecondsInBackground
+                              : cacheDurationInSecondsInForeground);
 }
 
 - (void)clearPurchaserInfoCacheTimestamp {
@@ -163,8 +168,9 @@ NSString *RCAttributionDataDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".attribution.
     [self.offeringsCachedObject cacheInstance:offerings];
 }
 
-- (BOOL)isOfferingsCacheStale {
-    return self.offeringsCachedObject.isCacheStale;
+- (BOOL)isOfferingsCacheStaleWithIsAppBackgrounded:(BOOL)isAppBackgrounded {
+    int cacheDurationInSeconds = [self cacheDurationInSecondsWithIsAppBackgrounded:isAppBackgrounded];
+    return [self.offeringsCachedObject isCacheStaleWithDurationInSeconds:cacheDurationInSeconds];
 }
 
 - (void)clearOfferingsCacheTimestamp {

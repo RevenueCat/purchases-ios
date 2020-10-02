@@ -425,10 +425,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     if (infoFromCache) {
         RCDebugLog(@"Vending purchaserInfo from cache");
         CALL_IF_SET_ON_MAIN_THREAD(completion, infoFromCache, nil);
-        if ([self.deviceCache isPurchaserInfoCacheStale]) {
-            RCDebugLog(@"Cache is stale, updating caches");
-            [self fetchAndCachePurchaserInfoWithCompletion:nil];
-        }
+        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
+            if ([self.deviceCache isPurchaserInfoCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
+                RCDebugLog(@"Cache is stale, updating caches");
+                [self fetchAndCachePurchaserInfoWithCompletion:nil];
+            }
+        }];
     } else {
         RCDebugLog(@"No cached purchaser info, fetching");
         [self fetchAndCachePurchaserInfoWithCompletion:completion];
@@ -821,14 +823,16 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)updateAllCachesIfNeeded {
     RCDebugLog(@"applicationDidBecomeActive");
-    if ([self.deviceCache isPurchaserInfoCacheStale]) {
-        RCDebugLog(@"PurchaserInfo cache is stale, updating caches");
-        [self fetchAndCachePurchaserInfoWithCompletion:nil];
-    }
-    if ([self.deviceCache isOfferingsCacheStale]) {
-        RCDebugLog(@"Offerings cache is stale, updating caches");
-        [self updateOfferingsCache:nil];
-    }
+    [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
+        if ([self.deviceCache isPurchaserInfoCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
+            RCDebugLog(@"PurchaserInfo cache is stale, updating caches");
+            [self fetchAndCachePurchaserInfoWithCompletion:nil];
+        }
+        if ([self.deviceCache isOfferingsCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
+            RCDebugLog(@"Offerings cache is stale, updating caches");
+            [self updateOfferingsCache:nil];
+        }
+    }];
 }
 
 - (RCPurchaserInfo *)readPurchaserInfoFromCache {
@@ -897,10 +901,12 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     if (self.deviceCache.cachedOfferings) {
         RCDebugLog(@"Vending offerings from cache");
         CALL_IF_SET_ON_MAIN_THREAD(completion, self.deviceCache.cachedOfferings, nil);
-        if (self.deviceCache.isOfferingsCacheStale) {
-            RCDebugLog(@"Offerings cache is stale, updating cache");
-            [self updateOfferingsCache:nil];
-        }
+        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
+            if ([self.deviceCache isOfferingsCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
+                RCDebugLog(@"Offerings cache is stale, updating cache");
+                [self updateOfferingsCache:nil];
+            }
+        }];
     } else {
         RCDebugLog(@"No cached offerings, fetching");
         [self updateOfferingsCache:completion];
