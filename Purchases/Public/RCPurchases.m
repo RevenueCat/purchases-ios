@@ -299,7 +299,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
         [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isBackgrounded) {
             if (!isBackgrounded) {
-                [self.operationDispatcher dispatchOnWorkerThread:^{
+                [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:NO :^{
                     [self updateAllCachesWithCompletionBlock:callDelegate];
                 }];
             } else {
@@ -421,20 +421,20 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion {
-    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
-    if (infoFromCache) {
-        RCDebugLog(@"Vending purchaserInfo from cache");
-        CALL_IF_SET_ON_MAIN_THREAD(completion, infoFromCache, nil);
-        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
+    [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
+        RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
+        if (infoFromCache) {
+            RCDebugLog(@"Vending purchaserInfo from cache");
+            CALL_IF_SET_ON_MAIN_THREAD(completion, infoFromCache, nil);
             if ([self.deviceCache isPurchaserInfoCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
                 RCDebugLog(@"Cache is stale, updating caches");
-                [self fetchAndCachePurchaserInfoWithCompletion:nil];
+                [self fetchAndCachePurchaserInfoWithCompletion:nil isAppBackgrounded:isAppBackgrounded];
             }
-        }];
-    } else {
-        RCDebugLog(@"No cached purchaser info, fetching");
-        [self fetchAndCachePurchaserInfoWithCompletion:completion];
-    }
+        } else {
+            RCDebugLog(@"No cached purchaser info, fetching");
+            [self fetchAndCachePurchaserInfoWithCompletion:completion isAppBackgrounded:isAppBackgrounded];
+        }
+    }];
 }
 
 #pragma mark Purchasing
@@ -826,11 +826,11 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
         if ([self.deviceCache isPurchaserInfoCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
             RCDebugLog(@"PurchaserInfo cache is stale, updating caches");
-            [self fetchAndCachePurchaserInfoWithCompletion:nil];
+            [self fetchAndCachePurchaserInfoWithCompletion:nil isAppBackgrounded:isAppBackgrounded];
         }
         if ([self.deviceCache isOfferingsCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
             RCDebugLog(@"Offerings cache is stale, updating caches");
-            [self updateOfferingsCache:nil];
+            [self updateOfferingsCache:nil isAppBackgrounded:isAppBackgrounded];
         }
     }];
 }
@@ -867,25 +867,30 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)updateAllCachesWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    [self fetchAndCachePurchaserInfoWithCompletion:completion];
-    [self updateOfferingsCache:nil];
+    [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
+        [self fetchAndCachePurchaserInfoWithCompletion:completion isAppBackgrounded:isAppBackgrounded];
+        [self updateOfferingsCache:nil isAppBackgrounded:isAppBackgrounded];
+    }];
 }
 
-- (void)fetchAndCachePurchaserInfoWithCompletion:(nullable RCReceivePurchaserInfoBlock)completion {
+- (void)fetchAndCachePurchaserInfoWithCompletion:(nullable RCReceivePurchaserInfoBlock)completion
+                               isAppBackgrounded:(BOOL)isAppBackgrounded {
     [self.deviceCache setPurchaserInfoCacheTimestampToNow];
-    NSString *appUserID = self.identityManager.currentAppUserID;
-    [self.backend getSubscriberDataWithAppUserID:appUserID
-                                      completion:^(RCPurchaserInfo * _Nullable info,
-                                                   NSError * _Nullable error) {
-                                          if (error == nil) {
-                                              [self cachePurchaserInfo:info forAppUserID:appUserID];
-                                              [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-                                          } else {
-                                              [self.deviceCache clearPurchaserInfoCacheTimestamp];
-                                          }
+    [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:isAppBackgrounded :^{
+        NSString *appUserID = self.identityManager.currentAppUserID;
+        [self.backend getSubscriberDataWithAppUserID:appUserID
+                                          completion:^(RCPurchaserInfo *_Nullable info,
+                                                       NSError *_Nullable error) {
+                                              if (error == nil) {
+                                                  [self cachePurchaserInfo:info forAppUserID:appUserID];
+                                                  [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
+                                              } else {
+                                                  [self.deviceCache clearPurchaserInfoCacheTimestamp];
+                                              }
 
-                                          CALL_IF_SET_ON_MAIN_THREAD(completion, info, error);
-                                      }];
+                                              CALL_IF_SET_ON_MAIN_THREAD(completion, info, error);
+                                          }];
+    }];
 }
 
 - (void)performOnEachProductIdentifierInOfferings:(NSDictionary *)offeringsData
@@ -898,33 +903,34 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)offeringsWithCompletionBlock:(RCReceiveOfferingsBlock)completion {
-    if (self.deviceCache.cachedOfferings) {
-        RCDebugLog(@"Vending offerings from cache");
-        CALL_IF_SET_ON_MAIN_THREAD(completion, self.deviceCache.cachedOfferings, nil);
-        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
-            if ([self.deviceCache isOfferingsCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
-                RCDebugLog(@"Offerings cache is stale, updating cache");
-                [self updateOfferingsCache:nil];
-            }
-        }];
-    } else {
-        RCDebugLog(@"No cached offerings, fetching");
-        [self updateOfferingsCache:completion];
-    }
+    [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
+        if (self.deviceCache.cachedOfferings) {
+            RCDebugLog(@"Vending offerings from cache");
+            CALL_IF_SET_ON_MAIN_THREAD(completion, self.deviceCache.cachedOfferings, nil);
+                if ([self.deviceCache isOfferingsCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
+                    RCDebugLog(@"Offerings cache is stale, updating cache");
+                    [self updateOfferingsCache:nil isAppBackgrounded:isAppBackgrounded];
+                }
+        } else {
+            RCDebugLog(@"No cached offerings, fetching");
+            [self updateOfferingsCache:completion isAppBackgrounded:isAppBackgrounded];
+        }
+    }];
 }
 
-- (void)updateOfferingsCache:(nullable RCReceiveOfferingsBlock)completion {
+- (void)updateOfferingsCache:(nullable RCReceiveOfferingsBlock)completion isAppBackgrounded:(BOOL)isAppBackgrounded {
     [self.deviceCache setOfferingsCacheTimestampToNow];
-    __weak typeof(self) weakSelf = self;
-    [self.backend getOfferingsForAppUserID:self.appUserID
-                                completion:^(NSDictionary *data, NSError *error) {
-                                    __strong typeof(self) strongSelf = weakSelf;
-                                    if (error != nil) {
-                                        [strongSelf handleOfferingsUpdateError:error completion:completion];
-                                        return;
-                                    }
-                                    [strongSelf handleOfferingsBackendResultWithData:data completion:completion];
-                                }];
+    [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:isAppBackgrounded :^{
+        [self.backend getOfferingsForAppUserID:self.appUserID
+                                    completion:^(NSDictionary *data, NSError *error) {
+                                        if (error != nil) {
+                                            [self handleOfferingsUpdateError:error completion:completion];
+                                            return;
+                                        }
+                                        [self handleOfferingsBackendResultWithData:data completion:completion];
+                                    }];
+    }];
+
 }
 
 - (void)handleOfferingsBackendResultWithData:(NSDictionary *)data completion:(RCReceiveOfferingsBlock)completion {

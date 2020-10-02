@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)syncSubscriberAttributesIfNeeded {
-    [self.operationDispatcher dispatchOnWorkerThread:^{
+    [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:NO :^{
         [self.subscriberAttributesManager syncAttributesForAllUsersWithCurrentAppUserID:self.appUserID];
     }];
 }
