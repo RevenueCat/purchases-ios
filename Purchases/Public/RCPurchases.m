@@ -536,11 +536,12 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     if (!self.finishTransactions) {
         RCDebugLog(@"makePurchase - Observer mode is active (finishTransactions is set to false) and makePurchase has been called. Are you sure you want to do this?");
     }
-    payment.applicationUsername = self.appUserID;
+    NSString *appUserID = self.appUserID;
+    payment.applicationUsername = appUserID;
 
     // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
     // from triggering a refresh.
-    [self.deviceCache setPurchaserInfoCacheTimestampToNow];
+    [self.deviceCache setPurchaserInfoCacheTimestampToNowForAppUserID:appUserID];
     [self.deviceCache setOfferingsCacheTimestampToNow];
 
     if (presentedOfferingIdentifier) {
