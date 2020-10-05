@@ -426,7 +426,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         if (infoFromCache) {
             RCDebugLog(@"Vending purchaserInfo from cache");
             CALL_IF_SET_ON_MAIN_THREAD(completion, infoFromCache, nil);
-            if ([self.deviceCache isPurchaserInfoCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
+            if ([self.deviceCache isPurchaserInfoCacheStaleForAppUserID:self.appUserID isAppBackgrounded:isAppBackgrounded]) {
                 RCDebugLog(@"Cache is stale, updating caches");
                 [self fetchAndCachePurchaserInfoWithCompletion:nil isAppBackgrounded:isAppBackgrounded];
             }
@@ -824,7 +824,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)updateAllCachesIfNeeded {
     RCDebugLog(@"applicationDidBecomeActive");
     [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
-        if ([self.deviceCache isPurchaserInfoCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
+        if ([self.deviceCache isPurchaserInfoCacheStaleForAppUserID:self.appUserID isAppBackgrounded:isAppBackgrounded]) {
             RCDebugLog(@"PurchaserInfo cache is stale, updating caches");
             [self fetchAndCachePurchaserInfoWithCompletion:nil isAppBackgrounded:isAppBackgrounded];
         }
@@ -875,9 +875,9 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)fetchAndCachePurchaserInfoWithCompletion:(nullable RCReceivePurchaserInfoBlock)completion
                                isAppBackgrounded:(BOOL)isAppBackgrounded {
-    [self.deviceCache setPurchaserInfoCacheTimestampToNow];
+    NSString *appUserID = self.identityManager.currentAppUserID;
+    [self.deviceCache setPurchaserInfoCacheTimestampToNowForAppUserID:appUserID];
     [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:isAppBackgrounded :^{
-        NSString *appUserID = self.identityManager.currentAppUserID;
         [self.backend getSubscriberDataWithAppUserID:appUserID
                                           completion:^(RCPurchaserInfo *_Nullable info,
                                                        NSError *_Nullable error) {
@@ -885,7 +885,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                   [self cachePurchaserInfo:info forAppUserID:appUserID];
                                                   [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
                                               } else {
-                                                  [self.deviceCache clearPurchaserInfoCacheTimestamp];
+                                                  [self.deviceCache clearPurchaserInfoCacheTimestampForAppUserID:appUserID];
                                               }
 
                                               CALL_IF_SET_ON_MAIN_THREAD(completion, info, error);

@@ -8,15 +8,12 @@
 
 #import "RCDeviceCache.h"
 #import "RCDeviceCache+Protected.h"
-#import "RCLogUtils.h"
-#import "NSDictionary+RCExtensions.h"
 
 @interface RCDeviceCache ()
 
 @property (nonatomic) NSUserDefaults *userDefaults;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 @property (nonatomic, nonnull) RCInMemoryCachedObject<RCOfferings *> *offeringsCachedObject;
-@property (nonatomic, nullable) NSDate *purchaserInfoCachesLastUpdated;
 
 @end
 
@@ -26,6 +23,7 @@
 NSString *RCLegacyGeneratedAppUserDefaultsKey = RC_CACHE_KEY_PREFIX @".appUserID";
 NSString *RCAppUserDefaultsKey = RC_CACHE_KEY_PREFIX @".appUserID.new";
 NSString *RCPurchaserInfoAppUserDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".purchaserInfo.";
+NSString *RCPurchaserInfoLastUpdatedKeyBase = RC_CACHE_KEY_PREFIX @".purchaserInfoLastUpdated.";
 NSString *RCLegacySubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscriberAttributes.";
 NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttributes";
 NSString *RCAttributionDataDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".attribution.";
@@ -105,7 +103,7 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 24;
     @synchronized (self) {
         [self.userDefaults removeObjectForKey:RCLegacyGeneratedAppUserDefaultsKey];
         [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:oldAppUserID]];
-        [self clearPurchaserInfoCacheTimestamp];
+        [self clearPurchaserInfoCacheTimestampForAppUserID:oldAppUserID];
         [self clearOfferingsCache];
 
         [self deleteAttributesIfSyncedForAppUserID:oldAppUserID];
@@ -124,14 +122,15 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 24;
     @synchronized (self) {
         [self.userDefaults setObject:data
                               forKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
-        [self setPurchaserInfoCacheTimestampToNow];
+        [self setPurchaserInfoCacheTimestampToNowForAppUserID:appUserID];
     }
 }
 
-- (BOOL)isPurchaserInfoCacheStaleWithIsAppBackgrounded:(BOOL)isAppBackgrounded {
-    NSTimeInterval timeSinceLastCheck = -[self.purchaserInfoCachesLastUpdated timeIntervalSinceNow];
+- (BOOL)isPurchaserInfoCacheStaleForAppUserID:(NSString *)appUserID isAppBackgrounded:(BOOL)isAppBackgrounded {
+    NSDate * _Nullable purchaserInfoCachesLastUpdated = [self purchaserInfoCachesLastUpdatedForAppUserID:appUserID];
+    NSTimeInterval timeSinceLastCheck = -[purchaserInfoCachesLastUpdated timeIntervalSinceNow];
     int cacheDurationInSeconds = [self cacheDurationInSecondsWithIsAppBackgrounded:isAppBackgrounded];
-    return !(self.purchaserInfoCachesLastUpdated != nil && timeSinceLastCheck < cacheDurationInSeconds);
+    return !(purchaserInfoCachesLastUpdated != nil && timeSinceLastCheck < cacheDurationInSeconds);
 }
 
 - (int)cacheDurationInSecondsWithIsAppBackgrounded:(BOOL)isAppBackgrounded {
@@ -139,23 +138,33 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 24;
                               : cacheDurationInSecondsInForeground);
 }
 
-- (void)clearPurchaserInfoCacheTimestamp {
-    self.purchaserInfoCachesLastUpdated = nil;
+- (void)clearPurchaserInfoCacheTimestampForAppUserID:(NSString *)appUserID {
+    NSString *cacheKey = [self purchaserInfoLastUpdatedCacheKeyForAppUserID:appUserID];
+    [self.userDefaults removeObjectForKey:cacheKey];
 }
 
 - (void)clearPurchaserInfoCacheForAppUserID:(NSString *)appUserID {
     @synchronized (self) {
-        [self clearPurchaserInfoCacheTimestamp];
+        [self clearPurchaserInfoCacheTimestampForAppUserID:appUserID];
         [self.userDefaults removeObjectForKey:[self purchaserInfoUserDefaultCacheKeyForAppUserID:appUserID]];
     }
 }
 
-- (void)setPurchaserInfoCacheTimestampToNow {
-    self.purchaserInfoCachesLastUpdated = [NSDate date];
+- (void)setPurchaserInfoCacheTimestampToNowForAppUserID:(NSString *)appUserID {
+    NSString *cacheKey = [self purchaserInfoLastUpdatedCacheKeyForAppUserID:appUserID];
+    [self.userDefaults setObject:[NSDate date] forKey:cacheKey];
+}
+
+- (nullable NSDate *)purchaserInfoCachesLastUpdatedForAppUserID:(NSString *)appUserID {
+    return (NSDate*)[self.userDefaults objectForKey:[self purchaserInfoLastUpdatedCacheKeyForAppUserID:appUserID]];
 }
 
 - (NSString *)purchaserInfoUserDefaultCacheKeyForAppUserID:(NSString *)appUserID {
     return [RCPurchaserInfoAppUserDefaultsKeyBase stringByAppendingString:appUserID];
+}
+
+- (NSString *)purchaserInfoLastUpdatedCacheKeyForAppUserID:(NSString *)appUserID {
+    return [RCPurchaserInfoLastUpdatedKeyBase stringByAppendingString:appUserID];
 }
 
 #pragma mark - offerings

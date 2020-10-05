@@ -33,13 +33,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)cachePurchaserInfo:(NSData *)data forAppUserID:(NSString *)appUserID;
 
-- (BOOL)isPurchaserInfoCacheStaleWithIsAppBackgrounded:(BOOL)isAppBackgrounded;
+- (BOOL)isPurchaserInfoCacheStaleForAppUserID:(NSString *)appUserID isAppBackgrounded:(BOOL)isAppBackgrounded;
 
-- (void)clearPurchaserInfoCacheTimestamp;
+- (void)clearPurchaserInfoCacheTimestampForAppUserID:(NSString *)appUserID;
 
 - (void)clearPurchaserInfoCacheForAppUserID:(NSString *)appUserID;
 
-- (void)setPurchaserInfoCacheTimestampToNow;
+- (void)setPurchaserInfoCacheTimestampToNowForAppUserID:(NSString *)appUserID;
 
 #pragma mark - offerings
 
