@@ -12,7 +12,7 @@ class MockInMemoryCachedOfferings<T: Purchases.Offerings> : RCInMemoryCachedObje
     var invokedIsCacheStaleCount = 0
     var stubbedIsCacheStaleResult: Bool! = false
 
-    override func isCacheStale() -> Bool {
+    override func isCacheStaleWithDuration(inSeconds durationInSeconds: Int32) -> Bool {
         invokedIsCacheStale = true
         invokedIsCacheStaleCount += 1
         return stubbedIsCacheStaleResult

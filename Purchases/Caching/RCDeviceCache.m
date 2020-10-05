@@ -151,8 +151,12 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 24;
 }
 
 - (void)setPurchaserInfoCacheTimestampToNowForAppUserID:(NSString *)appUserID {
+    [self setPurchaserInfoCacheTimestamp:[NSDate date] forAppUserID:appUserID];
+}
+
+- (void)setPurchaserInfoCacheTimestamp:(NSDate *)timestamp forAppUserID:(NSString *)appUserID {
     NSString *cacheKey = [self purchaserInfoLastUpdatedCacheKeyForAppUserID:appUserID];
-    [self.userDefaults setObject:[NSDate date] forKey:cacheKey];
+    [self.userDefaults setObject:timestamp forKey:cacheKey];
 }
 
 - (nullable NSDate *)purchaserInfoCachesLastUpdatedForAppUserID:(NSString *)appUserID {

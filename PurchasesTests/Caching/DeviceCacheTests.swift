@@ -52,9 +52,10 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testClearCachesForAppUserIDAndSaveNewUserIDClearsCachesTimestamp() {
-        self.deviceCache.setPurchaserInfoCacheTimestampToNow()
-        self.deviceCache.clearCaches(forAppUserID: "cesar", andSaveNewUserID: "newUser")
-        expect(self.deviceCache.isPurchaserInfoCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
+        let appUserID = "cesar"
+        self.deviceCache.setPurchaserInfoCacheTimestampToNowForAppUserID(appUserID)
+        self.deviceCache.clearCaches(forAppUserID: appUserID, andSaveNewUserID: "newUser")
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID, isAppBackgrounded: false)).to(beTrue())
     }
 
     func testClearCachesForAppUserIDAndSaveNewUserIDUpdatesCachedAppUserID() {
@@ -99,60 +100,72 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testSetPurchaserInfoCacheTimestampToNow() {
-        expect(self.deviceCache.isPurchaserInfoCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
-        self.deviceCache.setPurchaserInfoCacheTimestampToNow()
-        expect(self.deviceCache.isPurchaserInfoCacheStale(withIsAppBackgrounded: nil)).to(beFalse())
+        let appUserID = "user"
+        let isBackgrounded = false
+
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: isBackgrounded)) == true
+
+        self.deviceCache.setPurchaserInfoCacheTimestampToNowForAppUserID(appUserID)
+
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: isBackgrounded)) == false
     }
 
     func testPurchaserInfoCacheIsStaleIfNoCaches() {
-        expect(self.deviceCache.isPurchaserInfoCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: "user", isAppBackgrounded: false)).to(beTrue())
     }
 
     func testSetOfferingsCacheTimestampToNow() {
-        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
+        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: false)).to(beTrue())
         self.deviceCache.setOfferingsCacheTimestampToNow()
-        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: nil)).to(beFalse())
+        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: false)).to(beFalse())
     }
 
     func testOfferingsCacheIsStaleIfNoCaches() {
-        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
+        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: false)).to(beTrue())
     }
 
     func testPurchaserInfoCacheIsStaleIfLongerThanFiveMinutes() {
         let oldDate: Date! = Calendar.current.date(byAdding: .minute, value: -(6), to: Date())
         self.deviceCache = RCDeviceCache(mockUserDefaults)
-        self.deviceCache.cachePurchaserInfo(Data(), forAppUserID: "waldo")
+        let appUserID = "waldo"
+        self.deviceCache.cachePurchaserInfo(Data(), forAppUserID: appUserID)
+        let isAppBackgrounded = false
 
-        self.deviceCache.purchaserInfoCachesLastUpdated = oldDate
-        expect(self.deviceCache.isPurchaserInfoCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
+        self.deviceCache.setPurchaserInfoCacheTimestamp(oldDate, forAppUserID: appUserID)
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: isAppBackgrounded)) == true
 
-        self.deviceCache.purchaserInfoCachesLastUpdated = Date()
-        expect(self.deviceCache.isPurchaserInfoCacheStale(withIsAppBackgrounded: nil)).to(beFalse())
+        self.deviceCache.setPurchaserInfoCacheTimestamp(Date(), forAppUserID: appUserID)
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: isAppBackgrounded)) == false
     }
 
     func testOfferingsCacheIsStaleIfCachedObjectIsStale() {
-        let mockCachedObject = MockInMemoryCachedOfferings<Purchases.Offerings>(cacheDurationInSeconds: 5 * 60)
+        let mockCachedObject = MockInMemoryCachedOfferings<Purchases.Offerings>()
         self.deviceCache = RCDeviceCache(mockUserDefaults,
                                          offeringsCachedObject: mockCachedObject,
                                          notificationCenter: nil)
         let offerings = Purchases.Offerings()
         self.deviceCache.cacheOfferings(offerings)
+        let isAppBackgrounded = false
 
         mockCachedObject.stubbedIsCacheStaleResult = false
-        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: nil)).to(beFalse())
+        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: isAppBackgrounded)).to(beFalse())
 
         mockCachedObject.stubbedIsCacheStaleResult = true
-        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: nil)).to(beTrue())
+        expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: isAppBackgrounded)).to(beTrue())
     }
 
     func testPurchaserInfoIsProperlyCached() {
         let data = Data()
+        let userDefaults: UserDefaults = .standard
+        self.deviceCache = RCDeviceCache(userDefaults)
         self.deviceCache.cachePurchaserInfo(data, forAppUserID: "cesar")
-        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfo.cesar"] as? Data)
-            .to(equal(data))
+
         expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: "cesar")).to(equal(data))
-        expect(self.mockUserDefaults.setObjectForKeyCalledValue)
-            .to(equal("com.revenuecat.userdefaults.purchaserInfo.cesar"))
+        expect(userDefaults.data(forKey: "com.revenuecat.userdefaults.purchaserInfo.cesar")) == data
     }
 
     func testOfferingsAreProperlyCached() {

@@ -56,15 +56,16 @@ class MockDeviceCache: RCDeviceCache {
         return cachedPurchaserInfo[appUserID];
     }
 
-    override func isPurchaserInfoCacheStale() -> Bool {
+    override func isPurchaserInfoCacheStale(forAppUserID appUserID: String,
+                                            isAppBackgrounded: Bool) -> Bool {
         return stubbedIsPurchaserInfoCacheStale
     }
 
-    override func clearPurchaserInfoCacheTimestamp() {
+    override func clearPurchaserInfoCacheTimestamp(forAppUserID appUserID: String) {
         clearPurchaserInfoCacheTimestampCount += 1
     }
 
-    override func setPurchaserInfoCacheTimestampToNow() {
+    override func setPurchaserInfoCacheTimestampToNowForAppUserID(_ appUserID: String) {
         setPurchaserInfoCacheTimestampToNowCount += 1
     }
 
@@ -85,7 +86,7 @@ class MockDeviceCache: RCDeviceCache {
         cachedOfferingsCount += 1
     }
 
-    override func isOfferingsCacheStale() -> Bool {
+    override func isOfferingsCacheStale(withIsAppBackgrounded isAppBackgrounded: Bool) -> Bool {
         return stubbedIsOfferingsCacheStale
     }
 

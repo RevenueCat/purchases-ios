@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCDeviceCache (Protected)
 
+- (void)setPurchaserInfoCacheTimestamp:(NSDate *)timestamp forAppUserID:(NSString *)appUserID;
+
 - (nullable instancetype)initWith:(nullable NSUserDefaults *)userDefaults
             offeringsCachedObject:(nullable RCInMemoryCachedObject<RCOfferings *> *)offeringsCachedObject
                notificationCenter:(nullable NSNotificationCenter *)notificationCenter;
