@@ -160,12 +160,11 @@ class DeviceCacheTests: XCTestCase {
 
     func testPurchaserInfoIsProperlyCached() {
         let data = Data()
-        let userDefaults: UserDefaults = .standard
-        self.deviceCache = RCDeviceCache(userDefaults)
         self.deviceCache.cachePurchaserInfo(data, forAppUserID: "cesar")
 
-        expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: "cesar")).to(equal(data))
-        expect(userDefaults.data(forKey: "com.revenuecat.userdefaults.purchaserInfo.cesar")) == data
+        expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfo.cesar"] as? Data)
+            .to(equal(data))
+        expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: "cesar")) == data
     }
 
     func testOfferingsAreProperlyCached() {
