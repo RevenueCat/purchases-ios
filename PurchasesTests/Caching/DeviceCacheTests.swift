@@ -206,4 +206,41 @@ class DeviceCacheTests: XCTestCase {
 
         expect { mockNotificationCenter.fireNotifications() }.to(raiseException())
     }
+
+    func testNewDeviceCacheInstanceWithExistingValidPurchaserInfoCacheIsntStale() {
+        let mockNotificationCenter = MockNotificationCenter()
+        let appUserID = "myUser"
+        let fourMinutesAgo = Calendar.current.date(byAdding: .minute, value: -4, to: Date())
+        mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfoLastUpdated.\(appUserID)"] = fourMinutesAgo
+        self.deviceCache = RCDeviceCache(mockUserDefaults,
+                                         offeringsCachedObject: nil,
+                                         notificationCenter: mockNotificationCenter)
+
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: false)) == false
+    }
+
+    func testNewDeviceCacheInstanceWithExistingInvalidPurchaserInfoCacheIsStale() {
+        let mockNotificationCenter = MockNotificationCenter()
+        let appUserID = "myUser"
+        let fourDaysAgo = Calendar.current.date(byAdding: .day, value: -4, to: Date())
+        mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfoLastUpdated.\(appUserID)"] = fourDaysAgo
+        self.deviceCache = RCDeviceCache(mockUserDefaults,
+                                         offeringsCachedObject: nil,
+                                         notificationCenter: mockNotificationCenter)
+
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: false)) == true
+    }
+
+    func testNewDeviceCacheInstanceWithNoCachedPurchaserInfoCacheIsStale() {
+        let mockNotificationCenter = MockNotificationCenter()
+        let appUserID = "myUser"
+        self.deviceCache = RCDeviceCache(mockUserDefaults,
+                                         offeringsCachedObject: nil,
+                                         notificationCenter: mockNotificationCenter)
+
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: false)) == true
+    }
 }
