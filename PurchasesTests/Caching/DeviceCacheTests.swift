@@ -243,4 +243,57 @@ class DeviceCacheTests: XCTestCase {
         expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
                                                           isAppBackgrounded: false)) == true
     }
+
+    func testIsPurchaserInfoCacheStaleForBackground() {
+        let mockNotificationCenter = MockNotificationCenter()
+        let appUserID = "myUser"
+        self.deviceCache = RCDeviceCache(mockUserDefaults,
+                                         offeringsCachedObject: nil,
+                                         notificationCenter: mockNotificationCenter)
+        let outdatedCacheDateForBackground = Calendar.current.date(byAdding: .hour, value: -25, to: Date())!
+        self.deviceCache.setPurchaserInfoCacheTimestamp(outdatedCacheDateForBackground, forAppUserID: appUserID)
+
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: true)) == true
+
+        let validCacheDateForBackground = Calendar.current.date(byAdding: .hour, value: -15, to: Date())!
+        self.deviceCache.setPurchaserInfoCacheTimestamp(validCacheDateForBackground, forAppUserID: appUserID)
+
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: true)) == false
+    }
+
+    func testIsPurchaserInfoCacheStaleForForeground() {
+        let mockNotificationCenter = MockNotificationCenter()
+        let appUserID = "myUser"
+        self.deviceCache = RCDeviceCache(mockUserDefaults,
+                                         offeringsCachedObject: nil,
+                                         notificationCenter: mockNotificationCenter)
+        let outdatedCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -25, to: Date())!
+        self.deviceCache.setPurchaserInfoCacheTimestamp(outdatedCacheDateForForeground, forAppUserID: appUserID)
+
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: true)) == true
+
+        let validCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -3, to: Date())!
+        self.deviceCache.setPurchaserInfoCacheTimestamp(validCacheDateForForeground, forAppUserID: appUserID)
+
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: true)) == false
+    }
+
+    func testIsPurchaserInfoCacheStaleForDifferentAppUserID() {
+        let mockNotificationCenter = MockNotificationCenter()
+        let otherAppUserID = "some other user"
+        let currentAppUserID = "myUser"
+        self.deviceCache = RCDeviceCache(mockUserDefaults,
+                                         offeringsCachedObject: nil,
+                                         notificationCenter: mockNotificationCenter)
+        let validCacheDate = Calendar.current.date(byAdding: .minute, value: -3, to: Date())!
+        self.deviceCache.setPurchaserInfoCacheTimestamp(validCacheDate, forAppUserID: otherAppUserID)
+
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: currentAppUserID,
+                                                          isAppBackgrounded: true)) == true
+
+    }
 }
