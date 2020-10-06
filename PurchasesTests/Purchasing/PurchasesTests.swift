@@ -281,9 +281,31 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.getSubscriberCallCount).toEventually(equal(0))
     }
     
-    func testFirstInitializationFromForegroundUpdatesPurchaserInfoCache() {
+    func testFirstInitializationFromForegroundUpdatesPurchaserInfoCacheIfNotInUserDefaults() {
         systemInfo.stubbedIsApplicationBackgrounded = false
         setupPurchases()
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
+    }
+
+    func testFirstInitializationFromForegroundUpdatesPurchaserInfoCacheIfUserDefaultsCacheStale() {
+        let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -20, to: Date())!
+        self.deviceCache.setPurchaserInfoCacheTimestamp(staleCacheDateForForeground,
+                                                        forAppUserID: identityManager.currentAppUserID)
+        systemInfo.stubbedIsApplicationBackgrounded = false
+
+        setupPurchases()
+
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
+    }
+
+    func testFirstInitializationFromForegroundUpdatesPurchaserInfoEvenIfCacheValid() {
+        let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -2, to: Date())!
+        self.deviceCache.setPurchaserInfoCacheTimestamp(staleCacheDateForForeground,
+                                                        forAppUserID: identityManager.currentAppUserID)
+        systemInfo.stubbedIsApplicationBackgrounded = false
+
+        setupPurchases()
+
         expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
     }
 
