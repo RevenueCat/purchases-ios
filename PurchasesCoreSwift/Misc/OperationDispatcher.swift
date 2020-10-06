@@ -28,7 +28,7 @@ import Foundation
     }
 
     @objc public func dispatchOnWorkerThread(withRandomDelay: Bool = false,
-                                             _ block: @escaping () -> ()) {
+                                             block: @escaping () -> ()) {
         if withRandomDelay {
             let delay = Double.random(in: 0..<maxJitterInSeconds)
             workerQueue.asyncAfter(deadline: .now() + delay) { block() }

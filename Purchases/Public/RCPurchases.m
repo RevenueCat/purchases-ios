@@ -299,7 +299,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
         [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isBackgrounded) {
             if (!isBackgrounded) {
-                [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:NO :^{
+                [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:NO block:^{
                     [self updateAllCachesWithCompletionBlock:callDelegate];
                 }];
             } else {
@@ -878,7 +878,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                isAppBackgrounded:(BOOL)isAppBackgrounded {
     NSString *appUserID = self.identityManager.currentAppUserID;
     [self.deviceCache setPurchaserInfoCacheTimestampToNowForAppUserID:appUserID];
-    [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:isAppBackgrounded :^{
+    [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:isAppBackgrounded block:^{
         [self.backend getSubscriberDataWithAppUserID:appUserID
                                           completion:^(RCPurchaserInfo *_Nullable info,
                                                        NSError *_Nullable error) {
@@ -921,7 +921,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)updateOfferingsCache:(nullable RCReceiveOfferingsBlock)completion isAppBackgrounded:(BOOL)isAppBackgrounded {
     [self.deviceCache setOfferingsCacheTimestampToNow];
-    [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:isAppBackgrounded :^{
+    [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:isAppBackgrounded block:^{
         [self.backend getOfferingsForAppUserID:self.appUserID
                                     completion:^(NSDictionary *data, NSError *error) {
                                         if (error != nil) {
