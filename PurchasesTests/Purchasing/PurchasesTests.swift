@@ -902,9 +902,23 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.userID).toEventuallyNot(beNil());
     }
 
-    func testAutomaticallyFetchesPurchaserInfoOnDidBecomeActive() {
+    func testAutomaticallyFetchesPurchaserInfoOnDidBecomeActiveIfCacheStale() {
         setupPurchases()
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
+
+        self.deviceCache.stubbedIsPurchaserInfoCacheStale = true
         notificationCenter.fireNotifications();
+
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(2))
+    }
+
+    func testDoesntAutomaticallyFetchPurchaserInfoOnDidBecomeActiveIfCacheValid() {
+        setupPurchases()
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
+        self.deviceCache.stubbedIsPurchaserInfoCacheStale = false
+
+        notificationCenter.fireNotifications();
+
         expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
     }
 
@@ -1372,7 +1386,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.gotOfferings).toEventually(equal(1))
     }
 
-    func testFirstInitializationDoesntProductInfoFromOfferingsIfAppBackgrounded() {
+    func testFirstInitializationDoesntFetchOfferingsIfAppBackgrounded() {
         systemInfo.stubbedIsApplicationBackgrounded = true
         setupPurchases()
         expect(self.backend.gotOfferings).toEventually(equal(0))
