@@ -19,7 +19,7 @@ class ISO3601DateFormatterTests: XCTestCase {
         expect(ISO3601DateFormatter.shared.date(fromBytes: ArraySlice(dateBytes))) == date
     }
 
-    func testDateWithMilisecondsFromBytesReturnsCorrectValueIfPossible() {
+    func testDateWithMillisecondsFromBytesReturnsCorrectValueIfPossible() {
         let timeZone = TimeZone(identifier: "UTC")
         let dateComponents = DateComponents(timeZone: timeZone,
                                             year: 2020,
