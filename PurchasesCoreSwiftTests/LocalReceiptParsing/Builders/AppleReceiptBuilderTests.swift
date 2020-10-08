@@ -192,7 +192,7 @@ private extension AppleReceiptBuilderTests {
 
     func creationDateContainer() -> ASN1Container {
         containerFactory.receiptAttributeContainer(attributeType: ReceiptAttributeType.creationDate,
-                                                        creationDate)
+                                                   creationDate)
     }
 
     func sha1HashContainer() -> ASN1Container {
@@ -204,18 +204,17 @@ private extension AppleReceiptBuilderTests {
     }
 
     func originalAppVersionContainer() -> ASN1Container {
-        containerFactory
-            .receiptAttributeContainer(attributeType: ReceiptAttributeType.originalApplicationVersion,
-                                            originalApplicationVersion)
+        containerFactory.receiptAttributeContainer(attributeType: ReceiptAttributeType.originalApplicationVersion,
+                                                   originalApplicationVersion)
     }
 
     func appVersionContainer() -> ASN1Container {
         containerFactory.receiptAttributeContainer(attributeType: ReceiptAttributeType.applicationVersion,
-                                                        applicationVersion)
+                                                   applicationVersion)
     }
 
     func bundleIdContainer() -> ASN1Container {
         containerFactory.receiptAttributeContainer(attributeType: ReceiptAttributeType.bundleId,
-                                                        bundleId)
+                                                   bundleId)
     }
 }
