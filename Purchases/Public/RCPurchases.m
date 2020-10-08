@@ -880,8 +880,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.deviceCache setPurchaserInfoCacheTimestampToNowForAppUserID:appUserID];
     [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:isAppBackgrounded block:^{
         [self.backend getSubscriberDataWithAppUserID:appUserID
-                                          completion:^(RCPurchaserInfo *_Nullable info,
-                                                       NSError *_Nullable error) {
+                                          completion:^(RCPurchaserInfo * _Nullable info,
+                                                       NSError * _Nullable error) {
                                               if (error == nil) {
                                                   [self cachePurchaserInfo:info forAppUserID:appUserID];
                                                   [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
