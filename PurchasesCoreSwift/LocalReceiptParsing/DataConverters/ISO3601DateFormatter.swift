@@ -13,7 +13,7 @@ struct ISO3601DateFormatter {
 
     private init() {
         secondsDateFormatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ssZ"
-        milisecondsDateFormatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.SSSZ"
+        milisecondsDateFormatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'SSSZ"
     }
 
     func date(fromBytes bytes: ArraySlice<UInt8>) -> Date? {
