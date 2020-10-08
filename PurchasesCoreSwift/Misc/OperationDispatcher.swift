@@ -12,7 +12,7 @@ import Foundation
     
     private let mainQueue: DispatchQueue
     private let workerQueue: DispatchQueue
-    private let maxJitterInSeconds: Double = 1
+    private let maxJitterInSeconds: Double = 5
     
     @objc public override init() {
         mainQueue = DispatchQueue.main
