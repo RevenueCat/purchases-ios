@@ -128,9 +128,12 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 24;
 
 - (BOOL)isPurchaserInfoCacheStaleForAppUserID:(NSString *)appUserID isAppBackgrounded:(BOOL)isAppBackgrounded {
     NSDate * _Nullable purchaserInfoCachesLastUpdated = [self purchaserInfoCachesLastUpdatedForAppUserID:appUserID];
+    if (!purchaserInfoCachesLastUpdated) {
+        return YES;
+    }
     NSTimeInterval timeSinceLastCheck = -[purchaserInfoCachesLastUpdated timeIntervalSinceNow];
     int cacheDurationInSeconds = [self cacheDurationInSecondsWithIsAppBackgrounded:isAppBackgrounded];
-    return !(purchaserInfoCachesLastUpdated != nil && timeSinceLastCheck < cacheDurationInSeconds);
+    return timeSinceLastCheck >= cacheDurationInSeconds;
 }
 
 - (int)cacheDurationInSecondsWithIsAppBackgrounded:(BOOL)isAppBackgrounded {
