@@ -16,7 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCInMemoryCachedObject ()
 
 @property (nonatomic, nullable) NSDate *lastUpdatedAt;
-@property (nonatomic, assign) int cacheDurationInSeconds;
 @property (nonatomic, nullable) id cachedInstance;
 
 @end
@@ -24,20 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation RCInMemoryCachedObject
 
-- (instancetype)initWithCacheDurationInSeconds:(int)cacheDurationInSeconds {
-    if (self = [super init]) {
-        self.cacheDurationInSeconds = cacheDurationInSeconds;
-    }
-    return self;
-}
-
-- (BOOL)isCacheStale {
+- (BOOL)isCacheStaleWithDurationInSeconds:(int)durationInSeconds {
     if (self.lastUpdatedAt == nil) {
         return YES;
     }
 
     NSTimeInterval timeSinceLastCheck = -1 * [self.lastUpdatedAt timeIntervalSinceNow];
-    return timeSinceLastCheck >= self.cacheDurationInSeconds;
+    return timeSinceLastCheck >= durationInSeconds;
 }
 
 - (void)clearCacheTimestamp {
