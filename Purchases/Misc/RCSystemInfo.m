@@ -48,7 +48,7 @@ static BOOL _forceUniversalAppStore = NO;
 }
 
 + (NSString *)frameworkVersion {
-    return @"3.7.3";
+    return @"3.7.4";
 }
 
 + (NSString *)systemVersion {

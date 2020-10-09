@@ -1,3 +1,11 @@
+## 3.7.4
+- Fix parsing of dates in receipts with milliseconds
+    https://github.com/RevenueCat/purchases-ios/pull/367
+- Add jitter and extra cache for background processes
+    https://github.com/RevenueCat/purchases-ios/pull/366
+- Skip install to fix archives with direct integration
+    https://github.com/RevenueCat/purchases-ios/pull/364
+
 ## 3.7.3
 - Renames files with names that caused issues when building on Windows
     https://github.com/RevenueCat/purchases-ios/pull/362
