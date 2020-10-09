@@ -163,11 +163,14 @@ class DeviceCacheTests: XCTestCase {
 
     func testPurchaserInfoIsProperlyCached() {
         let data = Data()
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: "cesar", isAppBackgrounded: false)) == true
+
         self.deviceCache.cachePurchaserInfo(data, forAppUserID: "cesar")
 
         expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfo.cesar"] as? Data)
             .to(equal(data))
         expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: "cesar")) == data
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: "cesar", isAppBackgrounded: false)) == false
     }
 
     func testOfferingsAreProperlyCached() {
@@ -283,6 +286,25 @@ class DeviceCacheTests: XCTestCase {
 
         expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
                                                           isAppBackgrounded: true)) == false
+    }
+
+    func testIsPurchaserInfoCacheWithCachedInfoButNoTimestamp() {
+        let mockNotificationCenter = MockNotificationCenter()
+        let appUserID = "myUser"
+        self.deviceCache = RCDeviceCache(mockUserDefaults,
+                                         offeringsCachedObject: nil,
+                                         notificationCenter: mockNotificationCenter)
+
+        let data = Data()
+        self.deviceCache.cachePurchaserInfo(data, forAppUserID: appUserID)
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: false)) == false
+
+        self.deviceCache.clearPurchaserInfoCacheTimestamp(forAppUserID: appUserID)
+
+
+        expect(self.deviceCache.isPurchaserInfoCacheStale(forAppUserID: appUserID,
+                                                          isAppBackgrounded: false)) == true
     }
 
     func testIsPurchaserInfoCacheStaleForDifferentAppUserID() {
