@@ -12,6 +12,7 @@ import Foundation
     
     private let mainQueue: DispatchQueue
     private let workerQueue: DispatchQueue
+    private let maxJitterInSeconds: Double = 5
     
     @objc public override init() {
         mainQueue = DispatchQueue.main
@@ -26,8 +27,13 @@ import Foundation
         }
     }
 
-    @objc public func dispatchOnWorkerThread(_ block: @escaping () -> Void) {
-        workerQueue.async { block() }
+    @objc public func dispatchOnWorkerThread(withRandomDelay: Bool = false,
+                                             block: @escaping () -> ()) {
+        if withRandomDelay {
+            let delay = Double.random(in: 0..<maxJitterInSeconds)
+            workerQueue.asyncAfter(deadline: .now() + delay) { block() }
+        } else {
+            workerQueue.async { block() }
+        }
     }
-
 }

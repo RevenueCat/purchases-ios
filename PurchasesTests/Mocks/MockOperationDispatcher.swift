@@ -31,11 +31,11 @@ class MockOperationDispatcher: OperationDispatcher {
     var shouldInvokeDispatchOnWorkerThreadBlock = true
     var forwardToOriginalDispatchOnWorkerThread = false
 
-    override func dispatchOnWorkerThread(_ block: @escaping () -> Void) {
+    public override func dispatchOnWorkerThread(withRandomDelay: Bool = false, block: @escaping () -> ()) {
         invokedDispatchOnWorkerThread = true
         invokedDispatchOnWorkerThreadCount += 1
         if forwardToOriginalDispatchOnWorkerThread {
-            super.dispatchOnWorkerThread(block)
+            super.dispatchOnWorkerThread(withRandomDelay: withRandomDelay, block: block)
             return
         }
         if shouldInvokeDispatchOnWorkerThreadBlock {
