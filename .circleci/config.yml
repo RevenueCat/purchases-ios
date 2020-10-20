@@ -8,11 +8,18 @@ jobs:
     steps:
       - checkout
       
-      # CocoaPods
+      # Carthage
+      - restore_cache:
+          keys: 
+            - carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
-          name: Pod Install
+          name: Carthage Bootstrap
           command: |
-              pod install
+              ./carthage.sh bootstrap --cache-builds
+      - save_cache:
+          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          paths:
+            - Carthage
       
       # Bundler
       - restore_cache:
