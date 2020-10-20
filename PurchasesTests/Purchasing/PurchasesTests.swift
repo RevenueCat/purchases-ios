@@ -672,8 +672,10 @@ class PurchasesTests: XCTestCase {
 
         expect(self.backend.postedProductID).toNot(beNil())
         expect(self.backend.postedPrice).toNot(beNil())
-        expect(self.backend.postedIntroPrice).toNot(beNil())
         expect(self.backend.postedCurrencyCode).toNot(beNil())
+        if #available(iOS 12.2, macOS 10.14.4, *) {
+            expect(self.backend.postedIntroPrice).toNot(beNil())
+        }
     }
 
     enum BackendError: Error {
