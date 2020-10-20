@@ -15,7 +15,7 @@ jobs:
       - run:
           name: Carthage Bootstrap
           command: |
-              carthage bootstrap --cache-builds
+              ./carthage.sh bootstrap --cache-builds
       - save_cache:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
