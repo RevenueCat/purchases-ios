@@ -1066,16 +1066,24 @@ class BackendTests: XCTestCase {
             "product_id": productIdentifier,
             "price": price,
             "currency": currencyCode,
-            "subscription_group_id": group,
+            "subscription_group_id": group
+        ]
+        let bodyWithOffers = body.merging([
             "offers": [
                 "offer_identifier": "offerid",
                 "price": 12,
                 "payment_mode": 0
             ]
-        ]
-        
-        let expectedCall = HTTPRequest(HTTPMethod: "POST", serially: true, path: "/receipts",
+        ]) { _, new in new }
+
+        var expectedCall: HTTPRequest
+        if #available(iOS 12.2, macOS 10.14.4, *) {
+            expectedCall = HTTPRequest(HTTPMethod: "POST", serially: true, path: "/receipts",
+                                       body: bodyWithOffers , headers: ["Authorization": "Bearer " + apiKey])
+        } else {
+            expectedCall = HTTPRequest(HTTPMethod: "POST", serially: true, path: "/receipts",
                                        body: body , headers: ["Authorization": "Bearer " + apiKey])
+        }
         
         expect(self.httpClient.calls.count).to(equal(1))
         
@@ -1084,10 +1092,11 @@ class BackendTests: XCTestCase {
             
             expect(call.path).to(equal(expectedCall.path))
             expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
-            XCTAssert(call.body!.keys == expectedCall.body!.keys)
-            
+
             expect(call.headers?["Authorization"]).toNot(beNil())
             expect(call.headers?["Authorization"]).to(equal(expectedCall.headers?["Authorization"]))
+
+            expect(call.body!.keys) == expectedCall.body!.keys
         }
         
         expect(completionCalled).toEventually(beTrue())
