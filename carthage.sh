@@ -1,3 +1,8 @@
+# This script is needed to use Carthage in Xcode 12, since it currently has a compatibility issue
+# due to the support for Apple Silicon, which in turn creates a duplicated architecture. 
+# https://github.com/Carthage/Carthage/blob/master/Documentation/Xcode12Workaround.md
+# https://github.com/Carthage/Carthage/issues/3019
+
 set -euo pipefail
 
 xcconfig=$(mktemp /tmp/static.xcconfig.XXXXXX)
