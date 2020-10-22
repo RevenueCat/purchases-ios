@@ -1,3 +1,30 @@
+## 3.7.5
+- Move test dependencies back to carthage
+    https://github.com/RevenueCat/purchases-ios/pull/371
+    https://github.com/RevenueCat/purchases-ios/pull/373
+- fixed tests for iOS < 12.2
+    https://github.com/RevenueCat/purchases-ios/pull/372
+- Make cocoapods linking dynamic again
+    https://github.com/RevenueCat/purchases-ios/pull/374
+
+## 3.7.4
+- Fix parsing of dates in receipts with milliseconds
+    https://github.com/RevenueCat/purchases-ios/pull/367
+- Add jitter and extra cache for background processes
+    https://github.com/RevenueCat/purchases-ios/pull/366
+- Skip install to fix archives with direct integration
+    https://github.com/RevenueCat/purchases-ios/pull/364
+
+## 3.7.3
+- Renames files with names that caused issues when building on Windows
+    https://github.com/RevenueCat/purchases-ios/pull/362
+- Fixes crash when parsing receipts with an unexpected number of internal containers in an IAP ASN.1 Container
+    https://github.com/RevenueCat/purchases-ios/pull/360
+- Fixes crash when sending `NSNull` attributes to `addAttributionData:fromNetwork:`
+    https://github.com/RevenueCat/purchases-ios/pull/359
+- Added starter string constants file for logging
+    https://github.com/RevenueCat/purchases-ios/pull/339
+
 ## 3.7.2
 - Updates the Pod to make it compile as a static framework, fixing build issues on hybrid SDKs. Cleans up imports in `RCPurchases.h`.
     https://github.com/RevenueCat/purchases-ios/pull/353
@@ -62,6 +89,10 @@
 	https://github.com/RevenueCat/purchases-ios/pull/330
 - Fix bug where 404s in subscriber attributes POST would mark them as synced
     https://github.com/RevenueCat/purchases-ios/pull/328
+
+## 3.5.3
+- Addresses an issue where subscriber attributes might not sync correctly if subscriber info for the user hadn't been synced before the subscriber attributes sync was performed.
+    https://github.com/RevenueCat/purchases-ios/pull/327
 
 ## 3.5.2
 - Feature/defer cache updates if woken from push notification
