@@ -66,7 +66,7 @@ jobs:
   integration-tests-cocoapods:
     macos:
       xcode: "12.0"
-    working_directory: ~/purchases-ios/IntegrationTests/CocoapodsIntegration/
+    working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
@@ -75,13 +75,17 @@ jobs:
       - run:
           name: Install Pods
           command: |
+              cd IntegrationTests/CocoapodsIntegration/
               pod install
       
       # Bundler
       - restore_cache:
           keys: 
             - gem-cache-{{ checksum "Gemfile.lock" }}
-      - run: bundle install --clean --path vendor/bundle
+      - run:
+          command: |
+              cd IntegrationTests/CocoapodsIntegration/
+              bundle install --clean --path vendor/bundle
       - save_cache:
           key: gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
@@ -89,7 +93,9 @@ jobs:
       
       - run:
           name: Run tests
-          command: fastlane scan
+          command: |
+              cd IntegrationTests/CocoapodsIntegration/
+              fastlane scan
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -97,7 +103,9 @@ jobs:
           destination: test_report.html
       - run:
           name: Archive
-          command: fastlane run xcarchive scheme:"CocoapodsIntegration"
+          command: |
+              cd IntegrationTests/CocoapodsIntegration/
+              fastlane run xcarchive scheme:"CocoapodsIntegration"
       
 workflows:
   version: 2
