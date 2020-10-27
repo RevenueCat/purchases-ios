@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,6 +14,7 @@
 		2DC6CF1C2548A890009C7F3A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DC6CF1B2548A890009C7F3A /* Assets.xcassets */; };
 		2DC6CF1F2548A890009C7F3A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DC6CF1D2548A890009C7F3A /* LaunchScreen.storyboard */; };
 		2DC6CF222548A890009C7F3A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF212548A890009C7F3A /* main.m */; };
+		2DC6CF392548ACA5009C7F3A /* RCTestIntegration.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF382548ACA5009C7F3A /* RCTestIntegration.m */; };
 		B7032BF7386E23B0C49D6D3C /* Pods_CocoapodsIntegration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 818705A49AF078B53922D5A6 /* Pods_CocoapodsIntegration.framework */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,8 @@
 		2DC6CF1E2548A890009C7F3A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2DC6CF202548A890009C7F3A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2DC6CF212548A890009C7F3A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		2DC6CF372548ACA5009C7F3A /* RCTestIntegration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTestIntegration.h; sourceTree = "<group>"; };
+		2DC6CF382548ACA5009C7F3A /* RCTestIntegration.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTestIntegration.m; sourceTree = "<group>"; };
 		818705A49AF078B53922D5A6 /* Pods_CocoapodsIntegration.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CocoapodsIntegration.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F91D7D225ACF46566105E3C5 /* Pods-CocoapodsIntegration.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoapodsIntegration.release.xcconfig"; path = "Target Support Files/Pods-CocoapodsIntegration/Pods-CocoapodsIntegration.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -96,6 +99,8 @@
 				2DC6CF1D2548A890009C7F3A /* LaunchScreen.storyboard */,
 				2DC6CF202548A890009C7F3A /* Info.plist */,
 				2DC6CF212548A890009C7F3A /* main.m */,
+				2DC6CF372548ACA5009C7F3A /* RCTestIntegration.h */,
+				2DC6CF382548ACA5009C7F3A /* RCTestIntegration.m */,
 			);
 			name = CommonFiles;
 			path = ../CommonFiles;
@@ -120,6 +125,7 @@
 				2DC6CF082548A88F009C7F3A /* Sources */,
 				2DC6CF092548A88F009C7F3A /* Frameworks */,
 				2DC6CF0A2548A88F009C7F3A /* Resources */,
+				57C41777CBA6D4BB79846E49 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -175,6 +181,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		57C41777CBA6D4BB79846E49 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CocoapodsIntegration/Pods-CocoapodsIntegration-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CocoapodsIntegration/Pods-CocoapodsIntegration-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CocoapodsIntegration/Pods-CocoapodsIntegration-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		7BFBA6F181363E18BF9244CE /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -205,6 +228,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2DC6CF172548A88F009C7F3A /* ViewController.m in Sources */,
+				2DC6CF392548ACA5009C7F3A /* RCTestIntegration.m in Sources */,
 				2DC6CF112548A88F009C7F3A /* AppDelegate.m in Sources */,
 				2DC6CF222548A890009C7F3A /* main.m in Sources */,
 				2DC6CF142548A88F009C7F3A /* SceneDelegate.m in Sources */,

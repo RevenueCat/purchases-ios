@@ -6,6 +6,7 @@
 //
 
 #import "AppDelegate.h"
+#import "RCTestIntegration.h"
 
 @interface AppDelegate ()
 
@@ -15,6 +16,8 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    RCTestIntegration *integrationTest = [[RCTestIntegration alloc] init];
+    [integrationTest startTest];
     // Override point for customization after application launch.
     return YES;
 }
