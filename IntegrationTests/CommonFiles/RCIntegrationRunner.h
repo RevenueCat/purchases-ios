@@ -1,5 +1,5 @@
 //
-//  RCTestIntegration.h
+//  RCIntegrationRunner.h
 //  CocoapodsIntegration
 //
 //  Created by Andrés Boedo on 10/27/20.
@@ -9,9 +9,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RCTestIntegration : NSObject
+@interface RCIntegrationRunner : NSObject
 
-- (void)startTest;
+- (void)start;
 
 @end
 

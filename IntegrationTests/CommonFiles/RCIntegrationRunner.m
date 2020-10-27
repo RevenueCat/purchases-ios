@@ -1,18 +1,18 @@
 //
-//  RCTestIntegration.m
+//  RCIntegrationRunner.m
 //  CocoapodsIntegration
 //
 //  Created by Andrés Boedo on 10/27/20.
 //
 
-#import "RCTestIntegration.h"
+#import "RCIntegrationRunner.h"
 @import Purchases;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@implementation RCTestIntegration
+@implementation RCIntegrationRunner
 
-- (void)startTest {
+- (void)start {
     [RCPurchases setDebugLogsEnabled:true];
     [RCPurchases configureWithAPIKey:@"VtDdmbdWBySmqJeeQUTyrNxETUVkhuaJ"
                            appUserID:@"integrationTest"];
