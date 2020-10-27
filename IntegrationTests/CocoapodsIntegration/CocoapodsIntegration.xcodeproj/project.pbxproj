@@ -15,8 +15,8 @@
 		2DC6CF1F2548A890009C7F3A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DC6CF1D2548A890009C7F3A /* LaunchScreen.storyboard */; };
 		2DC6CF222548A890009C7F3A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF212548A890009C7F3A /* main.m */; };
 		2DC6CF392548ACA5009C7F3A /* RCIntegrationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF382548ACA5009C7F3A /* RCIntegrationRunner.m */; };
-		2DC6CF5B2548CDA8009C7F3A /* CocoapodsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF5A2548CDA8009C7F3A /* CocoapodsIntegrationTests.swift */; };
-		2DC6CF652548CDC0009C7F3A /* CocoapodsIntegrationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF642548CDC0009C7F3A /* CocoapodsIntegrationTest.swift */; };
+		2DC6CF652548CDC0009C7F3A /* CocoapodsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF642548CDC0009C7F3A /* CocoapodsIntegrationTests.swift */; };
+		2DC6CF792548D0B8009C7F3A /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DC6CF372548ACA5009C7F3A /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B7032BF7386E23B0C49D6D3C /* Pods_CocoapodsIntegration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 818705A49AF078B53922D5A6 /* Pods_CocoapodsIntegration.framework */; };
 /* End PBXBuildFile section */
 
@@ -47,9 +47,9 @@
 		2DC6CF372548ACA5009C7F3A /* RCIntegrationRunner.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCIntegrationRunner.h; sourceTree = "<group>"; };
 		2DC6CF382548ACA5009C7F3A /* RCIntegrationRunner.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCIntegrationRunner.m; sourceTree = "<group>"; };
 		2DC6CF582548CDA8009C7F3A /* CocoapodsIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CocoapodsIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		2DC6CF5A2548CDA8009C7F3A /* CocoapodsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoapodsIntegrationTests.swift; sourceTree = "<group>"; };
 		2DC6CF5C2548CDA8009C7F3A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2DC6CF642548CDC0009C7F3A /* CocoapodsIntegrationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoapodsIntegrationTest.swift; sourceTree = "<group>"; };
+		2DC6CF642548CDC0009C7F3A /* CocoapodsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoapodsIntegrationTests.swift; sourceTree = "<group>"; };
+		2DC6CF6C2548CF9C009C7F3A /* IntegrationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IntegrationTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		818705A49AF078B53922D5A6 /* Pods_CocoapodsIntegration.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CocoapodsIntegration.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F91D7D225ACF46566105E3C5 /* Pods-CocoapodsIntegration.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoapodsIntegration.release.xcconfig"; path = "Target Support Files/Pods-CocoapodsIntegration/Pods-CocoapodsIntegration.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -126,7 +126,6 @@
 				2DC6CF212548A890009C7F3A /* main.m */,
 				2DC6CF372548ACA5009C7F3A /* RCIntegrationRunner.h */,
 				2DC6CF382548ACA5009C7F3A /* RCIntegrationRunner.m */,
-				2DC6CF642548CDC0009C7F3A /* CocoapodsIntegrationTest.swift */,
 			);
 			name = CommonFiles;
 			path = ../CommonFiles;
@@ -135,7 +134,8 @@
 		2DC6CF592548CDA8009C7F3A /* CocoapodsIntegrationTests */ = {
 			isa = PBXGroup;
 			children = (
-				2DC6CF5A2548CDA8009C7F3A /* CocoapodsIntegrationTests.swift */,
+				2DC6CF642548CDC0009C7F3A /* CocoapodsIntegrationTests.swift */,
+				2DC6CF6C2548CF9C009C7F3A /* IntegrationTests-Bridging-Header.h */,
 				2DC6CF5C2548CDA8009C7F3A /* Info.plist */,
 			);
 			path = CocoapodsIntegrationTests;
@@ -151,12 +151,24 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		2DC6CF782548D0B2009C7F3A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2DC6CF792548D0B8009C7F3A /* RCIntegrationRunner.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
 		2DC6CF0B2548A88F009C7F3A /* CocoapodsIntegration */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2DC6CF252548A890009C7F3A /* Build configuration list for PBXNativeTarget "CocoapodsIntegration" */;
 			buildPhases = (
 				7BFBA6F181363E18BF9244CE /* [CP] Check Pods Manifest.lock */,
+				2DC6CF782548D0B2009C7F3A /* Headers */,
 				2DC6CF082548A88F009C7F3A /* Sources */,
 				2DC6CF092548A88F009C7F3A /* Frameworks */,
 				2DC6CF0A2548A88F009C7F3A /* Resources */,
@@ -305,8 +317,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2DC6CF652548CDC0009C7F3A /* CocoapodsIntegrationTest.swift in Sources */,
-				2DC6CF5B2548CDA8009C7F3A /* CocoapodsIntegrationTests.swift in Sources */,
+				2DC6CF652548CDC0009C7F3A /* CocoapodsIntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -505,6 +516,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CocoapodsIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OBJC_BRIDGING_HEADER = "CocoapodsIntegrationTests/IntegrationTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -527,6 +539,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CocoapodsIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OBJC_BRIDGING_HEADER = "CocoapodsIntegrationTests/IntegrationTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

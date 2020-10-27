@@ -7,5 +7,5 @@ target 'CocoapodsIntegration' do
 
   pod 'Purchases', path: '../../'
   pod 'PurchasesCoreSwift', path: '../../'
-
+  
 end
