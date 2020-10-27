@@ -15,8 +15,20 @@
 		2DC6CF1F2548A890009C7F3A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DC6CF1D2548A890009C7F3A /* LaunchScreen.storyboard */; };
 		2DC6CF222548A890009C7F3A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF212548A890009C7F3A /* main.m */; };
 		2DC6CF392548ACA5009C7F3A /* RCIntegrationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF382548ACA5009C7F3A /* RCIntegrationRunner.m */; };
+		2DC6CF5B2548CDA8009C7F3A /* CocoapodsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF5A2548CDA8009C7F3A /* CocoapodsIntegrationTests.swift */; };
+		2DC6CF652548CDC0009C7F3A /* CocoapodsIntegrationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF642548CDC0009C7F3A /* CocoapodsIntegrationTest.swift */; };
 		B7032BF7386E23B0C49D6D3C /* Pods_CocoapodsIntegration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 818705A49AF078B53922D5A6 /* Pods_CocoapodsIntegration.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2DC6CF5D2548CDA8009C7F3A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2DC6CF042548A88F009C7F3A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2DC6CF0B2548A88F009C7F3A;
+			remoteInfo = CocoapodsIntegration;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		1AC6ADECD47D5E8F50AD9DDB /* Pods-CocoapodsIntegration.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoapodsIntegration.debug.xcconfig"; path = "Target Support Files/Pods-CocoapodsIntegration/Pods-CocoapodsIntegration.debug.xcconfig"; sourceTree = "<group>"; };
@@ -34,6 +46,10 @@
 		2DC6CF212548A890009C7F3A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2DC6CF372548ACA5009C7F3A /* RCIntegrationRunner.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCIntegrationRunner.h; sourceTree = "<group>"; };
 		2DC6CF382548ACA5009C7F3A /* RCIntegrationRunner.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCIntegrationRunner.m; sourceTree = "<group>"; };
+		2DC6CF582548CDA8009C7F3A /* CocoapodsIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CocoapodsIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DC6CF5A2548CDA8009C7F3A /* CocoapodsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoapodsIntegrationTests.swift; sourceTree = "<group>"; };
+		2DC6CF5C2548CDA8009C7F3A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2DC6CF642548CDC0009C7F3A /* CocoapodsIntegrationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoapodsIntegrationTest.swift; sourceTree = "<group>"; };
 		818705A49AF078B53922D5A6 /* Pods_CocoapodsIntegration.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CocoapodsIntegration.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F91D7D225ACF46566105E3C5 /* Pods-CocoapodsIntegration.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoapodsIntegration.release.xcconfig"; path = "Target Support Files/Pods-CocoapodsIntegration/Pods-CocoapodsIntegration.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -44,6 +60,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				B7032BF7386E23B0C49D6D3C /* Pods_CocoapodsIntegration.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2DC6CF552548CDA8009C7F3A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,6 +87,7 @@
 			children = (
 				2DC6CF292548A9B0009C7F3A /* CommonFiles */,
 				2DC6CF0E2548A88F009C7F3A /* CocoapodsIntegration */,
+				2DC6CF592548CDA8009C7F3A /* CocoapodsIntegrationTests */,
 				2DC6CF0D2548A88F009C7F3A /* Products */,
 				0FDE47CFF85E7887D55FF8E6 /* Pods */,
 				B0CB1A54AC1FA215F0DA8C2C /* Frameworks */,
@@ -74,6 +98,7 @@
 			isa = PBXGroup;
 			children = (
 				2DC6CF0C2548A88F009C7F3A /* CocoapodsIntegration.app */,
+				2DC6CF582548CDA8009C7F3A /* CocoapodsIntegrationTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -101,9 +126,19 @@
 				2DC6CF212548A890009C7F3A /* main.m */,
 				2DC6CF372548ACA5009C7F3A /* RCIntegrationRunner.h */,
 				2DC6CF382548ACA5009C7F3A /* RCIntegrationRunner.m */,
+				2DC6CF642548CDC0009C7F3A /* CocoapodsIntegrationTest.swift */,
 			);
 			name = CommonFiles;
 			path = ../CommonFiles;
+			sourceTree = "<group>";
+		};
+		2DC6CF592548CDA8009C7F3A /* CocoapodsIntegrationTests */ = {
+			isa = PBXGroup;
+			children = (
+				2DC6CF5A2548CDA8009C7F3A /* CocoapodsIntegrationTests.swift */,
+				2DC6CF5C2548CDA8009C7F3A /* Info.plist */,
+			);
+			path = CocoapodsIntegrationTests;
 			sourceTree = "<group>";
 		};
 		B0CB1A54AC1FA215F0DA8C2C /* Frameworks */ = {
@@ -136,16 +171,39 @@
 			productReference = 2DC6CF0C2548A88F009C7F3A /* CocoapodsIntegration.app */;
 			productType = "com.apple.product-type.application";
 		};
+		2DC6CF572548CDA8009C7F3A /* CocoapodsIntegrationTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2DC6CF5F2548CDA8009C7F3A /* Build configuration list for PBXNativeTarget "CocoapodsIntegrationTests" */;
+			buildPhases = (
+				2DC6CF542548CDA8009C7F3A /* Sources */,
+				2DC6CF552548CDA8009C7F3A /* Frameworks */,
+				2DC6CF562548CDA8009C7F3A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2DC6CF5E2548CDA8009C7F3A /* PBXTargetDependency */,
+			);
+			name = CocoapodsIntegrationTests;
+			productName = CocoapodsIntegrationTests;
+			productReference = 2DC6CF582548CDA8009C7F3A /* CocoapodsIntegrationTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		2DC6CF042548A88F009C7F3A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1210;
 				LastUpgradeCheck = 1210;
 				TargetAttributes = {
 					2DC6CF0B2548A88F009C7F3A = {
 						CreatedOnToolsVersion = 12.1;
+					};
+					2DC6CF572548CDA8009C7F3A = {
+						CreatedOnToolsVersion = 12.1;
+						TestTargetID = 2DC6CF0B2548A88F009C7F3A;
 					};
 				};
 			};
@@ -163,6 +221,7 @@
 			projectRoot = "";
 			targets = (
 				2DC6CF0B2548A88F009C7F3A /* CocoapodsIntegration */,
+				2DC6CF572548CDA8009C7F3A /* CocoapodsIntegrationTests */,
 			);
 		};
 /* End PBXProject section */
@@ -175,6 +234,13 @@
 				2DC6CF1F2548A890009C7F3A /* LaunchScreen.storyboard in Resources */,
 				2DC6CF1C2548A890009C7F3A /* Assets.xcassets in Resources */,
 				2DC6CF1A2548A88F009C7F3A /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2DC6CF562548CDA8009C7F3A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -235,7 +301,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		2DC6CF542548CDA8009C7F3A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2DC6CF652548CDC0009C7F3A /* CocoapodsIntegrationTest.swift in Sources */,
+				2DC6CF5B2548CDA8009C7F3A /* CocoapodsIntegrationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2DC6CF5E2548CDA8009C7F3A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2DC6CF0B2548A88F009C7F3A /* CocoapodsIntegration */;
+			targetProxy = 2DC6CF5D2548CDA8009C7F3A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		2DC6CF182548A88F009C7F3A /* Main.storyboard */ = {
@@ -407,6 +490,50 @@
 			};
 			name = Release;
 		};
+		2DC6CF602548CDA8009C7F3A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
+				INFOPLIST_FILE = CocoapodsIntegrationTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CocoapodsIntegrationTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CocoapodsIntegration.app/CocoapodsIntegration";
+			};
+			name = Debug;
+		};
+		2DC6CF612548CDA8009C7F3A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
+				INFOPLIST_FILE = CocoapodsIntegrationTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CocoapodsIntegrationTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CocoapodsIntegration.app/CocoapodsIntegration";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -424,6 +551,15 @@
 			buildConfigurations = (
 				2DC6CF262548A890009C7F3A /* Debug */,
 				2DC6CF272548A890009C7F3A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2DC6CF5F2548CDA8009C7F3A /* Build configuration list for PBXNativeTarget "CocoapodsIntegrationTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2DC6CF602548CDA8009C7F3A /* Debug */,
+				2DC6CF612548CDA8009C7F3A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
