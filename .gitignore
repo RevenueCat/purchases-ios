@@ -28,8 +28,8 @@ Carthage
 .build/
 CarthageUploads
 *.bck
-fastlane/report.xml
-fastlane/test_output/
+**/fastlane/report.xml
+**/fastlane/test_output/
 CHANGELOG.latest.md
 builds/
 Pods/
