@@ -1,14 +1,14 @@
 //
-//  CocoapodsIntegrationTests.swift
-//  CocoapodsIntegrationTests
+//  SPMIntegrationTests.swift
+//  SPMIntegrationTests
 //
-//  Created by Andrés Boedo on 10/27/20.
+//  Created by Andrés Boedo on 10/28/20.
 //
 
 import XCTest
-@testable import CocoapodsIntegration
+@testable import SPMIntegration
 
-class CocoapodsIntegrationTests: XCTestCase {
+class SPMIntegrationTests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -19,7 +19,8 @@ class CocoapodsIntegrationTests: XCTestCase {
     }
 
     func testExample() throws {
-        RCIntegrationRunner().start()
+        // This is an example of a functional test case.
+        // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
 
     func testPerformanceExample() throws {

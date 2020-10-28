@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2D6C02D42549FCFA0039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02D32549FCFA0039CB92 /* Dummy.swift */; };
 		2DC6CF112548A88F009C7F3A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF102548A88F009C7F3A /* AppDelegate.m */; };
 		2DC6CF142548A88F009C7F3A /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF132548A88F009C7F3A /* SceneDelegate.m */; };
 		2DC6CF172548A88F009C7F3A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF162548A88F009C7F3A /* ViewController.m */; };
@@ -32,6 +33,8 @@
 
 /* Begin PBXFileReference section */
 		1AC6ADECD47D5E8F50AD9DDB /* Pods-CocoapodsIntegration.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoapodsIntegration.debug.xcconfig"; path = "Target Support Files/Pods-CocoapodsIntegration/Pods-CocoapodsIntegration.debug.xcconfig"; sourceTree = "<group>"; };
+		2D6C02D22549FCFA0039CB92 /* CocoapodsIntegration-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CocoapodsIntegration-Bridging-Header.h"; sourceTree = "<group>"; };
+		2D6C02D32549FCFA0039CB92 /* Dummy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
 		2DC6CF0C2548A88F009C7F3A /* CocoapodsIntegration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CocoapodsIntegration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DC6CF0F2548A88F009C7F3A /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2DC6CF102548A88F009C7F3A /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -91,6 +94,7 @@
 				2DC6CF0D2548A88F009C7F3A /* Products */,
 				0FDE47CFF85E7887D55FF8E6 /* Pods */,
 				B0CB1A54AC1FA215F0DA8C2C /* Frameworks */,
+				2D6C02D22549FCFA0039CB92 /* CocoapodsIntegration-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -113,6 +117,7 @@
 		2DC6CF292548A9B0009C7F3A /* CommonFiles */ = {
 			isa = PBXGroup;
 			children = (
+				2D6C02D32549FCFA0039CB92 /* Dummy.swift */,
 				2DC6CF0F2548A88F009C7F3A /* AppDelegate.h */,
 				2DC6CF102548A88F009C7F3A /* AppDelegate.m */,
 				2DC6CF122548A88F009C7F3A /* SceneDelegate.h */,
@@ -212,6 +217,7 @@
 				TargetAttributes = {
 					2DC6CF0B2548A88F009C7F3A = {
 						CreatedOnToolsVersion = 12.1;
+						LastSwiftMigration = 1210;
 					};
 					2DC6CF572548CDA8009C7F3A = {
 						CreatedOnToolsVersion = 12.1;
@@ -309,6 +315,7 @@
 				2DC6CF392548ACA5009C7F3A /* RCIntegrationRunner.m in Sources */,
 				2DC6CF112548A88F009C7F3A /* AppDelegate.m in Sources */,
 				2DC6CF222548A890009C7F3A /* main.m in Sources */,
+				2D6C02D42549FCFA0039CB92 /* Dummy.swift in Sources */,
 				2DC6CF142548A88F009C7F3A /* SceneDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -469,7 +476,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = "$(SRCROOT)/../CommonFiles/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
@@ -479,6 +488,9 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CocoapodsIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "CocoapodsIntegration-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -489,7 +501,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = "$(SRCROOT)/../CommonFiles/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
@@ -499,6 +513,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CocoapodsIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "CocoapodsIntegration-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -506,6 +522,7 @@
 		2DC6CF602548CDA8009C7F3A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
@@ -530,6 +547,7 @@
 		2DC6CF612548CDA8009C7F3A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
