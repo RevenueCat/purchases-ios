@@ -107,6 +107,43 @@ jobs:
               cd IntegrationTests/CocoapodsIntegration/
               fastlane run xcarchive scheme:"CocoapodsIntegration" destination:"platform=iOS Simulator,name=iPhone 8,OS=14.0"
       
+  integration-tests-swift-package-manager:
+    macos:
+      xcode: "12.0"
+    working_directory: ~/purchases-ios/
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      
+      # Bundler
+      - restore_cache:
+          keys: 
+            - gem-cache-{{ checksum "Gemfile.lock" }}
+      - run:
+          command: |
+              cd IntegrationTests/SPMIntegration/
+              bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+      
+      - run:
+          name: Run tests
+          command: |
+              cd IntegrationTests/SPMIntegration/
+              fastlane scan
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/report.html
+          destination: test_report.html
+      - run:
+          name: Archive
+          command: |
+              cd IntegrationTests/SPMIntegration/
+              fastlane run xcarchive scheme:"SPMIntegration" destination:"platform=iOS Simulator,name=iPhone 8,OS=14.0"
+      
 workflows:
   version: 2
   build-test:
