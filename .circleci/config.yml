@@ -160,7 +160,7 @@ jobs:
           name: Carthage Bootstrap
           command: |
               cd IntegrationTests/CarthageIntegration/
-              ../../carthage.sh bootstrap --cache-builds
+              ./carthage.sh bootstrap --cache-builds
       - save_cache:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
@@ -194,6 +194,44 @@ jobs:
           command: |
               cd IntegrationTests/CarthageIntegration/
               fastlane run xcarchive scheme:"CarthageIntegration" destination:"platform=iOS Simulator,name=iPhone 8,OS=14.0"    
+
+  integration-tests-xcode-direct-integration:
+    macos:
+      xcode: "12.0"
+    working_directory: ~/purchases-ios/
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      
+      # Bundler
+      - restore_cache:
+          keys: 
+            - gem-cache-{{ checksum "Gemfile.lock" }}
+      - run:
+          command: |
+              cd IntegrationTests/XcodeDirectIntegration/
+              bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+      
+      - run:
+          name: Run tests
+          command: |
+              cd IntegrationTests/XcodeDirectIntegration/
+              fastlane scan
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/report.html
+          destination: test_report.html
+      - run:
+          name: Archive
+          command: |
+              cd IntegrationTests/XcodeDirectIntegration/
+              fastlane run xcarchive scheme:"XcodeDirectIntegration" destination:"platform=iOS Simulator,name=iPhone 8,OS=14.0"
+
 workflows:
   version: 2
   build-test:
@@ -202,6 +240,7 @@ workflows:
       - integration-tests-cocoapods
       - integration-tests-swift-package-manager
       - integration-tests-carthage
+      - integration-tests-xcode-direct-integration
   docs:
     jobs:
       - docs-deploy:
