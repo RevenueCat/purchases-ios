@@ -143,7 +143,56 @@ jobs:
           command: |
               cd IntegrationTests/SPMIntegration/
               fastlane run xcarchive scheme:"SPMIntegration" destination:"platform=iOS Simulator,name=iPhone 8,OS=14.0"
+  
+  integration-tests-carthage:
+    macos:
+      xcode: "12.0"
+    working_directory: ~/purchases-ios/
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
       
+      # Carthage
+      - restore_cache:
+          keys: 
+            - carthage-cache-{{ checksum "Cartfile.resolved" }}
+      - run:
+          name: Carthage Bootstrap
+          command: |
+              ./carthage.sh bootstrap --cache-builds
+      - save_cache:
+          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          paths:
+            - Carthage
+      
+      # Bundler
+      - restore_cache:
+          keys: 
+            - gem-cache-{{ checksum "Gemfile.lock" }}
+      - run:
+          command: |
+              cd IntegrationTests/CarthageIntegration/
+              bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+      
+      - run:
+          name: Run tests
+          command: |
+              cd IntegrationTests/CarthageIntegration/
+              fastlane scan
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/report.html
+          destination: test_report.html
+      - run:
+          name: Archive
+          command: |
+              cd IntegrationTests/CarthageIntegration/
+              fastlane run xcarchive scheme:"CarthageIntegration" destination:"platform=iOS Simulator,name=iPhone 8,OS=14.0"    
 workflows:
   version: 2
   build-test:
@@ -151,6 +200,7 @@ workflows:
       - runtest
       - integration-tests-cocoapods
       - integration-tests-swift-package-manager
+      - integration-tests-carthage
   docs:
     jobs:
       - docs-deploy:
