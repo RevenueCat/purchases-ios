@@ -105,7 +105,7 @@ jobs:
           name: Archive
           command: |
               cd IntegrationTests/CocoapodsIntegration/
-              fastlane run xcarchive scheme:"CocoapodsIntegration"
+              fastlane run xcarchive scheme:"CocoapodsIntegration" destination:"platform=iOS Simulator,name=iPhone 8"
       
 workflows:
   version: 2
