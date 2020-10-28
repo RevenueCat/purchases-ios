@@ -150,6 +150,7 @@ workflows:
     jobs:
       - runtest
       - integration-tests-cocoapods
+      - integration-tests-swift-package-manager
   docs:
     jobs:
       - docs-deploy:
