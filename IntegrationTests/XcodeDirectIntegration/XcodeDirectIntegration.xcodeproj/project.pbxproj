@@ -30,13 +30,6 @@
 			remoteGlobalIDString = 2D6C03DE254A0A460039CB92;
 			remoteInfo = XcodeDirectIntegration;
 		};
-		2D6C0406254A0A470039CB92 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2D6C03D7254A0A460039CB92 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2D6C03DE254A0A460039CB92;
-			remoteInfo = XcodeDirectIntegration;
-		};
 		2D6C045B254A0AF10039CB92 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */;
@@ -85,8 +78,6 @@
 		2D6C03DF254A0A460039CB92 /* XcodeDirectIntegration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeDirectIntegration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C03FA254A0A470039CB92 /* XcodeDirectIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XcodeDirectIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C0400254A0A470039CB92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2D6C0405254A0A470039CB92 /* XcodeDirectIntegrationUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XcodeDirectIntegrationUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		2D6C040B254A0A470039CB92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2D6C041F254A0A550039CB92 /* RCIntegrationRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIntegrationRunner.m; sourceTree = "<group>"; };
 		2D6C0420254A0A550039CB92 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2D6C0421254A0A550039CB92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -123,13 +114,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2D6C0402254A0A470039CB92 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -140,7 +124,6 @@
 				2D6C041D254A0A550039CB92 /* CommonFiles */,
 				2D6C03E1254A0A460039CB92 /* XcodeDirectIntegration */,
 				2D6C03FD254A0A470039CB92 /* XcodeDirectIntegrationTests */,
-				2D6C0408254A0A470039CB92 /* XcodeDirectIntegrationUITests */,
 				2D6C03E0254A0A460039CB92 /* Products */,
 				2D6C046A254A0B290039CB92 /* Frameworks */,
 			);
@@ -151,7 +134,6 @@
 			children = (
 				2D6C03DF254A0A460039CB92 /* XcodeDirectIntegration.app */,
 				2D6C03FA254A0A470039CB92 /* XcodeDirectIntegrationTests.xctest */,
-				2D6C0405254A0A470039CB92 /* XcodeDirectIntegrationUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -172,14 +154,6 @@
 				2D6C0400254A0A470039CB92 /* Info.plist */,
 			);
 			path = XcodeDirectIntegrationTests;
-			sourceTree = "<group>";
-		};
-		2D6C0408254A0A470039CB92 /* XcodeDirectIntegrationUITests */ = {
-			isa = PBXGroup;
-			children = (
-				2D6C040B254A0A470039CB92 /* Info.plist */,
-			);
-			path = XcodeDirectIntegrationUITests;
 			sourceTree = "<group>";
 		};
 		2D6C041D254A0A550039CB92 /* CommonFiles */ = {
@@ -273,24 +247,6 @@
 			productReference = 2D6C03FA254A0A470039CB92 /* XcodeDirectIntegrationTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		2D6C0404254A0A470039CB92 /* XcodeDirectIntegrationUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 2D6C0414254A0A470039CB92 /* Build configuration list for PBXNativeTarget "XcodeDirectIntegrationUITests" */;
-			buildPhases = (
-				2D6C0401254A0A470039CB92 /* Sources */,
-				2D6C0402254A0A470039CB92 /* Frameworks */,
-				2D6C0403254A0A470039CB92 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				2D6C0407254A0A470039CB92 /* PBXTargetDependency */,
-			);
-			name = XcodeDirectIntegrationUITests;
-			productName = XcodeDirectIntegrationUITests;
-			productReference = 2D6C0405254A0A470039CB92 /* XcodeDirectIntegrationUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -306,10 +262,6 @@
 					2D6C03F9254A0A470039CB92 = {
 						CreatedOnToolsVersion = 12.1;
 						LastSwiftMigration = 1210;
-						TestTargetID = 2D6C03DE254A0A460039CB92;
-					};
-					2D6C0404254A0A470039CB92 = {
-						CreatedOnToolsVersion = 12.1;
 						TestTargetID = 2D6C03DE254A0A460039CB92;
 					};
 				};
@@ -335,7 +287,6 @@
 			targets = (
 				2D6C03DE254A0A460039CB92 /* XcodeDirectIntegration */,
 				2D6C03F9254A0A470039CB92 /* XcodeDirectIntegrationTests */,
-				2D6C0404254A0A470039CB92 /* XcodeDirectIntegrationUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -389,13 +340,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2D6C0403254A0A470039CB92 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -420,13 +364,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2D6C0401254A0A470039CB92 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -434,11 +371,6 @@
 			isa = PBXTargetDependency;
 			target = 2D6C03DE254A0A460039CB92 /* XcodeDirectIntegration */;
 			targetProxy = 2D6C03FB254A0A470039CB92 /* PBXContainerItemProxy */;
-		};
-		2D6C0407254A0A470039CB92 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 2D6C03DE254A0A460039CB92 /* XcodeDirectIntegration */;
-			targetProxy = 2D6C0406254A0A470039CB92 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -668,46 +600,6 @@
 			};
 			name = Release;
 		};
-		2D6C0415254A0A470039CB92 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = XcodeDirectIntegrationUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegrationUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = XcodeDirectIntegration;
-			};
-			name = Debug;
-		};
-		2D6C0416254A0A470039CB92 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = XcodeDirectIntegrationUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegrationUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = XcodeDirectIntegration;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -734,15 +626,6 @@
 			buildConfigurations = (
 				2D6C0412254A0A470039CB92 /* Debug */,
 				2D6C0413254A0A470039CB92 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		2D6C0414254A0A470039CB92 /* Build configuration list for PBXNativeTarget "XcodeDirectIntegrationUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				2D6C0415254A0A470039CB92 /* Debug */,
-				2D6C0416254A0A470039CB92 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
