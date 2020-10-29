@@ -157,10 +157,10 @@ jobs:
           keys: 
             - carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
-          name: Carthage Bootstrap
+          name: Carthage Update
           command: |
               cd IntegrationTests/CarthageIntegration/
-              ./carthage.sh bootstrap --cache-builds
+              ./carthage.sh update --cache-builds
       - save_cache:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
