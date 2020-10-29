@@ -105,7 +105,7 @@ jobs:
           name: Archive
           command: |
               cd IntegrationTests/CocoapodsIntegration/
-              xcodebuild archive -scheme "CocoapodsIntegration" -destination "platform=iOS Simulator,name=iPhone 8,OS=latest" -sdk "iphoneos"
+              xcodebuild archive -scheme "CocoapodsIntegration" -destination "-destination "generic/platform=iOS" -sdk "iphoneos"
       
   integration-tests-swift-package-manager:
     macos:
@@ -142,7 +142,7 @@ jobs:
           name: Archive
           command: |
               cd IntegrationTests/SPMIntegration/
-              xcodebuild archive -scheme "SPMIntegration" -destination "platform=iOS Simulator,name=iPhone 8,OS=latest" -sdk "iphoneos"
+              xcodebuild archive -scheme "SPMIntegration" -destination "-destination "generic/platform=iOS" -sdk "iphoneos"
   
   integration-tests-carthage:
     macos:
@@ -193,7 +193,7 @@ jobs:
           name: Archive
           command: |
               cd IntegrationTests/CarthageIntegration/
-              xcodebuild archive -scheme "CarthageIntegration" -destination "platform=iOS Simulator,name=iPhone 8,OS=latest" -sdk "iphoneos"
+              xcodebuild archive -scheme "CarthageIntegration" -destination "-destination "generic/platform=iOS" -sdk "iphoneos"
 
   integration-tests-xcode-direct-integration:
     macos:
@@ -230,7 +230,7 @@ jobs:
           name: Archive
           command: |
               cd IntegrationTests/XcodeDirectIntegration/
-              xcodebuild archive -scheme "XcodeDirectIntegration" -destination "platform=iOS Simulator,name=iPhone 8,OS=latest" -sdk "iphoneos"
+              xcodebuild archive -scheme "XcodeDirectIntegration" -destination "generic/platform=iOS" -sdk "iphoneos"
 
 workflows:
   version: 2
