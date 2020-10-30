@@ -4,5 +4,5 @@ storage_mode("git")
 
 type("development")
 
-app_identifier(["com.revenuecat.XcodeDirectIntegration"])
+app_identifier(["com.revenuecat.CocoapodsIntegration"])
 username(ENV["FASTLANE_USER"])
