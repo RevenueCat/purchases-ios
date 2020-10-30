@@ -236,9 +236,9 @@ workflows:
   build-test:
     jobs:
       # - runtest
-      - integration-tests-cocoapods
+      # - integration-tests-cocoapods
       # - integration-tests-swift-package-manager
-      # - integration-tests-carthage
+      - integration-tests-carthage
       # - integration-tests-xcode-direct-integration
   docs:
     jobs:

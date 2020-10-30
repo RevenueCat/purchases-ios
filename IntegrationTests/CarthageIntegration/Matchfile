@@ -1,0 +1,8 @@
+git_url("git@github.com:RevenueCat/apple-certificates-fastlane-match.git")
+
+storage_mode("git")
+
+type("development")
+
+app_identifier(["com.revenuecat.CarthageIntegration"])
+username(ENV["FASTLANE_USER"])
