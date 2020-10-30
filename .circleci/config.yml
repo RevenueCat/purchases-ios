@@ -232,7 +232,7 @@ jobs:
             security create-keychain -p "" temporary
             security default-keychain -s temporary
             security unlock-keychain -p "" temporary
-            security set-keychain-settings -lut 7200 temporary- run:
+            security set-keychain-settings -lut 7200 temporary
       - run:
           name: Archive
           command: |
