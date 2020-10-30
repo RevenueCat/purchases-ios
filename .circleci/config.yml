@@ -105,7 +105,7 @@ jobs:
           name: Archive
           command: |
               cd IntegrationTests/CocoapodsIntegration/
-              fastlane gym
+              bundle exec fastlane archive
       
   integration-tests-swift-package-manager:
     macos:
@@ -128,21 +128,21 @@ jobs:
           paths:
             - vendor/bundle
       
-      - run:
-          name: Run tests
-          command: |
-              cd IntegrationTests/SPMIntegration/
-              fastlane scan
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
+      # - run:
+      #     name: Run tests
+      #     command: |
+      #         cd IntegrationTests/SPMIntegration/
+      #         fastlane scan
+      # - store_test_results:
+      #     path: fastlane/test_output
+      # - store_artifacts:
+      #     path: fastlane/test_output/report.html
+      #     destination: test_report.html
       - run:
           name: Archive
           command: |
               cd IntegrationTests/SPMIntegration/
-              fastlane gym
+              bundle exec fastlane archive
   
   integration-tests-carthage:
     macos:
@@ -193,7 +193,7 @@ jobs:
           name: Archive
           command: |
               cd IntegrationTests/CarthageIntegration/
-              fastlane gym
+              bundle exec fastlane archive
 
   integration-tests-xcode-direct-integration:
     macos:
@@ -216,15 +216,15 @@ jobs:
           paths:
             - vendor/bundle
       
-      # - run:
-      #     name: Run tests
-      #     command: |
-      #         cd IntegrationTests/XcodeDirectIntegration/
-      # - store_test_results:
-      #     path: fastlane/test_output
-      # - store_artifacts:
-      #     path: fastlane/test_output/report.html
-      #     destination: test_report.html
+      - run:
+          name: Run tests
+          command: |
+              cd IntegrationTests/XcodeDirectIntegration/
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/report.html
+          destination: test_report.html
       - run:
           name: Archive
           command: |
@@ -236,10 +236,10 @@ workflows:
   build-test:
     jobs:
       # - runtest
-      # - integration-tests-cocoapods
+      - integration-tests-cocoapods
       # - integration-tests-swift-package-manager
       # - integration-tests-carthage
-      - integration-tests-xcode-direct-integration
+      # - integration-tests-xcode-direct-integration
   docs:
     jobs:
       - docs-deploy:
