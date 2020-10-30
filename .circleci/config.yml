@@ -216,16 +216,16 @@ jobs:
           paths:
             - vendor/bundle
       
-      - run:
-          name: Run tests
-          command: |
-              cd IntegrationTests/XcodeDirectIntegration/
-              fastlane scan
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
+      # - run:
+      #     name: Run tests
+      #     command: |
+      #         cd IntegrationTests/XcodeDirectIntegration/
+      #         fastlane scan
+      # - store_test_results:
+      #     path: fastlane/test_output
+      # - store_artifacts:
+      #     path: fastlane/test_output/report.html
+      #     destination: test_report.html
       - run:
           name: Archive
           command: |
