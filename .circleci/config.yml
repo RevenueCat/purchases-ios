@@ -227,6 +227,13 @@ jobs:
       #     path: fastlane/test_output/report.html
       #     destination: test_report.html
       - run:
+          name: "Create and set the default keychain"
+          command: |
+            security create-keychain -p "" temporary
+            security default-keychain -s temporary
+            security unlock-keychain -p "" temporary
+            security set-keychain-settings -lut 7200 temporary- run:
+      - run:
           name: Archive
           command: |
               cd IntegrationTests/XcodeDirectIntegration/
