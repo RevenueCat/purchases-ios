@@ -231,7 +231,7 @@ jobs:
           command: |
               cd IntegrationTests/XcodeDirectIntegration/
               fastlane match appstore --readonly
-              fastlane gym
+              fastlane gym --export_method app-store
 
 workflows:
   version: 2
