@@ -230,16 +230,17 @@ jobs:
           name: Archive
           command: |
               cd IntegrationTests/XcodeDirectIntegration/
+              fastlane match appstore --readonly
               fastlane gym
 
 workflows:
   version: 2
   build-test:
     jobs:
-      - runtest
-      - integration-tests-cocoapods
-      - integration-tests-swift-package-manager
-      - integration-tests-carthage
+      # - runtest
+      # - integration-tests-cocoapods
+      # - integration-tests-swift-package-manager
+      # - integration-tests-carthage
       - integration-tests-xcode-direct-integration
   docs:
     jobs:
