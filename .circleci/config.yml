@@ -220,23 +220,16 @@ jobs:
       #     name: Run tests
       #     command: |
       #         cd IntegrationTests/XcodeDirectIntegration/
-      #         fastlane scan
       # - store_test_results:
       #     path: fastlane/test_output
       # - store_artifacts:
       #     path: fastlane/test_output/report.html
       #     destination: test_report.html
       - run:
-          name: "Create and set the default keychain"
-          command: |
-            security create-keychain -p "" temporary
-            security default-keychain -s temporary
-            security unlock-keychain -p "" temporary
-            security set-keychain-settings -lut 7200 temporary
-      - run:
           name: Archive
           command: |
               cd IntegrationTests/XcodeDirectIntegration/
+              fastlane run setup_circle_ci
               fastlane match appstore --readonly
               fastlane gym --export_method app-store
 
