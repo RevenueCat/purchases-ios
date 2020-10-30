@@ -229,9 +229,7 @@ jobs:
           name: Archive
           command: |
               cd IntegrationTests/XcodeDirectIntegration/
-              fastlane run setup_circle_ci
-              fastlane match appstore --readonly
-              fastlane gym --export_method app-store
+              bundle exec fastlane archive
 
 workflows:
   version: 2
