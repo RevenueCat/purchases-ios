@@ -1,6 +1,9 @@
 version: 2.1
 commands:
   install-gems:
+    parameters:
+      directory:
+        type: string
     steps:
        # Bundler
       - restore_cache:
@@ -11,6 +14,27 @@ commands:
           key: gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
+  scan-and-archive:
+    parameters:
+      directory:
+        type: string
+    steps:
+      - run:
+          name: Run tests
+          command: |
+              cd << parameters.directory >>
+              fastlane scan
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/report.html
+          destination: test_report.html
+      - run:
+          name: Archive
+          command: |
+              cd << parameters.directory >>
+              bundle exec fastlane archive
+
 jobs:
   runtest:
     macos:
@@ -33,7 +57,8 @@ jobs:
           paths:
             - Carthage
       
-      - install-gems
+      - install-gems:
+          directory: .
       
       - run:
           name: Run tests
@@ -52,7 +77,8 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-gems
+      - install-gems:
+          directory: .
       - run:
           name: Build docs
           command: fastlane run jazzy
@@ -82,24 +108,11 @@ jobs:
               cd IntegrationTests/CocoapodsIntegration/
               pod install
       
-      - install-gems
-      
-      
-      - run:
-          name: Run tests
-          command: |
-              cd IntegrationTests/CocoapodsIntegration/
-              fastlane scan
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
-      - run:
-          name: Archive
-          command: |
-              cd IntegrationTests/CocoapodsIntegration/
-              bundle exec fastlane archive
+      - install-gems:
+          directory: "IntegrationTests/CocoapodsIntegration"
+
+      - scan-and-archive:
+          directory: "IntegrationTests/CocoapodsIntegration"
       
   integration-tests-swift-package-manager:
     macos:
@@ -108,24 +121,13 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-gems
+
+      - install-gems:
+          directory: "IntegrationTests/SPMIntegration/"
       
-      - run:
-          name: Run tests
-          command: |
-              cd IntegrationTests/SPMIntegration/
-              fastlane scan
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
-      - run:
-          name: Archive
-          command: |
-              cd IntegrationTests/SPMIntegration/
-              bundle exec fastlane archive
-  
+      - scan-and-archive:
+          directory: "IntegrationTests/SPMIntegration/"
+
   integration-tests-carthage:
     macos:
       xcode: "12.0"
@@ -148,23 +150,10 @@ jobs:
           paths:
             - Carthage
       
-      - install-gems
-      
-      - run:
-          name: Run tests
-          command: |
-              cd IntegrationTests/CarthageIntegration/
-              fastlane scan
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
-      - run:
-          name: Archive
-          command: |
-              cd IntegrationTests/CarthageIntegration/
-              bundle exec fastlane archive
+      - install-gems:
+          directory: "IntegrationTests/CarthageIntegration/"
+      - scan-and-archive:
+          directory: "IntegrationTests/CarthageIntegration/"
 
   integration-tests-xcode-direct-integration:
     macos:
@@ -173,23 +162,12 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-gems
+
+      - install-gems:
+          directory: "IntegrationTests/XcodeDirectIntegration/"
       
-      
-      - run:
-          name: Run tests
-          command: |
-              cd IntegrationTests/XcodeDirectIntegration/
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
-      - run:
-          name: Archive
-          command: |
-              cd IntegrationTests/XcodeDirectIntegration/
-              bundle exec fastlane archive
+      - scan-and-archive:
+          directory: "IntegrationTests/XcodeDirectIntegration/"
 
 workflows:
   version: 2
