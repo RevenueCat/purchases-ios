@@ -86,6 +86,13 @@ platform :ios do
     Spaceship::Tunes::SandboxTester.create!(email: email, password: password)
   end
 
+  desc "archive"
+  lane :archive do
+    match(type: "appstore")
+    gym(export_method: "app-store")
+  end
+
+
 end
 
 def increment_build_number(previous_version_number, new_version_number, file_path)
