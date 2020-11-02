@@ -9,7 +9,11 @@ commands:
       - restore_cache:
           keys: 
             - gem-cache-{{ checksum "Gemfile.lock" }}
-      - run: bundle install --clean --path vendor/bundle
+      - run: 
+          name: Bundle install
+          command: |
+              cd << parameters.directory >>
+              bundle install --clean --path vendor/bundle
       - save_cache:
           key: gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
