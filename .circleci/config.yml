@@ -1,4 +1,16 @@
 version: 2.1
+commands:
+  install-gems:
+    steps:
+       # Bundler
+      - restore_cache:
+          keys: 
+            - gem-cache-{{ checksum "Gemfile.lock" }}
+      - run: bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
 jobs:
   runtest:
     macos:
@@ -21,15 +33,7 @@ jobs:
           paths:
             - Carthage
       
-      # Bundler
-      - restore_cache:
-          keys: 
-            - gem-cache-{{ checksum "Gemfile.lock" }}
-      - run: bundle install --clean --path vendor/bundle
-      - save_cache:
-          key: gem-cache-{{ checksum "Gemfile.lock" }}
-          paths:
-            - vendor/bundle
+      - install-gems
       
       - run:
           name: Run tests
@@ -48,7 +52,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - run: bundle install
+      - install-gems
       - run:
           name: Build docs
           command: fastlane run jazzy
@@ -78,18 +82,8 @@ jobs:
               cd IntegrationTests/CocoapodsIntegration/
               pod install
       
-      # Bundler
-      - restore_cache:
-          keys: 
-            - gem-cache-{{ checksum "Gemfile.lock" }}
-      - run:
-          command: |
-              cd IntegrationTests/CocoapodsIntegration/
-              bundle install --clean --path vendor/bundle
-      - save_cache:
-          key: gem-cache-{{ checksum "Gemfile.lock" }}
-          paths:
-            - vendor/bundle
+      - install-gems
+      
       
       - run:
           name: Run tests
@@ -114,19 +108,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      
-      # Bundler
-      - restore_cache:
-          keys: 
-            - gem-cache-{{ checksum "Gemfile.lock" }}
-      - run:
-          command: |
-              cd IntegrationTests/SPMIntegration/
-              bundle install --clean --path vendor/bundle
-      - save_cache:
-          key: gem-cache-{{ checksum "Gemfile.lock" }}
-          paths:
-            - vendor/bundle
+      - install-gems
       
       - run:
           name: Run tests
@@ -166,18 +148,7 @@ jobs:
           paths:
             - Carthage
       
-      # Bundler
-      - restore_cache:
-          keys: 
-            - gem-cache-{{ checksum "Gemfile.lock" }}
-      - run:
-          command: |
-              cd IntegrationTests/CarthageIntegration/
-              bundle install --clean --path vendor/bundle
-      - save_cache:
-          key: gem-cache-{{ checksum "Gemfile.lock" }}
-          paths:
-            - vendor/bundle
+      - install-gems
       
       - run:
           name: Run tests
@@ -202,19 +173,8 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
+      - install-gems
       
-      # Bundler
-      - restore_cache:
-          keys: 
-            - gem-cache-{{ checksum "Gemfile.lock" }}
-      - run:
-          command: |
-              cd IntegrationTests/XcodeDirectIntegration/
-              bundle install --clean --path vendor/bundle
-      - save_cache:
-          key: gem-cache-{{ checksum "Gemfile.lock" }}
-          paths:
-            - vendor/bundle
       
       - run:
           name: Run tests
