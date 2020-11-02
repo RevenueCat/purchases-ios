@@ -38,6 +38,17 @@ commands:
           command: |
               cd << parameters.directory >>
               bundle exec fastlane archive
+  
+  install-gems-scan-and-archive:
+    parameters:
+      directory:
+        type: string
+    steps:
+      - install-gems:
+          directory: << parameters.directory >>
+      - scan-and-archive:
+          directory: << parameters.directory >>
+
 
 jobs:
   runtest:
@@ -61,19 +72,9 @@ jobs:
           paths:
             - Carthage
       
-      - install-gems:
+      - install-gems-scan-and-archive:
           directory: .
       
-      - run:
-          name: Run tests
-          command: fastlane scan
-          environment:
-            SCAN_SCHEME: All Tests
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
   docs-deploy:
     macos:
       xcode: "12.0"
@@ -126,12 +127,9 @@ jobs:
     steps:
       - checkout
 
-      - install-gems:
+      - install-gems-scan-and-archive:
           directory: "IntegrationTests/SPMIntegration/"
       
-      - scan-and-archive:
-          directory: "IntegrationTests/SPMIntegration/"
-
   integration-tests-carthage:
     macos:
       xcode: "12.0"
@@ -154,9 +152,7 @@ jobs:
           paths:
             - Carthage
       
-      - install-gems:
-          directory: "IntegrationTests/CarthageIntegration/"
-      - scan-and-archive:
+      - install-gems-scan-and-archive:
           directory: "IntegrationTests/CarthageIntegration/"
 
   integration-tests-xcode-direct-integration:
@@ -167,10 +163,7 @@ jobs:
     steps:
       - checkout
 
-      - install-gems:
-          directory: "IntegrationTests/XcodeDirectIntegration/"
-      
-      - scan-and-archive:
+      - install-gems-scan-and-archive:
           directory: "IntegrationTests/XcodeDirectIntegration/"
 
 workflows:
