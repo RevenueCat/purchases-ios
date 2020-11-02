@@ -72,9 +72,19 @@ jobs:
           paths:
             - Carthage
       
-      - install-gems-scan-and-archive:
+      - install-gems:
           directory: .
       
+      - run:
+          name: Run tests
+          command: fastlane scan
+          environment:
+            SCAN_SCHEME: All Tests
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/report.html
+          destination: test_report.html
   docs-deploy:
     macos:
       xcode: "12.0"
