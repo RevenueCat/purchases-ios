@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)start {
     [RCPurchases setDebugLogsEnabled:true];
-    [RCPurchases configureWithAPIKey:@"VtDdmbdWBySmqJeeQUTyrNxETUVkhuaJ"
+    [RCPurchases configureWithAPIKey:@"REVENUECAT_API_KEY"
                            appUserID:@"integrationTest"];
 }
 

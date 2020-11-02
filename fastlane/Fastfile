@@ -92,6 +92,13 @@ platform :ios do
     gym(export_method: "app-store")
   end
 
+  desc "replace API KEY for integration tests"
+  lane :replace_api_key_integration_tests do
+    api_key = ENV["REVENUECAT_API_KEY"]
+    sed_regex = 's|' + "REVENUECAT_API_KEY" + '|' + api_key + '|'
+    backup_extension = '.bck'
+    sh("sed", '-i', backup_extension, sed_regex, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
+  end
 
 end
 
