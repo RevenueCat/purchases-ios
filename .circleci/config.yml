@@ -106,16 +106,15 @@ jobs:
     steps:
       - checkout
       
-      # cocoapods
+      - install-gems:
+          directory: "IntegrationTests/CocoapodsIntegration"
+
       - run:
           name: Install Pods
           command: |
               cd IntegrationTests/CocoapodsIntegration/
               pod install
       
-      - install-gems:
-          directory: "IntegrationTests/CocoapodsIntegration"
-
       - scan-and-archive:
           directory: "IntegrationTests/CocoapodsIntegration"
       
