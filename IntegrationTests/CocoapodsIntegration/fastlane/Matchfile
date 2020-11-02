@@ -1,4 +1,4 @@
-git_url("git@github.com:RevenueCat/apple-certificates-fastlane-match.git")
+git_url(ENV["CERTS_REPO_URL"])
 
 storage_mode("git")
 
