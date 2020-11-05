@@ -18,7 +18,7 @@ class CocoapodsIntegrationTests: XCTestCase {
     func testCanFetchPurchaserInfo() throws {
         let integrationRunner = RCIntegrationRunner()
         integrationRunner.start()
-        let expectation = XCTestExpectation(description: "Download apple.com home page")
+        let expectation = XCTestExpectation(description: "get purchaserInfo")
 
         integrationRunner.purchaserInfo { (purchaserInfo, error) in
             XCTAssert(error == nil)

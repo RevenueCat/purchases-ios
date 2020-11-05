@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D6C022F2549F5620039CB92 /* SPMIntegrationUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C022E2549F5620039CB92 /* SPMIntegrationUITests.m */; };
 		2D6C02522549F5920039CB92 /* RCIntegrationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02432549F5920039CB92 /* RCIntegrationRunner.m */; };
 		2D6C02532549F5920039CB92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D6C02452549F5920039CB92 /* Assets.xcassets */; };
 		2D6C02542549F5920039CB92 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02462549F5920039CB92 /* ViewController.m */; };
@@ -30,22 +29,12 @@
 			remoteGlobalIDString = 2D6C02032549F5600039CB92;
 			remoteInfo = SPMIntegration;
 		};
-		2D6C022B2549F5620039CB92 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2D6C01FC2549F5600039CB92 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2D6C02032549F5600039CB92;
-			remoteInfo = SPMIntegration;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		2D6C02042549F5600039CB92 /* SPMIntegration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SPMIntegration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C021F2549F5620039CB92 /* SPMIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SPMIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C02252549F5620039CB92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2D6C022A2549F5620039CB92 /* SPMIntegrationUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SPMIntegrationUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		2D6C022E2549F5620039CB92 /* SPMIntegrationUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SPMIntegrationUITests.m; sourceTree = "<group>"; };
-		2D6C02302549F5620039CB92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2D6C02432549F5920039CB92 /* RCIntegrationRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIntegrationRunner.m; sourceTree = "<group>"; };
 		2D6C02442549F5920039CB92 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2D6C02452549F5920039CB92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -82,13 +71,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2D6C02272549F5620039CB92 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -99,7 +81,6 @@
 				2D6C02422549F5920039CB92 /* CommonFiles */,
 				2D6C02062549F5600039CB92 /* SPMIntegration */,
 				2D6C02222549F5620039CB92 /* SPMIntegrationTests */,
-				2D6C022D2549F5620039CB92 /* SPMIntegrationUITests */,
 				2D6C02052549F5600039CB92 /* Products */,
 				2D6C02682549F5D40039CB92 /* Frameworks */,
 				2D6C02D72549FD6D0039CB92 /* SPMIntegration-Bridging-Header.h */,
@@ -111,7 +92,6 @@
 			children = (
 				2D6C02042549F5600039CB92 /* SPMIntegration.app */,
 				2D6C021F2549F5620039CB92 /* SPMIntegrationTests.xctest */,
-				2D6C022A2549F5620039CB92 /* SPMIntegrationUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -131,15 +111,6 @@
 				2D6C02B82549F7E20039CB92 /* SPMIntegrationTests-Bridging-Header.h */,
 			);
 			path = SPMIntegrationTests;
-			sourceTree = "<group>";
-		};
-		2D6C022D2549F5620039CB92 /* SPMIntegrationUITests */ = {
-			isa = PBXGroup;
-			children = (
-				2D6C022E2549F5620039CB92 /* SPMIntegrationUITests.m */,
-				2D6C02302549F5620039CB92 /* Info.plist */,
-			);
-			path = SPMIntegrationUITests;
 			sourceTree = "<group>";
 		};
 		2D6C02422549F5920039CB92 /* CommonFiles */ = {
@@ -224,24 +195,6 @@
 			productReference = 2D6C021F2549F5620039CB92 /* SPMIntegrationTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		2D6C02292549F5620039CB92 /* SPMIntegrationUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 2D6C02392549F5620039CB92 /* Build configuration list for PBXNativeTarget "SPMIntegrationUITests" */;
-			buildPhases = (
-				2D6C02262549F5620039CB92 /* Sources */,
-				2D6C02272549F5620039CB92 /* Frameworks */,
-				2D6C02282549F5620039CB92 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				2D6C022C2549F5620039CB92 /* PBXTargetDependency */,
-			);
-			name = SPMIntegrationUITests;
-			productName = SPMIntegrationUITests;
-			productReference = 2D6C022A2549F5620039CB92 /* SPMIntegrationUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -257,10 +210,6 @@
 					2D6C021E2549F5620039CB92 = {
 						CreatedOnToolsVersion = 12.1;
 						LastSwiftMigration = 1210;
-						TestTargetID = 2D6C02032549F5600039CB92;
-					};
-					2D6C02292549F5620039CB92 = {
-						CreatedOnToolsVersion = 12.1;
 						TestTargetID = 2D6C02032549F5600039CB92;
 					};
 				};
@@ -280,7 +229,6 @@
 			targets = (
 				2D6C02032549F5600039CB92 /* SPMIntegration */,
 				2D6C021E2549F5620039CB92 /* SPMIntegrationTests */,
-				2D6C02292549F5620039CB92 /* SPMIntegrationUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -297,13 +245,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		2D6C021D2549F5620039CB92 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		2D6C02282549F5620039CB92 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -334,14 +275,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2D6C02262549F5620039CB92 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				2D6C022F2549F5620039CB92 /* SPMIntegrationUITests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -349,11 +282,6 @@
 			isa = PBXTargetDependency;
 			target = 2D6C02032549F5600039CB92 /* SPMIntegration */;
 			targetProxy = 2D6C02202549F5620039CB92 /* PBXContainerItemProxy */;
-		};
-		2D6C022C2549F5620039CB92 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 2D6C02032549F5600039CB92 /* SPMIntegration */;
-			targetProxy = 2D6C022B2549F5620039CB92 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -589,46 +517,6 @@
 			};
 			name = Release;
 		};
-		2D6C023A2549F5620039CB92 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = SPMIntegrationUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegrationUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = SPMIntegration;
-			};
-			name = Debug;
-		};
-		2D6C023B2549F5620039CB92 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = SPMIntegrationUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegrationUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = SPMIntegration;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -655,15 +543,6 @@
 			buildConfigurations = (
 				2D6C02372549F5620039CB92 /* Debug */,
 				2D6C02382549F5620039CB92 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		2D6C02392549F5620039CB92 /* Build configuration list for PBXNativeTarget "SPMIntegrationUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				2D6C023A2549F5620039CB92 /* Debug */,
-				2D6C023B2549F5620039CB92 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
