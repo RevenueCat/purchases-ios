@@ -26,7 +26,7 @@ commands:
       - run:
           name: Run tests
           command: |
-              bundle exec replace_api_key_integration_tests
+              bundle exec fastlane replace_api_key_integration_tests
               cd << parameters.directory >>
               bundle exec fastlane scan
       - store_test_results:
