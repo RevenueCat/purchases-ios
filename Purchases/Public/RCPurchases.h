@@ -229,7 +229,7 @@ __attribute((deprecated("Use the set<NetworkId> functions instead.")));
 NS_SWIFT_NAME(purchaserInfo(_:));
 
 /**
- Fetch the configured offerings for this users. Offerings allows you to configure your in-app products vis RevenueCat and greatly simplifies management. See the guide (https://docs.revenuecat.com/entitlements) for more info.
+ Fetch the configured offerings for this users. Offerings allows you to configure your in-app products via RevenueCat and greatly simplifies management. See the guide (https://docs.revenuecat.com/entitlements) for more info.
  
  Offerings will be fetched and cached on instantiation so that, by the time they are needed, your prices are loaded for your purchase flow. Time is money.
  
