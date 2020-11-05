@@ -118,6 +118,8 @@ jobs:
       - checkout
       
       - install-gems:
+          directory: "."
+      - install-gems:
           directory: "IntegrationTests/CocoapodsIntegration"
 
       - run:
