@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D6C02A82549F7700039CB92 /* CarthageIntegrationUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02A72549F7700039CB92 /* CarthageIntegrationUITests.m */; };
 		2D6C02F72549FE2C0039CB92 /* RCIntegrationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02E72549FE2C0039CB92 /* RCIntegrationRunner.m */; };
 		2D6C02F82549FE2C0039CB92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D6C02E92549FE2C0039CB92 /* Assets.xcassets */; };
 		2D6C02F92549FE2C0039CB92 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02EA2549FE2C0039CB92 /* ViewController.m */; };
@@ -30,22 +29,12 @@
 			remoteGlobalIDString = 2D6C027C2549F76E0039CB92;
 			remoteInfo = CarthageIntegration;
 		};
-		2D6C02A42549F7700039CB92 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2D6C02752549F76E0039CB92 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2D6C027C2549F76E0039CB92;
-			remoteInfo = CarthageIntegration;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		2D6C027D2549F76E0039CB92 /* CarthageIntegration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CarthageIntegration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C02982549F7700039CB92 /* CarthageIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CarthageIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6C029E2549F7700039CB92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2D6C02A32549F7700039CB92 /* CarthageIntegrationUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CarthageIntegrationUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		2D6C02A72549F7700039CB92 /* CarthageIntegrationUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CarthageIntegrationUITests.m; sourceTree = "<group>"; };
-		2D6C02A92549F7700039CB92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2D6C02E72549FE2C0039CB92 /* RCIntegrationRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIntegrationRunner.m; sourceTree = "<group>"; };
 		2D6C02E82549FE2C0039CB92 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2D6C02E92549FE2C0039CB92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -82,13 +71,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2D6C02A02549F7700039CB92 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -98,7 +80,6 @@
 				2D6C02E62549FE2C0039CB92 /* CommonFiles */,
 				2D6C027F2549F76E0039CB92 /* CarthageIntegration */,
 				2D6C029B2549F7700039CB92 /* CarthageIntegrationTests */,
-				2D6C02A62549F7700039CB92 /* CarthageIntegrationUITests */,
 				2D6C027E2549F76E0039CB92 /* Products */,
 				2D6C03CA254A08F00039CB92 /* Frameworks */,
 			);
@@ -109,7 +90,6 @@
 			children = (
 				2D6C027D2549F76E0039CB92 /* CarthageIntegration.app */,
 				2D6C02982549F7700039CB92 /* CarthageIntegrationTests.xctest */,
-				2D6C02A32549F7700039CB92 /* CarthageIntegrationUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -130,15 +110,6 @@
 				2D6C030A2549FE4E0039CB92 /* CarthageIntegrationTests-Bridging-Header.h */,
 			);
 			path = CarthageIntegrationTests;
-			sourceTree = "<group>";
-		};
-		2D6C02A62549F7700039CB92 /* CarthageIntegrationUITests */ = {
-			isa = PBXGroup;
-			children = (
-				2D6C02A72549F7700039CB92 /* CarthageIntegrationUITests.m */,
-				2D6C02A92549F7700039CB92 /* Info.plist */,
-			);
-			path = CarthageIntegrationUITests;
 			sourceTree = "<group>";
 		};
 		2D6C02E62549FE2C0039CB92 /* CommonFiles */ = {
@@ -222,24 +193,6 @@
 			productReference = 2D6C02982549F7700039CB92 /* CarthageIntegrationTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		2D6C02A22549F7700039CB92 /* CarthageIntegrationUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 2D6C02B22549F7700039CB92 /* Build configuration list for PBXNativeTarget "CarthageIntegrationUITests" */;
-			buildPhases = (
-				2D6C029F2549F7700039CB92 /* Sources */,
-				2D6C02A02549F7700039CB92 /* Frameworks */,
-				2D6C02A12549F7700039CB92 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				2D6C02A52549F7700039CB92 /* PBXTargetDependency */,
-			);
-			name = CarthageIntegrationUITests;
-			productName = CarthageIntegrationUITests;
-			productReference = 2D6C02A32549F7700039CB92 /* CarthageIntegrationUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -255,10 +208,6 @@
 					2D6C02972549F7700039CB92 = {
 						CreatedOnToolsVersion = 12.1;
 						LastSwiftMigration = 1210;
-						TestTargetID = 2D6C027C2549F76E0039CB92;
-					};
-					2D6C02A22549F7700039CB92 = {
-						CreatedOnToolsVersion = 12.1;
 						TestTargetID = 2D6C027C2549F76E0039CB92;
 					};
 				};
@@ -278,7 +227,6 @@
 			targets = (
 				2D6C027C2549F76E0039CB92 /* CarthageIntegration */,
 				2D6C02972549F7700039CB92 /* CarthageIntegrationTests */,
-				2D6C02A22549F7700039CB92 /* CarthageIntegrationUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -295,13 +243,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		2D6C02962549F7700039CB92 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		2D6C02A12549F7700039CB92 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -355,14 +296,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		2D6C029F2549F7700039CB92 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				2D6C02A82549F7700039CB92 /* CarthageIntegrationUITests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -370,11 +303,6 @@
 			isa = PBXTargetDependency;
 			target = 2D6C027C2549F76E0039CB92 /* CarthageIntegration */;
 			targetProxy = 2D6C02992549F7700039CB92 /* PBXContainerItemProxy */;
-		};
-		2D6C02A52549F7700039CB92 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 2D6C027C2549F76E0039CB92 /* CarthageIntegration */;
-			targetProxy = 2D6C02A42549F7700039CB92 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -618,46 +546,6 @@
 			};
 			name = Release;
 		};
-		2D6C02B32549F7700039CB92 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = CarthageIntegrationUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageIntegrationUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = CarthageIntegration;
-			};
-			name = Debug;
-		};
-		2D6C02B42549F7700039CB92 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = CarthageIntegrationUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageIntegrationUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = CarthageIntegration;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -684,15 +572,6 @@
 			buildConfigurations = (
 				2D6C02B02549F7700039CB92 /* Debug */,
 				2D6C02B12549F7700039CB92 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		2D6C02B22549F7700039CB92 /* Build configuration list for PBXNativeTarget "CarthageIntegrationUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				2D6C02B32549F7700039CB92 /* Debug */,
-				2D6C02B42549F7700039CB92 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
