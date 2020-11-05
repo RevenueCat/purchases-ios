@@ -33,3 +33,4 @@ CarthageUploads
 CHANGELOG.latest.md
 builds/
 Pods/
+IntegrationTests/CarthageIntegration/Cartfile.resolved
