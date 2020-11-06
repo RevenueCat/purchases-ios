@@ -15,6 +15,8 @@
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 @property (nonatomic, nonnull) RCInMemoryCachedObject<RCOfferings *> *offeringsCachedObject;
 
+@property (nonatomic, assign) BOOL appUserIDHasBeenSet;
+
 @end
 
 
@@ -55,6 +57,7 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 24;
             userDefaults = NSUserDefaults.standardUserDefaults;
         }
         self.userDefaults = userDefaults;
+        self.appUserIDHasBeenSet = self.cachedAppUserID != nil;
         [self observeAppUserIDChanges];
     }
 
@@ -71,7 +74,7 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 24;
 }
 
 - (void)handleUserDefaultsChanged:(NSNotification *)notification {
-    if (notification.object == self.userDefaults) {
+    if (self.appUserIDHasBeenSet && notification.object == self.userDefaults) {
         if (!self.cachedAppUserID) {
             NSAssert(false, @"[Purchases] - Cached appUserID has been deleted from user defaults. "
                             "This leaves the SDK in an undetermined state. Please make sure that RevenueCat "
@@ -109,6 +112,7 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 24;
         [self deleteAttributesIfSyncedForAppUserID:oldAppUserID];
 
         [self cacheAppUserID:newUserID];
+        self.appUserIDHasBeenSet = YES;
     }
 }
 
