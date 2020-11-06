@@ -42,7 +42,7 @@ struct InAppPurchase: Equatable {
     let cancellationDate: Date?
     let isInTrialPeriod: Bool?
     let isInIntroOfferPeriod: Bool
-    let webOrderLineItemId: Int
+    let webOrderLineItemId: Int64
     let promotionalOfferIdentifier: String?
 
     var asDict: [String: Any] {

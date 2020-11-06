@@ -1812,7 +1812,7 @@ class PurchasesTests: XCTestCase {
         if #available(iOS 12.2, *) {
             setupPurchases()
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
-            let discount = SKPaymentDiscount.init(identifier: "discount", keyIdentifier: "TIKAMASALA1", nonce: UUID(), signature: "Base64 encoded signature", timestamp: 123413232131)
+            let discount = SKPaymentDiscount.init(identifier: "discount", keyIdentifier: "TIKAMASALA1", nonce: UUID(), signature: "Base64 encoded signature", timestamp: NSNumber(value: Int64(123413232131)))
 
             self.purchases?.purchaseProduct(product, discount: discount) { (tx, info, error, userCancelled) in
 

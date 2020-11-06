@@ -48,7 +48,7 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase0.cancellationDate).to(beNil())
         expect(inAppPurchase0.isInTrialPeriod) == false
         expect(inAppPurchase0.isInIntroOfferPeriod) == false
-        expect(inAppPurchase0.webOrderLineItemId) == 1000000054042695
+        expect(inAppPurchase0.webOrderLineItemId) == Int64(1000000054042695)
         expect(inAppPurchase0.promotionalOfferIdentifier).to(beNil())
         
         let inAppPurchase1 = inAppPurchases[1]
@@ -63,7 +63,7 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase1.cancellationDate).to(beNil())
         expect(inAppPurchase1.isInTrialPeriod) == false
         expect(inAppPurchase1.isInIntroOfferPeriod) == false
-        expect(inAppPurchase1.webOrderLineItemId) == 1000000054042739
+        expect(inAppPurchase1.webOrderLineItemId) == Int64(1000000054042739)
         expect(inAppPurchase1.promotionalOfferIdentifier).to(beNil())
         
         let inAppPurchase2 = inAppPurchases[2]
@@ -78,7 +78,7 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase2.cancellationDate).to(beNil())
         expect(inAppPurchase2.isInTrialPeriod) == false
         expect(inAppPurchase2.isInIntroOfferPeriod) == false
-        expect(inAppPurchase2.webOrderLineItemId) == 1000000054044460
+        expect(inAppPurchase2.webOrderLineItemId) == Int64(1000000054044460)
         expect(inAppPurchase2.promotionalOfferIdentifier).to(beNil())
 
         let inAppPurchase3 = inAppPurchases[3]
@@ -93,7 +93,7 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase3.cancellationDate).to(beNil())
         expect(inAppPurchase3.isInTrialPeriod) == false
         expect(inAppPurchase3.isInIntroOfferPeriod) == false
-        expect(inAppPurchase3.webOrderLineItemId) == 1000000054044520
+        expect(inAppPurchase3.webOrderLineItemId) == Int64(1000000054044520)
         expect(inAppPurchase3.promotionalOfferIdentifier).to(beNil())
 
         let inAppPurchase4 = inAppPurchases[4]
@@ -108,7 +108,7 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase4.cancellationDate).to(beNil())
         expect(inAppPurchase4.isInTrialPeriod) == false
         expect(inAppPurchase4.isInIntroOfferPeriod) == false
-        expect(inAppPurchase4.webOrderLineItemId) == 1000000054044587
+        expect(inAppPurchase4.webOrderLineItemId) == Int64(1000000054044587)
         expect(inAppPurchase4.promotionalOfferIdentifier).to(beNil())
 
         let inAppPurchase5 = inAppPurchases[5]
@@ -123,7 +123,7 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase5.cancellationDate).to(beNil())
         expect(inAppPurchase5.isInTrialPeriod) == false
         expect(inAppPurchase5.isInIntroOfferPeriod) == false
-        expect(inAppPurchase5.webOrderLineItemId) == 1000000054044637
+        expect(inAppPurchase5.webOrderLineItemId) == Int64(1000000054044637)
         expect(inAppPurchase5.promotionalOfferIdentifier).to(beNil())
 
         let inAppPurchase6 = inAppPurchases[6]
@@ -138,7 +138,7 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase6.cancellationDate).to(beNil())
         expect(inAppPurchase6.isInTrialPeriod) == false
         expect(inAppPurchase6.isInIntroOfferPeriod) == false
-        expect(inAppPurchase6.webOrderLineItemId) == 1000000054044710
+        expect(inAppPurchase6.webOrderLineItemId) == Int64(1000000054044710)
         expect(inAppPurchase6.promotionalOfferIdentifier).to(beNil())
 
         let inAppPurchase7 = inAppPurchases[7]
@@ -153,7 +153,7 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase7.cancellationDate).to(beNil())
         expect(inAppPurchase7.isInTrialPeriod) == false
         expect(inAppPurchase7.isInIntroOfferPeriod) == false
-        expect(inAppPurchase7.webOrderLineItemId) == 1000000054044800
+        expect(inAppPurchase7.webOrderLineItemId) == Int64(1000000054044800)
         expect(inAppPurchase7.promotionalOfferIdentifier).to(beNil())
 
         let inAppPurchase8 = inAppPurchases[8]
@@ -168,7 +168,7 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase8.cancellationDate).to(beNil())
         expect(inAppPurchase8.isInTrialPeriod) == true
         expect(inAppPurchase8.isInIntroOfferPeriod) == false
-        expect(inAppPurchase8.webOrderLineItemId) == 1000000054042694
+        expect(inAppPurchase8.webOrderLineItemId) == Int64(1000000054042694)
         expect(inAppPurchase8.promotionalOfferIdentifier).to(beNil())
     }
 }

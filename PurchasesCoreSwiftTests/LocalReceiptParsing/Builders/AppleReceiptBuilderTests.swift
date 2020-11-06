@@ -92,7 +92,7 @@ class AppleReceiptBuilderTests: XCTestCase {
                                                                     cancellationDate: nil,
                                                                     isInTrialPeriod: false,
                                                                     isInIntroOfferPeriod: false,
-                                                                    webOrderLineItemId: 658464,
+                                                                    webOrderLineItemId: Int64(658464),
                                                                     promotionalOfferIdentifier: nil)
 
         let receipt = try! self.appleReceiptBuilder.build(fromContainer: receiptContainer)

@@ -6,18 +6,22 @@
 import Foundation
 
 extension ArraySlice where Element == UInt8 {
-    func toUInt() -> UInt {
+    func toUInt() -> UInt64 {
         let array = Array(self)
-        var result: UInt = 0
+        var result: UInt64 = 0
         for idx in 0..<(array.count) {
             let shiftAmount = UInt((array.count) - idx - 1) * 8
-            result += UInt(array[idx]) << shiftAmount
+            result += UInt64(array[idx]) << shiftAmount
         }
         return result
     }
 
     func toInt() -> Int {
         return Int(self.toUInt())
+    }
+
+    func toInt64() -> Int64 {
+        return Int64(self.toUInt())
     }
 
     func toBool() -> Bool {

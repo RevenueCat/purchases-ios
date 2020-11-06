@@ -17,8 +17,10 @@ class UInt8ExtensionsTests: XCTestCase {
     }
 
     func testBitAtIndexRaisesIfInvalidIndex() {
+        #if arch(x86_64)
         expect { _ = UInt8(0b1).bitAtIndex(7) }.notTo(throwAssertion())
         expect { _ = UInt8(0b1).bitAtIndex(8) }.to(throwAssertion())
+        #endif
     }
     
     func testValueInRangeGetsCorrectValue() {
@@ -32,8 +34,10 @@ class UInt8ExtensionsTests: XCTestCase {
     }
     
     func testValueInRangeRaisesIfInvalidRange() {
+        #if arch(x86_64)
         expect{ _ = UInt8(0b10000010).valueInRange(from: 1, to: 6)}.notTo(throwAssertion())
         expect{ _ = UInt8(0b10000010).valueInRange(from: 6, to: 1)}.to(throwAssertion())
         expect{ _ = UInt8(0b10000010).valueInRange(from: 6, to: 8)}.to(throwAssertion())
+        #endif
     }
 }

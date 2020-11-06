@@ -31,7 +31,7 @@ class InAppPurchaseBuilder {
         var cancellationDate: Date?
         var isInTrialPeriod: Bool?
         var isInIntroOfferPeriod: Bool?
-        var webOrderLineItemId: Int?
+        var webOrderLineItemId: Int64?
         var promotionalOfferIdentifier: String?
 
         for internalContainer in container.internalContainers {
@@ -51,7 +51,7 @@ class InAppPurchaseBuilder {
             case .quantity:
                 quantity = internalContainer.internalPayload.toInt()
             case .webOrderLineItemId:
-                webOrderLineItemId = internalContainer.internalPayload.toInt()
+                webOrderLineItemId = internalContainer.internalPayload.toInt64()
             case .productType:
                 productType = InAppPurchaseProductType(rawValue: internalContainer.internalPayload.toInt())
             case .isInIntroOfferPeriod:
