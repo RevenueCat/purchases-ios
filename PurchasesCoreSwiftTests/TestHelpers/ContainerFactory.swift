@@ -68,6 +68,18 @@ class ContainerFactory {
                              internalContainers: [])
     }
 
+    func int64Container(int64: Int64) -> ASN1Container {
+        let intAsBytes = int64ToBytes(int: int64)
+        let bytesUsedForLength = intAsBytes.count < 128 ? 1 : intToBytes(int: intAsBytes.count).count + 1
+
+        return ASN1Container(containerClass: .application,
+                             containerIdentifier: .octetString,
+                             encodingType: .primitive,
+                             length: ASN1Length(value: intAsBytes.count, bytesUsedForLength: bytesUsedForLength),
+                             internalPayload: ArraySlice(intAsBytes),
+                             internalContainers: [])
+    }
+
     func constructedContainer(containers: [ASN1Container],
                               encodingType: ASN1EncodingType = .constructed) -> ASN1Container {
         let payload = containers.flatMap { self.headerBytes(forContainer: $0) + $0.internalPayload }
@@ -92,6 +104,14 @@ class ContainerFactory {
         let typeContainer = intContainer(int: attributeType.rawValue)
         let versionContainer = intContainer(int: 1)
         let valueContainer = constructedContainer(containers: [intContainer(int: value)])
+
+        return constructedContainer(containers: [typeContainer, versionContainer, valueContainer])
+    }
+
+    func receiptAttributeContainer(attributeType: BuildableReceiptAttributeType, _ value: Int64) -> ASN1Container {
+        let typeContainer = intContainer(int: attributeType.rawValue)
+        let versionContainer = intContainer(int: 1)
+        let valueContainer = constructedContainer(containers: [int64Container(int64: value)])
 
         return constructedContainer(containers: [typeContainer, versionContainer, valueContainer])
     }
@@ -150,6 +170,12 @@ class ContainerFactory {
 
 private extension ContainerFactory {
     func intToBytes(int: Int) -> [UInt8] {
+        let intAsBytes = withUnsafeBytes(of: int.bigEndian, Array.init)
+        let arrayWithoutInsignificantBytes = Array(intAsBytes.drop(while: { $0 == 0 }))
+        return arrayWithoutInsignificantBytes
+    }
+
+    func int64ToBytes(int: Int64) -> [UInt8] {
         let intAsBytes = withUnsafeBytes(of: int.bigEndian, Array.init)
         let arrayWithoutInsignificantBytes = Array(intAsBytes.drop(while: { $0 == 0 }))
         return arrayWithoutInsignificantBytes

@@ -23,7 +23,7 @@ class EmptyPurchaserInfoTests: XCTestCase {
 class BasicPurchaserInfoTests: XCTestCase {
     let validSubscriberResponse = [
         "request_date": "2018-10-19T02:40:36Z",
-        "request_date_ms": 1563379533946,
+        "request_date_ms": Int64(1563379533946),
         "subscriber": [
             "original_app_user_id": "app_user_id",
             "original_application_version": "2083",

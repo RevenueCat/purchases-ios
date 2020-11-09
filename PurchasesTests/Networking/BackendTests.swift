@@ -1112,7 +1112,7 @@ class BackendTests: XCTestCase {
                     "signature_data": [
                         "signature": "Base64 encoded signature",
                         "nonce": "A UUID",
-                        "timestamp": 123413232131
+                        "timestamp": Int64(123413232131)
                     ],
                     "signature_error": nil
                 ]

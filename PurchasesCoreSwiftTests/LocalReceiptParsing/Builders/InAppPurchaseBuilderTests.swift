@@ -21,7 +21,7 @@ class InAppPurchaseBuilderTests: XCTestCase {
     let cancellationDate = Date.from(year: 2019, month: 7, day: 4, hour: 7, minute: 1, second: 45)
     let isInTrialPeriod = false
     let isInIntroOfferPeriod = true
-    let webOrderLineItemId = 897501072
+    let webOrderLineItemId = Int64(897501072)
     let promotionalOfferIdentifier = "com.revenuecat.productPromoOffer"
 
     private let containerFactory = ContainerFactory()
