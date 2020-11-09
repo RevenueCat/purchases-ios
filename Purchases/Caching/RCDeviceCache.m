@@ -99,7 +99,10 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 24;
 }
 
 - (void)cacheAppUserID:(NSString *)appUserID {
-    [self.userDefaults setObject:appUserID forKey:RCAppUserDefaultsKey];
+    @synchronized (self) {
+        self.appUserIDHasBeenSet = YES;
+        [self.userDefaults setObject:appUserID forKey:RCAppUserDefaultsKey];
+    }
 }
 
 - (void)clearCachesForAppUserID:(NSString *)oldAppUserID andSaveNewUserID:(NSString *)newUserID {
@@ -112,7 +115,6 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 24;
         [self deleteAttributesIfSyncedForAppUserID:oldAppUserID];
 
         [self cacheAppUserID:newUserID];
-        self.appUserIDHasBeenSet = YES;
     }
 }
 
