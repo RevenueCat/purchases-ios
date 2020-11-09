@@ -141,7 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
                                      error:(NSError *)error {
     if (error == nil) {
         RCLog(@"Subscriber attributes synced successfully for appUserID: %@", syncingAppUserID);
-        if (syncingAppUserID != currentAppUserID) {
+        if (![syncingAppUserID isEqualToString:currentAppUserID]) {
             [self.deviceCache deleteAttributesIfSyncedForAppUserID:syncingAppUserID];
         }
     } else {
