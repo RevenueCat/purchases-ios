@@ -283,23 +283,29 @@ NS_SWIFT_NAME(purchaseProduct(_:_:));
 NS_SWIFT_NAME(purchasePackage(_:_:));
 
 /**
- This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user. Going forward, either `appUserID` will be able to reference the same user.
+ This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`.
+ If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user.
+ Going forward, either `appUserID` will be able to reference the same user.
 
  You shouldn't use this method if you have your own account system. In that case "restoration" is provided by your app passing
  the same `appUserId` used to purchase originally.
 
- @note This may force your users to enter the App Store password so should only be performed on request of the user. Typically with a button in settings or near your purchase UI. Use silentRestoreTransactionsWithCompletionBlock if you need to restore transactions programatically.
+ @note This may force your users to enter the App Store password so should only be performed on request of the user.
+ Typically with a button in settings or near your purchase UI. Use silentRestoreTransactionsWithCompletionBlock if you need to restore transactions programatically.
  */
 - (void)restoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(restoreTransactions(_:));
 
 /**
- This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`. If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user. Going forward, either `appUserID` will be able to reference the same user.
+ This method will post all purchases associated with the current App Store account to RevenueCat and become associated with the current `appUserID`.
+ If the receipt is being used by an existing user, the current `appUserID` will be aliased together with the `appUserID` of the existing user.
+ Going forward, either `appUserID` will be able to reference the same user.
 
  You shouldn't use this method if you have your own account system. In that case "restoration" is provided by your app passing
  the same `appUserId` used to purchase originally.
 
- @note This method will not trigger a login prompt from App Store. However, if the receipt currently on the device does not contain subscriptions, but the user has made subscription purchases, this method won't be able to restore them. Use restoreTransactionsWithCompletionBlock to cover those cases.
+ @note This method will not trigger a login prompt from App Store. However, if the receipt currently on the device does not contain subscriptions,
+ but the user has made subscription purchases, this method won't be able to restore them. Use restoreTransactionsWithCompletionBlock to cover those cases.
  */
 - (void)silentRestoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(silentRestoreTransactions(_:));
