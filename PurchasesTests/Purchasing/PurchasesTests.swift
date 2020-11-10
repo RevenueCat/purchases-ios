@@ -1059,6 +1059,128 @@ class PurchasesTests: XCTestCase {
         expect(receivedError).toEventuallyNot(beNil())
     }
 
+    func testSilentRestoringPurchasesPostsTheReceipt() {
+        setupPurchases()
+        purchases!.silentRestoreTransactions()
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
+    }
+
+    func testSilentRestoringPurchasesDoesntPostIfReceiptEmptyAndPurchaserInfoLoaded() {
+        let info = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0",
+                "original_purchase_date": "2018-10-26T23:17:53Z"
+            ]]);
+
+        let jsonObject = info!.jsonObject()
+
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+
+        mockReceiptParser.stubbedReceiptHasTransactionsResult = false
+
+        setupPurchases()
+        purchases!.silentRestoreTransactions()
+
+        expect(self.backend.postReceiptDataCalled) == false
+    }
+
+    func testSilentRestoringPurchasesPostsIfReceiptEmptyAndPurchaserInfoNotLoaded() {
+        mockReceiptParser.stubbedReceiptHasTransactionsResult = false
+
+        setupPurchases()
+        purchases!.silentRestoreTransactions()
+
+        expect(self.backend.postReceiptDataCalled) == true
+    }
+
+    func testSilentRestoringPurchasesPostsIfReceiptHasTransactionsAndPurchaserInfoLoaded() {
+        let info = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": "1.0",
+                "original_purchase_date": "2018-10-26T23:17:53Z"
+            ]]);
+
+        let jsonObject = info!.jsonObject()
+
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+
+        mockReceiptParser.stubbedReceiptHasTransactionsResult = true
+
+        setupPurchases()
+        purchases!.silentRestoreTransactions()
+
+        expect(self.backend.postReceiptDataCalled) == true
+    }
+
+    func testSilentRestoringPurchasesPostsIfReceiptHasTransactionsAndPurchaserInfoNotLoaded() {
+        mockReceiptParser.stubbedReceiptHasTransactionsResult = true
+
+        setupPurchases()
+        purchases!.silentRestoreTransactions()
+
+        expect(self.backend.postReceiptDataCalled) == true
+    }
+
+    func testSilentRestoringPurchasesDoesntRefreshTheReceipt() {
+        setupPurchases()
+        self.receiptFetcher.shouldReturnReceipt = true
+        purchases!.silentRestoreTransactions()
+
+        expect(self.receiptFetcher.receiptDataTimesCalled) == 1
+        expect(self.requestFetcher.refreshReceiptCalled) == false
+    }
+
+    func testSilentRestoringPurchasesSetsIsRestore() {
+        setupPurchases()
+        purchases!.silentRestoreTransactions(nil)
+        expect(self.backend.postedIsRestore!).to(beTrue())
+    }
+
+    func testSilentRestoringPurchasesSetsIsRestoreForAnon() {
+        setupAnonPurchases()
+        purchases!.silentRestoreTransactions(nil)
+
+        expect(self.backend.postedIsRestore!).to(beTrue())
+    }
+
+    func testSilentRestoringPurchasesCallsSuccessDelegateMethod() {
+        setupPurchases()
+
+        let purchaserInfo = Purchases.PurchaserInfo()
+        self.backend.postReceiptPurchaserInfo = purchaserInfo
+
+        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+
+        purchases!.silentRestoreTransactions { (info, error) in
+            receivedPurchaserInfo = info
+        }
+
+        expect(receivedPurchaserInfo).toEventually(be(purchaserInfo))
+    }
+
+    func testSilentRestorePurchasesPassesErrorOnFailure() {
+        setupPurchases()
+
+        let error = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable:true)
+
+        self.backend.postReceiptError = error
+        self.purchasesDelegate.purchaserInfo = nil
+
+        var receivedError: Error?
+
+        purchases!.silentRestoreTransactions { (_, newError) in
+            receivedError = newError
+        }
+
+        expect(receivedError).toEventuallyNot(beNil())
+    }
+
     func testCallsShouldAddPromoPaymentDelegateMethod() {
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "mock_product")
