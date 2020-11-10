@@ -100,8 +100,8 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 24;
 
 - (void)cacheAppUserID:(NSString *)appUserID {
     @synchronized (self) {
-        self.appUserIDHasBeenSet = YES;
         [self.userDefaults setObject:appUserID forKey:RCAppUserDefaultsKey];
+        self.appUserIDHasBeenSet = YES;
     }
 }
 
