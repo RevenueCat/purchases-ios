@@ -201,16 +201,28 @@ class DeviceCacheTests: XCTestCase {
 
     func testCrashesWhenAppUserIDIsDeleted() {
         let mockNotificationCenter = MockNotificationCenter()
+        mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = "Rage Against the Machine"
+
         self.deviceCache = RCDeviceCache(mockUserDefaults,
                                          offeringsCachedObject: nil,
                                          notificationCenter: mockNotificationCenter)
-        mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = "Rage Against the Machine"
 
         expect { mockNotificationCenter.fireNotifications() }.notTo(raiseException())
 
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
 
         expect { mockNotificationCenter.fireNotifications() }.to(raiseException())
+    }
+
+    func testDoesntCrashIfOtherSettingIsDeletedAndAppUserIDHadntBeenSet() {
+        let mockNotificationCenter = MockNotificationCenter()
+        mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
+
+        self.deviceCache = RCDeviceCache(mockUserDefaults,
+                                         offeringsCachedObject: nil,
+                                         notificationCenter: mockNotificationCenter)
+
+        expect { mockNotificationCenter.fireNotifications() }.notTo(raiseException())
     }
 
     func testNewDeviceCacheInstanceWithExistingValidPurchaserInfoCacheIsntStale() {
