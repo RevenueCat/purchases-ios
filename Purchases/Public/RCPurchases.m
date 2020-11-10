@@ -573,14 +573,22 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.storeKitWrapper addPayment:[payment copy]];
 }
 
+- (void)silentRestoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
+    [self restoreTransactionsWithForceRefresh:NO completionBlock:completion];
+}
 
 - (void)restoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
+    [self restoreTransactionsWithForceRefresh:YES completionBlock:completion];
+}
+
+- (void)restoreTransactionsWithForceRefresh:(BOOL)shouldForceRefresh
+                            completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     if (!self.allowSharingAppStoreAccount) {
         RCDebugLog(@"allowSharingAppStoreAccount is set to false and restoreTransactions has been called. Are you sure you want to do this?");
     }
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
-    [self receiptDataWithForceRefresh:YES completion:^(NSData * _Nonnull data) {
+    [self receiptDataWithForceRefresh:shouldForceRefresh completion:^(NSData * _Nonnull data) {
         if (data.length == 0) {
             if (RCSystemInfo.isSandbox) {
                 RCLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless you've purchased before and there is a receipt available.");
