@@ -14,9 +14,9 @@ EXTERNAL SOURCES:
     :path: "../../"
 
 SPEC CHECKSUMS:
-  Purchases: 883b1a2c57cd2783fe3e73f264c37ab897d34cd5
-  PurchasesCoreSwift: e2369fb313cba83adcd3fd033a2415c7cdf62638
+  Purchases: 6778455b214c327fed4b850d6860c12e45db93f9
+  PurchasesCoreSwift: 10136558374deec2fa57586bc5026e899cee306b
 
 PODFILE CHECKSUM: abf85a7b493b4247cdd1f63fcaee462b025a5eed
 
-COCOAPODS: 1.9.3
+COCOAPODS: 1.8.4
