@@ -11,6 +11,7 @@
 #import "RCHTTPStatusCodes.h"
 #import "RCSystemInfo.h"
 #import "RCHTTPRequest.h"
+#import "RCCrossPlatformSupport.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -191,6 +192,11 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
 - (NSDictionary *)defaultHeaders {
     NSString *observerMode = [NSString stringWithFormat:@"%@", self.systemInfo.finishTransactions ? @"false" : @"true"];
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+#if DEBUG
+    NSString *isStoreKitTestReceipt = @"true";
+#else
+    NSString *isStoreKitTestReceipt = @"false";
+#endif
     [headers addEntriesFromDictionary: @{
         @"content-type": @"application/json",
         @"X-Version": RCSystemInfo.frameworkVersion,
@@ -198,7 +204,11 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
         @"X-Platform-Version": RCSystemInfo.systemVersion,
         @"X-Platform-Flavor": self.systemInfo.platformFlavor,
         @"X-Client-Version": RCSystemInfo.appVersion,
-        @"X-Observer-Mode-Enabled": observerMode
+        @"X-Observer-Mode-Enabled": observerMode,
+#if UI_DEVICE_AVAILABLE
+        @"X-Apple-Device-Identifier": UIDevice.currentDevice.identifierForVendor.UUIDString,
+#endif
+        @"X-Is-StoreKitTest-Receipt": isStoreKitTestReceipt
     }];
 
     NSString * _Nullable platformFlavorVersion = self.systemInfo.platformFlavorVersion;
