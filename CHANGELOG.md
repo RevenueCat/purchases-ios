@@ -1,3 +1,15 @@
+## 3.7.6
+- Fixed a race condition that could cause a crash after deleting and reinstalling the app
+    https://github.com/RevenueCat/purchases-ios/pull/383
+- Fixed possible overflow when performing local receipt parsing on 32-bit devices
+    https://github.com/RevenueCat/purchases-ios/pull/384
+- Fixed string comparison when deleting synced subscriber attributes
+    https://github.com/RevenueCat/purchases-ios/pull/385
+- Fixed docs-deploy job
+    https://github.com/RevenueCat/purchases-ios/pull/386
+- Fixed a typo in a RCPurchases.h
+    https://github.com/RevenueCat/purchases-ios/pull/380
+
 ## 3.7.5
 - Move test dependencies back to carthage
     https://github.com/RevenueCat/purchases-ios/pull/371
