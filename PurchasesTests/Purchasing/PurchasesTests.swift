@@ -1059,13 +1059,13 @@ class PurchasesTests: XCTestCase {
         expect(receivedError).toEventuallyNot(beNil())
     }
 
-    func testSilentRestoringPurchasesPostsTheReceipt() {
+    func testRestoringPurchasesProgrammaticallyPostsTheReceipt() {
         setupPurchases()
-        purchases!.silentRestoreTransactions()
+        purchases!.restoreTransactionsProgrammatically()
         expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
 
-    func testSilentRestoringPurchasesDoesntPostIfReceiptEmptyAndPurchaserInfoLoaded() {
+    func testRestoringPurchasesProgrammaticallyDoesntPostIfReceiptEmptyAndPurchaserInfoLoaded() {
         let info = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
@@ -1082,21 +1082,21 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = false
 
         setupPurchases()
-        purchases!.silentRestoreTransactions()
+        purchases!.restoreTransactionsProgrammatically()
 
         expect(self.backend.postReceiptDataCalled) == false
     }
 
-    func testSilentRestoringPurchasesPostsIfReceiptEmptyAndPurchaserInfoNotLoaded() {
+    func testRestoringPurchasesProgrammaticallyPostsIfReceiptEmptyAndPurchaserInfoNotLoaded() {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = false
 
         setupPurchases()
-        purchases!.silentRestoreTransactions()
+        purchases!.restoreTransactionsProgrammatically()
 
         expect(self.backend.postReceiptDataCalled) == true
     }
 
-    func testSilentRestoringPurchasesPostsIfReceiptHasTransactionsAndPurchaserInfoLoaded() {
+    func testRestoringPurchasesProgrammaticallyPostsIfReceiptHasTransactionsAndPurchaserInfoLoaded() {
         let info = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
@@ -1113,43 +1113,43 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
 
         setupPurchases()
-        purchases!.silentRestoreTransactions()
+        purchases!.restoreTransactionsProgrammatically()
 
         expect(self.backend.postReceiptDataCalled) == true
     }
 
-    func testSilentRestoringPurchasesPostsIfReceiptHasTransactionsAndPurchaserInfoNotLoaded() {
+    func testRestoringPurchasesProgrammaticallyPostsIfReceiptHasTransactionsAndPurchaserInfoNotLoaded() {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
 
         setupPurchases()
-        purchases!.silentRestoreTransactions()
+        purchases!.restoreTransactionsProgrammatically()
 
         expect(self.backend.postReceiptDataCalled) == true
     }
 
-    func testSilentRestoringPurchasesDoesntRefreshTheReceipt() {
+    func testRestoringPurchasesProgrammaticallyDoesntRefreshTheReceipt() {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = true
-        purchases!.silentRestoreTransactions()
+        purchases!.restoreTransactionsProgrammatically()
 
         expect(self.receiptFetcher.receiptDataTimesCalled) == 1
         expect(self.requestFetcher.refreshReceiptCalled) == false
     }
 
-    func testSilentRestoringPurchasesSetsIsRestore() {
+    func testRestoringPurchasesProgrammaticallySetsIsRestore() {
         setupPurchases()
-        purchases!.silentRestoreTransactions(nil)
+        purchases!.restoreTransactionsProgrammatically(nil)
         expect(self.backend.postedIsRestore!).to(beTrue())
     }
 
-    func testSilentRestoringPurchasesSetsIsRestoreForAnon() {
+    func testRestoringPurchasesProgrammaticallySetsIsRestoreForAnon() {
         setupAnonPurchases()
-        purchases!.silentRestoreTransactions(nil)
+        purchases!.restoreTransactionsProgrammatically(nil)
 
         expect(self.backend.postedIsRestore!).to(beTrue())
     }
 
-    func testSilentRestoringPurchasesCallsSuccessDelegateMethod() {
+    func testRestoringPurchasesProgrammaticallyCallsSuccessDelegateMethod() {
         setupPurchases()
 
         let purchaserInfo = Purchases.PurchaserInfo()
@@ -1157,7 +1157,7 @@ class PurchasesTests: XCTestCase {
 
         var receivedPurchaserInfo: Purchases.PurchaserInfo?
 
-        purchases!.silentRestoreTransactions { (info, error) in
+        purchases!.restoreTransactionsProgrammatically { (info, error) in
             receivedPurchaserInfo = info
         }
 
@@ -1174,7 +1174,7 @@ class PurchasesTests: XCTestCase {
 
         var receivedError: Error?
 
-        purchases!.silentRestoreTransactions { (_, newError) in
+        purchases!.restoreTransactionsProgrammatically { (_, newError) in
             receivedError = newError
         }
 

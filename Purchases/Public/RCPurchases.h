@@ -291,7 +291,8 @@ NS_SWIFT_NAME(purchasePackage(_:_:));
  the same `appUserId` used to purchase originally.
 
  @note This may force your users to enter the App Store password so should only be performed on request of the user.
- Typically with a button in settings or near your purchase UI. Use silentRestoreTransactionsWithCompletionBlock if you need to restore transactions programatically.
+ Typically with a button in settings or near your purchase UI. Use restoreTransactionsProgrammaticallyWithCompletionBlock
+ if you need to restore transactions programmatically.
  */
 - (void)restoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(restoreTransactions(_:));
@@ -307,8 +308,8 @@ NS_SWIFT_NAME(restoreTransactions(_:));
  @note This method will not trigger a login prompt from App Store. However, if the receipt currently on the device does not contain subscriptions,
  but the user has made subscription purchases, this method won't be able to restore them. Use restoreTransactionsWithCompletionBlock to cover those cases.
  */
-- (void)silentRestoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-NS_SWIFT_NAME(silentRestoreTransactions(_:));
+- (void)restoreTransactionsProgrammaticallyWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
+NS_SWIFT_NAME(restoreTransactionsProgrammatically(_:));
 
 
 /**
