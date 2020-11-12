@@ -23,7 +23,8 @@ commands:
       directory:
         type: string
     steps:
-      - run: Replace API key
+      - run: 
+          name: Replace API key
           command: bundle exec fastlane replace_api_key_integration_tests
       
       - run:
