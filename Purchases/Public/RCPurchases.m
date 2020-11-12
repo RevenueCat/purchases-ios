@@ -29,6 +29,7 @@
 #import "RCSystemInfo.h"
 #import "RCProductInfoExtractor.h"
 #import "RCIntroEligibility+Protected.h"
+#import "RCReceiptRefreshPolicy.h"
 @import PurchasesCoreSwift;
 
 
@@ -574,24 +575,26 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)restoreTransactionsProgrammaticallyWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    [self restoreTransactionsWithForceRefresh:NO completionBlock:completion];
+    [self restoreTransactionsWithReceiptRefreshPolicy:RCReceiptRefreshPolicyNever completionBlock:completion];
 }
 
 - (void)restoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    [self restoreTransactionsWithForceRefresh:YES completionBlock:completion];
+    [self restoreTransactionsWithReceiptRefreshPolicy:RCReceiptRefreshPolicyAlways completionBlock:completion];
 }
 
-- (void)restoreTransactionsWithForceRefresh:(BOOL)shouldForceRefresh
-                            completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
+- (void)restoreTransactionsWithReceiptRefreshPolicy:(RCReceiptRefreshPolicy)refreshPolicy
+                                    completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     if (!self.allowSharingAppStoreAccount) {
-        RCDebugLog(@"allowSharingAppStoreAccount is set to false and restoreTransactions has been called. Are you sure you want to do this?");
+        RCDebugLog(@"allowSharingAppStoreAccount is set to false and restoreTransactions has been called. "
+                   "Are you sure you want to do this?");
     }
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
-    [self receiptDataWithForceRefresh:shouldForceRefresh completion:^(NSData * _Nonnull data) {
+    [self receiptDataWithReceiptRefreshPolicy:refreshPolicy completion:^(NSData *_Nonnull data) {
         if (data.length == 0) {
             if (RCSystemInfo.isSandbox) {
-                RCLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless you've purchased before and there is a receipt available.");
+                RCLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless "
+                      "you've purchased before and there is a receipt available.");
             }
             CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
             return;
@@ -986,17 +989,20 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)receiptData:(RCReceiveReceiptDataBlock)completion {
-    [self receiptDataWithForceRefresh:NO completion:completion];
+    [self receiptDataWithReceiptRefreshPolicy:RCReceiptRefreshPolicyOnlyIfEmpty
+                                   completion:completion];
 }
 
-- (void)receiptDataWithForceRefresh:(BOOL)forceRefresh completion:(RCReceiveReceiptDataBlock)completion {
-    if (forceRefresh) {
+- (void)receiptDataWithReceiptRefreshPolicy:(RCReceiptRefreshPolicy)refreshPolicy
+                                 completion:(RCReceiveReceiptDataBlock)completion {
+    if (refreshPolicy == RCReceiptRefreshPolicyAlways) {
         RCDebugLog(@"Forced receipt refresh");
         [self refreshReceipt:completion];
         return;
     }
     NSData *receiptData = [self.receiptFetcher receiptData];
-    if (receiptData == nil || receiptData.length == 0) {
+    BOOL receiptIsEmpty = receiptData == nil || receiptData.length == 0;
+    if (receiptIsEmpty && refreshPolicy == RCReceiptRefreshPolicyOnlyIfEmpty) {
         RCDebugLog(@"Receipt empty, fetching");
         [self refreshReceipt:completion];
     } else {
