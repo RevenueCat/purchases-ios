@@ -1206,7 +1206,7 @@ class PurchasesTests: XCTestCase {
 
         expect(receivedError).toEventuallyNot(beNil())
     }
-
+    
     func testCallsShouldAddPromoPaymentDelegateMethod() {
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "mock_product")
