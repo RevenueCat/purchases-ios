@@ -23,12 +23,14 @@ commands:
       directory:
         type: string
     steps:
+      - run: Replace API key
+          command: bundle exec fastlane replace_api_key_integration_tests
+      
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
-          command: |
-              bundle exec fastlane replace_api_key_integration_tests
-              bundle exec fastlane scan
+          command: bundle exec fastlane scan
+
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
