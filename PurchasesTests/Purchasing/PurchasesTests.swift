@@ -1130,9 +1130,18 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled) == true
     }
 
-    func testRestoringPurchasesProgrammaticallyDoesntRefreshTheReceipt() {
+    func testRestoringPurchasesProgrammaticallyDoesntRefreshTheReceiptIfNotEmpty() {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = true
+        purchases!.restoreTransactionsProgrammatically()
+
+        expect(self.receiptFetcher.receiptDataTimesCalled) == 1
+        expect(self.requestFetcher.refreshReceiptCalled) == false
+    }
+
+    func testRestoringPurchasesProgrammaticallyDoesntRefreshTheReceiptIfEmpty() {
+        setupPurchases()
+        self.receiptFetcher.shouldReturnReceipt = false
         purchases!.restoreTransactionsProgrammatically()
 
         expect(self.receiptFetcher.receiptDataTimesCalled) == 1
