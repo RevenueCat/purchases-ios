@@ -1044,8 +1044,11 @@ class PurchasesTests: XCTestCase {
 
     func testRestorePurchasesPassesErrorOnFailure() {
         setupPurchases()
-        
-        let error = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable:true)
+
+        let errorCode = Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber
+        let error = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
+                                                      backendMessage: "Invalid credentials",
+                                                      finishable: true)
         
         self.backend.postReceiptError = error
         self.purchasesDelegate.purchaserInfo = nil
@@ -1164,10 +1167,13 @@ class PurchasesTests: XCTestCase {
         expect(receivedPurchaserInfo).toEventually(be(purchaserInfo))
     }
 
-    func testSilentRestorePurchasesPassesErrorOnFailure() {
+    func testRestoringPurchasesProgrammaticallyPassesErrorOnFailure() {
         setupPurchases()
 
-        let error = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable:true)
+        let errorCode = Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber
+        let error = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
+                                                      backendMessage: "Invalid credentials",
+                                                      finishable: true)
 
         self.backend.postReceiptError = error
         self.purchasesDelegate.purchaserInfo = nil
@@ -1180,7 +1186,7 @@ class PurchasesTests: XCTestCase {
 
         expect(receivedError).toEventuallyNot(beNil())
     }
-
+    
     func testCallsShouldAddPromoPaymentDelegateMethod() {
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "mock_product")
