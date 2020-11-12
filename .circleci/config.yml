@@ -4,6 +4,7 @@ commands:
     parameters:
       directory:
         type: string
+        default: .
     steps:
        # Bundler
       - restore_cache:
@@ -11,9 +12,8 @@ commands:
             - gem-cache-{{ checksum "Gemfile.lock" }}
       - run: 
           name: Bundle install
-          command: |
-              cd << parameters.directory >>
-              bundle install --clean --path vendor/bundle
+          working_directory: << parameters.directory >>
+          command: bundle install --clean --path vendor/bundle
       - save_cache:
           key: gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
@@ -25,9 +25,9 @@ commands:
     steps:
       - run:
           name: Run tests
+          working_directory: << parameters.directory >>
           command: |
               bundle exec fastlane replace_api_key_integration_tests
-              cd << parameters.directory >>
               bundle exec fastlane scan
       - store_test_results:
           path: fastlane/test_output
@@ -37,7 +37,6 @@ commands:
       - run:
           name: Archive
           command: |
-              cd << parameters.directory >>
               bundle exec fastlane archive
   
   install-gems-scan-and-archive:
@@ -73,8 +72,7 @@ jobs:
           paths:
             - Carthage
       
-      - install-gems:
-          directory: .
+      - install-gems
       
       - run:
           name: Run tests
@@ -93,8 +91,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-gems:
-          directory: .
+      - install-gems
       - run:
           name: Build docs
           command: fastlane run jazzy
@@ -117,19 +114,18 @@ jobs:
     steps:
       - checkout
       
+      - install-gems
       - install-gems:
-          directory: "."
-      - install-gems:
-          directory: "IntegrationTests/CocoapodsIntegration"
+          directory: IntegrationTests/CocoapodsIntegration
 
       - run:
           name: Install Pods
+          working_directory: IntegrationTests/CocoapodsIntegration/
           command: |
-              cd IntegrationTests/CocoapodsIntegration/
               pod install
       
       - scan-and-archive:
-          directory: "IntegrationTests/CocoapodsIntegration"
+          directory: IntegrationTests/CocoapodsIntegration
       
   integration-tests-swift-package-manager:
     macos:
@@ -140,7 +136,7 @@ jobs:
       - checkout
 
       - install-gems-scan-and-archive:
-          directory: "IntegrationTests/SPMIntegration/"
+          directory: IntegrationTests/SPMIntegration/
       
   integration-tests-carthage:
     macos:
@@ -156,16 +152,15 @@ jobs:
             - carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
           name: Carthage Update
-          command: |
-              cd IntegrationTests/CarthageIntegration/
-              ./carthage.sh update --cache-builds
+          working_directory: IntegrationTests/CarthageIntegration/
+          command: ./carthage.sh update --cache-builds
       - save_cache:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
             - Carthage
       
       - install-gems-scan-and-archive:
-          directory: "IntegrationTests/CarthageIntegration/"
+          directory: IntegrationTests/CarthageIntegration/
 
   integration-tests-xcode-direct-integration:
     macos:
@@ -176,7 +171,7 @@ jobs:
       - checkout
 
       - install-gems-scan-and-archive:
-          directory: "IntegrationTests/XcodeDirectIntegration/"
+          directory: IntegrationTests/XcodeDirectIntegration/
 
 workflows:
   version: 2
