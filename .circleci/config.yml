@@ -39,6 +39,7 @@ commands:
           destination: test_report.html
       - run:
           name: Archive
+          working_directory: << parameters.directory >>
           command: |
               bundle exec fastlane archive
   
