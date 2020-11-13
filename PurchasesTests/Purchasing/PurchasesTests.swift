@@ -1996,6 +1996,60 @@ class PurchasesTests: XCTestCase {
         }
     }
 
+
+    func testPaymentDiscountForProductDiscountCallsCompletionWithErrorIfReceiptNil() {
+        if #available(iOS 12.2, *) {
+            setupPurchases()
+            let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+
+            let discountIdentifier = "id"
+            let productDiscount = MockProductDiscount(mockIdentifier: discountIdentifier)
+
+            self.receiptFetcher.shouldReturnReceipt = false
+            var completionCalled = false
+            var receivedPaymentDiscount: SKPaymentDiscount?
+            var receivedError: Error? = nil
+            self.purchases?.paymentDiscount(for: productDiscount, product: product, completion: { (paymentDiscount, error) in
+                receivedPaymentDiscount = paymentDiscount
+                completionCalled = true
+                receivedError = error
+            })
+
+            expect(self.receiptFetcher.receiptDataCalled).toEventually(beTrue())
+            expect(receivedPaymentDiscount).to(beNil())
+            expect(completionCalled).toEventually(beTrue())
+            expect(self.backend.postOfferForSigningCalled) == false
+            expect((receivedError! as NSError).code) == Purchases.ErrorCode.missingReceiptFileError.rawValue
+        }
+    }
+
+    func testPaymentDiscountForProductDiscountCallsCompletionWithErrorIfReceiptEmpty() {
+        if #available(iOS 12.2, *) {
+            setupPurchases()
+            let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+
+            let discountIdentifier = "id"
+            let productDiscount = MockProductDiscount(mockIdentifier: discountIdentifier)
+
+            self.receiptFetcher.shouldReturnReceipt = true
+            self.receiptFetcher.shouldReturnZeroBytesReceipt = true
+            var completionCalled = false
+            var receivedPaymentDiscount: SKPaymentDiscount?
+            var receivedError: Error? = nil
+            self.purchases?.paymentDiscount(for: productDiscount, product: product, completion: { (paymentDiscount, error) in
+                receivedPaymentDiscount = paymentDiscount
+                completionCalled = true
+                receivedError = error
+            })
+
+            expect(self.receiptFetcher.receiptDataCalled).toEventually(beTrue())
+            expect(receivedPaymentDiscount).to(beNil())
+            expect(completionCalled).toEventually(beTrue())
+            expect(self.backend.postOfferForSigningCalled) == false
+            expect((receivedError! as NSError).code) == Purchases.ErrorCode.missingReceiptFileError.rawValue
+        }
+    }
+
     func testAttributionDataIsPostponedIfThereIsNoInstance() {
         let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
 
