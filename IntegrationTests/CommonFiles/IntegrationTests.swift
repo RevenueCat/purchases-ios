@@ -19,7 +19,7 @@ import XCTest
 
 import Purchases
 
-class SPMIntegrationTests: XCTestCase {
+class IntegrationTests: XCTestCase {
 
     func testCanConfigureTheSDK() throws {
         RCIntegrationRunner().start()
