@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)frameworkVersion;
 + (NSString *)systemVersion;
 + (NSString *)appVersion;
++ (NSString *)buildVersion;
 + (NSString *)platformHeader;
 
 + (NSURL *)serverHostURL;

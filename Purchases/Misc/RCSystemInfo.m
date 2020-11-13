@@ -62,6 +62,11 @@ static BOOL _forceUniversalAppStore = NO;
     return version ?: @"";
 }
 
++ (NSString *)buildVersion {
+    NSString *version = NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"];
+    return version ?: @"";
+}
+
 + (NSString *)platformHeader {
     return self.forceUniversalAppStore ? @"iOS" : PLATFORM_HEADER;
 }
