@@ -16,9 +16,9 @@
 		2D6C02582549F5920039CB92 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C024D2549F5920039CB92 /* main.m */; };
 		2D6C02592549F5920039CB92 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C024E2549F5920039CB92 /* AppDelegate.m */; };
 		2D6C026A2549F5D40039CB92 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = 2D6C02692549F5D40039CB92 /* Purchases */; };
-		2D6C02BA2549F7E20039CB92 /* SPMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02B92549F7E20039CB92 /* SPMIntegrationTests.swift */; };
 		2D6C02C22549F98C0039CB92 /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C024C2549F5920039CB92 /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D6C02D92549FD6D0039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02D82549FD6D0039CB92 /* Dummy.swift */; };
+		2DC19130255F195B0039389A /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02B92549F7E20039CB92 /* IntegrationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,7 +50,7 @@
 		2D6C02512549F5920039CB92 /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
 		2D6C02642549F5B90039CB92 /* purchases-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "purchases-ios"; path = ../..; sourceTree = "<group>"; };
 		2D6C02B82549F7E20039CB92 /* SPMIntegrationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SPMIntegrationTests-Bridging-Header.h"; sourceTree = "<group>"; };
-		2D6C02B92549F7E20039CB92 /* SPMIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SPMIntegrationTests.swift; sourceTree = "<group>"; };
+		2D6C02B92549F7E20039CB92 /* IntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 		2D6C02D72549FD6D0039CB92 /* SPMIntegration-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SPMIntegration-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C02D82549FD6D0039CB92 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -107,7 +107,6 @@
 			isa = PBXGroup;
 			children = (
 				2D6C02252549F5620039CB92 /* Info.plist */,
-				2D6C02B92549F7E20039CB92 /* SPMIntegrationTests.swift */,
 				2D6C02B82549F7E20039CB92 /* SPMIntegrationTests-Bridging-Header.h */,
 			);
 			path = SPMIntegrationTests;
@@ -116,6 +115,7 @@
 		2D6C02422549F5920039CB92 /* CommonFiles */ = {
 			isa = PBXGroup;
 			children = (
+				2D6C02B92549F7E20039CB92 /* IntegrationTests.swift */,
 				2D6C02D82549FD6D0039CB92 /* Dummy.swift */,
 				2D6C02432549F5920039CB92 /* RCIntegrationRunner.m */,
 				2D6C02442549F5920039CB92 /* AppDelegate.h */,
@@ -271,7 +271,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D6C02BA2549F7E20039CB92 /* SPMIntegrationTests.swift in Sources */,
+				2DC19130255F195B0039389A /* IntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -483,6 +483,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_SWIFT_FLAGS = "-DSPM_INTEGRATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "SPMIntegrationTests/SPMIntegrationTests-Bridging-Header.h";
@@ -508,6 +509,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_SWIFT_FLAGS = "-DSPM_INTEGRATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "SPMIntegrationTests/SPMIntegrationTests-Bridging-Header.h";

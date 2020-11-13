@@ -18,8 +18,8 @@
 		2D6C0444254A0A760039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0443254A0A760039CB92 /* Dummy.swift */; };
 		2D6C046F254A0B290039CB92 /* Purchases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6C045C254A0AF10039CB92 /* Purchases.framework */; };
 		2D6C0470254A0B290039CB92 /* Purchases.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6C045C254A0AF10039CB92 /* Purchases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		2D6C0483254A0C490039CB92 /* XcodeDirectIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0482254A0C490039CB92 /* XcodeDirectIntegrationTests.swift */; };
 		2D6C0487254A0CF20039CB92 /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C0428254A0A550039CB92 /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2DC19147255F1AFE0039389A /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19142255F1AFE0039389A /* IntegrationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -95,7 +95,7 @@
 		2D6C0443254A0A760039CB92 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
 		2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Purchases.xcodeproj; path = ../../Purchases.xcodeproj; sourceTree = "<group>"; };
 		2D6C047B254A0C230039CB92 /* XcodeDirectIntegrationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XcodeDirectIntegrationTests-Bridging-Header.h"; sourceTree = "<group>"; };
-		2D6C0482254A0C490039CB92 /* XcodeDirectIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = XcodeDirectIntegrationTests.swift; path = XcodeDirectIntegrationTests/XcodeDirectIntegrationTests.swift; sourceTree = SOURCE_ROOT; };
+		2DC19142255F1AFE0039389A /* IntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,7 +143,6 @@
 			children = (
 				2D6C0442254A0A760039CB92 /* XcodeDirectIntegration-Bridging-Header.h */,
 				2D6C047B254A0C230039CB92 /* XcodeDirectIntegrationTests-Bridging-Header.h */,
-				2D6C0482254A0C490039CB92 /* XcodeDirectIntegrationTests.swift */,
 			);
 			path = XcodeDirectIntegration;
 			sourceTree = "<group>";
@@ -159,6 +158,7 @@
 		2D6C041D254A0A550039CB92 /* CommonFiles */ = {
 			isa = PBXGroup;
 			children = (
+				2DC19142255F1AFE0039389A /* IntegrationTests.swift */,
 				2D6C0443254A0A760039CB92 /* Dummy.swift */,
 				2D6C041F254A0A550039CB92 /* RCIntegrationRunner.m */,
 				2D6C0420254A0A550039CB92 /* AppDelegate.h */,
@@ -360,7 +360,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D6C0483254A0C490039CB92 /* XcodeDirectIntegrationTests.swift in Sources */,
+				2DC19147255F1AFE0039389A /* IntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -570,6 +570,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_SWIFT_FLAGS = "-DXCODE_INTEGRATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectIntegration/XcodeDirectIntegrationTests-Bridging-Header.h";
@@ -595,6 +596,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_SWIFT_FLAGS = "-DXCODE_INTEGRATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectIntegration/XcodeDirectIntegrationTests-Bridging-Header.h";

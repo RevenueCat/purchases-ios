@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2D6C03AB254A05580039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C03AA254A05580039CB92 /* Dummy.swift */; };
+		2DC19159255F1B9F0039389A /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19153255F1B9D0039389A /* IntegrationTests.swift */; };
 		2DC6CF112548A88F009C7F3A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF102548A88F009C7F3A /* AppDelegate.m */; };
 		2DC6CF142548A88F009C7F3A /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF132548A88F009C7F3A /* SceneDelegate.m */; };
 		2DC6CF172548A88F009C7F3A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF162548A88F009C7F3A /* ViewController.m */; };
@@ -16,7 +17,6 @@
 		2DC6CF1F2548A890009C7F3A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DC6CF1D2548A890009C7F3A /* LaunchScreen.storyboard */; };
 		2DC6CF222548A890009C7F3A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF212548A890009C7F3A /* main.m */; };
 		2DC6CF392548ACA5009C7F3A /* RCIntegrationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF382548ACA5009C7F3A /* RCIntegrationRunner.m */; };
-		2DC6CF652548CDC0009C7F3A /* CocoapodsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF642548CDC0009C7F3A /* CocoapodsIntegrationTests.swift */; };
 		2DC6CF792548D0B8009C7F3A /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DC6CF372548ACA5009C7F3A /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B7032BF7386E23B0C49D6D3C /* Pods_CocoapodsIntegration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 818705A49AF078B53922D5A6 /* Pods_CocoapodsIntegration.framework */; };
 /* End PBXBuildFile section */
@@ -35,6 +35,7 @@
 		1AC6ADECD47D5E8F50AD9DDB /* Pods-CocoapodsIntegration.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoapodsIntegration.debug.xcconfig"; path = "Target Support Files/Pods-CocoapodsIntegration/Pods-CocoapodsIntegration.debug.xcconfig"; sourceTree = "<group>"; };
 		2D6C03A9254A05570039CB92 /* CocoapodsIntegration-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CocoapodsIntegration-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C03AA254A05580039CB92 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
+		2DC19153255F1B9D0039389A /* IntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 		2DC6CF0C2548A88F009C7F3A /* CocoapodsIntegration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CocoapodsIntegration.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DC6CF0F2548A88F009C7F3A /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2DC6CF102548A88F009C7F3A /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -51,7 +52,6 @@
 		2DC6CF382548ACA5009C7F3A /* RCIntegrationRunner.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCIntegrationRunner.m; sourceTree = "<group>"; };
 		2DC6CF582548CDA8009C7F3A /* CocoapodsIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CocoapodsIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DC6CF5C2548CDA8009C7F3A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2DC6CF642548CDC0009C7F3A /* CocoapodsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoapodsIntegrationTests.swift; sourceTree = "<group>"; };
 		2DC6CF6C2548CF9C009C7F3A /* IntegrationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IntegrationTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		818705A49AF078B53922D5A6 /* Pods_CocoapodsIntegration.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CocoapodsIntegration.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F91D7D225ACF46566105E3C5 /* Pods-CocoapodsIntegration.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoapodsIntegration.release.xcconfig"; path = "Target Support Files/Pods-CocoapodsIntegration/Pods-CocoapodsIntegration.release.xcconfig"; sourceTree = "<group>"; };
@@ -117,6 +117,7 @@
 		2DC6CF292548A9B0009C7F3A /* CommonFiles */ = {
 			isa = PBXGroup;
 			children = (
+				2DC19153255F1B9D0039389A /* IntegrationTests.swift */,
 				2DC6CF0F2548A88F009C7F3A /* AppDelegate.h */,
 				2DC6CF102548A88F009C7F3A /* AppDelegate.m */,
 				2DC6CF122548A88F009C7F3A /* SceneDelegate.h */,
@@ -139,7 +140,6 @@
 		2DC6CF592548CDA8009C7F3A /* CocoapodsIntegrationTests */ = {
 			isa = PBXGroup;
 			children = (
-				2DC6CF642548CDC0009C7F3A /* CocoapodsIntegrationTests.swift */,
 				2DC6CF6C2548CF9C009C7F3A /* IntegrationTests-Bridging-Header.h */,
 				2DC6CF5C2548CDA8009C7F3A /* Info.plist */,
 			);
@@ -324,7 +324,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2DC6CF652548CDC0009C7F3A /* CocoapodsIntegrationTests.swift in Sources */,
+				2DC19159255F1B9F0039389A /* IntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -487,6 +487,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -DCOCOAPODS_INTEGRATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CocoapodsIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development com.revenuecat.CocoapodsIntegration";
@@ -514,6 +515,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS -DCOCOAPODS_INTEGRATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CocoapodsIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.CocoapodsIntegration";

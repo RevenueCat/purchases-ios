@@ -15,10 +15,10 @@
 		2D6C02FC2549FE2C0039CB92 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2D6C02EE2549FE2C0039CB92 /* Main.storyboard */; };
 		2D6C02FD2549FE2C0039CB92 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02F12549FE2C0039CB92 /* main.m */; };
 		2D6C02FE2549FE2C0039CB92 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02F22549FE2C0039CB92 /* AppDelegate.m */; };
-		2D6C030C2549FE4E0039CB92 /* CarthageIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C030B2549FE4E0039CB92 /* CarthageIntegrationTests.swift */; };
 		2D6C03212549FF4F0039CB92 /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C02F02549FE2C0039CB92 /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D6C0393254A04300039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0392254A04300039CB92 /* Dummy.swift */; };
 		2D6C03CC254A08F00039CB92 /* Purchases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6C03CB254A08F00039CB92 /* Purchases.framework */; };
+		2DC19168255F1D100039389A /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19167255F1D0F0039389A /* IntegrationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,10 +49,10 @@
 		2D6C02F52549FE2C0039CB92 /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		2D6C02F62549FE2C0039CB92 /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
 		2D6C030A2549FE4E0039CB92 /* CarthageIntegrationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CarthageIntegrationTests-Bridging-Header.h"; sourceTree = "<group>"; };
-		2D6C030B2549FE4E0039CB92 /* CarthageIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarthageIntegrationTests.swift; sourceTree = "<group>"; };
 		2D6C0391254A04300039CB92 /* CarthageIntegration-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CarthageIntegration-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C0392254A04300039CB92 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
 		2D6C03CB254A08F00039CB92 /* Purchases.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Purchases.framework; path = Carthage/Build/iOS/Purchases.framework; sourceTree = "<group>"; };
+		2DC19167255F1D0F0039389A /* IntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,7 +106,6 @@
 			isa = PBXGroup;
 			children = (
 				2D6C029E2549F7700039CB92 /* Info.plist */,
-				2D6C030B2549FE4E0039CB92 /* CarthageIntegrationTests.swift */,
 				2D6C030A2549FE4E0039CB92 /* CarthageIntegrationTests-Bridging-Header.h */,
 			);
 			path = CarthageIntegrationTests;
@@ -115,6 +114,7 @@
 		2D6C02E62549FE2C0039CB92 /* CommonFiles */ = {
 			isa = PBXGroup;
 			children = (
+				2DC19167255F1D0F0039389A /* IntegrationTests.swift */,
 				2D6C0392254A04300039CB92 /* Dummy.swift */,
 				2D6C02E72549FE2C0039CB92 /* RCIntegrationRunner.m */,
 				2D6C02E82549FE2C0039CB92 /* AppDelegate.h */,
@@ -292,7 +292,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D6C030C2549FE4E0039CB92 /* CarthageIntegrationTests.swift in Sources */,
+				2DC19168255F1D100039389A /* IntegrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -512,6 +512,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_SWIFT_FLAGS = "-DCARTHAGE_INTEGRATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "CarthageIntegrationTests/CarthageIntegrationTests-Bridging-Header.h";
@@ -537,6 +538,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_SWIFT_FLAGS = "-DCARTHAGE_INTEGRATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CarthageIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "CarthageIntegrationTests/CarthageIntegrationTests-Bridging-Header.h";
