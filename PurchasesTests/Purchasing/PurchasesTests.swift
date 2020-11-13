@@ -1996,7 +1996,6 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-
     func testPaymentDiscountForProductDiscountCallsCompletionWithErrorIfReceiptNil() {
         if #available(iOS 12.2, *) {
             setupPurchases()
