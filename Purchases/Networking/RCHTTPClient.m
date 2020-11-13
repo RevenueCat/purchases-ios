@@ -204,6 +204,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
         @"X-Platform-Version": RCSystemInfo.systemVersion,
         @"X-Platform-Flavor": self.systemInfo.platformFlavor,
         @"X-Client-Version": RCSystemInfo.appVersion,
+        @"X-Bundle-Version": RCSystemInfo.bundleVersion,
         @"X-Observer-Mode-Enabled": observerMode,
 #if UI_DEVICE_AVAILABLE
         @"X-Apple-Device-Identifier": UIDevice.currentDevice.identifierForVendor.UUIDString,
