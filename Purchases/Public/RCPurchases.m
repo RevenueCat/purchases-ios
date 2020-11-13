@@ -698,23 +698,27 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                   product:(SKProduct *)product
                                completion:(RCPaymentDiscountBlock)completion {
     [self receiptData:^(NSData *data) {
-        [self.backend postOfferForSigning:discount.identifier
-                    withProductIdentifier:product.productIdentifier
-                        subscriptionGroup:product.subscriptionGroupIdentifier
-                              receiptData:data
-                                appUserID:self.appUserID
-                               completion:^(NSString *_Nullable signature,
-                                       NSString *_Nullable keyIdentifier,
-                                       NSUUID *_Nullable nonce,
-                                       NSNumber *_Nullable timestamp,
-                                       NSError *_Nullable error) {
-                                   SKPaymentDiscount *paymentDiscount = [[SKPaymentDiscount alloc] initWithIdentifier:discount.identifier
-                                                                                                        keyIdentifier:keyIdentifier
-                                                                                                                nonce:nonce
-                                                                                                            signature:signature
-                                                                                                            timestamp:timestamp];
-                                   completion(paymentDiscount, error);
-                               }];
+        if (data == nil || data.length == 0) {
+            completion(nil, RCPurchasesErrorUtils.missingReceiptFileError);
+        } else {
+            [self.backend postOfferForSigning:discount.identifier
+                        withProductIdentifier:product.productIdentifier
+                            subscriptionGroup:product.subscriptionGroupIdentifier
+                                  receiptData:data
+                                    appUserID:self.appUserID
+                                   completion:^(NSString *_Nullable signature,
+                                                NSString *_Nullable keyIdentifier,
+                                                NSUUID *_Nullable nonce,
+                                                NSNumber *_Nullable timestamp,
+                                                NSError *_Nullable error) {
+                SKPaymentDiscount *paymentDiscount = [[SKPaymentDiscount alloc] initWithIdentifier:discount.identifier
+                                                                                     keyIdentifier:keyIdentifier
+                                                                                             nonce:nonce
+                                                                                         signature:signature
+                                                                                         timestamp:timestamp];
+                completion(paymentDiscount, error);
+            }];
+        }
     }];
 }
 
