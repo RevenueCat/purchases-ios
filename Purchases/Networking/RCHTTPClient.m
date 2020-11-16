@@ -102,7 +102,7 @@ NS_ASSUME_NONNULL_BEGIN
 beginNextRequestWhenFinished:performSerially];
     };
 
-    RCDebugLog(@"%@ %@", urlRequest.HTTPMethod, urlRequest.URL.path, nil);
+    RCDebugLog(@"%@ %@", urlRequest.HTTPMethod, urlRequest.URL.path);
     NSURLSessionTask *task = [self.session dataTaskWithRequest:urlRequest
                                              completionHandler:block];
     [task resume];
