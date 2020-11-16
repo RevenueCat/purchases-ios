@@ -10,20 +10,23 @@ import Foundation
 
 @objc(RCLogLevel) public enum LogLevel: Int {
     case debug, info, warn, error
+
+    func description() -> String {
+        switch self {
+        case .debug: return "DEBUG"
+        case .info: return "INFO"
+        case .warn: return "WARN"
+        case .error: return "ERROR"
+        }
+    }
 }
 
 @objc(RCLogger) public class Logger: NSObject {
-    public static var shouldShowLogs = false
+    @objc public static var shouldShowDebugLogs = false
+    private static let frameworkDescription = "Purchases"
 
     @objc public static func log(level: LogLevel, message: String) {
-        let fullFormat = String(format: "NEW [Purchases] - DEBUG: %@ ", message)
-        NSLog(fullFormat)
-    }
-
-    public static func log(level: LogLevel, _ args: CVarArg...) {
-        withVaList(args) {
-            let fullFormat = String(format: "NEW [Purchases] - DEBUG: %@ ", args)
-            NSLogv(fullFormat, $0)
-        }
+        guard level != .debug || shouldShowDebugLogs else { return }
+        NSLog("[\(frameworkDescription)] - \(level.description()): \(message)")
     }
 }

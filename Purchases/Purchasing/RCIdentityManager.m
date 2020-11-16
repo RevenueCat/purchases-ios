@@ -7,6 +7,7 @@
 #import "RCLogUtils.h"
 #import "RCBackend.h"
 #import "RCPurchasesErrorUtils.h"
+@import PurchasesCoreSwift;
 
 
 @interface RCIdentityManager ()

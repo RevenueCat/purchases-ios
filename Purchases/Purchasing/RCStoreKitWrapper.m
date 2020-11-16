@@ -10,6 +10,7 @@
 #import "RCCrossPlatformSupport.h"
 
 #import "RCLogUtils.h"
+@import PurchasesCoreSwift;
 
 @interface RCStoreKitWrapper ()
 @property (nonatomic) SKPaymentQueue *paymentQueue;

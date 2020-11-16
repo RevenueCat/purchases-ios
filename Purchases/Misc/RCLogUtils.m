@@ -7,31 +7,16 @@
 //
 
 #import "RCLogUtils.h"
+@import PurchasesCoreSwift;
 
 static BOOL RCShouldShowLogs = NO;
 
-void RCSetShowDebugLogs(BOOL showDebugLogs)
-{
-    RCShouldShowLogs = showDebugLogs;
+void RCSetShowDebugLogs(BOOL showDebugLogs) {
+    RCLogger.shouldShowDebugLogs = showDebugLogs;
 }
 
-BOOL RCShowDebugLogs()
-{
-    return RCShouldShowLogs;
-}
-
-void RCDebugLog(NSString *format, ...)
-{
-    if (!RCShouldShowLogs)
-        return;
-
-    va_list args;
-    va_start(args, format);
-
-    format = [NSString stringWithFormat:@"[Purchases] - DEBUG: %@", format];
-
-    NSLogv(format, args);
-    va_end(args);
+BOOL RCShowDebugLogs() {
+    return RCLogger.shouldShowDebugLogs;
 }
 
 void RCErrorLog(NSString *format, ...)

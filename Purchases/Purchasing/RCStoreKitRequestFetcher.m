@@ -9,6 +9,7 @@
 #import <StoreKit/StoreKit.h>
 #import "RCStoreKitRequestFetcher.h"
 #import "RCLogUtils.h"
+@import PurchasesCoreSwift;
 
 @implementation RCProductsRequestFactory : NSObject
 - (SKProductsRequest *)requestForProductIdentifiers:(NSSet<NSString *> *)identifiers
