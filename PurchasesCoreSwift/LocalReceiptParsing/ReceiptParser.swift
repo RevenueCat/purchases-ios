@@ -32,7 +32,6 @@ import Foundation
         if let receipt = try? parse(from: receiptData) {
             return receipt.inAppPurchases.count > 0
         }
-        // if the receipt can't be parsed, conservatively return true
         return true
     }
 

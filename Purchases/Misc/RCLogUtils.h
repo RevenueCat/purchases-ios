@@ -16,4 +16,6 @@ void RCDebugLog(NSString *format, ...);
 void RCErrorLog(NSString *format, ...);
 void RCLog(NSString *format, ...);
 
+#define RCNewLog(args, ...) [RCLogger logWithLevel:RCLogLevelDebug message: [NSString stringWithFormat: args, ##__VA_ARGS__]]
+
 NS_ASSUME_NONNULL_END

@@ -11,6 +11,7 @@
 #import "RCHTTPStatusCodes.h"
 #import "RCSystemInfo.h"
 #import "RCHTTPRequest.h"
+@import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -65,14 +66,14 @@ NS_ASSUME_NONNULL_BEGIN
                                                            completionHandler:completionHandler];
         @synchronized (self) {
             if (self.currentSerialRequest) {
-                RCDebugLog(@"There's a request currently running and %ld requests left in the queue, queueing %@ %@",
+                RCNewLog(@"There's a request currently running and %ld requests left in the queue, queueing %@ %@",
                            self.queuedRequests.count,
                            httpMethod,
                            path);
                 [self.queuedRequests addObject:rcRequest];
                 return;
             } else {
-                RCDebugLog(@"there are no requests currently running, starting request %@ %@", httpMethod, path);
+                RCNewLog(@"there are no requests currently running, starting request %@ %@", httpMethod, path);
                 self.currentSerialRequest = rcRequest;
             }
         }
@@ -101,7 +102,7 @@ NS_ASSUME_NONNULL_BEGIN
 beginNextRequestWhenFinished:performSerially];
     };
 
-    RCDebugLog(@"%@ %@", urlRequest.HTTPMethod, urlRequest.URL.path);
+    RCNewLog(@"%@ %@", urlRequest.HTTPMethod, urlRequest.URL.path, nil);
     NSURLSessionTask *task = [self.session dataTaskWithRequest:urlRequest
                                              completionHandler:block];
     [task resume];
@@ -119,7 +120,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
     if (error == nil) {
         statusCode = ((NSHTTPURLResponse *) response).statusCode;
 
-        RCDebugLog(@"%@ %@ %d", request.HTTPMethod, request.URL.path, statusCode);
+        RCNewLog(@"%@ %@ %ld", request.HTTPMethod, request.URL.path, (long)statusCode);
 
         NSError *jsonError;
         responseObject = [NSJSONSerialization JSONObjectWithData:data
@@ -139,7 +140,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
 
     if (beginNextRequestWhenFinished) {
         @synchronized (self) {
-            RCDebugLog(@"serial request done: %@ %@, %ld requests left in the queue",
+            RCNewLog(@"serial request done: %@ %@, %ld requests left in the queue",
                        self.currentSerialRequest.httpMethod, self.currentSerialRequest.path, self.queuedRequests.count);
             RCHTTPRequest *nextRequest = nil;
             self.currentSerialRequest = nil;
@@ -148,7 +149,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
                 [self.queuedRequests removeObjectAtIndex:0];
             }
             if (nextRequest) {
-                RCDebugLog(@"starting the next request in the queue, %@", nextRequest);
+                RCNewLog(@"starting the next request in the queue, %@", nextRequest);
                 [self performRequest:nextRequest.httpMethod
                             serially:YES
                                 path:nextRequest.path
