@@ -11,6 +11,7 @@
 #import "NSData+RCExtensions.h"
 #import "RCLogUtils.h"
 #import "RCAttributionFetcher.h"
+@import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
 

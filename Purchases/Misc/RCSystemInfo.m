@@ -6,6 +6,7 @@
 #import "RCSystemInfo.h"
 #import "RCCrossPlatformSupport.h"
 #import "RCLogUtils.h"
+@import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
 
