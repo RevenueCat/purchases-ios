@@ -165,7 +165,7 @@
     RCDebugLog(@"Invalid Product Identifiers - %@", response.invalidProductIdentifiers);
     
     NSArray<RCFetchProductsCompletionHandler> *handlers = [self finishProductsRequest:request];
-    RCDebugLog(@"%d completion handlers waiting on products", handlers.count);
+    RCDebugLog(@"%lu completion handlers waiting on products", (unsigned long)handlers.count);
     for (RCFetchProductsCompletionHandler handler in handlers)
     {
         handler(response.products);

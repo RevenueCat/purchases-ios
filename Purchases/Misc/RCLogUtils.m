@@ -9,8 +9,6 @@
 #import "RCLogUtils.h"
 @import PurchasesCoreSwift;
 
-static BOOL RCShouldShowLogs = NO;
-
 void RCSetShowDebugLogs(BOOL showDebugLogs) {
     RCLogger.shouldShowDebugLogs = showDebugLogs;
 }

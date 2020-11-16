@@ -78,7 +78,7 @@
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions
 {
     for (SKPaymentTransaction *transaction in transactions) {
-        RCDebugLog(@"PaymentQueue updatedTransaction: %@ %@ (%@) %@ - %d", transaction.payment.productIdentifier, transaction.transactionIdentifier, transaction.error, transaction.originalTransaction.transactionIdentifier, transaction.transactionState);
+        RCDebugLog(@"PaymentQueue updatedTransaction: %@ %@ (%@) %@ - %ld", transaction.payment.productIdentifier, transaction.transactionIdentifier, transaction.error, transaction.originalTransaction.transactionIdentifier, (long)transaction.transactionState);
         [self.delegate storeKitWrapper:self updatedTransaction:transaction];
     }
 }
@@ -87,7 +87,7 @@
 - (void)paymentQueue:(SKPaymentQueue *)queue removedTransactions:(NSArray<SKPaymentTransaction *> *)transactions
 {
     for (SKPaymentTransaction *transaction in transactions) {
-        RCDebugLog(@"PaymentQueue removedTransaction: %@ %@ (%@ %@) %@ - %d", transaction.payment.productIdentifier, transaction.transactionIdentifier, transaction.originalTransaction.transactionIdentifier, transaction.error, transaction.error.userInfo, transaction.transactionState);
+        RCDebugLog(@"PaymentQueue removedTransaction: %@ %@ (%@ %@) %@ - %ld", transaction.payment.productIdentifier, transaction.transactionIdentifier, transaction.originalTransaction.transactionIdentifier, transaction.error, transaction.error.userInfo, (long)transaction.transactionState);
         [self.delegate storeKitWrapper:self removedTransaction:transaction];
     }
 }
