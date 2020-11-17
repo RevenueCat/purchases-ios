@@ -1,3 +1,7 @@
+## 3.8.0
+- Added a silent version of restoreTransactions, called `restoreTransactionsProgrammatically`, meant to be used by developers performing migrations for other systems.
+    https://github.com/RevenueCat/purchases-ios/pull/387
+
 ## 3.7.6
 - Fixed a race condition that could cause a crash after deleting and reinstalling the app
     https://github.com/RevenueCat/purchases-ios/pull/383
