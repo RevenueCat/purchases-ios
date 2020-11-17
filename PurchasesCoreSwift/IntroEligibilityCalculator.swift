@@ -32,7 +32,8 @@ import StoreKit
             completion([:], nil)
             return
         }
-        
+        Logger.debug("attempting to check intro eligibility locally")
+
         var result: [String: NSNumber] = candidateProductIdentifiers.reduce(into: [:]) { resultDict, productId in
             resultDict[productId] = IntroEligibilityStatus.unknown.toNSNumber()
         }
@@ -52,10 +53,12 @@ import StoreKit
                                                                                  purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffersOrFreeTrials)
                 result.merge(eligibility) { (_, new) in new }
                 
+                Logger.debug("local intro eligibility computed locally. Result: \(result)")
                 completion(result, nil)
             }
         }
         catch let error {
+            Logger.error("couldn't check intro eligibility locally, error: \(error.localizedDescription)")
             completion([:], error)
             return
         }

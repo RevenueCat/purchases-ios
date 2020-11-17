@@ -29,7 +29,7 @@ import Foundation
     }
     
     @objc public func receiptHasTransactions(receiptData: Data) -> Bool {
-        Logger.info("Parsing local receipt")
+        Logger.info("Parsing receipt")
         if let receipt = try? parse(from: receiptData) {
             return receipt.inAppPurchases.count > 0
         }
@@ -44,9 +44,11 @@ import Foundation
         let asn1Container = try containerBuilder.build(fromPayload: ArraySlice(intData))
         guard let receiptASN1Container = try findASN1Container(withObjectId: ASN1ObjectIdentifier.data,
                                                                inContainer: asn1Container) else {
+            Logger.error("the data object identifier couldn't be found on the receipt")
             throw ReceiptReadingError.dataObjectIdentifierMissing
         }
         let receipt = try receiptBuilder.build(fromContainer: receiptASN1Container)
+        Logger.info("receipt parsed successfully")
         return receipt
     }
 }
