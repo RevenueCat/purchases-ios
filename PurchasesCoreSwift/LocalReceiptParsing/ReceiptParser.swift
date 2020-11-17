@@ -29,12 +29,12 @@ import Foundation
     }
     
     @objc public func receiptHasTransactions(receiptData: Data) -> Bool {
-        Logger.log(level: .info, message: "Parsing local receipt")
+        Logger.info("Parsing local receipt")
         if let receipt = try? parse(from: receiptData) {
             return receipt.inAppPurchases.count > 0
         }
 
-        Logger.log(level: .warn, message: "\(#file) \(#function) Could not parse receipt, conservatively returning true")
+        Logger.warn("\(#file)-\(#function): Could not parse receipt, conservatively returning true")
         return true
     }
 

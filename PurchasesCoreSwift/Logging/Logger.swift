@@ -29,4 +29,20 @@ import Foundation
         guard level != .debug || shouldShowDebugLogs else { return }
         NSLog("[\(frameworkDescription)] - \(level.description()): \(message)")
     }
+
+    static func debug(_ message: String) {
+        log(level: .debug, message: message)
+    }
+
+    static func info(_ message: String) {
+        log(level: .debug, message: message)
+    }
+
+    static func warn(_ message: String) {
+        log(level: .debug, message: message)
+    }
+
+    static func error(_ message: String) {
+        log(level: .debug, message: message)
+    }
 }
