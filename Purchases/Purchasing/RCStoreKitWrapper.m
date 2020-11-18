@@ -66,7 +66,7 @@
     [self.paymentQueue finishTransaction:transaction];
 }
 
-- (void)presentCodeRedemptionSheet {
+- (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos) {
     if (@available(iOS 14.0, *)) {
         [self.paymentQueue presentCodeRedemptionSheet];
     } else {
