@@ -727,6 +727,11 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.deviceCache clearPurchaserInfoCacheForAppUserID:self.appUserID];
 }
 
+- (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos) {
+    RCDebugLog(@"Presenting code redemption sheet");
+    [self.storeKitWrapper presentCodeRedemptionSheet];
+}
+
 #pragma mark Subcriber Attributes
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {

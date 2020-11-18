@@ -66,6 +66,14 @@
     [self.paymentQueue finishTransaction:transaction];
 }
 
+- (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos) {
+    if (@available(iOS 14.0, *)) {
+        [self.paymentQueue presentCodeRedemptionSheet];
+    } else {
+        RCLog(@"Attempted to present code redemption sheet, but it's not available on this device.");
+    }
+}
+
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions
 {
     for (SKPaymentTransaction *transaction in transactions) {
