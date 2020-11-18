@@ -67,13 +67,11 @@
 }
 
 - (void)presentCodeRedemptionSheet {
-    #if TARGET_OS_IOS
     if (@available(iOS 14.0, *)) {
         [self.paymentQueue presentCodeRedemptionSheet];
     } else {
-        // Fallback on earlier versions
+        RCLog(@"Attempted to present code redemption sheet, but it's not available on this device.");
     }
-    #endif
 }
 
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions

@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)addPayment:(SKPayment *)payment;
 - (void)finishTransaction:(SKPaymentTransaction *)transaction;
-- (void)presentCodeRedemptionSheet;
+- (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos);
 
 @end
 
