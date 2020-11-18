@@ -67,7 +67,13 @@
 }
 
 - (void)presentCodeRedemptionSheet {
-    [self.paymentQueue presentCodeRedemptionSheet];
+    #if TARGET_OS_IOS
+    if (@available(iOS 14.0, *)) {
+        [self.paymentQueue presentCodeRedemptionSheet];
+    } else {
+        // Fallback on earlier versions
+    }
+    #endif
 }
 
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions

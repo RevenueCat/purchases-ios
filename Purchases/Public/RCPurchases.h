@@ -391,7 +391,8 @@ NS_SWIFT_NAME(restoreTransactionsProgrammatically(_:));
 /**
  Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
  */
-- (void)presentCodeRedemptionSheet;
+- (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos);
+
 
 #pragma mark Subscriber Attributes
 
