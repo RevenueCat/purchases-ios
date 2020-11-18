@@ -41,6 +41,11 @@ Make github release
 fastlane ios create_sandbox_account
 ```
 Create sandbox account
+### ios deployment_checks
+```
+fastlane ios deployment_checks
+```
+Deployment checks
 ### ios archive
 ```
 fastlane ios archive
