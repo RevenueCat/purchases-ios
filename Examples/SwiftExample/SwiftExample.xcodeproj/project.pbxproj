@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,7 +13,7 @@
 		2D54BF752437DED900FF4EE4 /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D54BF742437DED900FF4EE4 /* ExtensionDelegate.swift */; };
 		2D54BF772437DED900FF4EE4 /* NotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D54BF762437DED900FF4EE4 /* NotificationController.swift */; };
 		2D54BF792437DEDA00FF4EE4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D54BF782437DEDA00FF4EE4 /* Assets.xcassets */; };
-		2D54BF7E2437DEDA00FF4EE4 /* WatchExample.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 2D54BF612437DED800FF4EE4 /* WatchExample.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2D54BF7E2437DEDA00FF4EE4 /* WatchExample.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 2D54BF612437DED800FF4EE4 /* WatchExample.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2D6FCB222437E56200C398CF /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6FCB212437E56200C398CF /* StoreKit.framework */; };
 		2D6FCB232437E5F100C398CF /* WatchExample Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 2D54BF6D2437DED900FF4EE4 /* WatchExample Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2D6FCB282437E8FA00C398CF /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6FCB272437E8F900C398CF /* StoreKit.framework */; };
@@ -427,6 +427,7 @@
 /* Begin PBXTargetDependency section */
 		2D54BF7D2437DEDA00FF4EE4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilter = ios;
 			target = 2D54BF602437DED800FF4EE4 /* WatchExample */;
 			targetProxy = 2D54BF7C2437DEDA00FF4EE4 /* PBXContainerItemProxy */;
 		};
