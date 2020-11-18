@@ -388,6 +388,11 @@ NS_SWIFT_NAME(restoreTransactionsProgrammatically(_:));
  */
 - (void)invalidatePurchaserInfoCache;
 
+/**
+ Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
+ */
+- (void)presentCodeRedemptionSheet;
+
 #pragma mark Subscriber Attributes
 
 /**

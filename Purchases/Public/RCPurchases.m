@@ -727,6 +727,11 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.deviceCache clearPurchaserInfoCacheForAppUserID:self.appUserID];
 }
 
+- (void)presentCodeRedemptionSheet {
+    RCDebugLog(@"Presenting code redemption sheet");
+    [self.storeKitWrapper presentCodeRedemptionSheet];
+}
+
 #pragma mark Subcriber Attributes
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {

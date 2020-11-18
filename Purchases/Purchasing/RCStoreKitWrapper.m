@@ -66,6 +66,10 @@
     [self.paymentQueue finishTransaction:transaction];
 }
 
+- (void)presentCodeRedemptionSheet {
+    [self.paymentQueue presentCodeRedemptionSheet];
+}
+
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions
 {
     for (SKPaymentTransaction *transaction in transactions) {
