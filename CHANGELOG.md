@@ -1,6 +1,12 @@
 ## 3.8.0
-- Added a silent version of restoreTransactions, called `restoreTransactionsProgrammatically`, meant to be used by developers performing migrations for other systems.
+- Added a silent version of restoreTransactions, called `syncPurchases`, meant to be used by developers performing migrations for other systems.
     https://github.com/RevenueCat/purchases-ios/pull/387
+    https://github.com/RevenueCat/purchases-ios/pull/403
+- Added `presentCodeRedemptionSheet`, which allows apps to present code redemption sheet for offer codes
+    https://github.com/RevenueCat/purchases-ios/pull/400
+- Fixed sample app on macOS, which would fail to build because the watchOS app was embedded into it
+    https://github.com/RevenueCat/purchases-ios/pull/402
+
 
 ## 3.7.6
 - Fixed a race condition that could cause a crash after deleting and reinstalling the app
