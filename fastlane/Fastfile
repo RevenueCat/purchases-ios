@@ -88,9 +88,11 @@ platform :ios do
 
   desc "Deployment checks"
   lane :deployment_checks do |options|
+    version_number = get_version_number(target: "Purchases")
+    check_no_git_tag_exists(version_number)
     check_pods
     carthage_archive
-    check_no_github_release_exists
+    check_no_github_release_exists(version_number)
   end
 
   desc "archive"
@@ -109,8 +111,14 @@ platform :ios do
 
 end
 
-def check_no_github_release_exists
-  version_number = get_version_number(target: "Purchases")
+def check_no_git_tag_exists(version_number)
+  if git_tag_exists(tag: version_number, remote: true, remote_name: 'origin')
+    raise "git tag with version #{version_number} already exists!"
+  end
+end
+
+
+def check_no_github_release_exists(version_number)
   found_release_number = get_github_release(url: "revenuecat/purchases-ios", version: version_number)
   raise "Release with version #{version_number} already exists!" unless found_release_number.nil?
 end
@@ -122,7 +130,6 @@ def carthage_archive
     sh("./carthage.sh", "build", "--no-skip-current")
     sh("./carthage.sh", "archive", "Purchases")
   end
-
 end
 
 def check_pods
