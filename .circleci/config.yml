@@ -95,6 +95,35 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/report.html
           destination: test_report.html
+
+  deployment-checks: 
+    macos:
+      xcode: "12.0"
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      # Bundler
+      - restore_cache:
+          keys: 
+            - gem-cache-{{ checksum "Gemfile.lock" }}
+      - run: bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+      
+      - run:
+          name: Deployment checks
+          command: fastlane deployment_checks
+          environment:
+            SCAN_SCHEME: All Tests
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/report.html
+          destination: test_report.html
+          
   docs-deploy:
     macos:
       xcode: "12.0"
@@ -189,6 +218,7 @@ workflows:
   build-test:
     jobs:
       - runtest
+      - deployment-checks
       - integration-tests-cocoapods: *only-release-tags
       - integration-tests-swift-package-manager: *only-release-tags
       - integration-tests-carthage: *only-release-tags

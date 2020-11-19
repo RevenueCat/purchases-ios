@@ -88,8 +88,8 @@ platform :ios do
 
   desc "Deployment checks"
   lane :deployment_checks do |options|
-    pod_lib_lint(verbose: true, podspec:'PurchasesCoreSwift.podspec')
-    pod_lib_lint(verbose: true, podspec:'Purchases.podspec', include_podspecs:'PurchasesCoreSwift.podspec')
+    check_pods
+    carthage_archive
   end
 
   desc "archive"
@@ -106,6 +106,21 @@ platform :ios do
     sh("sed", '-i', backup_extension, sed_regex, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
   end
 
+end
+
+def carthage_archive
+  # can't use fastlane carthage integration directly because of Carthage/Xcode 12 compatibility issues:
+  # https://github.com/Carthage/Carthage/issues/3019
+  Dir.chdir("..") do
+    sh("./carthage.sh", "build", "--no-skip-current")
+    sh("./carthage.sh", "archive", "Purchases")
+  end
+
+end
+
+def check_pods
+  pod_lib_lint(verbose: true, podspec:'PurchasesCoreSwift.podspec')
+  pod_lib_lint(verbose: true, podspec:'Purchases.podspec', include_podspecs:'PurchasesCoreSwift.podspec')
 end
 
 def increment_build_number(previous_version_number, new_version_number, file_path)
