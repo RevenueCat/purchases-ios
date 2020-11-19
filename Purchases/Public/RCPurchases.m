@@ -574,7 +574,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.storeKitWrapper addPayment:[payment copy]];
 }
 
-- (void)restoreTransactionsProgrammaticallyWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
+- (void)syncPurchasesWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     [self restoreTransactionsWithReceiptRefreshPolicy:RCReceiptRefreshPolicyNever completionBlock:completion];
 }
 

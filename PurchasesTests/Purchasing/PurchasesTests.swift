@@ -1062,13 +1062,13 @@ class PurchasesTests: XCTestCase {
         expect(receivedError).toEventuallyNot(beNil())
     }
 
-    func testRestoringPurchasesProgrammaticallyPostsTheReceipt() {
+    func testSyncPurchasesPostsTheReceipt() {
         setupPurchases()
-        purchases!.restoreTransactionsProgrammatically()
+        purchases!.syncPurchases()
         expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
 
-    func testRestoringPurchasesProgrammaticallyDoesntPostIfReceiptEmptyAndPurchaserInfoLoaded() {
+    func testSyncPurchasesDoesntPostIfReceiptEmptyAndPurchaserInfoLoaded() {
         let info = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
@@ -1085,21 +1085,21 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = false
 
         setupPurchases()
-        purchases!.restoreTransactionsProgrammatically()
+        purchases!.syncPurchases()
 
         expect(self.backend.postReceiptDataCalled) == false
     }
 
-    func testRestoringPurchasesProgrammaticallyPostsIfReceiptEmptyAndPurchaserInfoNotLoaded() {
+    func testSyncPurchasesPostsIfReceiptEmptyAndPurchaserInfoNotLoaded() {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = false
 
         setupPurchases()
-        purchases!.restoreTransactionsProgrammatically()
+        purchases!.syncPurchases()
 
         expect(self.backend.postReceiptDataCalled) == true
     }
 
-    func testRestoringPurchasesProgrammaticallyPostsIfReceiptHasTransactionsAndPurchaserInfoLoaded() {
+    func testSyncPurchasesPostsIfReceiptHasTransactionsAndPurchaserInfoLoaded() {
         let info = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
@@ -1116,52 +1116,52 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
 
         setupPurchases()
-        purchases!.restoreTransactionsProgrammatically()
+        purchases!.syncPurchases()
 
         expect(self.backend.postReceiptDataCalled) == true
     }
 
-    func testRestoringPurchasesProgrammaticallyPostsIfReceiptHasTransactionsAndPurchaserInfoNotLoaded() {
+    func testSyncPurchasesPostsIfReceiptHasTransactionsAndPurchaserInfoNotLoaded() {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
 
         setupPurchases()
-        purchases!.restoreTransactionsProgrammatically()
+        purchases!.syncPurchases()
 
         expect(self.backend.postReceiptDataCalled) == true
     }
 
-    func testRestoringPurchasesProgrammaticallyDoesntRefreshTheReceiptIfNotEmpty() {
+    func testSyncPurchasesDoesntRefreshTheReceiptIfNotEmpty() {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = true
-        purchases!.restoreTransactionsProgrammatically()
+        purchases!.syncPurchases()
 
         expect(self.receiptFetcher.receiptDataTimesCalled) == 1
         expect(self.requestFetcher.refreshReceiptCalled) == false
     }
 
-    func testRestoringPurchasesProgrammaticallyDoesntRefreshTheReceiptIfEmpty() {
+    func testSyncPurchasesDoesntRefreshTheReceiptIfEmpty() {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = false
-        purchases!.restoreTransactionsProgrammatically()
+        purchases!.syncPurchases()
 
         expect(self.receiptFetcher.receiptDataTimesCalled) == 1
         expect(self.requestFetcher.refreshReceiptCalled) == false
     }
 
-    func testRestoringPurchasesProgrammaticallySetsIsRestore() {
+    func testSyncPurchasesSetsIsRestore() {
         setupPurchases()
-        purchases!.restoreTransactionsProgrammatically(nil)
+        purchases!.syncPurchases(nil)
         expect(self.backend.postedIsRestore!).to(beTrue())
     }
 
-    func testRestoringPurchasesProgrammaticallySetsIsRestoreForAnon() {
+    func testSyncPurchasesSetsIsRestoreForAnon() {
         setupAnonPurchases()
-        purchases!.restoreTransactionsProgrammatically(nil)
+        purchases!.syncPurchases(nil)
 
         expect(self.backend.postedIsRestore!).to(beTrue())
     }
 
-    func testRestoringPurchasesProgrammaticallyCallsSuccessDelegateMethod() {
+    func testSyncPurchasesCallsSuccessDelegateMethod() {
         setupPurchases()
 
         let purchaserInfo = Purchases.PurchaserInfo()
@@ -1169,14 +1169,14 @@ class PurchasesTests: XCTestCase {
 
         var receivedPurchaserInfo: Purchases.PurchaserInfo?
 
-        purchases!.restoreTransactionsProgrammatically { (info, error) in
+        purchases!.syncPurchases { (info, error) in
             receivedPurchaserInfo = info
         }
 
         expect(receivedPurchaserInfo).toEventually(be(purchaserInfo))
     }
 
-    func testRestoringPurchasesProgrammaticallyPassesErrorOnFailure() {
+    func testSyncPurchasesPassesErrorOnFailure() {
         setupPurchases()
 
         let errorCode = Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber
@@ -1189,7 +1189,7 @@ class PurchasesTests: XCTestCase {
 
         var receivedError: Error?
 
-        purchases!.restoreTransactionsProgrammatically { (_, newError) in
+        purchases!.syncPurchases { (_, newError) in
             receivedError = newError
         }
 
