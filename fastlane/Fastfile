@@ -109,6 +109,29 @@ platform :ios do
     sh("sed", '-i', backup_extension, sed_regex, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
   end
 
+  desc "Deploy"
+  lane :deploy do |options|
+    version_number = get_version_number(target: "Purchases")
+    create_and_push_git_tag(version_number)
+    push_pods
+    github_release(version: version_number)
+    prepare_next_version(version_number)
+  end
+
+end
+
+def prepare_next_version(current_version)
+  
+end
+
+def push_pods
+  pod_push(path: "PurchasesCoreSwift.podspec")
+  pod_push(path: "Purchases.podspec", synchronous: true)
+end
+
+def create_and_push_git_tag(version_number)
+  add_git_tag(tag: version_number)
+  push_to_git_remote
 end
 
 def check_no_git_tag_exists(version_number)
@@ -129,6 +152,9 @@ def carthage_archive
   Dir.chdir("..") do
     sh("./carthage.sh", "build", "--no-skip-current")
     sh("./carthage.sh", "archive", "Purchases")
+    carthage_uploads_path = './CarthageUploads'
+    sh("mkdir", carthage_uploads_path)
+    sh("mv", "Purchases.zip", carthage_uploads_path)
   end
 end
 
