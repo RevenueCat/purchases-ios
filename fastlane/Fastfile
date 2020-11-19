@@ -90,6 +90,7 @@ platform :ios do
   lane :deployment_checks do |options|
     check_pods
     carthage_archive
+    check_no_github_release_exists
   end
 
   desc "archive"
@@ -106,6 +107,12 @@ platform :ios do
     sh("sed", '-i', backup_extension, sed_regex, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
   end
 
+end
+
+def check_no_github_release_exists
+  version_number = get_version_number(target: "Purchases")
+  found_release_number = get_github_release(url: "revenuecat/purchases-ios", version: version_number)
+  raise "Release with version #{version_number} already exists!" unless found_release_number.nil?
 end
 
 def carthage_archive
