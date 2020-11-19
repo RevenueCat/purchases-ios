@@ -575,15 +575,20 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)syncPurchasesWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    [self restoreTransactionsWithReceiptRefreshPolicy:RCReceiptRefreshPolicyNever completionBlock:completion];
+    [self syncPurchasesWithReceiptRefreshPolicy:RCReceiptRefreshPolicyNever
+                                      isRestore:self.allowSharingAppStoreAccount
+                                     completion:completion];
 }
 
 - (void)restoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    [self restoreTransactionsWithReceiptRefreshPolicy:RCReceiptRefreshPolicyAlways completionBlock:completion];
+    [self syncPurchasesWithReceiptRefreshPolicy:RCReceiptRefreshPolicyAlways
+                                      isRestore:YES
+                                     completion:completion];
 }
 
-- (void)restoreTransactionsWithReceiptRefreshPolicy:(RCReceiptRefreshPolicy)refreshPolicy
-                                    completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
+- (void)syncPurchasesWithReceiptRefreshPolicy:(RCReceiptRefreshPolicy)refreshPolicy
+                                    isRestore:(BOOL)isRestore
+                                   completion:(nullable RCReceivePurchaserInfoBlock)completion {
     if (!self.allowSharingAppStoreAccount) {
         RCDebugLog(@"allowSharingAppStoreAccount is set to false and restoreTransactions has been called. "
                    "Are you sure you want to do this?");
@@ -611,7 +616,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
-                            isRestore:YES
+                            isRestore:isRestore
                           productInfo:nil
           presentedOfferingIdentifier:nil
                          observerMode:!self.finishTransactions

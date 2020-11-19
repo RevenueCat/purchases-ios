@@ -1148,17 +1148,28 @@ class PurchasesTests: XCTestCase {
         expect(self.requestFetcher.refreshReceiptCalled) == false
     }
 
-    func testSyncPurchasesSetsIsRestore() {
+    func testSyncPurchasesPassesIsRestoreAsAllowSharingAppStoreAccount() {
         setupPurchases()
-        purchases!.syncPurchases(nil)
-        expect(self.backend.postedIsRestore!).to(beTrue())
+
+        purchases.allowSharingAppStoreAccount = false
+        purchases!.syncPurchases()
+        expect(self.backend.postedIsRestore!) == false
+
+        purchases.allowSharingAppStoreAccount = true
+        purchases!.syncPurchases()
+        expect(self.backend.postedIsRestore!) == true
     }
 
     func testSyncPurchasesSetsIsRestoreForAnon() {
         setupAnonPurchases()
-        purchases!.syncPurchases(nil)
 
-        expect(self.backend.postedIsRestore!).to(beTrue())
+        purchases.allowSharingAppStoreAccount = false
+        purchases!.syncPurchases()
+        expect(self.backend.postedIsRestore!) == false
+
+        purchases.allowSharingAppStoreAccount = true
+        purchases!.syncPurchases()
+        expect(self.backend.postedIsRestore!) == true
     }
 
     func testSyncPurchasesCallsSuccessDelegateMethod() {
