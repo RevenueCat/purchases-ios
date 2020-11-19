@@ -33,27 +33,26 @@ cd ..
 echo "Releasing version $CURRENT_VERSION"
 
 echo "Creating RVM gemset (if needed) and activating..."
-rvm gemset use --create purchases-ios
+# rvm gemset use --create purchases-ios
 
 echo "Installing dependencies if needed..."
-bundle install
+# bundle install
 
 echo "Pushing release to Cocoapods..."
-pod trunk push PurchasesCoreSwift.podspec
-pod repo update
-pod trunk push Purchases.podspec
+# pod trunk push PurchasesCoreSwift.podspec
+# pod trunk push Purchases.podspec --synchronous
 
 echo "Preparing Carthage release"
 echo "building..."
-./carthage.sh build --no-skip-current
-./carthage.sh archive Purchases
+# ./carthage.sh build --no-skip-current
+# ./carthage.sh archive Purchases
 
 echo "creating uploads folder if needed"
-mkdir $CARTHAGE_UPLOADS_PATH
+# mkdir $CARTHAGE_UPLOADS_PATH
 
 FRAMEWORK_NAME=Purchases.framework
 
-mv $FRAMEWORK_NAME.zip $CARTHAGE_UPLOADS_PATH
+# mv $FRAMEWORK_NAME.zip $CARTHAGE_UPLOADS_PATH
 
 fastlane ios github_release version:$CURRENT_VERSION
 
