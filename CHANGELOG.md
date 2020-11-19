@@ -7,7 +7,6 @@
 - Fixed sample app on macOS, which would fail to build because the watchOS app was embedded into it
     https://github.com/RevenueCat/purchases-ios/pull/402
 
-
 ## 3.7.6
 - Fixed a race condition that could cause a crash after deleting and reinstalling the app
     https://github.com/RevenueCat/purchases-ios/pull/383
