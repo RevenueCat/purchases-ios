@@ -13,6 +13,7 @@
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
 #import "RCAttributionData.h"
+@import PurchasesCoreSwift;
 
 
 @protocol FakeAdClient <NSObject>

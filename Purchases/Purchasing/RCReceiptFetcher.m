@@ -8,6 +8,7 @@
 
 #import "RCReceiptFetcher.h"
 #import "RCLogUtils.h"
+@import PurchasesCoreSwift;
 #import "RCSystemInfo.h"
 
 @implementation RCReceiptFetcher : NSObject

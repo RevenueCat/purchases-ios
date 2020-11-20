@@ -11,6 +11,7 @@
 #import "RCHTTPStatusCodes.h"
 #import "RCSystemInfo.h"
 #import "RCHTTPRequest.h"
+@import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -119,7 +120,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
     if (error == nil) {
         statusCode = ((NSHTTPURLResponse *) response).statusCode;
 
-        RCDebugLog(@"%@ %@ %d", request.HTTPMethod, request.URL.path, statusCode);
+        RCDebugLog(@"%@ %@ %ld", request.HTTPMethod, request.URL.path, (long)statusCode);
 
         NSError *jsonError;
         responseObject = [NSJSONSerialization JSONObjectWithData:data

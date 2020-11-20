@@ -12,8 +12,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 void RCSetShowDebugLogs(BOOL showDebugLogs);
 BOOL RCShowDebugLogs(void);
-void RCDebugLog(NSString *format, ...);
-void RCErrorLog(NSString *format, ...);
-void RCLog(NSString *format, ...);
+
+#define RCDebugLog(args, ...) \
+    [RCLogger logWithLevel:RCLogLevelDebug \
+                   message:[NSString stringWithFormat: args, ##__VA_ARGS__]]
+
+#define RCLog(args, ...) \
+    [RCLogger logWithLevel:RCLogLevelInfo \
+                   message:[NSString stringWithFormat: args, ##__VA_ARGS__]]
+
+#define RCWarnLog(args, ...) \
+    [RCLogger logWithLevel:RCLogLevelWarn \
+                   message:[NSString stringWithFormat: args, ##__VA_ARGS__]]
+
+#define RCErrorLog(args, ...) \
+    [RCLogger logWithLevel:RCLogLevelError \
+                   message:[NSString stringWithFormat: args, ##__VA_ARGS__]]
 
 NS_ASSUME_NONNULL_END
