@@ -187,25 +187,25 @@ workflows:
           tags:
             ignore: /^.*-SNAPSHOT/
           branches:
-            only: /^release\/(\d+\.)(\d+\.)(\d+)$/
+            only: /^release\/.*/
       - integration-tests-swift-package-manager:
         filters:
           tags:
             ignore: /^.*-SNAPSHOT/
           branches:
-            only: /release\/.*/
+            only: /^release\/.*/
       - integration-tests-carthage:
         filters:
           tags:
             ignore: /^.*-SNAPSHOT/
           branches:
-            only: /^release\/(\d+\.)(\d+\.)(\d+)$/
+            only: /^release\/.*/
       - integration-tests-xcode-direct-integration:
         filters:
           tags:
             ignore: /^.*-SNAPSHOT/
           branches:
-            only: /^release\/(\d+\.)(\d+\.)(\d+)$/
+            only: /^release\/.*/
   docs:
     jobs:
       - docs-deploy:
