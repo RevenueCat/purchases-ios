@@ -182,10 +182,30 @@ workflows:
   build-test:
     jobs:
       - runtest
-      - integration-tests-cocoapods
-      - integration-tests-swift-package-manager
-      - integration-tests-carthage
-      - integration-tests-xcode-direct-integration
+      - integration-tests-cocoapods:
+        filters:
+          tags:
+            ignore: /^.*-SNAPSHOT/
+          branches:
+            only: /release\/.*/
+      - integration-tests-swift-package-manager:
+        filters:
+          tags:
+            ignore: /^.*-SNAPSHOT/
+          branches:
+            only: /release\/.*/
+      - integration-tests-carthage:
+        filters:
+          tags:
+            ignore: /^.*-SNAPSHOT/
+          branches:
+            only: /release\/.*/
+      - integration-tests-xcode-direct-integration:
+        filters:
+          tags:
+            ignore: /^.*-SNAPSHOT/
+          branches:
+            only: /release\/.*/
   docs:
     jobs:
       - docs-deploy:
