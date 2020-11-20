@@ -64,7 +64,7 @@ commands:
 jobs:
   runtest:
     macos:
-      xcode: "12.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -98,7 +98,7 @@ jobs:
 
   deployment-checks: 
     macos:
-      xcode: "12.1.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -126,7 +126,7 @@ jobs:
           
   docs-deploy:
     macos:
-      xcode: "12.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -148,7 +148,7 @@ jobs:
 
   integration-tests-cocoapods:
     macos:
-      xcode: "12.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -169,7 +169,7 @@ jobs:
       
   integration-tests-swift-package-manager:
     macos:
-      xcode: "12.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -180,7 +180,7 @@ jobs:
       
   integration-tests-carthage:
     macos:
-      xcode: "12.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -204,7 +204,7 @@ jobs:
 
   integration-tests-xcode-direct-integration:
     macos:
-      xcode: "12.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
