@@ -218,7 +218,7 @@ workflows:
   build-test:
     jobs:
       - runtest
-      - deployment-checks
+      - deployment-checks: *only-release-tags
       - integration-tests-cocoapods: *only-release-tags
       - integration-tests-swift-package-manager: *only-release-tags
       - integration-tests-carthage: *only-release-tags
