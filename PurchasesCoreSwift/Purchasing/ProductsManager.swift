@@ -51,7 +51,7 @@ extension ProductsManager: SKProductsRequestDelegate {
 
     func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         queue.async { [self] in
-            Logger.info("products request received response")
+            Logger.debug("SKProductsRequest request received response")
             guard let requestProducts = self.productsByRequests[request] else { fatalError("couldn't find request") }
             guard let completionBlocks = self.completionHandlers[requestProducts] else {
                 fatalError("couldn't find completion")
@@ -72,7 +72,7 @@ extension ProductsManager: SKProductsRequestDelegate {
 
     func request(_ request: SKRequest, didFailWithError error: Error) {
         queue.async { [self] in
-            Logger.error("products request failed! error: \(error.localizedDescription)")
+            Logger.error("SKProductsRequest failed! error: \(error.localizedDescription)")
             guard let products = self.productsByRequests[request] else { fatalError("couldn't find request") }
             guard let completionBlocks = self.completionHandlers[products] else {
                 fatalError("couldn't find completion")
