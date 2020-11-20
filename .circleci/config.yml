@@ -1,3 +1,10 @@
+only-release-tags: &only-release-tags
+  filters:
+    tags:
+      ignore: /^.*-SNAPSHOT/
+    branches:
+      only: /^release\/.*/
+
 version: 2.1
 commands:
   install-gems:
@@ -182,30 +189,10 @@ workflows:
   build-test:
     jobs:
       - runtest
-      - integration-tests-cocoapods:
-        filters:
-          tags:
-            ignore: /^.*-SNAPSHOT/
-          branches:
-            only: /^release\/.*/
-      - integration-tests-swift-package-manager:
-        filters:
-          tags:
-            ignore: /^.*-SNAPSHOT/
-          branches:
-            only: /^release\/.*/
-      - integration-tests-carthage:
-        filters:
-          tags:
-            ignore: /^.*-SNAPSHOT/
-          branches:
-            only: /^release\/.*/
-      - integration-tests-xcode-direct-integration:
-        filters:
-          tags:
-            ignore: /^.*-SNAPSHOT/
-          branches:
-            only: /^release\/.*/
+      - integration-tests-cocoapods: *only-release-tags
+      - integration-tests-swift-package-manager: *only-release-tags
+      - integration-tests-carthage: *only-release-tags
+      - integration-tests-xcode-direct-integration: *only-release-tags
   docs:
     jobs:
       - docs-deploy:
