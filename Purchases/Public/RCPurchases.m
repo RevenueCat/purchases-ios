@@ -590,7 +590,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                     isRestore:(BOOL)isRestore
                                    completion:(nullable RCReceivePurchaserInfoBlock)completion {
     if (!self.allowSharingAppStoreAccount) {
-        RCDebugLog(@"allowSharingAppStoreAccount is set to false and restoreTransactions has been called. "
+        RCWarnLog(@"allowSharingAppStoreAccount is set to false and restoreTransactions has been called. "
                    "Are you sure you want to do this?");
     }
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
@@ -598,8 +598,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self receiptDataWithReceiptRefreshPolicy:refreshPolicy completion:^(NSData *_Nonnull data) {
         if (data.length == 0) {
             if (RCSystemInfo.isSandbox) {
-                RCLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless "
-                      "you've purchased before and there is a receipt available.");
+                RCWarnLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless "
+                          "you've purchased before and there is a receipt available.");
             }
             CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
             return;
@@ -671,7 +671,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                         
                         CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
                     } else {
-                        NSLog(@"There was an error when trying to parse the receipt locally, details: %@", error.localizedDescription);
+                        RCErrorLog(@"There was an error when trying to parse the receipt locally, details: %@",
+                                   error.localizedDescription);
                         [self.backend getIntroEligibilityForAppUserID:self.appUserID
                                                           receiptData:data
                                                    productIdentifiers:productIdentifiers
