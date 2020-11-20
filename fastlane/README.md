@@ -41,6 +41,16 @@ Make github release
 fastlane ios create_sandbox_account
 ```
 Create sandbox account
+### ios archive
+```
+fastlane ios archive
+```
+archive
+### ios replace_api_key_integration_tests
+```
+fastlane ios replace_api_key_integration_tests
+```
+replace API KEY for integration tests
 
 ----
 

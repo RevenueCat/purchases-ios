@@ -1,4 +1,59 @@
 version: 2.1
+commands:
+  install-gems:
+    parameters:
+      directory:
+        type: string
+        default: .
+    steps:
+       # Bundler
+      - restore_cache:
+          keys: 
+            - gem-cache-{{ checksum "Gemfile.lock" }}
+      - run: 
+          name: Bundle install
+          working_directory: << parameters.directory >>
+          command: bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+  scan-and-archive:
+    parameters:
+      directory:
+        type: string
+    steps:
+      - run: 
+          name: Replace API key
+          command: bundle exec fastlane replace_api_key_integration_tests
+      
+      - run:
+          name: Run tests
+          working_directory: << parameters.directory >>
+          command: bundle exec fastlane scan
+
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/report.html
+          destination: test_report.html
+      - run:
+          name: Archive
+          working_directory: << parameters.directory >>
+          command: |
+              bundle exec fastlane archive
+  
+  install-gems-scan-and-archive:
+    parameters:
+      directory:
+        type: string
+    steps:
+      - install-gems:
+          directory: << parameters.directory >>
+      - scan-and-archive:
+          directory: << parameters.directory >>
+
+
 jobs:
   runtest:
     macos:
@@ -21,15 +76,7 @@ jobs:
           paths:
             - Carthage
       
-      # Bundler
-      - restore_cache:
-          keys: 
-            - gem-cache-{{ checksum "Gemfile.lock" }}
-      - run: bundle install --clean --path vendor/bundle
-      - save_cache:
-          key: gem-cache-{{ checksum "Gemfile.lock" }}
-          paths:
-            - vendor/bundle
+      - install-gems
       
       - run:
           name: Run tests
@@ -48,7 +95,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - run: bundle install
+      - install-gems
       - run:
           name: Build docs
           command: fastlane run jazzy
@@ -61,12 +108,84 @@ jobs:
       - run:
           name: Invalidate CloudFront caches
           command: aws cloudfront create-invalidation --distribution-id EPTW7F3CB566V --paths "/*"
-          
+  
+
+  integration-tests-cocoapods:
+    macos:
+      xcode: "12.0"
+    working_directory: ~/purchases-ios/
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      
+      - install-gems
+      - install-gems:
+          directory: IntegrationTests/CocoapodsIntegration
+
+      - run:
+          name: Install Pods
+          working_directory: IntegrationTests/CocoapodsIntegration/
+          command: |
+              pod install
+      
+      - scan-and-archive:
+          directory: IntegrationTests/CocoapodsIntegration
+      
+  integration-tests-swift-package-manager:
+    macos:
+      xcode: "12.0"
+    working_directory: ~/purchases-ios/
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+
+      - install-gems-scan-and-archive:
+          directory: IntegrationTests/SPMIntegration/
+      
+  integration-tests-carthage:
+    macos:
+      xcode: "12.0"
+    working_directory: ~/purchases-ios/
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      
+      # Carthage
+      - restore_cache:
+          keys: 
+            - carthage-cache-{{ checksum "Cartfile.resolved" }}
+      - run:
+          name: Carthage Update
+          working_directory: IntegrationTests/CarthageIntegration/
+          command: ./carthage.sh update --cache-builds
+      - save_cache:
+          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          paths:
+            - Carthage
+      
+      - install-gems-scan-and-archive:
+          directory: IntegrationTests/CarthageIntegration/
+
+  integration-tests-xcode-direct-integration:
+    macos:
+      xcode: "12.0"
+    working_directory: ~/purchases-ios/
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+
+      - install-gems-scan-and-archive:
+          directory: IntegrationTests/XcodeDirectIntegration/
+
 workflows:
   version: 2
   build-test:
     jobs:
       - runtest
+      - integration-tests-cocoapods
+      - integration-tests-swift-package-manager
+      - integration-tests-carthage
+      - integration-tests-xcode-direct-integration
   docs:
     jobs:
       - docs-deploy:
