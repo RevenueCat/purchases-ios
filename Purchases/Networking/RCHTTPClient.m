@@ -67,7 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
         @synchronized (self) {
             if (self.currentSerialRequest) {
                 RCDebugLog(@"There's a request currently running and %ld requests left in the queue, queueing %@ %@",
-                           self.queuedRequests.count,
+                           (unsigned long)self.queuedRequests.count,
                            httpMethod,
                            path);
                 [self.queuedRequests addObject:rcRequest];
@@ -141,7 +141,9 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
     if (beginNextRequestWhenFinished) {
         @synchronized (self) {
             RCDebugLog(@"serial request done: %@ %@, %ld requests left in the queue",
-                       self.currentSerialRequest.httpMethod, self.currentSerialRequest.path, self.queuedRequests.count);
+                       self.currentSerialRequest.httpMethod,
+                       self.currentSerialRequest.path,
+                       (unsigned long)self.queuedRequests.count);
             RCHTTPRequest *nextRequest = nil;
             self.currentSerialRequest = nil;
             if (self.queuedRequests.count > 0) {
