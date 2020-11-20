@@ -1,3 +1,10 @@
+only-release-tags: &only-release-tags
+  filters:
+    tags:
+      ignore: /^.*-SNAPSHOT/
+    branches:
+      only: /^release\/.*/
+
 version: 2.1
 commands:
   install-gems:
@@ -182,10 +189,10 @@ workflows:
   build-test:
     jobs:
       - runtest
-      - integration-tests-cocoapods
-      - integration-tests-swift-package-manager
-      - integration-tests-carthage
-      - integration-tests-xcode-direct-integration
+      - integration-tests-cocoapods: *only-release-tags
+      - integration-tests-swift-package-manager: *only-release-tags
+      - integration-tests-carthage: *only-release-tags
+      - integration-tests-xcode-direct-integration: *only-release-tags
   docs:
     jobs:
       - docs-deploy:
