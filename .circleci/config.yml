@@ -60,6 +60,16 @@ commands:
       - scan-and-archive:
           directory: << parameters.directory >>
 
+  trust-github-key:
+    steps:
+      - run:
+          name: Trust GitHub key
+          command: |
+              for ip in $(dig @8.8.8.8 github.com +short); \
+              do ssh-keyscan github.com,$ip; \
+              ssh-keyscan $ip; \
+              done 2>/dev/null >> ~/.ssh/known_hosts
+
 
 jobs:
   runtest:
@@ -103,6 +113,8 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
+      - trust-github-key
+
       # Bundler
       - restore_cache:
           keys: 
@@ -174,14 +186,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - run:
-          name: Trust GitHub key
-          command: |
-              for ip in $(dig @8.8.8.8 github.com +short); \
-              do ssh-keyscan github.com,$ip; \
-              ssh-keyscan $ip; \
-              done 2>/dev/null >> ~/.ssh/known_hosts
-
+      - trust-github-key
       - install-gems-scan-and-archive:
           directory: IntegrationTests/SPMIntegration/
       
