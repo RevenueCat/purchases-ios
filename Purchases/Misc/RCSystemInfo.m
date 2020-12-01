@@ -71,7 +71,7 @@ static BOOL _forceUniversalAppStore = NO;
     return self.forceUniversalAppStore ? @"iOS" : PLATFORM_HEADER;
 }
 
-- (nullable NSString *)identifierForVendor {
++ (nullable NSString *)identifierForVendor {
 #if UI_DEVICE_AVAILABLE
     return UIDevice.currentDevice.identifierForVendor.UUIDString;
 #elif WKINTERFACE_DEVICE_AVAILABLE

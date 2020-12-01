@@ -211,7 +211,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
         headers[@"X-Platform-Flavor-Version"] = platformFlavorVersion;
     }
 
-    NSString * _Nullable idfv = self.systemInfo.identifierForVendor;
+    NSString * _Nullable idfv = RCSystemInfo.identifierForVendor;
     if (idfv) {
         headers[@"X-Apple-Device-Identifier"] = idfv;
     }
