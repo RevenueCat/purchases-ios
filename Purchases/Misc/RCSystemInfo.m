@@ -71,6 +71,15 @@ static BOOL _forceUniversalAppStore = NO;
     return self.forceUniversalAppStore ? @"iOS" : PLATFORM_HEADER;
 }
 
+- (nullable NSString *)identifierForVendor {
+#if UI_DEVICE_AVAILABLE
+    if ([UIDevice class]) {
+        return UIDevice.currentDevice.identifierForVendor.UUIDString;
+    }
+#endif
+    return nil;
+}
+
 + (NSURL *)defaultServerHostURL {
     return [NSURL URLWithString:defaultServerHostName];
 }

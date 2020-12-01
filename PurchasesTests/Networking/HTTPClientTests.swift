@@ -319,6 +319,40 @@ class HTTPClientTests: XCTestCase {
         expect(headerPresent).toEventually(equal(true))
     }
 
+    func testAlwaysPassesClientBuildVersion() {
+        let path = "/a_random_path"
+        var headerPresent = false
+
+        let version = Bundle.main.infoDictionary!["CFBundleVersion"] as! String
+
+        stub(condition: hasHeaderNamed("X-Client-Build-Version", value: version )) { request in
+            headerPresent = true
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+        }
+
+        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
+                                   headers: ["test_header": "value"], completionHandler:nil)
+
+        expect(headerPresent).toEventually(equal(true))
+    }
+
+    func testAlwaysPassesAppleDeviceIdentifier() {
+        let path = "/a_random_path"
+        var headerPresent = false
+
+        let idfv = UIDevice.current.identifierForVendor!.uuidString
+
+        stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { request in
+            headerPresent = true
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+        }
+
+        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
+                                   headers: ["test_header": "value"], completionHandler:nil)
+
+        expect(headerPresent).toEventually(equal(true))
+    }
+
     func testDefaultsPlatformFlavorToNative() {
         let path = "/a_random_path"
         var headerPresent = false
