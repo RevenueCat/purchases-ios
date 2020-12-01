@@ -3,6 +3,8 @@
     https://github.com/RevenueCat/purchases-ios/pull/407
 - limit running integration tests to tags and release branches
     https://github.com/RevenueCat/purchases-ios/pull/406
+- added deployment checks
+    https://github.com/RevenueCat/purchases-ios/pull/404
 
 ## 3.8.0
 - Added a silent version of restoreTransactions, called `syncPurchases`, meant to be used by developers performing migrations for other systems.
