@@ -64,7 +64,7 @@ commands:
 jobs:
   runtest:
     macos:
-      xcode: "12.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -95,9 +95,38 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/report.html
           destination: test_report.html
+
+  deployment-checks: 
+    macos:
+      xcode: "12.2.0"
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      # Bundler
+      - restore_cache:
+          keys: 
+            - gem-cache-{{ checksum "Gemfile.lock" }}
+      - run: bundle install --clean --path vendor/bundle
+      - save_cache:
+          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+      
+      - run:
+          name: Deployment checks
+          command: fastlane deployment_checks
+          environment:
+            SCAN_SCHEME: All Tests
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/report.html
+          destination: test_report.html
+          
   docs-deploy:
     macos:
-      xcode: "12.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -119,7 +148,7 @@ jobs:
 
   integration-tests-cocoapods:
     macos:
-      xcode: "12.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -140,7 +169,7 @@ jobs:
       
   integration-tests-swift-package-manager:
     macos:
-      xcode: "12.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -151,7 +180,7 @@ jobs:
       
   integration-tests-carthage:
     macos:
-      xcode: "12.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -175,7 +204,7 @@ jobs:
 
   integration-tests-xcode-direct-integration:
     macos:
-      xcode: "12.0"
+      xcode: "12.2.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -189,6 +218,7 @@ workflows:
   build-test:
     jobs:
       - runtest
+      - deployment-checks: *only-release-tags
       - integration-tests-cocoapods: *only-release-tags
       - integration-tests-swift-package-manager: *only-release-tags
       - integration-tests-carthage: *only-release-tags

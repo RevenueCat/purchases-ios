@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *appUserID = self.appUserID;
     RCSubscriberAttributeDict unsyncedAttributes = [self.subscriberAttributesManager
                                                     unsyncedAttributesByKeyForAppUserID:appUserID];
-    RCLog(@"found %lu unsynced attributes for appUserID: %@", unsyncedAttributes.count, appUserID);
+    RCLog(@"found %lu unsynced attributes for appUserID: %@", (unsigned long)unsyncedAttributes.count, appUserID);
     if (unsyncedAttributes.count > 0) {
         RCLog(@"unsynced attributes: %@", unsyncedAttributes);
     }

@@ -86,6 +86,15 @@ platform :ios do
     Spaceship::Tunes::SandboxTester.create!(email: email, password: password)
   end
 
+  desc "Deployment checks"
+  lane :deployment_checks do |options|
+    version_number = get_version_number(target: "Purchases")
+    check_no_git_tag_exists(version_number)
+    check_pods
+    carthage_archive
+    check_no_github_release_exists(version_number)
+  end
+
   desc "archive"
   lane :archive do
     match(type: "appstore")
@@ -100,6 +109,32 @@ platform :ios do
     sh("sed", '-i', backup_extension, sed_regex, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
   end
 
+end
+
+def check_no_git_tag_exists(version_number)
+  if git_tag_exists(tag: version_number, remote: true, remote_name: 'origin')
+    raise "git tag with version #{version_number} already exists!"
+  end
+end
+
+
+def check_no_github_release_exists(version_number)
+  found_release_number = get_github_release(url: "revenuecat/purchases-ios", version: version_number)
+  raise "Release with version #{version_number} already exists!" unless found_release_number.nil?
+end
+
+def carthage_archive
+  # can't use fastlane carthage integration directly because of Carthage/Xcode 12 compatibility issues:
+  # https://github.com/Carthage/Carthage/issues/3019
+  Dir.chdir("..") do
+    sh("./carthage.sh", "build", "--no-skip-current")
+    sh("./carthage.sh", "archive", "Purchases")
+  end
+end
+
+def check_pods
+  pod_lib_lint(verbose: true, podspec:'PurchasesCoreSwift.podspec')
+  pod_lib_lint(verbose: true, podspec:'Purchases.podspec', include_podspecs:'PurchasesCoreSwift.podspec')
 end
 
 def increment_build_number(previous_version_number, new_version_number, file_path)
