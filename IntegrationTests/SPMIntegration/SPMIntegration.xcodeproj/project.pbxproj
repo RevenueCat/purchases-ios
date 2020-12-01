@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D2710D02576E52400A23A49 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = 2D2710CF2576E52400A23A49 /* Purchases */; };
+		2D2710D52576E68C00A23A49 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = 2D2710D42576E68C00A23A49 /* Purchases */; };
 		2D6C02522549F5920039CB92 /* RCIntegrationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02432549F5920039CB92 /* RCIntegrationRunner.m */; };
 		2D6C02532549F5920039CB92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D6C02452549F5920039CB92 /* Assets.xcassets */; };
 		2D6C02542549F5920039CB92 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02462549F5920039CB92 /* ViewController.m */; };
@@ -59,7 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D2710D02576E52400A23A49 /* Purchases in Frameworks */,
+				2D2710D52576E68C00A23A49 /* Purchases in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -169,7 +169,7 @@
 			);
 			name = SPMIntegration;
 			packageProductDependencies = (
-				2D2710CF2576E52400A23A49 /* Purchases */,
+				2D2710D42576E68C00A23A49 /* Purchases */,
 			);
 			productName = SPMIntegration;
 			productReference = 2D6C02042549F5600039CB92 /* SPMIntegration.app */;
@@ -222,7 +222,7 @@
 			);
 			mainGroup = 2D6C01FB2549F5600039CB92;
 			packageReferences = (
-				2D2710CE2576E52400A23A49 /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				2D2710D32576E68C00A23A49 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = 2D6C02052549F5600039CB92 /* Products */;
 			projectDirPath = "";
@@ -553,9 +553,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		2D2710CE2576E52400A23A49 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+		2D2710D32576E68C00A23A49 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/revenuecat/purchases-ios/";
+			repositoryURL = "git@github.com:revenuecat/purchases-ios.git";
 			requirement = {
 				branch = HEAD;
 				kind = branch;
@@ -564,9 +564,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		2D2710CF2576E52400A23A49 /* Purchases */ = {
+		2D2710D42576E68C00A23A49 /* Purchases */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2D2710CE2576E52400A23A49 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			package = 2D2710D32576E68C00A23A49 /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = Purchases;
 		};
 /* End XCSwiftPackageProductDependency section */
