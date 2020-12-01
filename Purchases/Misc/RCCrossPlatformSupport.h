@@ -47,6 +47,15 @@
 #endif
 
 // Should match available platforms in
+// https://developer.apple.com/documentation/watchkit/wkinterfacedevice?language=objc
+#if TARGET_OS_WATCH
+#define WKINTERFACE_DEVICE_AVAILABLE 1
+#else
+#define WKINTERFACE_DEVICE_AVAILABLE 0
+#endif
+
+
+// Should match available platforms in
 // https://developer.apple.com/documentation/iad/adclient?language=objc
 #if TARGET_OS_IOS
 #define AD_CLIENT_AVAILABLE 1
