@@ -11,7 +11,6 @@
 #import "RCHTTPStatusCodes.h"
 #import "RCSystemInfo.h"
 #import "RCHTTPRequest.h"
-#import "RCCrossPlatformSupport.h"
 @import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
