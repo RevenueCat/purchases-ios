@@ -201,12 +201,18 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
         @"X-Platform-Version": RCSystemInfo.systemVersion,
         @"X-Platform-Flavor": self.systemInfo.platformFlavor,
         @"X-Client-Version": RCSystemInfo.appVersion,
+        @"X-Client-Build-Version": RCSystemInfo.buildVersion,
         @"X-Observer-Mode-Enabled": observerMode
     }];
 
     NSString * _Nullable platformFlavorVersion = self.systemInfo.platformFlavorVersion;
     if (platformFlavorVersion) {
         headers[@"X-Platform-Flavor-Version"] = platformFlavorVersion;
+    }
+
+    NSString * _Nullable idfv = RCSystemInfo.identifierForVendor;
+    if (idfv) {
+        headers[@"X-Apple-Device-Identifier"] = idfv;
     }
 
     return headers;

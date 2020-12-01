@@ -62,8 +62,22 @@ static BOOL _forceUniversalAppStore = NO;
     return version ?: @"";
 }
 
++ (NSString *)buildVersion {
+    NSString *version = NSBundle.mainBundle.infoDictionary[@"CFBundleVersion"];
+    return version ?: @"";
+}
+
 + (NSString *)platformHeader {
     return self.forceUniversalAppStore ? @"iOS" : PLATFORM_HEADER;
+}
+
++ (nullable NSString *)identifierForVendor {
+#if UI_DEVICE_AVAILABLE
+    return UIDevice.currentDevice.identifierForVendor.UUIDString;
+#elif WKINTERFACE_DEVICE_AVAILABLE
+    return WKInterfaceDevice.currentDevice.identifierForVendor.UUIDString;
+#endif
+    return nil;
 }
 
 + (NSURL *)defaultServerHostURL {
