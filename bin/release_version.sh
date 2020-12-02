@@ -41,7 +41,7 @@ bundle install
 echo "Pushing release to Cocoapods..."
 pod trunk push PurchasesCoreSwift.podspec
 pod repo update
-pod trunk push Purchases.podspec
+pod trunk push Purchases.podspec --synchronous
 
 echo "Preparing Carthage release"
 echo "building..."
