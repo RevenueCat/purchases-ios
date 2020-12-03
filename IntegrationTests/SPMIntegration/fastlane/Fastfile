@@ -1,1 +1,9 @@
 import("../../../fastlane/Fastfile")
+
+  desc "Update swift package commit"
+  lane :update_swift_package_commit do
+    commit_hash = last_git_commit[:commit_hash]
+    sed_regex = 's|' + "SPM_INTEGRATION_GIT_COMMIT" + '|' + commit_hash + '|'
+    backup_extension = '.bck'
+    sh("sed", '-i', backup_extension, sed_regex, '../SPMIntegration.xcodeproj/project.pbxproj')
+  end
