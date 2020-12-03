@@ -112,7 +112,6 @@ platform :ios do
   desc "Deploy"
   lane :deploy do |options|
     version_number = get_version_number(target: "Purchases")
-    create_and_push_git_tag(version_number)
     push_pods
     github_release(version: version_number)
     prepare_next_version(version_number)
@@ -121,17 +120,21 @@ platform :ios do
 end
 
 def prepare_next_version(current_version)
-  
+  minor_version = current_version.split('.')[1]
+  next_version = minor_version + 1
+
+  branch_name = "bump/#{next_version}-SNAPSHOT"
+  sh("git", "checkout", "-b", branch_name)
+
+  bump(version: next_version)
+
+  sh("git", "commit", "-am", "Preparing for next version")
+  push_to_git_remote
 end
 
 def push_pods
   pod_push(path: "PurchasesCoreSwift.podspec")
   pod_push(path: "Purchases.podspec", synchronous: true)
-end
-
-def create_and_push_git_tag(version_number)
-  add_git_tag(tag: version_number)
-  push_to_git_remote
 end
 
 def check_no_git_tag_exists(version_number)
