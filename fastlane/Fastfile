@@ -113,6 +113,7 @@ platform :ios do
   lane :deploy do |options|
     version_number = get_version_number(target: "Purchases")
     push_pods
+    carthage_archive
     github_release(version: version_number)
     prepare_next_version(version_number)
   end
@@ -120,8 +121,8 @@ platform :ios do
 end
 
 def prepare_next_version(current_version)
-  minor_version = current_version.split('.')[1]
-  next_version = minor_version + 1
+  major, minor, patch = current_version.split('.')
+  next_version = "#{major}.#{minor.to_i + 1}.#{patch}"
 
   branch_name = "bump/#{next_version}-SNAPSHOT"
   sh("git", "checkout", "-b", branch_name)
@@ -130,6 +131,12 @@ def prepare_next_version(current_version)
 
   sh("git", "commit", "-am", "Preparing for next version")
   push_to_git_remote
+
+  create_pull_request(
+    repo: "revenuecat/purchases-ios",
+    title: "Prepare next version: #{next_version}",
+    base: "develop"
+  )
 end
 
 def push_pods
@@ -169,7 +176,7 @@ end
 def increment_build_number(previous_version_number, new_version_number, file_path)
   sed_regex = 's|' + previous_version_number + '|' + new_version_number + '|'
   backup_extension = '.bck'
-  sh("sed", '-i', backup_extension, sed_regex, file_path)	
+  sh("sed", '-i', backup_extension, sed_regex, file_path)
 end
 
 def attach_changelog_to_master
