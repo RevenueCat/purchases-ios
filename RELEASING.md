@@ -1,4 +1,4 @@
-#### Automated process: 
+#### Releasing: 
 1. Start a git-flow release/x.y.z
 1. Create a CHANGELOG.latest.md with the changes for the current 
 version (to be used by Fastlane for the github release notes)
