@@ -625,5 +625,18 @@ class HTTPClientTests: XCTestCase {
         expect(firstRequestFinished).toEventually(beTrue())
         expect(secondRequestFinished).toEventually(beTrue())
     }
+
+    func testPerformRequestFailsAssertionIfPostWithNilBody() {
+
+    }
+
+    func testPerformRequestCancelsIfBodyCouldntBeParsedIntoJson() {
+
+    }
+
+    func testPerformSeriallyMovesOnToNextRequestIfRequestCanceledFromJsonParsingError() {
+
+    }
+
 }
 

@@ -94,6 +94,10 @@ NS_ASSUME_NONNULL_BEGIN
         completionHandler(-1,
                           nil,
                           [RCPurchasesErrorUtils networkErrorWithUnderlyingError:RCPurchasesErrorUtils.unknownError]);
+        if (performSerially) {
+            [self makeNextRequestIfNeeded];
+        }
+        return;
     }
 
     typedef void (^SessionCompletionBlock)(NSData *_Nullable, NSURLResponse *_Nullable, NSError *_Nullable);
@@ -146,26 +150,30 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
     }
 
     if (beginNextRequestWhenFinished) {
-        @synchronized (self) {
-            RCDebugLog(@"serial request done: %@ %@, %ld requests left in the queue",
-                       self.currentSerialRequest.httpMethod,
-                       self.currentSerialRequest.path,
-                       (unsigned long)self.queuedRequests.count);
-            RCHTTPRequest *nextRequest = nil;
-            self.currentSerialRequest = nil;
-            if (self.queuedRequests.count > 0) {
-                nextRequest = self.queuedRequests[0];
-                [self.queuedRequests removeObjectAtIndex:0];
-            }
-            if (nextRequest) {
-                RCDebugLog(@"starting the next request in the queue, %@", nextRequest);
-                [self performRequest:nextRequest.httpMethod
-                            serially:YES
-                                path:nextRequest.path
-                                body:nextRequest.requestBody
-                             headers:nextRequest.headers
-                   completionHandler:nextRequest.completionHandler];
-            }
+        [self makeNextRequestIfNeeded];
+    }
+}
+
+- (void)makeNextRequestIfNeeded() {
+    @synchronized (self) {
+        RCDebugLog(@"serial request done: %@ %@, %ld requests left in the queue",
+                   self.currentSerialRequest.httpMethod,
+                   self.currentSerialRequest.path,
+                   (unsigned long)self.queuedRequests.count);
+        RCHTTPRequest *nextRequest = nil;
+        self.currentSerialRequest = nil;
+        if (self.queuedRequests.count > 0) {
+            nextRequest = self.queuedRequests[0];
+            [self.queuedRequests removeObjectAtIndex:0];
+        }
+        if (nextRequest) {
+            RCDebugLog(@"starting the next request in the queue, %@", nextRequest);
+            [self performRequest:nextRequest.httpMethod
+                        serially:YES
+                            path:nextRequest.path
+                            body:nextRequest.requestBody
+                         headers:nextRequest.headers
+               completionHandler:nextRequest.completionHandler];
         }
     }
 }
