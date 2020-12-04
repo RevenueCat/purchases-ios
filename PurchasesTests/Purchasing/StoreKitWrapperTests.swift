@@ -36,6 +36,10 @@ class MockPaymentQueue: SKPaymentQueue {
 }
 
 class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
+    func storeKitWrapper(_ storeKitWrapper: RCStoreKitWrapper, didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
+
+    }
+
 
     let paymentQueue = MockPaymentQueue()
 
