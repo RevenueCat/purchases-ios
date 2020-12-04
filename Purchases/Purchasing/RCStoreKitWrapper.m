@@ -106,7 +106,7 @@ shouldAddStorePayment:(SKPayment *)payment
 }
 #endif
 
-// Sent when the owner of a family shared subscription revokes access to a family member or cancels the subscription
+// Sent when access to a family shared subscription is revoked from a family member or canceled the subscription
 - (void)paymentQueue:(SKPaymentQueue *)queue
 didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
 API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
