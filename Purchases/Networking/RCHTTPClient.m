@@ -11,6 +11,7 @@
 #import "RCHTTPStatusCodes.h"
 #import "RCSystemInfo.h"
 #import "RCHTTPRequest.h"
+#import "RCPurchasesErrorUtils.h"
 @import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -88,6 +89,12 @@ NS_ASSUME_NONNULL_BEGIN
                                                                path:path
                                                         requestBody:requestBody
                                                             headers:defaultHeaders];
+    if (!urlRequest) {
+        RCErrorLog(@"Could not create request to %@ with body %@", path, requestBody);
+        completionHandler(-1,
+                          nil,
+                          [RCPurchasesErrorUtils networkErrorWithUnderlyingError:RCPurchasesErrorUtils.unknownError]);
+    }
 
     typedef void (^SessionCompletionBlock)(NSData *_Nullable, NSURLResponse *_Nullable, NSError *_Nullable);
 
@@ -179,7 +186,8 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
         NSError *JSONParseError;
         NSData *body = [NSJSONSerialization dataWithJSONObject:requestBody options:0 error:&JSONParseError];
         if (JSONParseError) {
-            RCLog(@"Error creating request JSON: %@", requestBody);
+            RCErrorLog(@"Error creating request JSON: %@", requestBody);
+            return nil;
         }
         request.HTTPBody = body;
     }
@@ -187,8 +195,9 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
 }
 
 - (void)assertIsValidRequestWithMethod:(NSString *)HTTPMethod body:(NSDictionary *)requestBody {
-    NSParameterAssert(!([HTTPMethod isEqualToString:@"GET"] && requestBody));
     NSParameterAssert(([HTTPMethod isEqualToString:@"GET"] || [HTTPMethod isEqualToString:@"POST"]));
+    NSParameterAssert(!([HTTPMethod isEqualToString:@"GET"] && requestBody));
+    NSParameterAssert(!([HTTPMethod isEqualToString:@"POST"] && !requestBody));
 }
 
 - (NSDictionary *)defaultHeaders {
