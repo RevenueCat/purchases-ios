@@ -174,13 +174,13 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
     }
 
     func testDidRevokeEntitlementsForProductIdentifiersCallsDelegateWithRightArguments() {
-        expect(self.productIdentifiersWithRevokedEntitlements).to(beNil())
-        let revokedProductIdentifiers = [
-            "mySuperProduct",
-            "theOtherProduct"
-        ]
+        if #available(iOS 14.0, macOS 14.0, tvOS 14.0, watchOS 7.0, *) {
+            expect(self.productIdentifiersWithRevokedEntitlements).to(beNil())
+            let revokedProductIdentifiers = [
+                "mySuperProduct",
+                "theOtherProduct"
+            ]
 
-        if #available(iOS 14.0, *) {
             wrapper?.paymentQueue(paymentQueue, didRevokeEntitlementsForProductIdentifiers: revokedProductIdentifiers)
             expect(self.productIdentifiersWithRevokedEntitlements) == revokedProductIdentifiers
         }

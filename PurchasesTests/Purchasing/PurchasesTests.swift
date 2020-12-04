@@ -2494,13 +2494,14 @@ class PurchasesTests: XCTestCase {
     }
 
 
-    @available(iOS 14.0, *)
     func testSyncsPurchasesIfEntitlementsRevokedForProductIDs() {
-        setupPurchases()
-        guard let purchases = purchases else { fatalError() }
-        expect(self.backend.postReceiptDataCalled).to(beFalse())
-        purchases.storeKitWrapper(storeKitWrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
-        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        if #available(iOS 14.0, macOS 14.0, tvOS 14.0, watchOS 7.0, *) {
+            setupPurchases()
+            guard let purchases = purchases else { fatalError() }
+            expect(self.backend.postReceiptDataCalled).to(beFalse())
+            purchases.storeKitWrapper(storeKitWrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
+            expect(self.backend.postReceiptDataCalled).to(beTrue())
+        }
     }
 
 
