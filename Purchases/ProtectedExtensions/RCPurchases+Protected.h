@@ -22,10 +22,12 @@
     RCIntroEligibilityCalculator,
     RCReceiptParser;
 
+#import "RCStoreKitWrapper.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 
-@interface RCPurchases (Protected)
+@interface RCPurchases (Protected) <RCStoreKitWrapperDelegate>
 
 - (instancetype)initWithAppUserID:(nullable NSString *)appUserID
                    requestFetcher:(RCStoreKitRequestFetcher *)requestFetcher

@@ -2493,6 +2493,18 @@ class PurchasesTests: XCTestCase {
         expect(receivedError?.code).toEventually(equal(Purchases.ErrorCode.paymentPendingError.rawValue))
     }
 
+
+    func testSyncsPurchasesIfEntitlementsRevokedForProductIDs() {
+        if #available(iOS 14.0, macOS 14.0, tvOS 14.0, watchOS 7.0, *) {
+            setupPurchases()
+            guard let purchases = purchases else { fatalError() }
+            expect(self.backend.postReceiptDataCalled).to(beFalse())
+            purchases.storeKitWrapper(storeKitWrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
+            expect(self.backend.postReceiptDataCalled).to(beTrue())
+        }
+    }
+
+
     private func verifyUpdatedCaches(newAppUserID: String) {
         let expectedCallCount = 2
         expect(self.backend.getSubscriberCallCount).toEventually(equal(expectedCallCount))

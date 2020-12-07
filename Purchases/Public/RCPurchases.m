@@ -1161,6 +1161,14 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
     return NO;
 }
+- (void)                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
+didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
+API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
+    RCDebugLog(@"entitlements revoked for product identifiers: %@. \nsyncing purchases", productIdentifiers);
+    [self syncPurchasesWithCompletionBlock:^(RCPurchaserInfo * _Nullable purchaserInfo, NSError * _Nullable error) {
+        RCDebugLog(@"Purchases synced");
+    }];
+}
 
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction {
     [self receiptData:^(NSData * _Nonnull data) {
