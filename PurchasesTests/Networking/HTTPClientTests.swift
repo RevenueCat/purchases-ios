@@ -627,16 +627,44 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testPerformRequestFailsAssertionIfPostWithNilBody() {
+        let path = "/a_random_path"
 
+        expect {
+            self.client.performRequest("POST",
+                                   serially: true,
+                                   path: path,
+                                   body: nil,
+                                   headers: nil, completionHandler: nil)
+        }.to(raiseException())
     }
 
     func testPerformRequestCancelsIfBodyCouldntBeParsedIntoJson() {
+        // infinity can't be cast into JSON, so we use it to force a parsing exception. See:
+        // https://developer.apple.com/documentation/foundation/nsjsonserialization?language=objc
+        let nonJSONBody = ["something": Double.infinity]
 
+        let path = "/a_random_path"
+        var completionCalled = false
+        var receivedError: Error? = nil
+        var receivedStatus: Int? = nil
+        var receivedData: [AnyHashable: Any]? = nil
+        self.client.performRequest("POST",
+                                   serially: true,
+                                   path: path,
+                                   body: nonJSONBody,
+                                   headers: nil) { (status, data, error) in
+            completionCalled = true
+            receivedError = error
+            receivedStatus = status
+            receivedData = data
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedError).toNot(beNil())
+        let receivedNSError = receivedError! as NSError
+        expect(receivedNSError.code) == Purchases.ErrorCode.networkError.rawValue
+        expect(receivedData).to(beNil())
+        expect(receivedStatus) == -1
     }
-
-    func testPerformSeriallyMovesOnToNextRequestIfRequestCanceledFromJsonParsingError() {
-
-    }
-
 }
 

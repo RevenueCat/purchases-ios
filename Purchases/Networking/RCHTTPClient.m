@@ -176,7 +176,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
     }
 }
 
-- (NSMutableURLRequest *)createRequestWithMethod:(NSString *)HTTPMethod
+- (nullable NSMutableURLRequest *)createRequestWithMethod:(NSString *)httpMethod
                                             path:(NSString *)path
                                      requestBody:(NSDictionary *)requestBody
                                          headers:(NSMutableDictionary *)defaultHeaders {
@@ -185,14 +185,18 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL];
 
-    request.HTTPMethod = HTTPMethod;
+    request.HTTPMethod = httpMethod;
     request.allHTTPHeaderFields = defaultHeaders;
 
-    if ([HTTPMethod isEqualToString:@"POST"]) {
-        NSError *JSONParseError;
-        NSData *body = [NSJSONSerialization dataWithJSONObject:requestBody options:0 error:&JSONParseError];
-        if (JSONParseError) {
-            RCErrorLog(@"Error creating request JSON: %@", requestBody);
+    if ([httpMethod isEqualToString:@"POST"]) {
+        NSError *jsonParseError;
+        NSData *body;
+        BOOL isValidJSONObject = [NSJSONSerialization isValidJSONObject:requestBody];
+        if (isValidJSONObject) {
+            body = [NSJSONSerialization dataWithJSONObject:requestBody options:0 error:&jsonParseError];
+        }
+        if (!isValidJSONObject || jsonParseError) {
+            RCErrorLog(@"Error creating request with JSON body: %@", requestBody);
             return nil;
         }
         request.HTTPBody = body;
