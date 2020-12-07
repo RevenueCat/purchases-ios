@@ -46,7 +46,7 @@ platform :ios do
   desc "Increment build number and update changelog"
   lane :bump_and_update_changelog do |options|
     bump(options)
-    attach_changelog_to_master
+    attach_changelog_to_master(options[:version])
   end
 
   desc "Make github release"
@@ -179,7 +179,7 @@ def increment_build_number(previous_version_number, new_version_number, file_pat
   sh("sed", '-i', backup_extension, sed_regex, file_path)
 end
 
-def attach_changelog_to_master
+def attach_changelog_to_master(version_number)
   current_changelog = File.open("../CHANGELOG.latest.md", 'r')
   master_changelog = File.open("../CHANGELOG.md", 'r')
 
@@ -190,7 +190,8 @@ def attach_changelog_to_master
   master_changelog.close
 
   File.open("../CHANGELOG.md", 'w') { |master_changelog_write_mode|
-    whole_file_data = "#{current_changelog_data}\n#{master_changelog_data}"
+    version_header = "## #{version_number}"
+    whole_file_data = "#{version_header}\n#{current_changelog_data}\n#{master_changelog_data}"
     puts "going to save. Contents - #{whole_file_data}"
     
     master_changelog_write_mode.write(whole_file_data)
