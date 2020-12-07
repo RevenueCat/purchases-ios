@@ -59,6 +59,23 @@ NS_ASSUME_NONNULL_BEGIN
                   body:(nullable NSDictionary *)requestBody
                headers:(nullable NSDictionary<NSString *, NSString *> *)headers
      completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler {
+    [self assertIsValidRequestWithMethod:httpMethod body:requestBody];
+
+    NSMutableDictionary *defaultHeaders = self.defaultHeaders.mutableCopy;
+    [defaultHeaders addEntriesFromDictionary:headers];
+
+    NSMutableURLRequest *urlRequest = [self createRequestWithMethod:httpMethod
+                                                               path:path
+                                                        requestBody:requestBody
+                                                            headers:defaultHeaders];
+    if (!urlRequest) {
+        RCErrorLog(@"Could not create request to %@ with body %@", path, requestBody);
+        completionHandler(-1,
+                          nil,
+                          [RCPurchasesErrorUtils networkErrorWithUnderlyingError:RCPurchasesErrorUtils.unknownError]);
+        return;
+    }
+
     if (performSerially) {
         RCHTTPRequest *rcRequest = [[RCHTTPRequest alloc] initWithHTTPMethod:httpMethod
                                                                         path:path
@@ -80,25 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    [self assertIsValidRequestWithMethod:httpMethod body:requestBody];
-
-    NSMutableDictionary *defaultHeaders = self.defaultHeaders.mutableCopy;
-    [defaultHeaders addEntriesFromDictionary:headers];
-
-    NSMutableURLRequest *urlRequest = [self createRequestWithMethod:httpMethod
-                                                               path:path
-                                                        requestBody:requestBody
-                                                            headers:defaultHeaders];
-    if (!urlRequest) {
-        RCErrorLog(@"Could not create request to %@ with body %@", path, requestBody);
-        completionHandler(-1,
-                          nil,
-                          [RCPurchasesErrorUtils networkErrorWithUnderlyingError:RCPurchasesErrorUtils.unknownError]);
-        if (performSerially) {
-            [self makeNextRequestIfNeeded];
-        }
-        return;
-    }
 
     typedef void (^SessionCompletionBlock)(NSData *_Nullable, NSURLResponse *_Nullable, NSError *_Nullable);
 
@@ -154,7 +152,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
     }
 }
 
-- (void)makeNextRequestIfNeeded() {
+- (void)makeNextRequestIfNeeded {
     @synchronized (self) {
         RCDebugLog(@"serial request done: %@ %@, %ld requests left in the queue",
                    self.currentSerialRequest.httpMethod,
