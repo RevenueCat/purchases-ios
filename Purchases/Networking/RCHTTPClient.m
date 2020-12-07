@@ -148,30 +148,26 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
     }
 
     if (beginNextRequestWhenFinished) {
-        [self makeNextRequestIfNeeded];
-    }
-}
-
-- (void)makeNextRequestIfNeeded {
-    @synchronized (self) {
-        RCDebugLog(@"serial request done: %@ %@, %ld requests left in the queue",
-                   self.currentSerialRequest.httpMethod,
-                   self.currentSerialRequest.path,
-                   (unsigned long)self.queuedRequests.count);
-        RCHTTPRequest *nextRequest = nil;
-        self.currentSerialRequest = nil;
-        if (self.queuedRequests.count > 0) {
-            nextRequest = self.queuedRequests[0];
-            [self.queuedRequests removeObjectAtIndex:0];
-        }
-        if (nextRequest) {
-            RCDebugLog(@"starting the next request in the queue, %@", nextRequest);
-            [self performRequest:nextRequest.httpMethod
-                        serially:YES
-                            path:nextRequest.path
-                            body:nextRequest.requestBody
-                         headers:nextRequest.headers
-               completionHandler:nextRequest.completionHandler];
+        @synchronized (self) {
+            RCDebugLog(@"serial request done: %@ %@, %ld requests left in the queue",
+                       self.currentSerialRequest.httpMethod,
+                       self.currentSerialRequest.path,
+                       (unsigned long)self.queuedRequests.count);
+            RCHTTPRequest *nextRequest = nil;
+            self.currentSerialRequest = nil;
+            if (self.queuedRequests.count > 0) {
+                nextRequest = self.queuedRequests[0];
+                [self.queuedRequests removeObjectAtIndex:0];
+            }
+            if (nextRequest) {
+                RCDebugLog(@"starting the next request in the queue, %@", nextRequest);
+                [self performRequest:nextRequest.httpMethod
+                            serially:YES
+                                path:nextRequest.path
+                                body:nextRequest.requestBody
+                             headers:nextRequest.headers
+                   completionHandler:nextRequest.completionHandler];
+            }
         }
     }
 }
