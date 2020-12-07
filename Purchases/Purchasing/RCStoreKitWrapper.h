@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
   shouldAddStorePayment:(SKPayment *)payment
              forProduct:(SKProduct *)product;
 
-- (void)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
+- (void)                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
 didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
 API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0));
 

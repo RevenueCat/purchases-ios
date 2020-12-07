@@ -1161,7 +1161,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
     return NO;
 }
-- (void)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
+- (void)                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
 didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
 API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
     RCDebugLog(@"entitlements revoked for product identifiers: %@. \nsyncing purchases", productIdentifiers);

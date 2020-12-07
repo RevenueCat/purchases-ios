@@ -99,15 +99,15 @@
 }
 
 #if PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE
-- (BOOL)paymentQueue:(SKPaymentQueue *)queue
+- (BOOL) paymentQueue:(SKPaymentQueue *)queue
 shouldAddStorePayment:(SKPayment *)payment
-          forProduct:(SKProduct *)product {
+           forProduct:(SKProduct *)product {
     return [self.delegate storeKitWrapper:self shouldAddStorePayment:payment forProduct:product];
 }
 #endif
 
 // Sent when access to a family shared subscription is revoked from a family member or canceled the subscription
-- (void)paymentQueue:(SKPaymentQueue *)queue
+- (void)                      paymentQueue:(SKPaymentQueue *)queue
 didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
 API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
     RCDebugLog(@"PaymentQueue didRevokeEntitlementsForProductIdentifiers: %@", productIdentifiers);
