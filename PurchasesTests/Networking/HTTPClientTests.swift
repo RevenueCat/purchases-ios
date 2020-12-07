@@ -638,7 +638,7 @@ class HTTPClientTests: XCTestCase {
         }.to(raiseException())
     }
 
-    func testPerformRequestCancelsIfBodyCouldntBeParsedIntoJson() {
+    func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() {
         // infinity can't be cast into JSON, so we use it to force a parsing exception. See:
         // https://developer.apple.com/documentation/foundation/nsjsonserialization?language=objc
         let nonJSONBody = ["something": Double.infinity]
@@ -665,6 +665,32 @@ class HTTPClientTests: XCTestCase {
         expect(receivedNSError.code) == Purchases.ErrorCode.networkError.rawValue
         expect(receivedData).to(beNil())
         expect(receivedStatus) == -1
+    }
+
+    func testPerformRequestDoesntPerformRequestIfBodyCouldntBeParsedIntoJSON() {
+        // infinity can't be cast into JSON, so we use it to force a parsing exception. See:
+        // https://developer.apple.com/documentation/foundation/nsjsonserialization?language=objc
+        let nonJSONBody = ["something": Double.infinity]
+
+        let path = "/a_random_path"
+        var completionCalled = false
+        var httpCallMade = false
+
+        stub(condition: isPath("/v1" + path)) { request in
+            httpCallMade = true
+            return HTTPStubsResponse(data: Data(), statusCode:200, headers:nil)
+        }
+
+        self.client.performRequest("POST",
+                                   serially: true,
+                                   path: path,
+                                   body: nonJSONBody,
+                                   headers: nil) { (status, data, error) in
+            completionCalled = true
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(httpCallMade).toEventually(beFalse())
     }
 }
 
