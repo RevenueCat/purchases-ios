@@ -1,3 +1,7 @@
+## 3.9.1
+- Added support for `SKPaymentQueue`'s `didRevokeEntitlementsForProductIdentifiers:`, so entitlements are automatically revoked from a family-shared purchase when a family member leaves or the subscription is canceled.
+    https://github.com/RevenueCat/purchases-ios/pull/413
+
 ## 3.9.0
 - Added support for StoreKit Config Files and StoreKitTest testing
     https://github.com/RevenueCat/purchases-ios/pull/407
