@@ -46,7 +46,7 @@ platform :ios do
   desc "Increment build number and update changelog"
   lane :bump_and_update_changelog do |options|
     bump(options)
-    attach_changelog_to_master
+    attach_changelog_to_master(options[:version])
   end
 
   desc "Make github release"
@@ -109,6 +109,39 @@ platform :ios do
     sh("sed", '-i', backup_extension, sed_regex, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
   end
 
+  desc "Deploy"
+  lane :deploy do |options|
+    version_number = get_version_number(target: "Purchases")
+    push_pods
+    carthage_archive
+    github_release(version: version_number)
+    prepare_next_version(version_number)
+  end
+
+end
+
+def prepare_next_version(current_version)
+  major, minor, patch = current_version.split('.')
+  next_version = "#{major}.#{minor.to_i + 1}.#{patch}"
+
+  branch_name = "bump/#{next_version}-SNAPSHOT"
+  sh("git", "checkout", "-b", branch_name)
+
+  bump(version: next_version)
+
+  sh("git", "commit", "-am", "Preparing for next version")
+  push_to_git_remote
+
+  create_pull_request(
+    repo: "revenuecat/purchases-ios",
+    title: "Prepare next version: #{next_version}",
+    base: "develop"
+  )
+end
+
+def push_pods
+  pod_push(path: "PurchasesCoreSwift.podspec")
+  pod_push(path: "Purchases.podspec", synchronous: true)
 end
 
 def check_no_git_tag_exists(version_number)
@@ -129,6 +162,9 @@ def carthage_archive
   Dir.chdir("..") do
     sh("./carthage.sh", "build", "--no-skip-current")
     sh("./carthage.sh", "archive", "Purchases")
+    carthage_uploads_path = './CarthageUploads'
+    sh("mkdir", carthage_uploads_path)
+    sh("mv", "Purchases.zip", carthage_uploads_path)
   end
 end
 
@@ -140,10 +176,10 @@ end
 def increment_build_number(previous_version_number, new_version_number, file_path)
   sed_regex = 's|' + previous_version_number + '|' + new_version_number + '|'
   backup_extension = '.bck'
-  sh("sed", '-i', backup_extension, sed_regex, file_path)	
+  sh("sed", '-i', backup_extension, sed_regex, file_path)
 end
 
-def attach_changelog_to_master
+def attach_changelog_to_master(version_number)
   current_changelog = File.open("../CHANGELOG.latest.md", 'r')
   master_changelog = File.open("../CHANGELOG.md", 'r')
 
@@ -154,7 +190,8 @@ def attach_changelog_to_master
   master_changelog.close
 
   File.open("../CHANGELOG.md", 'w') { |master_changelog_write_mode|
-    whole_file_data = "#{current_changelog_data}\n#{master_changelog_data}"
+    version_header = "## #{version_number}"
+    whole_file_data = "#{version_header}\n#{current_changelog_data}\n#{master_changelog_data}"
     puts "going to save. Contents - #{whole_file_data}"
     
     master_changelog_write_mode.write(whole_file_data)
