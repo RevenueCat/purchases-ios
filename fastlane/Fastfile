@@ -67,7 +67,7 @@ platform :ios do
       tag_name: "#{release_version}",
       description: changelog,
       commitish: "master",
-      upload_assets: ["CarthageUploads/Purchases.framework.zip"],
+      upload_assets: ["Purchases.framework.zip"],
       is_draft: false
   )
   end
@@ -162,9 +162,6 @@ def carthage_archive
   Dir.chdir("..") do
     sh("./carthage.sh", "build", "--no-skip-current")
     sh("./carthage.sh", "archive", "Purchases")
-    carthage_uploads_path = './CarthageUploads'
-    sh("mkdir", carthage_uploads_path)
-    sh("mv", "Purchases.zip", carthage_uploads_path)
   end
 end
 
