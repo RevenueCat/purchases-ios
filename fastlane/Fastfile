@@ -135,7 +135,8 @@ def prepare_next_version(current_version)
   create_pull_request(
     repo: "revenuecat/purchases-ios",
     title: "Prepare next version: #{next_version}",
-    base: "develop"
+    base: "develop",
+    api_token: ENV["GITHUB_TOKEN"]
   )
 end
 
