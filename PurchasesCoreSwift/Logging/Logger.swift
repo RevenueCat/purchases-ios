@@ -30,7 +30,7 @@ import Foundation
         NSLog("[\(frameworkDescription)] - \(level.description()): \(message)")
     }
     
-    @objc public static func log(level: LogLevel, intent: LogIntent, message: String) {
+    static func log(level: LogLevel, intent: LogIntent, message: String) {
         #if V2_LOGS_ENABLED
             let messageWithPrefix = "\(intent.suffix) \(message)"
             Logger.log(level: level, message: messageWithPrefix)
