@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum LogIntent: Int {
+@objc(RCLogIntent) public enum LogIntent: Int {
     case appleError
     case info
     case purchase
