@@ -225,7 +225,6 @@ jobs:
     steps:
       - checkout
       - trust-github-key
-      - install-gems
       - update-spm-integration-commit
       - install-gems-scan-and-archive:
           directory: IntegrationTests/SPMIntegration/
