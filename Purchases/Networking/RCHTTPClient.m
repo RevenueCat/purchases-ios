@@ -64,10 +64,10 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableDictionary *defaultHeaders = self.defaultHeaders.mutableCopy;
     [defaultHeaders addEntriesFromDictionary:headers];
 
-    NSMutableURLRequest *urlRequest = [self createRequestWithMethod:httpMethod
-                                                               path:path
-                                                        requestBody:requestBody
-                                                            headers:defaultHeaders];
+    NSMutableURLRequest * _Nullable urlRequest = [self createRequestWithMethod:httpMethod
+                                                                          path:path
+                                                                   requestBody:requestBody
+                                                                       headers:defaultHeaders];
     if (!urlRequest) {
         RCErrorLog(@"Could not create request to %@ with body %@", path, requestBody);
         completionHandler(-1,
@@ -173,9 +173,9 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
 }
 
 - (nullable NSMutableURLRequest *)createRequestWithMethod:(NSString *)httpMethod
-                                            path:(NSString *)path
-                                     requestBody:(NSDictionary *)requestBody
-                                         headers:(NSMutableDictionary *)defaultHeaders {
+                                                     path:(NSString *)path
+                                              requestBody:(NSDictionary *)requestBody
+                                                  headers:(NSMutableDictionary *)defaultHeaders {
     NSString *relativeURLString = [NSString stringWithFormat:@"/v1%@", path];
     NSURL *requestURL = [NSURL URLWithString:relativeURLString relativeToURL:RCSystemInfo.serverHostURL];
 
