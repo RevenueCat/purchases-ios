@@ -88,7 +88,7 @@ commands:
   update-spm-integration-commit:
     steps:
       - install-gems
-      - run: 
+      - run:
           name: Update git commit in SPM package
           working_directory: IntegrationTests/SPMIntegration/
           command: |
@@ -190,7 +190,7 @@ jobs:
     steps:
       - checkout
       - trust-github-key
-      - install-gems
+      - update-spm-integration-commit
       - run:
           name: Deploy new version
           command: bundle exec fastlane deploy
