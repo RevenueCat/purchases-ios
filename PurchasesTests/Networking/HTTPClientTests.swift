@@ -631,10 +631,10 @@ class HTTPClientTests: XCTestCase {
 
         expect {
             self.client.performRequest("POST",
-                                   serially: true,
-                                   path: path,
-                                   body: nil,
-                                   headers: nil, completionHandler: nil)
+                                       serially: true,
+                                       path: path,
+                                       body: nil,
+                                       headers: nil, completionHandler: nil)
         }.to(raiseException())
     }
 
