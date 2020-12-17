@@ -68,6 +68,7 @@ extension ProductsManager: SKProductsRequestDelegate {
 
     func requestDidFinish(_ request: SKRequest) {
         Logger.debug("SKProductsRequest did finish")
+        request.cancel()
     }
 
     func request(_ request: SKRequest, didFailWithError error: Error) {
@@ -84,6 +85,7 @@ extension ProductsManager: SKProductsRequestDelegate {
                 completion(Set())
             }
         }
+        request.cancel()
     }
 }
 
