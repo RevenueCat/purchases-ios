@@ -85,6 +85,14 @@ commands:
               ssh-keyscan $ip; \
               done 2>/dev/null >> ~/.ssh/known_hosts
 
+  update-spm-integration-commit:
+    steps:
+      - install-gems
+      - run: 
+          name: Update git commit in SPM package
+          working_directory: IntegrationTests/SPMIntegration/
+          command: |
+              bundle exec fastlane update_swift_package_commit
 
 jobs:
   runtest:
@@ -139,6 +147,8 @@ jobs:
           key: gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
+      
+      - update-spm-integration-commit
       
       - run:
           name: Deployment checks
@@ -216,12 +226,7 @@ jobs:
       - checkout
       - trust-github-key
       - install-gems
-      - run: 
-          name: Update git commit in SPM package
-          working_directory: IntegrationTests/SPMIntegration/
-          command: |
-              bundle exec fastlane update_swift_package_commit
-      
+      - update-spm-integration-commit
       - install-gems-scan-and-archive:
           directory: IntegrationTests/SPMIntegration/
       
