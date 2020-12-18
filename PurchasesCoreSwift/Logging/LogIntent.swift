@@ -20,14 +20,14 @@ import Foundation
     
     var suffix: String {
         switch self {
-        case .appleError: return Emoji.apple.rawValue + Emoji.doubleExclamation.rawValue
-        case .info: return Emoji.info.rawValue
-        case .purchase: return Emoji.moneyBag.rawValue
-        case .rcError: return Emoji.sadCatEyes.rawValue + Emoji.doubleExclamation.rawValue
-        case .rcPurchaseSuccess: return Emoji.heartCatEyes.rawValue + Emoji.moneyBag.rawValue
-        case .rcSuccess: return Emoji.heartCatEyes.rawValue
-        case .user: return Emoji.person.rawValue
-        case .warning: return Emoji.warning.rawValue
+        case .appleError: return "🍎‼️"
+        case .info: return "ℹ️"
+        case .purchase: return "💰"
+        case .rcError: return "😿‼️"
+        case .rcPurchaseSuccess: return "😻💰"
+        case .rcSuccess: return "😻"
+        case .user: return "👤"
+        case .warning: return "⚠️"
         }
     }
 }
