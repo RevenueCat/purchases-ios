@@ -17,7 +17,7 @@ import Foundation
     @objc public var method_called: String { "%s called" } // debug
     @objc public var networkuserid_required: String { "The parameter networkUserId is REQUIRED for AppsFlyer." } //warn
     @objc public var no_instance_configured_caching_attribution: String { "There is no purchase instance configured, caching attribution" } //debug
-    @objc public var purchase_instance_configured_posting_attribution: String { "There is a purchase instance configured, posting attribution"} //debug
+    @objc public var instance_configured_posting_attribution: String { "There is a purchase instance configured, posting attribution"} //debug
     @objc public var skip_same_attributes: String { "Attribution data is the same as latest. Skipping." } //debug
     @objc public var subscriber_attributes_error: String { "Subscriber attributes errors: %@" } //error
     @objc public var unsynced_attributes_count: String { "Found %lu unsynced attributes for App User ID: %@" } //debug
