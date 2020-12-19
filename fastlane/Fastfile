@@ -121,8 +121,8 @@ platform :ios do
 end
 
 def prepare_next_version(current_version)
-  major, minor, patch = current_version.split('.')
-  next_version = "#{major}.#{minor.to_i + 1}.#{patch}"
+  major, minor, _ = current_version.split('.')
+  next_version = "#{major}.#{minor.to_i + 1}.0"
 
   branch_name = "bump/#{next_version}-SNAPSHOT"
   sh("git", "checkout", "-b", branch_name)
@@ -135,7 +135,8 @@ def prepare_next_version(current_version)
   create_pull_request(
     repo: "revenuecat/purchases-ios",
     title: "Prepare next version: #{next_version}",
-    base: "develop"
+    base: "develop",
+    api_token: ENV["GITHUB_TOKEN"]
   )
 end
 

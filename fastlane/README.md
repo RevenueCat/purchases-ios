@@ -56,6 +56,11 @@ archive
 fastlane ios replace_api_key_integration_tests
 ```
 replace API KEY for integration tests
+### ios deploy
+```
+fastlane ios deploy
+```
+Deploy
 
 ----
 

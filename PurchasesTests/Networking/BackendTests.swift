@@ -980,7 +980,31 @@ class BackendTests: XCTestCase {
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
     }
-    
+
+    func testGetOfferingsSkipsBackendCallIfAppUserIDIsEmpty() {
+        var completionCalled = false
+
+        backend?.getOfferingsForAppUserID("", completion: { (offerings, error) in
+            completionCalled = true
+        })
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(self.httpClient.calls).to(beEmpty())
+    }
+
+    func testGetOfferingsCallsCompletionWithErrorIfAppUserIDIsEmpty() {
+        var completionCalled = false
+        var receivedError: Error? = nil
+
+        backend?.getOfferingsForAppUserID("", completion: { (offerings, error) in
+            completionCalled = true
+            receivedError = error
+        })
+
+        expect(completionCalled).toEventually(beTrue())
+        expect((receivedError! as NSError).code) == Purchases.ErrorCode.invalidAppUserIdError.rawValue
+    }
+
     func testDoesntCacheForDifferentDiscounts() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)

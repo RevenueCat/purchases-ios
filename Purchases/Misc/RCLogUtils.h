@@ -14,19 +14,33 @@ void RCSetShowDebugLogs(BOOL showDebugLogs);
 BOOL RCShowDebugLogs(void);
 
 #define RCDebugLog(args, ...) \
-    [RCLogger logWithLevel:RCLogLevelDebug \
-                   message:[NSString stringWithFormat: args, ##__VA_ARGS__]]
+    [RCLogger debug: [NSString stringWithFormat: args, ##__VA_ARGS__]]
 
 #define RCLog(args, ...) \
-    [RCLogger logWithLevel:RCLogLevelInfo \
-                   message:[NSString stringWithFormat: args, ##__VA_ARGS__]]
+    [RCLogger info: [NSString stringWithFormat: args, ##__VA_ARGS__]]
 
 #define RCWarnLog(args, ...) \
-    [RCLogger logWithLevel:RCLogLevelWarn \
-                   message:[NSString stringWithFormat: args, ##__VA_ARGS__]]
+    [RCLogger warn: [NSString stringWithFormat: args, ##__VA_ARGS__]]
 
 #define RCErrorLog(args, ...) \
-    [RCLogger logWithLevel:RCLogLevelError \
-                   message:[NSString stringWithFormat: args, ##__VA_ARGS__]]
+    [RCLogger error: [NSString stringWithFormat: args, ##__VA_ARGS__]]
+
+#define RCAppleErrorLog(args, ...) \
+    [RCLogger appleError: [NSString stringWithFormat: args, ##__VA_ARGS__]]
+
+#define RCAppleWarningLog(args, ...) \
+    [RCLogger appleWarning: [NSString stringWithFormat: args, ##__VA_ARGS__]]
+
+#define RCPurchaseLog(args, ...) \
+    [RCLogger purchase: [NSString stringWithFormat: args, ##__VA_ARGS__]]
+
+#define RCPurchaseSuccessLog(args, ...) \
+    [RCLogger rcPurchaseSuccess: [NSString stringWithFormat: args, ##__VA_ARGS__]]
+
+#define RCSuccessLog(args, ...) \
+    [RCLogger rcSuccess: [NSString stringWithFormat: args, ##__VA_ARGS__]]
+
+#define RCUserLog(args, ...) \
+    [RCLogger user: [NSString stringWithFormat: args, ##__VA_ARGS__]]
 
 NS_ASSUME_NONNULL_END
