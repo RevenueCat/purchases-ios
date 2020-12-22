@@ -434,7 +434,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                        appUserID:(NSString *)appUserID
                       completion:(nullable void (^)(NSError *_Nullable error))completion {
     if (subscriberAttributes.count == 0) {
-        RCLog(@"called post subscriber attributes with an empty attributes dict!");
+        RCWarnLog(@"%@", RCStrings.attribution.empty_subscriber_attributes);
         return;
     }
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];

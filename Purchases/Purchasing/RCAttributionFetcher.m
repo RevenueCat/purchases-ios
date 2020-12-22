@@ -89,7 +89,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
             NSUUID *identifierValue = [sharedManager valueForKey:identifierPropertyName];
             return identifierValue.UUIDString;
         } else {
-            RCDebugLog(@"AdSupport framework not imported. Attribution data incomplete.");
+            RCWarnLog(@"%@", RCStrings.configure.adsupport_not_imported);
         }
     }
     return nil;
@@ -125,10 +125,10 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
                 fromNetwork:(RCAttributionNetwork)network
            forNetworkUserId:(nullable NSString *)networkUserId {
     if (data[@"rc_appsflyer_id"]) {
-        RCErrorLog(@"⚠️ The parameter key rc_appsflyer_id is deprecated. Pass networkUserId to addAttribution instead. ⚠️");
+        RCWarnLog(@"%@", RCStrings.attribution.appsflyer_id_deprecated);
     }
     if (network == RCAttributionNetworkAppsFlyer && networkUserId == nil) {
-        RCErrorLog(@"⚠️ The parameter networkUserId is REQUIRED for AppsFlyer. ⚠️");
+        RCWarnLog(@"%@", RCStrings.attribution.networkuserid_required_for_appsflyer);
     }
     NSString *appUserID = self.identityManager.currentAppUserID;
     NSString *networkKey = [NSString stringWithFormat:@"%ld", (long) network];
@@ -139,7 +139,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", identifierForAdvertisers, networkUserId];
 
     if ([latestSentToNetwork isEqualToString:newValueForNetwork]) {
-        RCDebugLog(@"Attribution data is the same as latest. Skipping.");
+        RCDebugLog(@"%@", RCStrings.attribution.skip_same_attributes);
     } else {
         NSMutableDictionary<NSString *, NSString *> *newDictToCache =
             [NSMutableDictionary dictionaryWithDictionary:dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks];

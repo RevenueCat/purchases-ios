@@ -103,7 +103,7 @@ static BOOL _forceUniversalAppStore = NO;
 + (void)setProxyURL:(nullable NSURL *)newProxyURL {
     proxyURL = newProxyURL;
     if (newProxyURL) {
-        RCLog(@"Purchases is being configured using a proxy for RevenueCat with URL: %@", newProxyURL);
+        RCLog(RCStrings.configure.configuring_purchases_proxy_url_set, newProxyURL);
     }
 }
 
