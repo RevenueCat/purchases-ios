@@ -14,7 +14,7 @@ import Foundation
     @objc public var finishing_transaction: String { "Finishing transaction %@ %@ (%@)" }
     @objc public var purchasing_with_observer_mode_and_finish_transactions_false_warning: String { "Observer mode is active (finishTransactions is set to false) and purchase has been initiated. RevenueCat will not finish the transaction, are you sure you want to do this?" }
     @objc public var paymentqueue_removedtransaction: String { "PaymentQueue removedTransaction: %@ %@ (%@ %@) %@ - %d" }
-    @objc public var paymentqueue_revoke_entitlement: String { "PaymentQueue didRevokeEntitlementsForProductIdentifiers: %@" }
+    @objc public var paymentqueue_revoked_entitlements_for_product_identifiers: String { "PaymentQueue didRevokeEntitlementsForProductIdentifiers: %@" }
     @objc public var paymentqueue_updatedtransaction: String { "PaymentQueue updatedTransaction: %@ %@ (%@) %@ - %d" }
     @objc public var presenting_code_redemption_sheet_unavailable: String { "Attempted to present code redemption sheet, but it's not available on this device." }
     @objc public var presenting_code_redemption_sheet: String { "Presenting code redemption sheet." }

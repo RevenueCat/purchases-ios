@@ -112,7 +112,7 @@ shouldAddStorePayment:(SKPayment *)payment
 - (void)                      paymentQueue:(SKPaymentQueue *)queue
 didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
 API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
-    RCDebugLog(RCStrings.purchase.paymentqueue_revoke_entitlement, productIdentifiers);
+    RCDebugLog(RCStrings.purchase.paymentqueue_revoked_entitlements_for_product_identifiers, productIdentifiers);
     [self.delegate storeKitWrapper:self didRevokeEntitlementsForProductIdentifiers:productIdentifiers];
 }
 
