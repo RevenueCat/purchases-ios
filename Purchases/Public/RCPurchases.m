@@ -508,9 +508,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     RCDebugLog(@"makePurchase");
 
     if (!product || !payment) {
-        RCLog(@"makePurchase - Could not purchase SKProduct.");
-        RCLog(@"makePurchase - Ensure your products are correctly configured in App Store Connect");
-        RCLog(@"makePurchase - See https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard");
+        RCAppleWarningLog(@"%@", RCStrings.purchase.cannot_purchase_product_appstore_configuration_error);
         completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
                                                  code:RCProductNotAvailableForPurchaseError
                                              userInfo:@{
@@ -535,7 +533,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }
 
     if (!self.finishTransactions) {
-        RCDebugLog(@"makePurchase - Observer mode is active (finishTransactions is set to false) and makePurchase has been called. Are you sure you want to do this?");
+        RCWarnLog(@"%@", RCStrings.purchase.purchasing_with_observer_mode_and_finish_transactions_false_warning);
     }
     NSString *appUserID = self.appUserID;
     payment.applicationUsername = appUserID;
@@ -546,9 +544,9 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.deviceCache setOfferingsCacheTimestampToNow];
 
     if (presentedOfferingIdentifier) {
-        RCDebugLog(@"makePurchase - %@ - Offering: %@", productIdentifier, presentedOfferingIdentifier);
+        RCPurchaseLog(RCStrings.purchase.purchasing_product_from_package, productIdentifier, presentedOfferingIdentifier);
     } else {
-        RCDebugLog(@"makePurchase - %@", productIdentifier);
+        RCPurchaseLog(RCStrings.purchase.purchasing_product, productIdentifier);
     }
 
     @synchronized (self) {
@@ -590,8 +588,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                     isRestore:(BOOL)isRestore
                                    completion:(nullable RCReceivePurchaserInfoBlock)completion {
     if (!self.allowSharingAppStoreAccount) {
-        RCWarnLog(@"allowSharingAppStoreAccount is set to false and restoreTransactions has been called. "
-                   "Are you sure you want to do this?");
+        RCWarnLog(@"%@", RCStrings.restore.restoretransactions_called_with_allow_sharing_appstore_account_false_warning);
     }
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
@@ -734,7 +731,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos) {
-    RCDebugLog(@"Presenting code redemption sheet");
+    RCDebugLog(@"%@", RCStrings.purchase.presenting_code_redemption_sheet);
     [self.storeKitWrapper presentCodeRedemptionSheet];
 }
 
@@ -932,14 +929,15 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)offeringsWithCompletionBlock:(RCReceiveOfferingsBlock)completion {
     [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
         if (self.deviceCache.cachedOfferings) {
-            RCDebugLog(@"Vending offerings from cache");
+            RCDebugLog(@"%@", RCStrings.offering.vending_offerings_cache);
             CALL_IF_SET_ON_MAIN_THREAD(completion, self.deviceCache.cachedOfferings, nil);
                 if ([self.deviceCache isOfferingsCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
-                    RCDebugLog(@"Offerings cache is stale, updating cache");
+                    RCDebugLog(@"%@", isAppBackgrounded ? RCStrings.offering.offerings_stale_updating_in_background : RCStrings.offering.offerings_stale_updating_in_foreground);
                     [self updateOfferingsCache:nil isAppBackgrounded:isAppBackgrounded];
+                    RCSuccessLog(@"%@", RCStrings.offering.offerings_stale_updated_from_network);
                 }
         } else {
-            RCDebugLog(@"No cached offerings, fetching");
+            RCDebugLog(@"%@", RCStrings.offering.no_cached_offerings_fetching_from_network);
             [self updateOfferingsCache:completion isAppBackgrounded:isAppBackgrounded];
         }
     }];
@@ -984,9 +982,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             }];
 
             if (missingProducts.count > 0) {
-                RCLog(@"Could not find SKProduct for %@", missingProducts);
-                RCLog(@"Ensure your products are correctly configured in App Store Connect");
-                RCLog(@"See https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard");
+                RCAppleWarningLog(@"%@", RCStrings.offering.cannot_find_product_configuration_error);
             }
             [self.deviceCache cacheOfferings:offerings];
 
@@ -998,7 +994,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)handleOfferingsUpdateError:(NSError *)error completion:(RCReceiveOfferingsBlock)completion {
-    RCLog(@"Error fetching offerings - %@", error);
+    RCAppleErrorLog(RCStrings.offering.fetching_offerings_error, error);
     [self.deviceCache clearOfferingsCacheTimestamp];
     CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
 }
@@ -1164,9 +1160,9 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
 didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
 API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
-    RCDebugLog(@"entitlements revoked for product identifiers: %@. \nsyncing purchases", productIdentifiers);
+    RCDebugLog(RCStrings.purchase.entitlements_revoked_syncing_purchases, productIdentifiers);
     [self syncPurchasesWithCompletionBlock:^(RCPurchaserInfo * _Nullable purchaserInfo, NSError * _Nullable error) {
-        RCDebugLog(@"Purchases synced");
+        RCDebugLog(@"%@", RCStrings.purchase.purchases_synced);
     }];
 }
 
@@ -1231,9 +1227,9 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
 
 - (nullable NSString *)productIdentifierFrom:(SKPaymentTransaction *)transaction {
     if (transaction.payment == nil) {
-        RCLog(@"There is a problem with the payment. Couldn't find the payment. This is possibly an App Store quirk.");
+        RCAppleWarningLog(@"%@", RCStrings.purchase.skpayment_missing_from_skpaymenttransaction);
     } else if (transaction.payment.productIdentifier == nil) {
-        RCLog(@"There is a problem with the payment. Couldn't find its product identifier. This is possibly an App Store quirk.");
+        RCAppleWarningLog(@"%@", RCStrings.purchase.skpayment_missing_product_identifier);
     }
     return transaction.payment.productIdentifier;
 }

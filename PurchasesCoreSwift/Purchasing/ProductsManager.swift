@@ -26,18 +26,18 @@ internal class ProductsManager: NSObject {
             let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
             if productsAlreadyCached.count == identifiers.count {
                 let productsAlreadyCachedSet = Set(productsAlreadyCached.values)
-                Logger.debug("skipping products request because products were already cached. products: \(identifiers)")
+                Logger.debug(String(format: Strings.offering.products_already_cached, identifiers))
                 completion(productsAlreadyCachedSet)
                 return
             }
 
             if let existingHandlers = self.completionHandlers[identifiers] {
-                Logger.debug("found an existing request for products: \(identifiers), appending to completion")
+                Logger.debug(String(format: Strings.offering.found_existing_product_request, identifiers))
                 self.completionHandlers[identifiers] = existingHandlers + [completion]
                 return
             }
 
-            Logger.debug("no existing requests and products not cached, starting SKProducts request for: \(identifiers)")
+            Logger.debug(String(format: Strings.offering.no_cached_requests_and_products_starting_skproduct_request, identifiers))
             let request = self.productsRequestFactory.request(productIdentifiers: identifiers)
             request.delegate = self
             self.completionHandlers[identifiers] = [completion]

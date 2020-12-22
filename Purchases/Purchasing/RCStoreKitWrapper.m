@@ -54,7 +54,7 @@
 }
 
 - (void)finishTransaction:(SKPaymentTransaction *)transaction {
-    RCDebugLog(@"Finishing %@ %@ (%@)",
+    RCPurchaseLog(RCStrings.purchase.finishing_transaction,
                transaction.payment.productIdentifier,
                transaction.transactionIdentifier,
                transaction.originalTransaction.transactionIdentifier);
@@ -67,7 +67,7 @@
     if (@available(iOS 14.0, *)) {
         [self.paymentQueue presentCodeRedemptionSheet];
     } else {
-        RCLog(@"Attempted to present code redemption sheet, but it's not available on this device.");
+        RCLog(@"%@", RCStrings.purchase.presenting_code_redemption_sheet_unavailable);
     }
 #endif
 }
@@ -75,7 +75,7 @@
 - (void)paymentQueue:(SKPaymentQueue *)queue
  updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions {
     for (SKPaymentTransaction *transaction in transactions) {
-        RCDebugLog(@"PaymentQueue updatedTransaction: %@ %@ (%@) %@ - %ld",
+        RCDebugLog(RCStrings.purchase.paymentqueue_updatedtransaction,
                    transaction.payment.productIdentifier,
                    transaction.transactionIdentifier,
                    transaction.error,
@@ -89,7 +89,7 @@
 - (void)paymentQueue:(SKPaymentQueue *)queue
  removedTransactions:(NSArray<SKPaymentTransaction *> *)transactions {
     for (SKPaymentTransaction *transaction in transactions) {
-        RCDebugLog(@"PaymentQueue removedTransaction: %@ %@ (%@ %@) %@ - %ld",
+        RCDebugLog(RCStrings.purchase.paymentqueue_removedtransaction,
                    transaction.payment.productIdentifier,
                    transaction.transactionIdentifier,
                    transaction.originalTransaction.transactionIdentifier,
@@ -112,7 +112,7 @@ shouldAddStorePayment:(SKPayment *)payment
 - (void)                      paymentQueue:(SKPaymentQueue *)queue
 didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
 API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
-    RCDebugLog(@"PaymentQueue didRevokeEntitlementsForProductIdentifiers: %@", productIdentifiers);
+    RCDebugLog(RCStrings.purchase.paymentqueue_revoke_entitlement, productIdentifiers);
     [self.delegate storeKitWrapper:self didRevokeEntitlementsForProductIdentifiers:productIdentifiers];
 }
 

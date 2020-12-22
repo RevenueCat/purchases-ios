@@ -62,7 +62,7 @@
         SKProductsRequest *newRequest = nil;
         
         if (self.productsRequests[identifiers] == nil) {
-            RCDebugLog(@"Requesting products with identifiers: %@", identifiers);
+            RCDebugLog(RCStrings.offering.fetching_products, identifiers);
             newRequest = [self.requestFactory requestForProductIdentifiers:identifiers];
             newRequest.delegate = self;
             
@@ -140,7 +140,7 @@
 
 - (void)request:(SKRequest *)request didFailWithError:(NSError *)error
 {
-    RCDebugLog(@"SKRequest failed: %@", error.localizedDescription);
+    RCAppleErrorLog(RCStrings.offering.fetching_products_failed, error.localizedDescription);
     if ([request isKindOfClass:SKReceiptRefreshRequest.class]) {
         NSArray<RCFetchReceiptCompletionHandler> *receiptHandlers = [self finishReceiptRequest:request];
         for (RCFetchReceiptCompletionHandler receiptHandler in receiptHandlers) {
@@ -158,16 +158,16 @@
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response
 {
-    RCDebugLog(@"Products request finished");
-    RCDebugLog(@"Valid Products:");
+    RCDebugLog(@"%@", RCStrings.offering.fetching_products_finished);
+    RCPurchaseLog(@"%@", RCStrings.offering.retrieved_products);
     for (SKProduct *p in response.products)
     {
-        RCDebugLog(@"%@ - %@", p.productIdentifier, p);
+        RCPurchaseLog(RCStrings.offering.list_products, p.productIdentifier, p);
     }
-    RCDebugLog(@"Invalid Product Identifiers - %@", response.invalidProductIdentifiers);
+    RCAppleWarningLog(RCStrings.offering.invalid_product_identifiers, response.invalidProductIdentifiers);
     
     NSArray<RCFetchProductsCompletionHandler> *handlers = [self finishProductsRequest:request];
-    RCDebugLog(@"%lu completion handlers waiting on products", (unsigned long)handlers.count);
+    RCDebugLog(RCStrings.offering.completion_handlers_waiting_on_products, (unsigned long)handlers.count);
     for (RCFetchProductsCompletionHandler handler in handlers)
     {
         handler(response.products);

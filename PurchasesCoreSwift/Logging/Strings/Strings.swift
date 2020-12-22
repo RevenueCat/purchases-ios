@@ -7,4 +7,7 @@ import Foundation
 
 @objc(RCStrings) public class Strings: NSObject {
     @objc public static let attribution = AttributionStrings()
+    @objc public static let offering = OfferingStrings()
+    @objc public static let purchase = PurchaseStrings()
+    @objc public static let restore = RestoreStrings()
 }
