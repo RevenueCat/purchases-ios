@@ -33,7 +33,7 @@
 #endif
     
     NSData *data = [NSData dataWithContentsOfURL:receiptURL];
-    RCDebugLog(@"Loaded receipt from %@", receiptURL);
+    RCDebugLog(RCStrings.receipt.loaded_receipt, receiptURL);
     return data;
 }
 

@@ -84,14 +84,14 @@ NS_ASSUME_NONNULL_BEGIN
                                                            completionHandler:completionHandler];
         @synchronized (self) {
             if (self.currentSerialRequest) {
-                RCDebugLog(@"There's a request currently running and %ld requests left in the queue, queueing %@ %@",
+                RCDebugLog(RCStrings.network.serial_request_queued,
                            (unsigned long)self.queuedRequests.count,
                            httpMethod,
                            path);
                 [self.queuedRequests addObject:rcRequest];
                 return;
             } else {
-                RCDebugLog(@"there are no requests currently running, starting request %@ %@", httpMethod, path);
+                RCDebugLog(RCStrings.network.starting_request, httpMethod, path);
                 self.currentSerialRequest = rcRequest;
             }
         }
@@ -111,7 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
 beginNextRequestWhenFinished:performSerially];
     };
 
-    RCDebugLog(@"%@ %@", urlRequest.HTTPMethod, urlRequest.URL.path);
+    RCDebugLog(RCStrings.network.api_request_started, urlRequest.HTTPMethod, urlRequest.URL.path);
     NSURLSessionTask *task = [self.session dataTaskWithRequest:urlRequest
                                              completionHandler:block];
     [task resume];
@@ -129,7 +129,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
     if (error == nil) {
         statusCode = ((NSHTTPURLResponse *) response).statusCode;
 
-        RCDebugLog(@"%@ %@ %ld", request.HTTPMethod, request.URL.path, (long)statusCode);
+        RCDebugLog(RCStrings.network.api_request_completed, request.HTTPMethod, request.URL.path, (long)statusCode);
 
         NSError *jsonError;
         responseObject = [NSJSONSerialization JSONObjectWithData:data
@@ -137,8 +137,8 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
                                                            error:&jsonError];
 
         if (jsonError) {
-            RCLog(@"Error parsing JSON %@", jsonError.localizedDescription);
-            RCLog(@"Data received: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            RCErrorLog(RCStrings.network.parsing_json_error, jsonError.localizedDescription);
+            RCErrorLog(RCStrings.network.json_data_received, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             error = jsonError;
         }
     }
@@ -149,7 +149,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
 
     if (beginNextRequestWhenFinished) {
         @synchronized (self) {
-            RCDebugLog(@"serial request done: %@ %@, %ld requests left in the queue",
+            RCDebugLog(RCStrings.network.serial_request_done,
                        self.currentSerialRequest.httpMethod,
                        self.currentSerialRequest.path,
                        (unsigned long)self.queuedRequests.count);
@@ -160,7 +160,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
                 [self.queuedRequests removeObjectAtIndex:0];
             }
             if (nextRequest) {
-                RCDebugLog(@"starting the next request in the queue, %@", nextRequest);
+                RCDebugLog(RCStrings.network.starting_next_request, nextRequest);
                 [self performRequest:nextRequest.httpMethod
                             serially:YES
                                 path:nextRequest.path
@@ -192,7 +192,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
             body = [NSJSONSerialization dataWithJSONObject:requestBody options:0 error:&jsonParseError];
         }
         if (!isValidJSONObject || jsonParseError) {
-            RCErrorLog(@"Error creating request with JSON body: %@", requestBody);
+            RCErrorLog(RCStrings.network.creating_json_error, requestBody);
             return nil;
         }
         request.HTTPBody = body;

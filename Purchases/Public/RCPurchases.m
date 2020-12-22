@@ -598,8 +598,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self receiptDataWithReceiptRefreshPolicy:refreshPolicy completion:^(NSData *_Nonnull data) {
         if (data.length == 0) {
             if (RCSystemInfo.isSandbox) {
-                RCWarnLog(@"App running on sandbox without a receipt file. Restoring transactions won't work unless "
-                          "you've purchased before and there is a receipt available.");
+                RCAppleWarningLog(RCStrings.receipt.no_sandbox_receipt_restore);
             }
             CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
             return;
@@ -671,7 +670,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                         
                         CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
                     } else {
-                        RCErrorLog(@"There was an error when trying to parse the receipt locally, details: %@",
+                        RCErrorLog(RCStrings.receipt.parse_receipt_locally_error,
                                    error.localizedDescription);
                         [self.backend getIntroEligibilityForAppUserID:self.appUserID
                                                           receiptData:data
@@ -1011,14 +1010,14 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)receiptDataWithReceiptRefreshPolicy:(RCReceiptRefreshPolicy)refreshPolicy
                                  completion:(RCReceiveReceiptDataBlock)completion {
     if (refreshPolicy == RCReceiptRefreshPolicyAlways) {
-        RCDebugLog(@"Forced receipt refresh");
+        RCDebugLog(@"%@", RCStrings.receipt.force_refreshing_receipt);
         [self refreshReceipt:completion];
         return;
     }
     NSData *receiptData = [self.receiptFetcher receiptData];
     BOOL receiptIsEmpty = receiptData == nil || receiptData.length == 0;
     if (receiptIsEmpty && refreshPolicy == RCReceiptRefreshPolicyOnlyIfEmpty) {
-        RCDebugLog(@"Receipt empty, fetching");
+        RCDebugLog(RCStrings.receipt.refreshing_empty_receipt);
         [self refreshReceipt:completion];
     } else {
         completion(receiptData);
@@ -1029,7 +1028,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.requestFetcher fetchReceiptData:^{
         NSData *newReceiptData = [self.receiptFetcher receiptData];
         if (newReceiptData == nil || newReceiptData.length == 0) {
-            RCLog(@"Unable to load receipt, ensure you are logged in to the correct iTunes account.");
+            RCAppleWarningLog(RCStrings.receipt.unable_to_load_receipt);
         }
         completion(newReceiptData ?: [NSData data]);
     }];
@@ -1061,7 +1060,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         } else if (![error.userInfo[RCFinishableKey] boolValue]) {
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
         } else {
-            RCLog(@"Unexpected error from backend");
+            RCErrorLog(RCStrings.receipt.unknown_backend_error);
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
         }
     }];
