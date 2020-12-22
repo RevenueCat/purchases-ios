@@ -63,11 +63,13 @@
 }
 
 - (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos) {
+#ifdef __IPHONE_14_0
     if (@available(iOS 14.0, *)) {
         [self.paymentQueue presentCodeRedemptionSheet];
     } else {
         RCLog(@"Attempted to present code redemption sheet, but it's not available on this device.");
     }
+#endif
 }
 
 - (void)paymentQueue:(SKPaymentQueue *)queue

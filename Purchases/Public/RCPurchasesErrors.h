@@ -44,7 +44,6 @@ typedef NS_ERROR_ENUM(RCPurchasesErrorDomain, RCPurchasesErrorCode) {
     RCNetworkError,
     RCInvalidCredentialsError,
     RCUnexpectedBackendResponseError,
-    RCReceiptInUseByOtherSubscriberError,
     RCInvalidAppUserIdError,
     RCOperationAlreadyInProgressError,
     RCUnknownBackendError,

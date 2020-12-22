@@ -296,6 +296,12 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                       completion:(RCOfferingsResponseHandler)completion
 {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
+    if (!escapedAppUserID || [escapedAppUserID isEqualToString:@""]) {
+        RCWarnLog(@"called getOfferings with an empty appUserID!");
+        completion(nil, RCPurchasesErrorUtils.missingAppUserIDError);
+        return;
+    }
+
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/offerings", escapedAppUserID];
 
     if ([self addCallback:completion forKey:path]) {

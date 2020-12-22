@@ -29,20 +29,55 @@ import Foundation
         guard level != .debug || shouldShowDebugLogs else { return }
         NSLog("[\(frameworkDescription)] - \(level.description()): \(message)")
     }
-
-    static func debug(_ message: String) {
-        log(level: .debug, message: message)
+    
+    @objc public static func log(level: LogLevel, intent: LogIntent, message: String) {
+        #if V2_LOGS_ENABLED
+            let messageWithPrefix = "\(intent.suffix) \(message)"
+            Logger.log(level: level, message: messageWithPrefix)
+        #else
+            Logger.log(level: level, message: message)
+        #endif
     }
 
-    static func info(_ message: String) {
-        log(level: .debug, message: message)
+    @objc public static func debug(_ message: String) {
+        log(level: .debug, intent: .info, message: message)
     }
 
-    static func warn(_ message: String) {
-        log(level: .debug, message: message)
+    @objc public static func info(_ message: String) {
+        log(level: .info, intent: .info, message: message)
     }
 
-    static func error(_ message: String) {
-        log(level: .debug, message: message)
+    @objc public static func warn(_ message: String) {
+        log(level: .warn, intent: .warning, message: message)
+    }
+
+    @objc public static func error(_ message: String) {
+        log(level: .error, intent: .rcError, message: message)
+    }
+}
+
+@objc public extension Logger {
+    static func appleError(_ message: String) {
+        log(level: .error, intent: .appleError, message: message)
+    }
+    
+    static func appleWarning(_ message: String) {
+        log(level: .warn, intent: .appleError, message: message)
+    }
+    
+    static func purchase(_ message: String) {
+        log(level: .debug, intent: .purchase, message: message)
+    }
+    
+    static func rcPurchaseSuccess(_ message: String) {
+        log(level: .info, intent: .rcPurchaseSuccess, message: message)
+    }
+    
+    static func rcSuccess(_ message: String) {
+        log(level: .debug, intent: .rcSuccess, message: message)
+    }
+    
+    static func user(_ message: String) {
+        log(level: .debug, intent: .user, message: message)
     }
 }

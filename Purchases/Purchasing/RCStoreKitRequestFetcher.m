@@ -135,6 +135,7 @@
             receiptHandler();
         }
     }
+    [request cancel];
 }
 
 - (void)request:(SKRequest *)request didFailWithError:(NSError *)error
@@ -152,6 +153,7 @@
             handler(@[]);
         }
     }
+    [request cancel];
 }
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response
