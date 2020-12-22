@@ -428,7 +428,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             RCDebugLog(@"%@", RCStrings.purchaserInfo.vending_cache);
             CALL_IF_SET_ON_MAIN_THREAD(completion, infoFromCache, nil);
             if ([self.deviceCache isPurchaserInfoCacheStaleForAppUserID:self.appUserID isAppBackgrounded:isAppBackgrounded]) {
-                RCDebugLog(@"%@", isAppBackgrounded ? RCStrings.purchaserInfo.purchaserinfo_stale_updating_background : RCStrings.purchaserInfo.purchaserinfo_stale_updating_foreground);
+                RCDebugLog(@"%@", isAppBackgrounded ? RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_background : RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_foreground);
                 [self fetchAndCachePurchaserInfoWithCompletion:nil isAppBackgrounded:isAppBackgrounded];
                 RCSuccessLog(@"%@", RCStrings.purchaserInfo.purchaserinfo_updated_from_network);
             }
