@@ -55,9 +55,9 @@
 
 - (void)finishTransaction:(SKPaymentTransaction *)transaction {
     RCPurchaseLog(RCStrings.purchase.finishing_transaction,
-               transaction.payment.productIdentifier,
-               transaction.transactionIdentifier,
-               transaction.originalTransaction.transactionIdentifier);
+                  transaction.payment.productIdentifier,
+                  transaction.transactionIdentifier,
+                  transaction.originalTransaction.transactionIdentifier);
 
     [self.paymentQueue finishTransaction:transaction];
 }

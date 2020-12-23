@@ -982,7 +982,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             }];
 
             if (missingProducts.count > 0) {
-                RCAppleWarningLog(@"%@", RCStrings.offering.cannot_find_product_configuration_error);
+                RCAppleWarningLog(RCStrings.offering.cannot_find_product_configuration_error, missingProducts);
             }
             [self.deviceCache cacheOfferings:offerings];
 
