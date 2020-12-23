@@ -268,6 +268,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         RCDebugLog(@"Debug logging enabled.");
         RCDebugLog(@"SDK Version - %@", self.class.frameworkVersion);
         RCDebugLog(@"Initial App User ID - %@", appUserID);
+        RCDebugLog(@"%@", RCStrings.receipt.unknown_backend_error);
 
         self.requestFetcher = requestFetcher;
         self.receiptFetcher = receiptFetcher;
@@ -598,7 +599,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self receiptDataWithReceiptRefreshPolicy:refreshPolicy completion:^(NSData *_Nonnull data) {
         if (data.length == 0) {
             if (RCSystemInfo.isSandbox) {
-                RCAppleWarningLog(RCStrings.receipt.no_sandbox_receipt_restore);
+                RCAppleWarningLog(@"%@", RCStrings.receipt.no_sandbox_receipt_restore);
             }
             CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
             return;
@@ -1017,7 +1018,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     NSData *receiptData = [self.receiptFetcher receiptData];
     BOOL receiptIsEmpty = receiptData == nil || receiptData.length == 0;
     if (receiptIsEmpty && refreshPolicy == RCReceiptRefreshPolicyOnlyIfEmpty) {
-        RCDebugLog(RCStrings.receipt.refreshing_empty_receipt);
+        RCDebugLog(@"%@", RCStrings.receipt.refreshing_empty_receipt);
         [self refreshReceipt:completion];
     } else {
         completion(receiptData);
@@ -1028,7 +1029,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.requestFetcher fetchReceiptData:^{
         NSData *newReceiptData = [self.receiptFetcher receiptData];
         if (newReceiptData == nil || newReceiptData.length == 0) {
-            RCAppleWarningLog(RCStrings.receipt.unable_to_load_receipt);
+            RCAppleWarningLog(@"%@", RCStrings.receipt.unable_to_load_receipt);
         }
         completion(newReceiptData ?: [NSData data]);
     }];
@@ -1060,7 +1061,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         } else if (![error.userInfo[RCFinishableKey] boolValue]) {
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
         } else {
-            RCErrorLog(RCStrings.receipt.unknown_backend_error);
+            RCErrorLog(@"%@", RCStrings.receipt.unknown_backend_error);
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
         }
     }];

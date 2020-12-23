@@ -15,7 +15,8 @@ import Foundation
     @objc public var json_data_received: String { "Data received: %@" }
     @objc public var parsing_json_error: String { "Error parsing JSON %@" }
     @objc public var serial_request_done: String { "Serial request done: %@ %@, %ld requests left in the queue" }
-    @objc public var serial_request_queued: String { "There's a request currently running and %ld requests left in the queue, queueing %@ %@" }
+    @objc public var serial_request_queued: String { "There's a request currently running and %ld requests left in " +
+        "the queue, queueing %@ %@" }
     @objc public var skproductsrequest_failed: String {"SKProductsRequest failed! error: %@" }
     @objc public var skproductsrequest_finished: String { "SKProductsRequest did finish" }
     @objc public var skproductsrequest_received_response: String { "SKProductsRequest request received response" }
