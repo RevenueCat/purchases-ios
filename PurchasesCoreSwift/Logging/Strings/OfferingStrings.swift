@@ -19,11 +19,13 @@ import Foundation
     @objc public var invalid_product_identifiers: String { "Invalid Product Identifiers - %@" }
     @objc public var list_products: String { "%@ - %@" }
     @objc public var no_cached_offerings_fetching_from_network: String { "No cached Offerings, fetching from network" }
+    @objc public var no_cached_requests_and_products_starting_skproduct_request: String { "No existing requests and products not cached, starting SKProducts request for: %@" }
     @objc public var offerings_stale_updated_from_network: String { "Offerings updated from network." }
     @objc public var offerings_stale_updating_in_background: String { "Offerings cache is stale, updating from network in background" }
     @objc public var offerings_stale_updating_in_foreground: String { "Offerings cache is stale, updating from network in foreground" }
     @objc public var products_already_cached: String { "Skipping products request because products were already cached. products: %@" }
     @objc public var retrieved_products: String { "Retrieved SKProducts: "  }
-    @objc public var no_cached_requests_and_products_starting_skproduct_request: String { "No existing requests and products not cached, starting SKProducts request for: %@" }
+    @objc public var skproductsrequest_did_finish: String { "SKProductsRequest did finish" }
+    @objc public var skproductsrequest_received_response: String { "SKProductsRequest request received response" }
     @objc public var vending_offerings_cache: String { "Vending Offerings from cache" }
 }
