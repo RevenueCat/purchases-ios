@@ -26,6 +26,7 @@
 
 - (nullable instancetype)initWithPaymentQueue:(SKPaymentQueue *)paymentQueue {
     if (self = [super init]) {
+        self.simulatesAskToBuyInSandbox = NO;
         self.paymentQueue = paymentQueue;
     }
     return self;
@@ -71,6 +72,20 @@
     }
 #endif
 }
+
+- (SKMutablePayment *)paymentWithProduct:(SKProduct *)product {
+    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
+    payment.simulatesAskToBuyInSandbox = self.simulatesAskToBuyInSandbox;
+    return payment;
+}
+
+- (SKMutablePayment *)paymentWithProduct:(SKProduct *)product discount:(SKPaymentDiscount *)discount {
+    SKMutablePayment *payment = [self paymentWithProduct:product];
+    payment.paymentDiscount = discount;
+    return payment;
+}
+
+#pragma MARK: SKPaymentQueueDelegate
 
 - (void)paymentQueue:(SKPaymentQueue *)queue
  updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions {

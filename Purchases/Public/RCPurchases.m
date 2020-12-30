@@ -476,27 +476,28 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)purchaseProduct:(SKProduct *)product
     withCompletionBlock:(RCPurchaseCompletedBlock)completion {
-    SKMutablePayment *payment = [[[RCPaymentFactory alloc] init] paymentWithProduct:product];
+    SKMutablePayment *payment = [self.storeKitWrapper paymentWithProduct:product];
     [self purchaseProduct:product withPayment:payment withPresentedOfferingIdentifier:nil completion:completion];
 }
 
 - (void)purchasePackage:(RCPackage *)package
     withCompletionBlock:(RCPurchaseCompletedBlock)completion {
-    SKMutablePayment *payment = [[[RCPaymentFactory alloc] init] paymentWithProduct:package.product];
+    SKMutablePayment *payment = [self.storeKitWrapper paymentWithProduct:package.product];
     [self purchaseProduct:package.product withPayment:payment withPresentedOfferingIdentifier:package.offeringIdentifier completion:completion];
 }
 
 - (void)purchaseProduct:(SKProduct *)product
            withDiscount:(SKPaymentDiscount *)discount
         completionBlock:(RCPurchaseCompletedBlock)completion {
-    SKMutablePayment *payment = [[[RCPaymentFactory alloc] init] paymentWithProduct:product discount:discount];
+    SKMutablePayment *payment = [self.storeKitWrapper paymentWithProduct:product discount:discount];
     [self purchaseProduct:product withPayment:payment withPresentedOfferingIdentifier:nil completion:completion];
 }
 
 - (void)purchasePackage:(RCPackage *)package
            withDiscount:(SKPaymentDiscount *)discount
         completionBlock:(RCPurchaseCompletedBlock)completion {
-    SKMutablePayment *payment = [[[RCPaymentFactory alloc] init] paymentWithProduct:package.product discount:discount];
+    SKMutablePayment *payment = [self.storeKitWrapper paymentWithProduct:package.product
+                                                                discount:discount];
     [self purchaseProduct:package.product withPayment:payment withPresentedOfferingIdentifier:package.offeringIdentifier completion:completion];
 }
 

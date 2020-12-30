@@ -18,10 +18,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithPaymentQueue:(SKPaymentQueue *)paymentQueue;
 
 @property (nonatomic, weak, nullable) id<RCStoreKitWrapperDelegate> delegate;
+@property (nonatomic, assign) BOOL simulatesAskToBuyInSandbox;
 
 - (void)addPayment:(SKPayment *)payment;
 - (void)finishTransaction:(SKPaymentTransaction *)transaction;
 - (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos);
+
+- (SKMutablePayment *)paymentWithProduct:(SKProduct *)product;
+- (SKMutablePayment *)paymentWithProduct:(SKProduct *)product discount:(SKPaymentDiscount *)discount API_AVAILABLE(ios(12.2), macos(10.14.4), watchos(6.2), macCatalyst(13.0), tvos(12.2));
 
 @end
 

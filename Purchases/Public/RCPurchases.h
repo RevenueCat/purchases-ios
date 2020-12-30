@@ -81,6 +81,12 @@ NS_SWIFT_NAME(Purchases)
 @property (class, nonatomic, assign) BOOL forceUniversalAppStore;
 
 /**
+ Set this property to true *only* when testing the ask-to-buy / SCA purchases flow. More information:
+ https://developer.apple.com/documentation/storekit/skmutablepayment/1620604-simulatesasktobuyinsandbox
+ */
+@property (class, nonatomic, assign) BOOL simulatesAskToBuyInSandbox;
+
+/**
  Configures an instance of the Purchases SDK with a specified API key. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
 
  @note Use this initializer if your app does not have an account system. `RCPurchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`. This also affects the behavior of `restoreTransactionsForAppStoreAccount`.
