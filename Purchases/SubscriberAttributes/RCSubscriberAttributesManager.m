@@ -141,12 +141,12 @@ NS_ASSUME_NONNULL_BEGIN
                           currentAppUserID:(NSString *)currentAppUserID
                                      error:(NSError *)error {
     if (error == nil) {
-        RCLog(@"Subscriber attributes synced successfully for appUserID: %@", syncingAppUserID);
+        RCSuccessLog(RCStrings.attribution.attributes_sync_success, syncingAppUserID);
         if (![syncingAppUserID isEqualToString:currentAppUserID]) {
             [self.deviceCache deleteAttributesIfSyncedForAppUserID:syncingAppUserID];
         }
     } else {
-        RCErrorLog(@"error when syncing subscriber attributes. Details: %@\n UserInfo:%@",
+        RCErrorLog(RCStrings.attribution.attributes_sync_error,
                    error.localizedDescription,
                    error.userInfo);
     }
@@ -185,7 +185,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    RCLog(@"marking the following attributes as synced for appUserID: %@: %@", appUserID, syncedAttributes);
+    RCLog(RCStrings.attribution.marking_attributes_synced, appUserID, syncedAttributes);
     @synchronized (self) {
         RCSubscriberAttributeMutableDict
             unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID].mutableCopy;

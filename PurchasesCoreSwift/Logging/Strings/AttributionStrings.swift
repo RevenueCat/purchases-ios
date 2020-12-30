@@ -9,6 +9,17 @@
 import Foundation
 
 @objc(RCAttributionStrings) public class AttributionStrings: NSObject {
-    @objc public var instance_configured_posting_attribution: String { "There is an instance configured, posting attribution." }
-    @objc public var no_instance_configured_caching_attribution: String { "There is no instance configured, caching attribution." }
+    @objc public var appsflyer_id_deprecated: String { "The parameter key rc_appsflyer_id is deprecated. Pass networkUserId to addAttribution instead." }
+    @objc public var attributes_sync_error: String { "Error when syncing subscriber attributes. Details: %@\n UserInfo:%@" }
+    @objc public var attributes_sync_success: String { "Subscriber attributes synced successfully for App User ID: %@" }
+    @objc public var empty_subscriber_attributes: String { "Called post subscriber attributes with an empty attributes dictionary!" }
+    @objc public var marking_attributes_synced: String { "Marking the following attributes as synced for App User ID: %@: %@" }
+    @objc public var method_called: String { "%s called" }
+    @objc public var networkuserid_required_for_appsflyer: String { "The parameter networkUserId is REQUIRED for AppsFlyer." }
+    @objc public var no_instance_configured_caching_attribution: String { "There is no purchase instance configured, caching attribution" }
+    @objc public var instance_configured_posting_attribution: String { "There is a purchase instance configured, posting attribution"}
+    @objc public var skip_same_attributes: String { "Attribution data is the same as latest. Skipping." }
+    @objc public var subscriber_attributes_error: String { "Subscriber attributes errors: %@" }
+    @objc public var unsynced_attributes_count: String { "Found %lu unsynced attributes for App User ID: %@" }
+    @objc public var unsynced_attributes: String { "Unsynced attributes: %@" }
 }
