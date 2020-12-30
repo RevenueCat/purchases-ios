@@ -531,17 +531,6 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         return;
     }
 
-    if (!self.finishTransactions) {
-        RCWarnLog(@"%@", RCStrings.purchase.purchasing_with_observer_mode_and_finish_transactions_false_warning);
-    }
-    NSString *appUserID = self.appUserID;
-    payment.applicationUsername = appUserID;
-
-    // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
-    // from triggering a refresh.
-    [self.deviceCache setPurchaserInfoCacheTimestampToNowForAppUserID:appUserID];
-    [self.deviceCache setOfferingsCacheTimestampToNow];
-
     if (presentedOfferingIdentifier) {
         RCPurchaseLog(RCStrings.purchase.purchasing_product_from_package, productIdentifier, presentedOfferingIdentifier);
     } else {
@@ -549,14 +538,19 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }
 
     @synchronized (self) {
+        if (!self.finishTransactions) {
+          RCWarnLog(@"%@", RCStrings.purchase.purchasing_with_observer_mode_and_finish_transactions_false_warning);
+        }
+        NSString *appUserID = self.appUserID;
+        payment.applicationUsername = appUserID;
+
+        // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
+        // from triggering a refresh.
+        [self.deviceCache setPurchaserInfoCacheTimestampToNowForAppUserID:appUserID];
+        [self.deviceCache setOfferingsCacheTimestampToNow];
+
         self.productsByIdentifier[productIdentifier] = product;
-    }
-
-    @synchronized (self) {
         self.presentedOfferingsByProductIdentifier[productIdentifier] = presentedOfferingIdentifier;
-    }
-
-    @synchronized (self) {
         if (self.purchaseCompleteCallbacks[productIdentifier]) {
             completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
                                                      code:RCOperationAlreadyInProgressError
@@ -566,9 +560,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             return;
         }
         self.purchaseCompleteCallbacks[productIdentifier] = [completion copy];
+        [self.storeKitWrapper addPayment:[payment copy]];
     }
-
-    [self.storeKitWrapper addPayment:[payment copy]];
 }
 
 - (void)syncPurchasesWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
