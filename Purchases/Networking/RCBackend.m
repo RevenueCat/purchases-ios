@@ -246,7 +246,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     }
     if (receiptData.length == 0) {
         if (RCSystemInfo.isSandbox) {
-            RCLog(@"App running on sandbox without a receipt file. Unable to determine into eligibility unless you've purchased before and there is a receipt available.");
+            RCAppleWarningLog(@"%@", RCStrings.receipt.no_sandbox_receipt_intro_eligibility);
         }
         NSMutableDictionary *eligibilities = [NSMutableDictionary new];
         for (NSString *productID in productIdentifiers) {
