@@ -187,4 +187,60 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
         }
         #endif
     }
+
+    func testPaymentWithProductReturnsCorrectPayment() {
+        guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
+
+        let productId = "mySuperProduct"
+        let mockProduct = MockSKProduct(mockProductIdentifier: productId)
+        let payment = wrapper.payment(with: mockProduct)
+        expect(payment.productIdentifier) == productId
+    }
+
+    func testPaymentWithProductSetsSimulatesAskToBuyInSandbox() {
+        guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
+
+        let mockProduct = MockSKProduct(mockProductIdentifier: "mySuperProduct")
+
+        RCStoreKitWrapper.simulatesAskToBuyInSandbox = false
+        let payment1 = wrapper.payment(with: mockProduct)
+        expect(payment1.simulatesAskToBuyInSandbox) == false
+
+        RCStoreKitWrapper.simulatesAskToBuyInSandbox = true
+        let payment2 = wrapper.payment(with: mockProduct)
+        expect(payment2.simulatesAskToBuyInSandbox) == true
+    }
+
+    func testPaymentWithProductAndDiscountReturnsCorrectPaymentWithDiscount() {
+        if #available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *) {
+            guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
+
+            let productId = "mySuperProduct"
+            let discountId = "mySuperDiscount"
+
+            let mockProduct = MockSKProduct(mockProductIdentifier: productId)
+            let mockDiscount = MockPaymentDiscount(mockIdentifier: discountId)
+            let payment = wrapper.payment(with: mockProduct, discount: mockDiscount)
+            expect(payment.productIdentifier) == productId
+            expect(payment.paymentDiscount) == mockDiscount
+        }
+    }
+
+    func testPaymentWithProductAndDiscountSetsSimulatesAskToBuyInSandbox() {
+        if #available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *) {
+            guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
+
+            let mockProduct = MockSKProduct(mockProductIdentifier: "mySuperProduct")
+            let mockDiscount = MockPaymentDiscount(mockIdentifier: "mySuperDiscount")
+
+            RCStoreKitWrapper.simulatesAskToBuyInSandbox = false
+            let payment1 = wrapper.payment(with: mockProduct, discount: mockDiscount)
+            expect(payment1.simulatesAskToBuyInSandbox) == false
+
+            RCStoreKitWrapper.simulatesAskToBuyInSandbox = true
+            let payment2 = wrapper.payment(with: mockProduct)
+            expect(payment2.simulatesAskToBuyInSandbox) == true
+        }
+    }
+
 }
