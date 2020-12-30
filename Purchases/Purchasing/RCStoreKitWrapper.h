@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithPaymentQueue:(SKPaymentQueue *)paymentQueue;
 
 @property (nonatomic, weak, nullable) id<RCStoreKitWrapperDelegate> delegate;
-@property (nonatomic, assign) BOOL simulatesAskToBuyInSandbox;
+@property (class, nonatomic, assign) BOOL simulatesAskToBuyInSandbox;
 
 - (void)addPayment:(SKPayment *)payment;
 - (void)finishTransaction:(SKPaymentTransaction *)transaction;

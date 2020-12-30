@@ -117,6 +117,14 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCSystemInfo.forceUniversalAppStore = forceUniversalAppStore;
 }
 
++ (BOOL)simulatesAskToBuyInSandbox {
+    return RCStoreKitWrapper.simulatesAskToBuyInSandbox;
+}
+
++ (void)setSimulatesAskToBuyInSandbox:(BOOL)simulatesAskToBuyInSandbox {
+    RCStoreKitWrapper.simulatesAskToBuyInSandbox = simulatesAskToBuyInSandbox;
+}
+
 + (NSString *)frameworkVersion {
     return RCSystemInfo.frameworkVersion;
 }

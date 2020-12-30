@@ -18,6 +18,7 @@
 
 @implementation RCStoreKitWrapper
 
+static BOOL _simulatesAskToBuyInSandbox = NO;
 @synthesize delegate = _delegate;
 
 - (instancetype)init {
@@ -26,7 +27,6 @@
 
 - (nullable instancetype)initWithPaymentQueue:(SKPaymentQueue *)paymentQueue {
     if (self = [super init]) {
-        self.simulatesAskToBuyInSandbox = NO;
         self.paymentQueue = paymentQueue;
     }
     return self;
@@ -44,6 +44,14 @@
     } else {
         [self.paymentQueue removeTransactionObserver:self];
     }
+}
+
++ (BOOL)simulatesAskToBuyInSandbox {
+    return _simulatesAskToBuyInSandbox;
+}
+
++ (void)setSimulatesAskToBuyInSandbox:(BOOL)simulatesAskToBuyInSandbox {
+    _simulatesAskToBuyInSandbox = simulatesAskToBuyInSandbox;
 }
 
 - (id<RCStoreKitWrapperDelegate>)delegate {
@@ -75,7 +83,7 @@
 
 - (SKMutablePayment *)paymentWithProduct:(SKProduct *)product {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-    payment.simulatesAskToBuyInSandbox = self.simulatesAskToBuyInSandbox;
+    payment.simulatesAskToBuyInSandbox = self.class.simulatesAskToBuyInSandbox;
     return payment;
 }
 
