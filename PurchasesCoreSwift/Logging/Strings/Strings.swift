@@ -7,7 +7,9 @@ import Foundation
 
 @objc(RCStrings) public class Strings: NSObject {
     @objc public static let attribution = AttributionStrings()
+    @objc public static let configure = ConfigureStrings()
     @objc public static let identity = IdentityStrings()
     @objc public static let network = NetworkStrings()
+    @objc public static let purchaserInfo = PurchaserInfoStrings()
     @objc public static let receipt = ReceiptStrings()
 }

@@ -216,6 +216,8 @@
 		9A65E0762591977200DE00B0 /* IdentityStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0752591977200DE00B0 /* IdentityStrings.swift */; };
 		9A65E07B2591977500DE00B0 /* NetworkStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E07A2591977500DE00B0 /* NetworkStrings.swift */; };
 		9A65E0802591977900DE00B0 /* ReceiptStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E07F2591977900DE00B0 /* ReceiptStrings.swift */; };
+		9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */; };
+		9A65E03B25918B0900DE00B0 /* PurchaserInfoStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E03A25918B0900DE00B0 /* PurchaserInfoStrings.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -476,6 +478,8 @@
 		9A65E0752591977200DE00B0 /* IdentityStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IdentityStrings.swift; sourceTree = "<group>"; };
 		9A65E07A2591977500DE00B0 /* NetworkStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkStrings.swift; sourceTree = "<group>"; };
 		9A65E07F2591977900DE00B0 /* ReceiptStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceiptStrings.swift; sourceTree = "<group>"; };
+		9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfigureStrings.swift; sourceTree = "<group>"; };
+		9A65E03A25918B0900DE00B0 /* PurchaserInfoStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaserInfoStrings.swift; sourceTree = "<group>"; };
 		A976872C3EDAC0B4F4B45481 /* Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -535,6 +539,8 @@
 				9A65E0752591977200DE00B0 /* IdentityStrings.swift */,
 				9A65E07A2591977500DE00B0 /* NetworkStrings.swift */,
 				9A65E07F2591977900DE00B0 /* ReceiptStrings.swift */,
+				9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */,
+				9A65E03A25918B0900DE00B0 /* PurchaserInfoStrings.swift */,
 				37E3507939634ED5A9280544 /* Strings.swift */,
 			);
 			path = Strings;
@@ -1355,10 +1361,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A65E03B25918B0900DE00B0 /* PurchaserInfoStrings.swift in Sources */,
 				2DDF41B624F6F387005BC22D /* ASN1ObjectIdentifierBuilder.swift in Sources */,
 				2DDF419624F6F331005BC22D /* ProductsRequestFactory.swift in Sources */,
 				2DDF419724F6F331005BC22D /* DateExtensions.swift in Sources */,
 				2DC5623024EC63730031F69B /* OperationDispatcher.swift in Sources */,
+				9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */,
 				2D11F5E1250FF886005A70E8 /* AttributionStrings.swift in Sources */,
 				2DDF41B524F6F387005BC22D /* AppleReceiptBuilder.swift in Sources */,
 				2DDF41A324F6F331005BC22D /* ReceiptParser.swift in Sources */,

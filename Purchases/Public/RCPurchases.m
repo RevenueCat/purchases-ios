@@ -131,7 +131,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 + (instancetype)sharedPurchases {
     if (!_sharedPurchases) {
-        RCLog(@"There is no singleton instance. Make sure you configure Purchases before trying to get the default instance.");
+        RCWarnLog(@"%@", RCStrings.configure.no_singleton_instance);
     }
     return _sharedPurchases;
 }
@@ -139,7 +139,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 + (void)setDefaultInstance:(RCPurchases *)instance {
     @synchronized([RCPurchases class]) {
         if (_sharedPurchases) {
-            RCLog(@"Purchases instance already set. Did you mean to configure two Purchases objects?");
+            RCLog(@"%@", RCStrings.configure.purchase_instance_already_set);
         }
         _sharedPurchases = instance;
     }
@@ -265,10 +265,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
        introEligibilityCalculator:(RCIntroEligibilityCalculator *)introEligibilityCalculator
                     receiptParser:(RCReceiptParser *)receiptParser {
     if (self = [super init]) {
-        RCDebugLog(@"Debug logging enabled.");
-        RCDebugLog(@"SDK Version - %@", self.class.frameworkVersion);
-        RCDebugLog(@"Initial App User ID - %@", appUserID);
-        RCDebugLog(@"%@", RCStrings.receipt.unknown_backend_error);
+        RCDebugLog(@"%@", RCStrings.configure.debug_enabled);
+        RCDebugLog(RCStrings.configure.sdk_version, self.class.frameworkVersion);
+        RCDebugLog(RCStrings.configure.initial_app_user_id, appUserID);
 
         self.requestFetcher = requestFetcher;
         self.receiptFetcher = receiptFetcher;
@@ -341,7 +340,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)setDelegate:(id <RCPurchasesDelegate>)delegate {
     _delegate = delegate;
-    RCDebugLog(@"Delegate set");
+    RCDebugLog(@"%@", RCStrings.configure.delegate_set);
 
     [self sendCachedPurchaserInfoIfAvailable];
 }
@@ -367,10 +366,10 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                fromNetwork:(RCAttributionNetwork)network
           forNetworkUserId:(nullable NSString *)networkUserId {
     if (_sharedPurchases) {
-        RCLog(@"%@", RCStrings.attribution.instance_configured_posting_attribution);
+        RCDebugLog(@"%@", RCStrings.attribution.instance_configured_posting_attribution);
         [_sharedPurchases postAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
     } else {
-        RCLog(@"%@", RCStrings.attribution.no_instance_configured_caching_attribution);
+        RCDebugLog(@"%@", RCStrings.attribution.no_instance_configured_caching_attribution);
         [RCAttributionFetcher storePostponedAttributionData:data
                                                 fromNetwork:network
                                            forNetworkUserId:networkUserId];
@@ -426,14 +425,15 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
         RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
         if (infoFromCache) {
-            RCDebugLog(@"Vending purchaserInfo from cache");
+            RCDebugLog(@"%@", RCStrings.purchaserInfo.vending_cache);
             CALL_IF_SET_ON_MAIN_THREAD(completion, infoFromCache, nil);
             if ([self.deviceCache isPurchaserInfoCacheStaleForAppUserID:self.appUserID isAppBackgrounded:isAppBackgrounded]) {
-                RCDebugLog(@"Cache is stale, updating caches");
+                RCDebugLog(@"%@", isAppBackgrounded ? RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_background : RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_foreground);
                 [self fetchAndCachePurchaserInfoWithCompletion:nil isAppBackgrounded:isAppBackgrounded];
+                RCSuccessLog(@"%@", RCStrings.purchaserInfo.purchaserinfo_updated_from_network);
             }
         } else {
-            RCDebugLog(@"No cached purchaser info, fetching");
+            RCDebugLog(@"%@", RCStrings.purchaserInfo.no_cached_purchaserinfo);
             [self fetchAndCachePurchaserInfoWithCompletion:completion isAppBackgrounded:isAppBackgrounded];
         }
     }];
@@ -729,7 +729,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)invalidatePurchaserInfoCache {
-    RCDebugLog(@"Purchaser info cache is invalidated");
+    RCDebugLog(@"%@", RCStrings.purchaserInfo.invalidating_purchaserinfo_cache);
     [self.deviceCache clearPurchaserInfoCacheForAppUserID:self.appUserID];
 }
 
@@ -741,92 +741,93 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 #pragma mark Subcriber Attributes
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
-    RCDebugLog(@"setAttributes called");
+    RCDebugLog(RCStrings.attribution.method_called, "setAttributes");
     [self.subscriberAttributesManager setAttributes:attributes appUserID:self.appUserID];
 }
 
 - (void)setEmail:(nullable NSString *)email {
-    RCDebugLog(@"setEmail called");
+    RCDebugLog(RCStrings.attribution.method_called, "setEmail");
     [self.subscriberAttributesManager setEmail:email appUserID:self.appUserID];
 }
 
 - (void)setPhoneNumber:(nullable NSString *)phoneNumber {
-    RCDebugLog(@"setPhoneNumber called");
+    RCDebugLog(RCStrings.attribution.method_called, "setPhoneNumber");
     [self.subscriberAttributesManager setPhoneNumber:phoneNumber appUserID:self.appUserID];
 }
 
 - (void)setDisplayName:(nullable NSString *)displayName {
-    RCDebugLog(@"setDisplayName called");
+    RCDebugLog(RCStrings.attribution.method_called, "setDisplayName");
     [self.subscriberAttributesManager setDisplayName:displayName appUserID:self.appUserID];
 }
 
 - (void)setPushToken:(nullable NSData *)pushToken {
-    RCDebugLog(@"setPushToken called");
+    RCDebugLog(RCStrings.attribution.method_called, "setPushToken");
     [self.subscriberAttributesManager setPushToken:pushToken appUserID:self.appUserID];
 }
 
 - (void)_setPushTokenString:(nullable NSString *)pushToken {
-    RCDebugLog(@"setPushTokenString called");
+    RCDebugLog(RCStrings.attribution.method_called, "setPushTokenString");
     [self.subscriberAttributesManager setPushTokenString:pushToken appUserID:self.appUserID];
 }
 
 - (void)setAdjustID:(nullable NSString *)adjustID {
-    RCDebugLog(@"setAdjustID called");
+    RCDebugLog(RCStrings.attribution.method_called, "setAdjustID");
     [self.subscriberAttributesManager setAdjustID:adjustID appUserID:self.appUserID];
 }
 
 - (void)setAppsflyerID:(nullable NSString *)appsflyerID {
-    RCDebugLog(@"setAppsflyerID called");
+    RCDebugLog(RCStrings.attribution.method_called, "setAppsflyerID");
     [self.subscriberAttributesManager setAppsflyerID:appsflyerID appUserID:self.appUserID];
 }
 
 - (void)setFBAnonymousID:(nullable NSString *)fbAnonymousID {
-    RCDebugLog(@"setFBAnonymousID called");
+    RCDebugLog(RCStrings.attribution.method_called, "setFBAnonymousID");
     [self.subscriberAttributesManager setFBAnonymousID:fbAnonymousID appUserID:self.appUserID];
 }
 
 - (void)setMparticleID:(nullable NSString *)mparticleID {
-    RCDebugLog(@"setMparticleID called");
+    RCDebugLog(RCStrings.attribution.method_called, "setMparticleID");
     [self.subscriberAttributesManager setMparticleID:mparticleID appUserID:self.appUserID];
 }
 
 - (void)setOnesignalID:(nullable NSString *)onesignalID {
-    RCDebugLog(@"setOnesignalID called");
+    RCDebugLog(RCStrings.attribution.method_called, "setOnesignalID");
     [self.subscriberAttributesManager setOnesignalID:onesignalID appUserID:self.appUserID];
 }
 
 - (void)setMediaSource:(nullable NSString *)mediaSource {
-    RCDebugLog(@"setMediaSource called");
+    RCDebugLog(RCStrings.attribution.method_called, "setMediaSource");
     [self.subscriberAttributesManager setMediaSource:mediaSource appUserID:self.appUserID];
 }
 
 - (void)setCampaign:(nullable NSString *)campaign {
-    RCDebugLog(@"setCampaign called");
+    RCDebugLog(RCStrings.attribution.method_called, "setCampaign");
     [self.subscriberAttributesManager setCampaign:campaign appUserID:self.appUserID];
 }
 
 - (void)setAdGroup:(nullable NSString *)adGroup {
-    RCDebugLog(@"setAdGroup called");
+    RCDebugLog(RCStrings.attribution.method_called, "setAdGroup");
     [self.subscriberAttributesManager setAdGroup:adGroup appUserID:self.appUserID];
 }
 
 - (void)setAd:(nullable NSString *)ad {
-    RCDebugLog(@"setAd called");
+    RCDebugLog(RCStrings.attribution.method_called, "setAd");
     [self.subscriberAttributesManager setAd:ad appUserID:self.appUserID];
 }
 
 - (void)setKeyword:(nullable NSString *)keyword {
-    RCDebugLog(@"setKeyword called");
+    RCDebugLog(RCStrings.attribution.method_called, "setKeyword");
     [self.subscriberAttributesManager setKeyword:keyword appUserID:self.appUserID];
 }
 
 - (void)setCreative:(nullable NSString *)creative {
-    RCDebugLog(@"setCreative called");
+    RCDebugLog(RCStrings.attribution.method_called, "setCreative");
     [self.subscriberAttributesManager setCreative:creative appUserID:self.appUserID];
 }
 
 - (void)collectDeviceIdentifiers {
     RCDebugLog(@"collectDeviceIdentifiers called");
+    RCDebugLog(RCStrings.attribution.method_called, "setAttributes");
     [self.subscriberAttributesManager collectDeviceIdentifiersForAppUserID:self.appUserID];
 }
 
@@ -849,7 +850,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)updateAllCachesIfNeeded {
-    RCDebugLog(@"applicationDidBecomeActive");
+    RCDebugLog(@"%@", RCStrings.configure.application_active);
     [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
         if ([self.deviceCache isPurchaserInfoCacheStaleForAppUserID:self.appUserID isAppBackgrounded:isAppBackgrounded]) {
             RCDebugLog(@"PurchaserInfo cache is stale, updating caches");
@@ -1073,9 +1074,9 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         @synchronized (self) {
             if (![self.lastSentPurchaserInfo isEqual:info]) {
                 if (self.lastSentPurchaserInfo) {
-                    RCDebugLog(@"Purchaser info updated, sending to delegate");
+                    RCDebugLog(@"%@", RCStrings.purchaserInfo.sending_updated_purchaserinfo_to_delegate);
                 } else {
-                    RCDebugLog(@"Sending latest purchaser info to delegate");
+                    RCDebugLog(@"%@", RCStrings.purchaserInfo.sending_latest_purchaserinfo_to_delegate);
                 }
                 self.lastSentPurchaserInfo = info;
                 [self.operationDispatcher dispatchOnMainThread:^{
