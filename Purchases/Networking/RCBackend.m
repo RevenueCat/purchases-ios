@@ -246,7 +246,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     }
     if (receiptData.length == 0) {
         if (RCSystemInfo.isSandbox) {
-            RCLog(@"App running on sandbox without a receipt file. Unable to determine into eligibility unless you've purchased before and there is a receipt available.");
+            RCAppleWarningLog(@"%@", RCStrings.receipt.no_sandbox_receipt_intro_eligibility);
         }
         NSMutableDictionary *eligibilities = [NSMutableDictionary new];
         for (NSString *productID in productIdentifiers) {
@@ -434,7 +434,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                        appUserID:(NSString *)appUserID
                       completion:(nullable void (^)(NSError *_Nullable error))completion {
     if (subscriberAttributes.count == 0) {
-        RCLog(@"called post subscriber attributes with an empty attributes dict!");
+        RCWarnLog(@"%@", RCStrings.attribution.empty_subscriber_attributes);
         return;
     }
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];

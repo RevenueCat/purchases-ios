@@ -42,7 +42,7 @@
             appUserID = [self.deviceCache cachedLegacyAppUserID];
             if (appUserID == nil) {
                 appUserID = [self generateRandomID];
-                RCDebugLog(@"Generated New App User ID - %@", appUserID);
+                RCUserLog(RCStrings.identity.identifying_app_user_id, appUserID);
             }
         }
     }
@@ -53,10 +53,10 @@
 
 - (void)identifyAppUserID:(NSString *)appUserID withCompletionBlock:(void (^)(NSError *_Nullable error))completion {
     if (self.currentUserIsAnonymous) {
-        RCDebugLog(@"Identifying from an anonymous ID: %@. An alias will be created.", self.currentAppUserID);
+        RCUserLog(RCStrings.identity.identifying_anon_id, self.currentAppUserID);
         [self createAlias:appUserID withCompletionBlock:completion];
     } else {
-        RCDebugLog(@"Changing App User ID: %@ -> %@", self.currentAppUserID, appUserID);
+        RCUserLog(RCStrings.identity.changing_app_user_id, self.currentAppUserID, appUserID);
         [self.deviceCache clearCachesForAppUserID:self.currentAppUserID andSaveNewUserID:appUserID];
         completion(nil);
     }
@@ -69,15 +69,14 @@
 - (void)createAlias:(NSString *)alias withCompletionBlock:(void (^)(NSError *_Nullable error))completion {
     NSString *currentAppUserID = self.currentAppUserID;
     if (!currentAppUserID) {
-        RCWarnLog(@"Couldn't create an alias because the currentAppUserID is null. "
-                   "This might happen if the entry in UserDefaults is missing.");
+        RCWarnLog(@"%@", RCStrings.identity.creating_alias_failed_null_currentappuserid);
         completion(RCPurchasesErrorUtils.missingAppUserIDError);
         return;
     }
-    RCDebugLog(@"Creating an alias from %@ to %@", currentAppUserID, alias);
+    RCUserLog(RCStrings.identity.creating_alias, currentAppUserID, alias);
     [self.backend createAliasForAppUserID:currentAppUserID withNewAppUserID:alias completion:^(NSError *_Nullable error) {
         if (error == nil) {
-            RCDebugLog(@"Alias created");
+            RCUserLog(@"%@", RCStrings.identity.creating_alias_success);
             [self.deviceCache clearCachesForAppUserID:currentAppUserID andSaveNewUserID:alias];
         }
         completion(error);
