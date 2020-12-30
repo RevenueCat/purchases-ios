@@ -48,7 +48,7 @@ typedef void (^RCDeferredPromotionalPurchaseBlock)(RCPurchaseCompletedBlock);
 /**
  * Deferred block for `-[RCPurchases paymentDiscountForProductDiscount:product:completion:]`
  */
-API_AVAILABLE(ios(12.2), macos(10.14.4))
+API_AVAILABLE(ios(12.2), macos(10.14.4), watchos(6.2), macCatalyst(13.0), tvos(12.2))
 typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PaymentDiscountBlock);
 
 /**
@@ -333,7 +333,7 @@ NS_SWIFT_NAME(syncPurchases(_:));
 */
 - (void)paymentDiscountForProductDiscount:(SKProductDiscount *)discount
                                   product:(SKProduct *)product
-                               completion:(RCPaymentDiscountBlock)completion API_AVAILABLE(ios(12.2), macosx(10.14.4));
+                               completion:(RCPaymentDiscountBlock)completion API_AVAILABLE(ios(12.2), macos(10.14.4), watchos(6.2), macCatalyst(13.0), tvos(12.2));
 
 
 /**
@@ -353,7 +353,7 @@ NS_SWIFT_NAME(syncPurchases(_:));
  */
 - (void)purchaseProduct:(SKProduct *)product
            withDiscount:(SKPaymentDiscount *)discount
-        completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(purchaseProduct(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
+        completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(purchaseProduct(_:discount:_:)) API_AVAILABLE(ios(12.2), macos(10.14.4), watchos(6.2), macCatalyst(13.0), tvos(12.2));
 
 /**
  Purchase the passed `RCPackage`.
@@ -372,7 +372,7 @@ NS_SWIFT_NAME(syncPurchases(_:));
  */
 - (void)purchasePackage:(RCPackage *)package
            withDiscount:(SKPaymentDiscount *)discount
-        completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(purchasePackage(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4));
+        completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(purchasePackage(_:discount:_:)) API_AVAILABLE(ios(12.2), macos(10.14.4), watchos(6.2), macCatalyst(13.0), tvos(12.2));
 
 
 /**
