@@ -193,13 +193,25 @@ NS_SWIFT_NAME(createAlias(_:_:));
  @param appUserID The appUserID that should be linked to the currently user
  */
 - (void)identify:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-NS_SWIFT_NAME(identify(_:_:));
+NS_SWIFT_NAME(identify(_:_:)) __attribute((deprecated("Use logIn instead.")));;
 
 /**
  * Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
  */
 - (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-NS_SWIFT_NAME(reset(_:));
+NS_SWIFT_NAME(reset(_:)) __attribute((deprecated("Use logOut instead.")));
+
+/**
+ This function will identify the current user with an appUserID.
+ @param appUserID The appUserID that should be linked to the currently user
+ */
+- (void)logIn:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
+NS_SWIFT_NAME(logIn(_:_:));
+
+/**
+ Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.*/
+- (void)logOutWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
+NS_SWIFT_NAME(logOut(_:));
 
 #pragma mark Attribution
 

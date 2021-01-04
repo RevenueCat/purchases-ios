@@ -406,7 +406,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     if ([alias isEqualToString:self.identityManager.currentAppUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];
     } else {
-        [self.identityManager createAlias:alias withCompletionBlock:^(NSError * _Nullable error) {
+        [self.identityManager createAliasForAppUserID:alias completionBlock:^(NSError *_Nullable error) {
             if (error == nil) {
                 [self updateAllCachesWithCompletionBlock:completion];
             } else {
@@ -420,7 +420,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     if ([appUserID isEqualToString:self.identityManager.currentAppUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];
     } else {
-        [self.identityManager identifyAppUserID:appUserID withCompletionBlock:^(NSError *error) {
+        [self.identityManager identifyAppUserID:appUserID completionBlock:^(NSError *error) {
             if (error == nil) {
                 [self updateAllCachesWithCompletionBlock:completion];
             } else {
@@ -431,9 +431,27 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
+- (void)logIn:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
+    if ([appUserID isEqualToString:self.identityManager.currentAppUserID]) {
+        [self purchaserInfoWithCompletionBlock:completion];
+    } else {
+        [self.identityManager logInAppUserID:appUserID completionBlock:^(NSError *error) {
+            if (error == nil) {
+                [self updateAllCachesWithCompletionBlock:completion];
+            } else {
+                CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
+            }
+        }];
+    }
+}
+
+- (void)logOutWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     [self.identityManager resetAppUserID];
     [self updateAllCachesWithCompletionBlock:completion];
+}
+
+- (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
+    [self logOutWithCompletionBlock:completion];
 }
 
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion {

@@ -51,10 +51,10 @@
     [self.deviceCache cleanupSubscriberAttributes];
 }
 
-- (void)identifyAppUserID:(NSString *)appUserID withCompletionBlock:(void (^)(NSError *_Nullable error))completion {
+- (void)identifyAppUserID:(NSString *)appUserID completionBlock:(void (^)(NSError *_Nullable error))completion {
     if (self.currentUserIsAnonymous) {
         RCUserLog(RCStrings.identity.identifying_anon_id, self.currentAppUserID);
-        [self createAlias:appUserID withCompletionBlock:completion];
+        [self createAliasForAppUserID:appUserID completionBlock:completion];
     } else {
         RCUserLog(RCStrings.identity.changing_app_user_id, self.currentAppUserID, appUserID);
         [self.deviceCache clearCachesForAppUserID:self.currentAppUserID andSaveNewUserID:appUserID];
@@ -66,7 +66,7 @@
     [self.deviceCache cacheAppUserID:appUserID];
 }
 
-- (void)createAlias:(NSString *)alias withCompletionBlock:(void (^)(NSError *_Nullable error))completion {
+- (void)createAliasForAppUserID:(NSString *)alias completionBlock:(void (^)(NSError *_Nullable error))completion {
     NSString *currentAppUserID = self.currentAppUserID;
     if (!currentAppUserID) {
         RCWarnLog(@"%@", RCStrings.identity.creating_alias_failed_null_currentappuserid);
@@ -98,4 +98,32 @@
     return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID;
 }
 
+- (void)logInAppUserID:(NSString *)newAppUserID completionBlock:(void (^)(NSError *))completion {
+    if (!newAppUserID || [newAppUserID isEqualToString:@""]) {
+        RCErrorLog(@"%@", RCStrings.identity.creating_alias_failed_null_currentappuserid);
+        completion(RCPurchasesErrorUtils.missingAppUserIDError);
+        return;
+    }
+
+    NSString *currentAppUserID = self.currentAppUserID;
+    if (!currentAppUserID) {
+        RCWarnLog(@"%@", RCStrings.identity.logging_in_with_initial_appuserid_nil);
+    }
+
+    if ([newAppUserID isEqualToString:currentAppUserID]) {
+        RCWarnLog(@"%@", RCStrings.identity.logging_in_with_nil_appuserid);
+        completion(nil);
+        return;
+    }
+
+    [self.backend logInWithCurrentAppUserID:currentAppUserID
+                               newAppUserID:newAppUserID
+                                 completion:^(NSError *_Nullable error) {
+        if (error == nil) {
+            RCUserLog(@"%@", RCStrings.identity.login_success);
+            [self.deviceCache clearCachesForAppUserID:currentAppUserID andSaveNewUserID:newAppUserID];
+        }
+        completion(error);
+    }];
+}
 @end

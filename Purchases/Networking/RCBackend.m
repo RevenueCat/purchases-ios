@@ -509,4 +509,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     return resultDict;
 }
 
+- (void)logInWithCurrentAppUserID:(NSString *)currentAppUserID
+                     newAppUserID:(NSString *)newAppUserID
+                       completion:(void (^)(NSError *))completion {
+
+}
 @end
