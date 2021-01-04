@@ -82,7 +82,7 @@ NS_SWIFT_NAME(Purchases)
 
 /**
  Set this property to true *only* when testing the ask-to-buy / SCA purchases flow. More information:
- https://developer.apple.com/documentation/storekit/skmutablepayment/1620604-simulatesasktobuyinsandbox
+ http://errors.rev.cat/ask-to-buy
  */
 @property (class, nonatomic, assign) BOOL simulatesAskToBuyInSandbox;
 
