@@ -422,21 +422,26 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion {
-    [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
-        RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
-        if (infoFromCache) {
-            RCDebugLog(@"%@", RCStrings.purchaserInfo.vending_cache);
-            CALL_IF_SET_ON_MAIN_THREAD(completion, infoFromCache, nil);
-            if ([self.deviceCache isPurchaserInfoCacheStaleForAppUserID:self.appUserID isAppBackgrounded:isAppBackgrounded]) {
-                RCDebugLog(@"%@", isAppBackgrounded ? RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_background : RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_foreground);
+    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
+    if (infoFromCache) {
+        RCDebugLog(@"%@", RCStrings.purchaserInfo.vending_cache);
+        CALL_IF_SET_ON_MAIN_THREAD(completion, infoFromCache, nil);
+        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
+            if ([self.deviceCache isPurchaserInfoCacheStaleForAppUserID:self.appUserID
+                                                      isAppBackgrounded:isAppBackgrounded]) {
+                RCDebugLog(@"%@", isAppBackgrounded
+                                  ? RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_background
+                                  : RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_foreground);
                 [self fetchAndCachePurchaserInfoWithCompletion:nil isAppBackgrounded:isAppBackgrounded];
                 RCSuccessLog(@"%@", RCStrings.purchaserInfo.purchaserinfo_updated_from_network);
             }
-        } else {
-            RCDebugLog(@"%@", RCStrings.purchaserInfo.no_cached_purchaserinfo);
+        }];
+    } else {
+        RCDebugLog(@"%@", RCStrings.purchaserInfo.no_cached_purchaserinfo);
+        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
             [self fetchAndCachePurchaserInfoWithCompletion:completion isAppBackgrounded:isAppBackgrounded];
-        }
-    }];
+        }];
+    }
 }
 
 #pragma mark Purchasing
