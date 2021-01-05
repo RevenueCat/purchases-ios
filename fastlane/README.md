@@ -61,6 +61,11 @@ replace API KEY for integration tests
 fastlane ios deploy
 ```
 Deploy
+### ios prepare_next_version
+```
+fastlane ios prepare_next_version
+```
+Prepare next version
 
 ----
 
