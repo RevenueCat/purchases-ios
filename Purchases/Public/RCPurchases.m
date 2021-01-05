@@ -430,21 +430,26 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion {
-    [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
-        RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
-        if (infoFromCache) {
-            RCDebugLog(@"%@", RCStrings.purchaserInfo.vending_cache);
-            CALL_IF_SET_ON_MAIN_THREAD(completion, infoFromCache, nil);
-            if ([self.deviceCache isPurchaserInfoCacheStaleForAppUserID:self.appUserID isAppBackgrounded:isAppBackgrounded]) {
-                RCDebugLog(@"%@", isAppBackgrounded ? RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_background : RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_foreground);
+    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCache];
+    if (infoFromCache) {
+        RCDebugLog(@"%@", RCStrings.purchaserInfo.vending_cache);
+        CALL_IF_SET_ON_MAIN_THREAD(completion, infoFromCache, nil);
+        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
+            if ([self.deviceCache isPurchaserInfoCacheStaleForAppUserID:self.appUserID
+                                                      isAppBackgrounded:isAppBackgrounded]) {
+                RCDebugLog(@"%@", isAppBackgrounded
+                                  ? RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_background
+                                  : RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_foreground);
                 [self fetchAndCachePurchaserInfoWithCompletion:nil isAppBackgrounded:isAppBackgrounded];
                 RCSuccessLog(@"%@", RCStrings.purchaserInfo.purchaserinfo_updated_from_network);
             }
-        } else {
-            RCDebugLog(@"%@", RCStrings.purchaserInfo.no_cached_purchaserinfo);
+        }];
+    } else {
+        RCDebugLog(@"%@", RCStrings.purchaserInfo.no_cached_purchaserinfo);
+        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
             [self fetchAndCachePurchaserInfoWithCompletion:completion isAppBackgrounded:isAppBackgrounded];
-        }
-    }];
+        }];
+    }
 }
 
 #pragma mark Purchasing
@@ -935,20 +940,25 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)offeringsWithCompletionBlock:(RCReceiveOfferingsBlock)completion {
-    [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
-        if (self.deviceCache.cachedOfferings) {
-            RCDebugLog(@"%@", RCStrings.offering.vending_offerings_cache);
-            CALL_IF_SET_ON_MAIN_THREAD(completion, self.deviceCache.cachedOfferings, nil);
-                if ([self.deviceCache isOfferingsCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
-                    RCDebugLog(@"%@", isAppBackgrounded ? RCStrings.offering.offerings_stale_updating_in_background : RCStrings.offering.offerings_stale_updating_in_foreground);
-                    [self updateOfferingsCache:nil isAppBackgrounded:isAppBackgrounded];
-                    RCSuccessLog(@"%@", RCStrings.offering.offerings_stale_updated_from_network);
-                }
-        } else {
-            RCDebugLog(@"%@", RCStrings.offering.no_cached_offerings_fetching_from_network);
+    if (self.deviceCache.cachedOfferings) {
+        RCDebugLog(@"%@", RCStrings.offering.vending_offerings_cache);
+        CALL_IF_SET_ON_MAIN_THREAD(completion, self.deviceCache.cachedOfferings, nil);
+        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
+            if ([self.deviceCache isOfferingsCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
+                RCDebugLog(@"%@",
+                           isAppBackgrounded
+                           ? RCStrings.offering.offerings_stale_updating_in_background
+                           : RCStrings.offering.offerings_stale_updating_in_foreground);
+                [self updateOfferingsCache:nil isAppBackgrounded:isAppBackgrounded];
+                RCSuccessLog(@"%@", RCStrings.offering.offerings_stale_updated_from_network);
+            }
+        }];
+    } else {
+        RCDebugLog(@"%@", RCStrings.offering.no_cached_offerings_fetching_from_network);
+        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
             [self updateOfferingsCache:completion isAppBackgrounded:isAppBackgrounded];
-        }
-    }];
+        }];
+    }
 }
 
 - (void)updateOfferingsCache:(nullable RCReceiveOfferingsBlock)completion isAppBackgrounded:(BOOL)isAppBackgrounded {
