@@ -195,6 +195,17 @@ jobs:
           name: Deploy new version
           command: bundle exec fastlane deploy
 
+  prepare-next-version:
+    macos:
+      xcode: "12.2.0"
+    working_directory: ~/purchases-ios/
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - trust-github-key
+      - run:
+          name: Prepare next version
+          command: bundle exec fastlane prepare_next_version
 
   integration-tests-cocoapods:
     macos:
@@ -278,5 +289,6 @@ workflows:
   deploy:
     jobs:
       - make-release: *release-tags
+      - prepare-next-version: *release-tags
       - docs-deploy: *release-tags
 

@@ -115,30 +115,31 @@ platform :ios do
     push_pods
     carthage_archive
     github_release(version: version_number)
-    prepare_next_version(version_number)
   end
 
-end
+  desc "Prepare next version"
+  lane :prepare_next_version do |options|
+    current_version_number = get_version_number(target: "Purchases")
+    major, minor, _ = current_version_number.split('.')
+    next_version = "#{major}.#{minor.to_i + 1}.0"
+    next_version_snapshot = "#{next_version}-SNAPSHOT"
 
-def prepare_next_version(current_version)
-  major, minor, _ = current_version.split('.')
-  next_version = "#{major}.#{minor.to_i + 1}.0"
-  next_version_snapshot = "#{next_version}-SNAPSHOT"
+    branch_name = "bump/#{next_version_snapshot}"
+    sh("git", "checkout", "-b", branch_name)
 
-  branch_name = "bump/#{next_version_snapshot}"
-  sh("git", "checkout", "-b", branch_name)
+    bump(version: next_version_snapshot)
 
-  bump(version: next_version_snapshot)
+    sh("git", "commit", "-am", "Preparing for next version")
+    push_to_git_remote
 
-  sh("git", "commit", "-am", "Preparing for next version")
-  push_to_git_remote
+    create_pull_request(
+      repo: "revenuecat/purchases-ios",
+      title: "Prepare next version: #{next_version_snapshot}",
+      base: "develop",
+      api_token: ENV["GITHUB_TOKEN"]
+    )
+  end
 
-  create_pull_request(
-    repo: "revenuecat/purchases-ios",
-    title: "Prepare next version: #{next_version_snapshot}",
-    base: "develop",
-    api_token: ENV["GITHUB_TOKEN"]
-  )
 end
 
 def push_pods
