@@ -117,6 +117,14 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCSystemInfo.forceUniversalAppStore = forceUniversalAppStore;
 }
 
++ (BOOL)simulatesAskToBuyInSandbox {
+    return RCStoreKitWrapper.simulatesAskToBuyInSandbox;
+}
+
++ (void)setSimulatesAskToBuyInSandbox:(BOOL)simulatesAskToBuyInSandbox {
+    RCStoreKitWrapper.simulatesAskToBuyInSandbox = simulatesAskToBuyInSandbox;
+}
+
 + (NSString *)frameworkVersion {
     return RCSystemInfo.frameworkVersion;
 }
@@ -476,29 +484,28 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)purchaseProduct:(SKProduct *)product
     withCompletionBlock:(RCPurchaseCompletedBlock)completion {
-    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
+    SKMutablePayment *payment = [self.storeKitWrapper paymentWithProduct:product];
     [self purchaseProduct:product withPayment:payment withPresentedOfferingIdentifier:nil completion:completion];
 }
 
 - (void)purchasePackage:(RCPackage *)package
     withCompletionBlock:(RCPurchaseCompletedBlock)completion {
-    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:package.product];
+    SKMutablePayment *payment = [self.storeKitWrapper paymentWithProduct:package.product];
     [self purchaseProduct:package.product withPayment:payment withPresentedOfferingIdentifier:package.offeringIdentifier completion:completion];
 }
 
 - (void)purchaseProduct:(SKProduct *)product
            withDiscount:(SKPaymentDiscount *)discount
         completionBlock:(RCPurchaseCompletedBlock)completion {
-    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-    payment.paymentDiscount = discount;
+    SKMutablePayment *payment = [self.storeKitWrapper paymentWithProduct:product discount:discount];
     [self purchaseProduct:product withPayment:payment withPresentedOfferingIdentifier:nil completion:completion];
 }
 
 - (void)purchasePackage:(RCPackage *)package
            withDiscount:(SKPaymentDiscount *)discount
         completionBlock:(RCPurchaseCompletedBlock)completion {
-    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:package.product];
-    payment.paymentDiscount = discount;
+    SKMutablePayment *payment = [self.storeKitWrapper paymentWithProduct:package.product
+                                                                discount:discount];
     [self purchaseProduct:package.product withPayment:payment withPresentedOfferingIdentifier:package.offeringIdentifier completion:completion];
 }
 

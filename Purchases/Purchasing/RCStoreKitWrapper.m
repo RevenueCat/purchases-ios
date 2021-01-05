@@ -18,6 +18,7 @@
 
 @implementation RCStoreKitWrapper
 
+static BOOL _simulatesAskToBuyInSandbox = NO;
 @synthesize delegate = _delegate;
 
 - (instancetype)init {
@@ -43,6 +44,14 @@
     } else {
         [self.paymentQueue removeTransactionObserver:self];
     }
+}
+
++ (BOOL)simulatesAskToBuyInSandbox {
+    return _simulatesAskToBuyInSandbox;
+}
+
++ (void)setSimulatesAskToBuyInSandbox:(BOOL)simulatesAskToBuyInSandbox {
+    _simulatesAskToBuyInSandbox = simulatesAskToBuyInSandbox;
 }
 
 - (id<RCStoreKitWrapperDelegate>)delegate {
@@ -71,6 +80,20 @@
     }
 #endif
 }
+
+- (SKMutablePayment *)paymentWithProduct:(SKProduct *)product {
+    SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
+    payment.simulatesAskToBuyInSandbox = self.class.simulatesAskToBuyInSandbox;
+    return payment;
+}
+
+- (SKMutablePayment *)paymentWithProduct:(SKProduct *)product discount:(SKPaymentDiscount *)discount {
+    SKMutablePayment *payment = [self paymentWithProduct:product];
+    payment.paymentDiscount = discount;
+    return payment;
+}
+
+#pragma MARK: SKPaymentQueueDelegate
 
 - (void)paymentQueue:(SKPaymentQueue *)queue
  updatedTransactions:(NSArray<SKPaymentTransaction *> *)transactions {

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2D11F5E1250FF886005A70E8 /* AttributionStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */; };
+		2D390255259CF46000DB19C0 /* MockPaymentDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D390254259CF46000DB19C0 /* MockPaymentDiscount.swift */; };
 		2D49B32F253F7F5D003CBC8B /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
 		2D49B330253F7F5D003CBC8B /* OHHTTPStubs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDD71F7DF17F0065833D /* OHHTTPStubs.framework */; };
 		2D49B334253F7F78003CBC8B /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
@@ -263,6 +264,7 @@
 
 /* Begin PBXFileReference section */
 		2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionStrings.swift; sourceTree = "<group>"; };
+		2D390254259CF46000DB19C0 /* MockPaymentDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPaymentDiscount.swift; sourceTree = "<group>"; };
 		2D4C18A824F47E4400F268CD /* Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Purchases.swift; sourceTree = "<group>"; };
 		2D4D6AF224F7172900B656BE /* MockProductsRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockProductsRequest.swift; sourceTree = "<group>"; };
 		2D5033212406E4E8009CAE61 /* RCSubscriberAttribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCSubscriberAttribute.h; path = Purchases/SubscriberAttributes/RCSubscriberAttribute.h; sourceTree = SOURCE_ROOT; };
@@ -858,6 +860,7 @@
 				37E35659EB530A5109AFAB50 /* MockOperationDispatcher.swift */,
 				2D4D6AF224F7172900B656BE /* MockProductsRequest.swift */,
 				37E3558F697A939D2BBD7FEC /* MockReceiptParser.swift */,
+				2D390254259CF46000DB19C0 /* MockPaymentDiscount.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -1508,6 +1511,7 @@
 				37E35EBDFC5CD3068E1792A3 /* MockNotificationCenter.swift in Sources */,
 				2D8E9D482523747D00AFEE11 /* NSDictionaryExtensionsTests.swift in Sources */,
 				37E354E0A9A371481540B2B0 /* MockAttributionFetcher.swift in Sources */,
+				2D390255259CF46000DB19C0 /* MockPaymentDiscount.swift in Sources */,
 				37E35EDC57C486AC2D66B4B8 /* MockOfferingsFactory.swift in Sources */,
 				2DD7BA4D24C63A830066B4C2 /* MockSystemInfo.swift in Sources */,
 				37E35EB7B35C86140B96C58B /* MockIdentityManager.swift in Sources */,
