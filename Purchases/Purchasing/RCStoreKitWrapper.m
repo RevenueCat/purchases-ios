@@ -83,7 +83,7 @@ static BOOL _simulatesAskToBuyInSandbox = NO;
 
 - (SKMutablePayment *)paymentWithProduct:(SKProduct *)product {
     SKMutablePayment *payment = [SKMutablePayment paymentWithProduct:product];
-    if (@available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvos 12.2)) {
+    if (@available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, tvos 9.0, *)) {
         payment.simulatesAskToBuyInSandbox = self.class.simulatesAskToBuyInSandbox;
     }
     return payment;
