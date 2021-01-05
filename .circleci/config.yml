@@ -256,7 +256,10 @@ jobs:
       - run:
           name: Carthage Update
           working_directory: IntegrationTests/CarthageIntegration/
-          command: ./carthage.sh update --cache-builds
+          command: |
+              ./carthage.sh update --no-build
+              rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
+              ./carthage.sh build
       - save_cache:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
