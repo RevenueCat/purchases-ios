@@ -882,7 +882,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
         [self.purchaserInfoManager fetchAndCachePurchaserInfoWithAppUserID:self.appUserID
                                                          isAppBackgrounded:isAppBackgrounded
-                                                                completion:nil];
+                                                                completion:completion];
         [self updateOfferingsCacheWithIsAppBackgrounded:isAppBackgrounded completion:nil];
     }];
 }
@@ -1188,7 +1188,9 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
 
 #pragma MARK: RCPurchaserInfoManagerDelegate
 - (void)purchaserInfoManagerDidReceiveUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo {
-
+    if (self.delegate && [self.delegate respondsToSelector:@selector(purchases:didReceiveUpdatedPurchaserInfo:)]) {
+        [self.delegate purchases:self didReceiveUpdatedPurchaserInfo:purchaserInfo];
+    }
 }
 
 @end
