@@ -1164,6 +1164,7 @@
 				37E3598A1AAA3D70EA01C82D /* RCInMemoryCachedObject.h in Headers */,
 				37E352F190E0E957E8D932F8 /* RCDeviceCache.h in Headers */,
 				2D5033262406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h in Headers */,
+				37E35B94F66AD4C3BC3E3D54 /* RCPurchaserInfoManager.h in Headers */,
 				2D5033242406E4E8009CAE61 /* RCSubscriberAttribute.h in Headers */,
 				2D50332A2406EA61009CAE61 /* RCSubscriberAttributesManager.h in Headers */,
 				2DD448FF24088473002F5694 /* RCPurchases+SubscriberAttributes.h in Headers */,
@@ -1212,7 +1213,6 @@
 				37E35054EF6315E99DC20AEC /* RCAttributionTypeFactory.h in Headers */,
 				37E357712F2A42935CD05062 /* RCAttributionData.h in Headers */,
 				37E35D01E3A0F5FC8E0B16F7 /* RCIdentityManager.h in Headers */,
-				37E35B94F66AD4C3BC3E3D54 /* RCPurchaserInfoManager.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

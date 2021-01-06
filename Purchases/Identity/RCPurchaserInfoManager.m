@@ -26,14 +26,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation RCPurchaserInfoManager
 
-- (instancetype)initWithDelegate:(id <RCPurchaserInfoManagerDelegate>)delegate
-             operationDispatcher:(RCOperationDispatcher *)operationDispatcher
-                     deviceCache:(RCDeviceCache *)deviceCache
-                         backend:(RCBackend *)backend
-                      systemInfo:(RCSystemInfo *)systemInfo {
+- (instancetype)initWithOperationDispatcher:(RCOperationDispatcher *)operationDispatcher
+                                deviceCache:(RCDeviceCache *)deviceCache
+                                    backend:(RCBackend *)backend
+                                 systemInfo:(RCSystemInfo *)systemInfo {
     self = [super init];
     if (self) {
-        self.delegate = delegate;
         self.operationDispatcher = operationDispatcher;
         self.deviceCache = deviceCache;
         self.backend = backend;
@@ -75,8 +73,8 @@ NS_ASSUME_NONNULL_BEGIN
     return nil;
 }
 
-- (void)sendCachedPurchaserInfoIfAvailable {
-    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCacheForAppUserID:nil];
+- (void)sendCachedPurchaserInfoIfAvailableForAppUserID:(NSString *)appUserID {
+    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCacheForAppUserID:appUserID];
     if (infoFromCache) {
         [self sendUpdatedPurchaserInfoToDelegateIfChanged:infoFromCache];
     }
@@ -102,9 +100,11 @@ NS_ASSUME_NONNULL_BEGIN
                                                   [self.deviceCache clearPurchaserInfoCacheTimestampForAppUserID:appUserID];
                                               }
 
-                                              [self.operationDispatcher dispatchOnMainThread: ^{
-                                                  completion(info, error);
-                                              }];
+                                              if (completion) {
+                                                  [self.operationDispatcher dispatchOnMainThread: ^{
+                                                      completion(info, error);
+                                                  }];
+                                              }
                                           }];
     }];
 }
@@ -144,9 +144,11 @@ NS_ASSUME_NONNULL_BEGIN
     RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCacheForAppUserID:nil];
     if (infoFromCache) {
         RCDebugLog(@"%@", RCStrings.purchaserInfo.vending_cache);
-        [self.operationDispatcher dispatchOnMainThread: ^{
-            completion(infoFromCache, nil);
-        }];
+        if (completion) {
+            [self.operationDispatcher dispatchOnMainThread: ^{
+                completion(infoFromCache, nil);
+            }];
+        }
         [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
             if ([self.deviceCache isPurchaserInfoCacheStaleForAppUserID:appUserID
                                                       isAppBackgrounded:isAppBackgrounded]) {

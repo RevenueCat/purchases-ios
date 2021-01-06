@@ -43,4 +43,5 @@
 #include <Purchases/RCProductInfo.h>
 #include <Purchases/RCProductInfoExtractor.h>
 #include <Purchases/NSDictionary+RCExtensions.h>
+#include <Purchases/RCPurchaserInfoManager.h>
 #include <Purchases/RCAttributionTypeFactory.h>

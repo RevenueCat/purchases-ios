@@ -244,11 +244,11 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
     RCIntroEligibilityCalculator *introCalculator = [[RCIntroEligibilityCalculator alloc] init];
     RCReceiptParser *receiptParser = [[RCReceiptParser alloc] init];
-    RCPurchaserInfoManager *purchaserInfoManager = [[RCPurchaserInfoManager alloc] initWithDelegate:self
-                                                                                operationDispatcher:operationDispatcher
-                                                                                        deviceCache:deviceCache
-                                                                                            backend:backend
-                                                                                         systemInfo:systemInfo];
+    RCPurchaserInfoManager *purchaserInfoManager = [[RCPurchaserInfoManager alloc]
+                                                                            initWithOperationDispatcher:operationDispatcher
+                                                                                            deviceCache:deviceCache
+                                                                                                backend:backend
+                                                                                             systemInfo:systemInfo];
 
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
@@ -310,6 +310,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.introEligibilityCalculator = introEligibilityCalculator;
         self.receiptParser = receiptParser;
         self.purchaserInfoManager = purchaserInfoManager;
+        self.purchaserInfoManager.delegate = self;
 
         [self.identityManager configureWithAppUserID:appUserID];
 
@@ -319,7 +320,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                     [self updateAllCachesWithCompletionBlock:nil];
                 }];
             } else {
-                [self.purchaserInfoManager sendCachedPurchaserInfoIfAvailable];
+                [self.purchaserInfoManager sendCachedPurchaserInfoIfAvailableForAppUserID:self.appUserID];
             }
         }];
         self.storeKitWrapper.delegate = self;
@@ -355,7 +356,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     _delegate = delegate;
     RCDebugLog(@"%@", RCStrings.configure.delegate_set);
 
-    [self.purchaserInfoManager sendCachedPurchaserInfoIfAvailable];
+    [self.purchaserInfoManager sendCachedPurchaserInfoIfAvailableForAppUserID:self.appUserID];
 }
 
 #pragma mark - Public Methods
@@ -1036,10 +1037,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }];
 }
 
-/*
- RCStoreKitWrapperDelegate
- */
-
+#pragma MARK: RCStoreKitWrapperDelegate
 - (void)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
      updatedTransaction:(SKPaymentTransaction *)transaction {
     switch (transaction.transactionState) {

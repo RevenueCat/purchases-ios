@@ -22,11 +22,10 @@ typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError
 
 @property (nonatomic, weak, nullable) id<RCPurchaserInfoManagerDelegate> delegate;
 
-- (instancetype)initWithDelegate:(id <RCPurchaserInfoManagerDelegate>)delegate
-             operationDispatcher:(RCOperationDispatcher *)operationDispatcher
-                     deviceCache:(RCDeviceCache *)deviceCache
-                         backend:(RCBackend *)backend
-                      systemInfo:(RCSystemInfo *)systemInfo;
+- (instancetype)initWithOperationDispatcher:(RCOperationDispatcher *)operationDispatcher
+                                deviceCache:(RCDeviceCache *)deviceCache
+                                    backend:(RCBackend *)backend
+                                 systemInfo:(RCSystemInfo *)systemInfo;
 
 - (void)fetchAndCachePurchaserInfoWithAppUserID:(NSString *)appUserID
                               isAppBackgrounded:(BOOL)isAppBackgrounded
@@ -35,7 +34,7 @@ typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError
 - (void)fetchAndCachePurchaserInfoIfStaleWithAppUserID:(NSString *)appUserID
                                      isAppBackgrounded:(BOOL)isAppBackgrounded
                                             completion:(nullable RCReceivePurchaserInfoBlock)completion;
-- (void)sendCachedPurchaserInfoIfAvailable;
+- (void)sendCachedPurchaserInfoIfAvailableForAppUserID:(NSString *)appUserID;
 
 - (void)purchaserInfoWithAppUserID:(NSString *)appUserID
                    completionBlock:(RCReceivePurchaserInfoBlock)completion;
