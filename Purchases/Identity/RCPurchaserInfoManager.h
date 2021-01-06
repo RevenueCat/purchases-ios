@@ -8,13 +8,41 @@
 
 NS_ASSUME_NONNULL_BEGIN
 @class RCPurchaserInfo;
+@class RCDeviceCache;
+@class RCBackend;
+@class RCOperationDispatcher;
+@class RCSystemInfo;
 typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceivePurchaserInfoBlock);
 
+@protocol RCPurchaserInfoManagerDelegate <NSObject>
+- (void)purchaserInfoManagerDidReceiveUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
+@end
+
 @interface RCPurchaserInfoManager : NSObject
+
+@property (nonatomic, weak, nullable) id<RCPurchaserInfoManagerDelegate> delegate;
+
+- (instancetype)initWithDelegate:(id <RCPurchaserInfoManagerDelegate>)delegate
+             operationDispatcher:(RCOperationDispatcher *)operationDispatcher
+                     deviceCache:(RCDeviceCache *)deviceCache
+                         backend:(RCBackend *)backend
+                      systemInfo:(RCSystemInfo *)systemInfo;
 
 - (void)fetchAndCachePurchaserInfoWithAppUserID:(NSString *)appUserID
                               isAppBackgrounded:(BOOL)isAppBackgrounded
                                      completion:(nullable RCReceivePurchaserInfoBlock)completion;
+
+- (void)fetchAndCachePurchaserInfoIfStaleWithAppUserID:(NSString *)appUserID
+                                     isAppBackgrounded:(BOOL)isAppBackgrounded
+                                            completion:(nullable RCReceivePurchaserInfoBlock)completion;
+- (void)sendCachedPurchaserInfoIfAvailable;
+
+- (void)purchaserInfoWithAppUserID:(NSString *)appUserID
+                   completionBlock:(RCReceivePurchaserInfoBlock)completion;
+
+- (RCPurchaserInfo *)readPurchaserInfoFromCacheForAppUserID:(NSString *)appUserID;
+- (void)cachePurchaserInfo:(RCPurchaserInfo *)info forAppUserID:(NSString *)appUserID;
+- (void)clearPurchaserInfoCacheForAppUserID:(NSString *)appUserID;
 
 @end
 
