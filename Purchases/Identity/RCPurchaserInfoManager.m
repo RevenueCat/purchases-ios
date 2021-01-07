@@ -175,8 +175,18 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)clearPurchaserInfoCacheForAppUserID:(NSString *)appUserID {
-    [self.deviceCache clearPurchaserInfoCacheForAppUserID:appUserID];
-    self.lastSentPurchaserInfo = nil;
+    @synchronized (self) {
+        [self.deviceCache clearPurchaserInfoCacheForAppUserID:appUserID];
+        self.lastSentPurchaserInfo = nil;
+    }
+}
+
+- (void)clearCachesForAppUserID:(NSString *)oldAppUserID andSaveNewUserID:(NSString *)newUserID {
+    @synchronized (self) {
+        [self.deviceCache clearCachesForAppUserID:oldAppUserID
+                                 andSaveNewUserID:newUserID];
+        [self sendCachedPurchaserInfoIfAvailableForAppUserID:newUserID];
+    }
 }
 
 

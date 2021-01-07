@@ -127,11 +127,12 @@
     [self.backend logInWithCurrentAppUserID:currentAppUserID
                                newAppUserID:newAppUserID
                                  completion:^(RCPurchaserInfo *purchaserInfo, BOOL created, NSError *error) {
-        if (error == nil) {
-            RCUserLog(@"%@", RCStrings.identity.login_success);
-            [self.deviceCache clearCachesForAppUserID:currentAppUserID andSaveNewUserID:newAppUserID];
-        }
-        completion(purchaserInfo, created, error);
+                                     if (error == nil) {
+                                         RCUserLog(@"%@", RCStrings.identity.login_success);
+                                         [self.purchaserInfoManager clearCachesForAppUserID:currentAppUserID
+                                                                           andSaveNewUserID:newAppUserID];
+                                     }
+                                     completion(purchaserInfo, created, error);
     }];
 }
 @end
