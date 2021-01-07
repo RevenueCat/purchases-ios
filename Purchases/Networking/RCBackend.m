@@ -392,8 +392,25 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 
     if (completion != nil) {
         completion(nil, NO, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:responseError]);
+        return;
     }
-    // TODO: success case
+    NSNumber *createdAsNumber = (NSNumber *)response[@"created"];
+    if (createdAsNumber == nil) {
+        responseError = [RCPurchasesErrorUtils unexpectedBackendResponseError];
+        completion(nil, NO, responseError);
+        return;
+    }
+    BOOL created = ((NSNumber *)response[@"created"]).boolValue; // TODO: confirm field name and type
+
+    NSDictionary *purchaserInfoDict = response[@"subscriber_data"]; // TODO: confirm field name
+    RCPurchaserInfo *purchaserInfo = [[RCPurchaserInfo alloc] initWithData:purchaserInfoDict];
+    if (purchaserInfo == nil) {
+        responseError = [RCPurchasesErrorUtils unexpectedBackendResponseError];
+        completion(nil, NO, responseError);
+        return;
+    }
+
+    completion(purchaserInfo, created, nil);
 }
 
 - (void)createAliasForAppUserID:(NSString *)appUserID
