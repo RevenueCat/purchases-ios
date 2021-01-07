@@ -268,7 +268,7 @@ class PurchasesTests: XCTestCase {
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(0))
     }
     
-    func testFirstInitializationFromBackgroundDoesntCallDelegateForAnonIfInfoCached() {
+    func testFirstInitializationFromBackgroundCallsDelegateForAnonIfInfoCached() {
         systemInfo.stubbedIsApplicationBackgrounded = true
         let info = Purchases.PurchaserInfo(data: [
             "subscriber": [

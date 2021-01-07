@@ -26,6 +26,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation RCPurchaserInfoManager
 
+@synthesize delegate = _delegate;
+
+- (void)setDelegate:(nullable id <RCPurchaserInfoManagerDelegate>)delegate {
+    _delegate = delegate;
+}
+
 - (instancetype)initWithOperationDispatcher:(RCOperationDispatcher *)operationDispatcher
                                 deviceCache:(RCDeviceCache *)deviceCache
                                     backend:(RCBackend *)backend
@@ -95,7 +101,6 @@ NS_ASSUME_NONNULL_BEGIN
                                                        NSError *_Nullable error) {
                                               if (error == nil) {
                                                   [self cachePurchaserInfo:info forAppUserID:appUserID];
-                                                  [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
                                               } else {
                                                   [self.deviceCache clearPurchaserInfoCacheTimestampForAppUserID:appUserID];
                                               }
@@ -141,7 +146,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)purchaserInfoWithAppUserID:(NSString *)appUserID
                    completionBlock:(RCReceivePurchaserInfoBlock)completion {
-    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCacheForAppUserID:nil];
+    RCPurchaserInfo *infoFromCache = [self readPurchaserInfoFromCacheForAppUserID:appUserID];
     if (infoFromCache) {
         RCDebugLog(@"%@", RCStrings.purchaserInfo.vending_cache);
         if (completion) {
@@ -155,14 +160,14 @@ NS_ASSUME_NONNULL_BEGIN
                 RCDebugLog(@"%@", isAppBackgrounded
                                   ? RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_background
                                   : RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_foreground);
-                [self fetchAndCachePurchaserInfoWithAppUserID:nil isAppBackgrounded:isAppBackgrounded completion:nil];
+                [self fetchAndCachePurchaserInfoWithAppUserID:appUserID isAppBackgrounded:isAppBackgrounded completion:nil];
                 RCSuccessLog(@"%@", RCStrings.purchaserInfo.purchaserinfo_updated_from_network);
             }
         }];
     } else {
         RCDebugLog(@"%@", RCStrings.purchaserInfo.no_cached_purchaserinfo);
         [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
-            [self fetchAndCachePurchaserInfoWithAppUserID:nil
+            [self fetchAndCachePurchaserInfoWithAppUserID:appUserID
                                         isAppBackgrounded:isAppBackgrounded
                                                completion:completion];
         }];

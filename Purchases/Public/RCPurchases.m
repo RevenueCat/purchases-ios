@@ -310,7 +310,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.introEligibilityCalculator = introEligibilityCalculator;
         self.receiptParser = receiptParser;
         self.purchaserInfoManager = purchaserInfoManager;
-        self.purchaserInfoManager.delegate = self;
 
         [self.identityManager configureWithAppUserID:appUserID];
 
@@ -346,17 +345,18 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)dealloc {
     self.storeKitWrapper.delegate = nil;
+    self.purchaserInfoManager.delegate = nil;
     [self.notificationCenter removeObserver:self];
-    self.delegate = nil;
+    _delegate = nil;
 }
 
 @synthesize delegate = _delegate;
 
 - (void)setDelegate:(id <RCPurchasesDelegate>)delegate {
     _delegate = delegate;
-    RCDebugLog(@"%@", RCStrings.configure.delegate_set);
-
+    self.purchaserInfoManager.delegate = self;
     [self.purchaserInfoManager sendCachedPurchaserInfoIfAvailableForAppUserID:self.appUserID];
+    RCDebugLog(@"%@", RCStrings.configure.delegate_set);
 }
 
 #pragma mark - Public Methods
