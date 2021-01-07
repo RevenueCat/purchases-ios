@@ -34,7 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)resetAppUserID;
 
-- (void)logInAppUserID:(NSString *)newAppUserID completionBlock:(void (^)(NSError *))completion;
+- (void)logInAppUserID:(NSString *)newAppUserID
+       completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo,
+                                 BOOL created,
+                                 NSError *error))completion;
 
 @end
 

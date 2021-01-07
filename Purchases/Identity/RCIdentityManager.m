@@ -102,10 +102,11 @@
     return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID;
 }
 
-- (void)logInAppUserID:(NSString *)newAppUserID completionBlock:(void (^)(NSError *))completion {
+- (void)logInAppUserID:(NSString *)newAppUserID
+       completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL created, NSError *error))completion {
     if (!newAppUserID || [newAppUserID isEqualToString:@""]) {
         RCErrorLog(@"%@", RCStrings.identity.creating_alias_failed_null_currentappuserid);
-        completion(RCPurchasesErrorUtils.missingAppUserIDError);
+        completion(nil, NO, RCPurchasesErrorUtils.missingAppUserIDError);
         return;
     }
 
@@ -117,21 +118,20 @@
     if ([newAppUserID isEqualToString:currentAppUserID]) {
         RCWarnLog(@"%@", RCStrings.identity.logging_in_with_nil_appuserid);
         [self.purchaserInfoManager purchaserInfoWithAppUserID:currentAppUserID
-                                              completionBlock:^(RCPurchaserInfo *info, NSError *error) {
-                                                  // TODO: completion with created = false, error, purchaserInfo
+                                              completionBlock:^(RCPurchaserInfo *purchaserInfo, NSError *error) {
+                                                  completion(purchaserInfo, NO, error);
                                               }];
         return;
     }
 
     [self.backend logInWithCurrentAppUserID:currentAppUserID
                                newAppUserID:newAppUserID
-                                 completion:^(NSError *_Nullable error) {
+                                 completion:^(RCPurchaserInfo *purchaserInfo, BOOL created, NSError *error) {
         if (error == nil) {
             RCUserLog(@"%@", RCStrings.identity.login_success);
             [self.deviceCache clearCachesForAppUserID:currentAppUserID andSaveNewUserID:newAppUserID];
         }
-        completion(error);
-        // TODO: completion with created = backend.created, error, purchaserinfo
+        completion(purchaserInfo, created, error);
     }];
 }
 @end

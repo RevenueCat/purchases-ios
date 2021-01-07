@@ -434,20 +434,19 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 }
 
-- (void)logIn:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    if ([appUserID isEqualToString:self.identityManager.currentAppUserID]) {
-        [self purchaserInfoWithCompletionBlock:completion];
-    } else {
-        [self.identityManager logInAppUserID:appUserID completionBlock:^(NSError *error) {
-            if (error == nil) {
-                [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
-                    [self updateOfferingsCacheWithIsAppBackgrounded:isAppBackgrounded completion:nil];
-                }];
-            } else {
-                CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
-            }
-        }];
-    }
+- (void)  logIn:(NSString *)appUserID
+completionBlock:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo, BOOL created, NSError *error))completion {
+    [self.identityManager logInAppUserID:appUserID completionBlock:^(RCPurchaserInfo *purchaserInfo,
+                                                                     BOOL created,
+                                                                     NSError *error) {
+        CALL_IF_SET_ON_MAIN_THREAD(completion, purchaserInfo, created, error);
+
+        if (error == nil) {
+            [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
+                [self updateOfferingsCacheWithIsAppBackgrounded:isAppBackgrounded completion:nil];
+            }];
+        }
+    }];
 }
 
 - (void)logOutWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {

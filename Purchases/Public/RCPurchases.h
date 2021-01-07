@@ -198,7 +198,8 @@ NS_SWIFT_NAME(reset(_:)) __attribute((deprecated("Use logOut instead.")));
  This function will identify the current user with an appUserID.
  @param appUserID The appUserID that should be linked to the currently user
  */
-- (void)logIn:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
+- (void)  logIn:(NSString *)appUserID
+completionBlock:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo, BOOL created, NSError *error))completion
 NS_SWIFT_NAME(logIn(_:_:));
 
 /**

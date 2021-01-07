@@ -85,7 +85,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 
 - (void)logInWithCurrentAppUserID:(NSString *)currentAppUserID
                      newAppUserID:(NSString *)newAppUserID
-                       completion:(void (^)(NSError *))completion;
+                       completion:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL created, NSError *error))completion;
 @end
 
 NS_ASSUME_NONNULL_END
