@@ -181,14 +181,6 @@ NS_SWIFT_NAME(Purchases)
 @property (nonatomic, readonly) BOOL isAnonymous;
 
 /**
- This function will alias two appUserIDs together.
- @param alias The new appUserID that should be linked to the currently identified appUserID
- @param completion An optional completion block called when the aliasing has been successful. This completion block will receive an error if there's been one.
- */
-- (void)createAlias:(NSString *)alias completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-NS_SWIFT_NAME(createAlias(_:_:));
-
-/**
  This function will identify the current user with an appUserID. Typically this would be used after a logout to identify a new user without calling configure
  @param appUserID The appUserID that should be linked to the currently user
  */
@@ -556,7 +548,9 @@ NS_SWIFT_NAME(entitlements(_:)) RC_UNAVAILABLE("entitlements: has been replaced 
 - (void)makePurchase:(SKProduct *)product
         withDiscount:(nullable SKPaymentDiscount *)discount
      completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4)) __attribute__((unavailable("makePurchase:withDiscount: has been replaced by purchaseProduct:withDiscount:")));;
-
+/// :nodoc:
+NS_SWIFT_NAME(createAlias(_:_:)) RC_UNAVAILABLE("entitlements: has been replaced with offerings:. See https://docs.revenuecat.com/docs/offerings-migration");
+- (void)createAlias:(NSString *)alias completionBlock:(nullable RCReceivePurchaserInfoBlock)completion;
 #undef RC_UNAVAILABLE
 
 @end
