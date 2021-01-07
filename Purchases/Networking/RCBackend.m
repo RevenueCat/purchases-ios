@@ -52,8 +52,7 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
     return self;
 }
 
-- (NSDictionary<NSString *, NSString *> *)headers
-{
+- (NSDictionary<NSString *, NSString *> *)headers {
     return @{
             @"Authorization":
                 [NSString stringWithFormat:@"Bearer %@", self.APIKey]
@@ -63,8 +62,7 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
 - (void)handle:(NSInteger)statusCode
   withResponse:(nullable NSDictionary *)response
          error:(nullable NSError *)error
-    completion:(RCBackendPurchaserInfoResponseHandler)completion
-{
+    completion:(RCBackendPurchaserInfoResponseHandler)completion {
     if (error != nil) {
         completion(nil, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
         return;
@@ -104,8 +102,7 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
 - (void)handle:(NSInteger)statusCode
   withResponse:(nullable NSDictionary *)response
          error:(nullable NSError *)error
-  errorHandler:(void (^)(NSError * _Nullable error))errorHandler
-{
+  errorHandler:(void (^)(NSError * _Nullable error))errorHandler {
 
     if (error != nil) {
         errorHandler([RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
@@ -214,8 +211,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 }
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
-                            completion:(RCBackendPurchaserInfoResponseHandler)completion
-{
+                            completion:(RCBackendPurchaserInfoResponseHandler)completion {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@", escapedAppUserID];
 
@@ -238,8 +234,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 - (void)getIntroEligibilityForAppUserID:(NSString *)appUserID
                             receiptData:(NSData *)receiptData
                      productIdentifiers:(NSArray<NSString *> *)productIdentifiers
-                             completion:(RCIntroEligibilityResponseHandler)completion
-{
+                             completion:(RCIntroEligibilityResponseHandler)completion {
     if (productIdentifiers.count == 0) {
         completion(@{});
         return;
@@ -293,8 +288,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 }
 
 - (void)getOfferingsForAppUserID:(NSString *)appUserID
-                      completion:(RCOfferingsResponseHandler)completion
-{
+                      completion:(RCOfferingsResponseHandler)completion {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     if (!escapedAppUserID || [escapedAppUserID isEqualToString:@""]) {
         RCWarnLog(@"called getOfferings with an empty appUserID!");
@@ -336,8 +330,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
                forAppUserID:(NSString *)appUserID
-                 completion:(nullable void (^)(NSError * _Nullable error))completion
-{
+                 completion:(nullable void (^)(NSError * _Nullable error))completion {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attribution", escapedAppUserID];
 
@@ -354,10 +347,16 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                   }];
 }
 
+- (void)logInWithCurrentAppUserID:(NSString *)currentAppUserID
+                     newAppUserID:(NSString *)newAppUserID
+                       completion:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL created, NSError *error))completion {
+    // TODO: implement
+    completion(nil, NO, nil);
+}
+
 - (void)createAliasForAppUserID:(NSString *)appUserID
                withNewAppUserID:(NSString *)newAppUserID
-                     completion:(nullable void (^)(NSError * _Nullable error))completion
-{
+                     completion:(nullable void (^)(NSError * _Nullable error))completion {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/alias", escapedAppUserID];
     [self.httpClient performRequest:@"POST"
@@ -378,8 +377,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
           subscriptionGroup:(NSString *)subscriptionGroup
                 receiptData:(NSData *)receiptData
                   appUserID:(NSString *)appUserID
-                 completion:(RCOfferSigningResponseHandler)completion
-{
+                 completion:(RCOfferSigningResponseHandler)completion {
     NSString *fetchToken = [receiptData base64EncodedStringWithOptions:0];
     [self.httpClient performRequest:@"POST"
                            serially:YES
@@ -509,10 +507,4 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     return resultDict;
 }
 
-- (void)logInWithCurrentAppUserID:(NSString *)currentAppUserID
-                     newAppUserID:(NSString *)newAppUserID
-                       completion:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL created, NSError *error))completion {
-    // TODO: implement
-    completion(nil, NO, nil);
-}
 @end
