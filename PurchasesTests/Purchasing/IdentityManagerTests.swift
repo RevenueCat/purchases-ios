@@ -58,10 +58,13 @@ class IdentityManagerTests: XCTestCase {
 
     private let mockDeviceCache = MockDeviceCache()
     private let mockBackend = MockBackend()
+    private let mockPurchaserInfoManager = MockPurchaserInfoManager()
 
     override func setUp() {
         super.setUp()
-        self.identityManager = RCIdentityManager(mockDeviceCache, backend: mockBackend)
+        self.identityManager = RCIdentityManager(mockDeviceCache,
+                                                 backend: mockBackend,
+                                                 purchaserInfoManager: mockPurchaserInfoManager)
     }
 
     func testConfigureWithAnonymousUserIDGeneratesAnAppUserID() {

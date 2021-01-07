@@ -229,6 +229,14 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 
     RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWith:userDefaults];
+    RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
+    RCIntroEligibilityCalculator *introCalculator = [[RCIntroEligibilityCalculator alloc] init];
+    RCReceiptParser *receiptParser = [[RCReceiptParser alloc] init];
+    RCPurchaserInfoManager *purchaserInfoManager = [[RCPurchaserInfoManager alloc]
+                                                                            initWithOperationDispatcher:operationDispatcher
+                                                                                            deviceCache:deviceCache
+                                                                                                backend:backend
+                                                                                             systemInfo:systemInfo];
     RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWith:deviceCache backend:backend];
     RCAttributionTypeFactory *attributionTypeFactory = [[RCAttributionTypeFactory alloc] init];
     RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc]
@@ -241,15 +249,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             [[RCSubscriberAttributesManager alloc] initWithBackend:backend
                                                        deviceCache:deviceCache
                                                 attributionFetcher:attributionFetcher];
-    RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
-    RCIntroEligibilityCalculator *introCalculator = [[RCIntroEligibilityCalculator alloc] init];
-    RCReceiptParser *receiptParser = [[RCReceiptParser alloc] init];
-    RCPurchaserInfoManager *purchaserInfoManager = [[RCPurchaserInfoManager alloc]
-                                                                            initWithOperationDispatcher:operationDispatcher
-                                                                                            deviceCache:deviceCache
-                                                                                                backend:backend
-                                                                                             systemInfo:systemInfo];
-
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher

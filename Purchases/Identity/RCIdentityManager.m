@@ -7,24 +7,28 @@
 #import "RCLogUtils.h"
 #import "RCBackend.h"
 #import "RCPurchasesErrorUtils.h"
+#import "RCPurchaserInfoManager.h"
 @import PurchasesCoreSwift;
 
 
 @interface RCIdentityManager ()
 
 @property (nonatomic) RCDeviceCache *deviceCache;
-
 @property (nonatomic) RCBackend *backend;
+@property (nonatomic) RCPurchaserInfoManager *purchaserInfoManager;
 
 @end
 
 @implementation RCIdentityManager
 
-- (instancetype)initWith:(RCDeviceCache *)deviceCache backend:(RCBackend *)backend {
+- (instancetype)initWith:(RCDeviceCache *)deviceCache
+                 backend:(RCBackend *)backend
+    purchaserInfoManager:(RCPurchaserInfoManager *)purchaserInfoManager {
     self = [super init];
     if (self) {
         self.deviceCache = deviceCache;
         self.backend = backend;
+        self.purchaserInfoManager = purchaserInfoManager;
     }
 
     return self;
@@ -112,7 +116,10 @@
 
     if ([newAppUserID isEqualToString:currentAppUserID]) {
         RCWarnLog(@"%@", RCStrings.identity.logging_in_with_nil_appuserid);
-        completion(nil);
+        [self.purchaserInfoManager purchaserInfoWithAppUserID:currentAppUserID
+                                              completionBlock:^(RCPurchaserInfo *info, NSError *error) {
+                                                  // TODO: completion with created = false, error, purchaserInfo
+                                              }];
         return;
     }
 
@@ -124,6 +131,7 @@
             [self.deviceCache clearCachesForAppUserID:currentAppUserID andSaveNewUserID:newAppUserID];
         }
         completion(error);
+        // TODO: completion with created = backend.created, error, purchaserinfo
     }];
 }
 @end

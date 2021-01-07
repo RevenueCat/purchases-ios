@@ -14,10 +14,12 @@ NS_ASSUME_NONNULL_BEGIN
 @class RCSystemInfo;
 typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceivePurchaserInfoBlock);
 
+NS_SWIFT_NAME(PurchaserInfoManagerDelegate)
 @protocol RCPurchaserInfoManagerDelegate <NSObject>
 - (void)purchaserInfoManagerDidReceiveUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo;
 @end
 
+NS_SWIFT_NAME(PurchaserInfoManager)
 @interface RCPurchaserInfoManager : NSObject
 
 @property (nonatomic, weak, nullable) id<RCPurchaserInfoManagerDelegate> delegate;

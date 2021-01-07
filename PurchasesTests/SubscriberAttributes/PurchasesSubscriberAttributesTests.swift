@@ -33,7 +33,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
 
     let purchasesDelegate = MockPurchasesDelegate()
-    var purchaserInfoManager: RCPurchaserInfoManager!
+    var purchaserInfoManager: PurchaserInfoManager!
 
     var purchases: Purchases!
 

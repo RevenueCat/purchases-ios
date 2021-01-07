@@ -200,7 +200,7 @@ class PurchasesTests: XCTestCase {
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
     var mockReceiptParser: MockReceiptParser!
     var attributionFetcher: MockAttributionFetcher!
-    var purchaserInfoManager: RCPurchaserInfoManager!
+    var purchaserInfoManager: PurchaserInfoManager!
 
     let purchasesDelegate = MockPurchasesDelegate()
 

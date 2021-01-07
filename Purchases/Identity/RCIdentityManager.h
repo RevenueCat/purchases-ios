@@ -6,7 +6,7 @@
 #import <Foundation/Foundation.h>
 #import "RCDeviceCache.h"
 
-@class RCPurchaserInfo, RCBackend;
+@class RCPurchaserInfo, RCPurchaserInfoManager, RCBackend;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -20,7 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) BOOL currentUserIsAnonymous;
 
-- (instancetype)initWith:(RCDeviceCache *)deviceCache backend:(RCBackend *)backend;
+- (instancetype)initWith:(RCDeviceCache *)deviceCache
+                 backend:(RCBackend *)backend
+    purchaserInfoManager:(RCPurchaserInfoManager *)purchaserInfoManager;
 
 - (NSString *)generateRandomID;
 
