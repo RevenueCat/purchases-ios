@@ -450,12 +450,18 @@ completionBlock:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo, BOOL created
 }
 
 - (void)logOutWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    [self.identityManager resetAppUserID];
-    [self updateAllCachesWithCompletionBlock:completion];
+    [self.identityManager logOutWithCompletionBlock:^(NSError *error) {
+        if (error) {
+            completion(nil, error);
+        } else {
+            [self updateAllCachesWithCompletionBlock:completion];
+        }
+    }];
 }
 
 - (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    [self logOutWithCompletionBlock:completion];
+    [self.identityManager resetAppUserID];
+    [self updateAllCachesWithCompletionBlock:completion];
 }
 
 - (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion {

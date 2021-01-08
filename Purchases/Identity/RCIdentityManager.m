@@ -135,4 +135,14 @@
                                      completion(purchaserInfo, created, error);
     }];
 }
+
+- (void)logOutWithCompletionBlock:(void (^)(NSError * _Nullable error))completion {
+    if (!self.currentUserIsAnonymous) {
+        completion(RCPurchasesErrorUtils.logOutAnonymousUserError);
+        return;
+    }
+    [self resetAppUserID];
+    completion(nil);
+}
+
 @end
