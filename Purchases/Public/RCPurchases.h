@@ -84,7 +84,7 @@ NS_SWIFT_NAME(Purchases)
  Set this property to true *only* when testing the ask-to-buy / SCA purchases flow. More information:
  http://errors.rev.cat/ask-to-buy
  */
-@property (class, nonatomic, assign) BOOL simulatesAskToBuyInSandbox;
+@property (class, nonatomic, assign) BOOL simulatesAskToBuyInSandbox API_AVAILABLE(ios(8.0), macos(10.14), watchos(6.2), macCatalyst(13.0), tvos(9.0));
 
 /**
  Configures an instance of the Purchases SDK with a specified API key. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
