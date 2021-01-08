@@ -1,3 +1,9 @@
+## 3.10.1
+- Enables improved logging prefixes so they're easier to locate.
+    https://github.com/RevenueCat/purchases-ios/pull/441
+- Fixed issue with Prepare next version CI job, which was missing the install gems step. 
+    https://github.com/RevenueCat/purchases-ios/pull/440
+
 ## 3.10.0
 - Adds a new property `simulateAsksToBuyInSandbox`, that allows developers to test deferred purchases easily.
     https://github.com/RevenueCat/purchases-ios/pull/432
