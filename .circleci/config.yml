@@ -294,12 +294,11 @@ workflows:
   version: 2
   build-test:
     jobs:
-      # - runtest
+      - runtest
       - deployment-checks: *release-branches
       - integration-tests-cocoapods: *release-tags-and-branches
       - integration-tests-swift-package-manager: *release-tags-and-branches
-      - integration-tests-carthage
-      # - integration-tests-carthage: *release-tags-and-branches
+      - integration-tests-carthage: *release-tags-and-branches
       - integration-tests-xcode-direct-integration: *release-tags-and-branches
   deploy:
     jobs:
