@@ -275,7 +275,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     if (self = [super init]) {
         RCDebugLog(@"%@", RCStrings.configure.debug_enabled);
         RCDebugLog(RCStrings.configure.sdk_version, self.class.frameworkVersion);
-        RCDebugLog(RCStrings.configure.initial_app_user_id, appUserID);
+        RCUserLog(RCStrings.configure.initial_app_user_id, appUserID);
 
         self.requestFetcher = requestFetcher;
         self.receiptFetcher = receiptFetcher;
