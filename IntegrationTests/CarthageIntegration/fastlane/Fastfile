@@ -1,9 +1,9 @@
 import("../../../fastlane/Fastfile")
 
-  desc "Update carthage commit"
+desc "Update carthage commit"
   lane :update_carthage_commit do
-    commit_hash = last_git_commit[:commit_hash]
-    sed_regex = 's|' + "CARTHAGE_INTEGRATION_TESTS_GIT_COMMIT" + '|' + commit_hash + '|'
-    backup_extension = '.bck'
-    sh("sed", '-i', backup_extension, sed_regex, '../Cartfile')
-  end
+  commit_hash = last_git_commit[:commit_hash]
+  sed_regex = 's|' + "CARTHAGE_INTEGRATION_TESTS_GIT_COMMIT" + '|' + commit_hash + '|'
+  backup_extension = '.bck'
+  sh("sed", '-i', backup_extension, sed_regex, '../Cartfile')
+end
