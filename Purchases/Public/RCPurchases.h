@@ -551,7 +551,8 @@ NS_SWIFT_NAME(entitlements(_:)) RC_UNAVAILABLE("entitlements: has been replaced 
         withDiscount:(nullable SKPaymentDiscount *)discount
      completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4)) __attribute__((unavailable("makePurchase:withDiscount: has been replaced by purchaseProduct:withDiscount:")));;
 /// :nodoc:
-NS_SWIFT_NAME(createAlias(_:_:)) RC_UNAVAILABLE("entitlements: has been replaced with offerings:. See https://docs.revenuecat.com/docs/offerings-migration");
+// TODO: replace link with final version
+NS_SWIFT_NAME(createAlias(_:_:)) RC_UNAVAILABLE("createAlias has been replaced by logIn. See https://docs.revenuecat.com/docs/identity");
 - (void)createAlias:(NSString *)alias completionBlock:(nullable RCReceivePurchaserInfoBlock)completion;
 #undef RC_UNAVAILABLE
 
