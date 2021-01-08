@@ -31,12 +31,8 @@ import Foundation
     }
     
     @objc public static func log(level: LogLevel, intent: LogIntent, message: String) {
-        #if V2_LOGS_ENABLED
-            let messageWithPrefix = "\(intent.suffix) \(message)"
-            Logger.log(level: level, message: messageWithPrefix)
-        #else
-            Logger.log(level: level, message: message)
-        #endif
+        let messageWithPrefix = "\(intent.suffix) \(message)"
+        Logger.log(level: level, message: messageWithPrefix)
     }
 
     @objc public static func debug(_ message: String) {
