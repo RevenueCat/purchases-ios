@@ -1,6 +1,7 @@
 ## 3.10.0
 - Adds a new property `simulateAsksToBuyInSandbox`, that allows developers to test deferred purchases easily.
     https://github.com/RevenueCat/purchases-ios/pull/432
+    https://github.com/RevenueCat/purchases-ios/pull/436
 - Slight optimization so that offerings and purchaserInfo are returned faster if they're cached.
     https://github.com/RevenueCat/purchases-ios/pull/433
     https://github.com/RevenueCat/purchases-ios/issues/401
@@ -12,6 +13,7 @@
     https://github.com/RevenueCat/purchases-ios/pull/422
 - Fix deploy automation bugs when preparing the next version PR
     https://github.com/RevenueCat/purchases-ios/pull/434
+    https://github.com/RevenueCat/purchases-ios/pull/437
 
 ## 3.9.2
 - Fixed issues when compiling with Xcode 11 or earlier
