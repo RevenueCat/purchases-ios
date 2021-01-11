@@ -13,7 +13,7 @@
         <!--User-->
         <scene sceneID="tX2-Wc-IAL">
             <objects>
-                <viewController id="nV9-Ad-mnG" customClass="UserViewController" customModule="Magic_Weather" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="nV9-Ad-mnG" customClass="UserViewController" customModule="MagicWeather" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="VrE-Rr-eGX">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -122,7 +122,7 @@
         <!--✨ Magic Weather-->
         <scene sceneID="V4h-77-48f">
             <objects>
-                <viewController id="4pH-kE-nPd" customClass="WeatherViewController" customModule="Magic_Weather" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="4pH-kE-nPd" customClass="WeatherViewController" customModule="MagicWeather" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="dbp-Zu-cKV">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:/Users/codykerns/Desktop/Magic Weather Sample Apps/purchases-ios/Examples/MagicWeather/MagicWeather.xcodeproj">
+      location = "self:">
    </FileRef>
 </Workspace>
