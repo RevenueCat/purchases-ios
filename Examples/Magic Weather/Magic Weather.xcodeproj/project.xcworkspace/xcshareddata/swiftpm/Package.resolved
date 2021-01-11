@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Purchases",
+        "repositoryURL": "https://github.com/RevenueCat/purchases-ios.git",
+        "state": {
+          "branch": null,
+          "revision": "4c99b9ecaff307ac9e48bd5f520ea532ebbad570",
+          "version": "3.9.1"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

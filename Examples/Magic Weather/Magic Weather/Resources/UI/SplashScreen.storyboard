@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1Pu-zW-5n6">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Splash Screen View Controller-->
+        <scene sceneID="HJB-yl-KIo">
+            <objects>
+                <viewController id="1Pu-zW-5n6" customClass="SplashScreenViewController" customModule="Magic_Weather" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="65M-m4-wlW">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="Lxs-BG-rQj">
+                                <rect key="frame" x="188.5" y="365.5" width="37" height="37"/>
+                            </activityIndicatorView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QAh-QJ-PWJ">
+                                <rect key="frame" x="20" y="422.5" width="374" height="0.0"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="NWp-Ah-vdB">
+                                <rect key="frame" x="143" y="442.5" width="128" height="22"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="128" id="5qJ-43-XcD"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
+                                <color key="tintColor" name="AccentColor"/>
+                                <state key="normal" title="  Retry">
+                                    <color key="titleColor" name="AccentColor"/>
+                                    <imageReference key="image" image="arrow.clockwise" catalog="system" symbolScale="medium"/>
+                                    <preferredSymbolConfiguration key="preferredSymbolConfiguration" scale="default" weight="heavy"/>
+                                </state>
+                                <connections>
+                                    <action selector="retryAfterError" destination="1Pu-zW-5n6" eventType="touchUpInside" id="5zr-Mi-sdt"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="itj-Mv-i8e"/>
+                        <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="Lxs-BG-rQj" firstAttribute="centerX" secondItem="65M-m4-wlW" secondAttribute="centerX" id="J4f-yJ-Zvt"/>
+                            <constraint firstItem="Lxs-BG-rQj" firstAttribute="centerY" secondItem="65M-m4-wlW" secondAttribute="centerY" constant="-64" id="K57-cc-5eb"/>
+                            <constraint firstItem="NWp-Ah-vdB" firstAttribute="centerX" secondItem="65M-m4-wlW" secondAttribute="centerX" id="KSv-uu-cFE"/>
+                            <constraint firstItem="QAh-QJ-PWJ" firstAttribute="leading" secondItem="itj-Mv-i8e" secondAttribute="leading" constant="20" id="YAm-F7-hd5"/>
+                            <constraint firstItem="QAh-QJ-PWJ" firstAttribute="top" secondItem="Lxs-BG-rQj" secondAttribute="bottom" constant="20" id="YaJ-ti-5oI"/>
+                            <constraint firstItem="itj-Mv-i8e" firstAttribute="trailing" secondItem="QAh-QJ-PWJ" secondAttribute="trailing" constant="20" id="Yrt-iL-a3f"/>
+                            <constraint firstItem="NWp-Ah-vdB" firstAttribute="top" secondItem="QAh-QJ-PWJ" secondAttribute="bottom" constant="20" id="eef-vV-qrf"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="errorLabel" destination="QAh-QJ-PWJ" id="4Gl-R5-T5K"/>
+                        <outlet property="retryButton" destination="NWp-Ah-vdB" id="IuN-O6-8Th"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="0II-mq-r7E" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="35" y="72"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="arrow.clockwise" catalog="system" width="115" height="128"/>
+        <namedColor name="AccentColor">
+            <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </namedColor>
+        <systemColor name="secondarySystemBackgroundColor">
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>
