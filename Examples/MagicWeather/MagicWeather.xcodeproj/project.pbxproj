@@ -36,7 +36,7 @@
 		5539DF392593E6D90073FB19 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		5575FD48258801DE001B2F0D /* UserViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewController.swift; sourceTree = "<group>"; };
 		5576344225A3C08400C0486A /* PackageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageCell.swift; sourceTree = "<group>"; };
-		5582ECD32587EF8500ACB34B /* Magic Weather.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Magic Weather.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5582ECD32587EF8500ACB34B /* MagicWeather.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MagicWeather.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5582ECD62587EF8500ACB34B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5582ECD82587EF8500ACB34B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		5582ECDD2587EF8500ACB34B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -70,7 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				5539DF392593E6D90073FB19 /* README.md */,
-				5582ECD52587EF8500ACB34B /* Magic Weather */,
+				5582ECD52587EF8500ACB34B /* MagicWeather */,
 				5582ECD42587EF8500ACB34B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -78,19 +78,19 @@
 		5582ECD42587EF8500ACB34B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5582ECD32587EF8500ACB34B /* Magic Weather.app */,
+				5582ECD32587EF8500ACB34B /* MagicWeather.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		5582ECD52587EF8500ACB34B /* Magic Weather */ = {
+		5582ECD52587EF8500ACB34B /* MagicWeather */ = {
 			isa = PBXGroup;
 			children = (
 				5582ECF92587F29600ACB34B /* Constants.swift */,
 				5582ECEF2587EFD100ACB34B /* Sources */,
 				5582ECF42587F01E00ACB34B /* Resources */,
 			);
-			path = "Magic Weather";
+			path = MagicWeather;
 			sourceTree = "<group>";
 		};
 		5582ECEF2587EFD100ACB34B /* Sources */ = {
@@ -157,9 +157,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		5582ECD22587EF8500ACB34B /* Magic Weather */ = {
+		5582ECD22587EF8500ACB34B /* MagicWeather */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 5582ECE72587EF8800ACB34B /* Build configuration list for PBXNativeTarget "Magic Weather" */;
+			buildConfigurationList = 5582ECE72587EF8800ACB34B /* Build configuration list for PBXNativeTarget "MagicWeather" */;
 			buildPhases = (
 				5582ECCF2587EF8500ACB34B /* Sources */,
 				5582ECD02587EF8500ACB34B /* Frameworks */,
@@ -169,12 +169,12 @@
 			);
 			dependencies = (
 			);
-			name = "Magic Weather";
+			name = MagicWeather;
 			packageProductDependencies = (
 				5582ECEC2587EFC800ACB34B /* Purchases */,
 			);
 			productName = "Magic Weather";
-			productReference = 5582ECD32587EF8500ACB34B /* Magic Weather.app */;
+			productReference = 5582ECD32587EF8500ACB34B /* MagicWeather.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -191,7 +191,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 5582ECCE2587EF8500ACB34B /* Build configuration list for PBXProject "Magic Weather" */;
+			buildConfigurationList = 5582ECCE2587EF8500ACB34B /* Build configuration list for PBXProject "MagicWeather" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -207,7 +207,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				5582ECD22587EF8500ACB34B /* Magic Weather */,
+				5582ECD22587EF8500ACB34B /* MagicWeather */,
 			);
 		};
 /* End PBXProject section */
@@ -390,7 +390,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
-				INFOPLIST_FILE = "Magic Weather/Resources/Info.plist";
+				INFOPLIST_FILE = MagicWeather/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -410,7 +410,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
-				INFOPLIST_FILE = "Magic Weather/Resources/Info.plist";
+				INFOPLIST_FILE = MagicWeather/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -426,7 +426,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		5582ECCE2587EF8500ACB34B /* Build configuration list for PBXProject "Magic Weather" */ = {
+		5582ECCE2587EF8500ACB34B /* Build configuration list for PBXProject "MagicWeather" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5582ECE52587EF8800ACB34B /* Debug */,
@@ -435,7 +435,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		5582ECE72587EF8800ACB34B /* Build configuration list for PBXNativeTarget "Magic Weather" */ = {
+		5582ECE72587EF8800ACB34B /* Build configuration list for PBXNativeTarget "MagicWeather" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				5582ECE82587EF8800ACB34B /* Debug */,

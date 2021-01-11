@@ -18,11 +18,11 @@ See minimum platform version requirements for RevenueCat's *Purchases* SDK [here
 
 This sample demonstrates:
 
-- How to [configure](Magic%20Weather/Sources/Lifecycle/AppDelegate.swift) an instance of *Purchases*
-- How to display product prices and names, and how to build a basic [paywall](Magic%20Weather/Sources/Controllers/PaywallViewController.swift#L54)
--  How to check [subscription status](Magic%20Weather/Sources/Controllers/WeatherViewController.swift#L36)
-- How to [restore transactions](Magic%20Weather/Sources/Controllers/UserViewController.swift#L112)
-- How to [identify](Magic%20Weather/Sources/Controllers/UserViewController.swift#L56) users and how to [logout](Magic%20Weather/Sources/Controllers/UserViewController.swift#L86)
+- How to [configure](MagicWeather/Sources/Lifecycle/AppDelegate.swift) an instance of *Purchases*
+- How to display product prices and names, and how to build a basic [paywall](MagicWeather/Sources/Controllers/PaywallViewController.swift#L54)
+-  How to check [subscription status](MagicWeather/Sources/Controllers/WeatherViewController.swift#L36)
+- How to [restore transactions](MagicWeather/Sources/Controllers/UserViewController.swift#L112)
+- How to [identify](MagicWeather/Sources/Controllers/UserViewController.swift#L56) users and how to [logout](MagicWeather/Sources/Controllers/UserViewController.swift#L86)
 
 ## Support
 
