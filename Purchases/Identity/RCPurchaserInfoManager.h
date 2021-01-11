@@ -7,11 +7,7 @@
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class RCPurchaserInfo;
-@class RCDeviceCache;
-@class RCBackend;
-@class RCOperationDispatcher;
-@class RCSystemInfo;
+@class RCPurchaserInfo, RCDeviceCache, RCBackend, RCOperationDispatcher, RCSystemInfo;
 typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceivePurchaserInfoBlock);
 
 NS_SWIFT_NAME(PurchaserInfoManagerDelegate)
