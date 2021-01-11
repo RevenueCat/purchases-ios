@@ -35,9 +35,9 @@ NS_SWIFT_NAME(PurchaserInfoManager)
 - (void)sendCachedPurchaserInfoIfAvailableForAppUserID:(NSString *)appUserID;
 
 - (void)purchaserInfoWithAppUserID:(NSString *)appUserID
-                   completionBlock:(RCReceivePurchaserInfoBlock)completion;
+                   completionBlock:(nullable RCReceivePurchaserInfoBlock)completion;
 
-- (RCPurchaserInfo *)readPurchaserInfoFromCacheForAppUserID:(NSString *)appUserID;
+- (RCPurchaserInfo *)cachedPurchaserInfoForAppUserID:(NSString *)appUserID;
 - (void)cachePurchaserInfo:(RCPurchaserInfo *)info forAppUserID:(NSString *)appUserID;
 - (void)clearPurchaserInfoCacheForAppUserID:(NSString *)appUserID;
 - (void)clearCachesForAppUserID:(NSString *)oldAppUserID andSaveNewUserID:(NSString *)newUserID;

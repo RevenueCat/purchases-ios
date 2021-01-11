@@ -55,15 +55,14 @@ class MockPurchaserInfoManager: PurchaserInfoManager {
     }
 
     override func purchaserInfo(withAppUserID appUserID: String,
-                                completionBlock completion: @escaping Purchases.ReceivePurchaserInfoBlock) {
+                                completionBlock completion: Purchases.ReceivePurchaserInfoBlock?) {
         super.purchaserInfo(
             withAppUserID: appUserID,
             completionBlock: completion)
     }
 
-    override func readPurchaserInfoFromCache(forAppUserID appUserID: String) -> Purchases.PurchaserInfo {
-        super.readPurchaserInfoFromCache(
-            forAppUserID: appUserID)
+    override func cachedPurchaserInfo(forAppUserID appUserID: String) -> Purchases.PurchaserInfo {
+        super.cachedPurchaserInfo(forAppUserID: appUserID)
     }
 
     override func cachePurchaserInfo(_ info: Purchases.PurchaserInfo,

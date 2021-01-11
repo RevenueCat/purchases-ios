@@ -632,7 +632,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         }
 
         RCPurchaserInfo * _Nullable cachedPurchaserInfo = [self.purchaserInfoManager
-                                                           readPurchaserInfoFromCacheForAppUserID:self.appUserID];
+                                                           cachedPurchaserInfoForAppUserID:self.appUserID];
         BOOL hasOriginalPurchaseDate = cachedPurchaserInfo != nil && cachedPurchaserInfo.originalPurchaseDate != nil;
         BOOL receiptHasTransactions = [self.receiptParser receiptHasTransactionsWithReceiptData:data];
         if (!receiptHasTransactions && hasOriginalPurchaseDate) {
