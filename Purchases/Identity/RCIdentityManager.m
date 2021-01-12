@@ -89,7 +89,9 @@
 
 - (void)resetAppUserID {
     NSString *randomId = [self generateRandomID];
-    [self.deviceCache clearCachesForAppUserID:self.currentAppUserID andSaveNewUserID:randomId];
+    NSString *oldAppUserID = self.currentAppUserID;
+    [self.deviceCache clearCachesForAppUserID:oldAppUserID andSaveNewUserID:randomId];
+    [self.deviceCache clearLatestNetworkAndAdvertisingIdsSentForAppUserID:oldAppUserID];
 }
 
 - (NSString *)currentAppUserID {
@@ -129,6 +131,7 @@
                                  completion:^(RCPurchaserInfo *purchaserInfo, BOOL created, NSError *error) {
                                      if (error == nil) {
                                          RCUserLog(@"%@", RCStrings.identity.login_success);
+
                                          [self.purchaserInfoManager clearCachesForAppUserID:currentAppUserID
                                                                            andSaveNewUserID:newAppUserID];
                                      }
