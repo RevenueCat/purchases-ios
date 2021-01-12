@@ -45,7 +45,9 @@ class IdentityManagerTests: XCTestCase {
         var badOfferingsResponse = false
         var gotOfferings = 0
 
-        override func createAlias(forAppUserID appUserID: String, withNewAppUserID newAppUserID: String, completion: ((Error?) -> Void)? = nil) {
+        override func createAlias(forAppUserID appUserID: String,
+                                  withNewAppUserID newAppUserID: String,
+                                  completion: ((Error?) -> Void)? = nil) {
             aliasCalled = true
             if (aliasError != nil) {
                 completion!(aliasError)
@@ -96,13 +98,13 @@ class IdentityManagerTests: XCTestCase {
         self.identityManager.configure(withAppUserID: "cesar")
         let initialAppUserID: String = self.identityManager.currentAppUserID
         let newAppUserID = "cesar"
-        self.identityManager.identifyAppUserID(newAppUserID){ (error: Error?) in  }
+        self.identityManager.identifyAppUserID(newAppUserID) { (error: Error?) in }
         expect(self.mockDeviceCache.clearCachesCalledOldUserID).toEventually(equal(initialAppUserID))
     }
 
     func testIdentifyingCorrectlyIdentifies() {
         let newAppUserID = "cesar"
-        self.identityManager.identifyAppUserID(newAppUserID){ (error: Error?) in  }
+        self.identityManager.identifyAppUserID(newAppUserID) { (error: Error?) in }
         assertCorrectlyIdentified(expectedAppUserID: newAppUserID)
     }
 
@@ -110,7 +112,7 @@ class IdentityManagerTests: XCTestCase {
         self.mockBackend.aliasCalled = false
         self.mockDeviceCache.stubbedAppUserID = "appUserID"
 
-        self.identityManager.createAlias(forAppUserID: "cesar"){ (error: Error?) in
+        self.identityManager.createAlias(forAppUserID: "cesar") { (error: Error?) in
         }
 
         expect(self.mockBackend.aliasCalled).toEventually(beTrue())
@@ -119,7 +121,7 @@ class IdentityManagerTests: XCTestCase {
     func testCreateAliasNoOpsIfNilAppUserID() {
         self.mockBackend.aliasCalled = false
         self.mockDeviceCache.stubbedAppUserID = nil
-        self.identityManager.createAlias(forAppUserID: "cesar"){ (error: Error?) in
+        self.identityManager.createAlias(forAppUserID: "cesar") { (error: Error?) in
         }
 
         expect(self.mockBackend.aliasCalled).toEventually(beFalse())
@@ -130,7 +132,7 @@ class IdentityManagerTests: XCTestCase {
         self.mockDeviceCache.stubbedAppUserID = nil
         var completionCalled = false
         var receivedNSError: NSError?
-        self.identityManager.createAlias(forAppUserID: "cesar"){ (error: Error?) in
+        self.identityManager.createAlias(forAppUserID: "cesar") { (error: Error?) in
             completionCalled = true
 
             guard let receivedError = error else { fatalError() }
@@ -145,7 +147,7 @@ class IdentityManagerTests: XCTestCase {
     func testCreateAliasIdentifiesWhenSuccessful() {
         self.mockDeviceCache.cacheAppUserID("appUserID")
 
-        self.identityManager.createAlias(forAppUserID: "cesar"){ (error: Error?) in
+        self.identityManager.createAlias(forAppUserID: "cesar") { (error: Error?) in
         }
         assertCorrectlyIdentified(expectedAppUserID: "cesar")
     }
@@ -153,17 +155,19 @@ class IdentityManagerTests: XCTestCase {
     func testCreateAliasClearsCachesForPreviousUser() {
         self.identityManager.configure(withAppUserID: nil)
         let initialAppUserID: String = self.identityManager.currentAppUserID
-        self.identityManager.createAlias(forAppUserID: "cesar"){ (error: Error?) in
+        self.identityManager.createAlias(forAppUserID: "cesar") { (error: Error?) in
         }
         expect(self.mockDeviceCache.clearCachesCalledOldUserID).to(equal(initialAppUserID))
     }
 
     func testCreateAliasForwardsErrors() {
-        self.mockBackend.aliasError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
+        self.mockBackend.aliasError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber,
+                                                                        backendMessage: "Invalid credentials",
+                                                                        finishable: false)
         var error: Error? = nil
         self.mockDeviceCache.stubbedAppUserID = "appUserID"
 
-        self.identityManager.createAlias(forAppUserID: "cesar"){ (newError: Error?) in
+        self.identityManager.createAlias(forAppUserID: "cesar") { (newError: Error?) in
             error = newError
         }
         expect(error).toNot(beNil())
@@ -187,7 +191,7 @@ class IdentityManagerTests: XCTestCase {
         self.mockBackend.aliasError = nil
         self.mockDeviceCache.cacheAppUserID("$RCAnonymousID:5d73fc46744f4e0b99e524c6763dd7fc")
 
-        self.identityManager.identifyAppUserID("cesar"){ (error: Error?) in  }
+        self.identityManager.identifyAppUserID("cesar") { (error: Error?) in }
         expect(self.mockBackend.aliasCalled).toEventually(beTrue())
     }
 
@@ -205,13 +209,70 @@ class IdentityManagerTests: XCTestCase {
         assertCorrectlyIdentified(expectedAppUserID: "cesar")
     }
 
-    private func assertCorrectlyIdentified(expectedAppUserID: String) {
+    func testLogInFailsIfNilAppUserID() {
+        // TODO: implement
+    }
+
+    func testLogInFailsIfEmptyAppUserID() {
+        // TODO: implement
+    }
+
+    func testLogInSuccessfulIfOldAppUserIDEmpty() {
+        // TODO: implement
+    }
+
+    func testLogInWithSameAppUserIDRefreshesCacheIfStale() {
+        // TODO: implement
+    }
+
+    func testLogInWithSameAppUserIDDoesntRefreshCacheIfValid() {
+        // TODO: implement
+    }
+
+    func testLogInWithSameAppUserIPassesBackendPurchaserInfoErrors() {
+        // TODO: implement
+    }
+    func testLogInCallsBackendLogin() {
+        // TODO: implement
+    }
+
+    func testLogInPassesBackendLoginErrors() {
+        // TODO: implement
+    }
+
+    func testLogInClearsCachesIfSuccessful() {
+        // TODO: implement
+    }
+
+    func testLogInCachesNewPurchaserInfoIfSuccessful() {
+        // TODO: implement
+    }
+
+    func testLogInCallsCompletionCorrectly() {
+        // TODO: implement
+    }
+
+    func logOutCallsCompletionWithErrorIfUserAnonymous() {
+        // TODO: implement
+    }
+
+    func logOutCallsCompletionWithNoErrorIfSuccessful() {
+        // TODO: implement
+    }
+
+    func logOutClearsCachesAndAttributionData() {
+        // TODO: implement
+    }
+}
+
+private extension IdentityManagerTests {
+    func assertCorrectlyIdentified(expectedAppUserID: String) {
         expect(self.identityManager.currentAppUserID).to(equal(expectedAppUserID))
         expect(self.mockDeviceCache.userIDStoredInCache!).to(equal(expectedAppUserID));
         expect(self.identityManager.currentUserIsAnonymous).to(beFalse())
     }
 
-    private func assertCorrectlyIdentifiedWithAnonymous(usingOldID: Bool = false) {
+    func assertCorrectlyIdentifiedWithAnonymous(usingOldID: Bool = false) {
         if (!usingOldID) {
             expect(self.identityManager.currentAppUserID.range(of: #"\$RCAnonymousID:([a-z0-9]{32})$"#, options: .regularExpression)).toNot(beNil())
             expect(self.mockDeviceCache.userIDStoredInCache!.range(of: #"\$RCAnonymousID:([a-z0-9]{32})$"#, options: .regularExpression)).toNot(beNil())
