@@ -20,9 +20,9 @@ struct Constants {
     static let apiKey = "api_key"
     
     /*
-     The entitlement ID that is activated upon successful in-app purchase.
+     The entitlement ID from the RevenueCat dashboard that is activated upon successful in-app purchase for the duration of the purchase.
      */
-    #warning("Modify this property to reflect your app's entitlement.")
+    #error("Modify this property to reflect your app's entitlement identifier, then comment this line out.")
     static let entitlementID = "premium"
     
 }
