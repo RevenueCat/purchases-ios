@@ -6,6 +6,7 @@
 #import "RCIdentityManager.h"
 #import "RCLogUtils.h"
 #import "RCBackend.h"
+#import "RCDeviceCache.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCPurchaserInfoManager.h"
 @import PurchasesCoreSwift;
