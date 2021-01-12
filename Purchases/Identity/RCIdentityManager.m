@@ -134,6 +134,8 @@
 
                                          [self.deviceCache clearCachesForAppUserID:currentAppUserID
                                                                   andSaveNewUserID:newAppUserID];
+                                         [self.purchaserInfoManager cachePurchaserInfo:purchaserInfo
+                                                                          forAppUserID:newAppUserID];
                                      }
                                      completion(purchaserInfo, created, error);
     }];
