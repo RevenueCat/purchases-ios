@@ -1404,4 +1404,24 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count).to(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
+
+    func testLoginMakesRightCalls() {
+        // TODO: implement
+    }
+
+    func testLoginCallsCompletion() {
+        // TODO: implement
+    }
+
+    func testLoginPassesNetworkErrorIfCouldntCommunicate() {
+        // TODO: implement
+    }
+
+    func testLoginPassesErrors() {
+        // TODO: implement
+    }
+
+    func testLoginCallsCompletionWithErrorIfPurchaserInfoNil() {
+        // TODO: implement
+    }
 }
