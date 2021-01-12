@@ -132,8 +132,8 @@
                                      if (error == nil) {
                                          RCUserLog(@"%@", RCStrings.identity.login_success);
 
-                                         [self.purchaserInfoManager clearCachesForAppUserID:currentAppUserID
-                                                                           andSaveNewUserID:newAppUserID];
+                                         [self.deviceCache clearCachesForAppUserID:currentAppUserID
+                                                                  andSaveNewUserID:newAppUserID];
                                      }
                                      completion(purchaserInfo, created, error);
     }];

@@ -40,7 +40,6 @@ NS_SWIFT_NAME(PurchaserInfoManager)
 - (RCPurchaserInfo *)cachedPurchaserInfoForAppUserID:(NSString *)appUserID;
 - (void)cachePurchaserInfo:(RCPurchaserInfo *)info forAppUserID:(NSString *)appUserID;
 - (void)clearPurchaserInfoCacheForAppUserID:(NSString *)appUserID;
-- (void)clearCachesForAppUserID:(NSString *)oldAppUserID andSaveNewUserID:(NSString *)newUserID;
 
 @end
 

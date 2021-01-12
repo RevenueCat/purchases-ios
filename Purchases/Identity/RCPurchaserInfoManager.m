@@ -184,15 +184,6 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (void)clearCachesForAppUserID:(NSString *)oldAppUserID andSaveNewUserID:(NSString *)newUserID {
-    @synchronized (self) {
-        [self.deviceCache clearCachesForAppUserID:oldAppUserID
-                                 andSaveNewUserID:newUserID];
-        [self sendCachedPurchaserInfoIfAvailableForAppUserID:newUserID];
-    }
-}
-
-
 @end
 
 
