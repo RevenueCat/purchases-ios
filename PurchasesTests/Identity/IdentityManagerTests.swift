@@ -11,53 +11,6 @@ import Purchases
 class IdentityManagerTests: XCTestCase {
 
     private var identityManager: RCIdentityManager!
-
-    class MockBackend: RCBackend {
-        var userID: String?
-        var originalApplicationVersion: String?
-        var timeout = false
-        var getSubscriberCallCount = 0
-        var overridePurchaserInfo = Purchases.PurchaserInfo(data: [
-            "subscriber": [
-                "subscriptions": [:],
-                "other_purchases": [:]
-            ]])
-
-        var postReceiptDataCalled = false
-        var postedIsRestore: Bool?
-        var postedProductID: String?
-        var postedPrice: NSDecimalNumber?
-        var postedPaymentMode: RCPaymentMode?
-        var postedIntroPrice: NSDecimalNumber?
-        var postedCurrencyCode: String?
-        var postedSubscriptionGroup: String?
-        var postedDiscounts: Array<RCPromotionalOffer>?
-        var postedOfferingIdentifier: String?
-
-        var postReceiptPurchaserInfo: Purchases.PurchaserInfo?
-        var postReceiptError: Error?
-        var aliasError: Error?
-        var aliasCalled = false
-
-        var postedProductIdentifiers: [String]?
-
-        var failOfferings = false
-        var badOfferingsResponse = false
-        var gotOfferings = 0
-
-        override func createAlias(forAppUserID appUserID: String,
-                                  withNewAppUserID newAppUserID: String,
-                                  completion: ((Error?) -> Void)? = nil) {
-            aliasCalled = true
-            if (aliasError != nil) {
-                completion!(aliasError)
-            } else {
-                userID = newAppUserID
-                completion!(nil)
-            }
-        }
-    }
-
     private let mockDeviceCache = MockDeviceCache()
     private let mockBackend = MockBackend()
     private let mockPurchaserInfoManager = MockPurchaserInfoManager()
@@ -109,26 +62,26 @@ class IdentityManagerTests: XCTestCase {
     }
 
     func testCreateAliasCallsBackend() {
-        self.mockBackend.aliasCalled = false
+        self.mockBackend.invokedCreateAlias = false
         self.mockDeviceCache.stubbedAppUserID = "appUserID"
 
         self.identityManager.createAlias(forAppUserID: "cesar") { (error: Error?) in
         }
 
-        expect(self.mockBackend.aliasCalled).toEventually(beTrue())
+        expect(self.mockBackend.invokedCreateAlias).toEventually(beTrue())
     }
 
     func testCreateAliasNoOpsIfNilAppUserID() {
-        self.mockBackend.aliasCalled = false
+        self.mockBackend.invokedCreateAlias = false
         self.mockDeviceCache.stubbedAppUserID = nil
         self.identityManager.createAlias(forAppUserID: "cesar") { (error: Error?) in
         }
 
-        expect(self.mockBackend.aliasCalled).toEventually(beFalse())
+        expect(self.mockBackend.invokedCreateAlias).toEventually(beFalse())
     }
 
     func testCreateAliasCallsCompletionWithErrorIfNilAppUserID() {
-        self.mockBackend.aliasCalled = false
+        self.mockBackend.invokedCreateAlias = false
         self.mockDeviceCache.stubbedAppUserID = nil
         var completionCalled = false
         var receivedNSError: NSError?
@@ -146,6 +99,7 @@ class IdentityManagerTests: XCTestCase {
 
     func testCreateAliasIdentifiesWhenSuccessful() {
         self.mockDeviceCache.cacheAppUserID("appUserID")
+        mockBackend.stubbedCreateAliasCompletionResult = (nil, ())
 
         self.identityManager.createAlias(forAppUserID: "cesar") { (error: Error?) in
         }
@@ -155,15 +109,16 @@ class IdentityManagerTests: XCTestCase {
     func testCreateAliasClearsCachesForPreviousUser() {
         self.identityManager.configure(withAppUserID: nil)
         let initialAppUserID: String = self.identityManager.currentAppUserID
+        mockBackend.stubbedCreateAliasCompletionResult = (nil, ())
         self.identityManager.createAlias(forAppUserID: "cesar") { (error: Error?) in
         }
         expect(self.mockDeviceCache.clearCachesCalledOldUserID).to(equal(initialAppUserID))
     }
 
     func testCreateAliasForwardsErrors() {
-        self.mockBackend.aliasError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber,
+        self.mockBackend.stubbedCreateAliasCompletionResult = (Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber,
                                                                         backendMessage: "Invalid credentials",
-                                                                        finishable: false)
+                                                                        finishable: false), ())
         var error: Error? = nil
         self.mockDeviceCache.stubbedAppUserID = "appUserID"
 
@@ -188,11 +143,11 @@ class IdentityManagerTests: XCTestCase {
 
     func testIdentifyingWhenUserIsAnonymousCreatesAlias() {
         self.identityManager.configure(withAppUserID: nil)
-        self.mockBackend.aliasError = nil
+        self.mockBackend.stubbedCreateAliasCompletionResult = (nil, ())
         self.mockDeviceCache.cacheAppUserID("$RCAnonymousID:5d73fc46744f4e0b99e524c6763dd7fc")
 
         self.identityManager.identifyAppUserID("cesar") { (error: Error?) in }
-        expect(self.mockBackend.aliasCalled).toEventually(beTrue())
+        expect(self.mockBackend.invokedCreateAlias).toEventually(beTrue())
     }
 
     func testMigrationFromRandomIDConfiguringAnonymously() {
@@ -209,12 +164,26 @@ class IdentityManagerTests: XCTestCase {
         assertCorrectlyIdentified(expectedAppUserID: "cesar")
     }
 
-    func testLogInFailsIfNilAppUserID() {
-        // TODO: implement
-    }
-
     func testLogInFailsIfEmptyAppUserID() {
-        // TODO: implement
+        var completionCalled: Bool = false
+        var receivedCreated: Bool = false
+        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedError: Error?
+        identityManager.log(inAppUserID: "") { purchaserInfo, created, error in
+            completionCalled = true
+            receivedCreated = created
+            receivedPurchaserInfo = purchaserInfo
+            receivedError = error
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+
+        expect(receivedCreated) == false
+        expect(receivedPurchaserInfo).to(beNil())
+        expect(receivedError).toNot(beNil())
+
+        let receivedNSError = (receivedError! as NSError)
+        expect(receivedNSError.code) == Purchases.ErrorCode.invalidAppUserIdError.rawValue
     }
 
     func testLogInSuccessfulIfOldAppUserIDEmpty() {

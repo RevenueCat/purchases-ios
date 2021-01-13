@@ -203,5 +203,23 @@ class MockBackend: RCBackend {
         let subscriberAttributes: [String: RCSubscriberAttribute]?
         let appUserID: String?
     }
-}
 
+
+    var invokedLogIn = false
+    var invokedLogInCount = 0
+    var invokedLogInParameters: (currentAppUserID: String, newAppUserID: String)?
+    var invokedLogInParametersList = [(currentAppUserID: String, newAppUserID: String)]()
+    var stubbedLogInCompletionResult: (Purchases.PurchaserInfo?, Bool, Error)?
+
+    override func logIn(withCurrentAppUserID currentAppUserID: String,
+                        newAppUserID: String,
+                        completion: @escaping (Purchases.PurchaserInfo?, Bool, Error) -> ()) {
+        invokedLogIn = true
+        invokedLogInCount += 1
+        invokedLogInParameters = (currentAppUserID, newAppUserID)
+        invokedLogInParametersList.append((currentAppUserID, newAppUserID))
+        if let result = stubbedLogInCompletionResult {
+            completion(result.0, result.1, result.2)
+        }
+    }
+}
