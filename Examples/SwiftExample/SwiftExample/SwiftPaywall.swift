@@ -61,7 +61,8 @@ class SwiftPaywall: UIViewController {
     private var widthPerPackage : CGFloat {
         let paddingSpace = sectionInsets.left * (maxItemsPerRow + 1)
         let availableWidth = view.frame.width - paddingSpace
-        return availableWidth / maxItemsPerRow
+        let maxWidth:CGFloat = 300.0
+        return min(availableWidth / maxItemsPerRow, maxWidth)
     }
     
     private var offeringLoadingIndicator : UIActivityIndicatorView!
