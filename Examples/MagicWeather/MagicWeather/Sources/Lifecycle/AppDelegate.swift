@@ -28,6 +28,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                             appUserID: nil,
                             observerMode: false)
         
+        /// - Set the delegate to this instance of AppDelegate. Scroll down to see this implementation.
+        Purchases.shared.delegate = self
+        
         return true
     }
 
@@ -43,3 +46,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 }
 
+/*
+ Example implementation of PurchasesDelegate.
+ */
+extension AppDelegate: PurchasesDelegate {
+    
+    /// -  Whenever the `shared` instance of Purchases updates the PurchaserInfo cache, this method will be called.
+    func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: Purchases.PurchaserInfo) {
+        /// - If necessary, refresh app UI from updated PurchaserInfo
+    }
+    
+}

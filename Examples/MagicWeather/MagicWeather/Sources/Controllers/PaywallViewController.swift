@@ -23,6 +23,12 @@ class PaywallViewController: UITableViewController {
 
         /// - Load offerings when the paywall is displayed
         Purchases.shared.offerings { (offerings, error) in
+            
+            /// - If we have an error fetching offerings here, we'll print it out. You'll want to handle this case by either retrying, or letting your users know offerings weren't able to be fetched.
+            if let error = error {
+                print(error.localizedDescription)
+            }
+            
             self.offering = offerings?.current
             self.tableView.reloadData()
         }

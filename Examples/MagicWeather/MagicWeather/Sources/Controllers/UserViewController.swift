@@ -95,9 +95,10 @@ extension UserViewController {
         Purchases.shared.reset { (purchaserInfo, error) in
             if let error = error {
                 self.present(UIAlertController.errorAlert(message: error.localizedDescription), animated: true, completion: nil)
+            } else {
+                self.refreshUserDetails()
             }
             
-            self.refreshUserDetails()
         }
     }
 }
