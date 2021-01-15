@@ -409,7 +409,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     if ([alias isEqualToString:self.identityManager.currentAppUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];
     } else {
-        [self.identityManager createAliasForAppUserID:alias completionBlock:^(NSError *_Nullable error) {
+        [self.identityManager createAliasForAppUserID:alias completion:^(NSError *_Nullable error) {
             if (error == nil) {
                 [self updateAllCachesWithCompletionBlock:completion];
             } else {
@@ -423,7 +423,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     if ([appUserID isEqualToString:self.identityManager.currentAppUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];
     } else {
-        [self.identityManager identifyAppUserID:appUserID completionBlock:^(NSError *error) {
+        [self.identityManager identifyAppUserID:appUserID completion:^(NSError *error) {
             if (error == nil) {
                 [self updateAllCachesWithCompletionBlock:completion];
             } else {
@@ -436,9 +436,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)  logIn:(NSString *)appUserID
 completionBlock:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo, BOOL created, NSError *error))completion {
-    [self.identityManager logInWithAppUserID:appUserID completionBlock:^(RCPurchaserInfo *purchaserInfo,
-                                                                         BOOL created,
-                                                                         NSError *error) {
+    [self.identityManager logInWithAppUserID:appUserID completion:^(RCPurchaserInfo *purchaserInfo,
+                                                                    BOOL created,
+                                                                    NSError *error) {
         CALL_IF_SET_ON_MAIN_THREAD(completion, purchaserInfo, created, error);
 
         if (error == nil) {
@@ -450,7 +450,7 @@ completionBlock:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo, BOOL created
 }
 
 - (void)logOutWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    [self.identityManager logOutWithCompletionBlock:^(NSError *error) {
+    [self.identityManager logOutWithCompletion:^(NSError *error) {
         if (error) {
             completion(nil, error);
         } else {

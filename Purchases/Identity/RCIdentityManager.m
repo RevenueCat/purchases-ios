@@ -56,10 +56,10 @@
     [self.deviceCache cleanupSubscriberAttributes];
 }
 
-- (void)identifyAppUserID:(NSString *)appUserID completionBlock:(void (^)(NSError *_Nullable error))completion {
+- (void)identifyAppUserID:(NSString *)appUserID completion:(void (^)(NSError *_Nullable error))completion {
     if (self.currentUserIsAnonymous) {
         RCUserLog(RCStrings.identity.identifying_anon_id, self.currentAppUserID);
-        [self createAliasForAppUserID:appUserID completionBlock:completion];
+        [self createAliasForAppUserID:appUserID completion:completion];
     } else {
         RCUserLog(RCStrings.identity.changing_app_user_id, self.currentAppUserID, appUserID);
         [self.deviceCache clearCachesForAppUserID:self.currentAppUserID andSaveNewUserID:appUserID];
@@ -71,7 +71,7 @@
     [self.deviceCache cacheAppUserID:appUserID];
 }
 
-- (void)createAliasForAppUserID:(NSString *)alias completionBlock:(void (^)(NSError *_Nullable error))completion {
+- (void)createAliasForAppUserID:(NSString *)alias completion:(void (^)(NSError *_Nullable error))completion {
     NSString *currentAppUserID = self.currentAppUserID;
     if (!currentAppUserID) {
         RCWarnLog(@"%@", RCStrings.identity.creating_alias_failed_null_currentappuserid);
@@ -106,9 +106,9 @@
 }
 
 - (void)logInWithAppUserID:(NSString *)newAppUserID
-           completionBlock:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo,
-                                 BOOL created,
-                                 NSError *_Nullable error))completion {
+                completion:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo,
+                                     BOOL created,
+                                     NSError *_Nullable error))completion {
     if (!newAppUserID || [newAppUserID isEqualToString:@""]) {
         RCErrorLog(@"%@", RCStrings.identity.creating_alias_failed_null_currentappuserid);
         completion(nil, NO, RCPurchasesErrorUtils.missingAppUserIDError);
@@ -144,7 +144,7 @@
     }];
 }
 
-- (void)logOutWithCompletionBlock:(void (^)(NSError * _Nullable error))completion {
+- (void)logOutWithCompletion:(void (^)(NSError * _Nullable error))completion {
     if (!self.currentUserIsAnonymous) {
         completion(RCPurchasesErrorUtils.logOutAnonymousUserError);
         return;

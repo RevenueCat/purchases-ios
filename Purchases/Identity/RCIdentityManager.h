@@ -21,17 +21,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)configureWithAppUserID:(nullable NSString *)appUserID;
 
 - (void)logInWithAppUserID:(NSString *)newAppUserID
-           completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo,
-                                 BOOL created,
-                                 NSError * _Nullable error))completion;
+                completion:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo,
+                                     BOOL created,
+                                     NSError * _Nullable error))completion;
 
-- (void)logOutWithCompletionBlock:(void (^)(NSError * _Nullable error))completion;
+- (void)logOutWithCompletion:(void (^)(NSError * _Nullable error))completion;
 
 #pragma MARK - deprecated methods
 
-- (void)identifyAppUserID:(NSString *)appUserID completionBlock:(void (^)(NSError * _Nullable error))completion;
+- (void)identifyAppUserID:(NSString *)appUserID completion:(void (^)(NSError * _Nullable error))completion;
 
-- (void)createAliasForAppUserID:(NSString *)alias completionBlock:(void (^)(NSError * _Nullable error))completion;
+- (void)createAliasForAppUserID:(NSString *)alias completion:(void (^)(NSError * _Nullable error))completion;
 
 - (void)resetAppUserID;
 

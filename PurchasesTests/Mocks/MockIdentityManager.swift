@@ -31,7 +31,7 @@ class MockIdentityManager: RCIdentityManager {
         configurationCalled = true
     }
 
-    override func createAlias(forAppUserID alias: String!, completionBlock completion: ((Error?) -> ())!) {
+    override func createAlias(forAppUserID alias: String!, completion: ((Error?) -> ())!) {
         aliasCalled = true
         if (aliasError != nil) {
             completion(aliasError)
@@ -41,7 +41,7 @@ class MockIdentityManager: RCIdentityManager {
         }
     }
 
-    override func identifyAppUserID(_ appUserID: String!, completionBlock completion: ((Error?) -> ())!) {
+    override func identifyAppUserID(_ appUserID: String!, completion: ((Error?) -> ())!) {
         identifyCalled = true
         if (identifyError != nil) {
             completion(identifyError)
