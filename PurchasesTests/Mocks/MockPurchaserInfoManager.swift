@@ -7,71 +7,106 @@ import Foundation
 import PurchasesCoreSwift
 
 class MockPurchaserInfoManager: PurchaserInfoManager {
-    override var delegate: PurchaserInfoManagerDelegate? {
-        get { super.delegate }
-        set { super.delegate = newValue }
-    }
+    var invokedDelegateGetter = false
+    var invokedDelegateGetterCount = 0
 
-    convenience override init() {
-        self.init(operationDispatcher: MockOperationDispatcher(),
-                  deviceCache: MockDeviceCache(),
-                  backend: MockBackend(),
-                  systemInfo: RCSystemInfo(platformFlavor: "iOS",
-                                           platformFlavorVersion: "1.2.3",
-                                           finishTransactions: true))
-    }
-
-    override init(operationDispatcher: OperationDispatcher,
-                  deviceCache: RCDeviceCache,
-                  backend: RCBackend,
-                  systemInfo: RCSystemInfo) {
-        super.init(operationDispatcher: operationDispatcher,
-                   deviceCache: deviceCache,
-                   backend: backend,
-                   systemInfo: systemInfo)
-    }
+    var invokedFetchAndCachePurchaserInfo = false
+    var invokedFetchAndCachePurchaserInfoCount = 0
+    var invokedFetchAndCachePurchaserInfoParameters: (appUserID: String, isAppBackgrounded: Bool, completion: Purchases.ReceivePurchaserInfoBlock?)?
+    var invokedFetchAndCachePurchaserInfoParametersList = [(appUserID: String,
+        isAppBackgrounded: Bool,
+        completion: Purchases.ReceivePurchaserInfoBlock?)]()
 
     override func fetchAndCachePurchaserInfo(withAppUserID appUserID: String,
                                              isAppBackgrounded: Bool,
                                              completion: Purchases.ReceivePurchaserInfoBlock?) {
-        super.fetchAndCachePurchaserInfo(
-            withAppUserID: appUserID,
-            isAppBackgrounded: isAppBackgrounded,
-            completion: completion)
+        invokedFetchAndCachePurchaserInfo = true
+        invokedFetchAndCachePurchaserInfoCount += 1
+        invokedFetchAndCachePurchaserInfoParameters = (appUserID, isAppBackgrounded, completion)
+        invokedFetchAndCachePurchaserInfoParametersList.append((appUserID, isAppBackgrounded, completion))
     }
+
+    var invokedFetchAndCachePurchaserInfoIfStale = false
+    var invokedFetchAndCachePurchaserInfoIfStaleCount = 0
+    var invokedFetchAndCachePurchaserInfoIfStaleParameters: (appUserID: String, isAppBackgrounded: Bool, completion: Purchases.ReceivePurchaserInfoBlock?)?
+    var invokedFetchAndCachePurchaserInfoIfStaleParametersList = [(appUserID: String,
+        isAppBackgrounded: Bool,
+        completion: Purchases.ReceivePurchaserInfoBlock?)]()
 
     override func fetchAndCachePurchaserInfoIfStale(withAppUserID appUserID: String,
                                                     isAppBackgrounded: Bool,
                                                     completion: Purchases.ReceivePurchaserInfoBlock?) {
-        super.fetchAndCachePurchaserInfoIfStale(
-            withAppUserID: appUserID,
-            isAppBackgrounded: isAppBackgrounded,
-            completion: completion)
+        invokedFetchAndCachePurchaserInfoIfStale = true
+        invokedFetchAndCachePurchaserInfoIfStaleCount += 1
+        invokedFetchAndCachePurchaserInfoIfStaleParameters = (appUserID, isAppBackgrounded, completion)
+        invokedFetchAndCachePurchaserInfoIfStaleParametersList.append((appUserID, isAppBackgrounded, completion))
     }
 
+    var invokedSendCachedPurchaserInfoIfAvailable = false
+    var invokedSendCachedPurchaserInfoIfAvailableCount = 0
+    var invokedSendCachedPurchaserInfoIfAvailableParameters: (appUserID: String, Void)?
+    var invokedSendCachedPurchaserInfoIfAvailableParametersList = [(appUserID: String, Void)]()
+
     override func sendCachedPurchaserInfoIfAvailable(forAppUserID appUserID: String) {
-        super.sendCachedPurchaserInfoIfAvailable(
-            forAppUserID: appUserID)
+        invokedSendCachedPurchaserInfoIfAvailable = true
+        invokedSendCachedPurchaserInfoIfAvailableCount += 1
+        invokedSendCachedPurchaserInfoIfAvailableParameters = (appUserID, ())
+        invokedSendCachedPurchaserInfoIfAvailableParametersList.append((appUserID, ()))
     }
+
+    var invokedPurchaserInfo = false
+    var invokedPurchaserInfoCount = 0
+    var invokedPurchaserInfoParameters: (appUserID: String, completion: Purchases.ReceivePurchaserInfoBlock?)?
+    var invokedPurchaserInfoParametersList = [(appUserID: String, completion: Purchases.ReceivePurchaserInfoBlock?)]()
+
+    var stubbedPurchaserInfo: Purchases.PurchaserInfo?
+    var stubbedError: Error?
 
     override func purchaserInfo(withAppUserID appUserID: String,
                                 completionBlock completion: Purchases.ReceivePurchaserInfoBlock?) {
-        super.purchaserInfo(
-            withAppUserID: appUserID,
-            completionBlock: completion)
+        invokedPurchaserInfo = true
+        invokedPurchaserInfoCount += 1
+        invokedPurchaserInfoParameters = (appUserID, completion)
+        invokedPurchaserInfoParametersList.append((appUserID, completion))
+        completion?(stubbedPurchaserInfo, stubbedError)
     }
 
+    var invokedCachedPurchaserInfo = false
+    var invokedCachedPurchaserInfoCount = 0
+    var invokedCachedPurchaserInfoParameters: (appUserID: String, Void)?
+    var invokedCachedPurchaserInfoParametersList = [(appUserID: String, Void)]()
+    var stubbedCachedPurchaserInfoResult: Purchases.PurchaserInfo!
+
     override func cachedPurchaserInfo(forAppUserID appUserID: String) -> Purchases.PurchaserInfo {
-        super.cachedPurchaserInfo(forAppUserID: appUserID)
+        invokedCachedPurchaserInfo = true
+        invokedCachedPurchaserInfoCount += 1
+        invokedCachedPurchaserInfoParameters = (appUserID, ())
+        invokedCachedPurchaserInfoParametersList.append((appUserID, ()))
+        return stubbedCachedPurchaserInfoResult
     }
+
+    var invokedCachePurchaserInfo = false
+    var invokedCachePurchaserInfoCount = 0
+    var invokedCachePurchaserInfoParameters: (info: Purchases.PurchaserInfo, appUserID: String)?
+    var invokedCachePurchaserInfoParametersList = [(info: Purchases.PurchaserInfo, appUserID: String)]()
 
     override func cachePurchaserInfo(_ info: Purchases.PurchaserInfo,
                                      forAppUserID appUserID: String) {
-        super.cachePurchaserInfo(info,
-                                 forAppUserID: appUserID)
+        invokedCachePurchaserInfo = true
+        invokedCachePurchaserInfoCount += 1
+        invokedCachePurchaserInfoParameters = (info, appUserID)
+        invokedCachePurchaserInfoParametersList.append((info, appUserID))
     }
 
+    var invokedClearPurchaserInfoCache = false
+    var invokedClearPurchaserInfoCacheCount = 0
+    var invokedClearPurchaserInfoCacheParameters: (appUserID: String, Void)?
+    var invokedClearPurchaserInfoCacheParametersList = [(appUserID: String, Void)]()
+
     override func clearPurchaserInfoCache(forAppUserID appUserID: String) {
-        super.clearPurchaserInfoCache(forAppUserID: appUserID)
+        invokedClearPurchaserInfoCache = true
+        invokedClearPurchaserInfoCacheCount += 1
+        invokedClearPurchaserInfoCacheParameters = (appUserID, ())
+        invokedClearPurchaserInfoCacheParametersList.append((appUserID, ()))
     }
 }

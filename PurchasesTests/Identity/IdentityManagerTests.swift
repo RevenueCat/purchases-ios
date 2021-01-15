@@ -191,7 +191,18 @@ class IdentityManagerTests: XCTestCase {
     }
 
     func testLogInWithSameAppUserIDRefreshesCacheIfStale() {
-        // TODO: implement
+        var completionCalled: Bool = false
+        let appUserID = "myUser"
+        mockDeviceCache.stubbedAppUserID = appUserID
+        mockDeviceCache.stubbedIsPurchaserInfoCacheStale = false
+        identityManager.log(inAppUserID: appUserID) { purchaserInfo, created, error in
+            completionCalled = true
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+
+        expect(self.mockBackend.invokedLogInCount) == 0
+        expect(self.mockPurchaserInfoManager.invokedPurchaserInfoCount) == 1
     }
 
     func testLogInWithSameAppUserIDDoesntRefreshCacheIfValid() {
