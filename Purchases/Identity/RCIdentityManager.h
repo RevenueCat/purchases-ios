@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)logInAppUserID:(NSString *)newAppUserID
        completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo,
                                  BOOL created,
-                                 NSError *error))completion;
+                                 NSError * _Nullable error))completion;
 
 - (void)logOutWithCompletionBlock:(void (^)(NSError * _Nullable error))completion;
 

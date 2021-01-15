@@ -209,11 +209,11 @@ class MockBackend: RCBackend {
     var invokedLogInCount = 0
     var invokedLogInParameters: (currentAppUserID: String, newAppUserID: String)?
     var invokedLogInParametersList = [(currentAppUserID: String, newAppUserID: String)]()
-    var stubbedLogInCompletionResult: (Purchases.PurchaserInfo?, Bool, Error)?
+    var stubbedLogInCompletionResult: (Purchases.PurchaserInfo?, Bool, Error?)?
 
     override func logIn(withCurrentAppUserID currentAppUserID: String,
                         newAppUserID: String,
-                        completion: @escaping (Purchases.PurchaserInfo?, Bool, Error) -> ()) {
+                        completion: @escaping (Purchases.PurchaserInfo?, Bool, Error?) -> ()) {
         invokedLogIn = true
         invokedLogInCount += 1
         invokedLogInParameters = (currentAppUserID, newAppUserID)

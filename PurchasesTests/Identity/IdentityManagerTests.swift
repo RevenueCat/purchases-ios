@@ -190,11 +190,10 @@ class IdentityManagerTests: XCTestCase {
         // TODO: implement
     }
 
-    func testLogInWithSameAppUserIDRefreshesCacheIfStale() {
+    func testLogInWithSameAppUserIDFetchesPurchaserInfo() {
         var completionCalled: Bool = false
         let appUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = appUserID
-        mockDeviceCache.stubbedIsPurchaserInfoCacheStale = false
         identityManager.log(inAppUserID: appUserID) { purchaserInfo, created, error in
             completionCalled = true
         }
@@ -205,15 +204,69 @@ class IdentityManagerTests: XCTestCase {
         expect(self.mockPurchaserInfoManager.invokedPurchaserInfoCount) == 1
     }
 
-    func testLogInWithSameAppUserIDDoesntRefreshCacheIfValid() {
-        // TODO: implement
+    func testLogInWithSameAppUserIPassesBackendPurchaserInfoErrors() {
+        var completionCalled: Bool = false
+        let appUserID = "myUser"
+        mockDeviceCache.stubbedAppUserID = appUserID
+        var receivedCreated: Bool = true
+        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedError: NSError?
+
+        let stubbedError = NSError(domain: Purchases.ErrorDomain,
+                                   code: Purchases.ErrorCode.invalidAppUserIdError.rawValue,
+                                   userInfo: [:])
+
+        self.mockPurchaserInfoManager.stubbedError = stubbedError
+        identityManager.log(inAppUserID: appUserID) { purchaserInfo, created, error in
+            completionCalled = true
+            receivedCreated = created
+            receivedPurchaserInfo = purchaserInfo
+            receivedError = error as NSError?
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+
+        expect(receivedCreated) == false
+        expect(receivedPurchaserInfo).to(beNil())
+        expect(receivedError) == stubbedError
+
+        expect(self.mockBackend.invokedLogInCount) == 0
+        expect(self.mockPurchaserInfoManager.invokedPurchaserInfoCount) == 1
     }
 
-    func testLogInWithSameAppUserIPassesBackendPurchaserInfoErrors() {
-        // TODO: implement
-    }
+    let mockPurchaserInfo = Purchases.PurchaserInfo(data: [
+        "subscriber": [
+            "subscriptions": [:],
+            "other_purchases": [:],
+            "original_application_version": NSNull()
+        ]])
+
     func testLogInCallsBackendLogin() {
-        // TODO: implement
+        var completionCalled: Bool = false
+        let oldAppUserID = "anonymous"
+        let newAppUserID = "myUser"
+        mockDeviceCache.stubbedAppUserID = oldAppUserID
+        var receivedCreated: Bool = false
+        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedError: NSError?
+
+        self.mockBackend.stubbedLogInCompletionResult = (mockPurchaserInfo, true, nil)
+
+        identityManager.log(inAppUserID: newAppUserID) { purchaserInfo, created, error in
+            completionCalled = true
+            receivedCreated = created
+            receivedPurchaserInfo = purchaserInfo
+            receivedError = error as NSError?
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+
+        expect(receivedCreated) == true
+        expect(receivedPurchaserInfo) == mockPurchaserInfo
+        expect(receivedError).to(beNil())
+
+        expect(self.mockBackend.invokedLogInCount) == 1
+        expect(self.mockPurchaserInfoManager.invokedPurchaserInfoCount) == 0
     }
 
     func testLogInPassesBackendLoginErrors() {

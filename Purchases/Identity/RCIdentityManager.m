@@ -106,7 +106,9 @@
 }
 
 - (void)logInAppUserID:(NSString *)newAppUserID
-       completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL created, NSError *error))completion {
+       completionBlock:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo,
+                                 BOOL created,
+                                 NSError *_Nullable error))completion {
     if (!newAppUserID || [newAppUserID isEqualToString:@""]) {
         RCErrorLog(@"%@", RCStrings.identity.creating_alias_failed_null_currentappuserid);
         completion(nil, NO, RCPurchasesErrorUtils.missingAppUserIDError);
@@ -129,7 +131,7 @@
 
     [self.backend logInWithCurrentAppUserID:currentAppUserID
                                newAppUserID:newAppUserID
-                                 completion:^(RCPurchaserInfo *purchaserInfo, BOOL created, NSError *error) {
+                                 completion:^(RCPurchaserInfo *purchaserInfo, BOOL created, NSError * _Nullable error) {
                                      if (error == nil) {
                                          RCUserLog(@"%@", RCStrings.identity.login_success);
 
