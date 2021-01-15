@@ -436,9 +436,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)  logIn:(NSString *)appUserID
 completionBlock:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo, BOOL created, NSError *error))completion {
-    [self.identityManager logInAppUserID:appUserID completionBlock:^(RCPurchaserInfo *purchaserInfo,
-                                                                     BOOL created,
-                                                                     NSError *error) {
+    [self.identityManager logInWithAppUserID:appUserID completionBlock:^(RCPurchaserInfo *purchaserInfo,
+                                                                         BOOL created,
+                                                                         NSError *error) {
         CALL_IF_SET_ON_MAIN_THREAD(completion, purchaserInfo, created, error);
 
         if (error == nil) {

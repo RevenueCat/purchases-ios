@@ -105,8 +105,8 @@
     return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID;
 }
 
-- (void)logInAppUserID:(NSString *)newAppUserID
-       completionBlock:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo,
+- (void)logInWithAppUserID:(NSString *)newAppUserID
+           completionBlock:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo,
                                  BOOL created,
                                  NSError *_Nullable error))completion {
     if (!newAppUserID || [newAppUserID isEqualToString:@""]) {

@@ -176,7 +176,7 @@ class IdentityManagerTests: XCTestCase {
         var receivedCreated: Bool = false
         var receivedPurchaserInfo: Purchases.PurchaserInfo?
         var receivedError: Error?
-        identityManager.log(inAppUserID: "") { purchaserInfo, created, error in
+        identityManager.logIn(withAppUserID: ""){ purchaserInfo, created, error in
             completionCalled = true
             receivedCreated = created
             receivedPurchaserInfo = purchaserInfo
@@ -203,7 +203,7 @@ class IdentityManagerTests: XCTestCase {
 
         self.mockBackend.stubbedLogInCompletionResult = (mockPurchaserInfo, true, nil)
 
-        identityManager.log(inAppUserID: newAppUserID) { purchaserInfo, created, error in
+        identityManager.logIn(withAppUserID: newAppUserID){ purchaserInfo, created, error in
             completionCalled = true
             receivedCreated = created
             receivedPurchaserInfo = purchaserInfo
@@ -224,7 +224,7 @@ class IdentityManagerTests: XCTestCase {
         var completionCalled: Bool = false
         let appUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = appUserID
-        identityManager.log(inAppUserID: appUserID) { purchaserInfo, created, error in
+        identityManager.logIn(withAppUserID: appUserID){ purchaserInfo, created, error in
             completionCalled = true
         }
 
@@ -247,7 +247,7 @@ class IdentityManagerTests: XCTestCase {
                                    userInfo: [:])
 
         self.mockPurchaserInfoManager.stubbedError = stubbedError
-        identityManager.log(inAppUserID: appUserID) { purchaserInfo, created, error in
+        identityManager.logIn(withAppUserID: appUserID){ purchaserInfo, created, error in
             completionCalled = true
             receivedCreated = created
             receivedPurchaserInfo = purchaserInfo
@@ -275,7 +275,7 @@ class IdentityManagerTests: XCTestCase {
 
         self.mockBackend.stubbedLogInCompletionResult = (mockPurchaserInfo, true, nil)
 
-        identityManager.log(inAppUserID: newAppUserID) { purchaserInfo, created, error in
+        identityManager.logIn(withAppUserID: newAppUserID){ purchaserInfo, created, error in
             completionCalled = true
             receivedCreated = created
             receivedPurchaserInfo = purchaserInfo
@@ -308,7 +308,7 @@ class IdentityManagerTests: XCTestCase {
 
         self.mockPurchaserInfoManager.stubbedError = stubbedError
 
-        identityManager.log(inAppUserID: newAppUserID) { purchaserInfo, created, error in
+        identityManager.logIn(withAppUserID: newAppUserID){ purchaserInfo, created, error in
             completionCalled = true
             receivedCreated = created
             receivedPurchaserInfo = purchaserInfo
@@ -336,7 +336,7 @@ class IdentityManagerTests: XCTestCase {
 
         self.mockBackend.stubbedLogInCompletionResult = (mockPurchaserInfo, true, nil)
 
-        identityManager.log(inAppUserID: newAppUserID) { purchaserInfo, created, error in
+        identityManager.logIn(withAppUserID: newAppUserID){ purchaserInfo, created, error in
             completionCalled = true
         }
 
@@ -353,7 +353,7 @@ class IdentityManagerTests: XCTestCase {
 
         self.mockBackend.stubbedLogInCompletionResult = (mockPurchaserInfo, true, nil)
 
-        identityManager.log(inAppUserID: newAppUserID) { purchaserInfo, created, error in
+        identityManager.logIn(withAppUserID: newAppUserID){ purchaserInfo, created, error in
             completionCalled = true
         }
 
