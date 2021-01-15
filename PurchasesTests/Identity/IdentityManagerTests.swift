@@ -365,7 +365,7 @@ class IdentityManagerTests: XCTestCase {
     }
 
     func testLogOutCallsCompletionWithErrorIfUserAnonymous() {
-        mockDeviceCache.stubbedAnonymous = true
+        mockDeviceCache.stubbedAppUserID = identityManager.generateRandomID()
         var completionCalled = false
         var receivedError: Error?
         identityManager.logOut { error in
@@ -378,11 +378,27 @@ class IdentityManagerTests: XCTestCase {
     }
 
     func testLogOutCallsCompletionWithNoErrorIfSuccessful() {
-        // TODO: implement
+        mockDeviceCache.stubbedAppUserID = "myUser"
+        var completionCalled = false
+        var receivedError: Error?
+        identityManager.logOut { error in
+            completionCalled = true
+            receivedError = error
+        }
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedError).to(beNil())
     }
 
     func testLogOutClearsCachesAndAttributionData() {
-        // TODO: implement
+        mockDeviceCache.stubbedAppUserID = "myUser"
+        var completionCalled = false
+        identityManager.logOut { error in
+            completionCalled = true
+        }
+        expect(completionCalled).toEventually(beTrue())
+
+        expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == true
+        expect(self.mockDeviceCache.invokedClearLatestNetworkAndAdvertisingIdsSent) == true
     }
 }
 

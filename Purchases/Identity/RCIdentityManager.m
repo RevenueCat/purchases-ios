@@ -145,7 +145,7 @@
 }
 
 - (void)logOutWithCompletion:(void (^)(NSError * _Nullable error))completion {
-    if (!self.currentUserIsAnonymous) {
+    if (self.currentUserIsAnonymous) {
         completion(RCPurchasesErrorUtils.logOutAnonymousUserError);
         return;
     }

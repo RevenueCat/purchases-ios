@@ -201,7 +201,6 @@ class MockDeviceCache: RCDeviceCache {
         invokedDeleteAttributesIfSyncedParametersList.append(appUserID)
     }
 
-
     var invokedClearPurchaserInfoCache = false
     var invokedClearPurchaserInfoCacheCount = 0
     var invokedClearPurchaserInfoCacheParameters: (appUserID: String, Void)?
@@ -213,5 +212,17 @@ class MockDeviceCache: RCDeviceCache {
         invokedClearPurchaserInfoCacheCount += 1
         invokedClearPurchaserInfoCacheParameters = (appUserID, ())
         invokedClearPurchaserInfoCacheParametersList.append((appUserID, ()))
+    }
+
+    var invokedClearLatestNetworkAndAdvertisingIdsSent = false
+    var invokedClearLatestNetworkAndAdvertisingIdsSentCount = 0
+    var invokedClearLatestNetworkAndAdvertisingIdsSentParameters: (appUserID: String?, Void)?
+    var invokedClearLatestNetworkAndAdvertisingIdsSentParametersList = [(appUserID: String?, Void)]()
+
+    override func clearLatestNetworkAndAdvertisingIdsSent(forAppUserID appUserID: String?) {
+        invokedClearLatestNetworkAndAdvertisingIdsSent = true
+        invokedClearLatestNetworkAndAdvertisingIdsSentCount += 1
+        invokedClearLatestNetworkAndAdvertisingIdsSentParameters = (appUserID, ())
+        invokedClearLatestNetworkAndAdvertisingIdsSentParametersList.append((appUserID, ()))
     }
 }
