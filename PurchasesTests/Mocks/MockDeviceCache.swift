@@ -15,11 +15,13 @@ class MockDeviceCache: RCDeviceCache {
     var stubbedAnonymous: Bool = false
     var clearCachesCalledOldUserID: String? = nil
     var clearCachesCalleNewUserID: String? = nil
+    var invokedClearCachesForAppUserID: Bool = false
 
     override func clearCaches(forAppUserID oldUserId: String, andSaveNewUserID newUserID: String) {
         clearCachesCalledOldUserID = oldUserId
         clearCachesCalleNewUserID = newUserID
         userIDStoredInCache = newUserID
+        invokedClearCachesForAppUserID = true
     }
 
     override var cachedLegacyAppUserID: String? {
