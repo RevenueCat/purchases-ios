@@ -12,7 +12,8 @@
 - Slight optimization so that offerings and purchaserInfo are returned faster if they're cached.
     https://github.com/RevenueCat/purchases-ios/pull/433
     https://github.com/RevenueCat/purchases-ios/issues/401
-- Revamped logging strings, makes log messages from `Purchases` easier to spot and understand.
+- Revamped logging strings, makes log messages from `Purchases` easier to spot and understand. Deprecated `RCReceiptInUseByOtherSubscriberError`
+to use `RCReceiptAlreadyInUseError`.
     https://github.com/RevenueCat/purchases-ios/pull/426
     https://github.com/RevenueCat/purchases-ios/pull/428
     https://github.com/RevenueCat/purchases-ios/pull/430
