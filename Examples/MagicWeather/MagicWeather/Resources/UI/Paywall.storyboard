@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="17506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="RLd-eX-QeE">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17505"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Navigation Controller-->
+        <scene sceneID="sVs-F1-L92">
+            <objects>
+                <navigationController id="RLd-eX-QeE" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="pNT-dn-UQp">
+                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="Mk4-8x-dvj" kind="relationship" relationship="rootViewController" id="wYL-n3-6C6"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="bZN-In-NZx" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-696" y="112"/>
+        </scene>
+        <!--✨ Magic Weather Premium-->
+        <scene sceneID="Umz-nv-Kyl">
+            <objects>
+                <tableViewController id="Mk4-8x-dvj" customClass="PaywallViewController" customModule="MagicWeather" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="OLg-XE-0zm">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="PackageCell" rowHeight="89" id="4bw-Od-7N0" customClass="PackageCell" customModule="MagicWeather">
+                                <rect key="frame" x="20" y="55.5" width="374" height="89"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="4bw-Od-7N0" id="r1p-pu-mAb">
+                                    <rect key="frame" x="0.0" y="0.0" width="374" height="89"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Monthly" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Baw-ch-W2x">
+                                            <rect key="frame" x="20" y="20" width="72" height="24"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Includes 7-day Free Trial" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="klJ-c1-asM">
+                                            <rect key="frame" x="20" y="52" width="169" height="18"/>
+                                            <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                                            <color key="textColor" systemColor="secondaryLabelColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aAU-RZ-RwI">
+                                            <rect key="frame" x="291.5" y="0.0" width="74.5" height="89"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="$17.99" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Zs8-PC-EGx">
+                                                    <rect key="frame" x="8" y="32.5" width="58.5" height="24"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <constraints>
+                                                <constraint firstItem="Zs8-PC-EGx" firstAttribute="leading" secondItem="aAU-RZ-RwI" secondAttribute="leading" constant="8" id="80m-jN-QuV"/>
+                                                <constraint firstAttribute="trailing" secondItem="Zs8-PC-EGx" secondAttribute="trailing" constant="8" id="iJ4-xl-IiV"/>
+                                                <constraint firstItem="Zs8-PC-EGx" firstAttribute="centerY" secondItem="aAU-RZ-RwI" secondAttribute="centerY" id="yQy-z4-Mgt"/>
+                                            </constraints>
+                                        </view>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="aAU-RZ-RwI" secondAttribute="trailing" constant="8" id="2mk-L4-4Ld"/>
+                                        <constraint firstItem="Baw-ch-W2x" firstAttribute="top" secondItem="r1p-pu-mAb" secondAttribute="topMargin" constant="9" id="8gz-KM-8Fj"/>
+                                        <constraint firstItem="klJ-c1-asM" firstAttribute="top" secondItem="Baw-ch-W2x" secondAttribute="bottom" constant="8" symbolic="YES" id="9rb-lW-2kc"/>
+                                        <constraint firstItem="aAU-RZ-RwI" firstAttribute="top" secondItem="r1p-pu-mAb" secondAttribute="top" id="Ajs-QU-xYb"/>
+                                        <constraint firstItem="Baw-ch-W2x" firstAttribute="leading" secondItem="r1p-pu-mAb" secondAttribute="leadingMargin" id="BBL-y2-vho"/>
+                                        <constraint firstItem="klJ-c1-asM" firstAttribute="leading" secondItem="r1p-pu-mAb" secondAttribute="leadingMargin" id="ulD-Ze-gxT"/>
+                                        <constraint firstAttribute="bottom" secondItem="aAU-RZ-RwI" secondAttribute="bottom" id="xqy-7m-Av5"/>
+                                        <constraint firstAttribute="bottomMargin" secondItem="klJ-c1-asM" secondAttribute="bottom" constant="8" id="yr4-5r-VgA"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <color key="backgroundColor" systemColor="secondarySystemGroupedBackgroundColor"/>
+                                <connections>
+                                    <outlet property="packagePriceLabel" destination="Zs8-PC-EGx" id="flT-aJ-pT8"/>
+                                    <outlet property="packageTermsLabel" destination="klJ-c1-asM" id="p3Q-si-2gm"/>
+                                    <outlet property="packageTitleLabel" destination="Baw-ch-W2x" id="G5m-zG-1E7"/>
+                                </connections>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="Mk4-8x-dvj" id="8PC-aV-lEs"/>
+                            <outlet property="delegate" destination="Mk4-8x-dvj" id="z7L-vJ-KCA"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="✨ Magic Weather Premium" id="T2n-Xj-jYR">
+                        <barButtonItem key="leftBarButtonItem" title="Item" image="x.circle.fill" catalog="system" id="5mQ-FV-8fe">
+                            <connections>
+                                <action selector="dismissModal" destination="Mk4-8x-dvj" id="riA-hW-fCm"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Snq-fF-xhn" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="102.89855072463769" y="111.83035714285714"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="x.circle.fill" catalog="system" width="128" height="121"/>
+        <systemColor name="secondaryLabelColor">
+            <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="secondarySystemGroupedBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>
