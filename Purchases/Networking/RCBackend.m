@@ -390,19 +390,13 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     if (statusCode > RC_REDIRECT) {
         responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
                                                             backendMessage:response[@"message"]];
+        if (completion != nil) {
+            completion(nil, NO, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:responseError]);
+        }
+        return;
     }
 
-    if (completion != nil) {
-        completion(nil, NO, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:responseError]);
-        return;
-    }
-    NSNumber *createdAsNumber = (NSNumber *)response[@"created"];
-    if (createdAsNumber == nil) {
-        responseError = [RCPurchasesErrorUtils unexpectedBackendResponseError];
-        completion(nil, NO, responseError);
-        return;
-    }
-    BOOL created = ((NSNumber *)response[@"created"]).boolValue; // TODO: confirm field name and type
+    BOOL created = statusCode == 201;
 
     NSDictionary *purchaserInfoDict = response[@"subscriber_data"]; // TODO: confirm field name
     RCPurchaserInfo *purchaserInfo = [[RCPurchaserInfo alloc] initWithData:purchaserInfoDict];
