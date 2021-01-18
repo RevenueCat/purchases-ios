@@ -1406,15 +1406,65 @@ class BackendTests: XCTestCase {
     }
 
     func testLoginMakesRightCalls() {
-        // TODO: implement
-    }
+        let newAppUserID = "new id"
 
-    func testLoginCallsCompletion() {
-        // TODO: implement
+        let currentAppUserID = "old id"
+        let requestPath = mockLoginRequest(appUserID: currentAppUserID)
+
+        var completionCalled = false
+
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                                                      created: Bool,
+                                                      error: Error?) in
+            completionCalled = true
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(self.httpClient.calls).toNot(beEmpty())
+        expect(self.httpClient.calls.count) == 1
+
+        let receivedCall = self.httpClient.calls[0]
+        expect(receivedCall.path) == requestPath
+        expect(receivedCall.serially) == true
+        expect(receivedCall.HTTPMethod) == "POST"
+        expect(receivedCall.body as? [String: String]) == ["new_app_user_id": newAppUserID]
+        expect(receivedCall.headers) == ["Authorization": "Bearer asharedsecret"]
     }
 
     func testLoginPassesNetworkErrorIfCouldntCommunicate() {
-        // TODO: implement
+        let newAppUserID = "new id"
+
+        let errorCode = 123465
+        let stubbedError = NSError(domain: Purchases.ErrorDomain,
+                                   code: errorCode,
+                                   userInfo: [:])
+        let currentAppUserID = "old id"
+        _ = mockLoginRequest(appUserID: currentAppUserID, error: stubbedError)
+
+        var completionCalled = false
+        var receivedError: Error?
+        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedCreated: Bool?
+
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                                                      created: Bool,
+                                                      error: Error?) in
+            completionCalled = true
+            receivedError = error
+            receivedPurchaserInfo = purchaserInfo
+            receivedCreated = created
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedCreated) == false
+        expect(receivedPurchaserInfo).to(beNil())
+
+        expect(receivedError).toNot(beNil())
+        let receivedNSError = receivedError! as NSError
+        expect(receivedNSError.code) == Purchases.ErrorCode.networkError.rawValue
+        expect((receivedNSError.userInfo[NSUnderlyingErrorKey] as! NSError)) == stubbedError
     }
 
     func testLoginPassesErrors() {
@@ -1423,5 +1473,20 @@ class BackendTests: XCTestCase {
 
     func testLoginCallsCompletionWithErrorIfPurchaserInfoNil() {
         // TODO: implement
+    }
+}
+
+
+private extension BackendTests {
+
+    func mockLoginRequest(appUserID: String,
+                          statusCode: Int = 200,
+                          response: [AnyHashable : Any]? = [:],
+                          error: Error? = nil) -> String {
+        let escapedCurrentAppUserID = appUserID.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+        let response = HTTPResponse(statusCode: statusCode, response: response, error: error)
+        let requestPath = ("/subscribers/" + escapedCurrentAppUserID + "/login")
+        httpClient.mock(requestPath: requestPath, response: response)
+        return requestPath
     }
 }
