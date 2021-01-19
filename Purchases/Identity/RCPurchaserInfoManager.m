@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (RCPurchaserInfo *)cachedPurchaserInfoForAppUserID:(NSString *)appUserID {
+- (nullable RCPurchaserInfo *)cachedPurchaserInfoForAppUserID:(NSString *)appUserID {
     NSData *purchaserInfoData = [self.deviceCache cachedPurchaserInfoDataForAppUserID:appUserID];
     if (purchaserInfoData) {
         NSError *jsonError;
@@ -76,7 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)sendCachedPurchaserInfoIfAvailableForAppUserID:(NSString *)appUserID {
-    RCPurchaserInfo *infoFromCache = [self cachedPurchaserInfoForAppUserID:appUserID];
+    RCPurchaserInfo * _Nullable infoFromCache = [self cachedPurchaserInfoForAppUserID:appUserID];
     if (infoFromCache) {
         [self sendUpdatedPurchaserInfoToDelegateIfChanged:infoFromCache];
     }
@@ -156,7 +156,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)purchaserInfoWithAppUserID:(NSString *)appUserID
                    completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    RCPurchaserInfo *infoFromCache = [self cachedPurchaserInfoForAppUserID:appUserID];
+    RCPurchaserInfo * _Nullable infoFromCache = [self cachedPurchaserInfoForAppUserID:appUserID];
     if (infoFromCache) {
         RCDebugLog(@"%@", RCStrings.purchaserInfo.vending_cache);
         if (completion) {

@@ -293,19 +293,70 @@ class PurchaserInfoManagerTests: XCTestCase {
     }
 
     func testCachedPurchaserInfoParsesCorrectly() {
-        // TODO: implement
+        let appUserID = "myUser"
+        let info = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
+                "other_purchases": [:]
+            ]]);
+
+        let jsonObject = info!.jsonObject()
+
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        mockDeviceCache.cachedPurchaserInfo[appUserID] = object
+
+        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(forAppUserID: appUserID)
+
+        expect(receivedPurchaserInfo).toNot(beNil())
+        expect(receivedPurchaserInfo!) == info
     }
 
     func testCachedPurchaserInfoReturnsNilIfNotAvailable() {
-        // TODO: implement
+        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(forAppUserID: "myUser")
+        expect(receivedPurchaserInfo).to(beNil())
+    }
+
+    func testCachedPurchaserInfoReturnsNilIfNotAvailableForTheAppUserID() {
+        let info = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
+                "other_purchases": [:]
+            ]]);
+
+        let jsonObject = info!.jsonObject()
+
+        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        mockDeviceCache.cachedPurchaserInfo["firstUser"] = object
+
+        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(forAppUserID: "secondUser")
+        expect(receivedPurchaserInfo).to(beNil())
     }
 
     func testCachedPurchaserInfoReturnsNilIfCantBeParsed() {
-        // TODO: implement
+        let appUserID = "myUser"
+
+        mockDeviceCache.cachedPurchaserInfo[appUserID] = Data()
+
+        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(forAppUserID: appUserID)
+        expect(receivedPurchaserInfo).to(beNil())
     }
 
     func testCachedPurchaserInfoReturnsNilIfDifferentSchema() {
-        // TODO: implement
+        let oldSchemaVersion = Int(Purchases.PurchaserInfo.currentSchemaVersion())! - 1
+        let data: [String: Any] = [
+            "schema_version": "\(oldSchemaVersion)",
+            "subscriber": [
+                "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
+                "other_purchases": [:]
+            ]
+        ]
+
+        let object = try! JSONSerialization.data(withJSONObject: data, options: [])
+        let appUserID = "myUser"
+        mockDeviceCache.cachedPurchaserInfo[appUserID] = object
+
+        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(forAppUserID: appUserID)
+        expect(receivedPurchaserInfo).to(beNil())
     }
 
     func testCachePurchaserInfoStoresCorrectly() {
