@@ -31,27 +31,6 @@ class PurchaserInfoManagerTests: XCTestCase {
         purchaserInfoManager.delegate = self
     }
 
-    func testFetchAndCachePurchaserInfoOnlyRefreshesCacheOnce() {
-        mockDeviceCache.stubbedIsPurchaserInfoCacheStale = true
-        var firstCompletionCalled = false
-        var secondCompletionCalled = false
-
-        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(withAppUserID: "myUser",
-                                                               isAppBackgrounded: false) { purchaserInfo, error in
-            firstCompletionCalled = true
-        }
-        mockDeviceCache.stubbedIsPurchaserInfoCacheStale = false
-        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: "myUser")
-        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(withAppUserID: "myUser",
-                                                               isAppBackgrounded: false) { purchaserInfo, error in
-            secondCompletionCalled = true
-        }
-
-        expect(firstCompletionCalled).toEventually(beTrue())
-        expect(secondCompletionCalled).toEventually(beTrue())
-        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
-    }
-
     func testFetchAndCachePurchaserInfoCallsBackendWithRandomDelayIfAppBackgrounded() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
 
@@ -134,15 +113,68 @@ class PurchaserInfoManagerTests: XCTestCase {
     }
 
     func testFetchAndCachePurchaserInfoCallsCompletionOnMainThread() {
-        // TODO: implement
+        mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
+        mockOperationDispatcher.shouldInvokeDispatchOnMainThreadBlock = true
+        mockBackend.stubbedGetSubscriberDataPurchaserInfo = mockPurchaserInfo
+
+        var completionCalled = false
+        purchaserInfoManager.fetchAndCachePurchaserInfo(withAppUserID: "myUser",
+                                                        isAppBackgrounded: false) { purchaserInfo, error in
+            completionCalled = true
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+
+        let expectedInvokationsOnMainThread = 2 // one for the delegate, one for completion
+        expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == expectedInvokationsOnMainThread
+    }
+
+    func testFetchAndCachePurchaserInfoIfStaleOnlyRefreshesCacheOnce() {
+        mockDeviceCache.stubbedIsPurchaserInfoCacheStale = true
+        var firstCompletionCalled = false
+        var secondCompletionCalled = false
+
+        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(withAppUserID: "myUser",
+                                                               isAppBackgrounded: false) { purchaserInfo, error in
+            firstCompletionCalled = true
+        }
+        mockDeviceCache.stubbedIsPurchaserInfoCacheStale = false
+        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: "myUser")
+        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(withAppUserID: "myUser",
+                                                               isAppBackgrounded: false) { purchaserInfo, error in
+            secondCompletionCalled = true
+        }
+
+        expect(firstCompletionCalled).toEventually(beTrue())
+        expect(secondCompletionCalled).toEventually(beTrue())
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
     }
 
     func testFetchAndCachePurchaserInfoIfStaleFetchesIfStale() {
-        // TODO: implement
+        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: "myUser")
+        mockDeviceCache.stubbedIsPurchaserInfoCacheStale = true
+        var completionCalled = false
+
+        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(withAppUserID: "myUser",
+                                                               isAppBackgrounded: false) { purchaserInfo, error in
+            completionCalled = true
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
     }
 
     func testFetchAndCachePurchaserInfoIfStaleFetchesIfCacheEmpty() {
-        // TODO: implement
+        mockDeviceCache.stubbedIsPurchaserInfoCacheStale = false
+        var completionCalled = false
+
+        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(withAppUserID: "myUser",
+                                                               isAppBackgrounded: false) { purchaserInfo, error in
+            completionCalled = true
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
     }
 
     func testSendUpdatedPurchaserInfoToDelegateIfChangedSendsIfNeverSent() {

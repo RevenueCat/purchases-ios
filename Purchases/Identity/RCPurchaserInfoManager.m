@@ -48,19 +48,15 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)cachePurchaserInfo:(RCPurchaserInfo *)info forAppUserID:(NSString *)appUserID {
-    if (info) {
-        [self.operationDispatcher dispatchOnMainThread:^{
-            if (info.JSONObject) {
-                NSError *jsonError = nil;
-                NSData *jsonData = [NSJSONSerialization dataWithJSONObject:info.JSONObject
-                                                                   options:0
-                                                                     error:&jsonError];
-                if (jsonError == nil) {
-                    [self.deviceCache cachePurchaserInfo:jsonData forAppUserID:appUserID];
-                    [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
-                }
-            }
-        }];
+    if (info && info.JSONObject) {
+        NSError *jsonError = nil;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:info.JSONObject
+                                                           options:0
+                                                             error:&jsonError];
+        if (jsonError == nil) {
+            [self.deviceCache cachePurchaserInfo:jsonData forAppUserID:appUserID];
+            [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
+        }
     }
 }
 
@@ -132,7 +128,9 @@ NS_ASSUME_NONNULL_BEGIN
         RCSuccessLog(@"%@", RCStrings.purchaserInfo.purchaserinfo_updated_from_network);
     } else {
         if (completion) {
-            completion(cachedPurchaserInfo, nil);
+            [self.operationDispatcher dispatchOnMainThread: ^{
+                completion(cachedPurchaserInfo, nil);
+            }];
         }
     }
 }
