@@ -48,14 +48,17 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)cachePurchaserInfo:(RCPurchaserInfo *)info forAppUserID:(NSString *)appUserID {
-    if (info && info.JSONObject) {
-        NSError *jsonError = nil;
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:info.JSONObject
-                                                           options:0
-                                                             error:&jsonError];
-        if (jsonError == nil) {
-            [self.deviceCache cachePurchaserInfo:jsonData forAppUserID:appUserID];
-            [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
+    if (info) {
+        NSDictionary *infoAsJSONDict = info.JSONObject;
+        if ([NSJSONSerialization isValidJSONObject:infoAsJSONDict]) {
+            NSError *jsonError = nil;
+            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:infoAsJSONDict
+                                                               options:0
+                                                                 error:&jsonError];
+            if (jsonError == nil) {
+                [self.deviceCache cachePurchaserInfo:jsonData forAppUserID:appUserID];
+                [self sendUpdatedPurchaserInfoToDelegateIfChanged:info];
+            }
         }
     }
 }

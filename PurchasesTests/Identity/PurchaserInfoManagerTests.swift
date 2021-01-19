@@ -360,19 +360,31 @@ class PurchaserInfoManagerTests: XCTestCase {
     }
 
     func testCachePurchaserInfoStoresCorrectly() {
-        // TODO: implement
+        let appUserID = "myUser"
+        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: appUserID)
+
+        expect(self.purchaserInfoManager.cachedPurchaserInfo(forAppUserID: appUserID)) == mockPurchaserInfo
+        expect(self.mockDeviceCache.cachePurchaserInfoCount) == 1
     }
 
     func testCachePurchaserDoesntStoreIfEmpty() {
-        // TODO: implement
-    }
-
-    func testCachePurchaserDoesntStoreNoJsonObject() {
-        // TODO: implement
+        purchaserInfoManager.cachePurchaserInfo(Purchases.PurchaserInfo(), forAppUserID: "myUser")
+        expect(self.mockDeviceCache.cachePurchaserInfoCount) == 0
     }
 
     func testCachePurchaserDoesntStoreIfCantBeSerialized() {
-        // TODO: implement
+        // infinity can't be cast into JSON, so we use it to force a parsing exception. See:
+        // https://developer.apple.com/documentation/foundation/nsjsonserialization?language=objc
+        let invalidPurchaserInfo = Purchases.PurchaserInfo(data: [
+            "something": Double.infinity,
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": NSNull()
+            ]])!
+
+        purchaserInfoManager.cachePurchaserInfo(invalidPurchaserInfo, forAppUserID: "myUser")
+        expect(self.mockDeviceCache.cachePurchaserInfoCount) == 0
     }
 
     func testCachePurchaserSendsToDelegateIfChanged() {
