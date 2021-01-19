@@ -117,10 +117,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)fetchAndCachePurchaserInfoIfStaleWithAppUserID:(NSString *)appUserID
                                      isAppBackgrounded:(BOOL)isAppBackgrounded
                                             completion:(nullable RCReceivePurchaserInfoBlock)completion {
-    BOOL isCacheStale = ([self.deviceCache isPurchaserInfoCacheStaleForAppUserID:appUserID
-                                                              isAppBackgrounded:isAppBackgrounded]
-                          || ![self cachedPurchaserInfoForAppUserID:appUserID]);
-    if (isCacheStale) {
+    RCPurchaserInfo * _Nullable cachedPurchaserInfo = [self cachedPurchaserInfoForAppUserID:appUserID];
+    BOOL isCacheStale = [self.deviceCache isPurchaserInfoCacheStaleForAppUserID:appUserID
+                                                              isAppBackgrounded:isAppBackgrounded];
+    BOOL needsToRefresh = isCacheStale || !cachedPurchaserInfo;
+    if (needsToRefresh) {
         RCDebugLog(@"%@", isAppBackgrounded
                           ? RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_background
                           : RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_foreground);
@@ -129,6 +130,10 @@ NS_ASSUME_NONNULL_BEGIN
                                     isAppBackgrounded:isAppBackgrounded
                                            completion:completion];
         RCSuccessLog(@"%@", RCStrings.purchaserInfo.purchaserinfo_updated_from_network);
+    } else {
+        if (completion) {
+            completion(cachedPurchaserInfo, nil);
+        }
     }
 }
 

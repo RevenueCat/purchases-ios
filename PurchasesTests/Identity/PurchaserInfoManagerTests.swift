@@ -31,6 +31,27 @@ class PurchaserInfoManagerTests: XCTestCase {
         purchaserInfoManager.delegate = self
     }
 
+    func testFetchAndCachePurchaserInfoOnlyRefreshesCacheOnce() {
+        mockDeviceCache.stubbedIsPurchaserInfoCacheStale = true
+        var firstCompletionCalled = false
+        var secondCompletionCalled = false
+
+        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(withAppUserID: "myUser",
+                                                               isAppBackgrounded: false) { purchaserInfo, error in
+            firstCompletionCalled = true
+        }
+        mockDeviceCache.stubbedIsPurchaserInfoCacheStale = false
+        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: "myUser")
+        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(withAppUserID: "myUser",
+                                                               isAppBackgrounded: false) { purchaserInfo, error in
+            secondCompletionCalled = true
+        }
+
+        expect(firstCompletionCalled).toEventually(beTrue())
+        expect(secondCompletionCalled).toEventually(beTrue())
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+    }
+
     func testFetchAndCachePurchaserInfoCallsBackendWithRandomDelayIfAppBackgrounded() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
 
@@ -116,11 +137,11 @@ class PurchaserInfoManagerTests: XCTestCase {
         // TODO: implement
     }
 
-    func testFetchAndCachePurchaserInfoIfStaleFechesIfStale() {
+    func testFetchAndCachePurchaserInfoIfStaleFetchesIfStale() {
         // TODO: implement
     }
 
-    func testFetchAndCachePurchaserInfoIfStaleFechesIfCacheEmpty() {
+    func testFetchAndCachePurchaserInfoIfStaleFetchesIfCacheEmpty() {
         // TODO: implement
     }
 
