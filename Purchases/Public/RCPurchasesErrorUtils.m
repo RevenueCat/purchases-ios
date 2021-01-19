@@ -61,6 +61,11 @@ static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
             return @"The operation is already in progress.";
         case RCUnknownBackendError:
             return @"There was an unknown backend error.";
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+        case RCReceiptInUseByOtherSubscriberError:
+            return @"The receipt is in use by other subscriber.";
+#pragma GCC diagnostic pop
         case RCInvalidAppleSubscriptionKeyError:
             return @"Apple Subscription Key is invalid or not present. In order to provide subscription offers, you must first generate a subscription key. Please see https://docs.revenuecat.com/docs/ios-subscription-offers for more info.";
         case RCIneligibleError:
@@ -114,6 +119,11 @@ static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
             return @"OPERATION_ALREADY_IN_PROGRESS";
         case RCUnknownBackendError:
             return @"UNKNOWN_BACKEND_ERROR";
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+        case RCReceiptInUseByOtherSubscriberError:
+            return @"RECEIPT_IN_USE_BY_OTHER_SUBSCRIBER";
+#pragma GCC diagnostic pop
         case RCInvalidAppleSubscriptionKeyError:
             return @"INVALID_APPLE_SUBSCRIPTION_KEY";
         case RCIneligibleError:
