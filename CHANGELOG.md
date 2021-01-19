@@ -1,3 +1,7 @@
+## 3.10.2
+- Re-added `RCReceiptInUseByOtherSubscriberError`, but with a deprecation warning, so as not to break existing apps.
+    https://github.com/RevenueCat/purchases-ios/pull/452
+
 ## 3.10.1
 - Enables improved logging prefixes so they're easier to locate.
     https://github.com/RevenueCat/purchases-ios/pull/441
@@ -12,7 +16,7 @@
 - Slight optimization so that offerings and purchaserInfo are returned faster if they're cached.
     https://github.com/RevenueCat/purchases-ios/pull/433
     https://github.com/RevenueCat/purchases-ios/issues/401
-- Revamped logging strings, makes log messages from `Purchases` easier to spot and understand.
+- Revamped logging strings, makes log messages from `Purchases` easier to spot and understand. Removed `RCReceiptInUseByOtherSubscriberError`, replaced by `RCReceiptAlreadyInUseError`.
     https://github.com/RevenueCat/purchases-ios/pull/426
     https://github.com/RevenueCat/purchases-ios/pull/428
     https://github.com/RevenueCat/purchases-ios/pull/430
