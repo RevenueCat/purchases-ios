@@ -125,8 +125,8 @@ class PurchaserInfoManagerTests: XCTestCase {
 
         expect(completionCalled).toEventually(beTrue())
 
-        let expectedInvokationsOnMainThread = 2 // one for the delegate, one for completion
-        expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == expectedInvokationsOnMainThread
+        let expectedInvocationsOnMainThread = 2 // one for the delegate, one for completion
+        expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == expectedInvocationsOnMainThread
     }
 
     func testFetchAndCachePurchaserInfoIfStaleOnlyRefreshesCacheOnce() {
