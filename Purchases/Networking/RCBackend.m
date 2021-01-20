@@ -364,7 +364,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                            serially:YES
                                path:path
                                body:@{
-                                   @"new_app_user_id": newAppUserID
+                                   @"new_app_user_id": newAppUserID // TODO: confirm backend field name
                                }
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
