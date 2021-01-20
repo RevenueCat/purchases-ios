@@ -365,7 +365,6 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
     return [self errorWithCode:RCLogOutAnonymousUserError];
 }
 
-
 + (NSError *)purchasesErrorWithSKError:(NSError *)skError {
 
     RCPurchasesErrorCode errorCode = RCPurchasesErrorCodeFromSKError(skError);
