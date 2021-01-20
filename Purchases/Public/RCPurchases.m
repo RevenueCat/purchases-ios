@@ -604,7 +604,10 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)syncPurchasesWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     [self syncPurchasesWithReceiptRefreshPolicy:RCReceiptRefreshPolicyNever
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
                                       isRestore:self.allowSharingAppStoreAccount
+#pragma GCC diagnostic pop
                                      completion:completion];
 }
 
@@ -617,7 +620,10 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)syncPurchasesWithReceiptRefreshPolicy:(RCReceiptRefreshPolicy)refreshPolicy
                                     isRestore:(BOOL)isRestore
                                    completion:(nullable RCReceivePurchaserInfoBlock)completion {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     if (!self.allowSharingAppStoreAccount) {
+#pragma GCC diagnostic pop
         RCWarnLog(@"%@", RCStrings.restore.restoretransactions_called_with_allow_sharing_appstore_account_false_warning);
     }
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
@@ -1167,7 +1173,10 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
     }
     [self.backend postReceiptData:data
                         appUserID:self.appUserID
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
                         isRestore:self.allowSharingAppStoreAccount
+#pragma GCC diagnostic pop
                       productInfo:productInfo
       presentedOfferingIdentifier:presentedOffering
                      observerMode:!self.finishTransactions

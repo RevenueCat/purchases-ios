@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCPurchaserInfoManager (Protected)
 
-@property (nonatomic) RCPurchaserInfo *lastSentPurchaserInfo;
+@property (nonatomic, nullable) RCPurchaserInfo *lastSentPurchaserInfo;
 
 @end
 

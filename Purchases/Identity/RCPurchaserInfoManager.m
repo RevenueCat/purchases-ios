@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCPurchaserInfoManager ()
 
-@property (nonatomic) RCPurchaserInfo *lastSentPurchaserInfo;
+@property (nonatomic, nullable) RCPurchaserInfo *lastSentPurchaserInfo;
 @property (nonatomic) RCOperationDispatcher *operationDispatcher;
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCBackend *backend;
