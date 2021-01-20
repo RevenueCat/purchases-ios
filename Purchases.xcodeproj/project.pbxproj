@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2D11F5E1250FF886005A70E8 /* AttributionStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */; };
+		2D1FFAD525B8707400367C63 /* RCPurchaserInfoManager+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D1FFAD425B8707400367C63 /* RCPurchaserInfoManager+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D390255259CF46000DB19C0 /* MockPaymentDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D390254259CF46000DB19C0 /* MockPaymentDiscount.swift */; };
 		2D3E29CE25E8009000456FA8 /* MockAttributionTypeFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35DA3E083FE37DAF15954 /* MockAttributionTypeFactory.swift */; };
 		2D49B32F253F7F5D003CBC8B /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 350FBDDC1F7EA3570065833D /* Nimble.framework */; };
@@ -275,6 +276,7 @@
 
 /* Begin PBXFileReference section */
 		2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionStrings.swift; sourceTree = "<group>"; };
+		2D1FFAD425B8707400367C63 /* RCPurchaserInfoManager+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCPurchaserInfoManager+Protected.h"; sourceTree = "<group>"; };
 		2D390254259CF46000DB19C0 /* MockPaymentDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPaymentDiscount.swift; sourceTree = "<group>"; };
 		2D4C18A824F47E4400F268CD /* Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Purchases.swift; sourceTree = "<group>"; };
 		2D4D6AF224F7172900B656BE /* MockProductsRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockProductsRequest.swift; sourceTree = "<group>"; };
@@ -929,6 +931,7 @@
 				3589D15524C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h */,
 				3589D15524C21DBD00A65CBB /* RCAttributionFetcher+Protected.h */,
 				2DAF814D25B24243002C621E /* RCIdentityManager+Protected.h */,
+				2D1FFAD425B8707400367C63 /* RCPurchaserInfoManager+Protected.h */,
 			);
 			path = ProtectedExtensions;
 			sourceTree = "<group>";
@@ -1206,6 +1209,7 @@
 				37E35D04747C56E85F1B9679 /* RCPurchaserInfo+Protected.h in Headers */,
 				37E35473E5952D7500FF4BD8 /* RCEntitlementInfo+Protected.h in Headers */,
 				37E3500156786798CB166571 /* RCPurchases+Protected.h in Headers */,
+				2D1FFAD525B8707400367C63 /* RCPurchaserInfoManager+Protected.h in Headers */,
 				37E35D757DE82291BFFCFB91 /* RCOfferings+Protected.h in Headers */,
 				37E35E3CFED4426C0EE1302C /* RCOffering+Protected.h in Headers */,
 				2DC5623824EC7DF70031F69B /* RCTransaction.h in Headers */,

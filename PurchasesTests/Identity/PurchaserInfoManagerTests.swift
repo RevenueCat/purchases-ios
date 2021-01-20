@@ -388,15 +388,26 @@ class PurchaserInfoManagerTests: XCTestCase {
     }
 
     func testCachePurchaserSendsToDelegateIfChanged() {
-        // TODO: implement
+        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: "myUser")
+        expect(self.purchaserInfoManagerDelegateCallCount) == 1
+        expect(self.purchaserInfoManagerDelegateCallPurchaserInfo) == mockPurchaserInfo
     }
 
     func testClearPurchaserInfoCacheClearsCorrectly() {
-        // TODO: implement
+        let appUserID = "myUser"
+        purchaserInfoManager.clearPurchaserInfoCache(forAppUserID: appUserID)
+        expect(self.mockDeviceCache.invokedClearPurchaserInfoCache) == true
+        expect(self.mockDeviceCache.invokedClearPurchaserInfoCacheParameters?.appUserID) == appUserID
     }
 
     func testClearPurchaserInfoCacheResetsLastSent() {
-        // TODO: implement
+        let appUserID = "myUser"
+        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: appUserID)
+        expect(self.purchaserInfoManager.lastSentPurchaserInfo) == mockPurchaserInfo
+
+        purchaserInfoManager.clearPurchaserInfoCache(forAppUserID: appUserID)
+
+        expect(self.purchaserInfoManager.lastSentPurchaserInfo).to(beNil())
     }
 }
 
