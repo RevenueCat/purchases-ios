@@ -161,8 +161,7 @@ NS_SWIFT_NAME(Purchases)
  If a user tries to purchase a product that is active on the current app store account, we will treat it as a restore and alias
  the new ID with the previous id.
  */
-@property (nonatomic) BOOL allowSharingAppStoreAccount
-    __attribute((deprecated("Configure behavior through the RevenueCat dashboard instead.")));
+@property (nonatomic) BOOL allowSharingAppStoreAccount;
 
 /// Default to YES, set this to NO if you are finishing transactions with your own StoreKit queue listener
 @property (nonatomic) BOOL finishTransactions;
@@ -194,26 +193,13 @@ NS_SWIFT_NAME(createAlias(_:_:));
  @param appUserID The appUserID that should be linked to the currently user
  */
 - (void)identify:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-NS_SWIFT_NAME(identify(_:_:)) __attribute((deprecated("Use logIn instead.")));
+NS_SWIFT_NAME(identify(_:_:));
 
 /**
  * Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
  */
 - (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-NS_SWIFT_NAME(reset(_:)) __attribute((deprecated("Use logOut instead.")));
-
-/**
- This function will identify the current user with an appUserID.
- @param appUserID The appUserID that should be linked to the currently user
- */
-- (void)  logIn:(NSString *)appUserID
-completionBlock:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo, BOOL created, NSError *error))completion
-NS_SWIFT_NAME(logIn(_:_:));
-
-/**
- Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.*/
-- (void)logOutWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-NS_SWIFT_NAME(logOut(_:));
+NS_SWIFT_NAME(reset(_:));
 
 #pragma mark Attribution
 
@@ -558,6 +544,7 @@ NS_SWIFT_NAME(entitlements(_:)) RC_UNAVAILABLE("entitlements: has been replaced 
 - (void)makePurchase:(SKProduct *)product
         withDiscount:(nullable SKPaymentDiscount *)discount
      completionBlock:(RCPurchaseCompletedBlock)completion NS_SWIFT_NAME(makePurchase(_:discount:_:)) API_AVAILABLE(ios(12.2), macosx(10.14.4)) __attribute__((unavailable("makePurchase:withDiscount: has been replaced by purchaseProduct:withDiscount:")));;
+
 #undef RC_UNAVAILABLE
 
 @end
