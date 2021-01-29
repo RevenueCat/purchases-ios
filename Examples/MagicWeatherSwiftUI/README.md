@@ -21,7 +21,7 @@ This sample demonstrates:
 
 - How to [configure](Shared/Sources/Lifecycle/MagicWeatherApp.swift) an instance of *Purchases*
 - How to display product prices and names, and how to build a basic [paywall](Shared/Sources/Views/PaywallView.swift)
--  How to check [subscription status](Shared/Sources/Views/WeatherView#L58)
+-  How to check [subscription status](Shared/Sources/Views/WeatherView.swift#L58)
 - How to [restore transactions](Shared/Sources/Views/UserView.swift#L72)
 - How to [identify](Shared/Sources/ViewModels/UserViewModel.swift) users and how to [logout](Shared/Sources/ViewModels/UserViewModel.swift)
 
