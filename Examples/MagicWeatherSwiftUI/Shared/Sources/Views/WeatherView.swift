@@ -23,7 +23,7 @@ struct WeatherView: View {
             Text("\(model.currentData.emoji)")
                 .padding(.top, 32.0)
                 .font(.system(size: 76))
-            Text("\(model.currentData.temperature)")
+            Text("\(model.currentData.temperature)°\(model.currentData.unit.rawValue.capitalized)")
                 .multilineTextAlignment(.center)
                 .font(.custom("ArialRoundedMTBold", size: 96.0))
                 .padding(.top, 8.0)
