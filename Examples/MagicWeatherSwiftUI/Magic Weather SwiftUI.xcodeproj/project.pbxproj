@@ -34,8 +34,6 @@
 		5597797925ACDC3E00C33DFB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5597797E25ACDC3E00C33DFB /* Magic Weather SwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Magic Weather SwiftUI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5597798125ACDC3E00C33DFB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		5597798825ACDC3E00C33DFB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		5597798925ACDC3E00C33DFB /* macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macOS.entitlements; sourceTree = "<group>"; };
 		559779AB25B72D3200C33DFB /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		559779B325B72DC000C33DFB /* SampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleData.swift; sourceTree = "<group>"; };
 		559779BF25B72EE100C33DFB /* PurchasesDelegateHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDelegateHandler.swift; sourceTree = "<group>"; };
@@ -74,7 +72,6 @@
 			children = (
 				5597797625ACDC3A00C33DFB /* Shared */,
 				5597798025ACDC3E00C33DFB /* iOS */,
-				5597798725ACDC3E00C33DFB /* macOS */,
 				5597797F25ACDC3E00C33DFB /* Products */,
 				55413BF525B73F7200ECCA5A /* Frameworks */,
 			);
@@ -104,15 +101,6 @@
 				5597798125ACDC3E00C33DFB /* Info.plist */,
 			);
 			path = iOS;
-			sourceTree = "<group>";
-		};
-		5597798725ACDC3E00C33DFB /* macOS */ = {
-			isa = PBXGroup;
-			children = (
-				5597798825ACDC3E00C33DFB /* Info.plist */,
-				5597798925ACDC3E00C33DFB /* macOS.entitlements */,
-			);
-			path = macOS;
 			sourceTree = "<group>";
 		};
 		559779A525B72CCE00C33DFB /* Views */ = {

@@ -1,6 +1,6 @@
 //
 //  UserViewModel.swift
-//  Magic Weather SwiftUI (iOS)
+//  Magic Weather SwiftUI
 //
 //  Created by Cody Kerns on 1/19/21.
 //

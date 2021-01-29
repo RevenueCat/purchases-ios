@@ -1,6 +1,6 @@
 //
 //  Extensions.swift
-//  Magic Weather SwiftUI (iOS)
+//  Magic Weather SwiftUI
 //
 //  Created by Cody Kerns on 1/26/21.
 //

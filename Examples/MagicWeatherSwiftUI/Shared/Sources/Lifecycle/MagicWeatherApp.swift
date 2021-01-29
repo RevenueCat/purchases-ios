@@ -1,6 +1,6 @@
 //
-//  Magic_Weather_SwiftUIApp.swift
-//  Shared
+//  MagicWeatherApp.swift
+//  Magic Weather SwiftUI
 //
 //  Created by Cody Kerns on 1/11/21.
 //

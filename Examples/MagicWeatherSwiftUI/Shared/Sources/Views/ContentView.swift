@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Shared
+//  Magic Weather SwiftUI
 //
 //  Created by Cody Kerns on 1/11/21.
 //

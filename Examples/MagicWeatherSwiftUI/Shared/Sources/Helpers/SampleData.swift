@@ -1,6 +1,6 @@
 //
 //  SampleData.swift
-//  Magic Weather
+//  Magic Weather SwiftUI
 //
 //  Created by Cody Kerns on 12/16/20.
 //
