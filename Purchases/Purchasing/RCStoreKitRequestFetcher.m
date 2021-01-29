@@ -164,8 +164,10 @@
     {
         RCPurchaseLog(RCStrings.offering.list_products, p.productIdentifier, p);
     }
-    RCAppleWarningLog(RCStrings.offering.invalid_product_identifiers, response.invalidProductIdentifiers);
-    
+    if (response.invalidProductIdentifiers.count > 0) {
+        RCAppleWarningLog(RCStrings.offering.invalid_product_identifiers, response.invalidProductIdentifiers);        
+    }
+
     NSArray<RCFetchProductsCompletionHandler> *handlers = [self finishProductsRequest:request];
     RCDebugLog(RCStrings.offering.completion_handlers_waiting_on_products, (unsigned long)handlers.count);
     for (RCFetchProductsCompletionHandler handler in handlers)
