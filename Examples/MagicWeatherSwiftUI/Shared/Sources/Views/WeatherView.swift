@@ -15,7 +15,8 @@ import Purchases
 struct WeatherView: View {
     @Binding var paywallPresented: Bool
     @ObservedObject var model = WeatherViewModel.shared
-    
+    @ObservedObject var userModel = UserViewModel.shared
+
     var body: some View {
         VStack {
             /// - Sample weather details
@@ -59,8 +60,8 @@ struct WeatherView: View {
         /*
          We should check if we can magically change the weather (subscription active) and if not, display the paywall.
          */
-        Purchases.shared.purchaserInfo { (purchaserInfo, error) in
-            if purchaserInfo?.entitlements[Constants.entitlementID]?.isActive == true {
+        Purchases.shared.purchaserInfo { (_, _) in
+            if userModel.subscriptionActive {
                 self.model.currentData = SampleWeatherData.generateSampleData(for: self.model.currentEnvironment)
             } else {
                 self.paywallPresented.toggle()
