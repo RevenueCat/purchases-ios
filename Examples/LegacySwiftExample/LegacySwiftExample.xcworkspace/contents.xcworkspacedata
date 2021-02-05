@@ -2,12 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:/Users/andresboedo/revenuecat/purchases-ios/Examples/SwiftExample/LegacySwiftExample.xcodeproj">
+      location = "group:LegacySwiftExample.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Pods/Pods.xcodeproj">
-   </FileRef>
-   <FileRef
-      location = "group:LegacySwiftExample.xcodeproj">
    </FileRef>
 </Workspace>
