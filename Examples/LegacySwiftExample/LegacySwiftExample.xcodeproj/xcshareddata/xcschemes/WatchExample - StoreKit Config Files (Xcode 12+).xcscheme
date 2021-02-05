@@ -17,7 +17,7 @@
                BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
                BuildableName = "WatchExample.app"
                BlueprintName = "WatchExample"
-               ReferencedContainer = "container:SwiftExample.xcodeproj">
+               ReferencedContainer = "container:LegacySwiftExample.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -29,9 +29,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "3493335C21E6935F007AAAB9"
-               BuildableName = "SwiftExample.app"
-               BlueprintName = "SwiftExample"
-               ReferencedContainer = "container:SwiftExample.xcodeproj">
+               BuildableName = "LegacySwiftExample.app"
+               BlueprintName = "LegacySwiftExample"
+               ReferencedContainer = "container:LegacySwiftExample.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -64,7 +64,7 @@
             BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
             BuildableName = "WatchExample.app"
             BlueprintName = "WatchExample"
-            ReferencedContainer = "container:SwiftExample.xcodeproj">
+            ReferencedContainer = "container:LegacySwiftExample.xcodeproj">
          </BuildableReference>
       </RemoteRunnable>
       <StoreKitConfigurationFileReference
@@ -86,7 +86,7 @@
             BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
             BuildableName = "WatchExample.app"
             BlueprintName = "WatchExample"
-            ReferencedContainer = "container:SwiftExample.xcodeproj">
+            ReferencedContainer = "container:LegacySwiftExample.xcodeproj">
          </BuildableReference>
       </RemoteRunnable>
       <MacroExpansion>
@@ -95,7 +95,7 @@
             BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
             BuildableName = "WatchExample.app"
             BlueprintName = "WatchExample"
-            ReferencedContainer = "container:SwiftExample.xcodeproj">
+            ReferencedContainer = "container:LegacySwiftExample.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
