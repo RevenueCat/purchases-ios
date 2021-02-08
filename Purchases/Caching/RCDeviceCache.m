@@ -30,7 +30,7 @@ NSString *RCLegacySubscriberAttributesKeyBase = RC_CACHE_KEY_PREFIX @".subscribe
 NSString *RCSubscriberAttributesKey = RC_CACHE_KEY_PREFIX @".subscriberAttributes";
 NSString *RCAttributionDataDefaultsKeyBase = RC_CACHE_KEY_PREFIX @".attribution.";
 int cacheDurationInSecondsInForeground = 60 * 5;
-int cacheDurationInSecondsInBackground = 60 * 60 * 24;
+int cacheDurationInSecondsInBackground = 60 * 60 * 25;
 
 @implementation RCDeviceCache
 
