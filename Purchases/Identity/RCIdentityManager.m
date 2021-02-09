@@ -109,15 +109,14 @@
                 completion:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo,
                                      BOOL created,
                                      NSError *_Nullable error))completion {
-    if (!newAppUserID || [newAppUserID isEqualToString:@""]) {
-        RCErrorLog(@"%@", RCStrings.identity.creating_alias_failed_null_currentappuserid);
+    NSString *currentAppUserID = self.currentAppUserID;
+
+    if (!currentAppUserID || !newAppUserID || [newAppUserID isEqualToString:@""]) {
+        NSString *errorMessage = currentAppUserID == nil ? RCStrings.identity.logging_in_with_initial_appuserid_nil
+                                                         : RCStrings.identity.logging_in_with_nil_appuserid;
+        RCErrorLog(@"%@", errorMessage);
         completion(nil, NO, RCPurchasesErrorUtils.missingAppUserIDError);
         return;
-    }
-
-    NSString *currentAppUserID = self.currentAppUserID;
-    if (!currentAppUserID) {
-        RCWarnLog(@"%@", RCStrings.identity.logging_in_with_initial_appuserid_nil);
     }
 
     if ([newAppUserID isEqualToString:currentAppUserID]) {

@@ -193,7 +193,7 @@ class IdentityManagerTests: XCTestCase {
         expect(receivedNSError.code) == Purchases.ErrorCode.invalidAppUserIdError.rawValue
     }
 
-    func testLogInSuccessfulIfOldAppUserIDEmpty() {
+    func testLogInErrorsOutIfOldAppUserIDEmpty() {
         var completionCalled: Bool = false
         let newAppUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = nil
@@ -212,11 +212,13 @@ class IdentityManagerTests: XCTestCase {
 
         expect(completionCalled).toEventually(beTrue())
 
-        expect(receivedCreated) == true
-        expect(receivedPurchaserInfo) == mockPurchaserInfo
-        expect(receivedError).to(beNil())
+        expect(receivedCreated) == false
+        expect(receivedPurchaserInfo).to(beNil())
+        expect(receivedError).toNot(beNil())
+        let receivedNSError = (receivedError! as NSError)
+        expect(receivedNSError.code) == Purchases.ErrorCode.invalidAppUserIdError.rawValue
 
-        expect(self.mockBackend.invokedLogInCount) == 1
+        expect(self.mockBackend.invokedLogInCount) == 0
         expect(self.mockPurchaserInfoManager.invokedPurchaserInfoCount) == 0
     }
 
