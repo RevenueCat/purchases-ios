@@ -452,7 +452,7 @@ completionBlock:(void (^)(RCPurchaserInfo *_Nullable purchaserInfo, BOOL created
 - (void)logOutWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     [self.identityManager logOutWithCompletion:^(NSError *error) {
         if (error) {
-            completion(nil, error);
+            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
         } else {
             [self updateAllCachesWithCompletionBlock:completion];
         }
