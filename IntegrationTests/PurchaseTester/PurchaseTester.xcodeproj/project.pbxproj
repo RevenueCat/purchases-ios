@@ -486,8 +486,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
-				IBSC_MODULE = WatchExample_Extension;
-				INFOPLIST_FILE = WatchExample/Info.plist;
+				IBSC_MODULE = WatchPurchaseTester_Extension;
+				INFOPLIST_FILE = WatchPurchaseTester/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -506,8 +506,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
-				IBSC_MODULE = WatchExample_Extension;
-				INFOPLIST_FILE = WatchExample/Info.plist;
+				IBSC_MODULE = WatchPurchaseTester_Extension;
+				INFOPLIST_FILE = WatchPurchaseTester/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -526,7 +526,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = "WatchExample Extension/Info.plist";
+				INFOPLIST_FILE = "WatchPurchaseTester Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -550,7 +550,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = "WatchExample Extension/Info.plist";
+				INFOPLIST_FILE = "WatchPurchaseTester Extension/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -687,12 +687,12 @@
 			baseConfigurationReference = 96B8BAFC92896215F2FDBF35 /* Pods-PurchaseTester.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = SwiftExample/SwiftExample.entitlements;
+				CODE_SIGN_ENTITLEMENTS = PurchaseTester/PurchaseTester.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = SwiftExample/Info.plist;
+				INFOPLIST_FILE = PurchaseTester/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -711,12 +711,12 @@
 			baseConfigurationReference = 3BE82E1CF8DA6047D020ECDB /* Pods-PurchaseTester.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = SwiftExample/SwiftExample.entitlements;
+				CODE_SIGN_ENTITLEMENTS = PurchaseTester/PurchaseTester.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = SwiftExample/Info.plist;
+				INFOPLIST_FILE = PurchaseTester/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
