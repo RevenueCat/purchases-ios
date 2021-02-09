@@ -11,9 +11,9 @@ import Foundation
 @objc(RCIdentityStrings) public class IdentityStrings: NSObject {
     @objc public var changing_app_user_id: String { "Changing App User ID: %@ -> %@" }
     @objc public var creating_alias_failed_null_currentappuserid: String { "Couldn't create an alias because the " +
-        "currentAppUserID is null. This might happen if the cache in UserDefaults is unintentionally cleared." }
-    @objc public var logging_in_with_initial_appuserid_nil: String { "The value of appUserID before calling logIn " +
-        "was nil. This might happen if the cache in UserDefaults is unintentionally cleared." }
+        "currentAppUserID is nil. This might happen if the cache in UserDefaults is unintentionally cleared." }
+    @objc public var logging_in_with_initial_appuserid_nil: String { "Couldn't log in because the current appUserID " +
+        "is nil. This might happen if the cache in UserDefaults is unintentionally cleared." }
     @objc public var logging_in_with_nil_appuserid: String { "The appUserID passed to logIn is nil or empty. " +
         "Can't log in. This method should only be called with non-nil and non-empty values." }
     @objc public var logging_in_with_same_appuserid: String { "The appUserID passed to logIn is the same as the one " +
