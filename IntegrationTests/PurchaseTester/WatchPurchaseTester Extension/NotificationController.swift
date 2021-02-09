@@ -1,6 +1,6 @@
 //
 //  NotificationController.swift
-//  WatchExample Extension
+//  WatchPurchaseTester Extension
 //
 //  Created by Andrés Boedo on 4/3/20.
 //  Copyright © 2020 RevenueCat. All rights reserved.
