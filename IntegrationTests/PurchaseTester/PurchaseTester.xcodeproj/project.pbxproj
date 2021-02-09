@@ -488,7 +488,7 @@
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				IBSC_MODULE = WatchPurchaseTester_Extension;
 				INFOPLIST_FILE = WatchPurchaseTester/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.purchaseTester.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -508,7 +508,7 @@
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				IBSC_MODULE = WatchPurchaseTester_Extension;
 				INFOPLIST_FILE = WatchPurchaseTester/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.purchaseTester.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -532,7 +532,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp.watchkitapp.watchkitextension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.purchaseTester.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -556,7 +556,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp.watchkitapp.watchkitextension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.purchaseTester.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -697,7 +697,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.purchaseTester;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTS_MACCATALYST = YES;
@@ -721,7 +721,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sampleapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.purchaseTester;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTS_MACCATALYST = YES;
