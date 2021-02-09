@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
-               BuildableName = "WatchPurchaseTests.app"
-               BlueprintName = "WatchPurchaseTests"
-               ReferencedContainer = "container:PurchaseTests.xcodeproj">
+               BuildableName = "WatchPurchaseTester.app"
+               BlueprintName = "WatchPurchaseTester"
+               ReferencedContainer = "container:PurchaseTester.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -29,9 +29,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "3493335C21E6935F007AAAB9"
-               BuildableName = "PurchaseTests.app"
-               BlueprintName = "PurchaseTests"
-               ReferencedContainer = "container:PurchaseTests.xcodeproj">
+               BuildableName = "PurchaseTester.app"
+               BlueprintName = "PurchaseTester"
+               ReferencedContainer = "container:PurchaseTester.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -54,17 +54,20 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES"
-      notificationPayloadFile = "WatchPurchaseTests Extension/PushNotificationPayload.apns">
+      notificationPayloadFile = "WatchPurchaseTester Extension/PushNotificationPayload.apns">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
-            BuildableName = "WatchPurchaseTests.app"
-            BlueprintName = "WatchPurchaseTests"
-            ReferencedContainer = "container:PurchaseTests.xcodeproj">
+            BuildableName = "WatchPurchaseTester.app"
+            BlueprintName = "WatchPurchaseTester"
+            ReferencedContainer = "container:PurchaseTester.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "../Configuration.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -77,9 +80,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
-            BuildableName = "WatchPurchaseTests.app"
-            BlueprintName = "WatchPurchaseTests"
-            ReferencedContainer = "container:PurchaseTests.xcodeproj">
+            BuildableName = "WatchPurchaseTester.app"
+            BlueprintName = "WatchPurchaseTester"
+            ReferencedContainer = "container:PurchaseTester.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

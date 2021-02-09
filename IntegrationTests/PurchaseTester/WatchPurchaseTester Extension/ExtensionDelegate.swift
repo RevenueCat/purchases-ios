@@ -1,6 +1,6 @@
 //
 //  ExtensionDelegate.swift
-//  watchSample Extension
+//  watchPurchaseTester Extension
 //
 //  Created by RevenueCat on 2/12/20.
 //  Copyright © 2020 RevenueCat. All rights reserved.

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1200"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,24 +13,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
-               BuildableName = "WatchPurchaseTests.app"
-               BlueprintName = "WatchPurchaseTests"
-               ReferencedContainer = "container:PurchaseTests.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "3493335C21E6935F007AAAB9"
-               BuildableName = "PurchaseTests.app"
-               BlueprintName = "PurchaseTests"
-               ReferencedContainer = "container:PurchaseTests.xcodeproj">
+               BuildableName = "PurchaseTester.app"
+               BlueprintName = "PurchaseTester"
+               ReferencedContainer = "container:PurchaseTester.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -53,16 +38,15 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
-      allowLocationSimulation = "YES"
-      notificationPayloadFile = "WatchPurchaseTests Extension/PushNotificationPayload.apns">
+      allowLocationSimulation = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
-            BuildableName = "WatchPurchaseTests.app"
-            BlueprintName = "WatchPurchaseTests"
-            ReferencedContainer = "container:PurchaseTests.xcodeproj">
+            BlueprintIdentifier = "3493335C21E6935F007AAAB9"
+            BuildableName = "PurchaseTester.app"
+            BlueprintName = "PurchaseTester"
+            ReferencedContainer = "container:PurchaseTester.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
@@ -75,16 +59,6 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2D54BF602437DED800FF4EE4"
-            BuildableName = "WatchPurchaseTests.app"
-            BlueprintName = "WatchPurchaseTests"
-            ReferencedContainer = "container:PurchaseTests.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

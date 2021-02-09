@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  SwiftExample
+//  PurchaseTester
 //
 //  Created by Ryan Kotzebue on 1/9/19.
 //  Copyright © 2019 RevenueCat. All rights reserved.

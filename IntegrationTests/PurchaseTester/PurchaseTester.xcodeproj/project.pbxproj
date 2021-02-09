@@ -7,16 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		17139D38D870309AC2134390 /* libPods-PurchaseTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D272F690193E6C27DD59B684 /* libPods-PurchaseTests.a */; };
+		17139D38D870309AC2134390 /* libPods-PurchaseTester.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D272F690193E6C27DD59B684 /* libPods-PurchaseTester.a */; };
 		2D54BF652437DED800FF4EE4 /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2D54BF632437DED800FF4EE4 /* Interface.storyboard */; };
 		2D54BF672437DED900FF4EE4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D54BF662437DED900FF4EE4 /* Assets.xcassets */; };
 		2D54BF732437DED900FF4EE4 /* InterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D54BF722437DED900FF4EE4 /* InterfaceController.swift */; };
 		2D54BF752437DED900FF4EE4 /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D54BF742437DED900FF4EE4 /* ExtensionDelegate.swift */; };
 		2D54BF772437DED900FF4EE4 /* NotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D54BF762437DED900FF4EE4 /* NotificationController.swift */; };
 		2D54BF792437DEDA00FF4EE4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D54BF782437DEDA00FF4EE4 /* Assets.xcassets */; };
-		2D54BF7E2437DEDA00FF4EE4 /* WatchPurchaseTests.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 2D54BF612437DED800FF4EE4 /* WatchPurchaseTests.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2D54BF7E2437DEDA00FF4EE4 /* WatchPurchaseTester.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 2D54BF612437DED800FF4EE4 /* WatchPurchaseTester.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2D6FCB222437E56200C398CF /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6FCB212437E56200C398CF /* StoreKit.framework */; };
-		2D6FCB232437E5F100C398CF /* WatchPurchaseTests Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 2D54BF6D2437DED900FF4EE4 /* WatchPurchaseTests Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2D6FCB232437E5F100C398CF /* WatchPurchaseTester Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 2D54BF6D2437DED900FF4EE4 /* WatchPurchaseTester Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2D6FCB282437E8FA00C398CF /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6FCB272437E8F900C398CF /* StoreKit.framework */; };
 		2D95540F240EF9F100289461 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D95540E240EF9F100289461 /* UserNotifications.framework */; };
 		3493336121E6935F007AAAB9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493336021E6935F007AAAB9 /* AppDelegate.swift */; };
@@ -26,7 +26,7 @@
 		3493336B21E69360007AAAB9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3493336921E69360007AAAB9 /* LaunchScreen.storyboard */; };
 		3493337521E694D6007AAAB9 /* CatsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493337421E694D6007AAAB9 /* CatsViewController.swift */; };
 		34D05817233C1A3700343134 /* SwiftPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D05816233C1A3700343134 /* SwiftPaywall.swift */; };
-		963589776E76AD1BD9685D3C /* libPods-WatchPurchaseTests Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 77F30BA285533CF765B337AA /* libPods-WatchPurchaseTests Extension.a */; };
+		963589776E76AD1BD9685D3C /* libPods-WatchPurchaseTester Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 77F30BA285533CF765B337AA /* libPods-WatchPurchaseTester Extension.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,7 +53,7 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
 			dstSubfolderSpec = 16;
 			files = (
-				2D54BF7E2437DEDA00FF4EE4 /* WatchPurchaseTests.app in Embed Watch Content */,
+				2D54BF7E2437DEDA00FF4EE4 /* WatchPurchaseTester.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -64,7 +64,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				2D6FCB232437E5F100C398CF /* WatchPurchaseTests Extension.appex in Embed App Extensions */,
+				2D6FCB232437E5F100C398CF /* WatchPurchaseTester Extension.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -75,12 +75,12 @@
 		05DF17969D158C5471E19884 /* Pods-WatchExample Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchExample Extension.debug.xcconfig"; path = "Target Support Files/Pods-WatchExample Extension/Pods-WatchExample Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		0B83D927156D69EAFE397839 /* Pods-LegacySwiftExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LegacySwiftExample.debug.xcconfig"; path = "Target Support Files/Pods-LegacySwiftExample/Pods-LegacySwiftExample.debug.xcconfig"; sourceTree = "<group>"; };
 		164A5AED2A65F70448049504 /* Pods-SwiftExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwiftExample.release.xcconfig"; path = "Target Support Files/Pods-SwiftExample/Pods-SwiftExample.release.xcconfig"; sourceTree = "<group>"; };
-		2D2458A7240EF4EA007E6BE8 /* SwiftExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftExample.entitlements; sourceTree = "<group>"; };
-		2D54BF612437DED800FF4EE4 /* WatchPurchaseTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WatchPurchaseTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D2458A7240EF4EA007E6BE8 /* PurchaseTester.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PurchaseTester.entitlements; sourceTree = "<group>"; };
+		2D54BF612437DED800FF4EE4 /* WatchPurchaseTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WatchPurchaseTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D54BF642437DED800FF4EE4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
 		2D54BF662437DED900FF4EE4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2D54BF682437DED900FF4EE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		2D54BF6D2437DED900FF4EE4 /* WatchPurchaseTests Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "WatchPurchaseTests Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D54BF6D2437DED900FF4EE4 /* WatchPurchaseTester Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "WatchPurchaseTester Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D54BF722437DED900FF4EE4 /* InterfaceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfaceController.swift; sourceTree = "<group>"; };
 		2D54BF742437DED900FF4EE4 /* ExtensionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionDelegate.swift; sourceTree = "<group>"; };
 		2D54BF762437DED900FF4EE4 /* NotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationController.swift; sourceTree = "<group>"; };
@@ -91,7 +91,7 @@
 		2D6FCB212437E56200C398CF /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		2D6FCB272437E8F900C398CF /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS6.2.sdk/System/Library/Frameworks/StoreKit.framework; sourceTree = DEVELOPER_DIR; };
 		2D95540E240EF9F100289461 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
-		3493335D21E6935F007AAAB9 /* PurchaseTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PurchaseTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3493335D21E6935F007AAAB9 /* PurchaseTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PurchaseTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3493336021E6935F007AAAB9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3493336221E6935F007AAAB9 /* InitialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialViewController.swift; sourceTree = "<group>"; };
 		3493336521E6935F007AAAB9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -102,13 +102,13 @@
 		34D05816233C1A3700343134 /* SwiftPaywall.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftPaywall.swift; sourceTree = "<group>"; };
 		34EA88DD56F541EAD6B9D1D4 /* libPods-WatchExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		37066E6754E910550E7803A8 /* Pods-LegacySwiftExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LegacySwiftExample.release.xcconfig"; path = "Target Support Files/Pods-LegacySwiftExample/Pods-LegacySwiftExample.release.xcconfig"; sourceTree = "<group>"; };
-		3BE82E1CF8DA6047D020ECDB /* Pods-PurchaseTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PurchaseTests.release.xcconfig"; path = "Target Support Files/Pods-PurchaseTests/Pods-PurchaseTests.release.xcconfig"; sourceTree = "<group>"; };
-		505CA64DE33CA213B6B7DB16 /* Pods-WatchPurchaseTests Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchPurchaseTests Extension.release.xcconfig"; path = "Target Support Files/Pods-WatchPurchaseTests Extension/Pods-WatchPurchaseTests Extension.release.xcconfig"; sourceTree = "<group>"; };
-		77F30BA285533CF765B337AA /* libPods-WatchPurchaseTests Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchPurchaseTests Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		96B8BAFC92896215F2FDBF35 /* Pods-PurchaseTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PurchaseTests.debug.xcconfig"; path = "Target Support Files/Pods-PurchaseTests/Pods-PurchaseTests.debug.xcconfig"; sourceTree = "<group>"; };
+		3BE82E1CF8DA6047D020ECDB /* Pods-PurchaseTester.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PurchaseTester.release.xcconfig"; path = "Target Support Files/Pods-PurchaseTester/Pods-PurchaseTester.release.xcconfig"; sourceTree = "<group>"; };
+		505CA64DE33CA213B6B7DB16 /* Pods-WatchPurchaseTester Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchPurchaseTester Extension.release.xcconfig"; path = "Target Support Files/Pods-WatchPurchaseTester Extension/Pods-WatchPurchaseTester Extension.release.xcconfig"; sourceTree = "<group>"; };
+		77F30BA285533CF765B337AA /* libPods-WatchPurchaseTester Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchPurchaseTester Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		96B8BAFC92896215F2FDBF35 /* Pods-PurchaseTester.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PurchaseTester.debug.xcconfig"; path = "Target Support Files/Pods-PurchaseTester/Pods-PurchaseTester.debug.xcconfig"; sourceTree = "<group>"; };
 		C7A95EBC8058CE87D0E2B60A /* Pods-WatchExample Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchExample Extension.release.xcconfig"; path = "Target Support Files/Pods-WatchExample Extension/Pods-WatchExample Extension.release.xcconfig"; sourceTree = "<group>"; };
-		D272F690193E6C27DD59B684 /* libPods-PurchaseTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PurchaseTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		F0CD19672D52EB9233089BED /* Pods-WatchPurchaseTests Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchPurchaseTests Extension.debug.xcconfig"; path = "Target Support Files/Pods-WatchPurchaseTests Extension/Pods-WatchPurchaseTests Extension.debug.xcconfig"; sourceTree = "<group>"; };
+		D272F690193E6C27DD59B684 /* libPods-PurchaseTester.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PurchaseTester.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F0CD19672D52EB9233089BED /* Pods-WatchPurchaseTester Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchPurchaseTester Extension.debug.xcconfig"; path = "Target Support Files/Pods-WatchPurchaseTester Extension/Pods-WatchPurchaseTester Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		F47D44DA0C1FBE5A9FCA7E55 /* Pods-SwiftExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwiftExample.debug.xcconfig"; path = "Target Support Files/Pods-SwiftExample/Pods-SwiftExample.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -118,7 +118,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D6FCB282437E8FA00C398CF /* StoreKit.framework in Frameworks */,
-				963589776E76AD1BD9685D3C /* libPods-WatchPurchaseTests Extension.a in Frameworks */,
+				963589776E76AD1BD9685D3C /* libPods-WatchPurchaseTester Extension.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -135,24 +135,24 @@
 			files = (
 				2D6FCB222437E56200C398CF /* StoreKit.framework in Frameworks */,
 				2D95540F240EF9F100289461 /* UserNotifications.framework in Frameworks */,
-				17139D38D870309AC2134390 /* libPods-PurchaseTests.a in Frameworks */,
+				17139D38D870309AC2134390 /* libPods-PurchaseTester.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		2D54BF622437DED800FF4EE4 /* WatchExample */ = {
+		2D54BF622437DED800FF4EE4 /* WatchPurchaseTester */ = {
 			isa = PBXGroup;
 			children = (
 				2D54BF632437DED800FF4EE4 /* Interface.storyboard */,
 				2D54BF662437DED900FF4EE4 /* Assets.xcassets */,
 				2D54BF682437DED900FF4EE4 /* Info.plist */,
 			);
-			path = WatchExample;
+			path = WatchPurchaseTester;
 			sourceTree = "<group>";
 		};
-		2D54BF712437DED900FF4EE4 /* WatchExample Extension */ = {
+		2D54BF712437DED900FF4EE4 /* WatchPurchaseTester Extension */ = {
 			isa = PBXGroup;
 			children = (
 				2D54BF722437DED900FF4EE4 /* InterfaceController.swift */,
@@ -162,16 +162,16 @@
 				2D54BF7A2437DEDA00FF4EE4 /* Info.plist */,
 				2D54BF7B2437DEDA00FF4EE4 /* PushNotificationPayload.apns */,
 			);
-			path = "WatchExample Extension";
+			path = "WatchPurchaseTester Extension";
 			sourceTree = "<group>";
 		};
 		3493335421E6935E007AAAB9 = {
 			isa = PBXGroup;
 			children = (
 				2D5D9A8424AA5C2000EA7366 /* Configuration.storekit */,
-				3493335F21E6935F007AAAB9 /* SwiftExample */,
-				2D54BF622437DED800FF4EE4 /* WatchExample */,
-				2D54BF712437DED900FF4EE4 /* WatchExample Extension */,
+				3493335F21E6935F007AAAB9 /* PurchaseTester */,
+				2D54BF622437DED800FF4EE4 /* WatchPurchaseTester */,
+				2D54BF712437DED900FF4EE4 /* WatchPurchaseTester Extension */,
 				3493335E21E6935F007AAAB9 /* Products */,
 				A001EA8E0BF8324F03F6DF58 /* Pods */,
 				C40A83F5FB23D02C73486501 /* Frameworks */,
@@ -181,17 +181,17 @@
 		3493335E21E6935F007AAAB9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				3493335D21E6935F007AAAB9 /* PurchaseTests.app */,
-				2D54BF612437DED800FF4EE4 /* WatchPurchaseTests.app */,
-				2D54BF6D2437DED900FF4EE4 /* WatchPurchaseTests Extension.appex */,
+				3493335D21E6935F007AAAB9 /* PurchaseTester.app */,
+				2D54BF612437DED800FF4EE4 /* WatchPurchaseTester.app */,
+				2D54BF6D2437DED900FF4EE4 /* WatchPurchaseTester Extension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		3493335F21E6935F007AAAB9 /* SwiftExample */ = {
+		3493335F21E6935F007AAAB9 /* PurchaseTester */ = {
 			isa = PBXGroup;
 			children = (
-				2D2458A7240EF4EA007E6BE8 /* SwiftExample.entitlements */,
+				2D2458A7240EF4EA007E6BE8 /* PurchaseTester.entitlements */,
 				3493336021E6935F007AAAB9 /* AppDelegate.swift */,
 				3493336221E6935F007AAAB9 /* InitialViewController.swift */,
 				34D05816233C1A3700343134 /* SwiftPaywall.swift */,
@@ -201,7 +201,7 @@
 				3493336921E69360007AAAB9 /* LaunchScreen.storyboard */,
 				3493336C21E69360007AAAB9 /* Info.plist */,
 			);
-			path = SwiftExample;
+			path = PurchaseTester;
 			sourceTree = "<group>";
 		};
 		A001EA8E0BF8324F03F6DF58 /* Pods */ = {
@@ -213,10 +213,10 @@
 				C7A95EBC8058CE87D0E2B60A /* Pods-WatchExample Extension.release.xcconfig */,
 				0B83D927156D69EAFE397839 /* Pods-LegacySwiftExample.debug.xcconfig */,
 				37066E6754E910550E7803A8 /* Pods-LegacySwiftExample.release.xcconfig */,
-				96B8BAFC92896215F2FDBF35 /* Pods-PurchaseTests.debug.xcconfig */,
-				3BE82E1CF8DA6047D020ECDB /* Pods-PurchaseTests.release.xcconfig */,
-				F0CD19672D52EB9233089BED /* Pods-WatchPurchaseTests Extension.debug.xcconfig */,
-				505CA64DE33CA213B6B7DB16 /* Pods-WatchPurchaseTests Extension.release.xcconfig */,
+				96B8BAFC92896215F2FDBF35 /* Pods-PurchaseTester.debug.xcconfig */,
+				3BE82E1CF8DA6047D020ECDB /* Pods-PurchaseTester.release.xcconfig */,
+				F0CD19672D52EB9233089BED /* Pods-WatchPurchaseTester Extension.debug.xcconfig */,
+				505CA64DE33CA213B6B7DB16 /* Pods-WatchPurchaseTester Extension.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -228,8 +228,8 @@
 				2D6FCB272437E8F900C398CF /* StoreKit.framework */,
 				2D95540E240EF9F100289461 /* UserNotifications.framework */,
 				34EA88DD56F541EAD6B9D1D4 /* libPods-WatchExample.a */,
-				D272F690193E6C27DD59B684 /* libPods-PurchaseTests.a */,
-				77F30BA285533CF765B337AA /* libPods-WatchPurchaseTests Extension.a */,
+				D272F690193E6C27DD59B684 /* libPods-PurchaseTester.a */,
+				77F30BA285533CF765B337AA /* libPods-WatchPurchaseTester Extension.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -237,9 +237,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2D54BF602437DED800FF4EE4 /* WatchPurchaseTests */ = {
+		2D54BF602437DED800FF4EE4 /* WatchPurchaseTester */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2D54BF862437DEDA00FF4EE4 /* Build configuration list for PBXNativeTarget "WatchPurchaseTests" */;
+			buildConfigurationList = 2D54BF862437DEDA00FF4EE4 /* Build configuration list for PBXNativeTarget "WatchPurchaseTester" */;
 			buildPhases = (
 				2D54BF5F2437DED800FF4EE4 /* Resources */,
 				2EE90BD32DD6E7920E120D3B /* Frameworks */,
@@ -250,14 +250,14 @@
 			dependencies = (
 				2D6FCB252437E5F100C398CF /* PBXTargetDependency */,
 			);
-			name = WatchPurchaseTests;
+			name = WatchPurchaseTester;
 			productName = WatchExample;
-			productReference = 2D54BF612437DED800FF4EE4 /* WatchPurchaseTests.app */;
+			productReference = 2D54BF612437DED800FF4EE4 /* WatchPurchaseTester.app */;
 			productType = "com.apple.product-type.application.watchapp2";
 		};
-		2D54BF6C2437DED900FF4EE4 /* WatchPurchaseTests Extension */ = {
+		2D54BF6C2437DED900FF4EE4 /* WatchPurchaseTester Extension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2D54BF852437DEDA00FF4EE4 /* Build configuration list for PBXNativeTarget "WatchPurchaseTests Extension" */;
+			buildConfigurationList = 2D54BF852437DEDA00FF4EE4 /* Build configuration list for PBXNativeTarget "WatchPurchaseTester Extension" */;
 			buildPhases = (
 				8F88A6AF47337FF6AE547810 /* [CP] Check Pods Manifest.lock */,
 				2D54BF692437DED900FF4EE4 /* Sources */,
@@ -268,14 +268,14 @@
 			);
 			dependencies = (
 			);
-			name = "WatchPurchaseTests Extension";
+			name = "WatchPurchaseTester Extension";
 			productName = "WatchExample Extension";
-			productReference = 2D54BF6D2437DED900FF4EE4 /* WatchPurchaseTests Extension.appex */;
+			productReference = 2D54BF6D2437DED900FF4EE4 /* WatchPurchaseTester Extension.appex */;
 			productType = "com.apple.product-type.watchkit2-extension";
 		};
-		3493335C21E6935F007AAAB9 /* PurchaseTests */ = {
+		3493335C21E6935F007AAAB9 /* PurchaseTester */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 3493336F21E69360007AAAB9 /* Build configuration list for PBXNativeTarget "PurchaseTests" */;
+			buildConfigurationList = 3493336F21E69360007AAAB9 /* Build configuration list for PBXNativeTarget "PurchaseTester" */;
 			buildPhases = (
 				78D5352A7E847A5084F8FF23 /* [CP] Check Pods Manifest.lock */,
 				3493335921E6935F007AAAB9 /* Sources */,
@@ -288,9 +288,9 @@
 			dependencies = (
 				2D54BF7D2437DEDA00FF4EE4 /* PBXTargetDependency */,
 			);
-			name = PurchaseTests;
+			name = PurchaseTester;
 			productName = SwiftExample;
-			productReference = 3493335D21E6935F007AAAB9 /* PurchaseTests.app */;
+			productReference = 3493335D21E6935F007AAAB9 /* PurchaseTester.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -315,7 +315,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 3493335821E6935E007AAAB9 /* Build configuration list for PBXProject "PurchaseTests" */;
+			buildConfigurationList = 3493335821E6935E007AAAB9 /* Build configuration list for PBXProject "PurchaseTester" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -328,9 +328,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				3493335C21E6935F007AAAB9 /* PurchaseTests */,
-				2D54BF602437DED800FF4EE4 /* WatchPurchaseTests */,
-				2D54BF6C2437DED900FF4EE4 /* WatchPurchaseTests Extension */,
+				3493335C21E6935F007AAAB9 /* PurchaseTester */,
+				2D54BF602437DED800FF4EE4 /* WatchPurchaseTester */,
+				2D54BF6C2437DED900FF4EE4 /* WatchPurchaseTester Extension */,
 			);
 		};
 /* End PBXProject section */
@@ -381,7 +381,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PurchaseTests-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-PurchaseTester-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -403,7 +403,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-WatchPurchaseTests Extension-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-WatchPurchaseTester Extension-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -440,12 +440,12 @@
 		2D54BF7D2437DEDA00FF4EE4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			platformFilter = ios;
-			target = 2D54BF602437DED800FF4EE4 /* WatchPurchaseTests */;
+			target = 2D54BF602437DED800FF4EE4 /* WatchPurchaseTester */;
 			targetProxy = 2D54BF7C2437DEDA00FF4EE4 /* PBXContainerItemProxy */;
 		};
 		2D6FCB252437E5F100C398CF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 2D54BF6C2437DED900FF4EE4 /* WatchPurchaseTests Extension */;
+			target = 2D54BF6C2437DED900FF4EE4 /* WatchPurchaseTester Extension */;
 			targetProxy = 2D6FCB242437E5F100C398CF /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -520,7 +520,7 @@
 		};
 		2D54BF832437DEDA00FF4EE4 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F0CD19672D52EB9233089BED /* Pods-WatchPurchaseTests Extension.debug.xcconfig */;
+			baseConfigurationReference = F0CD19672D52EB9233089BED /* Pods-WatchPurchaseTester Extension.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
 				CODE_SIGN_STYLE = Automatic;
@@ -544,7 +544,7 @@
 		};
 		2D54BF842437DEDA00FF4EE4 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 505CA64DE33CA213B6B7DB16 /* Pods-WatchPurchaseTests Extension.release.xcconfig */;
+			baseConfigurationReference = 505CA64DE33CA213B6B7DB16 /* Pods-WatchPurchaseTester Extension.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
 				CODE_SIGN_STYLE = Automatic;
@@ -684,7 +684,7 @@
 		};
 		3493337021E69360007AAAB9 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 96B8BAFC92896215F2FDBF35 /* Pods-PurchaseTests.debug.xcconfig */;
+			baseConfigurationReference = 96B8BAFC92896215F2FDBF35 /* Pods-PurchaseTester.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SwiftExample/SwiftExample.entitlements;
@@ -708,7 +708,7 @@
 		};
 		3493337121E69360007AAAB9 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3BE82E1CF8DA6047D020ECDB /* Pods-PurchaseTests.release.xcconfig */;
+			baseConfigurationReference = 3BE82E1CF8DA6047D020ECDB /* Pods-PurchaseTester.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SwiftExample/SwiftExample.entitlements;
@@ -733,7 +733,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2D54BF852437DEDA00FF4EE4 /* Build configuration list for PBXNativeTarget "WatchPurchaseTests Extension" */ = {
+		2D54BF852437DEDA00FF4EE4 /* Build configuration list for PBXNativeTarget "WatchPurchaseTester Extension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2D54BF832437DEDA00FF4EE4 /* Debug */,
@@ -742,7 +742,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2D54BF862437DEDA00FF4EE4 /* Build configuration list for PBXNativeTarget "WatchPurchaseTests" */ = {
+		2D54BF862437DEDA00FF4EE4 /* Build configuration list for PBXNativeTarget "WatchPurchaseTester" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2D54BF802437DEDA00FF4EE4 /* Debug */,
@@ -751,7 +751,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		3493335821E6935E007AAAB9 /* Build configuration list for PBXProject "PurchaseTests" */ = {
+		3493335821E6935E007AAAB9 /* Build configuration list for PBXProject "PurchaseTester" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3493336D21E69360007AAAB9 /* Debug */,
@@ -760,7 +760,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		3493336F21E69360007AAAB9 /* Build configuration list for PBXNativeTarget "PurchaseTests" */ = {
+		3493336F21E69360007AAAB9 /* Build configuration list for PBXNativeTarget "PurchaseTester" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3493337021E69360007AAAB9 /* Debug */,

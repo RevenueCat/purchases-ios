@@ -14,9 +14,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "3493335C21E6935F007AAAB9"
-               BuildableName = "PurchaseTests.app"
-               BlueprintName = "PurchaseTests"
-               ReferencedContainer = "container:PurchaseTests.xcodeproj">
+               BuildableName = "PurchaseTester.app"
+               BlueprintName = "PurchaseTester"
+               ReferencedContainer = "container:PurchaseTester.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -44,9 +44,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "3493335C21E6935F007AAAB9"
-            BuildableName = "PurchaseTests.app"
-            BlueprintName = "PurchaseTests"
-            ReferencedContainer = "container:PurchaseTests.xcodeproj">
+            BuildableName = "PurchaseTester.app"
+            BlueprintName = "PurchaseTester"
+            ReferencedContainer = "container:PurchaseTester.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
