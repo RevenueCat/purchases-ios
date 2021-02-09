@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		17139D38D870309AC2134390 /* libPods-PurchaseTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D272F690193E6C27DD59B684 /* libPods-PurchaseTests.a */; };
 		2D54BF652437DED800FF4EE4 /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2D54BF632437DED800FF4EE4 /* Interface.storyboard */; };
 		2D54BF672437DED900FF4EE4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D54BF662437DED900FF4EE4 /* Assets.xcassets */; };
 		2D54BF732437DED900FF4EE4 /* InterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D54BF722437DED900FF4EE4 /* InterfaceController.swift */; };
@@ -25,8 +26,7 @@
 		3493336B21E69360007AAAB9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3493336921E69360007AAAB9 /* LaunchScreen.storyboard */; };
 		3493337521E694D6007AAAB9 /* CatsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493337421E694D6007AAAB9 /* CatsViewController.swift */; };
 		34D05817233C1A3700343134 /* SwiftPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D05816233C1A3700343134 /* SwiftPaywall.swift */; };
-		41223BBC2C9D443988BB8DE0 /* libPods-WatchExample Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17D0C275B4B2F174BACA291F /* libPods-WatchExample Extension.a */; };
-		65B9F7FB9AF0023131B10B5B /* libPods-LegacySwiftExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7737765947582E140906F4F7 /* libPods-LegacySwiftExample.a */; };
+		963589776E76AD1BD9685D3C /* libPods-WatchPurchaseTests Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 77F30BA285533CF765B337AA /* libPods-WatchPurchaseTests Extension.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,7 +75,6 @@
 		05DF17969D158C5471E19884 /* Pods-WatchExample Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchExample Extension.debug.xcconfig"; path = "Target Support Files/Pods-WatchExample Extension/Pods-WatchExample Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		0B83D927156D69EAFE397839 /* Pods-LegacySwiftExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LegacySwiftExample.debug.xcconfig"; path = "Target Support Files/Pods-LegacySwiftExample/Pods-LegacySwiftExample.debug.xcconfig"; sourceTree = "<group>"; };
 		164A5AED2A65F70448049504 /* Pods-SwiftExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwiftExample.release.xcconfig"; path = "Target Support Files/Pods-SwiftExample/Pods-SwiftExample.release.xcconfig"; sourceTree = "<group>"; };
-		17D0C275B4B2F174BACA291F /* libPods-WatchExample Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchExample Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D2458A7240EF4EA007E6BE8 /* SwiftExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftExample.entitlements; sourceTree = "<group>"; };
 		2D54BF612437DED800FF4EE4 /* WatchPurchaseTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WatchPurchaseTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D54BF642437DED800FF4EE4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
@@ -103,8 +102,13 @@
 		34D05816233C1A3700343134 /* SwiftPaywall.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftPaywall.swift; sourceTree = "<group>"; };
 		34EA88DD56F541EAD6B9D1D4 /* libPods-WatchExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		37066E6754E910550E7803A8 /* Pods-LegacySwiftExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LegacySwiftExample.release.xcconfig"; path = "Target Support Files/Pods-LegacySwiftExample/Pods-LegacySwiftExample.release.xcconfig"; sourceTree = "<group>"; };
-		7737765947582E140906F4F7 /* libPods-LegacySwiftExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LegacySwiftExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3BE82E1CF8DA6047D020ECDB /* Pods-PurchaseTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PurchaseTests.release.xcconfig"; path = "Target Support Files/Pods-PurchaseTests/Pods-PurchaseTests.release.xcconfig"; sourceTree = "<group>"; };
+		505CA64DE33CA213B6B7DB16 /* Pods-WatchPurchaseTests Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchPurchaseTests Extension.release.xcconfig"; path = "Target Support Files/Pods-WatchPurchaseTests Extension/Pods-WatchPurchaseTests Extension.release.xcconfig"; sourceTree = "<group>"; };
+		77F30BA285533CF765B337AA /* libPods-WatchPurchaseTests Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchPurchaseTests Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		96B8BAFC92896215F2FDBF35 /* Pods-PurchaseTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PurchaseTests.debug.xcconfig"; path = "Target Support Files/Pods-PurchaseTests/Pods-PurchaseTests.debug.xcconfig"; sourceTree = "<group>"; };
 		C7A95EBC8058CE87D0E2B60A /* Pods-WatchExample Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchExample Extension.release.xcconfig"; path = "Target Support Files/Pods-WatchExample Extension/Pods-WatchExample Extension.release.xcconfig"; sourceTree = "<group>"; };
+		D272F690193E6C27DD59B684 /* libPods-PurchaseTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PurchaseTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F0CD19672D52EB9233089BED /* Pods-WatchPurchaseTests Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchPurchaseTests Extension.debug.xcconfig"; path = "Target Support Files/Pods-WatchPurchaseTests Extension/Pods-WatchPurchaseTests Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		F47D44DA0C1FBE5A9FCA7E55 /* Pods-SwiftExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwiftExample.debug.xcconfig"; path = "Target Support Files/Pods-SwiftExample/Pods-SwiftExample.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -113,8 +117,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				41223BBC2C9D443988BB8DE0 /* libPods-WatchExample Extension.a in Frameworks */,
 				2D6FCB282437E8FA00C398CF /* StoreKit.framework in Frameworks */,
+				963589776E76AD1BD9685D3C /* libPods-WatchPurchaseTests Extension.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -131,7 +135,7 @@
 			files = (
 				2D6FCB222437E56200C398CF /* StoreKit.framework in Frameworks */,
 				2D95540F240EF9F100289461 /* UserNotifications.framework in Frameworks */,
-				65B9F7FB9AF0023131B10B5B /* libPods-LegacySwiftExample.a in Frameworks */,
+				17139D38D870309AC2134390 /* libPods-PurchaseTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -209,6 +213,10 @@
 				C7A95EBC8058CE87D0E2B60A /* Pods-WatchExample Extension.release.xcconfig */,
 				0B83D927156D69EAFE397839 /* Pods-LegacySwiftExample.debug.xcconfig */,
 				37066E6754E910550E7803A8 /* Pods-LegacySwiftExample.release.xcconfig */,
+				96B8BAFC92896215F2FDBF35 /* Pods-PurchaseTests.debug.xcconfig */,
+				3BE82E1CF8DA6047D020ECDB /* Pods-PurchaseTests.release.xcconfig */,
+				F0CD19672D52EB9233089BED /* Pods-WatchPurchaseTests Extension.debug.xcconfig */,
+				505CA64DE33CA213B6B7DB16 /* Pods-WatchPurchaseTests Extension.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -220,8 +228,8 @@
 				2D6FCB272437E8F900C398CF /* StoreKit.framework */,
 				2D95540E240EF9F100289461 /* UserNotifications.framework */,
 				34EA88DD56F541EAD6B9D1D4 /* libPods-WatchExample.a */,
-				17D0C275B4B2F174BACA291F /* libPods-WatchExample Extension.a */,
-				7737765947582E140906F4F7 /* libPods-LegacySwiftExample.a */,
+				D272F690193E6C27DD59B684 /* libPods-PurchaseTests.a */,
+				77F30BA285533CF765B337AA /* libPods-WatchPurchaseTests Extension.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -373,7 +381,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-LegacySwiftExample-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-PurchaseTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -395,7 +403,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-WatchExample Extension-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-WatchPurchaseTests Extension-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -512,7 +520,7 @@
 		};
 		2D54BF832437DEDA00FF4EE4 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 05DF17969D158C5471E19884 /* Pods-WatchExample Extension.debug.xcconfig */;
+			baseConfigurationReference = F0CD19672D52EB9233089BED /* Pods-WatchPurchaseTests Extension.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
 				CODE_SIGN_STYLE = Automatic;
@@ -536,7 +544,7 @@
 		};
 		2D54BF842437DEDA00FF4EE4 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C7A95EBC8058CE87D0E2B60A /* Pods-WatchExample Extension.release.xcconfig */;
+			baseConfigurationReference = 505CA64DE33CA213B6B7DB16 /* Pods-WatchPurchaseTests Extension.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
 				CODE_SIGN_STYLE = Automatic;
@@ -676,7 +684,7 @@
 		};
 		3493337021E69360007AAAB9 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0B83D927156D69EAFE397839 /* Pods-LegacySwiftExample.debug.xcconfig */;
+			baseConfigurationReference = 96B8BAFC92896215F2FDBF35 /* Pods-PurchaseTests.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SwiftExample/SwiftExample.entitlements;
@@ -700,7 +708,7 @@
 		};
 		3493337121E69360007AAAB9 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 37066E6754E910550E7803A8 /* Pods-LegacySwiftExample.release.xcconfig */;
+			baseConfigurationReference = 3BE82E1CF8DA6047D020ECDB /* Pods-PurchaseTests.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SwiftExample/SwiftExample.entitlements;
