@@ -121,7 +121,7 @@
     }
 
     if ([newAppUserID isEqualToString:currentAppUserID]) {
-        RCWarnLog(@"%@", RCStrings.identity.logging_in_with_nil_appuserid);
+        RCWarnLog(@"%@", RCStrings.identity.logging_in_with_same_appuserid);
         [self.purchaserInfoManager purchaserInfoWithAppUserID:currentAppUserID
                                               completionBlock:^(RCPurchaserInfo *purchaserInfo, NSError *error) {
                                                   completion(purchaserInfo, NO, error);
@@ -145,11 +145,13 @@
 }
 
 - (void)logOutWithCompletion:(void (^)(NSError * _Nullable error))completion {
+    RCLog(RCStrings.identity.logging_out_user, self.currentAppUserID);
     if (self.currentUserIsAnonymous) {
         completion(RCPurchasesErrorUtils.logOutAnonymousUserError);
         return;
     }
     [self resetAppUserID];
+    RCLog(@"%@", RCStrings.identity.log_out_success);
     completion(nil);
 }
 
