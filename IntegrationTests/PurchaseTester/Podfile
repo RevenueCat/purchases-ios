@@ -1,0 +1,18 @@
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '9.0'
+
+target 'PurchaseTester' do
+
+  # Pods for PurchaseTester
+  pod 'Purchases', :path => '../../'
+  pod 'PurchasesCoreSwift', :path => '../../'
+
+end
+
+target 'WatchPurchaseTester Extension' do
+
+  # Pods for PurchaseTester
+  pod 'Purchases', :path => '../../'
+  pod 'PurchasesCoreSwift', :path => '../../'
+
+end
