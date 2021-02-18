@@ -14,9 +14,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "3493335C21E6935F007AAAB9"
-               BuildableName = "SwiftExample.app"
-               BlueprintName = "SwiftExample"
-               ReferencedContainer = "container:SwiftExample.xcodeproj">
+               BuildableName = "LegacySwiftExample.app"
+               BlueprintName = "LegacySwiftExample"
+               ReferencedContainer = "container:LegacySwiftExample.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -44,11 +44,14 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "3493335C21E6935F007AAAB9"
-            BuildableName = "SwiftExample.app"
-            BlueprintName = "SwiftExample"
-            ReferencedContainer = "container:SwiftExample.xcodeproj">
+            BuildableName = "LegacySwiftExample.app"
+            BlueprintName = "LegacySwiftExample"
+            ReferencedContainer = "container:LegacySwiftExample.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "../Configuration.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

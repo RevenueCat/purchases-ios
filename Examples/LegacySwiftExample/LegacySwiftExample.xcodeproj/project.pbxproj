@@ -26,7 +26,7 @@
 		3493337521E694D6007AAAB9 /* CatsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493337421E694D6007AAAB9 /* CatsViewController.swift */; };
 		34D05817233C1A3700343134 /* SwiftPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D05816233C1A3700343134 /* SwiftPaywall.swift */; };
 		41223BBC2C9D443988BB8DE0 /* libPods-WatchExample Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17D0C275B4B2F174BACA291F /* libPods-WatchExample Extension.a */; };
-		612312EC8EFEAE0D4472F1D9 /* libPods-SwiftExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D95AC7213243D08744E89F6 /* libPods-SwiftExample.a */; };
+		65B9F7FB9AF0023131B10B5B /* libPods-LegacySwiftExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7737765947582E140906F4F7 /* libPods-LegacySwiftExample.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +73,7 @@
 
 /* Begin PBXFileReference section */
 		05DF17969D158C5471E19884 /* Pods-WatchExample Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchExample Extension.debug.xcconfig"; path = "Target Support Files/Pods-WatchExample Extension/Pods-WatchExample Extension.debug.xcconfig"; sourceTree = "<group>"; };
+		0B83D927156D69EAFE397839 /* Pods-LegacySwiftExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LegacySwiftExample.debug.xcconfig"; path = "Target Support Files/Pods-LegacySwiftExample/Pods-LegacySwiftExample.debug.xcconfig"; sourceTree = "<group>"; };
 		164A5AED2A65F70448049504 /* Pods-SwiftExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwiftExample.release.xcconfig"; path = "Target Support Files/Pods-SwiftExample/Pods-SwiftExample.release.xcconfig"; sourceTree = "<group>"; };
 		17D0C275B4B2F174BACA291F /* libPods-WatchExample Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchExample Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D2458A7240EF4EA007E6BE8 /* SwiftExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftExample.entitlements; sourceTree = "<group>"; };
@@ -91,7 +92,7 @@
 		2D6FCB212437E56200C398CF /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		2D6FCB272437E8F900C398CF /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS6.2.sdk/System/Library/Frameworks/StoreKit.framework; sourceTree = DEVELOPER_DIR; };
 		2D95540E240EF9F100289461 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
-		3493335D21E6935F007AAAB9 /* SwiftExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3493335D21E6935F007AAAB9 /* LegacySwiftExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LegacySwiftExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3493336021E6935F007AAAB9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3493336221E6935F007AAAB9 /* InitialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialViewController.swift; sourceTree = "<group>"; };
 		3493336521E6935F007AAAB9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -101,7 +102,8 @@
 		3493337421E694D6007AAAB9 /* CatsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatsViewController.swift; sourceTree = "<group>"; };
 		34D05816233C1A3700343134 /* SwiftPaywall.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftPaywall.swift; sourceTree = "<group>"; };
 		34EA88DD56F541EAD6B9D1D4 /* libPods-WatchExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		4D95AC7213243D08744E89F6 /* libPods-SwiftExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SwiftExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		37066E6754E910550E7803A8 /* Pods-LegacySwiftExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LegacySwiftExample.release.xcconfig"; path = "Target Support Files/Pods-LegacySwiftExample/Pods-LegacySwiftExample.release.xcconfig"; sourceTree = "<group>"; };
+		7737765947582E140906F4F7 /* libPods-LegacySwiftExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LegacySwiftExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7A95EBC8058CE87D0E2B60A /* Pods-WatchExample Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchExample Extension.release.xcconfig"; path = "Target Support Files/Pods-WatchExample Extension/Pods-WatchExample Extension.release.xcconfig"; sourceTree = "<group>"; };
 		F47D44DA0C1FBE5A9FCA7E55 /* Pods-SwiftExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwiftExample.debug.xcconfig"; path = "Target Support Files/Pods-SwiftExample/Pods-SwiftExample.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -129,7 +131,7 @@
 			files = (
 				2D6FCB222437E56200C398CF /* StoreKit.framework in Frameworks */,
 				2D95540F240EF9F100289461 /* UserNotifications.framework in Frameworks */,
-				612312EC8EFEAE0D4472F1D9 /* libPods-SwiftExample.a in Frameworks */,
+				65B9F7FB9AF0023131B10B5B /* libPods-LegacySwiftExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -175,7 +177,7 @@
 		3493335E21E6935F007AAAB9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				3493335D21E6935F007AAAB9 /* SwiftExample.app */,
+				3493335D21E6935F007AAAB9 /* LegacySwiftExample.app */,
 				2D54BF612437DED800FF4EE4 /* WatchExample.app */,
 				2D54BF6D2437DED900FF4EE4 /* WatchExample Extension.appex */,
 			);
@@ -205,6 +207,8 @@
 				164A5AED2A65F70448049504 /* Pods-SwiftExample.release.xcconfig */,
 				05DF17969D158C5471E19884 /* Pods-WatchExample Extension.debug.xcconfig */,
 				C7A95EBC8058CE87D0E2B60A /* Pods-WatchExample Extension.release.xcconfig */,
+				0B83D927156D69EAFE397839 /* Pods-LegacySwiftExample.debug.xcconfig */,
+				37066E6754E910550E7803A8 /* Pods-LegacySwiftExample.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -215,9 +219,9 @@
 				2D6FCB212437E56200C398CF /* StoreKit.framework */,
 				2D6FCB272437E8F900C398CF /* StoreKit.framework */,
 				2D95540E240EF9F100289461 /* UserNotifications.framework */,
-				4D95AC7213243D08744E89F6 /* libPods-SwiftExample.a */,
 				34EA88DD56F541EAD6B9D1D4 /* libPods-WatchExample.a */,
 				17D0C275B4B2F174BACA291F /* libPods-WatchExample Extension.a */,
+				7737765947582E140906F4F7 /* libPods-LegacySwiftExample.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -261,9 +265,9 @@
 			productReference = 2D54BF6D2437DED900FF4EE4 /* WatchExample Extension.appex */;
 			productType = "com.apple.product-type.watchkit2-extension";
 		};
-		3493335C21E6935F007AAAB9 /* SwiftExample */ = {
+		3493335C21E6935F007AAAB9 /* LegacySwiftExample */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 3493336F21E69360007AAAB9 /* Build configuration list for PBXNativeTarget "SwiftExample" */;
+			buildConfigurationList = 3493336F21E69360007AAAB9 /* Build configuration list for PBXNativeTarget "LegacySwiftExample" */;
 			buildPhases = (
 				78D5352A7E847A5084F8FF23 /* [CP] Check Pods Manifest.lock */,
 				3493335921E6935F007AAAB9 /* Sources */,
@@ -276,9 +280,9 @@
 			dependencies = (
 				2D54BF7D2437DEDA00FF4EE4 /* PBXTargetDependency */,
 			);
-			name = SwiftExample;
+			name = LegacySwiftExample;
 			productName = SwiftExample;
-			productReference = 3493335D21E6935F007AAAB9 /* SwiftExample.app */;
+			productReference = 3493335D21E6935F007AAAB9 /* LegacySwiftExample.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -303,7 +307,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 3493335821E6935E007AAAB9 /* Build configuration list for PBXProject "SwiftExample" */;
+			buildConfigurationList = 3493335821E6935E007AAAB9 /* Build configuration list for PBXProject "LegacySwiftExample" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -316,7 +320,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				3493335C21E6935F007AAAB9 /* SwiftExample */,
+				3493335C21E6935F007AAAB9 /* LegacySwiftExample */,
 				2D54BF602437DED800FF4EE4 /* WatchExample */,
 				2D54BF6C2437DED900FF4EE4 /* WatchExample Extension */,
 			);
@@ -369,7 +373,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-SwiftExample-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-LegacySwiftExample-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -672,7 +676,7 @@
 		};
 		3493337021E69360007AAAB9 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F47D44DA0C1FBE5A9FCA7E55 /* Pods-SwiftExample.debug.xcconfig */;
+			baseConfigurationReference = 0B83D927156D69EAFE397839 /* Pods-LegacySwiftExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SwiftExample/SwiftExample.entitlements;
@@ -696,7 +700,7 @@
 		};
 		3493337121E69360007AAAB9 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 164A5AED2A65F70448049504 /* Pods-SwiftExample.release.xcconfig */;
+			baseConfigurationReference = 37066E6754E910550E7803A8 /* Pods-LegacySwiftExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = SwiftExample/SwiftExample.entitlements;
@@ -739,7 +743,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		3493335821E6935E007AAAB9 /* Build configuration list for PBXProject "SwiftExample" */ = {
+		3493335821E6935E007AAAB9 /* Build configuration list for PBXProject "LegacySwiftExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3493336D21E69360007AAAB9 /* Debug */,
@@ -748,7 +752,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		3493336F21E69360007AAAB9 /* Build configuration list for PBXNativeTarget "SwiftExample" */ = {
+		3493336F21E69360007AAAB9 /* Build configuration list for PBXNativeTarget "LegacySwiftExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3493337021E69360007AAAB9 /* Debug */,
