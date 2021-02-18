@@ -66,6 +66,11 @@ Deploy
 fastlane ios prepare_next_version
 ```
 Prepare next version
+### ios export_xcframeworks
+```
+fastlane ios export_xcframeworks
+```
+Export XCFrameworks
 
 ----
 

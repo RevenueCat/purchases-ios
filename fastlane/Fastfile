@@ -67,7 +67,7 @@ platform :ios do
       tag_name: "#{release_version}",
       description: changelog,
       commitish: "master",
-      upload_assets: ["Purchases.framework.zip"],
+      upload_assets: ["Purchases.framework.zip", "Purchases.xcframework.zip"],
       is_draft: false
   )
   end
@@ -114,6 +114,7 @@ platform :ios do
     version_number = get_version_number(target: "Purchases")
     push_pods
     carthage_archive
+    export_xcframework
     github_release(version: version_number)
   end
 
@@ -138,6 +139,28 @@ platform :ios do
       base: "develop",
       api_token: ENV["GITHUB_TOKEN"]
     )
+  end
+
+  desc "Export XCFrameworks"
+  lane :export_xcframeworks do |options|
+    output_directory = 'build/xcframeworks'
+    platforms = [
+        'iOS',
+        'macOS',
+        'maccatalyst',
+        'tvOS',
+        'watchOS'
+      ]
+
+    create_xcframework(
+      destinations: platforms,
+      scheme: 'Purchases',
+      xcframework_output_directory: output_directory
+    )
+
+    xcframeworks_zip_path = "Purchases.xcframework.zip"
+    zip(path: output_directory,
+        output_path: xcframeworks_zip_path)
   end
 
 end
