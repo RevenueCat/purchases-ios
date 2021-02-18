@@ -67,7 +67,7 @@ platform :ios do
       tag_name: "#{release_version}",
       description: changelog,
       commitish: "master",
-      upload_assets: ["Purchases.framework.zip"],
+      upload_assets: ["Purchases.framework.zip", "Purchases.xcframework.zip"],
       is_draft: false
   )
   end
@@ -114,6 +114,7 @@ platform :ios do
     version_number = get_version_number(target: "Purchases")
     push_pods
     carthage_archive
+    export_xcframework
     github_release(version: version_number)
   end
 
@@ -142,9 +143,7 @@ platform :ios do
 
   desc "Export XCFrameworks"
   lane :export_xcframeworks do |options|
-    output_directory = options[:output_directory]
-    fail ArgumentError, "missing output directory" unless output_directory
-
+    output_directory = 'build/xcframeworks'
     platforms = [
         'iOS',
         'macOS',
@@ -159,10 +158,9 @@ platform :ios do
       xcframework_output_directory: output_directory
     )
 
-    xcframeworks_zip_path = output_directory + ".zip"
+    xcframeworks_zip_path = "Purchases.xcframework.zip"
     zip(path: output_directory,
         output_path: xcframeworks_zip_path)
-    return xcframeworks_zip_path
   end
 
 end
