@@ -141,8 +141,8 @@ platform :ios do
     )
   end
 
-  desc "Export XCFrameworks"
-  lane :export_xcframeworks do |options|
+  desc "Export XCFramework"
+  lane :export_xcframework do |options|
     output_directory = 'build/xcframeworks'
     platforms = [
         'iOS',
