@@ -162,7 +162,9 @@ platform :ios do
     output_directory_for_sh = "../#{output_directory}"
 
     xcframeworks_zip_path_for_sh = "../Purchases.xcframework.zip"
-    sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", output_directory_for_sh, xcframeworks_zip_path)
+    sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", 
+      output_directory_for_sh, 
+      xcframeworks_zip_path_for_sh)
 
   end
 
