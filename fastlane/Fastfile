@@ -158,9 +158,11 @@ platform :ios do
       xcframework_output_directory: output_directory,
       enable_bitcode: false
     )
+    # sh runs from the Fastfile's location, but other commands run from the project root.
+    output_directory_for_sh = "../#{output_directory}"
 
-    xcframeworks_zip_path = "Purchases.xcframework.zip"
-    sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", "\"./#{output_directory}/\"", xcframeworks_zip_path)
+    xcframeworks_zip_path_for_sh = "../Purchases.xcframework.zip"
+    sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", output_directory_for_sh, xcframeworks_zip_path)
 
   end
 
