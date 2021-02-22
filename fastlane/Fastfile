@@ -155,7 +155,8 @@ platform :ios do
     create_xcframework(
       destinations: platforms,
       scheme: 'Purchases',
-      xcframework_output_directory: output_directory
+      xcframework_output_directory: output_directory,
+      enable_bitcode: false
     )
 
     xcframeworks_zip_path = "Purchases.xcframework.zip"
