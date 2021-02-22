@@ -160,8 +160,8 @@ platform :ios do
     )
 
     xcframeworks_zip_path = "Purchases.xcframework.zip"
-    zip(path: output_directory,
-        output_path: xcframeworks_zip_path)
+    sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", "\"./#{output_directory}/\"", xcframeworks_zip_path)
+
   end
 
 end
