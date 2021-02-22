@@ -156,6 +156,8 @@ platform :ios do
       destinations: platforms,
       scheme: 'Purchases',
       xcframework_output_directory: output_directory,
+      # bitcode produces issues with Catalyst when validating builds, 
+      # with a message: "object not signed at all".
       enable_bitcode: false
     )
     # sh runs from the Fastfile's location, but other commands run from the project root.
