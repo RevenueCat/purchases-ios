@@ -155,12 +155,19 @@ platform :ios do
     create_xcframework(
       destinations: platforms,
       scheme: 'Purchases',
-      xcframework_output_directory: output_directory
+      xcframework_output_directory: output_directory,
+      # bitcode produces issues with Catalyst when validating builds, 
+      # with a message: "object not signed at all".
+      enable_bitcode: false
     )
+    # sh runs from the Fastfile's location, but other commands run from the project root.
+    output_directory_for_sh = "../#{output_directory}"
 
-    xcframeworks_zip_path = "Purchases.xcframework.zip"
-    zip(path: output_directory,
-        output_path: xcframeworks_zip_path)
+    xcframeworks_zip_path_for_sh = "../Purchases.xcframework.zip"
+    sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", 
+      output_directory_for_sh, 
+      xcframeworks_zip_path_for_sh)
+
   end
 
 end
