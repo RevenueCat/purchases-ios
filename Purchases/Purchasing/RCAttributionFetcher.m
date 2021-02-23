@@ -164,11 +164,12 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         }
     }
 }
-
 - (void)postAppleSearchAdsAttributionCollectionIfNeeded {
-    BOOL authorized = ATTrackingManager.trackingAuthorizationStatus == ATTrackingManagerAuthorizationStatusAuthorized;
-    if (!authorized) {
-        return;
+    if (@available(iOS 14, macosx(11.0), tvos(14), *)) {
+        BOOL authorized = ATTrackingManager.trackingAuthorizationStatus == ATTrackingManagerAuthorizationStatusAuthorized;
+        if (!authorized) {
+            return;
+        }
     }
 
     NSString *latestNetworkIdAndAdvertisingIdSentToAppleSearchAds = [self
