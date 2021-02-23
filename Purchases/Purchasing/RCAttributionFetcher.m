@@ -14,6 +14,7 @@
 #import "RCBackend.h"
 #import "RCAttributionData.h"
 @import PurchasesCoreSwift;
+@import AppTrackingTransparency;
 
 
 @protocol FakeAdClient <NSObject>
@@ -165,21 +166,28 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 }
 
 - (void)postAppleSearchAdsAttributionCollection {
+    BOOL authorized = ATTrackingManager.trackingAuthorizationStatus == ATTrackingManagerAuthorizationStatusAuthorized;
+    if (!authorized) {
+        return;
+    }
+
     NSString *latestNetworkIdAndAdvertisingIdSentToAppleSearchAds = [self
         latestNetworkIdAndAdvertisingIdentifierSentForNetwork:RCAttributionNetworkAppleSearchAds];
-    if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds == nil) {
-        [self adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails,
-                                                              NSError *_Nullable error) {
-            NSArray *values = [attributionDetails allValues];
-
-            bool hasIadAttribution = values.count != 0 && [values[0][@"iad-attribution"] boolValue];
-            if (hasIadAttribution) {
-                [self postAttributionData:attributionDetails
-                              fromNetwork:RCAttributionNetworkAppleSearchAds
-                         forNetworkUserId:nil];
-            }
-        }];
+    if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds != nil) {
+        return;
     }
+
+    [self adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails,
+                                                          NSError *_Nullable error) {
+        NSArray *values = [attributionDetails allValues];
+
+        bool hasIadAttribution = values.count != 0 && [values[0][@"iad-attribution"] boolValue];
+        if (hasIadAttribution) {
+            [self postAttributionData:attributionDetails
+                          fromNetwork:RCAttributionNetworkAppleSearchAds
+                     forNetworkUserId:nil];
+        }
+    }];
 }
 
 - (void)postPostponedAttributionDataIfNeeded {
