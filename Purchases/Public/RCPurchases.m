@@ -320,9 +320,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         [self subscribeToAppStateNotifications];
 
         [self.attributionFetcher postPostponedAttributionDataIfNeeded];
-        if (_automaticAppleSearchAdsAttributionCollection) {
-            [self.attributionFetcher postAppleSearchAdsAttributionCollection];
-        }
+        [self postAppleSearchAddsAttributionCollectionIfNeeded];
     }
 
     return self;
@@ -381,6 +379,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         [RCAttributionFetcher storePostponedAttributionData:data
                                                 fromNetwork:network
                                            forNetworkUserId:networkUserId];
+    }
+}
+
+- (void)postAppleSearchAddsAttributionCollectionIfNeeded {
+    if (_automaticAppleSearchAdsAttributionCollection) {
+        [self.attributionFetcher postAppleSearchAdsAttributionCollectionIfNeeded];
     }
 }
 
@@ -845,6 +849,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif {
     [self updateAllCachesIfNeeded];
     [self syncSubscriberAttributesIfNeeded];
+    [self postAppleSearchAddsAttributionCollectionIfNeeded];
 }
 
 - (void)applicationWillResignActive:(__unused NSNotification *)notif {

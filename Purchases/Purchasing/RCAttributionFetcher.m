@@ -165,7 +165,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     }
 }
 
-- (void)postAppleSearchAdsAttributionCollection {
+- (void)postAppleSearchAdsAttributionCollectionIfNeeded {
     BOOL authorized = ATTrackingManager.trackingAuthorizationStatus == ATTrackingManagerAuthorizationStatusAuthorized;
     if (!authorized) {
         return;
