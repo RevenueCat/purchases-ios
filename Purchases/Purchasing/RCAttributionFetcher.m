@@ -14,8 +14,9 @@
 #import "RCBackend.h"
 #import "RCAttributionData.h"
 @import PurchasesCoreSwift;
+#if APP_TRACKING_TRANSPARENCY_AVAILABLE
 @import AppTrackingTransparency;
-
+#endif
 
 @protocol FakeAdClient <NSObject>
 
@@ -165,12 +166,14 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     }
 }
 - (void)postAppleSearchAdsAttributionCollectionIfNeeded {
-    if (@available(iOS 14, macosx(11.0), tvos(14), *)) {
+#if APP_TRACKING_TRANSPARENCY_AVAILABLE
+    if (@available(iOS 14, macos 11, tvos 14, *)) {
         BOOL authorized = ATTrackingManager.trackingAuthorizationStatus == ATTrackingManagerAuthorizationStatusAuthorized;
         if (!authorized) {
             return;
         }
     }
+#endif
 
     NSString *latestNetworkIdAndAdvertisingIdSentToAppleSearchAds = [self
         latestNetworkIdAndAdvertisingIdentifierSentForNetwork:RCAttributionNetworkAppleSearchAds];

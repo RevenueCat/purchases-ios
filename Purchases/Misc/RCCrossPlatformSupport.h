@@ -70,3 +70,12 @@
 #else
 #define PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE 0
 #endif
+
+
+// Should match available platforms in
+// https://developer.apple.com/documentation/apptrackingtransparency?language=objc
+#if TARGET_OS_WATCH
+#define APP_TRACKING_TRANSPARENCY_AVAILABLE 0
+#else
+#define APP_TRACKING_TRANSPARENCY_AVAILABLE 1
+#endif
