@@ -557,7 +557,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
 			requirement = {
-				branch = SPM_INTEGRATION_GIT_COMMIT;
+				branch = develop;
 				kind = branch;
 			};
 		};
