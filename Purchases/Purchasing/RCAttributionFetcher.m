@@ -14,9 +14,6 @@
 #import "RCBackend.h"
 #import "RCAttributionData.h"
 @import PurchasesCoreSwift;
-#if APP_TRACKING_TRANSPARENCY_AVAILABLE
-@import AppTrackingTransparency;
-#endif
 
 @protocol FakeAdClient <NSObject>
 
@@ -32,6 +29,18 @@
 
 @end
 
+@protocol FakeATTrackingManager <NSObject>
+
++ (NSInteger)trackingAuthorizationStatus;
+
+@end
+
+typedef NS_ENUM(NSUInteger, FakeATTrackingManagerAuthorizationStatus) {
+    FakeATTrackingManagerAuthorizationStatusNotDetermined = 0,
+    FakeATTrackingManagerAuthorizationStatusRestricted,
+    FakeATTrackingManagerAuthorizationStatusDenied,
+    FakeATTrackingManagerAuthorizationStatusAuthorized
+};
 
 static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
@@ -168,9 +177,14 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 - (void)postAppleSearchAdsAttributionCollectionIfNeeded {
 #if APP_TRACKING_TRANSPARENCY_AVAILABLE
     if (@available(iOS 14, macos 11, tvos 14, *)) {
-        BOOL authorized = ATTrackingManager.trackingAuthorizationStatus == ATTrackingManagerAuthorizationStatusAuthorized;
-        if (!authorized) {
-            return;
+        id<FakeATTrackingManager> trackingManagerClass = (id<FakeATTrackingManager>)NSClassFromString(@"ATTrackingManager");
+
+        if (trackingManagerClass) {
+            NSInteger authorizationStatus = [trackingManagerClass trackingAuthorizationStatus];
+            BOOL authorized = authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized;
+            if (!authorized) {
+                return;
+            }
         }
     }
 #endif
