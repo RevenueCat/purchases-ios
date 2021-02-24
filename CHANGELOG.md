@@ -1,3 +1,10 @@
+## 3.10.5
+- Fixed a couple of issues with `.xcframework` output in releases
+    https://github.com/RevenueCat/purchases-ios/pull/470
+    https://github.com/RevenueCat/purchases-ios/pull/469
+- Fix Carthage builds from source, so that end customers can start leveraging XCFramework support for Carthage >= 0.37
+    https://github.com/RevenueCat/purchases-ios/pull/471
+
 ## 3.10.4
 - Added .xcframework output to Releases, alongside the usual fat frameworks.
     https://github.com/RevenueCat/purchases-ios/pull/466

@@ -92,6 +92,7 @@ platform :ios do
     check_no_git_tag_exists(version_number)
     check_pods
     carthage_archive
+    export_xcframework
     check_no_github_release_exists(version_number)
   end
 
