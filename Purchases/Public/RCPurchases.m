@@ -384,7 +384,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)postAppleSearchAddsAttributionCollectionIfNeeded {
     if (_automaticAppleSearchAdsAttributionCollection) {
-        [self.attributionFetcher postAppleSearchAdsAttributionCollectionIfNeeded];
+        [self.attributionFetcher postAppleSearchAdsAttributionIfNeeded];
     }
 }
 

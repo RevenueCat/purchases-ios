@@ -174,7 +174,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         }
     }
 }
-- (void)postAppleSearchAdsAttributionCollectionIfNeeded {
+- (void)postAppleSearchAdsAttributionIfNeeded {
 #if APP_TRACKING_TRANSPARENCY_AVAILABLE
     if (@available(iOS 14, macos 11, tvos 14, *)) {
         id<FakeATTrackingManager> trackingManagerClass = (id<FakeATTrackingManager>)NSClassFromString(@"ATTrackingManager");

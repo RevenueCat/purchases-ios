@@ -34,7 +34,7 @@ typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *
                 fromNetwork:(RCAttributionNetwork)network
            forNetworkUserId:(nullable NSString *)networkUserId;
 
-- (void)postAppleSearchAdsAttributionCollectionIfNeeded;
+- (void)postAppleSearchAdsAttributionIfNeeded;
 
 - (void)postPostponedAttributionDataIfNeeded;
 
