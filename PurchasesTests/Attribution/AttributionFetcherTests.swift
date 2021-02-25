@@ -125,4 +125,16 @@ class AttributionFetcherTests: XCTestCase {
 
         expect(backend.invokedPostAttributionDataCount) == 2
     }
+
+    func testPostAppleSearchAdsAttributionIfNeededSkipsIfNotAuthorized() {
+
+    }
+
+    func testPostAppleSearchAdsAttributionIfNeededPostsIfAuthorized() {
+
+    }
+
+    func testPostAppleSearchAdsAttributionIfNeededSkipsIfAlreadySent() {
+
+    }
 }

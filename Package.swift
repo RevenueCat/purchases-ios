@@ -19,6 +19,7 @@ func resolveDependencies() -> [Package.Dependency] {
 
 func resolveTargets() -> [Target] {
     let objcSources = ["Purchases/Info.plist",
+                       "Purchases/Attribution",
                        "Purchases/Caching",
                        "Purchases/FoundationExtensions",
                        "Purchases/Misc",
