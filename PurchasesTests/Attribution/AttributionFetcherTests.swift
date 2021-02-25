@@ -16,7 +16,7 @@ class AttributionFetcherTests: XCTestCase {
     var attributionFetcher: RCAttributionFetcher!
     var deviceCache: MockDeviceCache!
     var identityManager: MockIdentityManager!
-    var attributionFactory: AttributionTypeFactory! = AttributionTypeFactory()
+    var attributionFactory: AttributionTypeFactory! = MockAttributionTypeFactory()
 
     let userDefaultsSuiteName = "testUserDefaults"
     
