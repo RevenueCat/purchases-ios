@@ -16,6 +16,7 @@ class AttributionFetcherTests: XCTestCase {
     var attributionFetcher: RCAttributionFetcher!
     var deviceCache: MockDeviceCache!
     var identityManager: MockIdentityManager!
+    var attributionFactory: AttributionTypeFactory! = AttributionTypeFactory()
 
     let userDefaultsSuiteName = "testUserDefaults"
     
@@ -28,7 +29,8 @@ class AttributionFetcherTests: XCTestCase {
         identityManager = MockIdentityManager(mockAppUserID: userID)
         attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
                                                   identityManager: identityManager,
-                                                  backend: MockBackend())
+                                                  backend: MockBackend(),
+                                                  attributionFactory: attributionFactory)
     }
     
     override func tearDown() {
@@ -73,7 +75,8 @@ class AttributionFetcherTests: XCTestCase {
         
         attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
                                                   identityManager: identityManager,
-                                                  backend: backend)
+                                                  backend: backend,
+                                                  attributionFactory: attributionFactory)
         attributionFetcher.postAttributionData(["something": "here"],
                                                from: .adjust,
                                                forNetworkUserId: userID)
@@ -91,10 +94,11 @@ class AttributionFetcherTests: XCTestCase {
         let userID = "userID"
         let backend = MockBackend()
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
-        
+
         attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
                                                   identityManager: identityManager,
-                                                  backend: backend)
+                                                  backend: backend,
+                                                  attributionFactory: attributionFactory)
         attributionFetcher.postAttributionData(["something": "here"],
                                                from: .adjust,
                                                forNetworkUserId: userID)
@@ -110,10 +114,11 @@ class AttributionFetcherTests: XCTestCase {
     func testPostAttributionDataDoesntSkipIfSameUserIdButDifferentNetwork() {
         let backend = MockBackend()
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
-        
+
         attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
                                                   identityManager: identityManager,
-                                                  backend: backend)
+                                                  backend: backend,
+                                                  attributionFactory: attributionFactory)
         attributionFetcher.postAttributionData(["something": "here"],
                                                from: .adjust,
                                                forNetworkUserId: "attributionUser1")

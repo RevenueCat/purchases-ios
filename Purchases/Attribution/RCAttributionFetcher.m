@@ -38,12 +38,13 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
 - (instancetype)initWithDeviceCache:(RCDeviceCache *)deviceCache
                     identityManager:(RCIdentityManager *)identityManager
-                            backend:(RCBackend *)backend {
+                            backend:(RCBackend *)backend
+                 attributionFactory:(RCAttributionTypeFactory *)attributionFactory {
     if (self = [super init]) {
         self.deviceCache = deviceCache;
         self.identityManager = identityManager;
         self.backend = backend;
-        self.attributionFactory = [[RCAttributionTypeFactory alloc] init];
+        self.attributionFactory = attributionFactory;
     }
     return self;
 }

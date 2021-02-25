@@ -51,7 +51,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockReceiptParser = MockReceiptParser()
         self.mockAttributionFetcher = MockAttributionFetcher(deviceCache: mockDeviceCache,
                                                              identityManager: mockIdentityManager,
-                                                             backend: mockBackend)
+                                                             backend: mockBackend,
+                                                             attributionFactory: AttributionTypeFactory())
     }
 
     override func tearDown() {

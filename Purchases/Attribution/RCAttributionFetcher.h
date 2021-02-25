@@ -19,7 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithDeviceCache:(RCDeviceCache *)deviceCache
                     identityManager:(RCIdentityManager *)identityManager
-                            backend:(RCBackend *)backend NS_DESIGNATED_INITIALIZER;
+                            backend:(RCBackend *)backend
+                 attributionFactory:(RCAttributionTypeFactory *)attributionFactory NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 

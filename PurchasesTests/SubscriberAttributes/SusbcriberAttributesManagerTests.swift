@@ -24,7 +24,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.mockBackend = MockBackend()
         self.mockAttributionFetcher = MockAttributionFetcher(deviceCache: mockDeviceCache,
                                                              identityManager: MockIdentityManager(mockAppUserID: "appUserID"),
-                                                             backend: MockBackend())
+                                                             backend: MockBackend(),
+                                                             attributionFactory: AttributionTypeFactory())
         self.subscriberAttributesManager = RCSubscriberAttributesManager(
                 backend: mockBackend,
                 deviceCache: mockDeviceCache,

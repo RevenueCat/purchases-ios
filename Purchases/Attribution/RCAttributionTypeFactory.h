@@ -32,6 +32,7 @@ typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *
 @end
 
 
+NS_SWIFT_NAME(AttributionTypeFactory)
 @interface RCAttributionTypeFactory : NSObject
 
 - (Class<FakeAdClient> _Nullable)adClientClass;
