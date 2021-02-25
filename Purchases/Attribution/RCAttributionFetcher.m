@@ -15,26 +15,6 @@
 #import "RCAttributionData.h"
 @import PurchasesCoreSwift;
 
-//@protocol FakeAdClient <NSObject>
-//
-//+ (instancetype)sharedClient;
-//- (void)requestAttributionDetailsWithBlock:(RCAttributionDetailsBlock)completionHandler;
-//
-//@end
-//
-//
-//@protocol FakeASIdentifierManager <NSObject>
-//
-//+ (instancetype)sharedManager;
-//
-//@end
-//
-//@protocol FakeATTrackingManager <NSObject>
-//
-//+ (NSInteger)trackingAuthorizationStatus;
-//
-//@end
-
 typedef NS_ENUM(NSUInteger, FakeATTrackingManagerAuthorizationStatus) {
     FakeATTrackingManagerAuthorizationStatusNotDetermined = 0,
     FakeATTrackingManagerAuthorizationStatusRestricted,
@@ -50,10 +30,9 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 @property (strong, nonatomic) RCDeviceCache *deviceCache;
 @property (strong, nonatomic) RCIdentityManager *identityManager;
 @property (strong, nonatomic) RCBackend *backend;
-@property (strong, nonatomic) RCAttributionFactory *attributionFactory;
+@property (strong, nonatomic) RCAttributionTypeFactory *attributionFactory;
 
 @end
-
 
 @implementation RCAttributionFetcher : NSObject
 
@@ -64,7 +43,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         self.deviceCache = deviceCache;
         self.identityManager = identityManager;
         self.backend = backend;
-        self.attributionFactory = [[RCAttributionFactory alloc] init];
+        self.attributionFactory = [[RCAttributionTypeFactory alloc] init];
     }
     return self;
 }
@@ -119,7 +98,6 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
 - (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler {
 #if AD_CLIENT_AVAILABLE
-//    id<FakeAdClient> adClientClass = (id<FakeAdClient>)NSClassFromString(@"ADClient");
     Class<FakeAdClient> _Nullable adClientClass = [self.attributionFactory adClientClass];
     if (adClientClass) {
         [[adClientClass sharedClient] requestAttributionDetailsWithBlock:completionHandler];
@@ -179,8 +157,6 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 - (void)postAppleSearchAdsAttributionIfNeeded {
 #if APP_TRACKING_TRANSPARENCY_AVAILABLE
     if (@available(iOS 14, macos 11, tvos 14, *)) {
-//        id<FakeATTrackingManager> trackingManagerClass = (id<FakeATTrackingManager>)NSClassFromString(@"ATTrackingManager");
-
         Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory trackingManagerClass];
 
         if (trackingManagerClass) {

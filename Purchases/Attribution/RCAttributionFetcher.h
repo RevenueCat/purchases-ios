@@ -9,12 +9,11 @@
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
 #import "RCAttributionNetwork.h"
+#import "RCAttributionTypeFactory.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class RCDeviceCache, RCIdentityManager, RCBackend, RCAttributionData;
-
-typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *_Nullable, NSError *_Nullable);
 
 @interface RCAttributionFetcher : NSObject
 
