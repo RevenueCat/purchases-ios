@@ -132,14 +132,20 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     }
 }
 - (void)postAppleSearchAdsAttributionIfNeeded {
-#if APP_TRACKING_TRANSPARENCY_AVAILABLE
+#if APP_TRACKING_TRANSPARENCY_REQUIRED
     if (@available(iOS 14, macos 11, tvos 14, *)) {
+        NSOperatingSystemVersion minimumOSVersionRequiringAuthorization = { .majorVersion = 14, .minorVersion = 5, .patchVersion = 0 };
+
+        BOOL needsTrackingAuthorization = ![NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:minimumOSVersionRequiringAuthorization];
+
         Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory trackingManagerClass];
         if (!trackingManagerClass) {
             return; // AppTrackingTransparency isn't included in the bundle
         }
         NSInteger authorizationStatus = [trackingManagerClass trackingAuthorizationStatus];
-        BOOL authorized = authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized;
+        BOOL authorized = (needsTrackingAuthorization && authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized)
+            || (!needsTrackingAuthorization && (authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized
+                                                || authorizationStatus == FakeATTrackingManagerAuthorizationStatusNotDetermined));
         if (!authorized) {
             return;
         }

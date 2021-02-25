@@ -72,10 +72,10 @@
 #endif
 
 
-// Should match available platforms in
-// https://developer.apple.com/documentation/apptrackingtransparency?language=objc
-#if TARGET_OS_WATCH
-#define APP_TRACKING_TRANSPARENCY_AVAILABLE 0
+// Should match platforms that require permissions detailed in
+// https://developer.apple.com/app-store/user-privacy-and-data-use/
+#if TARGET_OS_WATCH || TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#define APP_TRACKING_TRANSPARENCY_REQUIRED 0
 #else
-#define APP_TRACKING_TRANSPARENCY_AVAILABLE 1
+#define APP_TRACKING_TRANSPARENCY_REQUIRED 1
 #endif
