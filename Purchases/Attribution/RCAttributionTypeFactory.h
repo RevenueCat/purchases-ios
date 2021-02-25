@@ -37,6 +37,9 @@ NS_SWIFT_NAME(AttributionTypeFactory)
 
 - (Class<FakeAdClient> _Nullable)adClientClass;
 - (Class<FakeATTrackingManager> _Nullable)trackingManagerClass;
+- (Class<FakeASIdentifierManager> _Nullable)asIdentifierClass;
+
+- (NSString *)asIdentifierPropertyName;
 
 @end
 

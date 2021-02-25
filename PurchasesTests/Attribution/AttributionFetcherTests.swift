@@ -32,51 +32,26 @@ class AttributionFetcherTests: XCTestCase {
                                                   identityManager: identityManager,
                                                   backend: backend,
                                                   attributionFactory: attributionFactory)
+        resetAttributionStaticProperties()
+        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
+    }
 
+    private func resetAttributionStaticProperties() {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
-            MockATTrackingManager.mockAuthorizationStatus = .denied
+            MockATTrackingManager.mockAuthorizationStatus = .authorized
         }
         MockAttributionTypeFactory.shouldReturnAdClientClass = true
         MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
         MockAdClient.requestAttributionDetailsCallCount = 0
-        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
-    }
-    
-    override func tearDown() {
-        UserDefaults.standard.removePersistentDomain(forName: userDefaultsSuiteName)
-        UserDefaults.standard.synchronize()
     }
 
-    func testCanRotateASIdentifierManager() {
-        let expected = "ASIdentifierManager"
-        let randomized = attributionFetcher.rot13(expected)
-        
-        expect { randomized } .notTo(equal(expected))
-        expect { self.attributionFetcher.rot13(randomized) } .to(equal(expected))
+    override func tearDown() {
+        super.tearDown()
+        UserDefaults.standard.removePersistentDomain(forName: userDefaultsSuiteName)
+        UserDefaults.standard.synchronize()
+        resetAttributionStaticProperties()
     }
-    
-    func testCanRotateASIdentifierManagerBack() {
-        let expected = "ASIdentifierManager"
-        let randomized = "NFVqragvsvreZnantre"
-        
-        expect { self.attributionFetcher.rot13(randomized) } .to(equal(expected))
-    }
-    
-    func testCanRotateAdvertisingIdentifier() {
-        let expected = "advertisingIdentifier"
-        
-        let randomized = attributionFetcher.rot13(expected)
-        expect { randomized } .notTo(equal(expected))
-        expect { self.attributionFetcher.rot13(randomized) } .to(equal(expected))
-    }
-    
-    func testCanRotateAdvertisingIdentifierBack() {
-        let expected = "advertisingIdentifier"
-        let randomized = "nqiregvfvatVqragvsvre"
-        
-        expect { self.attributionFetcher.rot13(randomized) } .to(equal(expected))
-    }
-    
+
     func testPostAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
         let backend = MockBackend()
