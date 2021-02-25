@@ -14,29 +14,43 @@ class MockAdClient: NSObject, FakeAdClient {
 
     static var sharedInstance = MockAdClient()
 
-    var mockAttributionDetails: [String: NSObject] = [:]
-    var mockError: Error?
+    static var mockAttributionDetails: [String: NSObject] = [
+        "Version3.1":
+            [
+                "iad-campaign-id": 15292426,
+                "iad-attribution": true
+            ] as NSObject
+    ]
+    static var mockError: Error?
+    static var requestAttributionDetailsCallCount = 0
+
     func requestAttributionDetails(_ completionHandler: RCAttributionDetailsBlock) {
-        completionHandler(mockAttributionDetails, mockError)
+        Self.requestAttributionDetailsCallCount += 1
+        completionHandler(Self.mockAttributionDetails, Self.mockError)
     }
 }
 
 @available(iOS 14, macOS 11, tvOS 14, *)
 class MockATTrackingManager: NSObject, FakeATTrackingManager {
     static var mockAuthorizationStatus: ATTrackingManager.AuthorizationStatus = .denied
+
     static func trackingAuthorizationStatus() -> Int {
         return Int(mockAuthorizationStatus.rawValue)
     }
 }
 
 class MockAttributionTypeFactory: AttributionTypeFactory {
+    static var shouldReturnAdClientClass = true
+
     override func adClientClass() -> FakeAdClient.Type? {
-        return MockAdClient.self
+        return Self.shouldReturnAdClientClass ? MockAdClient.self : nil
     }
+
+    static var shouldReturnTrackingManagerClass = true
 
     override func trackingManagerClass() -> FakeATTrackingManager.Type? {
         if #available(iOS 14, *) {
-            return MockATTrackingManager.self
+            return Self.shouldReturnTrackingManagerClass ? MockATTrackingManager.self : nil
         } else {
             return nil
         }

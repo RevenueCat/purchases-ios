@@ -100,9 +100,10 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 - (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler {
 #if AD_CLIENT_AVAILABLE
     Class<FakeAdClient> _Nullable adClientClass = [self.attributionFactory adClientClass];
-    if (adClientClass) {
-        [[adClientClass sharedClient] requestAttributionDetailsWithBlock:completionHandler];
+    if (!adClientClass) {
+        return; // iAd isn't included in the bundle
     }
+    [[adClientClass sharedClient] requestAttributionDetailsWithBlock:completionHandler];
 #endif
 }
 
@@ -159,13 +160,13 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 #if APP_TRACKING_TRANSPARENCY_AVAILABLE
     if (@available(iOS 14, macos 11, tvos 14, *)) {
         Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory trackingManagerClass];
-
-        if (trackingManagerClass) {
-            NSInteger authorizationStatus = [trackingManagerClass trackingAuthorizationStatus];
-            BOOL authorized = authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized;
-            if (!authorized) {
-                return;
-            }
+        if (!trackingManagerClass) {
+            return; // AppTrackingTransparency isn't included in the bundle
+        }
+        NSInteger authorizationStatus = [trackingManagerClass trackingAuthorizationStatus];
+        BOOL authorized = authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized;
+        if (!authorized) {
+            return;
         }
     }
 #endif
