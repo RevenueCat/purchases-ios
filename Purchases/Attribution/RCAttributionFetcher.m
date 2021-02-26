@@ -145,8 +145,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
         Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory trackingManagerClass];
         if (!trackingManagerClass && needsTrackingAuthorization) {
-            RCWarnLog(@"Tried to post Apple Search Ads Attribution, but AppTrackingTransparency is required on this OS"
-                      " and it isn't included");
+            RCWarnLog(RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
             return NO;
         }
         NSInteger authorizationStatus = [trackingManagerClass trackingAuthorizationStatus];
@@ -154,8 +153,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
                           || (!needsTrackingAuthorization && (authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized
                                                               || authorizationStatus == FakeATTrackingManagerAuthorizationStatusNotDetermined));
         if (!authorized) {
-            RCWarnLog(@"Tried to post Apple Search Ads Attribution, but authorization hasn't been granted. "
-                      "Will automatically retry if authorization gets granted.");
+            RCWarnLog(RCStrings.attribution.search_ads_attribution_cancelled_not_authorized);
             return NO;
         }
 
