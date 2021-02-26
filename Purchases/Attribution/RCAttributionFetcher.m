@@ -80,7 +80,8 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 #if AD_CLIENT_AVAILABLE
     Class<FakeAdClient> _Nullable adClientClass = [self.attributionFactory adClientClass];
     if (!adClientClass) {
-        return; // iAd isn't included in the bundle
+        RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_iad_framework);
+        return;
     }
     [[adClientClass sharedClient] requestAttributionDetailsWithBlock:completionHandler];
 #endif
