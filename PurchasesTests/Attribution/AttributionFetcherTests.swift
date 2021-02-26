@@ -104,14 +104,27 @@ class AttributionFetcherTests: XCTestCase {
         expect(self.backend.invokedPostAttributionDataCount) == 2
     }
 
-    func testPostAppleSearchAdsAttributionIfNeededSkipsIfATTFrameworkNotIncluded() {
+    func testPostAppleSearchAdsAttributionIfNeededSkipsIfATTFrameworkNotIncludedOnNewOS() {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
+            systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
             MockAttributionTypeFactory.shouldReturnAdClientClass = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerClass = false
 
             self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
 
             expect(MockAdClient.requestAttributionDetailsCallCount) == 0
+        }
+    }
+
+    func testPostAppleSearchAdsAttributionIfNeededPostsIfATTFrameworkNotIncludedOnOldOS() {
+        if #available(iOS 14, macOS 11, tvOS 14, *) {
+            systemInfo.stubbedIsOperatingSystemAtLeastVersion = false
+            MockAttributionTypeFactory.shouldReturnAdClientClass = true
+            MockAttributionTypeFactory.shouldReturnTrackingManagerClass = false
+
+            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+
+            expect(MockAdClient.requestAttributionDetailsCallCount) == 1
         }
     }
 

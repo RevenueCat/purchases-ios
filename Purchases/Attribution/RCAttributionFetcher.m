@@ -143,7 +143,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         BOOL needsTrackingAuthorization = [self.systemInfo isOperatingSystemAtLeastVersion:minimumOSVersionRequiringAuthorization];
 
         Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory trackingManagerClass];
-        if (!trackingManagerClass) {
+        if (!trackingManagerClass && needsTrackingAuthorization) {
             return; // AppTrackingTransparency isn't included in the bundle
         }
         NSInteger authorizationStatus = [trackingManagerClass trackingAuthorizationStatus];
