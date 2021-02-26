@@ -20,7 +20,10 @@ class PurchasesTests: XCTestCase {
         attributionFetcher = MockAttributionFetcher(deviceCache: deviceCache,
                                                     identityManager: identityManager,
                                                     backend: backend,
-                                                    attributionFactory: MockAttributionTypeFactory())
+                                                    attributionFactory: MockAttributionTypeFactory(),
+                                                    systemInfo: MockSystemInfo(platformFlavor: "iOS",
+                                                                               platformFlavorVersion: "3.2.1",
+                                                                               finishTransactions: true))
     }
 
     override func tearDown() {

@@ -18,6 +18,9 @@ class AttributionFetcherTests: XCTestCase {
     var identityManager: MockIdentityManager!
     var backend: MockBackend!
     var attributionFactory: AttributionTypeFactory! = MockAttributionTypeFactory()
+    var systemInfo: MockSystemInfo! = MockSystemInfo(platformFlavor: "iOS",
+                                                     platformFlavorVersion: "3.2.1",
+                                                     finishTransactions: true)
 
     let userDefaultsSuiteName = "testUserDefaults"
     
@@ -31,7 +34,8 @@ class AttributionFetcherTests: XCTestCase {
         attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
                                                   identityManager: identityManager,
                                                   backend: backend,
-                                                  attributionFactory: attributionFactory)
+                                                  attributionFactory: attributionFactory,
+                                                  systemInfo: systemInfo)
         resetAttributionStaticProperties()
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
     }
@@ -54,77 +58,50 @@ class AttributionFetcherTests: XCTestCase {
 
     func testPostAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
-        let backend = MockBackend()
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
         
-        attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
-                                                  identityManager: identityManager,
-                                                  backend: backend,
-                                                  attributionFactory: attributionFactory)
         attributionFetcher.postAttributionData(["something": "here"],
                                                from: .adjust,
                                                forNetworkUserId: userID)
-        expect(backend.invokedPostAttributionDataCount) == 1
+        expect(self.backend.invokedPostAttributionDataCount) == 1
 
         attributionFetcher.postAttributionData(["something": "else"],
                                                from: .adjust,
                                                forNetworkUserId: userID)
 
-        expect(backend.invokedPostAttributionDataCount) == 1
+        expect(self.backend.invokedPostAttributionDataCount) == 1
 
     }
 
     func testPostAttributionDataDoesntSkipIfNetworkUserIdChanged() {
         let userID = "userID"
-        let backend = MockBackend()
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
 
-        attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
-                                                  identityManager: identityManager,
-                                                  backend: backend,
-                                                  attributionFactory: attributionFactory)
         attributionFetcher.postAttributionData(["something": "here"],
                                                from: .adjust,
                                                forNetworkUserId: userID)
-        expect(backend.invokedPostAttributionDataCount) == 1
+        expect(self.backend.invokedPostAttributionDataCount) == 1
 
         attributionFetcher.postAttributionData(["something": "else"],
                                                from: .facebook,
                                                forNetworkUserId: userID)
 
-        expect(backend.invokedPostAttributionDataCount) == 2
+        expect(self.backend.invokedPostAttributionDataCount) == 2
     }
 
     func testPostAttributionDataDoesntSkipIfSameUserIdButDifferentNetwork() {
-        let backend = MockBackend()
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
 
-        attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
-                                                  identityManager: identityManager,
-                                                  backend: backend,
-                                                  attributionFactory: attributionFactory)
         attributionFetcher.postAttributionData(["something": "here"],
                                                from: .adjust,
                                                forNetworkUserId: "attributionUser1")
-        expect(backend.invokedPostAttributionDataCount) == 1
+        expect(self.backend.invokedPostAttributionDataCount) == 1
 
         attributionFetcher.postAttributionData(["something": "else"],
                                                from: .facebook,
                                                forNetworkUserId: "attributionUser2")
 
-        expect(backend.invokedPostAttributionDataCount) == 2
-    }
-
-    func testPostAppleSearchAdsAttributionIfNeededSkipsIfNotAuthorized() {
-        if #available(iOS 14, macOS 11, tvOS 14, *) {
-            MockATTrackingManager.mockAuthorizationStatus = .denied
-            MockAttributionTypeFactory.shouldReturnAdClientClass = true
-            MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
-
-            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
-
-            expect(MockAdClient.requestAttributionDetailsCallCount) == 0
-        }
+        expect(self.backend.invokedPostAttributionDataCount) == 2
     }
 
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfATTFrameworkNotIncluded() {
@@ -147,8 +124,9 @@ class AttributionFetcherTests: XCTestCase {
         expect(MockAdClient.requestAttributionDetailsCallCount) == 0
     }
 
-    func testPostAppleSearchAdsAttributionIfNeededPostsIfAuthorized() {
+    func testPostAppleSearchAdsAttributionIfNeededPostsIfAuthorizedOnNewOS() {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
+            systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
             MockATTrackingManager.mockAuthorizationStatus = .authorized
             MockAttributionTypeFactory.shouldReturnAdClientClass = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
@@ -156,6 +134,73 @@ class AttributionFetcherTests: XCTestCase {
             self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
 
             expect(MockAdClient.requestAttributionDetailsCallCount) == 1
+        }
+    }
+
+    func testPostAppleSearchAdsAttributionIfNeededPostsIfAuthorizedOnOldOS() {
+        if #available(iOS 14, macOS 11, tvOS 14, *) {
+            systemInfo.stubbedIsOperatingSystemAtLeastVersion = false
+            MockATTrackingManager.mockAuthorizationStatus = .authorized
+            MockAttributionTypeFactory.shouldReturnAdClientClass = true
+            MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
+
+            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+
+            expect(MockAdClient.requestAttributionDetailsCallCount) == 1
+        }
+    }
+
+    func testPostAppleSearchAdsAttributionIfNeededPostsIfAuthNotDeterminedOnOldOS() {
+        if #available(iOS 14, macOS 11, tvOS 14, *) {
+            systemInfo.stubbedIsOperatingSystemAtLeastVersion = false
+            MockATTrackingManager.mockAuthorizationStatus = .notDetermined
+            MockAttributionTypeFactory.shouldReturnAdClientClass = true
+            MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
+
+            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+
+            expect(MockAdClient.requestAttributionDetailsCallCount) == 1
+        }
+    }
+
+    func testPostAppleSearchAdsAttributionIfNeededSkipsIfAuthNotDeterminedOnNewOS() {
+        if #available(iOS 14, macOS 11, tvOS 14, *) {
+            systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
+
+            MockATTrackingManager.mockAuthorizationStatus = .notDetermined
+            MockAttributionTypeFactory.shouldReturnAdClientClass = true
+            MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
+
+            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+
+            expect(MockAdClient.requestAttributionDetailsCallCount) == 0
+        }
+    }
+
+
+    func testPostAppleSearchAdsAttributionIfNeededSkipsIfNotAuthorizedOnOldOS() {
+        if #available(iOS 14, macOS 11, tvOS 14, *) {
+            systemInfo.stubbedIsOperatingSystemAtLeastVersion = false
+            MockATTrackingManager.mockAuthorizationStatus = .denied
+            MockAttributionTypeFactory.shouldReturnAdClientClass = true
+            MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
+
+            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+
+            expect(MockAdClient.requestAttributionDetailsCallCount) == 0
+        }
+    }
+
+    func testPostAppleSearchAdsAttributionIfNeededSkipsIfNotAuthorizedOnNewOS() {
+        if #available(iOS 14, macOS 11, tvOS 14, *) {
+            systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
+            MockATTrackingManager.mockAuthorizationStatus = .denied
+            MockAttributionTypeFactory.shouldReturnAdClientClass = true
+            MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
+
+            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+
+            expect(MockAdClient.requestAttributionDetailsCallCount) == 0
         }
     }
 

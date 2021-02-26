@@ -25,7 +25,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.mockAttributionFetcher = MockAttributionFetcher(deviceCache: mockDeviceCache,
                                                              identityManager: MockIdentityManager(mockAppUserID: "appUserID"),
                                                              backend: MockBackend(),
-                                                             attributionFactory: AttributionTypeFactory())
+                                                             attributionFactory: AttributionTypeFactory(),
+                                                             systemInfo: MockSystemInfo(platformFlavor: "iOS",
+                                                                                        platformFlavorVersion: "3.2.1",
+                                                                                        finishTransactions: true))
         self.subscriberAttributesManager = RCSubscriberAttributesManager(
                 backend: mockBackend,
                 deviceCache: mockDeviceCache,

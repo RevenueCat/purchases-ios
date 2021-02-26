@@ -146,6 +146,10 @@ static BOOL _forceUniversalAppStore = NO;
 
 #endif
 
+- (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)version {
+    return [NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:version];
+}
+
 @end
 
 

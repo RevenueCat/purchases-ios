@@ -13,6 +13,7 @@
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
 #import "RCAttributionData.h"
+#import "RCSystemInfo.h"
 @import PurchasesCoreSwift;
 
 typedef NS_ENUM(NSUInteger, FakeATTrackingManagerAuthorizationStatus) {
@@ -31,6 +32,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 @property (strong, nonatomic) RCIdentityManager *identityManager;
 @property (strong, nonatomic) RCBackend *backend;
 @property (strong, nonatomic) RCAttributionTypeFactory *attributionFactory;
+@property (strong, nonatomic) RCSystemInfo *systemInfo;
 
 @end
 
@@ -39,12 +41,14 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 - (instancetype)initWithDeviceCache:(RCDeviceCache *)deviceCache
                     identityManager:(RCIdentityManager *)identityManager
                             backend:(RCBackend *)backend
-                 attributionFactory:(RCAttributionTypeFactory *)attributionFactory {
+                 attributionFactory:(RCAttributionTypeFactory *)attributionFactory
+                         systemInfo:(RCSystemInfo *)systemInfo {
     if (self = [super init]) {
         self.deviceCache = deviceCache;
         self.identityManager = identityManager;
         self.backend = backend;
         self.attributionFactory = attributionFactory;
+        self.systemInfo = systemInfo;
     }
     return self;
 }
@@ -136,7 +140,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     if (@available(iOS 14, macos 11, tvos 14, *)) {
         NSOperatingSystemVersion minimumOSVersionRequiringAuthorization = { .majorVersion = 14, .minorVersion = 5, .patchVersion = 0 };
 
-        BOOL needsTrackingAuthorization = ![NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:minimumOSVersionRequiringAuthorization];
+        BOOL needsTrackingAuthorization = [self.systemInfo isOperatingSystemAtLeastVersion:minimumOSVersionRequiringAuthorization];
 
         Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory trackingManagerClass];
         if (!trackingManagerClass) {

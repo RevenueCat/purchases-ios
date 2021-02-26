@@ -14,13 +14,16 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class RCDeviceCache, RCIdentityManager, RCBackend, RCAttributionData;
+@class RCSystemInfo;
+
 
 @interface RCAttributionFetcher : NSObject
 
 - (instancetype)initWithDeviceCache:(RCDeviceCache *)deviceCache
                     identityManager:(RCIdentityManager *)identityManager
                             backend:(RCBackend *)backend
-                 attributionFactory:(RCAttributionTypeFactory *)attributionFactory NS_DESIGNATED_INITIALIZER;
+                 attributionFactory:(RCAttributionTypeFactory *)attributionFactory
+                         systemInfo:(RCSystemInfo *)systemInfo;
 
 - (instancetype)init NS_UNAVAILABLE;
 
