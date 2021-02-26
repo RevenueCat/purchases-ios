@@ -154,7 +154,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
                           || (!needsTrackingAuthorization && (authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized
                                                               || authorizationStatus == FakeATTrackingManagerAuthorizationStatusNotDetermined));
         if (!authorized) {
-            RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_not_authorized);
+            RCLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_not_authorized);
             return NO;
         }
 
