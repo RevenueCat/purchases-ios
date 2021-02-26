@@ -146,7 +146,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
         Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory trackingManagerClass];
         if (!trackingManagerClass && needsTrackingAuthorization) {
-            RCWarnLog(RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
+            RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
             return NO;
         }
         NSInteger authorizationStatus = [trackingManagerClass trackingAuthorizationStatus];
@@ -154,7 +154,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
                           || (!needsTrackingAuthorization && (authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized
                                                               || authorizationStatus == FakeATTrackingManagerAuthorizationStatusNotDetermined));
         if (!authorized) {
-            RCWarnLog(RCStrings.attribution.search_ads_attribution_cancelled_not_authorized);
+            RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_not_authorized);
             return NO;
         }
 
