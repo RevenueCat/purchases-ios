@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSString *className = [self rot13:mangledClassName];
 
-    return (Class<FakeASIdentifierManager> _Nullable)NSClassFromString(@"ATTrackingManager");
+    return (Class<FakeASIdentifierManager> _Nullable)NSClassFromString(className);
 }
 
 - (NSString *)asIdentifierPropertyName {
