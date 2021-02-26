@@ -135,7 +135,8 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         }
     }
 }
-- (void)postAppleSearchAdsAttributionIfNeeded {
+
+- (BOOL)isAuthorizedToPostSearchAds {
 #if APP_TRACKING_TRANSPARENCY_REQUIRED
     if (@available(iOS 14, macos 11, tvos 14, *)) {
         NSOperatingSystemVersion minimumOSVersionRequiringAuthorization = { .majorVersion = 14, .minorVersion = 5, .patchVersion = 0 };
@@ -144,17 +145,29 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
         Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory trackingManagerClass];
         if (!trackingManagerClass && needsTrackingAuthorization) {
-            return; // AppTrackingTransparency isn't included in the bundle
+            RCWarnLog(@"Tried to post Apple Search Ads Attribution, but AppTrackingTransparency is required on this OS"
+                      " and it isn't included");
+            return NO;
         }
         NSInteger authorizationStatus = [trackingManagerClass trackingAuthorizationStatus];
         BOOL authorized = (needsTrackingAuthorization && authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized)
-            || (!needsTrackingAuthorization && (authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized
-                                                || authorizationStatus == FakeATTrackingManagerAuthorizationStatusNotDetermined));
+                          || (!needsTrackingAuthorization && (authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized
+                                                              || authorizationStatus == FakeATTrackingManagerAuthorizationStatusNotDetermined));
         if (!authorized) {
-            return;
+            RCWarnLog(@"Tried to post Apple Search Ads Attribution, but authorization hasn't been granted. "
+                      "Will automatically retry if authorization gets granted.");
+            return NO;
         }
+
     }
 #endif
+    return YES;
+}
+
+- (void)postAppleSearchAdsAttributionIfNeeded {
+    if (!self.isAuthorizedToPostSearchAds) {
+        return;
+    }
 
     NSString *latestNetworkIdAndAdvertisingIdSentToAppleSearchAds = [self
         latestNetworkIdAndAdvertisingIdentifierSentForNetwork:RCAttributionNetworkAppleSearchAds];
