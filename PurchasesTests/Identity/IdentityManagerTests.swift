@@ -236,7 +236,7 @@ class IdentityManagerTests: XCTestCase {
         expect(self.mockPurchaserInfoManager.invokedPurchaserInfoCount) == 1
     }
 
-    func testLogInWithSameAppUserIPassesBackendPurchaserInfoErrors() {
+    func testLogInWithSameAppUserIDPassesBackendPurchaserInfoErrors() {
         var completionCalled: Bool = false
         let appUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = appUserID
