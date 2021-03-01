@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+
 @implementation RCPurchaserInfoManager
 
 @synthesize delegate = _delegate;
@@ -105,7 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
                                               }
 
                                               if (completion) {
-                                                  [self.operationDispatcher dispatchOnMainThread: ^{
+                                                  [self.operationDispatcher dispatchOnMainThread:^{
                                                       completion(info, error);
                                                   }];
                                               }
@@ -131,7 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
         RCSuccessLog(@"%@", RCStrings.purchaserInfo.purchaserinfo_updated_from_network);
     } else {
         if (completion) {
-            [self.operationDispatcher dispatchOnMainThread: ^{
+            [self.operationDispatcher dispatchOnMainThread:^{
                 completion(cachedPurchaserInfo, nil);
             }];
         }
@@ -160,26 +161,24 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)purchaserInfoWithAppUserID:(NSString *)appUserID
                    completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     RCPurchaserInfo * _Nullable infoFromCache = [self cachedPurchaserInfoForAppUserID:appUserID];
+    BOOL completionCalled = NO;
     if (infoFromCache) {
         RCDebugLog(@"%@", RCStrings.purchaserInfo.vending_cache);
         if (completion) {
-            [self.operationDispatcher dispatchOnMainThread: ^{
+            completionCalled = YES;
+            [self.operationDispatcher dispatchOnMainThread:^{
                 completion(infoFromCache, nil);
             }];
         }
     }
 
+    // prevent calling completion twice
+    RCReceivePurchaserInfoBlock _Nullable fetchPurchaserInfoCompletion = completionCalled ? nil : completion;
+
     [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
-        BOOL shouldCallCompletionAfterFetching = infoFromCache == nil && completion != nil;
-        if (shouldCallCompletionAfterFetching) {
-            [self fetchAndCachePurchaserInfoIfStaleWithAppUserID:appUserID
-                                               isAppBackgrounded:isAppBackgrounded
-                                                      completion:completion];
-        } else {
-            [self fetchAndCachePurchaserInfoIfStaleWithAppUserID:appUserID
-                                               isAppBackgrounded:isAppBackgrounded
-                                                      completion:nil];
-        }
+        [self fetchAndCachePurchaserInfoIfStaleWithAppUserID:appUserID
+                                           isAppBackgrounded:isAppBackgrounded
+                                                  completion:fetchPurchaserInfoCompletion];
     }];
 }
 
