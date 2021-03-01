@@ -359,7 +359,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                                             BOOL created,
                                             NSError *_Nullable error))completion {
     NSString *escapedAppUserID = [self escapedAppUserID:currentAppUserID];
-    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/login", escapedAppUserID];
+    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/identify", escapedAppUserID];
     [self.httpClient performRequest:@"POST"
                            serially:YES
                                path:path
@@ -398,8 +398,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 
     BOOL created = statusCode == 201;
 
-    NSDictionary *purchaserInfoDict = response[@"subscriber_data"]; // TODO: confirm field name
-    RCPurchaserInfo *purchaserInfo = [[RCPurchaserInfo alloc] initWithData:purchaserInfoDict];
+    RCPurchaserInfo *purchaserInfo = [[RCPurchaserInfo alloc] initWithData:response];
     if (purchaserInfo == nil) {
         responseError = [RCPurchasesErrorUtils unexpectedBackendResponseError];
         completion(nil, NO, responseError);
