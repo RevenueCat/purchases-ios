@@ -1579,7 +1579,7 @@ class BackendTests: XCTestCase {
         let currentAppUserID = "old id"
         let _ = mockLoginRequest(appUserID: currentAppUserID,
                                  statusCode: 201,
-                                 response: ["subscriber_data": mockPurchaserInfoDict])
+                                 response: mockPurchaserInfoDict)
 
         var completionCalled = false
         var receivedError: Error?
@@ -1609,7 +1609,7 @@ class BackendTests: XCTestCase {
         let currentAppUserID = "old id"
         let _ = mockLoginRequest(appUserID: currentAppUserID,
                                  statusCode: 200,
-                                 response: ["subscriber_data": mockPurchaserInfoDict])
+                                 response: mockPurchaserInfoDict)
 
         var completionCalled = false
         var receivedError: Error?
@@ -1642,7 +1642,7 @@ private extension BackendTests {
                           error: Error? = nil) -> String {
         let escapedCurrentAppUserID = appUserID.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         let response = HTTPResponse(statusCode: statusCode, response: response, error: error)
-        let requestPath = ("/subscribers/" + escapedCurrentAppUserID + "/login")
+        let requestPath = ("/subscribers/" + escapedCurrentAppUserID + "/identify")
         httpClient.mock(requestPath: requestPath, response: response)
         return requestPath
     }
