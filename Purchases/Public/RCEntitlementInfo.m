@@ -39,13 +39,22 @@
         self.isSandbox = [productData[@"is_sandbox"] boolValue];
         self.unsubscribeDetectedAt = [self parseDate:productData[@"unsubscribe_detected_at"] withDateFormatter:dateFormatter];
         self.billingIssueDetectedAt = [self parseDate:productData[@"billing_issues_detected_at"] withDateFormatter:dateFormatter];
-        if ([entitlementData[@"expires_date"] isKindOfClass:NSNull.class]) {
-            self.willRenew = true;
-        } else {
-            self.willRenew = self.unsubscribeDetectedAt == nil && self.billingIssueDetectedAt == nil;
-        }
+        self.willRenew = [self willRenewWithExpirationDate:self.expirationDate
+                                                     store:self.store
+                                     unsubscribeDetectedAt:self.unsubscribeDetectedAt
+                                    billingIssueDetectedAt:self.billingIssueDetectedAt];
     }
     return self;
+}
+
+- (BOOL)willRenewWithExpirationDate:(NSDate *)expirationDate store:(RCStore)store unsubscribeDetectedAt:(NSDate *)unsubscribeDetectedAt billingIssueDetectedAt:(NSDate *)billingIssueDetectedAt
+{
+    BOOL isPromo = store == RCPromotional;
+    BOOL isLifetime = expirationDate == nil;
+    BOOL hasUnsubscribed = unsubscribeDetectedAt != nil;
+    BOOL hasBillingIssues = billingIssueDetectedAt != nil;
+    
+    return !(isPromo || isLifetime || hasUnsubscribed || hasBillingIssues);
 }
 
 - (BOOL)isDateActive:(nullable NSDate *)expirationDate forRequestDate:(NSDate *)requestDate
