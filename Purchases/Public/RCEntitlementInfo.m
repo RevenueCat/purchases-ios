@@ -39,12 +39,15 @@
         self.isSandbox = [productData[@"is_sandbox"] boolValue];
         self.unsubscribeDetectedAt = [self parseDate:productData[@"unsubscribe_detected_at"] withDateFormatter:dateFormatter];
         self.billingIssueDetectedAt = [self parseDate:productData[@"billing_issues_detected_at"] withDateFormatter:dateFormatter];
-        self.willRenew = [self willRenewWith:self.expirationDate store:self.store unsubscribeDetectedAt:self.unsubscribeDetectedAt billingIssueDetectedAt:self.billingIssueDetectedAt];
+        self.willRenew = [self willRenewWithExpirationDate:self.expirationDate
+                                                     store:self.store
+                                     unsubscribeDetectedAt:self.unsubscribeDetectedAt
+                                    billingIssueDetectedAt:self.billingIssueDetectedAt];
     }
     return self;
 }
 
-- (BOOL)willRenewWith:(NSDate *)expirationDate store:(RCStore)store unsubscribeDetectedAt:(NSDate *)unsubscribeDetectedAt billingIssueDetectedAt:(NSDate *)billingIssueDetectedAt
+- (BOOL)willRenewWithExpirationDate:(NSDate *)expirationDate store:(RCStore)store unsubscribeDetectedAt:(NSDate *)unsubscribeDetectedAt billingIssueDetectedAt:(NSDate *)billingIssueDetectedAt
 {
     BOOL isPromo = store == RCPromotional;
     BOOL isLifetime = expirationDate == nil;
