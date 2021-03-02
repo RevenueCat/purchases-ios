@@ -97,7 +97,7 @@ class EntitlementInfosTests: XCTestCase {
         verifyProduct()
         // Check for "lifetime_cat" entitlement
         verifyEntitlementActive(beTrue(), entitlement: "lifetime_cat")
-        verifyRenewal(beTrue(), unsubscribeDetectedAt: beNil(), billingIssueDetectedAt: beNil(), entitlement: "lifetime_cat")
+        verifyRenewal(beFalse(), unsubscribeDetectedAt: beNil(), billingIssueDetectedAt: beNil(), entitlement: "lifetime_cat")
         verifyPeriodType(equal(Purchases.PeriodType.normal.rawValue), entitlement: "lifetime_cat")
         verifyStore(equal(Purchases.Store.appStore.rawValue), entitlement: "lifetime_cat")
         verifySandbox(beFalse(), entitlement: "lifetime_cat")
@@ -274,7 +274,7 @@ class EntitlementInfosTests: XCTestCase {
 
         verifySubscriberInfo()
         verifyEntitlementActive()
-        verifyRenewal()
+        verifyRenewal(beFalse())
         verifyPeriodType()
         verifyStore()
         verifySandbox()
@@ -472,7 +472,7 @@ class EntitlementInfosTests: XCTestCase {
 
         verifySubscriberInfo()
         verifyEntitlementActive()
-        verifyRenewal()
+        verifyRenewal(beFalse())
         verifyPeriodType()
         verifyStore()
         verifySandbox()
@@ -921,6 +921,31 @@ class EntitlementInfosTests: XCTestCase {
             subscriptions: [:]
         )
         verifyPeriodType(equal(Purchases.PeriodType.normal.rawValue))
+    }
+
+    func testPromoWillRenew() {
+        stubResponse(
+                entitlements: [
+                    "pro_cat": [
+                        "expires_date": "2221-01-10T02:35:25Z",
+                        "product_identifier": "rc_promo_pro_cat_lifetime",
+                        "purchase_date": "2021-02-27T02:35:25Z"
+                    ]
+                ],
+                subscriptions: [
+                    "rc_promo_pro_cat_lifetime": [
+                        "billing_issues_detected_at": nil,
+                        "expires_date": "2221-01-10T02:35:25Z",
+                        "is_sandbox": false,
+                        "original_purchase_date": "2021-02-27T02:35:25Z",
+                        "period_type": "normal",
+                        "purchase_date": "2021-02-27T02:35:25Z",
+                        "store": "promotional",
+                        "unsubscribe_detected_at": nil
+                    ]
+                ])
+
+        verifyRenewal(beFalse())
     }
 
     func verifySubscriberInfo() {
