@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
     return (Class<FakeAdClient> _Nullable)NSClassFromString(@"ADClient");
 }
 
-- (Class<FakeATTrackingManager> _Nullable)trackingManagerClass {
+- (Class<FakeATTrackingManager> _Nullable)atTrackingManagerClass {
     return (Class<FakeATTrackingManager> _Nullable)NSClassFromString(@"ATTrackingManager");
 }
 

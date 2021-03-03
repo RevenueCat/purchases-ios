@@ -48,7 +48,7 @@ class MockAttributionTypeFactory: AttributionTypeFactory {
 
     static var shouldReturnTrackingManagerClass = true
 
-    override func trackingManagerClass() -> FakeATTrackingManager.Type? {
+    override func atTrackingManagerClass() -> FakeATTrackingManager.Type? {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
             return Self.shouldReturnTrackingManagerClass ? MockATTrackingManager.self : nil
         } else {
