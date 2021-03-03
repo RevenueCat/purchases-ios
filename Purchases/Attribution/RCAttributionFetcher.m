@@ -16,13 +16,6 @@
 #import "RCSystemInfo.h"
 @import PurchasesCoreSwift;
 
-typedef NS_ENUM(NSUInteger, FakeATTrackingManagerAuthorizationStatus) {
-    FakeATTrackingManagerAuthorizationStatusNotDetermined = 0,
-    FakeATTrackingManagerAuthorizationStatusRestricted,
-    FakeATTrackingManagerAuthorizationStatusDenied,
-    FakeATTrackingManagerAuthorizationStatusAuthorized
-};
-
 static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
 
