@@ -24,10 +24,10 @@ class PurchasesTests: XCTestCase {
                                                     systemInfo: MockSystemInfo(platformFlavor: "iOS",
                                                                                platformFlavorVersion: "3.2.1",
                                                                                finishTransactions: true))
-        purchaserInfoManager = RCPurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
-                                                      deviceCache: deviceCache,
-                                                      backend: backend,
-                                                      systemInfo: systemInfo)
+        purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
+                                                    deviceCache: deviceCache,
+                                                    backend: backend,
+                                                    systemInfo: systemInfo)
     }
 
     override func tearDown() {

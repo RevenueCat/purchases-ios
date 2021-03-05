@@ -57,10 +57,10 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                              systemInfo: MockSystemInfo(platformFlavor: "iOS",
                                                                                         platformFlavorVersion: "3.2.1",
                                                                                         finishTransactions: true))
-        self.purchaserInfoManager = RCPurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
-                                                           deviceCache: mockDeviceCache,
-                                                           backend: mockBackend,
-                                                           systemInfo: systemInfo)
+        self.purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
+                                                         deviceCache: mockDeviceCache,
+                                                         backend: mockBackend,
+                                                         systemInfo: systemInfo)
 
     }
 
