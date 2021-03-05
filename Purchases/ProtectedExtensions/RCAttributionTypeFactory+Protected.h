@@ -4,11 +4,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "RCAttributionFetcher.h"
+#import "RCAttributionTypeFactory.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RCAttributionFetcher (Protected)
+@interface RCAttributionTypeFactory (Protected)
 
 - (NSString *)rot13:(NSString *)string;
 

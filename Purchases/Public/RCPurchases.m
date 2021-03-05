@@ -229,9 +229,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
     RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWith:userDefaults];
     RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWith:deviceCache backend:backend];
-    RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] initWithDeviceCache:deviceCache
-                                                                                 identityManager:identityManager
-                                                                                         backend:backend];
+    RCAttributionTypeFactory *attributionTypeFactory = [[RCAttributionTypeFactory alloc] init];
+    RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc]
+                                                initWithDeviceCache:deviceCache
+                                                identityManager:identityManager
+                                                backend:backend
+                                                attributionFactory:attributionTypeFactory
+                                                systemInfo:systemInfo];
     RCSubscriberAttributesManager *subscriberAttributesManager =
             [[RCSubscriberAttributesManager alloc] initWithBackend:backend
                                                        deviceCache:deviceCache
@@ -320,9 +324,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         [self subscribeToAppStateNotifications];
 
         [self.attributionFetcher postPostponedAttributionDataIfNeeded];
-        if (_automaticAppleSearchAdsAttributionCollection) {
-            [self.attributionFetcher postAppleSearchAdsAttributionCollection];
-        }
+        [self postAppleSearchAddsAttributionCollectionIfNeeded];
     }
 
     return self;
@@ -381,6 +383,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         [RCAttributionFetcher storePostponedAttributionData:data
                                                 fromNetwork:network
                                            forNetworkUserId:networkUserId];
+    }
+}
+
+- (void)postAppleSearchAddsAttributionCollectionIfNeeded {
+    if (_automaticAppleSearchAdsAttributionCollection) {
+        [self.attributionFetcher postAppleSearchAdsAttributionIfNeeded];
     }
 }
 
@@ -845,6 +853,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif {
     [self updateAllCachesIfNeeded];
     [self syncSubscriberAttributesIfNeeded];
+    [self postAppleSearchAddsAttributionCollectionIfNeeded];
 }
 
 - (void)applicationWillResignActive:(__unused NSNotification *)notif {

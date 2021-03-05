@@ -14,4 +14,9 @@ class MockSystemInfo: RCSystemInfo {
     override func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
         completion(stubbedIsApplicationBackgrounded ?? false)
     }
+
+    var stubbedIsOperatingSystemAtLeastVersion: Bool?
+    override func isOperatingSystem(atLeastVersion version: OperatingSystemVersion) -> Bool {
+        return stubbedIsOperatingSystemAtLeastVersion ?? true
+    }
 }

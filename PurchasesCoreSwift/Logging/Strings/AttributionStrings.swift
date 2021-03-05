@@ -17,7 +17,19 @@ import Foundation
     @objc public var method_called: String { "%s called" }
     @objc public var networkuserid_required_for_appsflyer: String { "The parameter networkUserId is REQUIRED for AppsFlyer." }
     @objc public var no_instance_configured_caching_attribution: String { "There is no purchase instance configured, caching attribution" }
-    @objc public var instance_configured_posting_attribution: String { "There is a purchase instance configured, posting attribution"}
+    @objc public var instance_configured_posting_attribution: String { "There is a purchase instance configured, posting attribution" }
+    @objc public var search_ads_attribution_cancelled_missing_att_framework: String {
+        "Tried to post Apple Search Ads Attribution, but AppTrackingTransparency is required on this OS" +
+            " and it isn't included";
+    }
+    @objc public var search_ads_attribution_cancelled_missing_iad_framework: String {
+        "Tried to post Apple Search Ads Attribution, but iAd Framework is is required for it" +
+            " and it isn't included";
+    }
+    @objc public var search_ads_attribution_cancelled_not_authorized: String {
+        "Tried to post Apple Search Ads Attribution, but authorization hasn't been granted. " +
+            "Will automatically retry if authorization gets granted.";
+    }
     @objc public var skip_same_attributes: String { "Attribution data is the same as latest. Skipping." }
     @objc public var subscriber_attributes_error: String { "Subscriber attributes errors: %@" }
     @objc public var unsynced_attributes_count: String { "Found %lu unsynced attributes for App User ID: %@" }

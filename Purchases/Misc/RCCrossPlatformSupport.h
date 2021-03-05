@@ -70,3 +70,12 @@
 #else
 #define PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE 0
 #endif
+
+
+// Should match platforms that require permissions detailed in
+// https://developer.apple.com/app-store/user-privacy-and-data-use/
+#if TARGET_OS_WATCH || TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#define APP_TRACKING_TRANSPARENCY_REQUIRED 0
+#else
+#define APP_TRACKING_TRANSPARENCY_REQUIRED 1
+#endif

@@ -13,23 +13,8 @@
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
 #import "RCAttributionData.h"
+#import "RCSystemInfo.h"
 @import PurchasesCoreSwift;
-
-
-@protocol FakeAdClient <NSObject>
-
-+ (instancetype)sharedClient;
-- (void)requestAttributionDetailsWithBlock:(RCAttributionDetailsBlock)completionHandler;
-
-@end
-
-
-@protocol FakeASIdentifierManager <NSObject>
-
-+ (instancetype)sharedManager;
-
-@end
-
 
 static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
@@ -39,54 +24,34 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 @property (strong, nonatomic) RCDeviceCache *deviceCache;
 @property (strong, nonatomic) RCIdentityManager *identityManager;
 @property (strong, nonatomic) RCBackend *backend;
+@property (strong, nonatomic) RCAttributionTypeFactory *attributionFactory;
+@property (strong, nonatomic) RCSystemInfo *systemInfo;
 
 @end
-
 
 @implementation RCAttributionFetcher : NSObject
 
 - (instancetype)initWithDeviceCache:(RCDeviceCache *)deviceCache
                     identityManager:(RCIdentityManager *)identityManager
-                            backend:(RCBackend *)backend {
+                            backend:(RCBackend *)backend
+                 attributionFactory:(RCAttributionTypeFactory *)attributionFactory
+                         systemInfo:(RCSystemInfo *)systemInfo {
     if (self = [super init]) {
         self.deviceCache = deviceCache;
         self.identityManager = identityManager;
         self.backend = backend;
+        self.attributionFactory = attributionFactory;
+        self.systemInfo = systemInfo;
     }
     return self;
 }
 
-- (NSString *)rot13:(NSString *)string {
-    NSMutableString *rotatedString = [NSMutableString string];
-    for (NSUInteger charIdx = 0; charIdx < string.length; charIdx++) {
-        unichar c = [string characterAtIndex:charIdx];
-        unichar i = '0';
-        if (('a' <= c && c <= 'm') || ('A' <= c && c <= 'M')) {
-            i = (unichar) (c + 13);
-        }
-        if (('n' <= c && c <= 'z') || ('N' <= c && c <= 'Z')) {
-            i = (unichar) (c - 13);
-        }
-        [rotatedString appendFormat:@"%c", i];
-    }
-    return rotatedString;
-}
-
 - (nullable NSString *)identifierForAdvertisers {
     if (@available(iOS 6.0, macOS 10.14, *)) {
-        // We need to do this mangling to avoid Kid apps being rejected for getting idfa.
-        // It looks like during the app review process Apple does some string matching looking for
-        // functions in the AdSupport.framework. We apply rot13 on these functions and classes names
-        // so that Apple can't find them during the review, but we can still access them on runtime.
-        NSString *mangledClassName = @"NFVqragvsvreZnantre";
-        NSString *mangledIdentifierPropertyName = @"nqiregvfvatVqragvsvre";
-
-        NSString *className = [self rot13:mangledClassName];
-        id <FakeASIdentifierManager> asIdentifierManagerClass = (id <FakeASIdentifierManager>) NSClassFromString(className);
+        Class <FakeASIdentifierManager> _Nullable asIdentifierManagerClass = [self.attributionFactory asIdentifierClass];
         if (asIdentifierManagerClass) {
-            NSString *identifierPropertyName = [self rot13:mangledIdentifierPropertyName];
             id sharedManager = [asIdentifierManagerClass sharedManager];
-            NSUUID *identifierValue = [sharedManager valueForKey:identifierPropertyName];
+            NSUUID *identifierValue = [sharedManager valueForKey:[self.attributionFactory asIdentifierPropertyName]];
             return identifierValue.UUIDString;
         } else {
             RCWarnLog(@"%@", RCStrings.configure.adsupport_not_imported);
@@ -106,11 +71,12 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
 - (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler {
 #if AD_CLIENT_AVAILABLE
-    id<FakeAdClient> adClientClass = (id<FakeAdClient>)NSClassFromString(@"ADClient");
-    
-    if (adClientClass) {
-        [[adClientClass sharedClient] requestAttributionDetailsWithBlock:completionHandler];
+    Class<FakeAdClient> _Nullable adClientClass = [self.attributionFactory adClientClass];
+    if (!adClientClass) {
+        RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_iad_framework);
+        return;
     }
+    [[adClientClass sharedClient] requestAttributionDetailsWithBlock:completionHandler];
 #endif
 }
 
@@ -164,22 +130,54 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     }
 }
 
-- (void)postAppleSearchAdsAttributionCollection {
+- (BOOL)isAuthorizedToPostSearchAds {
+#if APP_TRACKING_TRANSPARENCY_REQUIRED
+    if (@available(iOS 14, macos 11, tvos 14, *)) {
+        NSOperatingSystemVersion minimumOSVersionRequiringAuthorization = { .majorVersion = 14, .minorVersion = 5, .patchVersion = 0 };
+
+        BOOL needsTrackingAuthorization = [self.systemInfo isOperatingSystemAtLeastVersion:minimumOSVersionRequiringAuthorization];
+
+        Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory atTrackingManagerClass];
+        if (!trackingManagerClass && needsTrackingAuthorization) {
+            RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
+            return NO;
+        }
+        NSInteger authorizationStatus = [trackingManagerClass trackingAuthorizationStatus];
+        BOOL authorized = authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized
+                          || (!needsTrackingAuthorization
+                              && authorizationStatus == FakeATTrackingManagerAuthorizationStatusNotDetermined);
+        if (!authorized) {
+            RCLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_not_authorized);
+            return NO;
+        }
+
+    }
+#endif
+    return YES;
+}
+
+- (void)postAppleSearchAdsAttributionIfNeeded {
+    if (!self.isAuthorizedToPostSearchAds) {
+        return;
+    }
+
     NSString *latestNetworkIdAndAdvertisingIdSentToAppleSearchAds = [self
         latestNetworkIdAndAdvertisingIdentifierSentForNetwork:RCAttributionNetworkAppleSearchAds];
-    if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds == nil) {
-        [self adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails,
-                                                              NSError *_Nullable error) {
-            NSArray *values = [attributionDetails allValues];
-
-            bool hasIadAttribution = values.count != 0 && [values[0][@"iad-attribution"] boolValue];
-            if (hasIadAttribution) {
-                [self postAttributionData:attributionDetails
-                              fromNetwork:RCAttributionNetworkAppleSearchAds
-                         forNetworkUserId:nil];
-            }
-        }];
+    if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds != nil) {
+        return;
     }
+
+    [self adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails,
+                                                          NSError *_Nullable error) {
+        NSArray *values = [attributionDetails allValues];
+
+        bool hasIadAttribution = values.count != 0 && [values[0][@"iad-attribution"] boolValue];
+        if (hasIadAttribution) {
+            [self postAttributionData:attributionDetails
+                          fromNetwork:RCAttributionNetworkAppleSearchAds
+                     forNetworkUserId:nil];
+        }
+    }];
 }
 
 - (void)postPostponedAttributionDataIfNeeded {

@@ -9,18 +9,21 @@
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
 #import "RCAttributionNetwork.h"
+#import "RCAttributionTypeFactory.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class RCDeviceCache, RCIdentityManager, RCBackend, RCAttributionData;
+@class RCSystemInfo;
 
-typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *_Nullable, NSError *_Nullable);
 
 @interface RCAttributionFetcher : NSObject
 
 - (instancetype)initWithDeviceCache:(RCDeviceCache *)deviceCache
                     identityManager:(RCIdentityManager *)identityManager
-                            backend:(RCBackend *)backend NS_DESIGNATED_INITIALIZER;
+                            backend:(RCBackend *)backend
+                 attributionFactory:(RCAttributionTypeFactory *)attributionFactory
+                         systemInfo:(RCSystemInfo *)systemInfo;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -34,7 +37,7 @@ typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *
                 fromNetwork:(RCAttributionNetwork)network
            forNetworkUserId:(nullable NSString *)networkUserId;
 
-- (void)postAppleSearchAdsAttributionCollection;
+- (void)postAppleSearchAdsAttributionIfNeeded;
 
 - (void)postPostponedAttributionDataIfNeeded;
 
