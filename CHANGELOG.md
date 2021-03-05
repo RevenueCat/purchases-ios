@@ -1,3 +1,11 @@
+## 3.10.6
+- Fix automatic Appl Search Ads Attribution collection for iOS 14.5
+    https://github.com/RevenueCat/purchases-ios/pull/473
+- Fixed `willRenew` values for consumables and promotionals
+    https://github.com/RevenueCat/purchases-ios/pull/475
+- Improves tests for EntitlementInfos
+    https://github.com/RevenueCat/purchases-ios/pull/476
+
 ## 3.10.5
 - Fixed a couple of issues with `.xcframework` output in releases
     https://github.com/RevenueCat/purchases-ios/pull/470
