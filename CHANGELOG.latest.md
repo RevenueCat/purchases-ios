@@ -1,5 +1,6 @@
-- Fixed a couple of issues with `.xcframework` output in releases
-    https://github.com/RevenueCat/purchases-ios/pull/470
-    https://github.com/RevenueCat/purchases-ios/pull/469
-- Fix Carthage builds from source, so that end customers can start leveraging XCFramework support for Carthage >= 0.37
-    https://github.com/RevenueCat/purchases-ios/pull/471
+- Fix automatic Apple Search Ads Attribution collection for iOS 14.5
+    https://github.com/RevenueCat/purchases-ios/pull/473
+- Fixed `willRenew` values for consumables and promotionals
+    https://github.com/RevenueCat/purchases-ios/pull/475
+- Improves tests for EntitlementInfos
+    https://github.com/RevenueCat/purchases-ios/pull/476
