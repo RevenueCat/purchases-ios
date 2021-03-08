@@ -1,0 +1,27 @@
+# Configuration for Issue Check: https://github.com/stevenzeck/issue-check
+
+# The name of the label to apply when an issue does not have all tasks checked
+labelName: "status: needs-additional-info"
+
+# The color of the label in hex format (without #). Will use the label color configured
+# in Issues settings.
+labelColor:
+
+# The text of the comment to add to the issue in addition to the label
+commentText: >
+  Hello! It doesn't seem like we have quite enough information to send this to 
+  a human yet to help out. We would love if you could provide more details about 
+  your issue by following the template without modifying any of the pre-filled
+  text.
+
+# Whether or not to ensure all checkboxes are checked
+checkCheckboxes: true
+
+# Keywords to look for in the body of the issue
+keywords:
+  - Platform
+  - SDK version
+  - OS version
+  - Xcode version
+  - Debug logs
+  - Steps to reproduce, with a description of expected vs. actual behavior
