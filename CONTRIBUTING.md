@@ -4,7 +4,6 @@
 
 Before submitting a Github issue, please make sure to
 
-- Take a look at https://docs.revenuecat.com/
 - Search for [existing Github issues](https://github.com/RevenueCat/purchases-ios/issues)
 - Review our [Help Center](https://support.revenuecat.com/hc/en-us)
 - Read our [docs.revenuecat.com](https://docs.revenuecat.com/)
