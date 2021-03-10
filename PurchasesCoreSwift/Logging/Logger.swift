@@ -23,11 +23,15 @@ import Foundation
 
 @objc(RCLogger) public class Logger: NSObject {
     @objc public static var shouldShowDebugLogs = false
+    @objc public static var logHandler: (LogLevel, String) -> Void = { level, message in
+        NSLog("[\(frameworkDescription)] - \(level.description()): \(message)")
+    }
+    
     private static let frameworkDescription = "Purchases"
 
     @objc public static func log(level: LogLevel, message: String) {
         guard level != .debug || shouldShowDebugLogs else { return }
-        NSLog("[\(frameworkDescription)] - \(level.description()): \(message)")
+        logHandler(level, message)
     }
     
     @objc public static func log(level: LogLevel, intent: LogIntent, message: String) {
