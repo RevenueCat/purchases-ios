@@ -28,7 +28,8 @@ Be sure to adhere to the prevailing style of the project.
 
 #### 4. Write tests for your fix/new functionality.
 
-You can run the tests by hitting Cmd+U. The tests are written swift
+You can run the tests by selecting the All Tests Scheme in Xcode and hitting `Cmd+U`.
+The tests are written in Swift, using XCTest and [Nimble](https://github.com/quick/nimble).
 
 #### 5. Create a pull request to revenuecat/master and request review
 
