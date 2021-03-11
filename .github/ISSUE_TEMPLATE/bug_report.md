@@ -6,7 +6,7 @@ labels: bug
 assignees: ""
 ---
 
-- [ ] I have Updated Purchases SDK to the latest version
+- [ ] I have updated Purchases SDK to the latest version
 - [ ] I have read the [Contribution Guidelines](https://github.com/RevenueCat/purchases-ios/blob/develop/CONTRIBUTING.md)
 - [ ] I have read the [Help Center](https://support.revenuecat.com/hc/en-us)
 - [ ] I have read [docs.revenuecat.com](https://docs.revenuecat.com/)
