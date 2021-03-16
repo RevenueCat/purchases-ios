@@ -4,6 +4,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RCPurchaseOwnershipType.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -113,6 +114,13 @@ NS_SWIFT_NAME(Purchases.EntitlementInfo)
  Check the `isActive` property.
  */
 @property (readonly, nullable) NSDate *billingIssueDetectedAt;
+
+/**
+ Use this property to determine whether a purchase was made by the current user
+ or shared to them by a family member. This can be useful for onboarding users who have had
+ an entitlement shared with them, but might not be entirely aware of the benefits they now have.
+ */
+@property (readonly) RCPurchaseOwnershipType ownershipType;
 
 @end
 

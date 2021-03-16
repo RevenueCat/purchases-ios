@@ -20,6 +20,7 @@
 @property (readwrite, nullable) NSDate *unsubscribeDetectedAt;
 @property (readwrite, nullable) NSDate *billingIssueDetectedAt;
 @property (readwrite) BOOL willRenew;
+@property (readwrite) RCPurchaseOwnershipType ownershipType;
 
 @end
 
@@ -43,8 +44,23 @@
                                                      store:self.store
                                      unsubscribeDetectedAt:self.unsubscribeDetectedAt
                                     billingIssueDetectedAt:self.billingIssueDetectedAt];
+        self.ownershipType = [self parseOwnershipType:productData[@"ownership_type"]];
+
     }
     return self;
+}
+
+- (RCPurchaseOwnershipType)parseOwnershipType:(NSString * _Nullable)ownershipType {
+    if (!ownershipType) {
+        return RCPurchaseOwnershipTypePurchased;
+    }
+    if ([ownershipType isEqualToString:@"PURCHASED"]) {
+        return RCPurchaseOwnershipTypePurchased;
+    } else if ([ownershipType isEqualToString:@"FAMILY_SHARED"]) {
+            return RCPurchaseOwnershipTypeFamilyShared;
+    } else {
+        return RCPurchaseOwnershipTypeUnknown;
+    }
 }
 
 - (BOOL)willRenewWithExpirationDate:(NSDate *)expirationDate store:(RCStore)store unsubscribeDetectedAt:(NSDate *)unsubscribeDetectedAt billingIssueDetectedAt:(NSDate *)billingIssueDetectedAt
@@ -114,6 +130,7 @@
     [description appendFormat:@"isSandbox=%d,\n", self.isSandbox];
     [description appendFormat:@"unsubscribeDetectedAt=%@,\n", self.unsubscribeDetectedAt];
     [description appendFormat:@"billingIssueDetectedAt=%@,\n", self.billingIssueDetectedAt];
+    [description appendFormat:@"ownershipType=%@,\n", self.ownershipType];
     [description appendString:@">"];
     return description;
 }
@@ -158,6 +175,8 @@
         return NO;
     if (self.billingIssueDetectedAt != info.billingIssueDetectedAt && ![self.billingIssueDetectedAt isEqualToDate:info.billingIssueDetectedAt])
         return NO;
+    if (self.ownershipType != info.ownershipType)
+        return NO;
     return YES;
 }
 
@@ -175,6 +194,7 @@
     hash = hash * 31u + self.isSandbox;
     hash = hash * 31u + [self.unsubscribeDetectedAt hash];
     hash = hash * 31u + [self.billingIssueDetectedAt hash];
+    hash = hash * 31u + (NSUInteger)self.ownershipType;
     return hash;
 }
 
