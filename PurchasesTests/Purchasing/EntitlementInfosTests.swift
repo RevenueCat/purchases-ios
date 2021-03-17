@@ -440,6 +440,75 @@ class EntitlementInfosTests: XCTestCase {
         verifyProduct()
     }
 
+    func mockSubscriptions(ownershipType: String?) -> [String: Any] {
+        var monthly: [String: Any?] = [
+            "billing_issues_detected_at": nil,
+            "expires_date": "2200-07-26T23:50:40Z",
+            "is_sandbox": true,
+            "original_purchase_date": "2019-07-26T23:30:41Z",
+            "period_type": "normal",
+            "purchase_date": "2019-07-26T23:45:40Z",
+            "store": "app_store",
+            "unsubscribe_detected_at": nil,
+        ]
+        if (ownershipType != nil) {
+            monthly["ownership_type"] = ownershipType!
+        }
+        return [
+            "monthly_freetrial": monthly
+        ]
+    }
+
+    func testParseOwnershipTypeAssignsTheRightValue() {
+        let mockEntitlements = [
+            "pro_cat": [
+                "expires_date": "2200-07-26T23:50:40Z",
+                "product_identifier": "monthly_freetrial",
+                "purchase_date": "2019-07-26T23:45:40Z"
+            ]
+        ]
+        stubResponse(entitlements: mockEntitlements,
+                     subscriptions: mockSubscriptions(ownershipType: "PURCHASED"))
+
+        var subscriberInfo = Purchases.PurchaserInfo(data: response)!
+        var entitlement: Purchases.EntitlementInfo? = subscriberInfo.entitlements.active["pro_cat"]
+        expect(entitlement).toNot(beNil())
+        expect(entitlement!.ownershipType) == .purchased
+
+        stubResponse(entitlements: mockEntitlements,
+                     subscriptions: mockSubscriptions(ownershipType: "FAMILY_SHARED"))
+
+        subscriberInfo = Purchases.PurchaserInfo(data: response)!
+        entitlement = subscriberInfo.entitlements.active["pro_cat"]
+        expect(entitlement).toNot(beNil())
+        expect(entitlement!.ownershipType) == .familyShared
+
+        stubResponse(entitlements: mockEntitlements,
+                     subscriptions: mockSubscriptions(ownershipType: "BOATY_MCBOATFACE"))
+
+        subscriberInfo = Purchases.PurchaserInfo(data: response)!
+        entitlement = subscriberInfo.entitlements.active["pro_cat"]
+        expect(entitlement).toNot(beNil())
+        expect(entitlement!.ownershipType) == .unknown
+    }
+
+    func testParseOwnershipTypeDefaultsToPurchasedIfMissing() {
+        let mockEntitlements = [
+            "pro_cat": [
+                "expires_date": "2200-07-26T23:50:40Z",
+                "product_identifier": "monthly_freetrial",
+                "purchase_date": "2019-07-26T23:45:40Z"
+            ]
+        ]
+        stubResponse(entitlements: mockEntitlements,
+                     subscriptions: mockSubscriptions(ownershipType: nil))
+
+        let subscriberInfo = Purchases.PurchaserInfo(data: response)!
+        let entitlement: Purchases.EntitlementInfo? = subscriberInfo.entitlements.active["pro_cat"]
+        expect(entitlement).toNot(beNil())
+        expect(entitlement!.ownershipType) == .purchased
+    }
+
     func testNonSubscription(){
         stubResponse(
                 entitlements: [

@@ -130,7 +130,7 @@
     [description appendFormat:@"isSandbox=%d,\n", self.isSandbox];
     [description appendFormat:@"unsubscribeDetectedAt=%@,\n", self.unsubscribeDetectedAt];
     [description appendFormat:@"billingIssueDetectedAt=%@,\n", self.billingIssueDetectedAt];
-    [description appendFormat:@"ownershipType=%@,\n", self.ownershipType];
+    [description appendFormat:@"ownershipType=%@,\n", (long) self.ownershipType];
     [description appendString:@">"];
     return description;
 }
