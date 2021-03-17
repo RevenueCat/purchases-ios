@@ -27,6 +27,7 @@
 #include <Purchases/RCDeviceCache+Protected.h>
 #include <Purchases/RCInMemoryCachedObject+Protected.h>
 #include <Purchases/RCIdentityManager.h>
+#include <Purchases/RCIdentityManager+Protected.h>
 #include <Purchases/RCSubscriberAttribute.h>
 #include <Purchases/RCSubscriberAttribute+Protected.h>
 #include <Purchases/RCSpecialSubscriberAttributes.h>
@@ -43,4 +44,6 @@
 #include <Purchases/RCProductInfo.h>
 #include <Purchases/RCProductInfoExtractor.h>
 #include <Purchases/NSDictionary+RCExtensions.h>
+#include <Purchases/RCPurchaserInfoManager.h>
 #include <Purchases/RCAttributionTypeFactory.h>
+#include <Purchases/RCPurchaserInfoManager+Protected.h>

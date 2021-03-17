@@ -79,6 +79,14 @@ NS_SWIFT_NAME(Purchases.ErrorUtils)
 + (NSError *)missingAppUserIDError;
 
 /**
+ * Constructs an NSError with the [RCLogOutAnonymousUserError] code.
+ *
+ * @note This error is used when logOut is called but the current user is anonymous,
+ * as noted by RCPurchaserInfo's isAnonymous property.
+ */
++ (NSError *)logOutAnonymousUserError;
+
+/**
  * Constructs an NSError with the [RCPaymentPendingError] code.
  *
  * @note This error is used during an “ask to buy” flow for a payment. The completion block of the purchasing function

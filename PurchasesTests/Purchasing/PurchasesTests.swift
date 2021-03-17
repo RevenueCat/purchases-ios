@@ -24,6 +24,10 @@ class PurchasesTests: XCTestCase {
                                                     systemInfo: MockSystemInfo(platformFlavor: "iOS",
                                                                                platformFlavorVersion: "3.2.1",
                                                                                finishTransactions: true))
+        purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
+                                                    deviceCache: deviceCache,
+                                                    backend: backend,
+                                                    systemInfo: systemInfo)
     }
 
     override func tearDown() {
@@ -196,6 +200,7 @@ class PurchasesTests: XCTestCase {
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
     var mockReceiptParser: MockReceiptParser!
     var attributionFetcher: MockAttributionFetcher!
+    var purchaserInfoManager: PurchaserInfoManager!
 
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -234,7 +239,8 @@ class PurchasesTests: XCTestCase {
                               subscriberAttributesManager: subscriberAttributesManager,
                               operationDispatcher: mockOperationDispatcher,
                               introEligibilityCalculator: mockIntroEligibilityCalculator,
-                              receiptParser: mockReceiptParser)
+                              receiptParser: mockReceiptParser,
+                              purchaserInfoManager: purchaserInfoManager)
 
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -262,7 +268,7 @@ class PurchasesTests: XCTestCase {
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(0))
     }
     
-    func testFirstInitializationFromBackgroundDoesntCallDelegateForAnonIfInfoCached() {
+    func testFirstInitializationFromBackgroundCallsDelegateForAnonIfInfoCached() {
         systemInfo.stubbedIsApplicationBackgrounded = true
         let info = Purchases.PurchaserInfo(data: [
             "subscriber": [
@@ -321,6 +327,19 @@ class PurchasesTests: XCTestCase {
 
         let product = MockSKProduct(mockProductIdentifier: "product")
         let payment = SKPayment(product: product)
+
+        let purchaserInfoBeforePurchase = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "non_subscriptions": [:]
+            ]])
+        let purchaserInfoAfterPurchase = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "non_subscriptions": [product.mockProductIdentifier: []]
+            ]])
+        self.backend.overridePurchaserInfo = purchaserInfoBeforePurchase
+        self.backend.postReceiptPurchaserInfo = purchaserInfoAfterPurchase
 
         let transaction = MockTransaction()
 
@@ -772,6 +791,19 @@ class PurchasesTests: XCTestCase {
         var receivedError: Error?
         var receivedUserCancelled: Bool?
 
+        let purchaserInfoBeforePurchase = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "non_subscriptions": [:]
+            ]])
+        let purchaserInfoAfterPurchase = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "non_subscriptions": [product.mockProductIdentifier: []]
+            ]])
+        self.backend.overridePurchaserInfo = purchaserInfoBeforePurchase
+        self.backend.postReceiptPurchaserInfo = purchaserInfoAfterPurchase
+
         self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
             purchaserInfo = info
             receivedError = error
@@ -780,8 +812,6 @@ class PurchasesTests: XCTestCase {
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
-
-        self.backend.postReceiptPurchaserInfo = Purchases.PurchaserInfo()
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2314,11 +2344,21 @@ class PurchasesTests: XCTestCase {
     func testProductIsRemovedButPresentInTheQueuedTransaction() {
         self.requestFetcher.failProducts = true
         setupPurchases()
-
-        let purchaserInfo = Purchases.PurchaserInfo()
-        self.backend.postReceiptPurchaserInfo = purchaserInfo
-
         let product = MockSKProduct(mockProductIdentifier: "product")
+
+        let purchaserInfoBeforePurchase = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "non_subscriptions": [:]
+            ]])
+        let purchaserInfoAfterPurchase = Purchases.PurchaserInfo(data: [
+            "subscriber": [
+                "subscriptions": [:],
+                "non_subscriptions": [product.mockProductIdentifier: []]
+            ]])
+        self.backend.overridePurchaserInfo = purchaserInfoBeforePurchase
+        self.backend.postReceiptPurchaserInfo = purchaserInfoAfterPurchase
+
         let payment = SKPayment(product: product)
 
         let transaction = MockTransaction()

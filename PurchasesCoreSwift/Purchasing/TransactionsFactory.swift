@@ -11,7 +11,7 @@ import Foundation
 @objc(RCTransactionsFactory) public class TransactionsFactory: NSObject {
     
     @objc public func nonSubscriptionTransactions(withSubscriptionsData subscriptionsData: [String: [[String: Any]]],
-                                                    dateFormatter: DateFormatter) -> [Transaction] {
+                                                  dateFormatter: DateFormatter) -> [Transaction] {
         subscriptionsData.flatMap { (productId: String, transactionData: [[String: Any]]) -> [Transaction] in
             transactionData.map {
                 Transaction(with: $0, productId: productId, dateFormatter: dateFormatter)

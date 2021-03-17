@@ -1404,4 +1404,255 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count).to(equal(2))
         expect(completionCalled).toEventually(equal(2))
     }
+
+    func testLoginMakesRightCalls() {
+        let newAppUserID = "new id"
+
+        let currentAppUserID = "old id"
+        let requestPath = mockLoginRequest(appUserID: currentAppUserID)
+
+        var completionCalled = false
+
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                                                      created: Bool,
+                                                      error: Error?) in
+            completionCalled = true
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(self.httpClient.calls).toNot(beEmpty())
+        expect(self.httpClient.calls.count) == 1
+
+        let receivedCall = self.httpClient.calls[0]
+        expect(receivedCall.path) == requestPath
+        expect(receivedCall.serially) == true
+        expect(receivedCall.HTTPMethod) == "POST"
+        expect(receivedCall.body as? [String: String]) == ["new_app_user_id": newAppUserID]
+        expect(receivedCall.headers) == ["Authorization": "Bearer asharedsecret"]
+    }
+
+    func testLoginPassesNetworkErrorIfCouldntCommunicate() {
+        let newAppUserID = "new id"
+
+        let errorCode = 123465
+        let stubbedError = NSError(domain: Purchases.ErrorDomain,
+                                   code: errorCode,
+                                   userInfo: [:])
+        let currentAppUserID = "old id"
+        _ = mockLoginRequest(appUserID: currentAppUserID, error: stubbedError)
+
+        var completionCalled = false
+        var receivedError: Error?
+        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedCreated: Bool?
+
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                                                      created: Bool,
+                                                      error: Error?) in
+            completionCalled = true
+            receivedError = error
+            receivedPurchaserInfo = purchaserInfo
+            receivedCreated = created
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedCreated) == false
+        expect(receivedPurchaserInfo).to(beNil())
+
+        expect(receivedError).toNot(beNil())
+        let receivedNSError = receivedError! as NSError
+        expect(receivedNSError.code) == Purchases.ErrorCode.networkError.rawValue
+        expect((receivedNSError.userInfo[NSUnderlyingErrorKey] as! NSError)) == stubbedError
+    }
+
+    func testLoginPassesErrors() {
+        let newAppUserID = "new id"
+
+        let errorCode = 123465
+        let stubbedError = NSError(domain: Purchases.ErrorDomain,
+                                   code: errorCode,
+                                   userInfo: [:])
+        let currentAppUserID = "old id"
+        _ = mockLoginRequest(appUserID: currentAppUserID, error: stubbedError)
+
+        var completionCalled = false
+        var receivedError: Error?
+        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedCreated: Bool?
+
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                                                      created: Bool,
+                                                      error: Error?) in
+            completionCalled = true
+            receivedError = error
+            receivedPurchaserInfo = purchaserInfo
+            receivedCreated = created
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedCreated) == false
+        expect(receivedPurchaserInfo).to(beNil())
+
+        expect(receivedError).toNot(beNil())
+        let receivedNSError = receivedError! as NSError
+        expect(receivedNSError.code) == Purchases.ErrorCode.networkError.rawValue
+        expect((receivedNSError.userInfo[NSUnderlyingErrorKey] as! NSError)) == stubbedError
+    }
+
+    func testLoginConsidersErrorStatusCodesAsErrors() {
+        let newAppUserID = "new id"
+
+        let currentAppUserID = "old id"
+        let underlyingErrorMessage = "header fields too large"
+        let underlyingErrorCode = "123456"
+        _ = mockLoginRequest(appUserID: currentAppUserID,
+                             statusCode: 431,
+                             response: ["code": underlyingErrorCode, "message": underlyingErrorMessage])
+
+        var completionCalled = false
+        var receivedError: Error?
+        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedCreated: Bool?
+
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                                                      created: Bool,
+                                                      error: Error?) in
+            completionCalled = true
+            receivedError = error
+            receivedPurchaserInfo = purchaserInfo
+            receivedCreated = created
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedCreated) == false
+        expect(receivedPurchaserInfo).to(beNil())
+
+        expect(receivedError).toNot(beNil())
+        let receivedNSError = receivedError! as NSError
+        expect(receivedNSError.code) == Purchases.ErrorCode.networkError.rawValue
+
+        // custom errors get wrapped in a backendError
+        let backendUnderlyingError = receivedNSError.userInfo[NSUnderlyingErrorKey] as? NSError
+        expect(backendUnderlyingError).toNot(beNil())
+        let underlyingError = backendUnderlyingError?.userInfo[NSUnderlyingErrorKey] as? NSError
+        expect(underlyingError?.code) == Int(underlyingErrorCode)
+        expect(underlyingError?.localizedDescription) == underlyingErrorMessage
+    }
+
+    func testLoginCallsCompletionWithErrorIfPurchaserInfoNil() {
+        let newAppUserID = "new id"
+
+        let currentAppUserID = "old id"
+        _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: [:])
+
+        var completionCalled = false
+        var receivedError: Error?
+        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedCreated: Bool?
+
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                                                      created: Bool,
+                                                      error: Error?) in
+            completionCalled = true
+            receivedError = error
+            receivedPurchaserInfo = purchaserInfo
+            receivedCreated = created
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedCreated) == false
+        expect(receivedPurchaserInfo).to(beNil())
+
+        expect(receivedError).toNot(beNil())
+        let receivedNSError = receivedError! as NSError
+        expect(receivedNSError.code) == Purchases.ErrorCode.unexpectedBackendResponseError.rawValue
+    }
+
+    func testLoginCallsCompletionWithPurchaserInfoAndCreatedFalseIf201() {
+        let newAppUserID = "new id"
+
+        let currentAppUserID = "old id"
+        let _ = mockLoginRequest(appUserID: currentAppUserID,
+                                 statusCode: 201,
+                                 response: mockPurchaserInfoDict)
+
+        var completionCalled = false
+        var receivedError: Error?
+        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedCreated: Bool?
+
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                                                      created: Bool,
+                                                      error: Error?) in
+            completionCalled = true
+            receivedError = error
+            receivedPurchaserInfo = purchaserInfo
+            receivedCreated = created
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+
+        expect(receivedCreated) == true
+        expect(receivedPurchaserInfo) == Purchases.PurchaserInfo(data: mockPurchaserInfoDict)
+        expect(receivedError).to(beNil())
+    }
+
+    func testLoginCallsCompletionWithPurchaserInfoAndCreatedFalseIf200() {
+        let newAppUserID = "new id"
+
+        let currentAppUserID = "old id"
+        let _ = mockLoginRequest(appUserID: currentAppUserID,
+                                 statusCode: 200,
+                                 response: mockPurchaserInfoDict)
+
+        var completionCalled = false
+        var receivedError: Error?
+        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedCreated: Bool?
+
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                                                      created: Bool,
+                                                      error: Error?) in
+            completionCalled = true
+            receivedError = error
+            receivedPurchaserInfo = purchaserInfo
+            receivedCreated = created
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+
+        expect(receivedCreated) == false
+        expect(receivedPurchaserInfo) == Purchases.PurchaserInfo(data: mockPurchaserInfoDict)
+        expect(receivedError).to(beNil())
+    }
+}
+
+private extension BackendTests {
+
+    func mockLoginRequest(appUserID: String,
+                          statusCode: Int = 200,
+                          response: [AnyHashable: Any]? = [:],
+                          error: Error? = nil) -> String {
+        let escapedCurrentAppUserID = appUserID.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+        let response = HTTPResponse(statusCode: statusCode, response: response, error: error)
+        let requestPath = ("/subscribers/" + escapedCurrentAppUserID + "/identify")
+        httpClient.mock(requestPath: requestPath, response: response)
+        return requestPath
+    }
+
+    var mockPurchaserInfoDict: [String: Any] { [
+            "subscriber": [
+                "subscriptions": [:],
+                "other_purchases": [:],
+                "original_application_version": NSNull()
+            ]
+        ]
+    }
 }
