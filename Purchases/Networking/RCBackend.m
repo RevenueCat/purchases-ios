@@ -358,13 +358,15 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                        completion:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo,
                                             BOOL created,
                                             NSError * _Nullable error))completion {
-    NSString *escapedAppUserID = [self escapedAppUserID:currentAppUserID];
-    NSString *path = [NSString stringWithFormat:@"/subscribers/%@/identify", escapedAppUserID];
+    NSParameterAssert(currentAppUserID);
+    NSParameterAssert(newAppUserID);
+    NSString *path = @"/subscribers/identify";
     [self.httpClient performRequest:@"POST"
                            serially:YES
                                path:path
                                body:@{
-                                   @"new_app_user_id": newAppUserID // TODO: confirm backend field name
+                                   @"app_user_id": currentAppUserID,
+                                   @"new_app_user_id": newAppUserID
                                }
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
