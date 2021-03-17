@@ -139,7 +139,6 @@
 		37E353851D42047D5B0A57D0 /* MockDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3578BD602C7B8E2274279 /* MockDateProvider.swift */; };
 		37E35398FCB4931573C56CAF /* MockReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E352B11676F7DC51559E84 /* MockReceiptFetcher.swift */; };
 		37E353E153F6B5C6DE54DE4B /* RCAttributionFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E35B99BA2A8F048F2482F8 /* RCAttributionFetcher.m */; };
-		37E353E6011160108235023C /* (null) in Headers */ = {isa = PBXBuildFile; settings = {ATTRIBUTES = (Private, ); }; };
 		37E353FA89D4F510BA73F0D3 /* RCProductInfoExtractor.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E35E5C3D1B1D6814496C89 /* RCProductInfoExtractor.m */; };
 		37E354159288DE3D23212382 /* RCCrossPlatformSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35DE721FC2A73255D505E /* RCCrossPlatformSupport.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35473E5952D7500FF4BD8 /* RCEntitlementInfo+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35B2CE711472BE58F51ED /* RCEntitlementInfo+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1210,7 +1209,6 @@
 				2DC5623824EC7DF70031F69B /* RCTransaction.h in Headers */,
 				37E354AFE06A9723230E47B8 /* RCInMemoryCachedObject+Protected.h in Headers */,
 				37E35C7C3BADD6D1BBAE7129 /* RCSubscriberAttribute+Protected.h in Headers */,
-				37E353E6011160108235023C /* (null) in Headers */,
 				2DAF814E25B24243002C621E /* RCIdentityManager+Protected.h in Headers */,
 				37E358D3F3C7C0388FF5C2BD /* RCOfferingsFactory.h in Headers */,
 				37E35DB1E991055497D18044 /* RCPromotionalOffer.h in Headers */,
