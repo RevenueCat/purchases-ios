@@ -1428,7 +1428,8 @@ class BackendTests: XCTestCase {
         expect(receivedCall.path) == requestPath
         expect(receivedCall.serially) == true
         expect(receivedCall.HTTPMethod) == "POST"
-        expect(receivedCall.body as? [String: String]) == ["new_app_user_id": newAppUserID]
+        expect(receivedCall.body as? [String: String]) == ["new_app_user_id": newAppUserID,
+                                                           "app_user_id": currentAppUserID]
         expect(receivedCall.headers) == ["Authorization": "Bearer asharedsecret"]
     }
 
@@ -1640,9 +1641,8 @@ private extension BackendTests {
                           statusCode: Int = 200,
                           response: [AnyHashable: Any]? = [:],
                           error: Error? = nil) -> String {
-        let escapedCurrentAppUserID = appUserID.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         let response = HTTPResponse(statusCode: statusCode, response: response, error: error)
-        let requestPath = ("/subscribers/" + escapedCurrentAppUserID + "/identify")
+        let requestPath = ("/subscribers/identify")
         httpClient.mock(requestPath: requestPath, response: response)
         return requestPath
     }
