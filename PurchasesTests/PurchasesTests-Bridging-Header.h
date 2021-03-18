@@ -46,4 +46,5 @@
 #include <Purchases/NSDictionary+RCExtensions.h>
 #include <Purchases/RCPurchaserInfoManager.h>
 #include <Purchases/RCAttributionTypeFactory.h>
+#include <Purchases/RCPurchaseOwnershipType.h>
 #include <Purchases/RCPurchaserInfoManager+Protected.h>
