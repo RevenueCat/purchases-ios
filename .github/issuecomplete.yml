@@ -12,7 +12,8 @@ commentText: >
   Hello! It doesn't seem like we have quite enough information to send this to 
   a human yet to help out. We would love if you could provide more details about 
   your issue by following the template without modifying any of the pre-filled
-  text.
+  text. If you're looking for support, head over to our [Help Center](https://support.revenuecat.com/hc/en-us)
+  to get in touch with our team directly.
 
 # Whether or not to ensure all checkboxes are checked
 checkCheckboxes: true
