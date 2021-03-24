@@ -142,7 +142,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
             RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
             return NO;
         }
-        NSInteger authorizationStatus = [trackingManagerClass trackingAuthStatusProperty];
+        NSInteger authorizationStatus = [trackingManagerClass trackingAuthorizationStatus];
         BOOL authorized = authorizationStatus == FakeTrackingManagerAuthorizationStatusAuthorized
                           || (!needsTrackingAuthorization
                               && authorizationStatus == FakeTrackingManagerAuthorizationStatusNotDetermined);

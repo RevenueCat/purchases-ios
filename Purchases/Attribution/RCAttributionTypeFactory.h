@@ -33,7 +33,7 @@ typedef NS_ENUM(NSUInteger, FakeTrackingManagerAuthorizationStatus) {
 
 @protocol FakeATTrackingManager <NSObject>
 
-+ (NSInteger)trackingAuthStatusProperty;
++ (NSInteger)trackingAuthorizationStatus;
 
 @end
 

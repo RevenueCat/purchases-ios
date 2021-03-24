@@ -34,7 +34,7 @@ class MockAdClient: NSObject, FakeAdClient {
 class MockATTrackingManager: NSObject, FakeATTrackingManager {
     static var mockAuthorizationStatus: ATTrackingManager.AuthorizationStatus = .authorized
 
-    static func trackingAuthStatusProperty() -> Int {
+    static func trackingAuthorizationStatus() -> Int {
         return Int(mockAuthorizationStatus.rawValue)
     }
 }
