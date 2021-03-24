@@ -10,11 +10,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *_Nullable, NSError *_Nullable);
 
-typedef NS_ENUM(NSUInteger, FakeATTrackingManagerAuthorizationStatus) {
-    FakeATTrackingManagerAuthorizationStatusNotDetermined = 0,
-    FakeATTrackingManagerAuthorizationStatusRestricted,
-    FakeATTrackingManagerAuthorizationStatusDenied,
-    FakeATTrackingManagerAuthorizationStatusAuthorized
+typedef NS_ENUM(NSUInteger, FakeTrackingManagerAuthorizationStatus) {
+    FakeTrackingManagerAuthorizationStatusNotDetermined = 0,
+    FakeTrackingManagerAuthorizationStatusRestricted,
+    FakeTrackingManagerAuthorizationStatusDenied,
+    FakeTrackingManagerAuthorizationStatusAuthorized
 };
 
 @protocol FakeAdClient <NSObject>
