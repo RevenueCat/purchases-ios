@@ -42,10 +42,14 @@ NS_SWIFT_NAME(AttributionTypeFactory)
 @interface RCAttributionTypeFactory : NSObject
 
 - (Class<FakeAdClient> _Nullable)adClientClass;
-- (Class<FakeATTrackingManager> _Nullable)atTrackingManagerClass;
+- (Class<FakeATTrackingManager> _Nullable)atTrackingClass;
 - (Class<FakeASIdentifierManager> _Nullable)asIdentifierClass;
 
 - (NSString *)asIdentifierPropertyName;
+
+@property (readonly) NSString *mangledIdentifierClassName;
+@property (readonly) NSString *mangledIdentifierPropertyName;
+@property (readonly) NSString *mangledTrackingClassName;
 
 @end
 

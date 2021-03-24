@@ -137,7 +137,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
         BOOL needsTrackingAuthorization = [self.systemInfo isOperatingSystemAtLeastVersion:minimumOSVersionRequiringAuthorization];
 
-        Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory atTrackingManagerClass];
+        Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory atTrackingClass];
         if (!trackingManagerClass && needsTrackingAuthorization) {
             RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
             return NO;
