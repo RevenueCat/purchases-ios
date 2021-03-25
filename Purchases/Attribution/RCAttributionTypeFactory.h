@@ -46,10 +46,12 @@ NS_SWIFT_NAME(AttributionTypeFactory)
 - (Class<FakeASIdentifierManager> _Nullable)asIdentifierClass;
 
 - (NSString *)asIdentifierPropertyName;
+- (NSString *)authorizationStatusPropertyName;
 
 @property (readonly) NSString *mangledIdentifierClassName;
 @property (readonly) NSString *mangledIdentifierPropertyName;
 @property (readonly) NSString *mangledTrackingClassName;
+@property (readonly) NSString *mangledAuthStatusPropertyName;
 
 @end
 

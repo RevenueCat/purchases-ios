@@ -21,6 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
     return @"nqiregvfvatVqragvsvre";
 }
 
+- (NSString *)mangledAuthStatusPropertyName {
+    return @"genpxvatNhgubevmngvbaFgnghf";
+}
+
 - (NSString *)mangledTrackingClassName {
     return @"NGGenpxvatZnantre";
 }
@@ -47,6 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)asIdentifierPropertyName {
     return [self rot13:self.mangledIdentifierPropertyName];
+}
+
+- (NSString *)authorizationStatusPropertyName {
+    return [self rot13:self.mangledAuthStatusPropertyName];
 }
 
 - (NSString *)rot13:(NSString *)string {

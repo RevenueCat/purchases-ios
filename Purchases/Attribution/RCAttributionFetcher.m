@@ -131,18 +131,20 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 }
 
 - (BOOL)isAuthorizedToPostSearchAds {
-//#if APP_TRACKING_TRANSPARENCY_REQUIRED
+#if APP_TRACKING_TRANSPARENCY_REQUIRED
     if (@available(iOS 14, macos 11, tvos 14, *)) {
         NSOperatingSystemVersion minimumOSVersionRequiringAuthorization = { .majorVersion = 14, .minorVersion = 5, .patchVersion = 0 };
 
         BOOL needsTrackingAuthorization = [self.systemInfo isOperatingSystemAtLeastVersion:minimumOSVersionRequiringAuthorization];
 
         Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory atTrackingClass];
-        if (!trackingManagerClass && needsTrackingAuthorization) {
-            RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
-            return NO;
+        if (!trackingManagerClass) {
+            if (needsTrackingAuthorization) {
+                RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
+            }
+            return !needsTrackingAuthorization;
         }
-        SEL authStatusSelector = NSSelectorFromString(@"trackingAuthorizationStatus");
+        SEL authStatusSelector = NSSelectorFromString(self.attributionFactory.authorizationStatusPropertyName);
         BOOL canPerformSelector = [trackingManagerClass respondsToSelector:authStatusSelector];
         if (!canPerformSelector) {
             RCWarnLog(@"%@", RCStrings.attribution.att_framework_present_but_couldnt_call_tracking_authorization_status);
@@ -158,7 +160,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         }
 
     }
-//#endif
+#endif
     return YES;
 }
 

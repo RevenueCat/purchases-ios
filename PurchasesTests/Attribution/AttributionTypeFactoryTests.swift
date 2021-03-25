@@ -61,4 +61,19 @@ class AttributionTypeFactoryTests: XCTestCase {
 
         expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
     }
+
+    func testCanRotateTrackingAuthorizationStatus() {
+        let expected = "trackingAuthorizationStatus"
+
+        let randomized = attributionTypeFactory.rot13(expected)
+        expect { randomized }.notTo(equal(expected))
+        expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
+    }
+
+    func testCanRotateTrackingAuthorizationStatusBack() {
+        let expected = "trackingAuthorizationStatus"
+        let randomized = self.attributionTypeFactory.mangledAuthStatusPropertyName
+
+        expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
+    }
 }
