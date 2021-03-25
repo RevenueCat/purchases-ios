@@ -22,6 +22,9 @@ import Foundation
         "Tried to post Apple Search Ads Attribution, but AppTrackingTransparency is required on this OS" +
             " and it isn't included";
     }
+    @objc public var att_framework_present_but_couldnt_call_tracking_authorization_status: String {
+        "AppTrackingTransparency framework was found but it didn't respond to authorization status selector!";
+    }
     @objc public var search_ads_attribution_cancelled_missing_iad_framework: String {
         "Tried to post Apple Search Ads Attribution, but iAd Framework is is required for it" +
             " and it isn't included";
