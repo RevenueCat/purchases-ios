@@ -137,7 +137,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
         BOOL needsTrackingAuthorization = [self.systemInfo isOperatingSystemAtLeastVersion:minimumOSVersionRequiringAuthorization];
 
-        Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory atTrackingClass];
+        Class _Nullable trackingManagerClass = [self.attributionFactory atTrackingClass];
         if (!trackingManagerClass) {
             if (needsTrackingAuthorization) {
                 RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
@@ -150,7 +150,16 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
             RCWarnLog(@"%@", RCStrings.attribution.att_framework_present_but_couldnt_call_tracking_authorization_status);
             return NO;
         }
-        NSInteger authorizationStatus = (NSInteger)[trackingManagerClass performSelector:authStatusSelector];
+
+        NSMethodSignature *methodSignature = [trackingManagerClass methodSignatureForSelector:authStatusSelector];
+        NSInvocation *myInvocation = [NSInvocation invocationWithMethodSignature:methodSignature];
+        [myInvocation setTarget:trackingManagerClass];
+        [myInvocation setSelector:authStatusSelector];
+
+        [myInvocation invoke];
+        NSInteger authorizationStatus;
+        [myInvocation getReturnValue:&authorizationStatus];
+
         BOOL authorized = authorizationStatus == FakeTrackingManagerAuthorizationStatusAuthorized
                           || (!needsTrackingAuthorization
                               && authorizationStatus == FakeTrackingManagerAuthorizationStatusNotDetermined);
