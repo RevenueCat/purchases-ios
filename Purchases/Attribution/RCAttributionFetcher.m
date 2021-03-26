@@ -137,15 +137,33 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
         BOOL needsTrackingAuthorization = [self.systemInfo isOperatingSystemAtLeastVersion:minimumOSVersionRequiringAuthorization];
 
-        Class<FakeATTrackingManager> _Nullable trackingManagerClass = [self.attributionFactory atTrackingManagerClass];
-        if (!trackingManagerClass && needsTrackingAuthorization) {
-            RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
+        Class _Nullable trackingManagerClass = [self.attributionFactory atTrackingClass];
+        if (!trackingManagerClass) {
+            if (needsTrackingAuthorization) {
+                RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
+            }
+            return !needsTrackingAuthorization;
+        }
+        SEL authStatusSelector = NSSelectorFromString(self.attributionFactory.authorizationStatusPropertyName);
+        BOOL canPerformSelector = [trackingManagerClass respondsToSelector:authStatusSelector];
+        if (!canPerformSelector) {
+            RCWarnLog(@"%@", RCStrings.attribution.att_framework_present_but_couldnt_call_tracking_authorization_status);
             return NO;
         }
-        NSInteger authorizationStatus = [trackingManagerClass trackingAuthorizationStatus];
-        BOOL authorized = authorizationStatus == FakeATTrackingManagerAuthorizationStatusAuthorized
+        // we use NSInvocation to prevent direct references to tracking frameworks, which cause issues for
+        // kids apps when going through app review, even if they don't actually use them at all. 
+        NSMethodSignature *methodSignature = [trackingManagerClass methodSignatureForSelector:authStatusSelector];
+        NSInvocation *myInvocation = [NSInvocation invocationWithMethodSignature:methodSignature];
+        [myInvocation setTarget:trackingManagerClass];
+        [myInvocation setSelector:authStatusSelector];
+
+        [myInvocation invoke];
+        NSInteger authorizationStatus;
+        [myInvocation getReturnValue:&authorizationStatus];
+
+        BOOL authorized = authorizationStatus == FakeTrackingManagerAuthorizationStatusAuthorized
                           || (!needsTrackingAuthorization
-                              && authorizationStatus == FakeATTrackingManagerAuthorizationStatusNotDetermined);
+                              && authorizationStatus == FakeTrackingManagerAuthorizationStatusNotDetermined);
         if (!authorized) {
             RCLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_not_authorized);
             return NO;
