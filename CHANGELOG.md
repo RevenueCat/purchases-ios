@@ -1,3 +1,7 @@
+## 3.10.7
+- Obfuscates calls to `AppTrackingTransparency` to prevent unnecessary rejections for kids apps when the framework isn't used at all. 
+    https://github.com/RevenueCat/purchases-ios/pull/486
+
 ## 3.10.6
 - Fix automatic Apple Search Ads Attribution collection for iOS 14.5
     https://github.com/RevenueCat/purchases-ios/pull/473
