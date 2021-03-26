@@ -150,7 +150,8 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
             RCWarnLog(@"%@", RCStrings.attribution.att_framework_present_but_couldnt_call_tracking_authorization_status);
             return NO;
         }
-
+        // we use NSInvocation to prevent direct references to tracking frameworks, which cause issues for
+        // kids apps when going through app review, even if they don't actually use them at all. 
         NSMethodSignature *methodSignature = [trackingManagerClass methodSignatureForSelector:authStatusSelector];
         NSInvocation *myInvocation = [NSInvocation invocationWithMethodSignature:methodSignature];
         [myInvocation setTarget:trackingManagerClass];
