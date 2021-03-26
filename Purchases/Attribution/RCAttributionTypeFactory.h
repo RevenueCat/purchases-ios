@@ -31,7 +31,7 @@ typedef NS_ENUM(NSUInteger, FakeTrackingManagerAuthorizationStatus) {
 
 @end
 
-@protocol FakeATTrackingManager <NSObject>
+@protocol FakeTrackingManager <NSObject>
 
 + (NSInteger)trackingAuthorizationStatus;
 
@@ -42,7 +42,7 @@ NS_SWIFT_NAME(AttributionTypeFactory)
 @interface RCAttributionTypeFactory : NSObject
 
 - (Class<FakeAdClient> _Nullable)adClientClass;
-- (Class<FakeATTrackingManager> _Nullable)atTrackingClass;
+- (Class<FakeTrackingManager> _Nullable)atTrackingClass;
 - (Class<FakeASIdentifierManager> _Nullable)asIdentifierClass;
 
 - (NSString *)asIdentifierPropertyName;

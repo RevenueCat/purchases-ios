@@ -47,7 +47,7 @@ class AttributionTypeFactoryTests: XCTestCase {
         expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
     }
 
-    func testCanRotateATTrackingManager() {
+    func testCanRotateTrackingManager() {
         let expected = "ATTrackingManager"
         let randomized = attributionTypeFactory.rot13(expected)
 
@@ -55,7 +55,7 @@ class AttributionTypeFactoryTests: XCTestCase {
         expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
     }
 
-    func testCanRotateATTrackingManagerBack() {
+    func testCanRotateTrackingManagerBack() {
         let expected = "ATTrackingManager"
         let randomized = self.attributionTypeFactory.mangledTrackingClassName
 

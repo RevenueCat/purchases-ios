@@ -29,14 +29,14 @@ NS_ASSUME_NONNULL_BEGIN
     return @"NGGenpxvatZnantre";
 }
 
-- (Class<FakeATTrackingManager> _Nullable)atTrackingClass {
+- (Class<FakeTrackingManager> _Nullable)atTrackingClass {
     // We need to do this mangling to avoid Kid apps being rejected for getting idfa.
     // It looks like during the app review process Apple does some string matching looking for
     // functions in ATTrackingTransparency. We apply rot13 on these functions and classes names
     // so that Apple can't find them during the review, but we can still access them on runtime.
     NSString *className = [self rot13:self.mangledTrackingClassName];
 
-    return (Class<FakeATTrackingManager> _Nullable)NSClassFromString(className);
+    return (Class<FakeTrackingManager> _Nullable)NSClassFromString(className);
 }
 
 - (Class<FakeASIdentifierManager> _Nullable)asIdentifierClass {
