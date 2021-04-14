@@ -176,6 +176,8 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(RCBackend
         case RCBackendPlayStoreQuotaExceeded:
         case RCBackendPlayStoreGenericError:
         case RCBackendInvalidPlayStoreCredentials:
+        case RCBackendBadRequest:
+        case RCBackendInternalServerError:
             return RCUnknownBackendError;
     }
     return RCUnknownError;
