@@ -79,7 +79,7 @@ static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
         case RCLogOutAnonymousUserError:
             return @"LogOut was called but the current user is anonymous.";
         case RCConfigurationError:
-            return @"There was a configuration error. See message for more details.";
+            return @"There is an issue with your configuration. Check the underlying error for more details.";
     }
     return @"Something went wrong.";
 }
