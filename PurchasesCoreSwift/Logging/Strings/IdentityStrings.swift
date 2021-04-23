@@ -22,7 +22,7 @@ import Foundation
     @objc public var login_success: String { "Log in successful" }
     @objc public var logging_out_user: String { "Logging out user %@" }
     @objc public var log_out_success: String { "Log out successful" }
-    @objc public var creating_alias: String { "Creating an alias to %@ from %@" }
+    @objc public var creating_alias: String { "Creating an alias between current appUserID %@ and %@" }
     @objc public var identifying_anon_id: String { "Identifying from an anonymous ID: %@. An alias will be created." }
     @objc public var identifying_app_user_id: String { "Identifying App User ID: %@" }
 }
