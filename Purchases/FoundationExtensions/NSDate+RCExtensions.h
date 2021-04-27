@@ -10,7 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSDate (RCExtensions)
 
-- (UInt64)rc_UInt64MillisecondsSince1970;
+- (UInt64)rc_uint64MillisecondsSince1970;
 
 @end
 
