@@ -451,8 +451,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.9.1;
+				branch = feature/identityV3_public_facing_changes;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
