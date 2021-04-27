@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setPushToken:(nullable NSData *)pushToken appUserID:(NSString *)appUserID {
-    NSString *pushTokenString = pushToken ? pushToken.asString : nil;
+    NSString *pushTokenString = pushToken ? pushToken.rc_asString : nil;
     [self setPushTokenString:pushTokenString appUserID:appUserID];
 }
 
@@ -170,7 +170,7 @@ NS_ASSUME_NONNULL_BEGIN
           forAppUserID:(NSString *)appUserID
             completion:(void (^)(NSError *))completion {
     [self.backend postSubscriberAttributes:attributes appUserID:appUserID completion:^(NSError *error) {
-        BOOL didBackendReceiveValues = (error == nil || error.successfullySynced);
+        BOOL didBackendReceiveValues = (error == nil || error.rc_successfullySynced);
 
         if (didBackendReceiveValues) {
             [self markAttributesAsSynced:attributes appUserID:appUserID];

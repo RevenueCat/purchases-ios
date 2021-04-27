@@ -20,7 +20,7 @@
 @import PurchasesCoreSwift;
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
-NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"successfullySynced";
+NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"rc_successfullySynced";
 NSString *const RCAttributeErrorsKey = @"attribute_errors";
 NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
 

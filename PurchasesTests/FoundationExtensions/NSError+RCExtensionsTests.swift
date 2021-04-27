@@ -14,31 +14,31 @@ class NSErrorRCExtensionsTests: XCTestCase {
     func testSuccessfullySyncedFalseIfCodeIsNetworkError() {
         let errorCode = Purchases.ErrorCode.networkError.rawValue
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [:])
-        expect(error.successfullySynced()) == false
+        expect(error.rc_successfullySynced()) == false
     }
 
     func testSuccessfullySyncedFalseIfNotShouldMarkSynced() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [RCSuccessfullySyncedKey: false])
-        expect(error.successfullySynced()) == false
+        expect(error.rc_successfullySynced()) == false
     }
 
     func testSuccessfullySyncedFalseIfShouldMarkSyncedNotPresent() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [:])
-        expect(error.successfullySynced()) == false
+        expect(error.rc_successfullySynced()) == false
     }
 
     func testSuccessfullySyncedTrueIfShouldMarkSynced() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [RCSuccessfullySyncedKey: true])
-        expect(error.successfullySynced()) == true
+        expect(error.rc_successfullySynced()) == true
     }
 
     func testSubscriberAttributesErrorsNilIfNoAttributesErrors() {
         let errorCode = Purchases.ErrorCode.purchaseNotAllowedError.rawValue
         let error = NSError(domain: Purchases.ErrorDomain, code: errorCode, userInfo: [RCSuccessfullySyncedKey: true])
-        expect(error.subscriberAttributesErrors()).to(beNil())
+        expect(error.rc_subscriberAttributesErrors()).to(beNil())
     }
 
     func testSubscriberAttributesErrorsReturnsAttributesErrorsInUserInfo() {
@@ -48,7 +48,7 @@ class NSErrorRCExtensionsTests: XCTestCase {
         let error = NSError(domain: Purchases.ErrorDomain,
                             code: errorCode,
                             userInfo: [RCAttributeErrorsKey: attributeErrors])
-        expect(error.subscriberAttributesErrors()).toNot(beNil())
-        expect(error.subscriberAttributesErrors() as? [String: String]) == attributeErrors
+        expect(error.rc_subscriberAttributesErrors()).toNot(beNil())
+        expect(error.rc_subscriberAttributesErrors() as? [String: String]) == attributeErrors
     }
 }
