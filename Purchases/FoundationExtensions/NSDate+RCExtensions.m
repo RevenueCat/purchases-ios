@@ -10,7 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation NSDate (RCExtensions)
 
-- (UInt64)rc_millisecondsSince1970InUInt64 {
+- (UInt64)rc_UInt64MillisecondsSince1970 {
     return (UInt64)([self timeIntervalSince1970] * 1000.0);
 }
 
