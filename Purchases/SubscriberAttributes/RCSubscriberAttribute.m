@@ -80,7 +80,7 @@ NS_ASSUME_NONNULL_END
 - (NSDictionary <NSString *, NSObject *> *)asBackendDictionary {
     return @{
         BACKEND_VALUE_KEY: self.value ?: @"",
-        BACKEND_TIMESTAMP_KEY: @(self.setTime.millisecondsSince1970)
+        BACKEND_TIMESTAMP_KEY: @(self.setTime.rc_millisecondsSince1970InUInt64)
     };
 }
 

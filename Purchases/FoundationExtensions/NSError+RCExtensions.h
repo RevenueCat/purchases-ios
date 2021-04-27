@@ -10,8 +10,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSError (RCExtensions)
 
-- (BOOL)successfullySynced;
-- (nullable NSDictionary *)subscriberAttributesErrors;
+- (BOOL)rc_successfullySynced;
+- (nullable NSDictionary *)rc_subscriberAttributesErrors;
 
 @end
 

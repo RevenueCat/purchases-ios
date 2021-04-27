@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation NSError (RCExtensions)
 
-- (BOOL)successfullySynced {
+- (BOOL)rc_successfullySynced {
     if (self.code == RCNetworkError) {
         return NO;
     }
@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
     return successfullySyncedNumber.boolValue;
 }
 
-- (nullable NSDictionary *)subscriberAttributesErrors {
+- (nullable NSDictionary *)rc_subscriberAttributesErrors {
     return self.userInfo[RCAttributeErrorsKey];
 }
 

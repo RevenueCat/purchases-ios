@@ -9,8 +9,8 @@ import XCTest
 import Purchases
 
 class NSDateExtensionsTests: XCTestCase {
-    func testMillisecondsSince1970() {
+    func testMillisecondsSince1970PerformsCorrectConversion() {
         let date = NSDate()
-        expect(date.millisecondsSince1970()) == (UInt64)(date.timeIntervalSince1970 * 1000)
+        expect(date.rc_millisecondsSince1970InUInt64()) == (UInt64)(date.timeIntervalSince1970 * 1000)
     }
 }

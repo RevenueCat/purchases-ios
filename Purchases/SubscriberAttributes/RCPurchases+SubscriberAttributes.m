@@ -35,12 +35,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)markAttributesAsSyncedIfNeeded:(nullable RCSubscriberAttributeDict)syncedAttributes
                              appUserID:(NSString *)appUserID
                                  error:(nullable NSError *)error {
-    if (error && !error.successfullySynced) {
+    if (error && !error.rc_successfullySynced) {
         return;
     }
 
-    if (error.subscriberAttributesErrors) {
-        RCErrorLog(RCStrings.attribution.subscriber_attributes_error, error.subscriberAttributesErrors);
+    if (error.rc_subscriberAttributesErrors) {
+        RCErrorLog(RCStrings.attribution.subscriber_attributes_error, error.rc_subscriberAttributesErrors);
     }
     [self.subscriberAttributesManager markAttributesAsSynced:syncedAttributes appUserID:appUserID];
 }
