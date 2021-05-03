@@ -108,6 +108,7 @@ platform :ios do
     sed_regex = 's|' + "REVENUECAT_API_KEY" + '|' + api_key + '|'
     backup_extension = '.bck'
     sh("sed", '-i', backup_extension, sed_regex, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
+    sh("sed", '-i', backup_extension, sed_regex, '../StoreKitTests/Constants.swift')
   end
 
   desc "Deploy"

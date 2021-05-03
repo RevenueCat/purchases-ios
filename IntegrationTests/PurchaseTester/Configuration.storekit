@@ -1,4 +1,8 @@
 {
+  "identifier" : "B495CDA2",
+  "nonRenewingSubscriptions" : [
+
+  ],
   "products" : [
     {
       "displayPrice" : "199.99",
@@ -84,6 +88,6 @@
   ],
   "version" : {
     "major" : 1,
-    "minor" : 0
+    "minor" : 1
   }
 }
