@@ -173,6 +173,12 @@ platform :ios do
 
   end
 
+  desc "Run StoreKitTests"
+  lane :storekit_tests do |options|
+    replace_api_key_integration_tests
+    scan(scheme: "StoreKitTests", derived_data_path: "scan_derived_data")
+  end
+
 end
 
 def push_pods

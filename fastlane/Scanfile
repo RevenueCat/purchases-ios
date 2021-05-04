@@ -4,4 +4,4 @@
 # In general, you can use the options available
 # fastlane scan --help
 
-scheme("All Tests")
+scheme("Unit Tests")
