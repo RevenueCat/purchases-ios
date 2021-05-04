@@ -145,7 +145,10 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      
+      - run:
+          name: Open simulator
+          command: xcrun instruments -w "iPhone 11 Pro (14.2) [" || true
+
       # Carthage
       - restore_cache:
           keys: 
@@ -164,6 +167,8 @@ jobs:
       - run:
           name: Run StoreKit Tests
           command: bundle exec fastlane storekit_tests
+          environment:
+            SCAN_DEVICE: iPhone 11 Pro (14.2)
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
