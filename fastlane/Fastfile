@@ -138,7 +138,8 @@ platform :ios do
       repo: "revenuecat/purchases-ios",
       title: "Prepare next version: #{next_version_snapshot}",
       base: "develop",
-      api_token: ENV["GITHUB_TOKEN"]
+      api_token: ENV["GITHUB_TOKEN"],
+      head: branch_name
     )
   end
 
