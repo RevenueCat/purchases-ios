@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     // Server URL for the tests. If set to empty string, we'll use the default URL.
     // Server URL for the tests. If set to empty string, we'll use the default URL.
-    NSString *proxyURL = "REVENUECAT_PROXY_URL";
+    NSString *proxyURL = @"REVENUECAT_PROXY_URL";
     if (![proxyURL isEqualToString:@""]) {
         RCPurchases.proxyURL = [NSURL URLWithString:proxyURL];
     }
