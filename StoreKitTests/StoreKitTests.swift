@@ -22,6 +22,9 @@ class StoreKitTests: XCTestCase {
         
         userDefaults = UserDefaults(suiteName: Constants.userDefaultsSuiteName)
         userDefaults?.removePersistentDomain(forName: Constants.userDefaultsSuiteName)
+        if !Constants.proxyURL.isEmpty {
+            Purchases.proxyURL = URL(string: Constants.proxyURL)
+        }
     }
 
     override func tearDownWithError() throws {
@@ -47,6 +50,5 @@ class StoreKitTests: XCTestCase {
         expect(receivedError).to(beNil())
         expect(receivedOfferings).toNot(beNil())
         expect(receivedOfferings!.all).toNot(beEmpty())
-
     }
 }

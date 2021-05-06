@@ -334,12 +334,18 @@ workflows:
   build-test:
     jobs:
       - runtest
+      # - storekit_tests: *release-tags-and-branches
+      # - deployment-checks: *release-branches
+      # - integration-tests-cocoapods: *release-tags-and-branches
+      # - integration-tests-swift-package-manager: *release-tags-and-branches
+      # - integration-tests-carthage: *release-tags-and-branches
+      # - integration-tests-xcode-direct-integration: *release-tags-and-branches
       - storekit_tests
       - deployment-checks: *release-branches
-      - integration-tests-cocoapods: *release-tags-and-branches
-      - integration-tests-swift-package-manager: *release-tags-and-branches
-      - integration-tests-carthage: *release-tags-and-branches
-      - integration-tests-xcode-direct-integration: *release-tags-and-branches
+      - integration-tests-cocoapods
+      - integration-tests-swift-package-manager
+      - integration-tests-carthage
+      - integration-tests-xcode-direct-integration
   deploy:
     jobs:
       - make-release: *release-tags
