@@ -104,10 +104,11 @@ platform :ios do
 
   desc "replace API KEY for integration tests"
   lane :replace_api_key_integration_tests do
-    api_key = ENV["REVENUECAT_API_KEY"]
-    sed_regex = 's|' + "REVENUECAT_API_KEY" + '|' + api_key + '|'
-    backup_extension = '.bck'
-    sh("sed", '-i', backup_extension, sed_regex, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
+    replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../StoreKitTests/Constants.swift')
+    replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
+
+    replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../StoreKitTests/Constants.swift')
+    replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
   end
 
   desc "Deploy"
@@ -172,6 +173,12 @@ platform :ios do
 
   end
 
+  desc "Run StoreKitTests"
+  lane :storekit_tests do |options|
+    replace_api_key_integration_tests
+    scan(scheme: "StoreKitTests", derived_data_path: "scan_derived_data")
+  end
+
 end
 
 def push_pods
@@ -206,9 +213,7 @@ def check_pods
 end
 
 def increment_build_number(previous_version_number, new_version_number, file_path)
-  sed_regex = 's|' + previous_version_number + '|' + new_version_number + '|'
-  backup_extension = '.bck'
-  sh("sed", '-i', backup_extension, sed_regex, file_path)
+  replace_in(previous_version_number, new_version_number, file_path)
 end
 
 def attach_changelog_to_master(version_number)
@@ -228,4 +233,10 @@ def attach_changelog_to_master(version_number)
     
     master_changelog_write_mode.write(whole_file_data)
   }
+end
+
+def replace_in(previous_text, new_text, path)
+  sed_regex = 's|' + previous_text + '|' + new_text + '|'
+  backup_extension = '.bck'
+  sh("sed", '-i', backup_extension, sed_regex, path)
 end
