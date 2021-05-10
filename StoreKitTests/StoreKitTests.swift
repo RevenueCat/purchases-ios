@@ -67,4 +67,108 @@ class StoreKitTests: XCTestCase {
         expect(receivedOfferings).toNot(beNil())
         expect(receivedOfferings!.all).toNot(beEmpty())
     }
+    
+    func testCanMakePurchase() throws {
+        Purchases.configure(withAPIKey: Constants.apiKey,
+                            appUserID: nil,
+                            observerMode: false,
+                            userDefaults: userDefaults)
+        Purchases.debugLogsEnabled = true
+        let purchasesDelegate = TestPurchaseDelegate()
+        Purchases.shared.delegate = purchasesDelegate
+        
+        Purchases.shared.offerings { offerings, error in
+            expect(error).to(beNil())
+            
+            let offering = offerings?.current
+            expect(offering).toNot(beNil())
+            
+            let monthlyPackage = offering?.monthly
+            expect(monthlyPackage).toNot(beNil())
+            
+            Purchases.shared.purchaseProduct(monthlyPackage!.product) { transaction, purchaserInfo, purchaseError, userCancelled in
+                expect(purchaseError).to(beNil())
+                expect(purchaserInfo).toNot(beNil())
+            }
+            
+            Purchases.shared.syncPurchases()
+        }
+        
+        expect(purchasesDelegate.purchaserInfo?.entitlements.all.count).toEventually(equal(1), timeout: .seconds(10))
+        let entitlements = purchasesDelegate.purchaserInfo?.entitlements
+        expect(entitlements?["premium"]?.isActive) == true
+    }
+    
+    func testPurchaseMadeBeforeLogInIsRetainedAfter() {
+        Purchases.configure(withAPIKey: Constants.apiKey,
+                            appUserID: nil,
+                            observerMode: false,
+                            userDefaults: userDefaults)
+        Purchases.debugLogsEnabled = true
+        let purchasesDelegate = TestPurchaseDelegate()
+        Purchases.shared.delegate = purchasesDelegate
+        
+        Purchases.shared.offerings { offerings, error in
+            expect(error).to(beNil())
+            
+            let offering = offerings?.current
+            expect(offering).toNot(beNil())
+            
+            let monthlyPackage = offering?.monthly
+            expect(monthlyPackage).toNot(beNil())
+            
+            Purchases.shared.purchaseProduct(monthlyPackage!.product) { transaction, purchaserInfo, purchaseError, userCancelled in
+                expect(purchaseError).to(beNil())
+                expect(purchaserInfo).toNot(beNil())
+            }
+            
+            Purchases.shared.syncPurchases()
+        }
+        
+        expect(purchasesDelegate.purchaserInfo?.entitlements.all.count).toEventually(equal(1), timeout: .seconds(10))
+        let entitlements = purchasesDelegate.purchaserInfo?.entitlements
+        expect(entitlements?["premium"]?.isActive) == true
+        
+        let anonUserID = Purchases.shared.appUserID
+        let identifiedUserID = "identified_\(anonUserID)"
+        
+        var completionCalled = false
+        Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
+            expect(error).to(beNil())
+            
+            expect(created).to(beTrue())
+            expect(identifiedPurchaserInfo?.entitlements["premium"]?.isActive) == true
+            completionCalled = true
+            print("identifiedPurchaserInfo: \(String(describing: identifiedPurchaserInfo))")
+        }
+        
+        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+    }
+    
+    func testLogInReturnsCreatedTrueWhenNewAndFalseWhenExisting() {
+        Purchases.configure(withAPIKey: Constants.apiKey,
+                            appUserID: nil,
+                            observerMode: false,
+                            userDefaults: userDefaults)
+        Purchases.debugLogsEnabled = true
+        
+        let anonUserID = Purchases.shared.appUserID
+        let identifiedUserID = "identified_\(anonUserID)"
+        
+        var completionCalled = false
+        Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
+            expect(error).to(beNil())
+            expect(created).to(beTrue())
+            Purchases.shared.logOut { loggedOutPurchaserInfo, logOutError in
+                Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
+                    expect(error).to(beNil())
+                    expect(created).to(beFalse())
+                    completionCalled = true
+                }
+            }
+        }
+        
+        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+    }
+    
 }
