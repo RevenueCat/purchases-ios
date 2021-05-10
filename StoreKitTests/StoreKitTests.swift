@@ -11,14 +11,30 @@ import Purchases
 import Nimble
 import StoreKitTest
 
-class StoreKitTests: XCTestCase {
+class TestPurchaseDelegate: NSObject, PurchasesDelegate {
+    var purchaserInfo: Purchases.PurchaserInfo?
+    var purchaserInfoUpdateCount = 0
+    
+    func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: Purchases.PurchaserInfo) {
+        self.purchaserInfo = purchaserInfo
+        purchaserInfoUpdateCount += 1
+    }
+    
+    func purchases(_ purchases: Purchases, shouldPurchasePromoProduct product: SKProduct, defermentBlock makeDeferredPurchase: @escaping RCDeferredPromotionalPurchaseBlock) {
+        
+    }
+    
+}
 
+class StoreKitTests: XCTestCase {
+    
     var testSession: SKTestSession!
     var userDefaults: UserDefaults!
     
     override func setUpWithError() throws {
         testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
         testSession.disableDialogs = true
+        testSession.clearTransactions()
         
         userDefaults = UserDefaults(suiteName: Constants.userDefaultsSuiteName)
         userDefaults?.removePersistentDomain(forName: Constants.userDefaultsSuiteName)
@@ -26,12 +42,12 @@ class StoreKitTests: XCTestCase {
             Purchases.proxyURL = URL(string: Constants.proxyURL)
         }
     }
-
+    
     override func tearDownWithError() throws {
         testSession.clearTransactions()
     }
-
-    func testExample() throws {
+    
+    func testCanGetOfferings() throws {
         Purchases.configure(withAPIKey: Constants.apiKey,
                             appUserID: nil,
                             observerMode: false,

@@ -26,6 +26,8 @@
 		2D50332A2406EA61009CAE61 /* RCSubscriberAttributesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D50332B2406EA61009CAE61 /* RCSubscriberAttributesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D5033282406EA61009CAE61 /* RCSubscriberAttributesManager.m */; };
 		2D540CD72601509000A7475D /* RCPurchaseOwnershipType.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D540CD62601509000A7475D /* RCPurchaseOwnershipType.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2D8D2E4F2645E97C009E1B47 /* StoreKitTestCertificate.cer in Resources */ = {isa = PBXBuildFile; fileRef = 2D8D2E4E2645E97C009E1B47 /* StoreKitTestCertificate.cer */; };
+		2D8D2E502645E97C009E1B47 /* StoreKitTestCertificate.cer in Resources */ = {isa = PBXBuildFile; fileRef = 2D8D2E4E2645E97C009E1B47 /* StoreKitTestCertificate.cer */; };
 		2D8DB34B24072AAE00BE3D31 /* SubscriberAttributeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */; };
 		2D8E9D482523747D00AFEE11 /* NSDictionaryExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD269162522A20A006AC4BC /* NSDictionaryExtensionsTests.swift */; };
 		2D8E9D54252374A600AFEE11 /* NSDictionary+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D8E9D52252374A600AFEE11 /* NSDictionary+RCExtensions.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -321,6 +323,7 @@
 		2D540CD62601509000A7475D /* RCPurchaseOwnershipType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPurchaseOwnershipType.h; sourceTree = "<group>"; };
 		2D5BB46A24C8E8ED00E27537 /* ReceiptParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptParser.swift; sourceTree = "<group>"; };
 		2D604CA224E5BF37004821DC /* RCTransaction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTransaction.h; sourceTree = "<group>"; };
+		2D8D2E4E2645E97C009E1B47 /* StoreKitTestCertificate.cer */ = {isa = PBXFileReference; lastKnownFileType = file; path = StoreKitTestCertificate.cer; sourceTree = "<group>"; };
 		2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscriberAttributeTests.swift; sourceTree = "<group>"; };
 		2D8E9D52252374A600AFEE11 /* NSDictionary+RCExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+RCExtensions.h"; sourceTree = "<group>"; };
 		2D8E9D53252374A600AFEE11 /* NSDictionary+RCExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+RCExtensions.m"; sourceTree = "<group>"; };
@@ -821,6 +824,7 @@
 			isa = PBXGroup;
 			children = (
 				2DE20B7926408921004C597D /* Configuration.storekit */,
+				2D8D2E4E2645E97C009E1B47 /* StoreKitTestCertificate.cer */,
 				2DE20B6E264087FB004C597D /* StoreKitTests.swift */,
 				2DE20B70264087FB004C597D /* Info.plist */,
 				2DE61A83264190830021CEA0 /* Constants.swift */,
@@ -1604,6 +1608,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2DE20B7A26408921004C597D /* Configuration.storekit in Resources */,
+				2D8D2E502645E97C009E1B47 /* StoreKitTestCertificate.cer in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1613,6 +1618,7 @@
 			files = (
 				2DE20B8926409EB8004C597D /* Preview Assets.xcassets in Resources */,
 				2DE20B8626409EB8004C597D /* Assets.xcassets in Resources */,
+				2D8D2E4F2645E97C009E1B47 /* StoreKitTestCertificate.cer in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2081,6 +2087,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"StoreKitTestApp/Preview Content\"";
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = StoreKitTestApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
@@ -2108,6 +2115,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"StoreKitTestApp/Preview Content\"";
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = StoreKitTestApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
