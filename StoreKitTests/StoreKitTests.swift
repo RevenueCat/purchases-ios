@@ -96,6 +96,41 @@ class StoreKitTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
     }
     
+    func testPurchaseMadeBeforeLogInIsNotRetainedAfterIfLogInToExistingUser() {
+        configurePurchases()
+        var completionCalled = false
+        let existingUserID = UUID().uuidString
+        expect(self.purchasesDelegate.purchaserInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
+        
+        Purchases.shared.logIn(existingUserID) { logInPurchaserInfo, created, logInError in
+            Purchases.shared.logOut() { loggedOutPurchaserInfo, logOutError in
+                completionCalled = true
+            }
+        }
+        
+        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+
+        purchaseMonthlyOffering()
+        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count).toEventually(equal(1), timeout: .seconds(10))
+        
+        testSession.clearTransactions()
+        
+        completionCalled = false
+        
+        Purchases.shared.logIn(existingUserID) { purchaserInfo, created, logInError in
+            completionCalled = true
+            expect(purchaserInfo?.entitlements.all.count) == 0
+            expect(created).to(beFalse())
+            expect(logInError).to(beNil())
+        }
+        
+        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        
+        Purchases.shared.restoreTransactions()
+        
+        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count).toEventually(equal(1), timeout: .seconds(10))
+    }
+    
     func testLogInReturnsCreatedTrueWhenNewAndFalseWhenExisting() {
         configurePurchases()
         
