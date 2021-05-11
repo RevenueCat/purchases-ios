@@ -183,6 +183,29 @@ class StoreKitTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
     }
     
+    func testLogInThenLogInAsAnotherUserWontTransferPurchases() {
+        configurePurchases()
+        
+        let userID1 = UUID().uuidString
+        let userID2 = UUID().uuidString
+        
+        Purchases.shared.logIn(userID1) { identifiedPurchaserInfo, created, error in
+            self.purchaseMonthlyOffering()
+        }
+        
+        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count).toEventually(equal(1), timeout: .seconds(10))
+        
+        testSession.clearTransactions()
+        
+        Purchases.shared.logIn(userID2) { identifiedPurchaserInfo, created, error in
+            expect(identifiedPurchaserInfo?.entitlements.all.count) == 0
+            expect(error).to(beNil())
+        }
+
+        expect(self.purchasesDelegate.purchaserInfo?.originalAppUserId).toEventually(equal(userID2), timeout: .seconds(10))
+        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count) == 0
+    }
+    
     func testLogOutRemovesEntitlements() {
         configurePurchases()
         
