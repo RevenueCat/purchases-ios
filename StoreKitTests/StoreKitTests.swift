@@ -96,7 +96,7 @@ class StoreKitTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
     }
     
-    func testPurchaseMadeBeforeLogInIsNotRetainedAfterIfLogInToExistingUser() {
+    func testPurchaseMadeBeforeLogInIsNotRetainedAfterIfLogInToExistingUserUntilRestore() {
         configurePurchases()
         var completionCalled = false
         let existingUserID = UUID().uuidString
