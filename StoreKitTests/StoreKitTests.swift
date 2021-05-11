@@ -144,8 +144,12 @@ class StoreKitTests: XCTestCase {
         
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
     }
+    
+}
+
+private extension StoreKitTests {
         
-    private func purchaseMonthlyOffering() {
+    func purchaseMonthlyOffering() {
         Purchases.shared.offerings { offerings, error in
             expect(error).to(beNil())
             
@@ -164,7 +168,7 @@ class StoreKitTests: XCTestCase {
         }
     }
     
-    private func configurePurchases() {
+    func configurePurchases() {
         purchasesDelegate = TestPurchaseDelegate()
         Purchases.configure(withAPIKey: Constants.apiKey,
                             appUserID: nil,
