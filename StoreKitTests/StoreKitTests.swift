@@ -30,6 +30,7 @@ class StoreKitTests: XCTestCase {
     
     var testSession: SKTestSession!
     var userDefaults: UserDefaults!
+    var purchasesDelegate: TestPurchaseDelegate!
     
     override func setUpWithError() throws {
         testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
@@ -43,16 +44,8 @@ class StoreKitTests: XCTestCase {
         }
     }
     
-    override func tearDownWithError() throws {
-        testSession.clearTransactions()
-    }
-    
     func testCanGetOfferings() throws {
-        Purchases.configure(withAPIKey: Constants.apiKey,
-                            appUserID: nil,
-                            observerMode: false,
-                            userDefaults: userDefaults)
-        Purchases.debugLogsEnabled = true
+        configurePurchases()
         var completionCalled = false
         var receivedError: Error? = nil
         var receivedOfferings: Purchases.Offerings? = nil
@@ -69,63 +62,21 @@ class StoreKitTests: XCTestCase {
     }
     
     func testCanMakePurchase() throws {
-        Purchases.configure(withAPIKey: Constants.apiKey,
-                            appUserID: nil,
-                            observerMode: false,
-                            userDefaults: userDefaults)
-        Purchases.debugLogsEnabled = true
-        let purchasesDelegate = TestPurchaseDelegate()
-        Purchases.shared.delegate = purchasesDelegate
+        configurePurchases()
+        purchaseMonthlyOffering()
         
-        Purchases.shared.offerings { offerings, error in
-            expect(error).to(beNil())
-            
-            let offering = offerings?.current
-            expect(offering).toNot(beNil())
-            
-            let monthlyPackage = offering?.monthly
-            expect(monthlyPackage).toNot(beNil())
-            
-            Purchases.shared.purchaseProduct(monthlyPackage!.product) { transaction, purchaserInfo, purchaseError, userCancelled in
-                expect(purchaseError).to(beNil())
-                expect(purchaserInfo).toNot(beNil())
-            }
-            
-            Purchases.shared.syncPurchases()
-        }
-        
-        expect(purchasesDelegate.purchaserInfo?.entitlements.all.count).toEventually(equal(1), timeout: .seconds(10))
+        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count).toEventually(equal(1), timeout: .seconds(10))
         let entitlements = purchasesDelegate.purchaserInfo?.entitlements
         expect(entitlements?["premium"]?.isActive) == true
     }
     
+    
     func testPurchaseMadeBeforeLogInIsRetainedAfter() {
-        Purchases.configure(withAPIKey: Constants.apiKey,
-                            appUserID: nil,
-                            observerMode: false,
-                            userDefaults: userDefaults)
-        Purchases.debugLogsEnabled = true
-        let purchasesDelegate = TestPurchaseDelegate()
-        Purchases.shared.delegate = purchasesDelegate
+        configurePurchases()
         
-        Purchases.shared.offerings { offerings, error in
-            expect(error).to(beNil())
-            
-            let offering = offerings?.current
-            expect(offering).toNot(beNil())
-            
-            let monthlyPackage = offering?.monthly
-            expect(monthlyPackage).toNot(beNil())
-            
-            Purchases.shared.purchaseProduct(monthlyPackage!.product) { transaction, purchaserInfo, purchaseError, userCancelled in
-                expect(purchaseError).to(beNil())
-                expect(purchaserInfo).toNot(beNil())
-            }
-            
-            Purchases.shared.syncPurchases()
-        }
+        purchaseMonthlyOffering()
         
-        expect(purchasesDelegate.purchaserInfo?.entitlements.all.count).toEventually(equal(1), timeout: .seconds(10))
+        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count).toEventually(equal(1), timeout: .seconds(10))
         let entitlements = purchasesDelegate.purchaserInfo?.entitlements
         expect(entitlements?["premium"]?.isActive) == true
         
@@ -146,14 +97,10 @@ class StoreKitTests: XCTestCase {
     }
     
     func testLogInReturnsCreatedTrueWhenNewAndFalseWhenExisting() {
-        Purchases.configure(withAPIKey: Constants.apiKey,
-                            appUserID: nil,
-                            observerMode: false,
-                            userDefaults: userDefaults)
-        Purchases.debugLogsEnabled = true
+        configurePurchases()
         
         let anonUserID = Purchases.shared.appUserID
-        let identifiedUserID = "identified_\(anonUserID)"
+        let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnon", with: "")
         
         var completionCalled = false
         Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
@@ -171,4 +118,59 @@ class StoreKitTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
     }
     
+    func testLogOutRemovesEntitlements() {
+        configurePurchases()
+        
+        let anonUserID = Purchases.shared.appUserID
+        let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnon", with: "")
+        
+        Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
+            expect(error).to(beNil())
+            
+            expect(created).to(beTrue())
+            print("identifiedPurchaserInfo: \(String(describing: identifiedPurchaserInfo))")
+            
+            self.purchaseMonthlyOffering()
+         }
+        
+        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count).toEventually(equal(1), timeout: .seconds(10))
+        
+        var completionCalled = false
+        Purchases.shared.logOut { loggedOutPurchaserInfo, logOutError in
+            expect(logOutError).to(beNil())
+            expect(loggedOutPurchaserInfo?.entitlements.all.count) == 0
+            completionCalled = true
+        }
+        
+        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+    }
+        
+    private func purchaseMonthlyOffering() {
+        Purchases.shared.offerings { offerings, error in
+            expect(error).to(beNil())
+            
+            let offering = offerings?.current
+            expect(offering).toNot(beNil())
+            
+            let monthlyPackage = offering?.monthly
+            expect(monthlyPackage).toNot(beNil())
+            
+            Purchases.shared.purchaseProduct(monthlyPackage!.product) { transaction, purchaserInfo, purchaseError, userCancelled in
+                expect(purchaseError).to(beNil())
+                expect(purchaserInfo).toNot(beNil())
+            }
+            
+            Purchases.shared.syncPurchases()
+        }
+    }
+    
+    private func configurePurchases() {
+        purchasesDelegate = TestPurchaseDelegate()
+        Purchases.configure(withAPIKey: Constants.apiKey,
+                            appUserID: nil,
+                            observerMode: false,
+                            userDefaults: userDefaults)
+        Purchases.debugLogsEnabled = true
+        Purchases.shared.delegate = purchasesDelegate
+    }
 }
