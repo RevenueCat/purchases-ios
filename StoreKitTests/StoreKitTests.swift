@@ -74,25 +74,23 @@ class StoreKitTests: XCTestCase {
     func testPurchaseMadeBeforeLogInIsRetainedAfter() {
         configurePurchases()
         
-        purchaseMonthlyOffering()
-        
-        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count).toEventually(equal(1), timeout: .seconds(10))
-        let entitlements = purchasesDelegate.purchaserInfo?.entitlements
-        expect(entitlements?["premium"]?.isActive) == true
-        
-        let anonUserID = Purchases.shared.appUserID
-        let identifiedUserID = "identified_\(anonUserID)"
-        
         var completionCalled = false
-        Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
-            expect(error).to(beNil())
+        purchaseMonthlyOffering { [self] purchaserInfo, error in
+            expect(purchaserInfo?.entitlements.all.count) == 1
+            let entitlements = self.purchasesDelegate.purchaserInfo?.entitlements
+            expect(entitlements?["premium"]?.isActive) == true
             
-            expect(created).to(beTrue())
-            expect(identifiedPurchaserInfo?.entitlements["premium"]?.isActive) == true
-            completionCalled = true
-            print("identifiedPurchaserInfo: \(String(describing: identifiedPurchaserInfo))")
+            let anonUserID = Purchases.shared.appUserID
+            let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
+            
+            Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
+                expect(error).to(beNil())
+                
+                expect(created).to(beTrue())
+                expect(identifiedPurchaserInfo?.entitlements["premium"]?.isActive) == true
+                completionCalled = true
+            }
         }
-        
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
     }
     
@@ -165,7 +163,7 @@ class StoreKitTests: XCTestCase {
         configurePurchases()
         
         let anonUserID = Purchases.shared.appUserID
-        let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnon", with: "")
+        let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
         
         var completionCalled = false
         Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
@@ -210,7 +208,7 @@ class StoreKitTests: XCTestCase {
         configurePurchases()
         
         let anonUserID = Purchases.shared.appUserID
-        let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnon", with: "")
+        let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
         
         Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
             expect(error).to(beNil())
@@ -237,7 +235,7 @@ class StoreKitTests: XCTestCase {
 
 private extension StoreKitTests {
         
-    func purchaseMonthlyOffering() {
+    func purchaseMonthlyOffering(completion: ((Purchases.PurchaserInfo?, Error?) -> Void)? = nil) {
         Purchases.shared.offerings { offerings, error in
             expect(error).to(beNil())
             
@@ -252,7 +250,9 @@ private extension StoreKitTests {
                 expect(purchaserInfo).toNot(beNil())
             }
             
-            Purchases.shared.syncPurchases()
+            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
+                Purchases.shared.syncPurchases(completion)
+            }
         }
     }
     
