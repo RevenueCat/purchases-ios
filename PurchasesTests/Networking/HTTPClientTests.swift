@@ -11,16 +11,20 @@ import OHHTTPStubs.Swift
 import Nimble
 
 import Purchases
-
+import PurchasesCoreSwift
 
 class HTTPClientTests: XCTestCase {
 
     let systemInfo = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
     var client: RCHTTPClient!
+    var userDefaults: UserDefaults!
+    var eTagManager: MockETagManager!
 
     override func setUp() {
         super.setUp()
-        client = RCHTTPClient(systemInfo: systemInfo)
+        userDefaults = MockUserDefaults()
+        eTagManager = MockETagManager(userDefaults: userDefaults)
+        client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
     }
 
     override func tearDown() {
@@ -187,6 +191,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
 
+        self.eTagManager.shouldReturnResultFromBackend = true
         self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, error) in
             completionCalled = true
         }
@@ -204,7 +209,7 @@ class HTTPClientTests: XCTestCase {
             response.error = error
             return response
         }
-
+        self.eTagManager.shouldReturnResultFromBackend = true
         self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, responseError) in
             if let responseNSError = responseError as NSError? {
                 successFailed = (status >= 500
@@ -273,6 +278,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
         }
 
+        self.eTagManager.shouldReturnResultFromBackend = true
         self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, error) in
             correctResponse = (status == errorCode) && (data == nil) && (error != nil);
         }
@@ -379,7 +385,7 @@ class HTTPClientTests: XCTestCase {
         let systemInfo = RCSystemInfo(platformFlavor: "react-native",
                                       platformFlavorVersion: "3.2.1",
                                       finishTransactions: true)
-        let client = RCHTTPClient(systemInfo: systemInfo)
+        let client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
 
         client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
                                    headers: ["test_header": "value"], completionHandler:nil)
@@ -398,7 +404,7 @@ class HTTPClientTests: XCTestCase {
         let systemInfo = RCSystemInfo(platformFlavor: "react-native",
                                       platformFlavorVersion: "1.2.3",
                                       finishTransactions: true)
-        let client = RCHTTPClient(systemInfo: systemInfo)
+        let client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
 
         client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
                                    headers: ["test_header": "value"], completionHandler:nil)
@@ -415,7 +421,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
         let systemInfo = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
-        let client = RCHTTPClient(systemInfo: systemInfo)
+        let client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
 
         client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
                                    headers: ["test_header": "value"], completionHandler:nil)
@@ -432,7 +438,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
         let systemInfo = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
-        let client = RCHTTPClient(systemInfo: systemInfo)
+        let client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
 
         client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
                                    headers: ["test_header": "value"], completionHandler:nil)
@@ -536,6 +542,7 @@ class HTTPClientTests: XCTestCase {
             firstRequestFinished = true
         }
 
+        self.eTagManager.shouldReturnResultFromBackend = true
         self.client.performRequest("POST",
                                    serially: false,
                                    path: path,
@@ -566,6 +573,8 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
                 .responseTime(0.1)
         }
+
+        self.eTagManager.shouldReturnResultFromBackend = true
 
         self.client.performRequest("POST",
                                    serially: true,

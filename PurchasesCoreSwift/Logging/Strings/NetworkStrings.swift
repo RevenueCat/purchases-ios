@@ -22,4 +22,15 @@ import Foundation
     @objc public var skproductsrequest_received_response: String { "SKProductsRequest request received response" }
     @objc public var starting_next_request: String { "Starting the next request in the queue, %@" }
     @objc public var starting_request: String { "There are no requests currently running, starting request %@ %@" }
+    @objc public var retrying_request: String { "Retrying request %@ %@" }
+    @objc public var could_not_find_cached_response: String {
+        """
+        We were expecting to be able to return a cached response, but we can't find it. Retrying call with a new ETag.
+        """
+    }
+    @objc public var could_not_find_cached_response_in_already_retried: String {
+        """
+        We can't find the cached response, but call has already been retried. Returning result from backend %@.
+        """
+    }
 }

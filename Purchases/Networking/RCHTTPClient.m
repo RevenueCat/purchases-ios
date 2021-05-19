@@ -8,7 +8,6 @@
 
 #import "RCHTTPClient.h"
 #import "RCLogUtils.h"
-#import "RCHTTPStatusCodes.h"
 #import "RCSystemInfo.h"
 #import "RCHTTPRequest.h"
 #import "RCPurchasesErrorUtils.h"
@@ -22,13 +21,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) RCSystemInfo *systemInfo;
 @property (nonatomic) NSMutableArray<RCHTTPRequest *> *queuedRequests;
 @property (nonatomic, nullable) RCHTTPRequest *currentSerialRequest;
+@property (nonatomic) RCETagManager *eTagManager;
 
 @end
 
 
 @implementation RCHTTPClient
 
-- (instancetype)initWithSystemInfo:(RCSystemInfo *)systemInfo {
+typedef void (^RetryRequestBlock)();
+
+- (instancetype)initWithSystemInfo:(RCSystemInfo *)systemInfo
+                       eTagManager:(RCETagManager *)eTagManager{
     if (self = [super init]) {
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
         config.HTTPMaximumConnectionsPerHost = 1;
@@ -36,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.systemInfo = systemInfo;
         self.queuedRequests = [[NSMutableArray alloc] init];
         self.currentSerialRequest = nil;
+        self.eTagManager = eTagManager;
     }
     return self;
 }
@@ -59,15 +63,31 @@ NS_ASSUME_NONNULL_BEGIN
                   body:(nullable NSDictionary *)requestBody
                headers:(nullable NSDictionary<NSString *, NSString *> *)headers
      completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler {
+    [self performRequest:httpMethod
+                serially:performSerially
+                    path:path
+                    body:requestBody
+                 headers:headers
+                 retried:false
+       completionHandler:completionHandler];
+}
+
+- (void)performRequest:(NSString *)httpMethod
+              serially:(BOOL)performSerially
+                  path:(NSString *)path
+                  body:(nullable NSDictionary *)requestBody
+               headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+               retried:(BOOL)retried
+     completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler {
     [self assertIsValidRequestWithMethod:httpMethod body:requestBody];
 
     NSMutableDictionary *defaultHeaders = self.defaultHeaders.mutableCopy;
     [defaultHeaders addEntriesFromDictionary:headers];
-
     NSMutableURLRequest * _Nullable urlRequest = [self createRequestWithMethod:httpMethod
                                                                           path:path
                                                                    requestBody:requestBody
-                                                                       headers:defaultHeaders];
+                                                                       headers:defaultHeaders
+                                                                   refreshETag:retried];
     if (!urlRequest) {
         RCErrorLog(@"Could not create request to %@ with body %@", path, requestBody);
         completionHandler(-1,
@@ -76,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    if (performSerially) {
+    if (performSerially && !retried) {
         RCHTTPRequest *rcRequest = [[RCHTTPRequest alloc] initWithHTTPMethod:httpMethod
                                                                         path:path
                                                                         body:requestBody
@@ -97,6 +117,16 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
+    RetryRequestBlock retryBlock = ^void() {
+        RCDebugLog(RCStrings.network.retrying_request, httpMethod, path);
+        [self performRequest:httpMethod
+                    serially:performSerially
+                        path:path
+                        body:requestBody
+                     headers:headers
+                     retried:YES
+           completionHandler:completionHandler];
+    };
 
     typedef void (^SessionCompletionBlock)(NSData *_Nullable, NSURLResponse *_Nullable, NSError *_Nullable);
 
@@ -108,7 +138,9 @@ NS_ASSUME_NONNULL_BEGIN
                        error:error
                      request:urlRequest
            completionHandler:completionHandler
-beginNextRequestWhenFinished:performSerially];
+beginNextRequestWhenFinished:performSerially
+                  retryBlock:retryBlock
+                     retried:retried];
     };
 
     RCDebugLog(RCStrings.network.api_request_started, urlRequest.HTTPMethod, urlRequest.URL.path);
@@ -122,14 +154,16 @@ beginNextRequestWhenFinished:performSerially];
                        error:(NSError *)error
                      request:(NSMutableURLRequest *)request
            completionHandler:(RCHTTPClientResponseHandler)completionHandler
-beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
-    NSInteger statusCode = RC_NETWORK_CONNECT_TIMEOUT_ERROR;
+beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
+                  retryBlock:(RetryRequestBlock)retryBlock
+                     retried:(BOOL)retried {
+    NSInteger statusCode = RCHTTPStatusCodesNetworkConnectTimeoutError;
     NSDictionary *responseObject = nil;
-
+    RCHTTPResponse *httpResponse = [[RCHTTPResponse alloc] initWithStatusCode:statusCode responseObject:responseObject];
     if (error == nil) {
         statusCode = ((NSHTTPURLResponse *) response).statusCode;
 
-        RCDebugLog(RCStrings.network.api_request_completed, request.HTTPMethod, request.URL.path, (long)statusCode);
+        RCDebugLog(RCStrings.network.api_request_completed, request.HTTPMethod, request.URL.path, (long) statusCode);
 
         NSError *jsonError;
         responseObject = [NSJSONSerialization JSONObjectWithData:data
@@ -141,18 +175,31 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
             RCErrorLog(RCStrings.network.json_data_received, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             error = jsonError;
         }
+
+        NSDictionary *headersInResponse = ((NSHTTPURLResponse *) response).allHeaderFields;
+
+        httpResponse = [self.eTagManager getHTTPResultFromCacheOrBackendWith:statusCode
+                                                              responseObject:responseObject
+                                                                       error:error
+                                                           headersInResponse:headersInResponse
+                                                                     request:request
+                                                                     retried:retried];
+        if (!httpResponse) {
+            retryBlock();
+            return;
+        }
     }
 
     if (completionHandler != nil) {
-        completionHandler(statusCode, responseObject, error);
+        completionHandler(httpResponse.statusCode, httpResponse.responseObject, error);
     }
 
     if (beginNextRequestWhenFinished) {
         @synchronized (self) {
             RCDebugLog(RCStrings.network.serial_request_done,
-                       self.currentSerialRequest.httpMethod,
-                       self.currentSerialRequest.path,
-                       (unsigned long)self.queuedRequests.count);
+                    self.currentSerialRequest.httpMethod,
+                    self.currentSerialRequest.path,
+                    (unsigned long) self.queuedRequests.count);
             RCHTTPRequest *nextRequest = nil;
             self.currentSerialRequest = nil;
             if (self.queuedRequests.count > 0) {
@@ -175,14 +222,19 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
 - (nullable NSMutableURLRequest *)createRequestWithMethod:(NSString *)httpMethod
                                                      path:(NSString *)path
                                               requestBody:(NSDictionary *)requestBody
-                                                  headers:(NSMutableDictionary *)defaultHeaders {
+                                                  headers:(NSMutableDictionary *)headers
+                                              refreshETag:(BOOL)refreshETag {
     NSString *relativeURLString = [NSString stringWithFormat:@"/v1%@", path];
     NSURL *requestURL = [NSURL URLWithString:relativeURLString relativeToURL:RCSystemInfo.serverHostURL];
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL];
 
     request.HTTPMethod = httpMethod;
-    request.allHTTPHeaderFields = defaultHeaders;
+
+    NSDictionary<NSString *, NSString *> *eTagHeader =
+            [self.eTagManager getETagHeaderFor:request refreshETag:refreshETag];
+    [headers addEntriesFromDictionary:eTagHeader];
+    request.allHTTPHeaderFields = headers;
 
     if ([httpMethod isEqualToString:@"POST"]) {
         NSError *jsonParseError;
@@ -233,6 +285,9 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
     return headers;
 }
 
+- (void)clearCaches {
+    [self.eTagManager clearCaches];
+}
 
 @end
 
