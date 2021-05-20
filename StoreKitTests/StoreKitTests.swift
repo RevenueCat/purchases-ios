@@ -81,7 +81,7 @@ class StoreKitTests: XCTestCase {
             expect(entitlements?["premium"]?.isActive) == true
             
             let anonUserID = Purchases.shared.appUserID
-            let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
+            let identifiedUserID = "identified_\(anonUserID)_testPurchaseMadeBeforeLogInIsRetainedAfter".replacingOccurrences(of: "RCAnonymous", with: "")
             
             Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
                 expect(error).to(beNil())
@@ -94,10 +94,10 @@ class StoreKitTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
     }
     
-    func testPurchaseMadeBeforeLogInIsNotRetainedAfterIfLogInToExistingUserUntilRestore() {
+    func testPurchaseMadeBeforeLogInIsNotRetainedAfterUntilRestoreIfLogInToExistingUser() {
         configurePurchases()
         var completionCalled = false
-        let existingUserID = UUID().uuidString
+        let existingUserID = UUID().uuidString + "testPurchaseMadeBeforeLogInIsNotRetainedAfterUntilRestoreIfLogInToExistingUser"
         expect(self.purchasesDelegate.purchaserInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
         
         Purchases.shared.logIn(existingUserID) { logInPurchaserInfo, created, logInError in
