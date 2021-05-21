@@ -140,7 +140,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 + (instancetype)sharedPurchases {
     if (!_sharedPurchases) {
-        RCWarnLog(@"%@", RCStrings.configure.no_singleton_instance);
+        NSString *errorMessage = RCStrings.configure.no_singleton_instance;
+        RCWarnLog(@"%@", errorMessage);
+        @throw([NSException exceptionWithName:@"UninitializedPurchasesSDKException" reason:errorMessage userInfo:nil]);
     }
     return _sharedPurchases;
 }
