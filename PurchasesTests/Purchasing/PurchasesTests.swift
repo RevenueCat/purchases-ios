@@ -257,6 +257,12 @@ class PurchasesTests: XCTestCase {
         expect{ Purchases.shared }.toNot(raiseException())
     }
 
+    func testIsConfiguredReturnsCorrectvalue() {
+        expect(Purchases.isConfigured) == false
+        setupPurchases()
+        expect(Purchases.isConfigured) == true
+    }
+    
     func testFirstInitializationCallDelegate() {
         setupPurchases()
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
