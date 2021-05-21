@@ -152,10 +152,17 @@ NS_SWIFT_NAME(Purchases)
 
 /**
  @return A singleton `RCPurchases` object. Call this after a configure method to access the singleton.
+ @note: If the SDK has not been configured, calls to sharedPurchases will raise an exception. Make sure to configure the SDK before making calls to sharedPurchases.
  */
 @property (class, nonatomic, readonly) RCPurchases *sharedPurchases;
 
 #pragma mark Configuration
+
+/**
+ @note True if the SDK has been configured, false otherwise. This property should only be used in special circumstances. If the shared instance has not been configured,
+ calls made to it will raise an exception.
+ */
+@property (class, nonatomic, readonly) BOOL isConfigured;
 
 /** Set this to true if you are passing in an appUserID but it is anonymous, this is true by default if you didn't pass an appUserID
  If a user tries to purchase a product that is active on the current app store account, we will treat it as a restore and alias
