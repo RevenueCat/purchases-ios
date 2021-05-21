@@ -10,12 +10,18 @@ class ETagManagerTests: XCTestCase {
     private var mockUserDefaults: MockUserDefaults! = nil
     private var eTagManager: ETagManager!
     private var baseURL: URL = URL(string: "https://api.revenuecat.com")!
+    
     override func setUp() {
         super.setUp()
         self.mockUserDefaults = MockUserDefaults()
         self.eTagManager = ETagManager(userDefaults: self.mockUserDefaults)
     }
-
+    
+    override func tearDown() {
+        self.mockUserDefaults = nil
+        self.eTagManager = nil
+    }
+    
     func testETagIsEmptyIfThereIsNoETagSavedForThatRequest() {
         let url = URL(string: "/v1/subscribers/appUserID", relativeTo: baseURL)
         let request = URLRequest(url: url!)
@@ -132,7 +138,7 @@ class ETagManagerTests: XCTestCase {
         expect(self.mockUserDefaults.setObjectForKeyCalledValue) == ETAG_USER_DEFAULTS_KEY_BASE + "https://api.revenuecat.com/v1/subscribers/appUserID"
         let eTagAndResponseWrapper = try! ETagAndResponseWrapper(with: setData)
         expect(eTagAndResponseWrapper.eTag) == eTag
-        expect(eTagAndResponseWrapper.responseObject as! [String: String]) == responseObject
+        expect(eTagAndResponseWrapper.responseObject as? [String: String]) == responseObject
     }
 
     func testResponseIsNotStoredIfResponseCodeIst500() {

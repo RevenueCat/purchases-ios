@@ -166,10 +166,14 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
         RCDebugLog(RCStrings.network.api_request_completed, request.HTTPMethod, request.URL.path, (long) statusCode);
 
         NSError *jsonError;
-        responseObject = [NSJSONSerialization JSONObjectWithData:data
-                                                         options:0
-                                                           error:&jsonError];
-
+        if (statusCode == RCHTTPStatusCodesNotModifiedResponseCode && data.length == 0) {
+            responseObject = @{};
+        } else {
+            responseObject = [NSJSONSerialization JSONObjectWithData:data
+                                                             options:0
+                                                               error:&jsonError];
+        }
+        
         if (jsonError) {
             RCErrorLog(RCStrings.network.parsing_json_error, jsonError.localizedDescription);
             RCErrorLog(RCStrings.network.json_data_received, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);

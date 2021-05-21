@@ -220,6 +220,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
                                                       platformFlavorVersion:platformFlavorVersion
                                                          finishTransactions:!observerMode];
+    if (userDefaults == nil) {
+        userDefaults = [NSUserDefaults standardUserDefaults];
+    }
 
     RCETagManager *eTagManager = [[RCETagManager alloc] initWithUserDefaults:userDefaults];
 
@@ -229,9 +232,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
     RCOfferingsFactory *offeringsFactory = [[RCOfferingsFactory alloc] init];
 
-    if (userDefaults == nil) {
-        userDefaults = [NSUserDefaults standardUserDefaults];
-    }
 
     RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWith:userDefaults];
     RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];

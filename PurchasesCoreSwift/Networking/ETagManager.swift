@@ -36,7 +36,13 @@ internal let ETAG_USER_DEFAULTS_KEY_BASE = "com.revenuecat.userdefaults" + ".eta
         if error != nil {
             return resultFromBackend
         }
-        if let eTagInResponse = headersInResponse[ETAG_HEADER_NAME] as! String? {
+        
+        var eTagInResponse: String? = headersInResponse[ETAG_HEADER_NAME] as! String?
+        if ((eTagInResponse == nil)) {
+            eTagInResponse = headersInResponse[ETAG_HEADER_NAME.lowercased()] as! String?
+        }
+        
+        if (eTagInResponse != nil) {
             if (shouldUseCachedVersion(responseCode: statusCode)) {
                 guard let storedResponse = getStoredHTTPResponse(for: request) else {
                     if (retried) {
@@ -57,7 +63,7 @@ internal let ETAG_USER_DEFAULTS_KEY_BASE = "com.revenuecat.userdefaults" + ".eta
                     for: request,
                     statusCode: statusCode,
                     responseObject: responseObject,
-                    eTag: eTagInResponse)
+                    eTag: eTagInResponse!)
         }
 
         return resultFromBackend
@@ -106,13 +112,11 @@ internal let ETAG_USER_DEFAULTS_KEY_BASE = "com.revenuecat.userdefaults" + ".eta
         if statusCode != HTTPStatusCodes.notModifiedResponseCode.rawValue &&
                    statusCode < HTTPStatusCodes.internalServerError.rawValue &&
                    responseObject != nil {
-            queue.async { [self] in
-                if let cacheKey = eTagDefaultCacheKey(for: request) {
-                    let eTagAndResponse =
-                            ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, responseObject: responseObject!)
-                    if let dataToStore = eTagAndResponse.asData() {
-                        userDefaults.set(dataToStore, forKey: cacheKey)
-                    }
+            if let cacheKey = eTagDefaultCacheKey(for: request) {
+                let eTagAndResponse =
+                        ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, responseObject: responseObject!)
+                if let dataToStore = eTagAndResponse.asData() {
+                    userDefaults.set(dataToStore, forKey: cacheKey)
                 }
             }
         }

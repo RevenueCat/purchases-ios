@@ -66,7 +66,6 @@ class BackendTests: XCTestCase {
 
     let systemInfo = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
     var httpClient: MockHTTPClient!
-    var eTagManager: MockETagManager!
     let apiKey = "asharedsecret"
     let bundleID = "com.bundle.id"
     let userID = "user"
@@ -91,6 +90,7 @@ class BackendTests: XCTestCase {
     var backend: RCBackend?
 
     override func setUp() {
+        let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
         httpClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         backend = RCBackend.init(httpClient: httpClient,
                                  apiKey: apiKey)

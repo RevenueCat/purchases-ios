@@ -31,14 +31,14 @@ class MockETagManager: ETagManager {
     var invokedGetHTTPResultFromCacheOrBackendParameters: (statusCode: Int, responseObject: [String: Any]?, error: Error?, headersInResponse: [String: Any], request: URLRequest, retried: Bool)?
     var invokedGetHTTPResultFromCacheOrBackendParametersList = [(statusCode: Int, responseObject: [String: Any]?, error: Error?, headersInResponse: [String: Any], request: URLRequest, retried: Bool)]()
     var stubbedGetHTTPResultFromCacheOrBackendResult: HTTPResponse!
-    var shouldReturnResultFromBackend = false
-    
+    var shouldReturnResultFromBackend = true
+
     override func getHTTPResultFromCacheOrBackend(with statusCode: Int,
-        responseObject: [String: Any]?,
-        error: Error?,
-        headersInResponse: [String: Any],
-        request: URLRequest,
-        retried: Bool) -> HTTPResponse? {
+                                                  responseObject: [String: Any]?,
+                                                  error: Error?,
+                                                  headersInResponse: [String: Any],
+                                                  request: URLRequest,
+                                                  retried: Bool) -> HTTPResponse? {
         invokedGetHTTPResultFromCacheOrBackend = true
         invokedGetHTTPResultFromCacheOrBackendCount += 1
         invokedGetHTTPResultFromCacheOrBackendParameters = (statusCode, responseObject, error, headersInResponse, request, retried)
