@@ -130,12 +130,12 @@ class ETagManagerTests: XCTestCase {
         expect(response).toNot(beNil())
         expect(self.mockUserDefaults.setObjectForKeyCallCount) == 1
 
-        let cacheKey = ETAG_USER_DEFAULTS_KEY_BASE + url!.absoluteString
+        let cacheKey = url!.absoluteString
         expect(self.mockUserDefaults.mockValues[cacheKey]).toNot(beNil())
         let setData: Data = self.mockUserDefaults.mockValues[cacheKey] as! Data
 
         expect(setData).toNot(beNil())
-        expect(self.mockUserDefaults.setObjectForKeyCalledValue) == ETAG_USER_DEFAULTS_KEY_BASE + "https://api.revenuecat.com/v1/subscribers/appUserID"
+        expect(self.mockUserDefaults.setObjectForKeyCalledValue) ==  "https://api.revenuecat.com/v1/subscribers/appUserID"
         let eTagAndResponseWrapper = try! ETagAndResponseWrapper(with: setData)
         expect(eTagAndResponseWrapper.eTag) == eTag
         expect(eTagAndResponseWrapper.responseObject as? [String: String]) == responseObject
@@ -155,21 +155,21 @@ class ETagManagerTests: XCTestCase {
 
         expect(self.mockUserDefaults.setObjectForKeyCallCount) == 0
 
-        let cacheKey = ETAG_USER_DEFAULTS_KEY_BASE + url!.absoluteString
+        let cacheKey = url!.absoluteString
         expect(self.mockUserDefaults.mockValues[cacheKey]).to(beNil())
     }
 
     func testClearCachesWorks() {
         let eTag = "an_etag"
         let url = URL(string: "/v1/subscribers/appUserID", relativeTo: baseURL)
-        mockStoredETagAndResponse(for: url!, statusCode: HTTPStatusCodes.success, eTag: eTag)
+        let _ = mockStoredETagAndResponse(for: url!, statusCode: HTTPStatusCodes.success, eTag: eTag)
 
-        let cacheKey = ETAG_USER_DEFAULTS_KEY_BASE + url!.absoluteString
+        let cacheKey = url!.absoluteString
         expect(self.mockUserDefaults.mockValues[cacheKey]).toNot(beNil())
 
         eTagManager.clearCaches()
 
-        expect(self.mockUserDefaults.mockValues[cacheKey]).to(beNil())
+        expect(self.mockUserDefaults.mockValues.count) == 0
     }
 
     private func getHeaders(eTag: String) -> [String: String] {
@@ -193,7 +193,7 @@ class ETagManagerTests: XCTestCase {
                 eTag: eTag,
                 statusCode: statusCode.rawValue,
                 responseObject: responseObject)
-        let cacheKey = ETAG_USER_DEFAULTS_KEY_BASE + url.absoluteString
+        let cacheKey = url.absoluteString
         self.mockUserDefaults.mockValues[cacheKey] = etagAndResponse.asData()
         return responseObject
     }

@@ -5,13 +5,18 @@
 import Foundation
 
 internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
-internal let ETAG_USER_DEFAULTS_KEY_BASE = "com.revenuecat.userdefaults" + ".etags.";
 
 @objc(RCETagManager) public class ETagManager: NSObject {
     private let queue = DispatchQueue(label: "ETagManager")
 
     private var userDefaults: UserDefaults
 
+    @objc public override init() {
+        // TODO: do they persist after reinstalling
+        let bundleID: String = Bundle.main.bundleIdentifier ?? ""
+        self.userDefaults = UserDefaults(suiteName: bundleID + ".revenuecat.etags") ?? UserDefaults.standard
+    }
+    
     @objc public init(userDefaults: UserDefaults) {
         self.userDefaults = userDefaults
     }
@@ -70,11 +75,8 @@ internal let ETAG_USER_DEFAULTS_KEY_BASE = "com.revenuecat.userdefaults" + ".eta
     }
 
     @objc public func clearCaches() {
-        let keys = self.userDefaults.dictionaryRepresentation().keys
-        keys.forEach { key in
-            if key.starts(with: ETAG_USER_DEFAULTS_KEY_BASE) {
-                self.userDefaults.removeObject(forKey: key)
-            }
+        if let bundleID = Bundle.main.bundleIdentifier {
+            self.userDefaults.removePersistentDomain(forName: bundleID + ".revenuecat.etags")
         }
     }
 
@@ -124,7 +126,7 @@ internal let ETAG_USER_DEFAULTS_KEY_BASE = "com.revenuecat.userdefaults" + ".eta
 
     private func eTagDefaultCacheKey(for request: URLRequest) -> String? {
         if let url = request.url?.absoluteString {
-            return ETAG_USER_DEFAULTS_KEY_BASE + url
+            return url
         }
         return nil
     }
