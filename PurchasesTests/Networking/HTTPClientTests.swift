@@ -695,5 +695,27 @@ class HTTPClientTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
         expect(httpCallMade).toEventually(beFalse())
     }
+
+    func testRequestIsRetriedIfResponseFromETagManagerIsNil() {
+        let path = "/a_random_path"
+        var completionCalled = false
+
+        var firstTimeCalled = false
+        stub(condition: isPath("/v1" + path)) { _ in
+            if (firstTimeCalled) {
+                self.eTagManager.shouldReturnResultFromBackend = true
+            }
+            firstTimeCalled = true
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+        }
+
+        self.eTagManager.shouldReturnResultFromBackend = false
+        self.eTagManager.stubbedGetHTTPResultFromCacheOrBackendResult = nil
+        self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, error) in
+            completionCalled = true
+        }
+
+        expect(completionCalled).toEventually(equal(true), timeout: .seconds(1))
+    }
 }
 
