@@ -138,10 +138,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     self.systemInfo.finishTransactions = finishTransactions;
 }
 
++ (BOOL)isConfigured {
+    return _sharedPurchases != nil;
+}
+
 + (instancetype)sharedPurchases {
-    if (!_sharedPurchases) {
-        RCWarnLog(@"%@", RCStrings.configure.no_singleton_instance);
-    }
+    NSCAssert(_sharedPurchases, RCStrings.configure.no_singleton_instance);
     return _sharedPurchases;
 }
 
