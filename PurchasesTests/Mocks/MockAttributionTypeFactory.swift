@@ -31,7 +31,7 @@ class MockAdClient: NSObject, FakeAdClient {
 }
 
 @available(iOS 14, macOS 11, tvOS 14, *)
-class MockATTrackingManager: NSObject, FakeATTrackingManager {
+class MockTrackingManager: NSObject, FakeTrackingManager {
     static var mockAuthorizationStatus: ATTrackingManager.AuthorizationStatus = .authorized
 
     static func trackingAuthorizationStatus() -> Int {
@@ -48,9 +48,9 @@ class MockAttributionTypeFactory: AttributionTypeFactory {
 
     static var shouldReturnTrackingManagerClass = true
 
-    override func atTrackingManagerClass() -> FakeATTrackingManager.Type? {
+    override func atTrackingClass() -> FakeTrackingManager.Type? {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
-            return Self.shouldReturnTrackingManagerClass ? MockATTrackingManager.self : nil
+            return Self.shouldReturnTrackingManagerClass ? MockTrackingManager.self : nil
         } else {
             return nil
         }

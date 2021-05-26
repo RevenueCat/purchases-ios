@@ -23,12 +23,12 @@ class NSDictionaryExtensionsTests: XCTestCase {
             "type": 1
         ]
         
-        expect(testValues.removingNSNullValues() as NSDictionary) == expectedValues
+        expect(testValues.rc_removingNSNullValues() as NSDictionary) == expectedValues
     }
     
     func testRemovingNSNullValuesReturnsEmptyIfOriginalIsEmpty() {
         let testValues = NSDictionary()
         
-        expect(testValues.removingNSNullValues() as NSDictionary) == testValues
+        expect(testValues.rc_removingNSNullValues() as NSDictionary) == testValues
     }
 }

@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation NSDictionary (RCExtensions)
 
-- (NSDictionary *)removingNSNullValues {
+- (NSDictionary *)rc_removingNSNullValues {
     NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
     
     NSEnumerator *enumerator = [self keyEnumerator];

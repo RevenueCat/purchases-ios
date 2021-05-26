@@ -24,6 +24,6 @@ class NSDataExtensionsTests: XCTestCase {
 
         let nsData = data as NSData
 
-        expect(nsData.asString()) == "e388152d6c67f4d5f7a78edf073946f158357f89a1dc74dff80a796740fd9d91"
+        expect(nsData.rc_asString()) == "e388152d6c67f4d5f7a78edf073946f158357f89a1dc74dff80a796740fd9d91"
     }
 }

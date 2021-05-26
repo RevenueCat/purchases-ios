@@ -1,6 +1,4 @@
-- Fix automatic Apple Search Ads Attribution collection for iOS 14.5
-    https://github.com/RevenueCat/purchases-ios/pull/473
-- Fixed `willRenew` values for consumables and promotionals
-    https://github.com/RevenueCat/purchases-ios/pull/475
-- Improves tests for EntitlementInfos
-    https://github.com/RevenueCat/purchases-ios/pull/476
+- Updates log message for `createAlias` to improve clarity
+    https://github.com/RevenueCat/purchases-ios/pull/498
+- Adds `rc_` to all Foundation extensions to prevent name collisions
+    https://github.com/RevenueCat/purchases-ios/pull/500

@@ -42,7 +42,7 @@ class AttributionFetcherTests: XCTestCase {
 
     private func resetAttributionStaticProperties() {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
-            MockATTrackingManager.mockAuthorizationStatus = .authorized
+            MockTrackingManager.mockAuthorizationStatus = .authorized
         }
         MockAttributionTypeFactory.shouldReturnAdClientClass = true
         MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
@@ -140,7 +140,7 @@ class AttributionFetcherTests: XCTestCase {
     func testPostAppleSearchAdsAttributionIfNeededPostsIfAuthorizedOnNewOS() {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
             systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
-            MockATTrackingManager.mockAuthorizationStatus = .authorized
+            MockTrackingManager.mockAuthorizationStatus = .authorized
             MockAttributionTypeFactory.shouldReturnAdClientClass = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
 
@@ -153,7 +153,7 @@ class AttributionFetcherTests: XCTestCase {
     func testPostAppleSearchAdsAttributionIfNeededPostsIfAuthorizedOnOldOS() {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
             systemInfo.stubbedIsOperatingSystemAtLeastVersion = false
-            MockATTrackingManager.mockAuthorizationStatus = .authorized
+            MockTrackingManager.mockAuthorizationStatus = .authorized
             MockAttributionTypeFactory.shouldReturnAdClientClass = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
 
@@ -166,7 +166,7 @@ class AttributionFetcherTests: XCTestCase {
     func testPostAppleSearchAdsAttributionIfNeededPostsIfAuthNotDeterminedOnOldOS() {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
             systemInfo.stubbedIsOperatingSystemAtLeastVersion = false
-            MockATTrackingManager.mockAuthorizationStatus = .notDetermined
+            MockTrackingManager.mockAuthorizationStatus = .notDetermined
             MockAttributionTypeFactory.shouldReturnAdClientClass = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
 
@@ -180,7 +180,7 @@ class AttributionFetcherTests: XCTestCase {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
             systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
 
-            MockATTrackingManager.mockAuthorizationStatus = .notDetermined
+            MockTrackingManager.mockAuthorizationStatus = .notDetermined
             MockAttributionTypeFactory.shouldReturnAdClientClass = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
 
@@ -194,7 +194,7 @@ class AttributionFetcherTests: XCTestCase {
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfNotAuthorizedOnOldOS() {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
             systemInfo.stubbedIsOperatingSystemAtLeastVersion = false
-            MockATTrackingManager.mockAuthorizationStatus = .denied
+            MockTrackingManager.mockAuthorizationStatus = .denied
             MockAttributionTypeFactory.shouldReturnAdClientClass = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
 
@@ -207,7 +207,7 @@ class AttributionFetcherTests: XCTestCase {
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfNotAuthorizedOnNewOS() {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
             systemInfo.stubbedIsOperatingSystemAtLeastVersion = true
-            MockATTrackingManager.mockAuthorizationStatus = .denied
+            MockTrackingManager.mockAuthorizationStatus = .denied
             MockAttributionTypeFactory.shouldReturnAdClientClass = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
 
@@ -219,7 +219,7 @@ class AttributionFetcherTests: XCTestCase {
 
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfAlreadySent() {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
-            MockATTrackingManager.mockAuthorizationStatus = .authorized
+            MockTrackingManager.mockAuthorizationStatus = .authorized
             MockAttributionTypeFactory.shouldReturnAdClientClass = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerClass = true
 

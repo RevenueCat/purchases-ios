@@ -54,6 +54,7 @@ typedef NS_ERROR_ENUM(RCPurchasesErrorDomain, RCPurchasesErrorCode) {
     RCPaymentPendingError = 20,
     RCInvalidSubscriberAttributesError = 21,
     RCLogOutAnonymousUserError = 22,
+    RCConfigurationError = 23,
 } NS_SWIFT_NAME(Purchases.ErrorCode);
 
 /**
@@ -68,9 +69,11 @@ typedef NS_ENUM(NSInteger, RCBackendErrorCode) {
     RCBackendInvalidPaymentModeOrIntroPriceNotProvided = 7105,
     RCBackendProductIdForGoogleReceiptNotProvided = 7106,
     RCBackendInvalidPlayStoreCredentials = 7107,
+    RCBackendInternalServerError = 7110,
     RCBackendEmptyAppUserId = 7220,
     RCBackendInvalidAuthToken = 7224,
     RCBackendInvalidAPIKey = 7225,
+    RCBackendBadRequest = 7226,
     RCBackendPlayStoreQuotaExceeded = 7229,
     RCBackendPlayStoreInvalidPackageName = 7230,
     RCBackendPlayStoreGenericError = 7231,

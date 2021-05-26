@@ -71,6 +71,11 @@ Prepare next version
 fastlane ios export_xcframework
 ```
 Export XCFramework
+### ios storekit_tests
+```
+fastlane ios storekit_tests
+```
+Run StoreKitTests
 
 ----
 

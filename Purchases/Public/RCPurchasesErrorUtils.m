@@ -78,6 +78,8 @@ static NSString *RCPurchasesErrorDescription(RCPurchasesErrorCode code) {
             return @"One or more of the attributes sent could not be saved.";
         case RCLogOutAnonymousUserError:
             return @"LogOut was called but the current user is anonymous.";
+        case RCConfigurationError:
+            return @"There is an issue with your configuration. Check the underlying error for more details.";
     }
     return @"Something went wrong.";
 }
@@ -138,6 +140,8 @@ static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
             return @"INVALID_SUBSCRIBER_ATTRIBUTES";
         case RCLogOutAnonymousUserError:
             return @"LOGOUT_CALLED_WITH_ANONYMOUS_USER";
+        case RCConfigurationError:
+            return @"CONFIGURATION_ERROR";
     }
     return @"UNRECOGNIZED_ERROR";
 }
@@ -145,18 +149,14 @@ static NSString *const RCPurchasesErrorCodeString(RCPurchasesErrorCode code) {
 static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(RCBackendErrorCode code) {
     switch (code) {
         case RCBackendInvalidPlatform:
-            return RCUnknownError;
+            return RCConfigurationError;
         case RCBackendStoreProblem:
-        case RCBackendPlayStoreQuotaExceeded:
-        case RCBackendPlayStoreInvalidPackageName:
-        case RCBackendPlayStoreGenericError:
             return RCStoreProblemError;
         case RCBackendCannotTransferPurchase:
             return RCReceiptAlreadyInUseError;
         case RCBackendInvalidReceiptToken:
             return RCInvalidReceiptError;
         case RCBackendInvalidAppStoreSharedSecret:
-        case RCBackendInvalidPlayStoreCredentials:
         case RCBackendInvalidAuthToken:
         case RCBackendInvalidAPIKey:
             return RCInvalidCredentialsError;
@@ -172,6 +172,13 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromRCBackendErrorCode(RCBackend
         case RCBackendInvalidSubscriberAttributes:
         case RCBackendInvalidSubscriberAttributesBody:
             return RCInvalidSubscriberAttributesError;
+        case RCBackendPlayStoreInvalidPackageName:
+        case RCBackendPlayStoreQuotaExceeded:
+        case RCBackendPlayStoreGenericError:
+        case RCBackendInvalidPlayStoreCredentials:
+        case RCBackendBadRequest:
+        case RCBackendInternalServerError:
+            return RCUnknownBackendError;
     }
     return RCUnknownError;
 }

@@ -19,8 +19,11 @@ import Foundation
     @objc public var no_instance_configured_caching_attribution: String { "There is no purchase instance configured, caching attribution" }
     @objc public var instance_configured_posting_attribution: String { "There is a purchase instance configured, posting attribution" }
     @objc public var search_ads_attribution_cancelled_missing_att_framework: String {
-        "Tried to post Apple Search Ads Attribution, but AppTrackingTransparency is required on this OS" +
+        "Tried to post Apple Search Ads Attribution, but ATT Framework is required on this OS" +
             " and it isn't included";
+    }
+    @objc public var att_framework_present_but_couldnt_call_tracking_authorization_status: String {
+        "ATT Framework was found but it didn't respond to authorization status selector!";
     }
     @objc public var search_ads_attribution_cancelled_missing_iad_framework: String {
         "Tried to post Apple Search Ads Attribution, but iAd Framework is is required for it" +
