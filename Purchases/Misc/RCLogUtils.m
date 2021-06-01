@@ -10,9 +10,9 @@
 @import PurchasesCoreSwift;
 
 void RCSetShowDebugLogs(BOOL showDebugLogs) {
-    RCLogger.shouldShowDebugLogs = showDebugLogs;
+    RCLog.shouldShowDebugLogs = showDebugLogs;
 }
 
 BOOL RCShowDebugLogs() {
-    return RCLogger.shouldShowDebugLogs;
+    return RCLog.shouldShowDebugLogs;
 }
