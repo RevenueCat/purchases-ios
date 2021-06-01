@@ -11,10 +11,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, RCLogLevel) {
-    RCLogLevelDebug,
-    RCLogLevelInfo,
-    RCLogLevelWarn,
-    RCLogLevelError,
+    RCLogLevelDebug = 0,
+    RCLogLevelInfo = 1,
+    RCLogLevelWarn = 2,
+    RCLogLevelError = 3,
 } NS_SWIFT_NAME(Purchases.LogLevel);
 
 NS_SWIFT_NAME(Purchases.Logger)
@@ -28,9 +28,9 @@ NS_SWIFT_NAME(Purchases.Logger)
 + (void)setLogHandler:(void(^)(RCLogLevel, NSString * _Nonnull))logHandler;
 
 /**
- Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat
+ Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat
 */
-@property (class, nonatomic) BOOL debugLogsEnabled;
+@property (class, nonatomic) RCLogLevel logLevel;
 
 - (instancetype)init NS_UNAVAILABLE;
 

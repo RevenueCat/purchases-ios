@@ -8,11 +8,3 @@
 
 #import "RCLogUtils.h"
 @import PurchasesCoreSwift;
-
-void RCSetShowDebugLogs(BOOL showDebugLogs) {
-    RCLog.shouldShowDebugLogs = showDebugLogs;
-}
-
-BOOL RCShowDebugLogs() {
-    return RCLog.shouldShowDebugLogs;
-}

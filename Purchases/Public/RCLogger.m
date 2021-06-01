@@ -13,14 +13,35 @@
 
 @implementation RCLogger
 
-+ (void)setDebugLogsEnabled:(BOOL)enabled {
-    RCSetShowDebugLogs(enabled);
++ (void)setLogLevel:(RCLogLevel)logLevel {
+    switch (logLevel) {
+        case RCLogLevelDebug:
+            RCLog.logLevel = RCInternalLogLevelDebug;
+            break;
+        case RCLogLevelInfo:
+            RCLog.logLevel = RCInternalLogLevelInfo;
+            break;
+        case RCLogLevelWarn:
+            RCLog.logLevel = RCInternalLogLevelWarn;
+            break;
+        case RCLogLevelError:
+            RCLog.logLevel = RCInternalLogLevelError;
+            break;
+    }
 }
 
-+ (BOOL)debugLogsEnabled {
-    return RCShowDebugLogs();
++ (RCLogLevel)logLevel {
+    switch (RCLog.logLevel) {
+        case RCInternalLogLevelDebug:
+            return RCLogLevelDebug;
+        case RCInternalLogLevelInfo:
+            return RCLogLevelInfo;
+        case RCInternalLogLevelWarn:
+            return RCLogLevelWarn;
+        case RCInternalLogLevelError:
+            return RCLogLevelError;
+    }
 }
-
 + (void)setLogHandler:(void(^)(RCLogLevel, NSString * _Nonnull))handler {
     RCLog.logHandler = ^(NSInteger level, NSString *message) {
         handler((RCLogLevel)level, message);

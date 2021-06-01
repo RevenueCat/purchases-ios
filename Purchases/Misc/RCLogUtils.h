@@ -10,9 +10,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-void RCSetShowDebugLogs(BOOL showDebugLogs);
-BOOL RCShowDebugLogs(void);
-
 #define RCDebugLog(args, ...) \
     [RCLog debug: [NSString stringWithFormat: args, ##__VA_ARGS__]]
 

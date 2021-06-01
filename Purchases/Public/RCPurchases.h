@@ -67,7 +67,7 @@ NS_SWIFT_NAME(Purchases)
 /**
  Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat
 */
-@property (class, nonatomic, assign) BOOL debugLogsEnabled DEPRECATED_MSG_ATTRIBUTE("use RCLogger.debugLogsEnabled");
+@property (class, nonatomic, assign) BOOL debugLogsEnabled DEPRECATED_MSG_ATTRIBUTE("use Purchases.Logger.logLevel = .debug instead");
 
 /**
  Set this property to your proxy URL before configuring Purchases *only* if you've received a proxy key value from your RevenueCat contact.
