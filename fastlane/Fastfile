@@ -30,13 +30,19 @@ platform :ios do
   lane :bump do |options|
     new_version_number = options[:version]
     fail ArgumentError, "missing version" unless new_version_number
-    previous_version_number = get_version_number(target: "Purchases")
-    increment_version_number(version_number: new_version_number)
+    previous_version_number = current_version_number
+    
+    version_number_without_prerelease_modifiers = new_version_number.split("-")[0]
+    increment_version_number(version_number: version_number_without_prerelease_modifiers)
+    
     files_to_update = [
       '../PurchasesCoreSwift.podspec',
       '../Purchases.podspec',
       '../Purchases/Misc/RCSystemInfo.m',
-      '../.jazzy.yaml'
+      '../.jazzy.yaml',
+      '../.version',
+      '../Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
+      '../Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj',
     ]
     for file_to_update in files_to_update
       increment_build_number(previous_version_number, new_version_number, file_to_update)
@@ -59,6 +65,8 @@ platform :ios do
     rescue
       fail "please add a CHANGELOG.latest.md file before calling this lane"
     end
+    commit_hash = last_git_commit[:commit_hash]
+    puts commit_hash
 
     set_github_release(
       repository_name: "revenuecat/purchases-ios",
@@ -66,7 +74,7 @@ platform :ios do
       name: release_version,
       tag_name: "#{release_version}",
       description: changelog,
-      commitish: "master",
+      commitish: commit_hash,
       upload_assets: ["Purchases.framework.zip", "Purchases.xcframework.zip"],
       is_draft: false
   )
@@ -88,7 +96,7 @@ platform :ios do
 
   desc "Deployment checks"
   lane :deployment_checks do |options|
-    version_number = get_version_number(target: "Purchases")
+    version_number = current_version_number
     check_no_git_tag_exists(version_number)
     check_pods
     carthage_archive
@@ -113,7 +121,7 @@ platform :ios do
 
   desc "Deploy"
   lane :deploy do |options|
-    version_number = get_version_number(target: "Purchases")
+    version_number = current_version_number
     push_pods
     carthage_archive
     export_xcframework
@@ -122,7 +130,7 @@ platform :ios do
 
   desc "Prepare next version"
   lane :prepare_next_version do |options|
-    current_version_number = get_version_number(target: "Purchases")
+    current_version_number = current_version_number
     major, minor, _ = current_version_number.split('.')
     next_version = "#{major}.#{minor.to_i + 1}.0"
     next_version_snapshot = "#{next_version}-SNAPSHOT"
@@ -239,4 +247,8 @@ def replace_in(previous_text, new_text, path)
   sed_regex = 's|' + previous_text + '|' + new_text + '|'
   backup_extension = '.bck'
   sh("sed", '-i', backup_extension, sed_regex, path)
+end
+
+def current_version_number
+  File.read("../.version")
 end
