@@ -340,10 +340,9 @@ workflows:
       - integration-tests-swift-package-manager: *release-tags-and-branches
       - integration-tests-carthage: *release-tags-and-branches
       - integration-tests-xcode-direct-integration: *release-tags-and-branches
-  # temporarily disabling auto-deploys for beta release
-  # deploy:
-    # jobs:
-      # - make-release: *release-tags
-      # - prepare-next-version: *release-tags
-      # - docs-deploy: *release-tags
+  deploy:
+    jobs:
+      - make-release: *release-tags
+      - prepare-next-version: *release-tags
+      - docs-deploy: *release-tags
 
