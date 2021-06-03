@@ -103,15 +103,15 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 + (void)setLogHandler:(void(^)(RCLogLevel, NSString * _Nonnull))logHandler {
-    [RCLogger setLogHandler:logHandler];
+    [RCLoggerBridge setLogHandler:logHandler];
 }
 
 + (RCLogLevel)logLevel {
-    return RCLogger.logLevel;
+    return RCLoggerBridge.logLevel;
 }
 
 + (void)setLogLevel:(RCLogLevel)logLevel {
-    RCLogger.logLevel = logLevel;
+    RCLoggerBridge.logLevel = logLevel;
 }
 
 + (NSURL *)proxyURL {

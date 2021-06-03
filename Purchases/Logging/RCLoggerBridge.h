@@ -12,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 NS_SWIFT_NAME(Purchases.Logger)
-@interface RCLogger : NSObject
+@interface RCLoggerBridge : NSObject
 
 /**
  Set a custom log handler for redirecting logs to your own logging system.

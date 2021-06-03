@@ -6,12 +6,12 @@
 //  Copyright © 2021 RevenueCat. All rights reserved.
 //
 
-#import "RCLogger.h"
+#import "RCLoggerBridge.h"
 #import "RCLogUtils.h"
 
 @import PurchasesCoreSwift;
 
-@implementation RCLogger
+@implementation RCLoggerBridge
 
 + (void)setLogLevel:(RCLogLevel)logLevel {
     switch (logLevel) {
