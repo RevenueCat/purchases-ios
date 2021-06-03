@@ -31,6 +31,7 @@
 #import "RCIntroEligibility+Protected.h"
 #import "RCReceiptRefreshPolicy.h"
 #import "RCPurchaserInfoManager.h"
+#import "RCLoggerBridge.h"
 @import PurchasesCoreSwift;
 
 
