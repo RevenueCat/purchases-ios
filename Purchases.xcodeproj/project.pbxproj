@@ -12,6 +12,7 @@
 		2D22679125F2D9AD00E6950C /* PurchasesTests-Bridging-Header.h in Headers */ = {isa = PBXBuildFile; fileRef = 35262A291F7D783F00C04F2C /* PurchasesTests-Bridging-Header.h */; };
 		2D390255259CF46000DB19C0 /* MockPaymentDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D390254259CF46000DB19C0 /* MockPaymentDiscount.swift */; };
 		2D3E29CE25E8009000456FA8 /* MockAttributionTypeFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35DA3E083FE37DAF15954 /* MockAttributionTypeFactory.swift */; };
+		2D4C02E426697E490038F877 /* RCLogLevel.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D4C02E326697E490038F877 /* RCLogLevel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D4C18A924F47E5000F268CD /* Purchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C18A824F47E4400F268CD /* Purchases.swift */; };
 		2D4D6AF124F6FEE000B656BE /* MockIntroEligibilityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DA0068E24E2E515002C59D3 /* MockIntroEligibilityCalculator.swift */; };
 		2D4D6AF324F7172900B656BE /* MockProductsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4D6AF224F7172900B656BE /* MockProductsRequest.swift */; };
@@ -29,7 +30,7 @@
 		2D8E9D482523747D00AFEE11 /* NSDictionaryExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD269162522A20A006AC4BC /* NSDictionaryExtensionsTests.swift */; };
 		2D8E9D54252374A600AFEE11 /* NSDictionary+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D8E9D52252374A600AFEE11 /* NSDictionary+RCExtensions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D8E9D55252374A600AFEE11 /* NSDictionary+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D8E9D53252374A600AFEE11 /* NSDictionary+RCExtensions.m */; };
-		2DA600382666D8DB00B9E79E /* RCLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DA600362666D8DB00B9E79E /* RCLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2DA600382666D8DB00B9E79E /* RCLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DA600362666D8DB00B9E79E /* RCLogger.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2DA600392666D8DB00B9E79E /* RCLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DA600372666D8DB00B9E79E /* RCLogger.m */; };
 		2DAF814E25B24243002C621E /* RCIdentityManager+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DAF814D25B24243002C621E /* RCIdentityManager+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2DC19195255F36D10039389A /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19194255F36D10039389A /* Logger.swift */; };
@@ -303,6 +304,7 @@
 		2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionStrings.swift; sourceTree = "<group>"; };
 		2D1FFAD425B8707400367C63 /* RCPurchaserInfoManager+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCPurchaserInfoManager+Protected.h"; sourceTree = "<group>"; };
 		2D390254259CF46000DB19C0 /* MockPaymentDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPaymentDiscount.swift; sourceTree = "<group>"; };
+		2D4C02E326697E490038F877 /* RCLogLevel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCLogLevel.h; sourceTree = "<group>"; };
 		2D4C18A824F47E4400F268CD /* Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Purchases.swift; sourceTree = "<group>"; };
 		2D4D6AF224F7172900B656BE /* MockProductsRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockProductsRequest.swift; sourceTree = "<group>"; };
 		2D5033212406E4E8009CAE61 /* RCSubscriberAttribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCSubscriberAttribute.h; path = Purchases/SubscriberAttributes/RCSubscriberAttribute.h; sourceTree = SOURCE_ROOT; };
@@ -857,6 +859,7 @@
 				2D604CA224E5BF37004821DC /* RCTransaction.h */,
 				37E357903E469CF42667760C /* RCAttributionNetwork.h */,
 				2D540CD62601509000A7475D /* RCPurchaseOwnershipType.h */,
+				2D4C02E326697E490038F877 /* RCLogLevel.h */,
 			);
 			path = Public;
 			sourceTree = "<group>";
@@ -1340,6 +1343,7 @@
 				37E35CB9C20AFAFBC98ADA27 /* RCAttributionFetcher.h in Headers */,
 				37E35C5E805407840AC79468 /* RCReceiptRefreshPolicy.h in Headers */,
 				37E35054EF6315E99DC20AEC /* RCAttributionTypeFactory.h in Headers */,
+				2D4C02E426697E490038F877 /* RCLogLevel.h in Headers */,
 				37E357712F2A42935CD05062 /* RCAttributionData.h in Headers */,
 				37E35D01E3A0F5FC8E0B16F7 /* RCIdentityManager.h in Headers */,
 			);

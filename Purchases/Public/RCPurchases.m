@@ -95,11 +95,23 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 + (void)setDebugLogsEnabled:(BOOL)enabled {
-    RCLogger.logLevel = RCLogLevelDebug;
+    [self setLogLevel:RCLogLevelDebug];
 }
 
 + (BOOL)debugLogsEnabled {
+    return self.logLevel <= RCLogLevelDebug;
+}
+
++ (void)setLogHandler:(void(^)(RCLogLevel, NSString * _Nonnull))logHandler {
+    [RCLogger setLogHandler:logHandler];
+}
+
++ (RCLogLevel)logLevel {
     return RCLogger.logLevel;
+}
+
++ (void)setLogLevel:(RCLogLevel)logLevel {
+    RCLogger.logLevel = logLevel;
 }
 
 + (NSURL *)proxyURL {
