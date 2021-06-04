@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-
+// These must match the values in LogLevel.swift exactly
 typedef NS_ENUM(NSInteger, RCLogLevel) {
     RCLogLevelDebug = 0,
     RCLogLevelInfo = 1,
