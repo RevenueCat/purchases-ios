@@ -94,7 +94,7 @@ class StoreKitTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
     }
     
-    func testPurchaseMadeBeforeLogInIsNotRetainedAfterUntilRestoreIfLogInToExistingUser() {
+    func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedAfterUntilRestore() {
         configurePurchases()
         var completionCalled = false
         let existingUserID = UUID().uuidString + "testPurchaseMadeBeforeLogInIsNotRetainedAfterUntilRestoreIfLogInToExistingUser"
@@ -110,8 +110,6 @@ class StoreKitTests: XCTestCase {
 
         purchaseMonthlyOffering()
         expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count).toEventually(equal(1), timeout: .seconds(10))
-        
-        testSession.clearTransactions()
         
         completionCalled = false
         
