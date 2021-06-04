@@ -65,8 +65,7 @@ class StoreKitTests: XCTestCase {
         configurePurchases()
         purchaseMonthlyOffering()
 
-        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count)
-            .toEventually(equal(1), timeout: .seconds(10))
+        waitUntilPurchaseGoesThrough()
         let entitlements = purchasesDelegate.purchaserInfo?.entitlements
         expect(entitlements?["premium"]?.isActive) == true
     }
@@ -81,9 +80,7 @@ class StoreKitTests: XCTestCase {
             expect(entitlements?["premium"]?.isActive) == true
 
             let anonUserID = Purchases.shared.appUserID
-            let identifiedUserID = "identified_\(anonUserID)_testPurchaseMadeBeforeLogInIsRetainedAfter".replacingOccurrences(
-                of: "RCAnonymous",
-                with: "")
+            let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
 
             Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
                 expect(error).to(beNil())
@@ -99,9 +96,10 @@ class StoreKitTests: XCTestCase {
     func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedAfterUntilRestore() {
         configurePurchases()
         var completionCalled = false
-        let existingUserID = UUID().uuidString + "testPurchaseMadeBeforeLogInIsNotRetainedAfterUntilRestoreIfLogInToExistingUser"
+        let existingUserID = "\(#function)\(UUID().uuidString)"
         expect(self.purchasesDelegate.purchaserInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
 
+        // log in to create the user, then log out
         Purchases.shared.logIn(existingUserID) { logInPurchaserInfo, created, logInError in
             Purchases.shared.logOut() { loggedOutPurchaserInfo, logOutError in
                 completionCalled = true
@@ -110,9 +108,9 @@ class StoreKitTests: XCTestCase {
 
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
 
+        // purchase as anonymous user, then log in
         purchaseMonthlyOffering()
-        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count)
-            .toEventually(equal(1), timeout: .seconds(10))
+        waitUntilPurchaseGoesThrough()
 
         completionCalled = false
 
@@ -127,8 +125,7 @@ class StoreKitTests: XCTestCase {
 
         Purchases.shared.restoreTransactions()
 
-        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count)
-            .toEventually(equal(1), timeout: .seconds(10))
+        waitUntilPurchaseGoesThrough()
     }
 
     func testPurchaseAsIdentifiedThenLogOutThenRestoreGrantsEntitlements() {
@@ -144,8 +141,7 @@ class StoreKitTests: XCTestCase {
 
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
 
-        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count)
-            .toEventually(equal(1), timeout: .seconds(10))
+        waitUntilPurchaseGoesThrough()
 
         completionCalled = false
 
@@ -159,15 +155,14 @@ class StoreKitTests: XCTestCase {
 
         Purchases.shared.restoreTransactions()
 
-        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count)
-            .toEventually(equal(1), timeout: .seconds(10))
+        waitUntilPurchaseGoesThrough()
     }
 
     func testLogInReturnsCreatedTrueWhenNewAndFalseWhenExisting() {
         configurePurchases()
 
         let anonUserID = Purchases.shared.appUserID
-        let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
+        let identifiedUserID = "\(#function)_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
 
         var completionCalled = false
         Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
@@ -195,8 +190,7 @@ class StoreKitTests: XCTestCase {
             self.purchaseMonthlyOffering()
         }
 
-        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count)
-            .toEventually(equal(1), timeout: .seconds(10))
+        waitUntilPurchaseGoesThrough()
 
         testSession.clearTransactions()
 
@@ -225,8 +219,7 @@ class StoreKitTests: XCTestCase {
             self.purchaseMonthlyOffering()
         }
 
-        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count)
-            .toEventually(equal(1), timeout: .seconds(10))
+        waitUntilPurchaseGoesThrough()
 
         var completionCalled = false
         Purchases.shared.logOut { loggedOutPurchaserInfo, logOutError in
@@ -273,5 +266,10 @@ private extension StoreKitTests {
                             userDefaults: userDefaults)
         Purchases.debugLogsEnabled = true
         Purchases.shared.delegate = purchasesDelegate
+    }
+
+    func waitUntilPurchaseGoesThrough() {
+        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count)
+            .toEventually(equal(1), timeout: .seconds(10))
     }
 }
