@@ -413,11 +413,8 @@
 		37E35097C6785A4A89DEBB18 /* NSData+RCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+RCExtensions.h"; sourceTree = "<group>"; };
 		37E3509E7B186A712097B8CF /* RCReceiptFetcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCReceiptFetcher.m; sourceTree = "<group>"; };
 		37E350ABE7173A637AA8B148 /* RCAttributionData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCAttributionData.m; sourceTree = "<group>"; };
-		37E350B5671B69C9D9897A16 /* RCIdentityManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCIdentityManager.h; sourceTree = "<group>"; };
 		37E350E57B0A393455A72B40 /* ProductInfoTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProductInfoTests.swift; sourceTree = "<group>"; };
 		37E35105C5C36A30D084954C /* RCOfferingsFactory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCOfferingsFactory.m; sourceTree = "<group>"; };
-		37E351221B2DFCE79A333401 /* RCIdentityManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIdentityManager.m; sourceTree = "<group>"; };
-		37E35166EE0877FCCD3C0C2D /* RCAttributionFetcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCAttributionFetcher.m; sourceTree = "<group>"; };
 		37E351AC0FF9607719F7A29A /* MockStoreKitWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockStoreKitWrapper.swift; sourceTree = "<group>"; };
 		37E351CD1EE6B897F434EA40 /* MockAttributionFetcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockAttributionFetcher.swift; sourceTree = "<group>"; };
 		37E351CDC94FE0A49A3DAAB3 /* RCStoreKitRequestFetcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCStoreKitRequestFetcher.m; sourceTree = "<group>"; };
@@ -1131,9 +1128,6 @@
 		37E35B15D9082D6838722719 /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
-				37E350B5671B69C9D9897A16 /* RCIdentityManager.h */,
-				37E351221B2DFCE79A333401 /* RCIdentityManager.m */,
-				37E35166EE0877FCCD3C0C2D /* RCAttributionFetcher.m */,
 				37E352CB6BD9FE3D1F4946C5 /* RCOfferingsFactory.h */,
 				37E35105C5C36A30D084954C /* RCOfferingsFactory.m */,
 				37E357AE7E003DACF1635491 /* RCPromotionalOffer.h */,
