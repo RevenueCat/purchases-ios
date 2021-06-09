@@ -146,7 +146,7 @@ platform :ios do
     create_pull_request(
       repo: "revenuecat/purchases-ios",
       title: "Prepare next version: #{next_version_snapshot}",
-      base: "develop",
+      base: "main",
       api_token: ENV["GITHUB_TOKEN"],
       head: branch_name
     )

@@ -31,7 +31,7 @@ Be sure to adhere to the prevailing style of the project.
 You can run the tests by selecting the All Tests Scheme in Xcode and hitting `Cmd+U`.
 The tests are written in Swift, using XCTest and [Nimble](https://github.com/quick/nimble).
 
-#### 5. Create a pull request to revenuecat/master and request review
+#### 5. Create a pull request to revenuecat/main and request review
 
 Explain in your pull request the work that was done, the reasoning, and that tests passed.
 
