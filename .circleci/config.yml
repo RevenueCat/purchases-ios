@@ -30,7 +30,7 @@ commands:
     steps:
        # Bundler
       - restore_cache:
-          keys: 
+          keys:
             - gem-cache-{{ checksum "Gemfile.lock" }}
       - run: 
           name: Bundle install
@@ -113,6 +113,9 @@ jobs:
       - checkout
       
       # Carthage
+      - restore_cache:
+          keys:
+            - carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
           name: Carthage Bootstrap
           command: |
@@ -147,6 +150,9 @@ jobs:
           command: xcrun instruments -w "iPhone 11 Pro (14.2) [" || true
 
       # Carthage
+      - restore_cache:
+          keys:
+            - carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
           name: Carthage Bootstrap
           command: |
@@ -181,7 +187,7 @@ jobs:
 
       # Bundler
       - restore_cache:
-          keys: 
+          keys:
             - gem-cache-{{ checksum "Gemfile.lock" }}
       - run: bundle install --clean --path vendor/bundle
       - save_cache:
@@ -292,6 +298,9 @@ jobs:
       - trust-github-key
       - update-carthage-integration-commit
       # Carthage
+      - restore_cache:
+          keys:
+            - carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
           name: Carthage Update
           working_directory: IntegrationTests/CarthageIntegration/
@@ -336,4 +345,3 @@ workflows:
       - make-release: *release-tags
       - prepare-next-version: *release-tags
       - docs-deploy: *release-tags
-
