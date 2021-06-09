@@ -30,13 +30,12 @@ func resolveTargets() -> [Target] {
                        "Purchases/SubscriberAttributes",
                        "Purchases/Identity"]
     let infoPlist = "Purchases/Info.plist"
-    let swiftSources = "Purchases/SwiftSources"
     
     let baseTargets: [Target] = [
         .target(name: "Purchases",
                 dependencies: ["PurchasesCoreSwift"],
                 path: ".",
-                exclude: [infoPlist, swiftSources],
+                exclude: [infoPlist],
                 sources: ["Purchases"],
                 publicHeadersPath: "Purchases/Public",
                 cSettings: objcSources.map { CSetting.headerSearchPath($0) }
