@@ -115,13 +115,13 @@ jobs:
       # Carthage
       - restore_cache:
           keys:
-            - carthage-cache-{{ checksum "Cartfile.resolved" }}
+            - v1-carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
           name: Carthage Bootstrap
           command: |
               carthage bootstrap --cache-builds --use-xcframeworks
       - save_cache:
-          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          key: v1-carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
             - Carthage
       
@@ -152,13 +152,13 @@ jobs:
       # Carthage
       - restore_cache:
           keys:
-            - carthage-cache-{{ checksum "Cartfile.resolved" }}
+            - v1-carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
           name: Carthage Bootstrap
           command: |
               carthage bootstrap --cache-builds --use-xcframeworks
       - save_cache:
-          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          key: v1-carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
             - Carthage
       
@@ -300,7 +300,7 @@ jobs:
       # Carthage
       - restore_cache:
           keys:
-            - carthage-cache-{{ checksum "Cartfile.resolved" }}
+            - v1-carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
           name: Carthage Update
           working_directory: IntegrationTests/CarthageIntegration/
@@ -311,7 +311,7 @@ jobs:
               rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
               carthage build --use-xcframeworks
       - save_cache:
-          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          key: v1-carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
             - Carthage
       
