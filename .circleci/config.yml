@@ -119,7 +119,7 @@ jobs:
       - run:
           name: Carthage Bootstrap
           command: |
-              ./carthage.sh bootstrap --cache-builds
+              carthage bootstrap --cache-builds --use-xcframeworks
       - save_cache:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
@@ -156,7 +156,7 @@ jobs:
       - run:
           name: Carthage Bootstrap
           command: |
-              ./carthage.sh bootstrap --cache-builds
+              carthage bootstrap --cache-builds --use-xcframeworks
       - save_cache:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
@@ -307,9 +307,9 @@ jobs:
           # install without building, then remove the tests and build, so that carthage
           # doesn't try to build the other integration tests
           command: |
-              ./carthage.sh update --no-build
+              carthage update --no-build
               rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
-              ./carthage.sh build
+              carthage build --use-xcframeworks
       - save_cache:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:

@@ -210,8 +210,7 @@ def carthage_archive
   # can't use fastlane carthage integration directly because of Carthage/Xcode 12 compatibility issues:
   # https://github.com/Carthage/Carthage/issues/3019
   Dir.chdir("..") do
-    sh("./carthage.sh", "build", "--no-skip-current")
-    sh("./carthage.sh", "archive", "Purchases")
+    sh("carthage", "build", "--no-skip-current", "--use-xcframeworks", "--archive")
   end
 end
 
