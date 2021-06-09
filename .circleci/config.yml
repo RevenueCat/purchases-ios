@@ -111,11 +111,17 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
+      
       # Carthage
       - run:
           name: Carthage Bootstrap
           command: |
               carthage bootstrap --cache-builds --use-xcframeworks
+      - save_cache:
+          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          paths:
+            - Carthage
+      
       - install-gems
       
       - run:
@@ -145,7 +151,13 @@ jobs:
           name: Carthage Bootstrap
           command: |
               carthage bootstrap --cache-builds --use-xcframeworks
+      - save_cache:
+          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          paths:
+            - Carthage
+      
       - install-gems
+      
       - run:
           name: Run StoreKit Tests
           command: bundle exec fastlane storekit_tests
@@ -289,6 +301,11 @@ jobs:
               carthage update --no-build
               rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
               carthage build --use-xcframeworks
+      - save_cache:
+          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          paths:
+            - Carthage
+      
       - install-gems-scan-and-archive:
           directory: IntegrationTests/CarthageIntegration/
 
