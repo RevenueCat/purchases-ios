@@ -42,14 +42,19 @@ class SystemInfoTests: XCTestCase {
     }
 
     func testPlatformFlavorAndPlatformFlavorVersionMustSimultaneouslyExistOrNotExist() {
-        expect { RCSystemInfo(platformFlavor: "a", platformFlavorVersion: "b", finishTransactions: true) }
-            .notTo(raiseException())
-        expect { RCSystemInfo(platformFlavor: nil, platformFlavorVersion: "b", finishTransactions: true) }
-            .to(raiseException())
-        expect { RCSystemInfo(platformFlavor: "a", platformFlavorVersion: nil, finishTransactions: true) }
-            .to(raiseException())
-        expect { RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true) }
-            .notTo(raiseException())
+        expectToNotThrowException {
+            _ = RCSystemInfo(platformFlavor: "a", platformFlavorVersion: "b", finishTransactions: true)
+        }
+        expectToThrowException(.parameterAssert) {
+            _ = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: "b", finishTransactions: true)
+        }
+        expectToThrowException(.parameterAssert) {
+            _ = RCSystemInfo(platformFlavor: "a", platformFlavorVersion: nil, finishTransactions: true)
+        }
+            
+        expectToNotThrowException {
+            _ = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+        }
     }
 
     func testFinishTransactions() {
