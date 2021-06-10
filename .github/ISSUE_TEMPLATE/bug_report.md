@@ -7,7 +7,7 @@ assignees: ""
 ---
 
 - [ ] I have updated Purchases SDK to the latest version
-- [ ] I have read the [Contribution Guidelines](https://github.com/RevenueCat/purchases-ios/blob/develop/CONTRIBUTING.md)
+- [ ] I have read the [Contribution Guidelines](https://github.com/RevenueCat/purchases-ios/blob/main/CONTRIBUTING.md)
 - [ ] I have read the [Help Center](https://support.revenuecat.com/hc/en-us)
 - [ ] I have read [docs.revenuecat.com](https://docs.revenuecat.com/)
 - [ ] I have searched for [existing Github issues](https://github.com/RevenueCat/purchases-ios/issues)
