@@ -60,4 +60,3 @@ struct AppleReceipt: Equatable {
         return String(describing: self.asDict)
     }
 }
-

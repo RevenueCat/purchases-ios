@@ -27,14 +27,14 @@ import Foundation
     @objc public static var logHandler: (LogLevel, String) -> Void = { level, message in
         NSLog("[\(frameworkDescription)] - \(level.description()): \(message)")
     }
-    
+
     private static let frameworkDescription = "Purchases"
 
     @objc public static func log(level: LogLevel, message: String) {
         guard level != .debug || shouldShowDebugLogs else { return }
         logHandler(level, message)
     }
-    
+
     @objc public static func log(level: LogLevel, intent: LogIntent, message: String) {
         let messageWithPrefix = "\(intent.suffix) \(message)"
         Logger.log(level: level, message: messageWithPrefix)
@@ -61,23 +61,23 @@ import Foundation
     static func appleError(_ message: String) {
         log(level: .error, intent: .appleError, message: message)
     }
-    
+
     static func appleWarning(_ message: String) {
         log(level: .warn, intent: .appleError, message: message)
     }
-    
+
     static func purchase(_ message: String) {
         log(level: .debug, intent: .purchase, message: message)
     }
-    
+
     static func rcPurchaseSuccess(_ message: String) {
         log(level: .info, intent: .rcPurchaseSuccess, message: message)
     }
-    
+
     static func rcSuccess(_ message: String) {
         log(level: .debug, intent: .rcSuccess, message: message)
     }
-    
+
     static func user(_ message: String) {
         log(level: .debug, intent: .user, message: message)
     }

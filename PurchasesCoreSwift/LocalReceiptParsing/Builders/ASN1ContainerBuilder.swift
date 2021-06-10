@@ -42,7 +42,7 @@ private extension ASN1ContainerBuilder {
     func buildInternalContainers(payload: ArraySlice<UInt8>) throws -> [ASN1Container] {
         var internalContainers = [ASN1Container]()
         var currentPayload = payload
-        while (currentPayload.count > 0) {
+        while currentPayload.count > 0 {
             let internalContainer = try build(fromPayload: currentPayload)
             internalContainers.append(internalContainer)
             currentPayload = currentPayload.dropFirst(internalContainer.totalBytesUsed)

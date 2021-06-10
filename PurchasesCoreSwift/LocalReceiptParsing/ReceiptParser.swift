@@ -18,7 +18,7 @@ import Foundation
                   containerBuilder: ASN1ContainerBuilder(),
                   receiptBuilder: AppleReceiptBuilder())
     }
-    
+
     init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder,
          containerBuilder: ASN1ContainerBuilder,
          receiptBuilder: AppleReceiptBuilder) {
@@ -27,7 +27,7 @@ import Foundation
         self.receiptBuilder = receiptBuilder
         super.init()
     }
-    
+
     @objc public func receiptHasTransactions(receiptData: Data) -> Bool {
         Logger.info(Strings.receipt.parsing_receipt)
         if let receipt = try? parse(from: receiptData) {

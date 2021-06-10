@@ -8,6 +8,7 @@
 
 import Foundation
 
+// swiftlint:disable identifier_name
 @objc(RCIdentityStrings) public class IdentityStrings: NSObject {
     @objc public var changing_app_user_id: String { "Changing App User ID: %@ -> %@" }
     @objc public var creating_alias_failed_null_currentappuserid: String { "Couldn't create an alias because the " +

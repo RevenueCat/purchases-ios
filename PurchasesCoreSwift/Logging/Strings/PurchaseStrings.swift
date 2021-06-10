@@ -8,6 +8,7 @@
 
 import Foundation
 
+// swiftlint:disable identifier_name
 @objc(RCPurchaseStrings) public class PurchaseStrings: NSObject {
     @objc public var cannot_purchase_product_appstore_configuration_error: String { "Could not purchase SKProduct. " +
         "There is a problem with your configuration in App Store Connect. " +
@@ -18,7 +19,9 @@ import Foundation
     @objc public var purchasing_with_observer_mode_and_finish_transactions_false_warning: String { "Observer mode is " +
         "active (finishTransactions is set to false) and purchase has been initiated. RevenueCat will not finish the " +
         "transaction, are you sure you want to do this?" }
-    @objc public var paymentqueue_removedtransaction: String { "PaymentQueue removedTransaction: %@ %@ (%@ %@) %@ - %d" }
+    @objc public var paymentqueue_removedtransaction: String {
+        "PaymentQueue removedTransaction: %@ %@ (%@ %@) %@ - %d"
+    }
     @objc public var paymentqueue_revoked_entitlements_for_product_identifiers: String { "PaymentQueue " +
         "didRevokeEntitlementsForProductIdentifiers: %@" }
     @objc public var paymentqueue_updatedtransaction: String { "PaymentQueue updatedTransaction: %@ %@ (%@) %@ - %d" }
