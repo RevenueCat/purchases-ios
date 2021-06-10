@@ -18,7 +18,7 @@ class UInt8ExtensionsTests: XCTestCase {
 
     func testBitAtIndexRaisesIfInvalidIndex() {
         expect { _ = try UInt8(0b1).bitAtIndex(7) }.notTo(throwError())
-        expect { _ = try UInt8(0b1).bitAtIndex(8) }.to(throwError())
+        expect { _ = try UInt8(0b1).bitAtIndex(8) }.to(throwError(BitShiftError.invalidIndex(8)))
     }
     
     func testValueInRangeGetsCorrectValue() {
@@ -33,7 +33,7 @@ class UInt8ExtensionsTests: XCTestCase {
     
     func testValueInRangeRaisesIfInvalidRange() {
         expect{ _ = try UInt8(0b10000010).valueInRange(from: 1, to: 6)}.notTo(throwError())
-        expect{ _ = try UInt8(0b10000010).valueInRange(from: 6, to: 1)}.to(throwError())
-        expect{ _ = try UInt8(0b10000010).valueInRange(from: 6, to: 8)}.to(throwError())
+        expect{ _ = try UInt8(0b10000010).valueInRange(from: 6, to: 1)}.to(throwError(BitShiftError.rangeFlipped(from: 6, to: 1)))
+        expect{ _ = try UInt8(0b10000010).valueInRange(from: 6, to: 8)}.to(throwError(BitShiftError.invalidIndex(8)))
     }
 }
