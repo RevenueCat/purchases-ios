@@ -31,13 +31,13 @@ commands:
        # Bundler
       - restore_cache:
           keys: 
-            - gem-cache-{{ checksum "Gemfile.lock" }}
+            - v1-gem-cache-{{ checksum "Gemfile.lock" }}
       - run: 
           name: Bundle install
           working_directory: << parameters.directory >>
           command: bundle install --clean --path vendor/bundle
       - save_cache:
-          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
   scan-and-archive:
@@ -112,19 +112,6 @@ jobs:
     steps:
       - checkout
       
-      # Carthage
-      - restore_cache:
-          keys: 
-            - carthage-cache-{{ checksum "Cartfile.resolved" }}
-      - run:
-          name: Carthage Bootstrap
-          command: |
-              ./carthage.sh bootstrap --cache-builds
-      - save_cache:
-          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
-          paths:
-            - Carthage
-      
       - install-gems
       
       - run:
@@ -148,19 +135,6 @@ jobs:
       - run:
           name: Open simulator
           command: xcrun instruments -w "iPhone 11 Pro (14.2) [" || true
-
-      # Carthage
-      - restore_cache:
-          keys: 
-            - carthage-cache-{{ checksum "Cartfile.resolved" }}
-      - run:
-          name: Carthage Bootstrap
-          command: |
-              ./carthage.sh bootstrap --cache-builds
-      - save_cache:
-          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
-          paths:
-            - Carthage
       
       - install-gems
       
@@ -188,10 +162,10 @@ jobs:
       # Bundler
       - restore_cache:
           keys: 
-            - gem-cache-{{ checksum "Gemfile.lock" }}
+            - v1-gem-cache-{{ checksum "Gemfile.lock" }}
       - run: bundle install --clean --path vendor/bundle
       - save_cache:
-          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
       
@@ -287,36 +261,6 @@ jobs:
       - update-spm-integration-commit
       - install-gems-scan-and-archive:
           directory: IntegrationTests/SPMIntegration/
-      
-  integration-tests-carthage:
-    macos:
-      xcode: "12.5.0"
-    working_directory: ~/purchases-ios/
-    shell: /bin/bash --login -o pipefail
-    steps:
-      - checkout
-      - trust-github-key
-      - update-carthage-integration-commit
-      # Carthage
-      - restore_cache:
-          keys: 
-            - carthage-cache-{{ checksum "Cartfile.resolved" }}
-      - run:
-          name: Carthage Update
-          working_directory: IntegrationTests/CarthageIntegration/
-          # install without building, then remove the tests and build, so that carthage
-          # doesn't try to build the other integration tests
-          command: |
-              ./carthage.sh update --no-build
-              rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
-              ./carthage.sh build
-      - save_cache:
-          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
-          paths:
-            - Carthage
-      
-      - install-gems-scan-and-archive:
-          directory: IntegrationTests/CarthageIntegration/
 
   integration-tests-xcode-direct-integration:
     macos:

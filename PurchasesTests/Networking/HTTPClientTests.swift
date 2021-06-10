@@ -7,7 +7,8 @@
 //
 
 import XCTest
-import OHHTTPStubs.Swift
+import OHHTTPStubs
+import OHHTTPStubsSwift
 import Nimble
 
 import Purchases
