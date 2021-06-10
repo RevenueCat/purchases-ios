@@ -99,7 +99,6 @@ platform :ios do
     version_number = current_version_number
     check_no_git_tag_exists(version_number)
     check_pods
-    carthage_archive
     export_xcframework
     check_no_github_release_exists(version_number)
   end
@@ -123,7 +122,6 @@ platform :ios do
   lane :deploy do |options|
     version_number = current_version_number
     push_pods
-    carthage_archive
     export_xcframework
     github_release(version: version_number)
   end
@@ -206,14 +204,6 @@ def check_no_github_release_exists(version_number)
   raise "Release with version #{version_number} already exists!" unless found_release_number.nil?
 end
 
-def carthage_archive
-  # can't use fastlane carthage integration directly because of Carthage/Xcode 12 compatibility issues:
-  # https://github.com/Carthage/Carthage/issues/3019
-  Dir.chdir("..") do
-    sh("./carthage.sh", "build", "--no-skip-current")
-    sh("./carthage.sh", "archive", "Purchases")
-  end
-end
 
 def check_pods
   pod_lib_lint(verbose: true, podspec:'PurchasesCoreSwift.podspec')
