@@ -41,8 +41,10 @@ internal struct ETagAndResponseWrapper {
 
 extension ETagAndResponseWrapper {
     init(with data: Data) throws {
-        let dictionary =
-                try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as! Dictionary<String, Any>
+        guard let dictionary =
+                try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String: Any] else {
+                    fatalError("Could not parse JSON Object from data!")
+                }
         self.init(dictionary: dictionary)
     }
 
