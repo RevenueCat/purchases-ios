@@ -166,7 +166,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
         RCDebugLog(RCStrings.network.api_request_completed, request.HTTPMethod, request.URL.path, (long) statusCode);
 
         NSError *jsonError;
-        if (statusCode == RCHTTPStatusCodesNotModifiedResponseCode && data.length == 0) {
+        if (statusCode == RCHTTPStatusCodesNotModifiedResponseCode) {
             responseObject = @{};
         } else {
             responseObject = [NSJSONSerialization JSONObjectWithData:data
