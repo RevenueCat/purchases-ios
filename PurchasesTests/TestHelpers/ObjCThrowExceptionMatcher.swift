@@ -2,6 +2,13 @@
 //  ObjCThrowExceptionMatcher.swift
 //  PurchasesTests
 //
+//  Nimble's exception matcher isn't supported when installed via SPM.
+//  See https://github.com/Quick/Nimble/blob/main/Sources/Nimble/Matchers/RaisesException.swift#L1
+//  Also, Nimble's throwAssertion() matcher doesn't work for ARM64.
+//  See https://github.com/Quick/Nimble/blob/main/Sources/Nimble/Matchers/ThrowAssertion.swift#L125
+//  This solution solves both issues because assertions in Objc come over as an exception, so we can catch them, and
+//  then treat them as errors, and then compare.
+//
 //  Created by Joshua Liebowitz on 6/10/21.
 //  Copyright © 2021 Purchases. All rights reserved.
 //
@@ -45,7 +52,7 @@ func expectToNotThrowException(closure: @escaping  () -> Void) -> Void {
     }
 }
 
-func messageForError(error: NSError?, named: String?) -> ExpectationMessage {
+fileprivate func messageForError(error: NSError?, named: String?) -> ExpectationMessage {
     var rawMessage: String = "raise exception"
 
     if let named = named {
@@ -70,7 +77,7 @@ func messageForError(error: NSError?, named: String?) -> ExpectationMessage {
     return .expectedCustomValueTo(rawMessage, actual: actual)
 }
 
- func errorMatchesNonNilFields(_ error: NSError?, named: String?) -> Bool {
+ fileprivate func errorMatchesNonNilFields(_ error: NSError?, named: String?) -> Bool {
     var matches = false
 
     if let error = error {
