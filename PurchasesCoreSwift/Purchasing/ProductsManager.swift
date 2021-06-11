@@ -37,7 +37,9 @@ internal class ProductsManager: NSObject {
                 return
             }
 
-            Logger.debug(String(format: Strings.offering.no_cached_requests_and_products_starting_skproduct_request, identifiers))
+            Logger.debug(
+                String(format: Strings.offering.no_cached_requests_and_products_starting_skproduct_request, identifiers)
+            )
             let request = self.productsRequestFactory.request(productIdentifiers: identifiers)
             request.delegate = self
             self.completionHandlers[identifiers] = [completion]
