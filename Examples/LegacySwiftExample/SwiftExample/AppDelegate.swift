@@ -32,8 +32,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             print(introEligibilityDict)
         }
 
-        Purchases.addAttributionData(["pru":"eba"], from: .facebook);
-
         return true
     }
 
