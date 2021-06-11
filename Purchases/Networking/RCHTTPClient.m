@@ -203,7 +203,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
             RCDebugLog(RCStrings.network.serial_request_done,
                     self.currentSerialRequest.httpMethod,
                     self.currentSerialRequest.path,
-                    (unsigned long) self.queuedRequests.count);
+                    (unsigned long)self.queuedRequests.count);
             RCHTTPRequest *nextRequest = nil;
             self.currentSerialRequest = nil;
             if (self.queuedRequests.count > 0) {
