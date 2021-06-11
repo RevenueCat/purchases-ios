@@ -12,8 +12,7 @@ internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
     private var userDefaults: UserDefaults
 
     @objc public override init() {
-        // TODO: do they persist after reinstalling
-        let bundleID: String = Bundle.main.bundleIdentifier ?? ""
+        let bundleID = Bundle.main.bundleIdentifier ?? ""
         self.userDefaults = UserDefaults(suiteName: bundleID + ".revenuecat.etags") ?? UserDefaults.standard
     }
     
