@@ -46,10 +46,10 @@ extension ETagAndResponseWrapper {
         self.init(dictionary: dictionary)
     }
 
-    init(dictionary: Dictionary<String, Any>) {
+    init(dictionary: [String: Any]) {
         let eTag = dictionary[ETAG_KEY] as! String
         let statusCode = dictionary[STATUS_CODE_KEY] as! Int
-        let responseObject = dictionary[RESPONSE_OBJECT_KEY] as! Dictionary<String, Any>
+        let responseObject = dictionary[RESPONSE_OBJECT_KEY] as! [String: Any]
         self.init(eTag: eTag, statusCode: statusCode, responseObject: responseObject)
     }
 }
