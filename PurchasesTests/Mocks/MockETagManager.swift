@@ -18,7 +18,7 @@ class MockETagManager: ETagManager {
     var invokedGetETagHeaderParametersList = [(urlRequest: URLRequest, refreshETag: Bool)]()
     var stubbedGetETagHeaderResult: [String: String]! = [:]
 
-    override func getETagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
+    override func eTagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
         invokedGetETagHeader = true
         invokedGetETagHeaderCount += 1
         invokedGetETagHeaderParameters = (urlRequest, refreshETag)

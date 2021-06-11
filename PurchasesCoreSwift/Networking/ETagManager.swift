@@ -20,7 +20,7 @@ internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
         self.userDefaults = userDefaults
     }
 
-    @objc public func getETagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
+    @objc public func eTagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
         var storedETag = ""
         if (!refreshETag) {
             if let storedETagAndResponse = getStoredETagAndResponse(for: urlRequest) {

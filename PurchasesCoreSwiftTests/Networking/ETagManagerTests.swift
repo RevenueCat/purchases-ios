@@ -25,7 +25,7 @@ class ETagManagerTests: XCTestCase {
     func testETagIsEmptyIfThereIsNoETagSavedForThatRequest() {
         let url = URL(string: "/v1/subscribers/appUserID", relativeTo: baseURL)
         let request = URLRequest(url: url!)
-        let header = eTagManager.getETagHeader(for: request)
+        let header = eTagManager.eTagHeader(for: request)
         let value2: String? = header[ETAG_HEADER_NAME]
 
         expect(value2).toNot(beNil())
@@ -36,7 +36,7 @@ class ETagManagerTests: XCTestCase {
         let url = URL(string: "/v1/subscribers/appUserID", relativeTo: baseURL)
         mockStoredETagAndResponse(for: url!)
         let request = URLRequest(url: url!)
-        let header = eTagManager.getETagHeader(for: request)
+        let header = eTagManager.eTagHeader(for: request)
         let value2: String? = header[ETAG_HEADER_NAME]
 
         expect(value2).toNot(beNil())

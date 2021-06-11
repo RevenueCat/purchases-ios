@@ -236,7 +236,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
     request.HTTPMethod = httpMethod;
 
     NSDictionary<NSString *, NSString *> *eTagHeader =
-            [self.eTagManager getETagHeaderFor:request refreshETag:refreshETag];
+            [self.eTagManager eTagHeaderFor:request refreshETag:refreshETag];
     [headers addEntriesFromDictionary:eTagHeader];
     request.allHTTPHeaderFields = headers;
 
