@@ -44,23 +44,23 @@ class SubscriberAttributesManagerTests: XCTestCase {
     }
 
     func testInitializerCrashesIfNilParams() {
-        expect {
-            RCSubscriberAttributesManager(backend: nil,
+        expectToThrowException(.parameterAssert) {
+            _ = RCSubscriberAttributesManager(backend: nil,
                                           deviceCache: self.mockDeviceCache,
                                           attributionFetcher: self.mockAttributionFetcher)
-        } .to(raiseException())
+        }
 
-        expect {
-            RCSubscriberAttributesManager(backend: self.mockBackend,
+        expectToThrowException(.parameterAssert) {
+            _ = RCSubscriberAttributesManager(backend: self.mockBackend,
                                           deviceCache: nil,
                                           attributionFetcher: self.mockAttributionFetcher)
-        } .to(raiseException())
+        }
 
-        expect {
-            RCSubscriberAttributesManager(backend: self.mockBackend,
+        expectToThrowException(.parameterAssert) {
+            _ = RCSubscriberAttributesManager(backend: self.mockBackend,
                                           deviceCache: self.mockDeviceCache,
                                           attributionFetcher: nil)
-        } .to(raiseException())
+        }
     }
 
     // MARK: setting attributes

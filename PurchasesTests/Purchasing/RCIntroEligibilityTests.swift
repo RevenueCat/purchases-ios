@@ -28,7 +28,7 @@ class RCIntroEligibilityTests: XCTestCase {
     }
     
     func testInitWithEligibilityStatusCodeFailsIfInvalid() {
-        expect { RCIntroEligibility(eligibilityStatusCode: -1) } .to(raiseException())
-        expect { RCIntroEligibility(eligibilityStatusCode: 3) } .to(raiseException())
+        expectToThrowException(.parameterAssert) { _ = RCIntroEligibility(eligibilityStatusCode: -1) }
+        expectToThrowException(.parameterAssert) { _ = RCIntroEligibility(eligibilityStatusCode: 3) }
     }
 }

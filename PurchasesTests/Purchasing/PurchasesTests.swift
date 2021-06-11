@@ -252,9 +252,9 @@ class PurchasesTests: XCTestCase {
     }
     
     func testUsingSharedInstanceWithoutInitializingRaisesException() {
-        expect{ Purchases.shared }.to(raiseException())
+        expectToThrowException(.parameterAssert) { _ = Purchases.shared }
         setupPurchases()
-        expect{ Purchases.shared }.toNot(raiseException())
+        expectToNotThrowException { _ = Purchases.shared }
     }
 
     func testIsConfiguredReturnsCorrectvalue() {
