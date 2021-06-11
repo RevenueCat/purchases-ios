@@ -263,34 +263,34 @@ jobs:
           directory: IntegrationTests/SPMIntegration/
 
   integration-tests-carthage:
-  macos:
-    xcode: "12.5.0"
-  working_directory: ~/purchases-ios/
-  shell: /bin/bash --login -o pipefail
-  steps:
-    - checkout
-    - trust-github-key
-    - update-carthage-integration-commit
-    # Carthage
-    - restore_cache:
-        keys: 
-          - carthage-cache-{{ checksum "Cartfile.resolved" }}
-    - run:
-        name: Carthage Update
-        working_directory: IntegrationTests/CarthageIntegration/
-        # install without building, then remove the tests and build, so that carthage
-        # doesn't try to build the other integration tests
-        command: |
-            ./carthage.sh update --no-build
-            rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
-            ./carthage.sh build
-    - save_cache:
-        key: carthage-cache-{{ checksum "Cartfile.resolved" }}
-        paths:
-          - Carthage
+    macos:
+      xcode: "12.5.0"
+    working_directory: ~/purchases-ios/
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - trust-github-key
+      - update-carthage-integration-commit
+      # Carthage
+      - restore_cache:
+          keys: 
+            - carthage-cache-{{ checksum "Cartfile.resolved" }}
+      - run:
+          name: Carthage Update
+          working_directory: IntegrationTests/CarthageIntegration/
+          # install without building, then remove the tests and build, so that carthage
+          # doesn't try to build the other integration tests
+          command: |
+              ./carthage.sh update --no-build
+              rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
+              ./carthage.sh build
+      - save_cache:
+          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
+          paths:
+            - Carthage
 
-    - install-gems-scan-and-archive:
-        directory: IntegrationTests/CarthageIntegration/
+      - install-gems-scan-and-archive:
+          directory: IntegrationTests/CarthageIntegration/
 
   integration-tests-xcode-direct-integration:
     macos:
