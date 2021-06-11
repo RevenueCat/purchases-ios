@@ -9,7 +9,7 @@ internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
 @objc(RCETagManager) public class ETagManager: NSObject {
     private let queue = DispatchQueue(label: "ETagManager")
 
-    private var userDefaults: UserDefaults
+    private let userDefaults: UserDefaults
 
     @objc public override init() {
         let bundleID = Bundle.main.bundleIdentifier ?? ""
