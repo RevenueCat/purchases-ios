@@ -8,6 +8,7 @@
 
 import Foundation
 
+// swiftlint:disable identifier_name
 @objc(RCReceiptStrings) public class ReceiptStrings: NSObject {
     @objc public var data_object_identifer_not_found_receipt: String { "The data object identifier couldn't be found " +
         "on the receipt." }

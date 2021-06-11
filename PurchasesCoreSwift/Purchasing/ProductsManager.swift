@@ -37,7 +37,9 @@ internal class ProductsManager: NSObject {
                 return
             }
 
-            Logger.debug(String(format: Strings.offering.no_cached_requests_and_products_starting_skproduct_request, identifiers))
+            Logger.debug(
+                String(format: Strings.offering.no_cached_requests_and_products_starting_skproduct_request, identifiers)
+            )
             let request = self.productsRequestFactory.request(productIdentifiers: identifiers)
             request.delegate = self
             self.completionHandlers[identifiers] = [completion]
@@ -73,7 +75,7 @@ extension ProductsManager: SKProductsRequestDelegate {
 
     func request(_ request: SKRequest, didFailWithError error: Error) {
         queue.async { [self] in
-            Logger.appleError(String(format:Strings.network.skproductsrequest_failed, error.localizedDescription))
+            Logger.appleError(String(format: Strings.network.skproductsrequest_failed, error.localizedDescription))
             guard let products = self.productsByRequests[request] else { fatalError("couldn't find request") }
             guard let completionBlocks = self.completionHandlers[products] else {
                 fatalError("couldn't find completion")

@@ -8,6 +8,7 @@
 
 import Foundation
 
+// swiftlint:disable identifier_name
 @objc(RCNetworkStrings) public class NetworkStrings: NSObject {
     @objc public var api_request_completed: String { "API request completed with status: %@ %@ %d" }
     @objc public var api_request_started: String { "API request started: %@ %@" }

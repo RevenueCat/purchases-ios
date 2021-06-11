@@ -8,6 +8,7 @@
 
 import Foundation
 
+// swiftlint:disable identifier_name
 @objc(RCOfferingStrings) public class OfferingStrings: NSObject {
     @objc public var cannot_find_product_configuration_error: String { "Could not find SKProduct for %@ " +
         "\nThere is a problem with your configuration in App Store Connect. " +

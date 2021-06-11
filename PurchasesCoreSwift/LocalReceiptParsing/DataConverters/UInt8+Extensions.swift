@@ -15,6 +15,7 @@ extension UInt8 {
         return shifted & 0b1
     }
 
+    // swiftlint:disable:next identifier_name
     func valueInRange(from: UInt8, to: UInt8) -> UInt8 {
         guard to <= 7 else { fatalError("invalid index: \(to)") }
         guard from <= to else { fatalError("from: \(from) can't be greater than to: \(to)") }

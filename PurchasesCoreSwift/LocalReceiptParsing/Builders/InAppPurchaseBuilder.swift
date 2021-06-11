@@ -8,7 +8,7 @@ import Foundation
 class InAppPurchaseBuilder {
     private let containerBuilder: ASN1ContainerBuilder
     private let dateFormatter: ISO3601DateFormatter
-    
+
     private let typeContainerIndex = 0
     private let versionContainerIndex = 1 // unused
     private let attributeTypeContainerIndex = 2
@@ -19,6 +19,7 @@ class InAppPurchaseBuilder {
         self.dateFormatter = ISO3601DateFormatter.shared
     }
 
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     func build(fromContainer container: ASN1Container) throws -> InAppPurchase {
         var quantity: Int?
         var productId: String?

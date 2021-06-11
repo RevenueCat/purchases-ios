@@ -9,16 +9,16 @@
 import Foundation
 
 @objc(RCOperationDispatcher) public class OperationDispatcher: NSObject {
-    
+
     private let mainQueue: DispatchQueue
     private let workerQueue: DispatchQueue
     private let maxJitterInSeconds: Double = 5
-    
+
     @objc public override init() {
         mainQueue = DispatchQueue.main
         workerQueue = DispatchQueue(label: "OperationDispatcherWorkerQueue")
     }
-    
+
     @objc public func dispatchOnMainThread(_ block: @escaping () -> Void) {
         if Thread.isMainThread {
             block()
@@ -28,7 +28,7 @@ import Foundation
     }
 
     @objc public func dispatchOnWorkerThread(withRandomDelay: Bool = false,
-                                             block: @escaping () -> ()) {
+                                             block: @escaping () -> Void) {
         if withRandomDelay {
             let delay = Double.random(in: 0..<maxJitterInSeconds)
             workerQueue.asyncAfter(deadline: .now() + delay) { block() }

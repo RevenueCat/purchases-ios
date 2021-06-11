@@ -1,0 +1,14 @@
+excluded:
+  - Carthage
+  - Pods
+  - PurchasesTests
+  - PurchasesCoreSwiftTests
+  - Examples
+  - IntegrationTests
+  - StoreKitTests
+disabled_rules:
+  - trailing_comma
+variable_name: 
+  max_length: 
+    warning: 60 
+    error: 80

@@ -26,7 +26,7 @@ import Foundation
               let dateString = serverResponse["purchase_date"] as? String,
               let purchaseDate = dateFormatter.date(from: dateString) else {
             fatalError("""
-                       Couldn't initialize Transaction from dictionary. 
+                       Couldn't initialize Transaction from dictionary.
                        Reason: unexpected format. Dictionary: \(serverResponse).
                        """)
         }
