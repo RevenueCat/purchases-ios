@@ -45,7 +45,7 @@ func expectToNotThrowException(closure: @escaping  () -> Void) -> Void {
     }
 }
 
-internal func messageForError(error: NSError?, named: String?) -> ExpectationMessage {
+func messageForError(error: NSError?, named: String?) -> ExpectationMessage {
     var rawMessage: String = "raise exception"
 
     if let named = named {
@@ -58,8 +58,11 @@ internal func messageForError(error: NSError?, named: String?) -> ExpectationMes
 
     let actual: String
     if let realError = error {
-        // swiftlint:disable:next line_length
-        actual = "\(String(describing: type(of: realError))) { domain=\(realError.domain), description='\(stringify(realError.description))', userInfo=\(stringify(realError.userInfo)) }"
+        let errorString = stringify(realError)
+        let errorDomain = "domain=\(realError.domain)"
+        let errorDescription = "description=\(stringify(realError.description))"
+        let errorUserInfo = "userInfo=\(stringify(realError.userInfo))"
+        actual = "\(errorString) { \(errorDomain), '\(errorDescription)', \(errorUserInfo) }"
     } else {
         actual = "no exception"
     }
@@ -67,7 +70,7 @@ internal func messageForError(error: NSError?, named: String?) -> ExpectationMes
     return .expectedCustomValueTo(rawMessage, actual: actual)
 }
 
-internal func errorMatchesNonNilFields(_ error: NSError?, named: String?) -> Bool {
+ func errorMatchesNonNilFields(_ error: NSError?, named: String?) -> Bool {
     var matches = false
 
     if let error = error {

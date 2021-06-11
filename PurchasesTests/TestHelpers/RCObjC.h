@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCObjC : NSObject
 
-+ (BOOL)catchException:(void(^)(void))tryBlock error:(__autoreleasing NSError **)error;
++ (BOOL)catchExceptionFromBlock:(void(^)(void))block error:(__autoreleasing NSError **)error;
 
 @end
 

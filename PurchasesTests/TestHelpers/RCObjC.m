@@ -10,9 +10,9 @@
 
 @implementation RCObjC
 
-+ (BOOL)catchException:(void(^)(void))tryBlock error:(__autoreleasing NSError **)error {
++ (BOOL)catchExceptionFromBlock:(void(^)(void))block error:(__autoreleasing NSError **)error {
     @try {
-        tryBlock();
+        block();
         return YES;
     }
     @catch (NSException *exception) {

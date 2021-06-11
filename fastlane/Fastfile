@@ -99,8 +99,14 @@ platform :ios do
     version_number = current_version_number
     check_no_git_tag_exists(version_number)
     check_pods
+    carthage_archive
     export_xcframework
     check_no_github_release_exists(version_number)
+  end
+
+  desc "Run the carthage archive steps to prepare for carthage distribution"
+  lane :carthage_archive do |options|
+    carthage_archive
   end
 
   desc "archive"
@@ -122,6 +128,7 @@ platform :ios do
   lane :deploy do |options|
     version_number = current_version_number
     push_pods
+    carthage_archive
     export_xcframework
     github_release(version: version_number)
   end
@@ -204,6 +211,12 @@ def check_no_github_release_exists(version_number)
   raise "Release with version #{version_number} already exists!" unless found_release_number.nil?
 end
 
+def carthage_archive
+  Dir.chdir("..") do
+    sh("carthage", "build", "--no-skip-current", "--use-xcframeworks")
+    sh("carthage", "archive", "Purchases")
+  end
+end
 
 def check_pods
   pod_lib_lint(verbose: true, podspec:'PurchasesCoreSwift.podspec')
