@@ -8,7 +8,7 @@ excluded:
   - StoreKitTests
 disabled_rules:
   - trailing_comma
-variable_name: 
+identifier_name: 
   max_length: 
     warning: 60 
     error: 80

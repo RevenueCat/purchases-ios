@@ -8,8 +8,9 @@
 
 import Foundation
 
+// swiftlint:disable identifier_name
 enum BitShiftError: Error {
-    
+
     case invalidIndex(_ index: UInt8)
     case rangeFlipped(from: UInt8, to: UInt8)
     case rangeLargerThanByte
