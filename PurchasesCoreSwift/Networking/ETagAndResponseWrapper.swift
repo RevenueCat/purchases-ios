@@ -16,9 +16,9 @@ internal struct ETagAndResponseWrapper {
 
     let eTag: String
     let statusCode: Int
-    let responseObject: Dictionary<String, Any>
+    let responseObject: [String: Any]
 
-    func asDictionary() -> Dictionary<String, Any> {
+    func asDictionary() -> [String: Any] {
         [
             ETAG_KEY: eTag,
             STATUS_CODE_KEY: statusCode,

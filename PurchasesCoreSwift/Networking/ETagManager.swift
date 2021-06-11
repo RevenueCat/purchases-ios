@@ -15,14 +15,14 @@ internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
         let bundleID = Bundle.main.bundleIdentifier ?? ""
         self.userDefaults = UserDefaults(suiteName: bundleID + ".revenuecat.etags") ?? UserDefaults.standard
     }
-    
+
     @objc public init(userDefaults: UserDefaults) {
         self.userDefaults = userDefaults
     }
 
     @objc public func eTagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
         var storedETag = ""
-        if (!refreshETag) {
+        if !refreshETag {
             if let storedETagAndResponse = getStoredETagAndResponse(for: urlRequest) {
                 storedETag = storedETagAndResponse.eTag
             }
@@ -40,16 +40,16 @@ internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
         if error != nil {
             return resultFromBackend
         }
-        
+
         var eTagInResponse: String? = headersInResponse[ETAG_HEADER_NAME] as! String?
-        if ((eTagInResponse == nil)) {
+        if (eTagInResponse == nil) {
             eTagInResponse = headersInResponse[ETAG_HEADER_NAME.lowercased()] as! String?
         }
-        
-        if (eTagInResponse != nil) {
-            if (shouldUseCachedVersion(responseCode: statusCode)) {
+
+        if eTagInResponse != nil {
+            if shouldUseCachedVersion(responseCode: statusCode) {
                 guard let storedResponse = getStoredHTTPResponse(for: request) else {
-                    if (retried) {
+                    if retried {
                         Logger.warn(
                                 String(
                                         format: Strings.network.could_not_find_cached_response_in_already_retried,
