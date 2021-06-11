@@ -103,7 +103,6 @@ enum IntroEligibilityStatus: Int {
 
 extension IntroEligibilityStatus {
     func toNSNumber() -> NSNumber {
-        // swiftlint:disable:next compiler_protocol_init
-        return NSNumber(integerLiteral: self.rawValue)
+        return self.rawValue as NSNumber
     }
 }
