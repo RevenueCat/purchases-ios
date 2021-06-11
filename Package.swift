@@ -17,7 +17,7 @@ func resolveTargets() -> [Target] {
                        "Purchases/SubscriberAttributes",
                        "Purchases/Identity"]
     let infoPlist = "Purchases/Info.plist"
-    
+
     let baseTargets: [Target] = [
         .target(name: "Purchases",
                 dependencies: ["PurchasesCoreSwift"],
@@ -31,7 +31,7 @@ func resolveTargets() -> [Target] {
                 dependencies: [],
                 path: ".",
                 sources: ["PurchasesCoreSwift"])]
-    
+
     return baseTargets
 }
 
