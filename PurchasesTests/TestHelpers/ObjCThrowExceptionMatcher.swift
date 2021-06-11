@@ -52,7 +52,7 @@ func expectToNotThrowException(closure: @escaping  () -> Void) -> Void {
     }
 }
 
-fileprivate func messageForError(error: NSError?, named: String?) -> ExpectationMessage {
+private func messageForError(error: NSError?, named: String?) -> ExpectationMessage {
     var rawMessage: String = "raise exception"
 
     if let named = named {
@@ -77,7 +77,7 @@ fileprivate func messageForError(error: NSError?, named: String?) -> Expectation
     return .expectedCustomValueTo(rawMessage, actual: actual)
 }
 
- fileprivate func errorMatchesNonNilFields(_ error: NSError?, named: String?) -> Bool {
+ private func errorMatchesNonNilFields(_ error: NSError?, named: String?) -> Bool {
     var matches = false
 
     if let error = error {
