@@ -16,6 +16,11 @@ or alternatively using `brew install fastlane`
 
 # Available Actions
 ## iOS
+### ios setup_dev
+```
+fastlane ios setup_dev
+```
+Setup development environment
 ### ios test
 ```
 fastlane ios test
