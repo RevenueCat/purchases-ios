@@ -12,8 +12,7 @@ internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
     private let userDefaults: UserDefaults
 
     @objc public override init() {
-        let bundleID = Bundle.main.bundleIdentifier ?? ""
-        self.userDefaults = UserDefaults(suiteName: bundleID + ".revenuecat.etags") ?? UserDefaults.standard
+        self.userDefaults = UserDefaults(suiteName: ETagManager.suiteName) ?? UserDefaults.standard
     }
 
     @objc public init(userDefaults: UserDefaults) {
@@ -22,10 +21,8 @@ internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
 
     @objc public func eTagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
         var storedETag = ""
-        if !refreshETag {
-            if let storedETagAndResponse = getStoredETagAndResponse(for: urlRequest) {
-                storedETag = storedETagAndResponse.eTag
-            }
+        if !refreshETag, let storedETagAndResponse = storedETagAndResponse(for: urlRequest) {
+            storedETag = storedETagAndResponse.eTag
         }
         return [ETAG_HEADER_NAME: storedETag]
     }
@@ -37,14 +34,10 @@ internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
                                                       request: URLRequest,
                                                       retried: Bool) -> HTTPResponse? {
         let resultFromBackend = HTTPResponse(statusCode: statusCode, responseObject: responseObject)
-        if error != nil {
-            return resultFromBackend
-        }
+        guard error == nil else { return resultFromBackend }
 
-        var eTagInResponse: String? = headersInResponse[ETAG_HEADER_NAME] as! String?
-        if (eTagInResponse == nil) {
-            eTagInResponse = headersInResponse[ETAG_HEADER_NAME.lowercased()] as! String?
-        }
+        let eTagInResponse: String? = headersInResponse[ETAG_HEADER_NAME] as? String ??
+                headersInResponse[ETAG_HEADER_NAME.lowercased()] as? String
 
         if eTagInResponse != nil {
             if shouldUseCachedVersion(responseCode: statusCode) {
@@ -74,30 +67,25 @@ internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
     }
 
     @objc public func clearCaches() {
-        if let bundleID = Bundle.main.bundleIdentifier {
-            self.userDefaults.removePersistentDomain(forName: bundleID + ".revenuecat.etags")
-        }
+        self.userDefaults.removePersistentDomain(forName: ETagManager.suiteName)
     }
 
     private func shouldUseCachedVersion(responseCode: Int) -> Bool {
         responseCode == HTTPStatusCodes.notModifiedResponseCode.rawValue
     }
 
-    private func getStoredETagAndResponse(for request: URLRequest) -> ETagAndResponseWrapper? {
-        if let cacheKey = eTagDefaultCacheKey(for: request) {
-            if let data = userDefaults.object(forKey: cacheKey) as! Data? {
-                do {
-                    return try ETagAndResponseWrapper(with: data)
-                } catch {
-                }
+    private func storedETagAndResponse(for request: URLRequest) -> ETagAndResponseWrapper? {
+        if let cacheKey = eTagDefaultCacheKey(for: request),
+            let value = userDefaults.object(forKey: cacheKey),
+            let data = value as? Data {
+                return try? ETagAndResponseWrapper(with: data)
             }
-        }
 
         return nil
     }
 
     private func getStoredHTTPResponse(for request: URLRequest) -> HTTPResponse? {
-        if let storedETagAndResponse = getStoredETagAndResponse(for: request) {
+        if let storedETagAndResponse = storedETagAndResponse(for: request) {
             return HTTPResponse(
                     statusCode: storedETagAndResponse.statusCode,
                     responseObject: storedETagAndResponse.responseObject)
@@ -124,10 +112,12 @@ internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
     }
 
     private func eTagDefaultCacheKey(for request: URLRequest) -> String? {
-        if let url = request.url?.absoluteString {
-            return url
-        }
-        return nil
+        return request.url?.absoluteString
+    }
+
+    private static var suiteName: String {
+        let bundleID = Bundle.main.bundleIdentifier ?? ""
+        return bundleID + ".revenuecat.etags"
     }
 
 }

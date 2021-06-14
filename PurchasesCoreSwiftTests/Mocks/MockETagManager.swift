@@ -43,7 +43,7 @@ class MockETagManager: ETagManager {
         invokedGetHTTPResultFromCacheOrBackendCount += 1
         invokedGetHTTPResultFromCacheOrBackendParameters = (statusCode, responseObject, error, headersInResponse, request, retried)
         invokedGetHTTPResultFromCacheOrBackendParametersList.append((statusCode, responseObject, error, headersInResponse, request, retried))
-        if (shouldReturnResultFromBackend) {
+        if shouldReturnResultFromBackend {
             return HTTPResponse(statusCode: statusCode, responseObject: responseObject)
         }
         return stubbedGetHTTPResultFromCacheOrBackendResult
