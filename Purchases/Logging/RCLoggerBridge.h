@@ -7,18 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RCLogLevel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSInteger, RCLogLevel) {
-    RCLogLevelDebug,
-    RCLogLevelInfo,
-    RCLogLevelWarn,
-    RCLogLevelError,
-} NS_SWIFT_NAME(Purchases.LogLevel);
-
 NS_SWIFT_NAME(Purchases.Logger)
-@interface RCLogger : NSObject
+@interface RCLoggerBridge : NSObject
 
 /**
  Set a custom log handler for redirecting logs to your own logging system.
@@ -28,9 +22,9 @@ NS_SWIFT_NAME(Purchases.Logger)
 + (void)setLogHandler:(void(^)(RCLogLevel, NSString * _Nonnull))logHandler;
 
 /**
- Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat
+ Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat
 */
-@property (class, nonatomic) BOOL debugLogsEnabled;
+@property (class, nonatomic) RCLogLevel logLevel;
 
 - (instancetype)init NS_UNAVAILABLE;
 

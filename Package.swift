@@ -10,6 +10,7 @@ func resolveTargets() -> [Target] {
                        "Purchases/Caching",
                        "Purchases/FoundationExtensions",
                        "Purchases/Misc",
+                       "Purchases/Logging",
                        "Purchases/Networking",
                        "Purchases/Public",
                        "Purchases/Purchasing",

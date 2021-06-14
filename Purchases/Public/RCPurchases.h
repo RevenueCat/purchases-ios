@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "RCAttributionNetwork.h"
+#import "RCLogLevel.h"
 
 @class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility, RCOfferings, RCOffering, RCPackage;
 @protocol RCPurchasesDelegate;
@@ -67,7 +68,19 @@ NS_SWIFT_NAME(Purchases)
 /**
  Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat
 */
-@property (class, nonatomic, assign) BOOL debugLogsEnabled DEPRECATED_MSG_ATTRIBUTE("use RCLogger.debugLogsEnabled");
+@property (class, nonatomic, assign) BOOL debugLogsEnabled DEPRECATED_MSG_ATTRIBUTE("use logLevel instead");
+
+/**
+ Set a custom log handler for redirecting logs to your own logging system.
+ 
+ By default, this sends Info, Warn, and Error messages. If you wish to receive Debug level messages, you must enable debug logs.
+ */
++ (void)setLogHandler:(void(^)(RCLogLevel, NSString * _Nonnull))logHandler;
+
+/**
+ Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat
+*/
+@property (class, nonatomic) RCLogLevel logLevel;
 
 /**
  Set this property to your proxy URL before configuring Purchases *only* if you've received a proxy key value from your RevenueCat contact.
