@@ -244,6 +244,9 @@ def attach_changelog_to_master(version_number)
 end
 
 def replace_in(previous_text, new_text, path)
+  if new_text.to_s.strip.empty?
+    fail "Missing `new_text` in call to `replace_in`, looking for replacement for #{previous_text} 😵."
+  end
   sed_regex = 's|' + previous_text + '|' + new_text + '|'
   backup_extension = '.bck'
   sh("sed", '-i', backup_extension, sed_regex, path)
