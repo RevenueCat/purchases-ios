@@ -20,6 +20,26 @@ platform :ios do
     setup_circle_ci
   end
 
+  desc "Setup development environment"
+  lane :setup_dev do |options|
+    begin
+      sh("brew install swiftlint")
+    rescue => exception
+      UI.error("❌ Please install homebrew and then re-run this lane: /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"")
+      raise exception
+    end
+
+    pre_commit_link = "../.git/hooks/pre-commit"
+    if File.exist?(pre_commit_link) || File.symlink?(pre_commit_link)
+      UI.message("pre-commit script already linked ✅")
+    else
+      UI.message("Linking pre-commit script 🔗")
+      Dir.chdir ".." do
+        sh("ln -s -f ../../scripts/pre-commit.sh .git/hooks/pre-commit")
+      end
+    end
+  end
+
   desc "Runs all the tests"
   lane :test do
     scan
