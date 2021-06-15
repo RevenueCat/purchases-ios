@@ -8,7 +8,7 @@ import Foundation
 enum DateExtensionsError: Error {
     case notValidDateFromComponents
 }
-    
+
 extension Date {
 
     // swiftlint:disable:next function_parameter_count
@@ -21,7 +21,9 @@ extension Date {
         dateComponents.hour = hour
         dateComponents.minute = minute
         dateComponents.second = second
-        guard let date = calendar.date(from: dateComponents) else { throw DateExtensionsError.notValidDateFromComponents }
+        guard let date = calendar.date(from: dateComponents) else {
+            throw DateExtensionsError.notValidDateFromComponents
+        }
         return date
     }
 }
