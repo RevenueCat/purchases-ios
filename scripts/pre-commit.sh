@@ -51,7 +51,7 @@ echo "SwiftLint took $(($DIFF / 60)) minutes and $(($DIFF % 60)) seconds to comp
 if [ $SHOULD_FAIL_PRECOMMIT -ne 0 ]; then
   echo "😵 Found formatting errors, some might have been autocorrected."
   echo ""
-  echo "⚠️  Please run '${SWIFT_LINT} --autocorrect --strict' then check the changes were made, and commit them. ⚠️"
+  echo "⚠️  Please run '${SWIFT_LINT} --autocorrect --strict' then check the changes were made and commit them. ⚠️"
 fi
 
 exit $SHOULD_FAIL_PRECOMMIT
