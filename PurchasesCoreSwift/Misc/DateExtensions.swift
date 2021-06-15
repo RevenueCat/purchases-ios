@@ -6,7 +6,7 @@
 import Foundation
 
 enum DateExtensionsError: Error {
-    case notValidDateFromComponents
+    case invalidDateComponents
 }
 
 extension Date {
@@ -22,7 +22,7 @@ extension Date {
         dateComponents.minute = minute
         dateComponents.second = second
         guard let date = calendar.date(from: dateComponents) else {
-            throw DateExtensionsError.notValidDateFromComponents
+            throw DateExtensionsError.invalidDateComponents
         }
         return date
     }
