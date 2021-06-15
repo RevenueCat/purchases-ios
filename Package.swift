@@ -4,7 +4,7 @@
 import PackageDescription
 import class Foundation.ProcessInfo
 
-func resolveTargets() -> [Target]  {
+func resolveTargets() -> [Target] {
     let objcSources = ["Purchases/Info.plist",
                        "Purchases/Attribution",
                        "Purchases/Caching",

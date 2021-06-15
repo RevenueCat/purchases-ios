@@ -43,3 +43,4 @@ if which swiftlint >/dev/null; then
 else
   echo "error: SwiftLint not installed in ${HOMEBREW_BINARY_DESTINATION}, download from https://github.com/realm/SwiftLint"
 fi
+
