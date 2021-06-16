@@ -308,7 +308,7 @@ class HTTPClientTests: XCTestCase {
         let path = "/a_random_path"
         var headerPresent = false
         
-        let version = "" // for unit tests the version will empty
+        let version = RCSystemInfo.appVersion()
 
         stub(condition: hasHeaderNamed("X-Client-Version", value: version )) { request in
             headerPresent = true
