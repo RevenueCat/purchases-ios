@@ -79,7 +79,7 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 25;
             NSAssert(false, @"[Purchases] - Cached appUserID has been deleted from user defaults. "
                             "This leaves the SDK in an undetermined state. Please make sure that RevenueCat "
                             "entries in user defaults don't get deleted by anything other than the SDK. "
-                            "More info: https://support.revenuecat.com/hc/en-us/articles/360047927393");
+                            "More info: https://rev.cat/userdefaults-crash");
         }
     }
 }
