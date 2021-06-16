@@ -15,10 +15,10 @@ class InAppPurchaseBuilderTests: XCTestCase {
     let transactionId = "089230953203"
     let originalTransactionId = "089230953101"
     let productType = InAppPurchaseProductType.autoRenewableSubscription
-    let purchaseDate = Date.from(year: 2019, month: 5, day: 3, hour: 1, minute: 55, second: 1)
-    let originalPurchaseDate = Date.from(year: 2018, month: 6, day: 22, hour: 1, minute: 55, second: 1)
-    let expiresDate = Date.from(year: 2018, month: 6, day: 22, hour: 1, minute: 55, second: 1)
-    let cancellationDate = Date.from(year: 2019, month: 7, day: 4, hour: 7, minute: 1, second: 45)
+    let purchaseDate = try! Date.from(year: 2019, month: 5, day: 3, hour: 1, minute: 55, second: 1)
+    let originalPurchaseDate = try! Date.from(year: 2018, month: 6, day: 22, hour: 1, minute: 55, second: 1)
+    let expiresDate = try! Date.from(year: 2018, month: 6, day: 22, hour: 1, minute: 55, second: 1)
+    let cancellationDate = try! Date.from(year: 2019, month: 7, day: 4, hour: 7, minute: 1, second: 45)
     let isInTrialPeriod = false
     let isInIntroOfferPeriod = true
     let webOrderLineItemId = Int64(897501072)

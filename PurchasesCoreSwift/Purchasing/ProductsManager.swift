@@ -54,10 +54,15 @@ extension ProductsManager: SKProductsRequestDelegate {
     func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         queue.async { [self] in
             Logger.rcSuccess(Strings.network.skproductsrequest_received_response)
-            guard let requestProducts = self.productsByRequests[request] else { fatalError("couldn't find request") }
-            guard let completionBlocks = self.completionHandlers[requestProducts] else {
-                fatalError("couldn't find completion")
+            guard let requestProducts = self.productsByRequests[request] else {
+                Logger.error("requested products not found for request: \(request)")
+                return
             }
+            guard let completionBlocks = self.completionHandlers[requestProducts] else {
+                Logger.error("callback not found for failing request: \(request)")
+                return
+            }
+
             self.completionHandlers.removeValue(forKey: requestProducts)
             self.productsByRequests.removeValue(forKey: request)
 
@@ -76,9 +81,13 @@ extension ProductsManager: SKProductsRequestDelegate {
     func request(_ request: SKRequest, didFailWithError error: Error) {
         queue.async { [self] in
             Logger.appleError(String(format: Strings.network.skproductsrequest_failed, error.localizedDescription))
-            guard let products = self.productsByRequests[request] else { fatalError("couldn't find request") }
+            guard let products = self.productsByRequests[request] else {
+                Logger.error("requested products not found for request: \(request)")
+                return
+            }
             guard let completionBlocks = self.completionHandlers[products] else {
-                fatalError("couldn't find completion")
+                Logger.error("callback not found for failing request: \(request)")
+                return
             }
 
             self.completionHandlers.removeValue(forKey: products)

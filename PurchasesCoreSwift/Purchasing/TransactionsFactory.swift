@@ -15,7 +15,7 @@ import Foundation
         subscriptionsData.flatMap { (productId: String, transactionData: [[String: Any]]) -> [Transaction] in
             transactionData.map {
                 Transaction(with: $0, productId: productId, dateFormatter: dateFormatter)
-            }
+            }.compactMap { $0 }
         }.sorted {
             $0.purchaseDate < $1.purchaseDate
         }

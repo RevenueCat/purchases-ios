@@ -81,4 +81,27 @@ class TransactionsFactoryTests: XCTestCase {
         expect(list).to(beEmpty())
     }
 
+    func testBuildsCorrectlyEvenIfSomeTransactionsCantBeBuilt() {
+        let subscriptionsData = [
+            "lifetime_access": [
+                [
+                    "id": "d6c097ba74",
+                    "is_sandbox": true,
+                    "original_purchase_date": "2018-07-11T18:36:20Z",
+                    "purchase_date": "2018-07-11T18:36:20Z",
+                    "store": "app_store"
+                ]
+            ],
+            "invalid_non_transaction": [
+                [
+                    "ioasgioaew": 0832
+                ]
+            ]
+        ]
+        
+        let nonSubscriptionTransactions = transactionsFactory.nonSubscriptionTransactions(withSubscriptionsData: subscriptionsData, dateFormatter: dateFormatter)
+        expect(nonSubscriptionTransactions.count) == 1
+        expect(nonSubscriptionTransactions.first!.productId) == "lifetime_access"
+    }
+
 }
