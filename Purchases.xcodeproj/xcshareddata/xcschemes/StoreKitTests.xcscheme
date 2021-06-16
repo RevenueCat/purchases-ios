@@ -38,6 +38,16 @@
                ReferencedContainer = "container:Purchases.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "2D488A85267A724F00EFF50A"
+               BuildableName = "PurchasesSwiftTests.xctest"
+               BlueprintName = "PurchasesSwiftTests"
+               ReferencedContainer = "container:Purchases.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -70,15 +80,6 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2DE20B7E26409EB7004C597D"
-            BuildableName = "StoreKitTestApp.app"
-            BlueprintName = "StoreKitTestApp"
-            ReferencedContainer = "container:Purchases.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
