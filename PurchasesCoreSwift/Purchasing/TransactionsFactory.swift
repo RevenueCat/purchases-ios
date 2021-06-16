@@ -9,7 +9,7 @@
 import Foundation
 
 @objc(RCTransactionsFactory) public class TransactionsFactory: NSObject {
-    
+
     @objc public func nonSubscriptionTransactions(withSubscriptionsData subscriptionsData: [String: [[String: Any]]],
                                                   dateFormatter: DateFormatter) -> [Transaction] {
         subscriptionsData.flatMap { (productId: String, transactionData: [[String: Any]]) -> [Transaction] in
@@ -20,5 +20,5 @@ import Foundation
             $0.purchaseDate < $1.purchaseDate
         }
     }
-    
+
 }

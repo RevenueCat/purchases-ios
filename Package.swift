@@ -4,25 +4,13 @@
 import PackageDescription
 import class Foundation.ProcessInfo
 
-let shouldTest = ProcessInfo.processInfo.environment["TEST"] == "1"
-
-func resolveDependencies() -> [Package.Dependency] {
-    if shouldTest {
-        return [
-            .package(url: "https://github.com/AliSoftware/OHHTTPStubs.git", .branch("feature/spm-support")),
-            .package(url: "https://github.com/Quick/Nimble", .exact("8.0.4"))
-        ]
-    }
-
-    return []
-}
-
 func resolveTargets() -> [Target] {
     let objcSources = ["Purchases/Info.plist",
                        "Purchases/Attribution",
                        "Purchases/Caching",
                        "Purchases/FoundationExtensions",
                        "Purchases/Misc",
+                       "Purchases/Logging",
                        "Purchases/Networking",
                        "Purchases/Public",
                        "Purchases/Purchasing",
@@ -30,13 +18,12 @@ func resolveTargets() -> [Target] {
                        "Purchases/SubscriberAttributes",
                        "Purchases/Identity"]
     let infoPlist = "Purchases/Info.plist"
-    let swiftSources = "Purchases/SwiftSources"
-    
+
     let baseTargets: [Target] = [
         .target(name: "Purchases",
                 dependencies: ["PurchasesCoreSwift"],
                 path: ".",
-                exclude: [infoPlist, swiftSources],
+                exclude: [infoPlist],
                 sources: ["Purchases"],
                 publicHeadersPath: "Purchases/Public",
                 cSettings: objcSources.map { CSetting.headerSearchPath($0) }
@@ -46,31 +33,18 @@ func resolveTargets() -> [Target] {
                 path: ".",
                 sources: ["PurchasesCoreSwift"])]
 
-    if shouldTest {
-        let testTargets: [Target] = [
-            .testTarget(name: "PurchasesTests",
-                    dependencies: ["Purchases", "OHHTTPStubs", "Nimble"],
-                    path: "PurchasesTests",
-                    exclude: [],
-                    sources: nil)]
-
-        return baseTargets + testTargets
-    }
-
     return baseTargets
 }
 
 let package = Package(
-        name: "Purchases",
-        platforms: [
-            .macOS(.v10_12), .iOS(.v9), .watchOS("6.2"), .tvOS(.v9)
-        ],
-        products: [
-            .library(name: "Purchases",
-                    targets: ["Purchases"]),
-        ],
-        dependencies: resolveDependencies(),
-        targets: resolveTargets()
+    name: "Purchases",
+    platforms: [
+        .macOS(.v10_12), .iOS(.v9), .watchOS("6.2"), .tvOS(.v9)
+    ],
+    products: [
+        .library(name: "Purchases",
+                 targets: ["Purchases"]),
+    ],
+    dependencies: [],
+    targets: resolveTargets()
 )
-
-

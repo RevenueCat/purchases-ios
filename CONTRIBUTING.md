@@ -8,7 +8,7 @@ Before submitting a Github issue, please make sure to
 - Review our [Help Center](https://support.revenuecat.com/hc/en-us)
 - Read our [docs.revenuecat.com](https://docs.revenuecat.com/)
 
-## Common project specific issues
+## Common project specific issues.
 
 There are certain project specific issues that are commonly misinterpreted as bugs.
 
@@ -22,19 +22,37 @@ If you have a clearly defined bug (with a [Minimal, Complete, and Reproducible e
 
 #### 2. Create a fork/branch.
 
-#### 3. Do your work.
+#### 3. Setup your development environment.
 
-Be sure to adhere to the prevailing style of the project.
+##### Install fastlane.
 
-#### 4. Write tests for your fix/new functionality.
+We use fastlane 🚀 for all our automation, including setting up out dev environment.
+
+```bash
+$brew install fastlane
+```
+
+##### Run the setup lane.
+
+```bash
+$fastlane setup_dev
+```
+
+This installs [Homebrew](https://brew.sh/), and then [SwiftLint](https://github.com/realm/SwiftLint). After, it links in our pre-commit hook to run swiftlint. That saves you time so you don't have to wait for our CI to do it ⏱.
+
+#### 5. Build something!
+
+We don't have a style guide, yet, but when coding please try to match the prevailing style of the project. This is pretty subjective, so don't get too stressed about it. If there's any issue, we'll suggest a change.
+
+#### 6. Write tests for your fix/new functionality.
 
 You can run the tests by selecting the All Tests Scheme in Xcode and hitting `Cmd+U`.
 The tests are written in Swift, using XCTest and [Nimble](https://github.com/quick/nimble).
 
-#### 5. Create a pull request to revenuecat/master and request review
+#### 7. Create a pull request to revenuecat/main and request review.
 
-Explain in your pull request the work that was done, the reasoning, and that tests passed.
+Explain in your pull request the work that was done and the reasoning.
 
-#### 6. Make changes in response to review
+#### 8. Make changes in response to review.
 
-#### 7. Bask in the glory of community maintained software
+#### 9. Bask in the glory of community maintained software 😎

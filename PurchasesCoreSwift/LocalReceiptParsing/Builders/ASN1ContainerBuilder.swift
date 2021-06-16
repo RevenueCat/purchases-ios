@@ -42,7 +42,7 @@ private extension ASN1ContainerBuilder {
     func buildInternalContainers(payload: ArraySlice<UInt8>) throws -> [ASN1Container] {
         var internalContainers = [ASN1Container]()
         var currentPayload = payload
-        while (currentPayload.count > 0) {
+        while currentPayload.count > 0 {
             let internalContainer = try build(fromPayload: currentPayload)
             internalContainers.append(internalContainer)
             currentPayload = currentPayload.dropFirst(internalContainer.totalBytesUsed)
@@ -51,7 +51,7 @@ private extension ASN1ContainerBuilder {
     }
 
     func extractClass(byte: UInt8) throws -> ASN1Class {
-        let firstTwoBits = byte.valueInRange(from: 0, to: 1)
+        let firstTwoBits = try byte.valueInRange(from: 0, to: 1)
         guard let asn1Class = ASN1Class(rawValue: firstTwoBits) else {
             throw ReceiptReadingError.asn1ParsingError(description: "couldn't determine asn1 class")
         }
@@ -59,7 +59,7 @@ private extension ASN1ContainerBuilder {
     }
 
     func extractEncodingType(byte: UInt8) throws -> ASN1EncodingType {
-        let thirdBit = byte.bitAtIndex(2)
+        let thirdBit = try byte.bitAtIndex(2)
         guard let encodingType = ASN1EncodingType(rawValue: thirdBit) else {
             throw ReceiptReadingError.asn1ParsingError(description: "couldn't determine encoding type")
         }
@@ -67,7 +67,7 @@ private extension ASN1ContainerBuilder {
     }
 
     func extractIdentifier(byte: UInt8) throws -> ASN1Identifier {
-        let lastFiveBits = byte.valueInRange(from: 3, to: 7)
+        let lastFiveBits = try byte.valueInRange(from: 3, to: 7)
         guard let asn1Identifier = ASN1Identifier(rawValue: lastFiveBits) else {
             throw ReceiptReadingError.asn1ParsingError(description: "couldn't determine identifier")
         }
@@ -79,10 +79,10 @@ private extension ASN1ContainerBuilder {
             throw ReceiptReadingError.asn1ParsingError(description: "length needs to be at least one byte")
         }
 
-        let lengthBit = firstByte.bitAtIndex(0)
+        let lengthBit = try firstByte.bitAtIndex(0)
         let isShortLength = lengthBit == 0
 
-        let firstByteValue = Int(firstByte.valueInRange(from: 1, to: 7))
+        let firstByteValue = Int(try firstByte.valueInRange(from: 1, to: 7))
 
         var bytesUsedForLength = 1
         if isShortLength {

@@ -207,11 +207,11 @@ class DeviceCacheTests: XCTestCase {
                                          offeringsCachedObject: nil,
                                          notificationCenter: mockNotificationCenter)
 
-        expect { mockNotificationCenter.fireNotifications() }.notTo(raiseException())
+        expectToNotThrowException { mockNotificationCenter.fireNotifications() }
 
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
 
-        expect { mockNotificationCenter.fireNotifications() }.to(raiseException())
+        expectToThrowException(.parameterAssert) { mockNotificationCenter.fireNotifications() }
     }
 
     func testDoesntCrashIfOtherSettingIsDeletedAndAppUserIDHadntBeenSet() {
@@ -222,7 +222,7 @@ class DeviceCacheTests: XCTestCase {
                                          offeringsCachedObject: nil,
                                          notificationCenter: mockNotificationCenter)
 
-        expect { mockNotificationCenter.fireNotifications() }.notTo(raiseException())
+        expectToNotThrowException { mockNotificationCenter.fireNotifications() }
     }
 
     func testNewDeviceCacheInstanceWithExistingValidPurchaserInfoCacheIsntStale() {

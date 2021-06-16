@@ -23,6 +23,7 @@ class AppleReceiptBuilder {
         self.dateFormatter = dateFormatter
     }
 
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
     func build(fromContainer container: ASN1Container) throws -> AppleReceipt {
         var bundleId: String?
         var applicationVersion: String?

@@ -7,7 +7,8 @@
 //
 
 import XCTest
-import OHHTTPStubs.Swift
+import OHHTTPStubs
+import OHHTTPStubsSwift
 import Nimble
 
 import Purchases
@@ -32,17 +33,18 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testCantPostABodyWithGet() {
-        expect {
+        expectToThrowException(.parameterAssert) {
             self.client.performRequest("GET", serially: true, path: "/", body: Dictionary.init(),
                                        headers: nil, completionHandler: nil)
-        }.to(raiseException())
+        }
+        
     }
 
     func testUnrecognizedMethodFails() {
-        expect {
+        expectToThrowException(.parameterAssert) {
             self.client.performRequest("GE", serially: true, path: "/", body: Dictionary.init(),
                                        headers: nil, completionHandler: nil)
-            }.to(raiseException())
+            }
     }
 
     func testUsesTheCorrectHost() {
@@ -632,13 +634,13 @@ class HTTPClientTests: XCTestCase {
     func testPerformRequestFailsAssertionIfPostWithNilBody() {
         let path = "/a_random_path"
 
-        expect {
+        expectToThrowException(.parameterAssert) {
             self.client.performRequest("POST",
                                        serially: true,
                                        path: path,
                                        body: nil,
                                        headers: nil, completionHandler: nil)
-        }.to(raiseException())
+        }
     }
 
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() {

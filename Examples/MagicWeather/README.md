@@ -12,7 +12,7 @@ This sample uses:
 - iOS 14
 - Swift 5
 
-See minimum platform version requirements for RevenueCat's *Purchases* SDK [here](https://github.com/RevenueCat/purchases-ios/blob/develop/Package.swift#L65).
+See minimum platform version requirements for RevenueCat's *Purchases* SDK [here](https://github.com/RevenueCat/purchases-ios/blob/main/Package.swift#L65).
 
 ## Features
 

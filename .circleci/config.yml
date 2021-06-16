@@ -31,13 +31,13 @@ commands:
        # Bundler
       - restore_cache:
           keys: 
-            - gem-cache-{{ checksum "Gemfile.lock" }}
+            - v1-gem-cache-{{ checksum "Gemfile.lock" }}
       - run: 
           name: Bundle install
           working_directory: << parameters.directory >>
           command: bundle install --clean --path vendor/bundle
       - save_cache:
-          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
   scan-and-archive:
@@ -106,24 +106,11 @@ commands:
 jobs:
   runtest:
     macos:
-      xcode: "12.2.0"
+      xcode: "12.5.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      
-      # Carthage
-      - restore_cache:
-          keys: 
-            - carthage-cache-{{ checksum "Cartfile.resolved" }}
-      - run:
-          name: Carthage Bootstrap
-          command: |
-              ./carthage.sh bootstrap --cache-builds
-      - save_cache:
-          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
-          paths:
-            - Carthage
       
       - install-gems
       
@@ -140,7 +127,7 @@ jobs:
 
   storekit_tests:
     macos:
-      xcode: "12.2.0"
+      xcode: "12.5.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -148,19 +135,6 @@ jobs:
       - run:
           name: Open simulator
           command: xcrun instruments -w "iPhone 11 Pro (14.2) [" || true
-
-      # Carthage
-      - restore_cache:
-          keys: 
-            - carthage-cache-{{ checksum "Cartfile.resolved" }}
-      - run:
-          name: Carthage Bootstrap
-          command: |
-              ./carthage.sh bootstrap --cache-builds
-      - save_cache:
-          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
-          paths:
-            - Carthage
       
       - install-gems
       
@@ -178,7 +152,7 @@ jobs:
 
   deployment-checks: 
     macos:
-      xcode: "12.2.0"
+      xcode: "12.5.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -188,10 +162,10 @@ jobs:
       # Bundler
       - restore_cache:
           keys: 
-            - gem-cache-{{ checksum "Gemfile.lock" }}
+            - v1-gem-cache-{{ checksum "Gemfile.lock" }}
       - run: bundle install --clean --path vendor/bundle
       - save_cache:
-          key: gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
       
@@ -210,7 +184,7 @@ jobs:
           
   docs-deploy:
     macos:
-      xcode: "12.2.0"
+      xcode: "12.5.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -231,7 +205,7 @@ jobs:
   
   make-release:
     macos:
-      xcode: "12.2.0"
+      xcode: "12.5.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -244,7 +218,7 @@ jobs:
 
   prepare-next-version:
     macos:
-      xcode: "12.2.0"
+      xcode: "12.5.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -257,7 +231,7 @@ jobs:
 
   integration-tests-cocoapods:
     macos:
-      xcode: "12.2.0"
+      xcode: "12.5.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -278,7 +252,7 @@ jobs:
       
   integration-tests-swift-package-manager:
     macos:
-      xcode: "12.2.0"
+      xcode: "12.5.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -287,10 +261,10 @@ jobs:
       - update-spm-integration-commit
       - install-gems-scan-and-archive:
           directory: IntegrationTests/SPMIntegration/
-      
+
   integration-tests-carthage:
     macos:
-      xcode: "12.2.0"
+      xcode: "12.5.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -314,13 +288,13 @@ jobs:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
             - Carthage
-      
+
       - install-gems-scan-and-archive:
           directory: IntegrationTests/CarthageIntegration/
 
   integration-tests-xcode-direct-integration:
     macos:
-      xcode: "12.2.0"
+      xcode: "12.5.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -329,10 +303,25 @@ jobs:
       - install-gems-scan-and-archive:
           directory: IntegrationTests/XcodeDirectIntegration/
 
+  lint:
+    macos:
+      xcode: "12.2.0"
+    working_directory: ~/purchases-ios/
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - run:
+          name: Install swiftlint
+          command: brew install swiftlint
+      - run:
+          name: Run fastlane swiftlint lane
+          command: fastlane run swiftlint raise_if_swiftlint_error:true strict:true
+
 workflows:
   version: 2
   build-test:
     jobs:
+      - lint
       - runtest
       - storekit_tests: *release-tags-and-branches
       - deployment-checks: *release-branches

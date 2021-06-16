@@ -20,6 +20,26 @@ platform :ios do
     setup_circle_ci
   end
 
+  desc "Setup development environment"
+  lane :setup_dev do |options|
+    begin
+      sh("brew install swiftlint")
+    rescue => exception
+      UI.error("❌ Please install homebrew and then re-run this lane: /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"")
+      raise exception
+    end
+
+    pre_commit_link = "../.git/hooks/pre-commit"
+    if File.exist?(pre_commit_link) || File.symlink?(pre_commit_link)
+      UI.message("pre-commit script already linked ✅")
+    else
+      UI.message("Linking pre-commit script 🔗")
+      Dir.chdir ".." do
+        sh("ln -s -f ../../scripts/pre-commit.sh .git/hooks/pre-commit")
+      end
+    end
+  end
+
   desc "Runs all the tests"
   lane :test do
     scan
@@ -30,13 +50,19 @@ platform :ios do
   lane :bump do |options|
     new_version_number = options[:version]
     fail ArgumentError, "missing version" unless new_version_number
-    previous_version_number = get_version_number(target: "Purchases")
-    increment_version_number(version_number: new_version_number)
+    previous_version_number = current_version_number
+    
+    version_number_without_prerelease_modifiers = new_version_number.split("-")[0]
+    increment_version_number(version_number: version_number_without_prerelease_modifiers)
+    
     files_to_update = [
       '../PurchasesCoreSwift.podspec',
       '../Purchases.podspec',
       '../Purchases/Misc/RCSystemInfo.m',
-      '../.jazzy.yaml'
+      '../.jazzy.yaml',
+      '../.version',
+      '../Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
+      '../Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj',
     ]
     for file_to_update in files_to_update
       increment_build_number(previous_version_number, new_version_number, file_to_update)
@@ -59,6 +85,8 @@ platform :ios do
     rescue
       fail "please add a CHANGELOG.latest.md file before calling this lane"
     end
+    commit_hash = last_git_commit[:commit_hash]
+    puts commit_hash
 
     set_github_release(
       repository_name: "revenuecat/purchases-ios",
@@ -66,7 +94,7 @@ platform :ios do
       name: release_version,
       tag_name: "#{release_version}",
       description: changelog,
-      commitish: "master",
+      commitish: commit_hash,
       upload_assets: ["Purchases.framework.zip", "Purchases.xcframework.zip"],
       is_draft: false
   )
@@ -88,12 +116,17 @@ platform :ios do
 
   desc "Deployment checks"
   lane :deployment_checks do |options|
-    version_number = get_version_number(target: "Purchases")
+    version_number = current_version_number
     check_no_git_tag_exists(version_number)
     check_pods
     carthage_archive
     export_xcframework
     check_no_github_release_exists(version_number)
+  end
+
+  desc "Run the carthage archive steps to prepare for carthage distribution"
+  lane :carthage_archive do |options|
+    carthage_archive
   end
 
   desc "archive"
@@ -113,7 +146,7 @@ platform :ios do
 
   desc "Deploy"
   lane :deploy do |options|
-    version_number = get_version_number(target: "Purchases")
+    version_number = current_version_number
     push_pods
     carthage_archive
     export_xcframework
@@ -122,7 +155,7 @@ platform :ios do
 
   desc "Prepare next version"
   lane :prepare_next_version do |options|
-    current_version_number = get_version_number(target: "Purchases")
+    current_version_number = current_version_number
     major, minor, _ = current_version_number.split('.')
     next_version = "#{major}.#{minor.to_i + 1}.0"
     next_version_snapshot = "#{next_version}-SNAPSHOT"
@@ -138,7 +171,7 @@ platform :ios do
     create_pull_request(
       repo: "revenuecat/purchases-ios",
       title: "Prepare next version: #{next_version_snapshot}",
-      base: "develop",
+      base: "main",
       api_token: ENV["GITHUB_TOKEN"],
       head: branch_name
     )
@@ -199,11 +232,9 @@ def check_no_github_release_exists(version_number)
 end
 
 def carthage_archive
-  # can't use fastlane carthage integration directly because of Carthage/Xcode 12 compatibility issues:
-  # https://github.com/Carthage/Carthage/issues/3019
   Dir.chdir("..") do
-    sh("./carthage.sh", "build", "--no-skip-current")
-    sh("./carthage.sh", "archive", "Purchases")
+    sh("carthage", "build", "--no-skip-current", "--use-xcframeworks")
+    sh("carthage", "archive", "Purchases")
   end
 end
 
@@ -236,7 +267,14 @@ def attach_changelog_to_master(version_number)
 end
 
 def replace_in(previous_text, new_text, path)
+  if new_text.to_s.strip.empty?
+    fail "Missing `new_text` in call to `replace_in`, looking for replacement for #{previous_text} 😵."
+  end
   sed_regex = 's|' + previous_text + '|' + new_text + '|'
   backup_extension = '.bck'
   sh("sed", '-i', backup_extension, sed_regex, path)
+end
+
+def current_version_number
+  File.read("../.version")
 end

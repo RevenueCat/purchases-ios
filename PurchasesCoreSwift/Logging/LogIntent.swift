@@ -17,7 +17,7 @@ import Foundation
     case rcSuccess
     case user
     case warning
-    
+
     var suffix: String {
         switch self {
         case .appleError: return "🍎‼️"

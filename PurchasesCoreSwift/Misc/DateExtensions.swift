@@ -7,6 +7,7 @@ import Foundation
 
 extension Date {
 
+    // swiftlint:disable:next function_parameter_count
     static func from(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) -> Date {
         let calendar = Calendar(identifier: .gregorian)
         var dateComponents = DateComponents()

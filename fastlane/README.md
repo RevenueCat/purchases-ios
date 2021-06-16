@@ -16,6 +16,11 @@ or alternatively using `brew install fastlane`
 
 # Available Actions
 ## iOS
+### ios setup_dev
+```
+fastlane ios setup_dev
+```
+Setup development environment
 ### ios test
 ```
 fastlane ios test
@@ -46,6 +51,11 @@ Create sandbox account
 fastlane ios deployment_checks
 ```
 Deployment checks
+### ios carthage_archive
+```
+fastlane ios carthage_archive
+```
+Run the carthage archive steps to prepare for carthage distribution
 ### ios archive
 ```
 fastlane ios archive
