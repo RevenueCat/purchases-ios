@@ -13,17 +13,50 @@ import StoreKit
 
 @objc public extension Purchases {
     func showManageSubscriptionModal() {
-        if #available(iOS 15.0, *) {
-            detach {
-                await self.showSK2ManageSubscriptions()
+
+        self.purchaserInfo { purchaserInfo, error in
+            if let error = error {
+                print("there was an error getting purchaserInfo: \(error.localizedDescription)")
+                return
             }
-        } else {
-            self.showSK1ManageSubscriptions()
+
+            guard let purchaserInfo = purchaserInfo else {
+                print("there was no error but purchaserInfo is null!")
+                return
+            }
+
+            guard let managementURL = purchaserInfo.managementURL else {
+                print("managementURL is nil, opening iOS subscription management page")
+                self.showAppleManageSubscriptions()
+                return
+            }
+
+            if managementURL.isAppleSubscription() {
+                if #available(iOS 15.0, *) {
+                    detach {
+                        await self.showSK2ManageSubscriptions()
+                    }
+                    return
+                }
+            }
+
+            self.openURL(managementURL)
         }
     }
 }
 
 public extension Purchases {
+
+    func showAppleManageSubscriptions() {
+        if #available(iOS 15.0, *) {
+            detach {
+                await self.showSK2ManageSubscriptions()
+            }
+        } else {
+            self.openURL(.appleSubscriptionsURL)
+        }
+    }
+
     @MainActor
     @available(iOS 15.0, *)
     func showSK2ManageSubscriptions() async {
@@ -44,24 +77,6 @@ public extension Purchases {
         }
     }
 
-    func showSK1ManageSubscriptions() {
-        self.purchaserInfo { purchaserInfo, error in
-            if let error = error {
-                print("there was an error getting purchaserInfo: \(error.localizedDescription)")
-                return
-            }
-
-            if let purchaserInfo = purchaserInfo,
-               let managementURL = purchaserInfo.managementURL {
-                self.openURL(managementURL)
-            } else {
-                print("no management URL avaialable, opening generic settings instead")
-                let subscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
-                self.openURL(subscriptionsURL)
-            }
-        }
-    }
-
     func openURL(_ url: URL) {
         if #available(iOS 10.0, *) {
             UIApplication.shared.open(url)
@@ -71,10 +86,10 @@ public extension Purchases {
     }
 }
 
-public class Foo {
-    public init() { }
-
-    public func bar() {
-        print("totally foobar")
+private extension URL {
+    func isAppleSubscription() -> Bool {
+        self.absoluteString.contains("apps.apple.com")
     }
+
+    static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
 }
