@@ -11,6 +11,8 @@ import StoreKit
 
 @_exported import Purchases
 
+#if os(iOS)
+
 @objc public extension Purchases {
     func showManageSubscriptionModal() {
 
@@ -36,8 +38,8 @@ import StoreKit
                     detach {
                         await self.showSK2ManageSubscriptions()
                     }
-                    return
                 }
+                return
             }
 
             self.openURL(managementURL)
@@ -47,6 +49,10 @@ import StoreKit
 
 public extension Purchases {
 
+    @available(iOS 9.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
     func showAppleManageSubscriptions() {
         if #available(iOS 15.0, *) {
             detach {
@@ -59,6 +65,9 @@ public extension Purchases {
 
     @MainActor
     @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
     func showSK2ManageSubscriptions() async {
         let windowScene = UIApplication.shared
             .connectedScenes
@@ -93,3 +102,4 @@ private extension URL {
 
     static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
 }
+#endif
