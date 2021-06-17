@@ -55,9 +55,9 @@ public extension Purchases {
                let managementURL = purchaserInfo.managementURL {
                 self.openURL(managementURL)
             } else {
-                print("no management URL avaialable, opening support instead")
-                let supportURL = URL(string: "https://support.revenuecat.com")!
-                self.openURL(supportURL)
+                print("no management URL avaialable, opening generic settings instead")
+                let subscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
+                self.openURL(subscriptionsURL)
             }
         }
     }
