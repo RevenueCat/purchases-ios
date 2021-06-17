@@ -20,6 +20,10 @@ func resolveTargets() -> [Target] {
     let infoPlist = "Purchases/Info.plist"
 
     let baseTargets: [Target] = [
+        .target(name: "PurchasesSwift",
+                dependencies: ["PurchasesSwift"],
+                path: ".",
+                sources: ["PurchasesSwift"])),
         .target(name: "Purchases",
                 dependencies: ["PurchasesCoreSwift"],
                 path: ".",
@@ -43,7 +47,7 @@ let package = Package(
     ],
     products: [
         .library(name: "Purchases",
-                 targets: ["Purchases"]),
+                 targets: ["PurchasesSwift"]),
     ],
     dependencies: [],
     targets: resolveTargets()
