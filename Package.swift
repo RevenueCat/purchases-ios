@@ -23,19 +23,19 @@ func resolveTargets() -> [Target] {
         .target(name: "PurchasesSwift",
                 dependencies: ["PurchasesSwift"],
                 path: ".",
-                sources: ["PurchasesSwift"])),
+                sources: ["PurchasesSwift"]),
         .target(name: "Purchases",
                 dependencies: ["PurchasesCoreSwift"],
                 path: ".",
                 exclude: [infoPlist],
                 sources: ["Purchases"],
                 publicHeadersPath: "Purchases/Public",
-                cSettings: objcSources.map { CSetting.headerSearchPath($0) }
-        ),
+                cSettings: objcSources.map { CSetting.headerSearchPath($0) }),
         .target(name: "PurchasesCoreSwift",
                 dependencies: [],
                 path: ".",
-                sources: ["PurchasesCoreSwift"])]
+                sources: ["PurchasesCoreSwift"])
+    ]
 
     return baseTargets
 }
