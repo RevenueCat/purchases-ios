@@ -141,7 +141,7 @@ class ETagManagerTests: XCTestCase {
 
         expect(setData).toNot(beNil())
         expect(self.mockUserDefaults.setObjectForKeyCalledValue) ==  "https://api.revenuecat.com/v1/subscribers/appUserID"
-        guard let eTagAndResponseWrapper = try? ETagAndResponseWrapper(with: setData) else {
+        guard let eTagAndResponseWrapper = ETagAndResponseWrapper(with: setData) else {
             fatalError("Error creating ETagAndResponseWrapper")
         }
         expect(eTagAndResponseWrapper.eTag) == eTag

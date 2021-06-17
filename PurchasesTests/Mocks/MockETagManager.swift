@@ -12,34 +12,38 @@ import Foundation
 
 class MockETagManager: ETagManager {
 
-    var invokedGetETagHeader = false
-    var invokedGetETagHeaderCount = 0
-    var invokedGetETagHeaderParameters: (urlRequest: URLRequest, refreshETag: Bool)?
-    var invokedGetETagHeaderParametersList = [(urlRequest: URLRequest, refreshETag: Bool)]()
-    var stubbedGetETagHeaderResult: [String: String]! = [:]
+    var invokedETagHeader = false
+    var invokedETagHeaderCount = 0
+    var invokedETagHeaderParameters: (urlRequest: URLRequest, refreshETag: Bool)?
+    var invokedETagHeaderParametersList = [(urlRequest: URLRequest, refreshETag: Bool)]()
+    var stubbedETagHeaderResult: [String: String]! = [:]
 
     override func eTagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
-        invokedGetETagHeader = true
-        invokedGetETagHeaderCount += 1
-        invokedGetETagHeaderParameters = (urlRequest, refreshETag)
-        invokedGetETagHeaderParametersList.append((urlRequest, refreshETag))
-        return stubbedGetETagHeaderResult
+        invokedETagHeader = true
+        invokedETagHeaderCount += 1
+        invokedETagHeaderParameters = (urlRequest, refreshETag)
+        invokedETagHeaderParametersList.append((urlRequest, refreshETag))
+        return stubbedETagHeaderResult
     }
 
     var invokedGetHTTPResultFromCacheOrBackend = false
     var invokedGetHTTPResultFromCacheOrBackendCount = 0
-    var invokedGetHTTPResultFromCacheOrBackendParameters: (statusCode: Int, responseObject: [String: Any]?, error: Error?, headersInResponse: [String: Any], request: URLRequest, retried: Bool)?
-    var invokedGetHTTPResultFromCacheOrBackendParametersList = [(statusCode: Int, responseObject: [String: Any]?, error: Error?, headersInResponse: [String: Any], request: URLRequest, retried: Bool)]()
+    var invokedGetHTTPResultFromCacheOrBackendParameters: (response: HTTPURLResponse, responseObject: [String: Any]?, error: Error?, request: URLRequest, retried: Bool)?
+    var invokedGetHTTPResultFromCacheOrBackendParametersList = [(response: HTTPURLResponse, responseObject: [String: Any]?, error: Error?, request: URLRequest, retried: Bool)]()
     var stubbedGetHTTPResultFromCacheOrBackendResult: HTTPResponse!
     var shouldReturnResultFromBackend = true
-    
-    public override func getHTTPResultFromCacheOrBackend(with response: URLResponse, responseObject: [String: Any]?, error: Error?, request: URLRequest, retried: Bool) -> HTTPResponse? {
+
+    override func getHTTPResultFromCacheOrBackend(with response: HTTPURLResponse,
+        responseObject: [String: Any]?,
+        error: Error?,
+        request: URLRequest,
+        retried: Bool) -> HTTPResponse? {
         invokedGetHTTPResultFromCacheOrBackend = true
         invokedGetHTTPResultFromCacheOrBackendCount += 1
-        invokedGetHTTPResultFromCacheOrBackendParameters = (response, responseObject, error, headersInResponse, request, retried)
-        invokedGetHTTPResultFromCacheOrBackendParametersList.append((response, responseObject, error, headersInResponse, request, retried))
-        if (shouldReturnResultFromBackend) {
-            return HTTPResponse(statusCode: response, responseObject: responseObject)
+        invokedGetHTTPResultFromCacheOrBackendParameters = (response, responseObject, error, request, retried)
+        invokedGetHTTPResultFromCacheOrBackendParametersList.append((response, responseObject, error, request, retried))
+        if shouldReturnResultFromBackend {
+            return HTTPResponse(statusCode: response.statusCode, responseObject: responseObject)
         }
         return stubbedGetHTTPResultFromCacheOrBackendResult
     }
