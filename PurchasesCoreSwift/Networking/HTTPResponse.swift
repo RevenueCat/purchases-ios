@@ -9,7 +9,7 @@
 import Foundation
 
 @objc(RCHTTPResponse) public class HTTPResponse: NSObject {
-    
+
     @objc public let statusCode: Int
     @objc public let responseObject: [String: Any]?
 

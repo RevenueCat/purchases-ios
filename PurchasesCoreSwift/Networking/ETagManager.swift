@@ -4,9 +4,9 @@
 
 import Foundation
 
-internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
-
 @objc(RCETagManager) public class ETagManager: NSObject {
+    internal static let eTagHeaderName = "X-RevenueCat-ETag"
+
     private let queue = DispatchQueue(label: "ETagManager")
 
     private let userDefaults: UserDefaults
@@ -24,20 +24,21 @@ internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
         if !refreshETag, let storedETagAndResponse = storedETagAndResponse(for: urlRequest) {
             storedETag = storedETagAndResponse.eTag
         }
-        return [ETAG_HEADER_NAME: storedETag]
+        return [ETagManager.eTagHeaderName: storedETag]
     }
 
-    @objc public func getHTTPResultFromCacheOrBackend(with statusCode: Int,
+    @objc public func getHTTPResultFromCacheOrBackend(with response: HTTPURLResponse,
                                                       responseObject: [String: Any]?,
                                                       error: Error?,
-                                                      headersInResponse: [String: Any],
                                                       request: URLRequest,
                                                       retried: Bool) -> HTTPResponse? {
+        let statusCode = response.statusCode
+        let headersInResponse = response.allHeaderFields
         let resultFromBackend = HTTPResponse(statusCode: statusCode, responseObject: responseObject)
         guard error == nil else { return resultFromBackend }
 
-        let eTagInResponse: String? = headersInResponse[ETAG_HEADER_NAME] as? String ??
-                headersInResponse[ETAG_HEADER_NAME.lowercased()] as? String
+        let eTagInResponse: String? = headersInResponse[ETagManager.eTagHeaderName] as? String ??
+                headersInResponse[ETagManager.eTagHeaderName.lowercased()] as? String
 
         if eTagInResponse != nil {
             if shouldUseCachedVersion(responseCode: statusCode) {
@@ -78,7 +79,7 @@ internal let ETAG_HEADER_NAME: String = "X-RevenueCat-ETag"
         if let cacheKey = eTagDefaultCacheKey(for: request),
             let value = userDefaults.object(forKey: cacheKey),
             let data = value as? Data {
-                return try? ETagAndResponseWrapper(with: data)
+                return ETagAndResponseWrapper(with: data)
             }
 
         return nil

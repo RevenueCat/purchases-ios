@@ -180,12 +180,9 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
             error = jsonError;
         }
 
-        NSDictionary *headersInResponse = ((NSHTTPURLResponse *) response).allHeaderFields;
-
-        httpResponse = [self.eTagManager getHTTPResultFromCacheOrBackendWith:statusCode
+        httpResponse = [self.eTagManager getHTTPResultFromCacheOrBackendWith:((NSHTTPURLResponse *) response)
                                                               responseObject:responseObject
                                                                        error:error
-                                                           headersInResponse:headersInResponse
                                                                      request:request
                                                                      retried:retried];
         if (!httpResponse) {
