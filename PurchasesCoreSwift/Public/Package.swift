@@ -6,7 +6,7 @@
 import Foundation
 import StoreKit
 
-@objc(RCPackageType) enum PackageType: Int {
+@objc(RCPackageType) public enum PackageType: Int {
     /// A package that was defined with a custom identifier.
     case unknown = -2,
         /// A package that was defined with a custom identifier.
@@ -57,19 +57,19 @@ private extension PackageType {
 
 @objc(RCPackage) public class Package: NSObject {
 
-    private let identifier: String
-    private let packageType: PackageType
-    private let product: SKProduct
-    internal let offeringIdentifier: String
+    @objc public let identifier: String
+    @objc public let packageType: PackageType
+    @objc public let product: SKProduct
+    @objc public let offeringIdentifier: String
 
-    init(identifier: String, packageType: PackageType, product: SKProduct, offeringIdentifier: String) {
+    @objc public init(identifier: String, packageType: PackageType, product: SKProduct, offeringIdentifier: String) {
         self.identifier = identifier
         self.packageType = packageType
         self.product = product
         self.offeringIdentifier = offeringIdentifier
     }
 
-    public var localizedPriceString: String {
+    @objc public var localizedPriceString: String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.locale = product.priceLocale
@@ -77,7 +77,7 @@ private extension PackageType {
         return formatter.string(from: product.price) ?? ""
     }
 
-    public var localizedIntroductoryPriceString: String {
+    @objc public var localizedIntroductoryPriceString: String {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) {
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
@@ -93,7 +93,7 @@ private extension PackageType {
     }
 }
 
-extension Package {
+@objc public extension Package {
     static func string(from packageType: PackageType) -> String? {
         return packageType.description
     }

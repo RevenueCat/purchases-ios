@@ -110,8 +110,6 @@
 		354D50DF22E7D014009B870C /* RCOfferings.h in Headers */ = {isa = PBXBuildFile; fileRef = 354D50DD22E7D014009B870C /* RCOfferings.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		354D50E022E7D014009B870C /* RCOfferings.m in Sources */ = {isa = PBXBuildFile; fileRef = 354D50DE22E7D014009B870C /* RCOfferings.m */; };
 		356D65F620B873AF00576D45 /* Purchases.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		3585D6A322E680E30079E2C5 /* RCPackage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3585D6A122E680E30079E2C5 /* RCPackage.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3585D6A422E680E30079E2C5 /* RCPackage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3585D6A222E680E30079E2C5 /* RCPackage.m */; };
 		3589D15624C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 3589D15524C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35B54E4622EA6F11005918B1 /* RCEntitlementInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B54E4522EA6F11005918B1 /* RCEntitlementInfo.m */; };
 		35B54E4822EA6F4E005918B1 /* RCEntitlementInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4722EA6F4E005918B1 /* RCEntitlementInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -199,7 +197,6 @@
 		37E35BD1D25AE2B73AE41B8A /* RCAttributionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E350ABE7173A637AA8B148 /* RCAttributionData.m */; };
 		37E35BDDC331C3A5FF72CFFF /* RCStoreKitRequestFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E351CDC94FE0A49A3DAAB3 /* RCStoreKitRequestFetcher.m */; };
 		37E35BE05E2A8BB2BD310CB0 /* RCHTTPClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E356C39D29EB6C8EC2D6BD /* RCHTTPClient.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		37E35C1B3C0170F15FC920F5 /* RCPackage+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35DF0786134609B68FA23 /* RCPackage+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35C5A53AC7CF63B240FEC /* RCEntitlementInfos+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E354902741920FC5AE69A5 /* RCEntitlementInfos+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35C5E805407840AC79468 /* RCReceiptRefreshPolicy.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3585E07410DC8470406D5 /* RCReceiptRefreshPolicy.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35C7C3BADD6D1BBAE7129 /* RCSubscriberAttribute+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35C1DFC68AC9E58E868F2 /* RCSubscriberAttribute+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -397,8 +394,6 @@
 		354D50DD22E7D014009B870C /* RCOfferings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOfferings.h; sourceTree = "<group>"; };
 		354D50DE22E7D014009B870C /* RCOfferings.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCOfferings.m; sourceTree = "<group>"; };
 		357C9BC022725CFA006BC624 /* iAd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = iAd.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/iAd.framework; sourceTree = DEVELOPER_DIR; };
-		3585D6A122E680E30079E2C5 /* RCPackage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPackage.h; sourceTree = "<group>"; };
-		3585D6A222E680E30079E2C5 /* RCPackage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPackage.m; sourceTree = "<group>"; };
 		3589D15524C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCAttributionTypeFactory+Protected.h"; sourceTree = "<group>"; };
 		3597020F24BF6A710010506E /* TransactionsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactory.swift; sourceTree = "<group>"; };
 		3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactoryTests.swift; sourceTree = "<group>"; };
@@ -527,7 +522,6 @@
 		37E35DCFDBDCD33B531395A6 /* RCDeviceCache+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCDeviceCache+Protected.h"; sourceTree = "<group>"; };
 		37E35DE5707E845DA3FF51BC /* PurchasesTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesTests.swift; sourceTree = "<group>"; };
 		37E35DE721FC2A73255D505E /* RCCrossPlatformSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCCrossPlatformSupport.h; sourceTree = "<group>"; };
-		37E35DF0786134609B68FA23 /* RCPackage+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCPackage+Protected.h"; sourceTree = "<group>"; };
 		37E35E282619939718FC7DBE /* RCBackend.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCBackend.m; sourceTree = "<group>"; };
 		37E35E3250FBBB03D92E06EC /* InMemoryCachedObjectTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InMemoryCachedObjectTests.swift; sourceTree = "<group>"; };
 		37E35E5C3D1B1D6814496C89 /* RCProductInfoExtractor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCProductInfoExtractor.m; sourceTree = "<group>"; };
@@ -868,8 +862,6 @@
 				354D50DE22E7D014009B870C /* RCOfferings.m */,
 				35CE74F920C38A7100CE09D8 /* RCOffering.h */,
 				35CE74FA20C38A7100CE09D8 /* RCOffering.m */,
-				3585D6A122E680E30079E2C5 /* RCPackage.h */,
-				3585D6A222E680E30079E2C5 /* RCPackage.m */,
 				35B54E4522EA6F11005918B1 /* RCEntitlementInfo.m */,
 				35B54E4722EA6F4E005918B1 /* RCEntitlementInfo.h */,
 				35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */,
@@ -1049,7 +1041,6 @@
 				37E357C8623F79A4F0BEE213 /* RCOffering+Protected.h */,
 				37E35A6246A6969C7236B29B /* RCInMemoryCachedObject+Protected.h */,
 				37E35C1DFC68AC9E58E868F2 /* RCSubscriberAttribute+Protected.h */,
-				37E35DF0786134609B68FA23 /* RCPackage+Protected.h */,
 				37E35DCFDBDCD33B531395A6 /* RCDeviceCache+Protected.h */,
 				3589D15524C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h */,
 				2DAF814D25B24243002C621E /* RCIdentityManager+Protected.h */,
@@ -1310,7 +1301,6 @@
 				35CE74FB20C38A7100CE09D8 /* RCOffering.h in Headers */,
 				35B54E4822EA6F4E005918B1 /* RCEntitlementInfo.h in Headers */,
 				353AB5E4222F624E003754E6 /* RCPurchasesErrors.h in Headers */,
-				3585D6A322E680E30079E2C5 /* RCPackage.h in Headers */,
 				353AB5E6222F633D003754E6 /* RCPurchasesErrorUtils.h in Headers */,
 				350FBDE91F7EEF070065833D /* RCPurchases.h in Headers */,
 				354D50DF22E7D014009B870C /* RCOfferings.h in Headers */,
@@ -1356,7 +1346,6 @@
 				37E35F20B49BCE1B6D76B084 /* RCStoreKitRequestFetcher.h in Headers */,
 				37E35616A3D5D204B8BB2503 /* RCStoreKitWrapper.h in Headers */,
 				2DEB9767247DB46900A92099 /* RCISOPeriodFormatter.h in Headers */,
-				37E35C1B3C0170F15FC920F5 /* RCPackage+Protected.h in Headers */,
 				37E35010ECA71A4CE6E16307 /* RCDeviceCache+Protected.h in Headers */,
 				37E35312E13F08FD8C7CC275 /* RCProductInfo.h in Headers */,
 				3589D15624C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h in Headers */,
@@ -1548,8 +1537,8 @@
 			);
 			mainGroup = 352629F41F7C4B9100C04F2C;
 			packageReferences = (
-				B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */,
-				B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */,
+				B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */,
+				B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */,
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
 			projectDirPath = "";
@@ -1730,7 +1719,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				35B54E4622EA6F11005918B1 /* RCEntitlementInfo.m in Sources */,
-				3585D6A422E680E30079E2C5 /* RCPackage.m in Sources */,
 				35B54E4C22EA6FD3005918B1 /* RCEntitlementInfos.m in Sources */,
 				35D3AB442030B4C600DE42C5 /* RCIntroEligibility.m in Sources */,
 				352E88442229B1A70046A10A /* RCPurchasesErrorUtils.m in Sources */,
@@ -2408,7 +2396,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */ = {
+		B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Quick/Nimble.git";
 			requirement = {
@@ -2416,7 +2404,7 @@
 				version = 9.2.0;
 			};
 		};
-		B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */ = {
+		B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/AliSoftware/OHHTTPStubs.git";
 			requirement = {
@@ -2429,37 +2417,37 @@
 /* Begin XCSwiftPackageProductDependency section */
 		B3D5CFBC267282630056FA67 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */;
+			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */;
 			productName = Nimble;
 		};
 		B3D5CFBF267282760056FA67 /* OHHTTPStubsSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
 		};
 		B3D5CFC1267282760056FA67 /* OHHTTPStubs */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubs;
 		};
 		B3D5CFC32672827D0056FA67 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */;
+			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */;
 			productName = Nimble;
 		};
 		B3D5CFC52672827D0056FA67 /* OHHTTPStubs */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubs;
 		};
 		B3D5CFC72672827D0056FA67 /* OHHTTPStubsSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
 		};
 		B3D5CFC9267282860056FA67 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */;
+			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */;
 			productName = Nimble;
 		};
 /* End XCSwiftPackageProductDependency section */
