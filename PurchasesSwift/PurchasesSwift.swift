@@ -11,10 +11,9 @@ import StoreKit
 
 @_exported import Purchases
 
-#if os(iOS)
 
 @objc public extension Purchases {
-    func showManageSubscriptionModal() {
+    @objc func showManageSubscriptionModal() {
 
         self.purchaserInfo { purchaserInfo, error in
             if let error = error {
@@ -33,6 +32,7 @@ import StoreKit
                 return
             }
 
+            #if os(iOS)
             if managementURL.isAppleSubscription() {
                 if #available(iOS 15.0, *) {
                     detach {
@@ -41,7 +41,7 @@ import StoreKit
                 }
                 return
             }
-
+            #endif
             self.openURL(managementURL)
         }
     }
@@ -50,10 +50,11 @@ import StoreKit
 public extension Purchases {
 
     @available(iOS 9.0, *)
-    @available(macOS, unavailable)
+    @available(macOS 10.12, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showAppleManageSubscriptions() {
+#if os(iOS)
         if #available(iOS 15.0, *) {
             detach {
                 await self.showSK2ManageSubscriptions()
@@ -61,6 +62,9 @@ public extension Purchases {
         } else {
             self.openURL(.appleSubscriptionsURL)
         }
+#elseif os(macOS)
+        self.openURL(.appleSubscriptionsURL)
+#endif
     }
 
     @MainActor
@@ -69,6 +73,7 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showSK2ManageSubscriptions() async {
+        #if os(iOS)
         let windowScene = UIApplication.shared
             .connectedScenes
             .filter { $0.activationState == .foregroundActive }
@@ -84,14 +89,19 @@ public extension Purchases {
         } else {
             print("couldn't get window")
         }
+        #endif
     }
 
     func openURL(_ url: URL) {
+#if os(iOS)
         if #available(iOS 10.0, *) {
             UIApplication.shared.open(url)
         } else {
             UIApplication.shared.openURL(url)
         }
+#elseif os(macOS)
+        NSWorkspace.shared.open(url)
+#endif
     }
 }
 
@@ -102,4 +112,3 @@ private extension URL {
 
     static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
 }
-#endif
