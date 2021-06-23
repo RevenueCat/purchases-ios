@@ -1,7 +1,7 @@
-#Swift Migration 🐦
+# Swift Migration 🐦
 ---
 
-##Yeah, but like, why?
+## Yeah, but like, why?
 * Easier to implement in hybrid sdks.
 * 🦶 Lowers our overall footprint for modules.
 * 🗣️ Unifies the language used for the entire SDK.
