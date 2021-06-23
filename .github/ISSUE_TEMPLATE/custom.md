@@ -1,6 +1,6 @@
 ---
-name: Custom issue template
-about: Describe this issue template's purpose here.
+name: Swift Migration Task
+about: For use when creating issues for any work relating to our Swift migration.
 title: ''
 labels: swift migration
 assignees: ''
