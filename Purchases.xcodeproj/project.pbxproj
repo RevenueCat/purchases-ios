@@ -248,7 +248,6 @@
 		B387F47A2683FDEA0028701F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46D2683FDAC0028701F /* main.m */; };
 		B387F47B2683FDEA0028701F /* RevenueCatAPI.h in Sources */ = {isa = PBXBuildFile; fileRef = B387F46C2683FDAC0028701F /* RevenueCatAPI.h */; };
 		B387F47C2683FDEA0028701F /* RevenueCatAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46E2683FDAC0028701F /* RevenueCatAPI.m */; };
-		B387F486268405F10028701F /* Purchases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; };
 		B3D5CFBD267282630056FA67 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBC267282630056FA67 /* Nimble */; };
 		B3D5CFC0267282760056FA67 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBF267282760056FA67 /* OHHTTPStubsSwift */; };
 		B3D5CFC2267282760056FA67 /* OHHTTPStubs in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFC1267282760056FA67 /* OHHTTPStubs */; };
@@ -281,6 +280,13 @@
 			remoteInfo = StoreKitTestApp;
 		};
 		35DFC68220B8757C004584CC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 352629FD1F7C4B9100C04F2C;
+			remoteInfo = Purchases;
+		};
+		B387F48726840B7F0028701F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
 			proxyType = 1;
@@ -636,7 +642,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B387F486268405F10028701F /* Purchases.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1538,6 +1543,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				B387F48826840B7F0028701F /* PBXTargetDependency */,
 			);
 			name = APITester;
 			productName = APITester;
@@ -1918,6 +1924,11 @@
 			isa = PBXTargetDependency;
 			target = 352629FD1F7C4B9100C04F2C /* Purchases */;
 			targetProxy = 35DFC68220B8757C004584CC /* PBXContainerItemProxy */;
+		};
+		B387F48826840B7F0028701F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 352629FD1F7C4B9100C04F2C /* Purchases */;
+			targetProxy = B387F48726840B7F0028701F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
