@@ -13,7 +13,8 @@ If you decide you want to help, that [you can do this!](https://github.com/Reven
 - If the issue isn't clear enough, feel free to tag in sdk team `@RevenueCat/sdk` asking for clarification.
 - Work on the issue! 
 - Once you think you're done, build the `APITester` target. That target compiles a file that contains references to all public api for the `Purchases` framework. This is how we ensure our changes don't impact the public api.
-- If that builds, then follow [the final steps](#7-create-a-pull-request-to-revenuecatmain-and-request-review), but make sure you select the `swift_migration` branch as the target for your PR's `base`.
+- If that builds, then follow [the final steps (Create a pull request to revenucat)](#7-create-a-pull-request-to-revenuecatmain-and-request-review)
+  - **Important:** make sure you select the `swift_migration` branch as the target for your PR's `base` instead of `main`.
 - Done!
 
 ___
