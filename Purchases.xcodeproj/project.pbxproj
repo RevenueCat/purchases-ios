@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -638,7 +638,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B387F480268400EE0028701F /* Purchases.framework in Frameworks */,
+				B387F486268405F10028701F /* Purchases.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1505,7 +1505,6 @@
 				352629FB1F7C4B9100C04F2C /* Headers */,
 				352629FC1F7C4B9100C04F2C /* Resources */,
 				B385A1532674324500C6F132 /* Swiftlint */,
-				B387F481268401220028701F /* BuildTester API */,
 			);
 			buildRules = (
 			);
@@ -1698,25 +1697,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "scripts/swiftlint.sh\n";
-		};
-		B387F481268401220028701F /* BuildTester API */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "BuildTester API";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n# Builds the API tester target to ensure our public API hasn't changed.\nxcodebuild -target APITester\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
