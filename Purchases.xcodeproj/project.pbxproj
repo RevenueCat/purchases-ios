@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -245,6 +245,10 @@
 		9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */; };
 		B33C43EF267295E2006B8C8C /* RCObjC.m in Sources */ = {isa = PBXBuildFile; fileRef = B33C43EC2672953D006B8C8C /* RCObjC.m */; };
 		B33C43F22672986D006B8C8C /* ObjCThrowExceptionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33C43F12672986D006B8C8C /* ObjCThrowExceptionMatcher.swift */; };
+		B387F47A2683FDEA0028701F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46D2683FDAC0028701F /* main.m */; };
+		B387F47B2683FDEA0028701F /* RevenueCatAPI.h in Sources */ = {isa = PBXBuildFile; fileRef = B387F46C2683FDAC0028701F /* RevenueCatAPI.h */; };
+		B387F47C2683FDEA0028701F /* RevenueCatAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46E2683FDAC0028701F /* RevenueCatAPI.m */; };
+		B387F480268400EE0028701F /* Purchases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; };
 		B3D5CFBD267282630056FA67 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBC267282630056FA67 /* Nimble */; };
 		B3D5CFC0267282760056FA67 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBF267282760056FA67 /* OHHTTPStubsSwift */; };
 		B3D5CFC2267282760056FA67 /* OHHTTPStubs in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFC1267282760056FA67 /* OHHTTPStubs */; };
@@ -296,6 +300,15 @@
 			);
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B387F4712683FDDB0028701F /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -555,6 +568,11 @@
 		B33C43EB2672953D006B8C8C /* RCObjC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCObjC.h; sourceTree = "<group>"; };
 		B33C43EC2672953D006B8C8C /* RCObjC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCObjC.m; sourceTree = "<group>"; };
 		B33C43F12672986D006B8C8C /* ObjCThrowExceptionMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjCThrowExceptionMatcher.swift; sourceTree = "<group>"; };
+		B387F46C2683FDAC0028701F /* RevenueCatAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RevenueCatAPI.h; sourceTree = "<group>"; };
+		B387F46D2683FDAC0028701F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		B387F46E2683FDAC0028701F /* RevenueCatAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RevenueCatAPI.m; sourceTree = "<group>"; };
+		B387F4732683FDDB0028701F /* APITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = APITester; sourceTree = BUILT_PRODUCTS_DIR; };
+		B387F4752683FDDB0028701F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -611,6 +629,14 @@
 				B3D5CFC0267282760056FA67 /* OHHTTPStubsSwift in Frameworks */,
 				B3D5CFBD267282630056FA67 /* Nimble in Frameworks */,
 				B3D5CFC2267282760056FA67 /* OHHTTPStubs in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B387F4702683FDDB0028701F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B387F480268400EE0028701F /* Purchases.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -873,6 +899,7 @@
 		352629F41F7C4B9100C04F2C = {
 			isa = PBXGroup;
 			children = (
+				B387F46B2683FD730028701F /* PublicSDKAPITester */,
 				2D4C18A824F47E4400F268CD /* Purchases.swift */,
 				2DEC0CFB24A2A1B100B0E5BB /* Package.swift */,
 				35262A001F7C4B9100C04F2C /* Purchases */,
@@ -881,6 +908,7 @@
 				2DC5622224EC63430031F69B /* PurchasesCoreSwiftTests */,
 				2DE20B6D264087FB004C597D /* StoreKitTests */,
 				2DE20B8026409EB7004C597D /* StoreKitTestApp */,
+				B387F4742683FDDB0028701F /* APITester */,
 				352629FF1F7C4B9100C04F2C /* Products */,
 				3530C18722653E8F00D6DF52 /* Frameworks */,
 				2DCB85BF2406EC3F003C1260 /* Recovered References */,
@@ -896,6 +924,7 @@
 				2DC5621E24EC63430031F69B /* PurchasesCoreSwiftTests.xctest */,
 				2DE20B6C264087FB004C597D /* StoreKitTests.xctest */,
 				2DE20B7F26409EB7004C597D /* StoreKitTestApp.app */,
+				B387F4732683FDDB0028701F /* APITester */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1270,6 +1299,24 @@
 			path = TestHelpers;
 			sourceTree = "<group>";
 		};
+		B387F46B2683FD730028701F /* PublicSDKAPITester */ = {
+			isa = PBXGroup;
+			children = (
+				B387F46D2683FDAC0028701F /* main.m */,
+				B387F46C2683FDAC0028701F /* RevenueCatAPI.h */,
+				B387F46E2683FDAC0028701F /* RevenueCatAPI.m */,
+			);
+			path = PublicSDKAPITester;
+			sourceTree = "<group>";
+		};
+		B387F4742683FDDB0028701F /* APITester */ = {
+			isa = PBXGroup;
+			children = (
+				B387F4752683FDDB0028701F /* main.m */,
+			);
+			path = APITester;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1444,7 +1491,8 @@
 				352629FA1F7C4B9100C04F2C /* Frameworks */,
 				352629FB1F7C4B9100C04F2C /* Headers */,
 				352629FC1F7C4B9100C04F2C /* Resources */,
-				B385A1532674324500C6F132 /* ShellScript */,
+				B385A1532674324500C6F132 /* Swiftlint */,
+				B387F481268401220028701F /* BuildTester API */,
 			);
 			buildRules = (
 			);
@@ -1479,6 +1527,23 @@
 			productName = PurchasesTests;
 			productReference = 35262A1E1F7D77E600C04F2C /* PurchasesTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B387F4722683FDDB0028701F /* APITester */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B387F4772683FDDB0028701F /* Build configuration list for PBXNativeTarget "APITester" */;
+			buildPhases = (
+				B387F46F2683FDDB0028701F /* Sources */,
+				B387F4702683FDDB0028701F /* Frameworks */,
+				B387F4712683FDDB0028701F /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = APITester;
+			productName = APITester;
+			productReference = B387F4732683FDDB0028701F /* APITester */;
+			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
@@ -1517,6 +1582,9 @@
 						LastSwiftMigration = 1100;
 						ProvisioningStyle = Automatic;
 					};
+					B387F4722683FDDB0028701F = {
+						CreatedOnToolsVersion = 12.5.1;
+					};
 				};
 			};
 			buildConfigurationList = 352629F81F7C4B9100C04F2C /* Build configuration list for PBXProject "Purchases" */;
@@ -1542,6 +1610,7 @@
 				2DC5621D24EC63430031F69B /* PurchasesCoreSwiftTests */,
 				2DE20B7E26409EB7004C597D /* StoreKitTestApp */,
 				2DE20B6B264087FB004C597D /* StoreKitTests */,
+				B387F4722683FDDB0028701F /* APITester */,
 			);
 		};
 /* End PBXProject section */
@@ -1597,7 +1666,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		B385A1532674324500C6F132 /* ShellScript */ = {
+		B385A1532674324500C6F132 /* Swiftlint */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1606,6 +1675,7 @@
 			);
 			inputPaths = (
 			);
+			name = Swiftlint;
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -1613,6 +1683,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "scripts/swiftlint.sh\n";
+		};
+		B387F481268401220028701F /* BuildTester API */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "BuildTester API";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n# Builds the API tester target to ensure our public API hasn't changed.\nxcodebuild -target APITester\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1814,6 +1903,16 @@
 				37E359F038FEA41F207662A5 /* MockPurchaserInfoManager.swift in Sources */,
 				37E35FF7952D59C0AE3879D3 /* IdentityManagerTests.swift in Sources */,
 				37E35D6F8CF6DFB88F0A2F61 /* PurchaserInfoManagerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B387F46F2683FDDB0028701F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B387F47A2683FDEA0028701F /* main.m in Sources */,
+				B387F47B2683FDEA0028701F /* RevenueCatAPI.h in Sources */,
+				B387F47C2683FDEA0028701F /* RevenueCatAPI.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2319,6 +2418,35 @@
 			};
 			name = Release;
 		};
+		B387F4782683FDDB0028701F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				MACOSX_DEPLOYMENT_TARGET = 11.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		B387F4792683FDDB0028701F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				MACOSX_DEPLOYMENT_TARGET = 11.3;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2381,6 +2509,15 @@
 			buildConfigurations = (
 				35262A271F7D77E600C04F2C /* Debug */,
 				35262A281F7D77E600C04F2C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B387F4772683FDDB0028701F /* Build configuration list for PBXNativeTarget "APITester" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B387F4782683FDDB0028701F /* Debug */,
+				B387F4792683FDDB0028701F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
