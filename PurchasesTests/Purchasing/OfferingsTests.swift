@@ -11,6 +11,7 @@ import XCTest
 import Nimble
 
 import Purchases
+import PurchasesCoreSwift
 
 class OfferingsTests: XCTestCase {
 
@@ -41,7 +42,7 @@ class OfferingsTests: XCTestCase {
         expect(package).toNot(beNil())
         expect(package?.product).to(equal(product))
         expect(package?.identifier).to(equal(packageIdentifier))
-        expect(package?.packageType).to(equal(Purchases.PackageType.monthly))
+        expect(package?.packageType).to(equal(PackageType.monthly))
     }
 
     func testOfferingIsNotCreatedIfNoValidPackage() {
@@ -151,39 +152,39 @@ class OfferingsTests: XCTestCase {
     }
 
     func testLifetimePackage() {
-        testPackageType(packageType: Purchases.PackageType.lifetime)
+        testPackageType(packageType: PackageType.lifetime)
     }
 
     func testAnnualPackage() {
-        testPackageType(packageType: Purchases.PackageType.annual)
+        testPackageType(packageType: PackageType.annual)
     }
 
     func testSixMonthPackage() {
-        testPackageType(packageType: Purchases.PackageType.sixMonth)
+        testPackageType(packageType: PackageType.sixMonth)
     }
 
     func testThreeMonthPackage() {
-        testPackageType(packageType: Purchases.PackageType.threeMonth)
+        testPackageType(packageType: PackageType.threeMonth)
     }
 
     func testTwoMonthPackage() {
-        testPackageType(packageType: Purchases.PackageType.twoMonth)
+        testPackageType(packageType: PackageType.twoMonth)
     }
 
     func testMonthlyPackage() {
-        testPackageType(packageType: Purchases.PackageType.monthly)
+        testPackageType(packageType: PackageType.monthly)
     }
 
     func testWeeklyPackage() {
-        testPackageType(packageType: Purchases.PackageType.weekly)
+        testPackageType(packageType: PackageType.weekly)
     }
 
     func testCustomPackage() {
-        testPackageType(packageType: Purchases.PackageType.custom)
+        testPackageType(packageType: PackageType.custom)
     }
 
     func testUnknownPackageType() {
-        testPackageType(packageType: Purchases.PackageType.unknown)
+        testPackageType(packageType: PackageType.unknown)
     }
 
     func testNoOfferings() {
@@ -215,10 +216,10 @@ class OfferingsTests: XCTestCase {
         expect(offerings).to(beNil())
     }
 
-    private func testPackageType(packageType: Purchases.PackageType) {
-        var identifier = Purchases.Package.string(from: packageType)
+    private func testPackageType(packageType: PackageType) {
+        var identifier = Package.string(from: packageType)
         if (identifier == nil) {
-            if (packageType == Purchases.PackageType.unknown) {
+            if (packageType == PackageType.unknown) {
                 identifier = "$rc_unknown_id_from_the_future"
             } else {
                 identifier = "custom"
@@ -244,37 +245,37 @@ class OfferingsTests: XCTestCase {
 
         expect(offerings).toNot(beNil())
         expect(offerings!.current).toNot(beNil())
-        if (packageType == Purchases.PackageType.lifetime) {
+        if (packageType == PackageType.lifetime) {
             expect(offerings!.current?.lifetime).toNot(beNil())
         } else {
             expect(offerings!.current?.lifetime).to(beNil())
         }
-        if (packageType == Purchases.PackageType.annual) {
+        if (packageType == PackageType.annual) {
             expect(offerings!.current?.annual).toNot(beNil())
         } else {
             expect(offerings!.current?.annual).to(beNil())
         }
-        if (packageType == Purchases.PackageType.sixMonth) {
+        if (packageType == PackageType.sixMonth) {
             expect(offerings!.current?.sixMonth).toNot(beNil())
         } else {
             expect(offerings!.current?.sixMonth).to(beNil())
         }
-        if (packageType == Purchases.PackageType.threeMonth) {
+        if (packageType == PackageType.threeMonth) {
             expect(offerings!.current?.threeMonth).toNot(beNil())
         } else {
             expect(offerings!.current?.threeMonth).to(beNil())
         }
-        if (packageType == Purchases.PackageType.twoMonth) {
+        if (packageType == PackageType.twoMonth) {
             expect(offerings!.current?.twoMonth).toNot(beNil())
         } else {
             expect(offerings!.current?.twoMonth).to(beNil())
         }
-        if (packageType == Purchases.PackageType.monthly) {
+        if (packageType == PackageType.monthly) {
             expect(offerings!.current?.monthly).toNot(beNil())
         } else {
             expect(offerings!.current?.monthly).to(beNil())
         }
-        if (packageType == Purchases.PackageType.weekly) {
+        if (packageType == PackageType.weekly) {
             expect(offerings!.current?.weekly).toNot(beNil())
         } else {
             expect(offerings!.current?.weekly).to(beNil())

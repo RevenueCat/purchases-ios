@@ -22,7 +22,6 @@
 #import "RCAttributionFetcher.h"
 #import "RCAttributionData.h"
 #import "RCOfferingsFactory.h"
-#import "RCPackage+Protected.h"
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
 #import "RCSubscriberAttributesManager.h"

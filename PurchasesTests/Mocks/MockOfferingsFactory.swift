@@ -2,12 +2,13 @@
 // Created by RevenueCat on 3/2/20.
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
+import PurchasesCoreSwift
 
 class MockOfferingsFactory: RCOfferingsFactory {
-
+    
     var emptyOfferings = false
     var badOfferings = false
-
+    
     override func createOfferings(withProducts products: [String: SKProduct],
                                   data: [AnyHashable: Any]) -> Purchases.Offerings? {
         if (emptyOfferings) {
@@ -22,10 +23,10 @@ class MockOfferingsFactory: RCOfferingsFactory {
                     identifier: "base",
                     serverDescription: "This is the base offering",
                     availablePackages: [
-                        Purchases.Package(identifier: "$rc_monthly",
-                                          packageType: Purchases.PackageType.monthly,
-                                          product: MockSKProduct(mockProductIdentifier: "monthly_freetrial"),
-                                          offeringIdentifier: "base")
+                        Package(identifier: "$rc_monthly",
+                                packageType: PackageType.monthly,
+                                product: MockSKProduct(mockProductIdentifier: "monthly_freetrial"),
+                                offeringIdentifier: "base")
                     ]
                 )],
             currentOfferingID: "base")

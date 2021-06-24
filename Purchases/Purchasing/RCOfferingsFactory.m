@@ -9,12 +9,10 @@
 #import <StoreKit/StoreKit.h>
 #import "RCOfferingsFactory.h"
 #import "RCOffering.h"
-#import "RCPackage.h"
 #import "RCOfferings.h"
 #import "RCOfferings+Protected.h"
-#import "RCPackage+Protected.h"
 #import "RCOffering+Protected.h"
-
+@import PurchasesCoreSwift;
 
 @interface RCOfferingsFactory ()
 
@@ -62,7 +60,8 @@
     SKProduct *product = products[data[@"platform_product_identifier"]];
     if (product) {
         NSString *identifier = data[@"identifier"];
-        RCPackageType packageType = [RCPackage packageTypeFromString:identifier];
+        RCPackageType packageType = [RCPackage packageTypeFrom:identifier];
+        
         return [[RCPackage alloc] initWithIdentifier:identifier packageType:packageType product:product offeringIdentifier:offeringIdentifier];
     }
     return nil;

@@ -7,7 +7,7 @@
 //
 
 #import "RCOffering.h"
-#import "RCPackage.h"
+@import PurchasesCoreSwift;
 
 @interface RCOffering ()
 
