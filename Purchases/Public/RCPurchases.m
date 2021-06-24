@@ -30,7 +30,6 @@
 #import "RCIntroEligibility+Protected.h"
 #import "RCReceiptRefreshPolicy.h"
 #import "RCPurchaserInfoManager.h"
-#import "RCLoggerBridge.h"
 @import PurchasesCoreSwift;
 
 
@@ -103,15 +102,15 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 + (void)setLogHandler:(void(^)(RCLogLevel, NSString * _Nonnull))logHandler {
-    [RCLoggerBridge setLogHandler:logHandler];
+    RCLog.logHandler = logHandler;
 }
 
 + (RCLogLevel)logLevel {
-    return RCLoggerBridge.logLevel;
+    return RCLog.logLevel;
 }
 
 + (void)setLogLevel:(RCLogLevel)logLevel {
-    RCLoggerBridge.logLevel = logLevel;
+    RCLog.logLevel = logLevel;
 }
 
 + (NSURL *)proxyURL {
