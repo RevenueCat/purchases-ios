@@ -10,9 +10,9 @@ import Foundation
 
 internal struct ETagAndResponseWrapper {
 
-    static let eTagKey = "eTag"
-    static let statusCodeKey = "statusCode"
-    static let jsonObjectKey = "responseObject"
+    private static let eTagKey = "eTag"
+    private static let statusCodeKey = "statusCode"
+    private static let jsonObjectKey = "responseObject"
 
     let eTag: String
     let statusCode: Int
