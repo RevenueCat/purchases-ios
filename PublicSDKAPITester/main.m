@@ -6,12 +6,15 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RCEntitlementInfoAPI.h"
+#import "RCPurchasesAPI.h"
+
 @import StoreKit;
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
-        // insert code here...
-        NSLog(@"Hello, World!");
+        [RCPurchasesAPI checkAPI];
+        [RCEntitlementInfoAPI checkAPI];
     }
     return 0;
 }
