@@ -5,12 +5,13 @@
 //  Created by Joshua Liebowitz on 6/18/21.
 //
 
+#import <Purchases/RCEntitlementInfo.h>
+#import <Purchases/RCPurchaserInfo.h>
+#import <Purchases/RCPurchases.h>
 #import "RevenueCatAPI.h"
-#import "Purchases.h"
-#import "RCPurchases.h"
 
-@import StoreKit;
 @import PurchasesCoreSwift;
+@import StoreKit;
 
 @implementation RevenueCatAPI
 
@@ -116,6 +117,27 @@ BOOL isAnonymous;
     // RCPurchasesDelegate
     [p.delegate purchases:p didReceiveUpdatedPurchaserInfo:pi];
     [p.delegate purchases:p shouldPurchasePromoProduct:skp defermentBlock:^(RCPurchaseCompletedBlock makeDeferredPurchase) {}];
+}
+
++ (void)enums {
+    RCPeriodType t = RCNormal;
+    t = RCIntro;
+    t = RCTrial;
+    
+    RCPurchaseOwnershipType o = RCPurchaseOwnershipTypePurchased;
+    o = RCPurchaseOwnershipTypeFamilyShared;
+    o = RCPurchaseOwnershipTypeUnknown;
+    
+    RCStore rs = RCAppStore;
+    rs = RCMacAppStore;
+    rs = RCPlayStore;
+    rs = RCStripe;
+    rs = RCPromotional;
+    rs = RCUnknownStore;
+    
+    RCPeriodType pr = RCIntro;
+    pr = RCTrial;
+    pr = RCNormal;
 }
 
 @end

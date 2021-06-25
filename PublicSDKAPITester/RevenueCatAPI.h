@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RevenueCatAPI<RCPurchasesDelegate> : NSObject
 
 + (void)allTheThings;
++ (void)enums;
 
 @end
 
