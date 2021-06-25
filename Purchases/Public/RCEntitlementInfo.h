@@ -4,39 +4,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "RCPurchaseOwnershipType.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-/**
- Enum of supported stores
- */
-typedef NS_ENUM(NSInteger, RCStore) {
-    /// For entitlements granted via Apple App Store.
-    RCAppStore = 0,
-    /// For entitlements granted via Apple Mac App Store.
-    RCMacAppStore,
-    /// For entitlements granted via Google Play Store.
-    RCPlayStore,
-    /// For entitlements granted via Stripe.
-    RCStripe,
-    /// For entitlements granted via a promo in RevenueCat.
-    RCPromotional,
-    /// For entitlements granted via an unknown store.
-    RCUnknownStore,
-} NS_SWIFT_NAME(Purchases.Store);
-
-/**
- Enum of supported period types for an entitlement.
- */
-typedef NS_ENUM(NSInteger, RCPeriodType) {
-    /// If the entitlement is not under an introductory or trial period.
-    RCNormal = 0,
-    /// If the entitlement is under a introductory price period.
-    RCIntro,
-    /// If the entitlement is under a trial period.
-    RCTrial,
-} NS_SWIFT_NAME(Purchases.PeriodType);
 
 /**
  The EntitlementInfo object gives you access to all of the information about the status of a user entitlement.
@@ -65,7 +34,7 @@ NS_SWIFT_NAME(Purchases.EntitlementInfo)
  The last period type this entitlement was in
  Either: RCNormal, RCIntro, RCTrial
  */
-@property (readonly) RCPeriodType periodType;
+@property (readonly) enum RCPeriodType periodType;
 
 /**
  The latest purchase or renewal date for the entitlement.
@@ -87,7 +56,7 @@ NS_SWIFT_NAME(Purchases.EntitlementInfo)
  The store where this entitlement was unlocked from
  Either: RCAppStore, RCMacAppStore, RCPlayStore, RCStripe, RCPromotional, RCUnknownStore
  */
-@property (readonly) RCStore store;
+@property (readonly) enum RCStore store;
 
 /**
  The product identifier that unlocked this entitlement
@@ -120,8 +89,11 @@ NS_SWIFT_NAME(Purchases.EntitlementInfo)
  or shared to them by a family member. This can be useful for onboarding users who have had
  an entitlement shared with them, but might not be entirely aware of the benefits they now have.
  */
-@property (readonly) RCPurchaseOwnershipType ownershipType;
+@property (readonly) enum RCPurchaseOwnershipType ownershipType;
 
 @end
 
 NS_ASSUME_NONNULL_END
+
+
+
