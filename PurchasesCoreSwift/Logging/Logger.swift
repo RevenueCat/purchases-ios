@@ -8,8 +8,7 @@
 
 import Foundation
 
-// NOTE: this must exactly match the enum in RCLogging.h
-@objc(RCInternalLogLevel) public enum LogLevel: Int {
+@objc(RCLogLevel) public enum LogLevel: Int {
     case debug, info, warn, error
 
     func description() -> String {

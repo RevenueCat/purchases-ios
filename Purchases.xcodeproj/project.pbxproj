@@ -30,8 +30,6 @@
 		2D8E9D482523747D00AFEE11 /* NSDictionaryExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD269162522A20A006AC4BC /* NSDictionaryExtensionsTests.swift */; };
 		2D8E9D54252374A600AFEE11 /* NSDictionary+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D8E9D52252374A600AFEE11 /* NSDictionary+RCExtensions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D8E9D55252374A600AFEE11 /* NSDictionary+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D8E9D53252374A600AFEE11 /* NSDictionary+RCExtensions.m */; };
-		2DA600382666D8DB00B9E79E /* RCLoggerBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DA600362666D8DB00B9E79E /* RCLoggerBridge.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		2DA600392666D8DB00B9E79E /* RCLoggerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DA600372666D8DB00B9E79E /* RCLoggerBridge.m */; };
 		2DAF814E25B24243002C621E /* RCIdentityManager+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DAF814D25B24243002C621E /* RCIdentityManager+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2DC19195255F36D10039389A /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19194255F36D10039389A /* Logger.swift */; };
 		2DC5621F24EC63430031F69B /* PurchasesCoreSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* PurchasesCoreSwift.framework */; };
@@ -246,6 +244,7 @@
 		B387F47A2683FDEA0028701F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46D2683FDAC0028701F /* main.m */; };
 		B387F47B2683FDEA0028701F /* RevenueCatAPI.h in Sources */ = {isa = PBXBuildFile; fileRef = B387F46C2683FDAC0028701F /* RevenueCatAPI.h */; };
 		B387F47C2683FDEA0028701F /* RevenueCatAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46E2683FDAC0028701F /* RevenueCatAPI.m */; };
+		B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C46F26856AFF00CB3C21 /* APITester.swift */; };
 		B3D5CFBD267282630056FA67 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBC267282630056FA67 /* Nimble */; };
 		B3D5CFC0267282760056FA67 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBF267282760056FA67 /* OHHTTPStubsSwift */; };
 		B3D5CFC2267282760056FA67 /* OHHTTPStubs in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFC1267282760056FA67 /* OHHTTPStubs */; };
@@ -337,8 +336,6 @@
 		2D8F622224D30F9D00F993AA /* ReceiptParsingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptParsingError.swift; sourceTree = "<group>"; };
 		2D97458E24BDFCEF006245E9 /* IntroEligibilityCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroEligibilityCalculator.swift; sourceTree = "<group>"; };
 		2DA0068E24E2E515002C59D3 /* MockIntroEligibilityCalculator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockIntroEligibilityCalculator.swift; sourceTree = "<group>"; };
-		2DA600362666D8DB00B9E79E /* RCLoggerBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCLoggerBridge.h; sourceTree = "<group>"; };
-		2DA600372666D8DB00B9E79E /* RCLoggerBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCLoggerBridge.m; sourceTree = "<group>"; };
 		2DAF814D25B24243002C621E /* RCIdentityManager+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCIdentityManager+Protected.h"; sourceTree = "<group>"; };
 		2DC19194255F36D10039389A /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		2DC5621624EC63420031F69B /* PurchasesCoreSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PurchasesCoreSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -575,6 +572,8 @@
 		B387F46E2683FDAC0028701F /* RevenueCatAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RevenueCatAPI.m; sourceTree = "<group>"; };
 		B387F4732683FDDB0028701F /* APITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = APITester; sourceTree = BUILT_PRODUCTS_DIR; };
 		B387F4752683FDDB0028701F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		B3D3C46E26856AFE00CB3C21 /* APITester-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "APITester-Bridging-Header.h"; sourceTree = "<group>"; };
+		B3D3C46F26856AFF00CB3C21 /* APITester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APITester.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -686,8 +685,6 @@
 		2D4C02E52669801D0038F877 /* Logging */ = {
 			isa = PBXGroup;
 			children = (
-				2DA600362666D8DB00B9E79E /* RCLoggerBridge.h */,
-				2DA600372666D8DB00B9E79E /* RCLoggerBridge.m */,
 				37E35EB9B60477A7AD2C2EB5 /* RCLogUtils.h */,
 			);
 			path = Logging;
@@ -1320,6 +1317,8 @@
 				B387F46D2683FDAC0028701F /* main.m */,
 				B387F46C2683FDAC0028701F /* RevenueCatAPI.h */,
 				B387F46E2683FDAC0028701F /* RevenueCatAPI.m */,
+				B3D3C46F26856AFF00CB3C21 /* APITester.swift */,
+				B3D3C46E26856AFE00CB3C21 /* APITester-Bridging-Header.h */,
 			);
 			path = PublicSDKAPITester;
 			sourceTree = "<group>";
@@ -1377,7 +1376,6 @@
 				37E3585A687FF4D7B69C554C /* RCDateProvider.h in Headers */,
 				37E354159288DE3D23212382 /* RCCrossPlatformSupport.h in Headers */,
 				37E35E9CEC36E93AF682D012 /* RCPromotionalOffer+Protected.h in Headers */,
-				2DA600382666D8DB00B9E79E /* RCLoggerBridge.h in Headers */,
 				37E352E86A182E92130B823C /* RCIntroEligibility+Protected.h in Headers */,
 				37E35C5A53AC7CF63B240FEC /* RCEntitlementInfos+Protected.h in Headers */,
 				37E3575B0FFDD90D01861D81 /* RCPurchasesErrorUtils+Protected.h in Headers */,
@@ -1597,6 +1595,7 @@
 					};
 					B387F4722683FDDB0028701F = {
 						CreatedOnToolsVersion = 12.5.1;
+						LastSwiftMigration = 1250;
 					};
 				};
 			};
@@ -1817,7 +1816,6 @@
 				37E358DB4F4016AC297D6B00 /* RCOfferingsFactory.m in Sources */,
 				37E35DD8BE40E352311AC2C1 /* RCPromotionalOffer.m in Sources */,
 				37E358250B07BF2DA06EA27B /* RCReceiptFetcher.m in Sources */,
-				2DA600392666D8DB00B9E79E /* RCLoggerBridge.m in Sources */,
 				37E35BDDC331C3A5FF72CFFF /* RCStoreKitRequestFetcher.m in Sources */,
 				37E35A299524507A480956D5 /* RCStoreKitWrapper.m in Sources */,
 				37E35A7ED3312F10B80FFE2B /* RCDeviceCache.m in Sources */,
@@ -1907,6 +1905,7 @@
 				B387F47A2683FDEA0028701F /* main.m in Sources */,
 				B387F47B2683FDEA0028701F /* RevenueCatAPI.h in Sources */,
 				B387F47C2683FDEA0028701F /* RevenueCatAPI.m in Sources */,
+				B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2420,29 +2419,48 @@
 		B387F4782683FDDB0028701F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
 				CODE_SIGN_STYLE = Automatic;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift";
 				MACOSX_DEPLOYMENT_TARGET = 11.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "PublicSDKAPITester/APITester-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
 		B387F4792683FDDB0028701F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
 				CODE_SIGN_STYLE = Automatic;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift";
 				MACOSX_DEPLOYMENT_TARGET = 11.3;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "PublicSDKAPITester/APITester-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
