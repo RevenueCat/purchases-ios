@@ -148,8 +148,8 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
               queableRequest:(RCHTTPRequest *)queableRequest
                      retried:(BOOL)retried {
     NSInteger statusCode = RCHTTPStatusCodesNetworkConnectTimeoutError;
-    NSDictionary *responseObject = nil;
-    RCHTTPResponse *httpResponse = [[RCHTTPResponse alloc] initWithStatusCode:statusCode responseObject:responseObject];
+    NSDictionary *jsonObject = nil;
+    RCHTTPResponse *httpResponse = [[RCHTTPResponse alloc] initWithStatusCode:statusCode jsonObject:jsonObject];
     if (error == nil) {
         statusCode = ((NSHTTPURLResponse *) response).statusCode;
 
@@ -157,11 +157,11 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
 
         NSError *jsonError;
         if (statusCode == RCHTTPStatusCodesNotModifiedResponseCode) {
-            responseObject = @{};
+            jsonObject = @{};
         } else {
-            responseObject = [NSJSONSerialization JSONObjectWithData:data
-                                                             options:0
-                                                               error:&jsonError];
+            jsonObject = [NSJSONSerialization JSONObjectWithData:data
+                                                         options:0
+                                                           error:&jsonError];
         }
         
         if (jsonError) {
@@ -171,10 +171,10 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
         }
 
         httpResponse = [self.eTagManager getHTTPResultFromCacheOrBackendWith:((NSHTTPURLResponse *) response)
-                                                              responseObject:responseObject
-                                                                       error:error
-                                                                     request:request
-                                                                     retried:retried];
+                                                              jsonObject:jsonObject
+                                                                   error:error
+                                                                 request:request
+                                                                 retried:retried];
         if (httpResponse == nil) {
             RCDebugLog(RCStrings.network.retrying_request, queableRequest.httpMethod, queableRequest.path);
             RCHTTPRequest *retriedRequest = [[RCHTTPRequest alloc] initWithRCHTTPRequest:queableRequest
@@ -185,7 +185,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
     }
 
     if (httpResponse != nil && completionHandler != nil) {
-        completionHandler(httpResponse.statusCode, httpResponse.responseObject, error);
+        completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error);
     }
 
     if (beginNextRequestWhenFinished) {

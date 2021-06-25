@@ -11,10 +11,10 @@ import Foundation
 @objc(RCHTTPResponse) public class HTTPResponse: NSObject {
 
     @objc public let statusCode: Int
-    @objc public let responseObject: [String: Any]?
+    @objc public let jsonObject: [String: Any]?
 
-    @objc public init(statusCode: Int, responseObject: [String: Any]?) {
+    @objc public init(statusCode: Int, jsonObject: [String: Any]?) {
         self.statusCode = statusCode
-        self.responseObject = responseObject
+        self.jsonObject = jsonObject
     }
 }

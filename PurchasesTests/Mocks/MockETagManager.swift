@@ -34,16 +34,16 @@ class MockETagManager: ETagManager {
     var shouldReturnResultFromBackend = true
 
     override func getHTTPResultFromCacheOrBackend(with response: HTTPURLResponse,
-        responseObject: [String: Any]?,
+        jsonObject: [String: Any]?,
         error: Error?,
         request: URLRequest,
         retried: Bool) -> HTTPResponse? {
         invokedGetHTTPResultFromCacheOrBackend = true
         invokedGetHTTPResultFromCacheOrBackendCount += 1
-        invokedGetHTTPResultFromCacheOrBackendParameters = (response, responseObject, error, request, retried)
-        invokedGetHTTPResultFromCacheOrBackendParametersList.append((response, responseObject, error, request, retried))
+        invokedGetHTTPResultFromCacheOrBackendParameters = (response, jsonObject, error, request, retried)
+        invokedGetHTTPResultFromCacheOrBackendParametersList.append((response, jsonObject, error, request, retried))
         if shouldReturnResultFromBackend {
-            return HTTPResponse(statusCode: response.statusCode, responseObject: responseObject)
+            return HTTPResponse(statusCode: response.statusCode, responseObject: jsonObject)
         }
         return stubbedGetHTTPResultFromCacheOrBackendResult
     }

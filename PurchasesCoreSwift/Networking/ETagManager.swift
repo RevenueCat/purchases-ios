@@ -28,13 +28,13 @@ import Foundation
     }
 
     @objc public func getHTTPResultFromCacheOrBackend(with response: HTTPURLResponse,
-                                                      responseObject: [String: Any]?,
+                                                      jsonObject: [String: Any]?,
                                                       error: Error?,
                                                       request: URLRequest,
                                                       retried: Bool) -> HTTPResponse? {
         let statusCode = response.statusCode
         let headersInResponse = response.allHeaderFields
-        let resultFromBackend = HTTPResponse(statusCode: statusCode, responseObject: responseObject)
+        let resultFromBackend = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
         guard error == nil else { return resultFromBackend }
 
         let eTagInResponse: String? = headersInResponse[ETagManager.eTagHeaderName] as? String ??
@@ -60,7 +60,7 @@ import Foundation
             storeStatusCodeAndResponseIfNoError(
                     for: request,
                     statusCode: statusCode,
-                    responseObject: responseObject,
+                    responseObject: jsonObject,
                     eTag: eTagInResponse!)
         }
 
@@ -89,7 +89,7 @@ import Foundation
         if let storedETagAndResponse = storedETagAndResponse(for: request) {
             return HTTPResponse(
                     statusCode: storedETagAndResponse.statusCode,
-                    responseObject: storedETagAndResponse.responseObject)
+                    jsonObject: storedETagAndResponse.jsonObject)
         }
 
         return nil
@@ -104,7 +104,7 @@ import Foundation
            let responseObject = responseObject,
            let cacheKey = eTagDefaultCacheKey(for: request) {
             let eTagAndResponse =
-                ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, responseObject: responseObject)
+                ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, jsonObject: responseObject)
             if let dataToStore = eTagAndResponse.asData() {
                 userDefaults.set(dataToStore, forKey: cacheKey)
             }

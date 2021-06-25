@@ -52,10 +52,10 @@ class ETagManagerTests: XCTestCase {
         guard let httpURLResponse = HTTPURLResponse(url: url, statusCode: HTTPStatusCodes.notModifiedResponseCode.rawValue, httpVersion: "HTTP/1.1", headerFields: getHeaders(eTag: eTag)) else {
             fatalError("Error initializing HTTPURLResponse")
         }
-        let response = eTagManager.getHTTPResultFromCacheOrBackend(with: httpURLResponse, responseObject: [:], error: nil, request: request, retried: false)
+        let response = eTagManager.getHTTPResultFromCacheOrBackend(with: httpURLResponse, jsonObject: [:], error: nil, request: request, retried: false)
         expect(response).toNot(beNil())
         expect(response?.statusCode) == HTTPStatusCodes.success.rawValue
-        expect(response?.responseObject as? [String: String]).to(equal(cachedResponse))
+        expect(response?.jsonObject as? [String: String]).to(equal(cachedResponse))
     }
 
     func testStoredResponseIsNotUsedIfResponseCodeIs200() {
@@ -66,10 +66,10 @@ class ETagManagerTests: XCTestCase {
         let responseObject = ["a": "response"]
         let httpURLResponse = httpURLResponseForTest(url: url, eTag: eTag, statusCode: HTTPStatusCodes.success.rawValue)
         let response = eTagManager.getHTTPResultFromCacheOrBackend(
-                with: httpURLResponse, responseObject: responseObject, error: nil, request: request, retried: false)
+                with: httpURLResponse, jsonObject: responseObject, error: nil, request: request, retried: false)
         expect(response).toNot(beNil())
         expect(response?.statusCode) == HTTPStatusCodes.success.rawValue
-        expect(response?.responseObject as? [String: String]).to(equal(responseObject))
+        expect(response?.jsonObject as? [String: String]).to(equal(responseObject))
     }
 
     func testBackendResponseIsReturnedIfThereIsAnError() {
@@ -84,10 +84,10 @@ class ETagManagerTests: XCTestCase {
                 eTag: eTag,
                 statusCode: HTTPStatusCodes.notModifiedResponseCode.rawValue)
         let response = eTagManager.getHTTPResultFromCacheOrBackend(
-                with: httpURLResponse, responseObject: responseObject, error: error, request: request, retried: false)
+                with: httpURLResponse, jsonObject: responseObject, error: error, request: request, retried: false)
         expect(response).toNot(beNil())
         expect(response?.statusCode) == HTTPStatusCodes.notModifiedResponseCode.rawValue
-        expect(response?.responseObject as? [String: String]).to(equal(responseObject))
+        expect(response?.jsonObject as? [String: String]).to(equal(responseObject))
     }
 
     func testBackendResponseIsReturnedIf304AndCantFindCachedAndItHasAlreadyRetried() {
@@ -100,10 +100,10 @@ class ETagManagerTests: XCTestCase {
                 eTag: eTag,
                 statusCode: HTTPStatusCodes.notModifiedResponseCode.rawValue)
         let response = eTagManager.getHTTPResultFromCacheOrBackend(
-                with: httpURLResponse, responseObject: responseObject, error: nil, request: request, retried: true)
+                with: httpURLResponse, jsonObject: responseObject, error: nil, request: request, retried: true)
         expect(response).toNot(beNil())
         expect(response?.statusCode) == HTTPStatusCodes.notModifiedResponseCode.rawValue
-        expect(response?.responseObject as? [String: String]).to(equal(responseObject))
+        expect(response?.jsonObject as? [String: String]).to(equal(responseObject))
     }
 
     func testReturnNullIf304AndCantFindCachedResponse() {
@@ -116,7 +116,7 @@ class ETagManagerTests: XCTestCase {
                 eTag: eTag,
                 statusCode: HTTPStatusCodes.notModifiedResponseCode.rawValue)
         let response = eTagManager.getHTTPResultFromCacheOrBackend(
-                with: httpURLResponse, responseObject: responseObject, error: nil, request: request, retried: false)
+                with: httpURLResponse, jsonObject: responseObject, error: nil, request: request, retried: false)
         expect(response).to(beNil())
     }
 
@@ -130,7 +130,7 @@ class ETagManagerTests: XCTestCase {
                 eTag: eTag,
                 statusCode: HTTPStatusCodes.success.rawValue)
         let response = eTagManager.getHTTPResultFromCacheOrBackend(
-                with: httpURLResponse, responseObject: responseObject, error: nil, request: request, retried: false)
+                with: httpURLResponse, jsonObject: responseObject, error: nil, request: request, retried: false)
 
         expect(response).toNot(beNil())
         expect(self.mockUserDefaults.setObjectForKeyCallCount) == 1
@@ -145,7 +145,7 @@ class ETagManagerTests: XCTestCase {
             fatalError("Error creating ETagAndResponseWrapper")
         }
         expect(eTagAndResponseWrapper.eTag) == eTag
-        expect(eTagAndResponseWrapper.responseObject as? [String: String]) == responseObject
+        expect(eTagAndResponseWrapper.jsonObject as? [String: String]) == responseObject
     }
 
     func testResponseIsNotStoredIfResponseCodeIst500() {
@@ -159,11 +159,11 @@ class ETagManagerTests: XCTestCase {
                 eTag: eTag,
                 statusCode: HTTPStatusCodes.internalServerError.rawValue)
         let response = eTagManager.getHTTPResultFromCacheOrBackend(
-                with: httpURLResponse, responseObject: responseObject, error: nil, request: request, retried: false)
+                with: httpURLResponse, jsonObject: responseObject, error: nil, request: request, retried: false)
 
         expect(response).toNot(beNil())
         expect(response?.statusCode) == HTTPStatusCodes.internalServerError.rawValue
-        expect(response?.responseObject as? [String: String]).to(equal(responseObject))
+        expect(response?.jsonObject as? [String: String]).to(equal(responseObject))
 
         expect(self.mockUserDefaults.setObjectForKeyCallCount) == 0
 
@@ -200,14 +200,14 @@ class ETagManagerTests: XCTestCase {
     private func mockStoredETagAndResponse(for url: URL,
                                            statusCode: HTTPStatusCodes = HTTPStatusCodes.success,
                                            eTag: String = "an_etag") -> [String: String] {
-        let responseObject = ["arg": "value"]
+        let jsonObject = ["arg": "value"]
         let etagAndResponse = ETagAndResponseWrapper(
                 eTag: eTag,
                 statusCode: statusCode.rawValue,
-                responseObject: responseObject)
+                jsonObject: jsonObject)
         let cacheKey = url.absoluteString
         self.mockUserDefaults.mockValues[cacheKey] = etagAndResponse.asData()
-        return responseObject
+        return jsonObject
     }
     
     private func urlForTest() -> URL {
