@@ -244,6 +244,7 @@
 		B387F47A2683FDEA0028701F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46D2683FDAC0028701F /* main.m */; };
 		B387F47B2683FDEA0028701F /* RevenueCatAPI.h in Sources */ = {isa = PBXBuildFile; fileRef = B387F46C2683FDAC0028701F /* RevenueCatAPI.h */; };
 		B387F47C2683FDEA0028701F /* RevenueCatAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46E2683FDAC0028701F /* RevenueCatAPI.m */; };
+		B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C46F26856AFF00CB3C21 /* APITester.swift */; };
 		B3D5CFBD267282630056FA67 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBC267282630056FA67 /* Nimble */; };
 		B3D5CFC0267282760056FA67 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBF267282760056FA67 /* OHHTTPStubsSwift */; };
 		B3D5CFC2267282760056FA67 /* OHHTTPStubs in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFC1267282760056FA67 /* OHHTTPStubs */; };
@@ -571,6 +572,8 @@
 		B387F46E2683FDAC0028701F /* RevenueCatAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RevenueCatAPI.m; sourceTree = "<group>"; };
 		B387F4732683FDDB0028701F /* APITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = APITester; sourceTree = BUILT_PRODUCTS_DIR; };
 		B387F4752683FDDB0028701F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		B3D3C46E26856AFE00CB3C21 /* APITester-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "APITester-Bridging-Header.h"; sourceTree = "<group>"; };
+		B3D3C46F26856AFF00CB3C21 /* APITester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APITester.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1314,6 +1317,8 @@
 				B387F46D2683FDAC0028701F /* main.m */,
 				B387F46C2683FDAC0028701F /* RevenueCatAPI.h */,
 				B387F46E2683FDAC0028701F /* RevenueCatAPI.m */,
+				B3D3C46F26856AFF00CB3C21 /* APITester.swift */,
+				B3D3C46E26856AFE00CB3C21 /* APITester-Bridging-Header.h */,
 			);
 			path = PublicSDKAPITester;
 			sourceTree = "<group>";
@@ -1590,6 +1595,7 @@
 					};
 					B387F4722683FDDB0028701F = {
 						CreatedOnToolsVersion = 12.5.1;
+						LastSwiftMigration = 1250;
 					};
 				};
 			};
@@ -1899,6 +1905,7 @@
 				B387F47A2683FDEA0028701F /* main.m in Sources */,
 				B387F47B2683FDEA0028701F /* RevenueCatAPI.h in Sources */,
 				B387F47C2683FDEA0028701F /* RevenueCatAPI.m in Sources */,
+				B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2412,33 +2419,48 @@
 		B387F4782683FDDB0028701F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
 				CODE_SIGN_STYLE = Automatic;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
-				LD_VERIFY_BITCODE = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift";
 				MACOSX_DEPLOYMENT_TARGET = 11.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "PublicSDKAPITester/APITester-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
 		B387F4792683FDDB0028701F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
 				CODE_SIGN_STYLE = Automatic;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
-				LD_VERIFY_BITCODE = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift";
 				MACOSX_DEPLOYMENT_TARGET = 11.3;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "PublicSDKAPITester/APITester-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
