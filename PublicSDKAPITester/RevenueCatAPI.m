@@ -5,10 +5,10 @@
 //  Created by Joshua Liebowitz on 6/18/21.
 //
 
-#import "RevenueCatAPI.h"
-#import "Purchases.h"
-#import "RCPurchases.h"
 #import <Purchases/RCEntitlementInfo.h>
+#import <Purchases/RCPurchaserInfo.h>
+#import <Purchases/RCPurchases.h>
+#import "RevenueCatAPI.h"
 
 @import PurchasesCoreSwift;
 @import StoreKit;

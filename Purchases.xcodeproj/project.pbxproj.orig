@@ -242,9 +242,12 @@
 		B387F47A2683FDEA0028701F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46D2683FDAC0028701F /* main.m */; };
 		B387F47B2683FDEA0028701F /* RevenueCatAPI.h in Sources */ = {isa = PBXBuildFile; fileRef = B387F46C2683FDAC0028701F /* RevenueCatAPI.h */; };
 		B387F47C2683FDEA0028701F /* RevenueCatAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46E2683FDAC0028701F /* RevenueCatAPI.m */; };
-		B3D3C4722685784800CB3C21 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C4712685784800CB3C21 /* Package.swift */; };
+<<<<<<< HEAD
 		B387F480268400EE0028701F /* Purchases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; };
 		B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C46F26856AFF00CB3C21 /* APITester.swift */; };
+=======
+		B3D3C4722685784800CB3C21 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C4712685784800CB3C21 /* Package.swift */; };
+>>>>>>> 0181be8 (Don't try to build Package.swift for SPM)
 		B3D5CFBD267282630056FA67 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBC267282630056FA67 /* Nimble */; };
 		B3D5CFC0267282760056FA67 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBF267282760056FA67 /* OHHTTPStubsSwift */; };
 		B3D5CFC2267282760056FA67 /* OHHTTPStubs in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFC1267282760056FA67 /* OHHTTPStubs */; };
