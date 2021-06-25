@@ -8,7 +8,7 @@
 
 import Foundation
 
-internal struct ETagAndResponseWrapper {
+struct ETagAndResponseWrapper {
 
     private static let eTagKey = "eTag"
     private static let statusCodeKey = "statusCode"
