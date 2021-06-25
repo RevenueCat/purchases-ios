@@ -15,7 +15,11 @@
 @implementation RCEntitlementInfoAPI
 
 + (void)checkAPI {
-    RCEntitlementInfo *ri = [[RCEntitlementInfo alloc] init];
+    RCEntitlementInfo *ri = [[RCEntitlementInfo alloc] initWithEntitlementId:@""
+                                                             entitlementData:@{}
+                                                                 productData:@{}
+                                                               dateFormatter:[[NSDateFormatter alloc] init]
+                                                                 requestDate:NSDate.now];
     BOOL wr = [ri willRenew];
     RCPeriodType pt = [ri periodType];
     NSDate *lpd = [ri latestPurchaseDate];

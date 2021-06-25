@@ -11,6 +11,7 @@ import XCTest
 import Nimble
 
 import Purchases
+import PurchasesCoreSwift
 
 class EmptyPurchaserInfoTests: XCTestCase {
     let purchaserInfo = Purchases.PurchaserInfo.init(data: [AnyHashable : Any]())
@@ -306,7 +307,7 @@ class BasicPurchaserInfoTests: XCTestCase {
         ] as [String : Any]
         let purchaserInfoWithoutRequestData = Purchases.PurchaserInfo(data: response)
 
-        let entitlements: [String : Purchases.EntitlementInfo] = purchaserInfoWithoutRequestData!.entitlements.active
+        let entitlements: [String : EntitlementInfo] = purchaserInfoWithoutRequestData!.entitlements.active
         expect(entitlements["pro"]).toNot(beNil());
         expect(entitlements["old_pro"]).to(beNil());
     }
