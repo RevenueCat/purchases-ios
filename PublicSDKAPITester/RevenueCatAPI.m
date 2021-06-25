@@ -12,7 +12,6 @@
 
 @import PurchasesCoreSwift;
 @import StoreKit;
-@import PurchasesCoreSwift;
 
 @implementation RevenueCatAPI
 
