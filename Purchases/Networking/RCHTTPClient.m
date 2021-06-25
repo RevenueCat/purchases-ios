@@ -95,13 +95,14 @@ typedef void (^RetryRequestBlock)();
                           [RCPurchasesErrorUtils networkErrorWithUnderlyingError:RCPurchasesErrorUtils.unknownError]);
         return;
     }
-
+    
+    RCHTTPRequest *rcRequest = [[RCHTTPRequest alloc] initWithHTTPMethod:httpMethod
+                                                                         path:path
+                                                                         body:requestBody
+                                                                      headers:headers
+                                                                      retried:retried
+                                                            completionHandler:completionHandler];
     if (performSerially && !retried) {
-        RCHTTPRequest *rcRequest = [[RCHTTPRequest alloc] initWithHTTPMethod:httpMethod
-                                                                        path:path
-                                                                        body:requestBody
-                                                                     headers:headers
-                                                           completionHandler:completionHandler];
         @synchronized (self) {
             if (self.currentSerialRequest) {
                 RCDebugLog(RCStrings.network.serial_request_queued,
@@ -117,17 +118,6 @@ typedef void (^RetryRequestBlock)();
         }
     }
 
-    RetryRequestBlock retryBlock = ^void() {
-        RCDebugLog(RCStrings.network.retrying_request, httpMethod, path);
-        [self performRequest:httpMethod
-                    serially:performSerially
-                        path:path
-                        body:requestBody
-                     headers:headers
-                     retried:YES
-           completionHandler:completionHandler];
-    };
-
     typedef void (^SessionCompletionBlock)(NSData *_Nullable, NSURLResponse *_Nullable, NSError *_Nullable);
 
     SessionCompletionBlock block = ^void(NSData *_Nullable data,
@@ -139,7 +129,7 @@ typedef void (^RetryRequestBlock)();
                      request:urlRequest
            completionHandler:completionHandler
 beginNextRequestWhenFinished:performSerially
-                  retryBlock:retryBlock
+              queableRequest:rcRequest
                      retried:retried];
     };
 
@@ -155,7 +145,7 @@ beginNextRequestWhenFinished:performSerially
                      request:(NSMutableURLRequest *)request
            completionHandler:(RCHTTPClientResponseHandler)completionHandler
 beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
-                  retryBlock:(RetryRequestBlock)retryBlock
+              queableRequest:(RCHTTPRequest *)queableRequest
                      retried:(BOOL)retried {
     NSInteger statusCode = RCHTTPStatusCodesNetworkConnectTimeoutError;
     NSDictionary *responseObject = nil;
@@ -185,13 +175,16 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
                                                                        error:error
                                                                      request:request
                                                                      retried:retried];
-        if (!httpResponse) {
-            retryBlock();
-            return;
+        if (httpResponse == nil) {
+            RCDebugLog(RCStrings.network.retrying_request, queableRequest.httpMethod, queableRequest.path);
+            RCHTTPRequest *retriedRequest = [[RCHTTPRequest alloc] initWithRCHTTPRequest:queableRequest
+                                                                                 retried:YES];
+            [self.queuedRequests insertObject:retriedRequest atIndex:0];
+            beginNextRequestWhenFinished = true;
         }
     }
 
-    if (completionHandler != nil) {
+    if (httpResponse != nil && completionHandler != nil) {
         completionHandler(httpResponse.statusCode, httpResponse.responseObject, error);
     }
 
@@ -214,6 +207,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
                                 path:nextRequest.path
                                 body:nextRequest.requestBody
                              headers:nextRequest.headers
+                             retried:nextRequest.retried
                    completionHandler:nextRequest.completionHandler];
             }
         }
