@@ -33,9 +33,9 @@ import Foundation
                                                       request: URLRequest,
                                                       retried: Bool) -> HTTPResponse? {
         let statusCode = response.statusCode
-        let headersInResponse = response.allHeaderFields
         let resultFromBackend = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
         guard error == nil else { return resultFromBackend }
+        let headersInResponse = response.allHeaderFields
 
         let eTagInResponse: String? = headersInResponse[ETagManager.eTagHeaderName] as? String ??
                 headersInResponse[ETagManager.eTagHeaderName.lowercased()] as? String
