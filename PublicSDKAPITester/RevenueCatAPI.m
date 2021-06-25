@@ -10,6 +10,7 @@
 #import "RCPurchases.h"
 
 @import StoreKit;
+@import PurchasesCoreSwift;
 
 @implementation RevenueCatAPI
 
@@ -67,7 +68,7 @@ BOOL isAnonymous;
     SKProductDiscount *skpd = [[SKProductDiscount alloc] init];
     SKPaymentDiscount *skmd = [[SKPaymentDiscount alloc] init];
     
-    RCPackage *pack = [[RCPackage alloc] init];
+    RCPackage *pack = [[RCPackage alloc] initWithIdentifier:@"" packageType:RCPackageTypeCustom product:skp offeringIdentifier:@""];
     [RCPurchases configureWithAPIKey:@"" appUserID:@""];
     [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false];
     [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:nil];
