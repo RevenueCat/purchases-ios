@@ -100,14 +100,13 @@ import Foundation
                                                      responseObject: [String: Any]?,
                                                      eTag: String) {
         if statusCode != HTTPStatusCodes.notModifiedResponseCode.rawValue &&
-                   statusCode < HTTPStatusCodes.internalServerError.rawValue &&
-                   responseObject != nil {
-            if let cacheKey = eTagDefaultCacheKey(for: request) {
-                let eTagAndResponse =
-                        ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, responseObject: responseObject!)
-                if let dataToStore = eTagAndResponse.asData() {
-                    userDefaults.set(dataToStore, forKey: cacheKey)
-                }
+            statusCode < HTTPStatusCodes.internalServerError.rawValue,
+           let responseObject = responseObject,
+           let cacheKey = eTagDefaultCacheKey(for: request) {
+            let eTagAndResponse =
+                ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, responseObject: responseObject)
+            if let dataToStore = eTagAndResponse.asData() {
+                userDefaults.set(dataToStore, forKey: cacheKey)
             }
         }
     }
