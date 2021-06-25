@@ -8,4 +8,5 @@
 
 import Foundation
 
-// This is fine 🔥
+// This file is empty, but is needed so that Xcode can correctly
+// link Swift dependencies for the framework.

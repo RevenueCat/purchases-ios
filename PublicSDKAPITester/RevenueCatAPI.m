@@ -32,15 +32,17 @@ NSString *appUserID;
 BOOL isAnonymous;
 
 + (void)allTheThings {
-//    typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceivePurchaserInfoBlock);
-//    typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *) NS_SWIFT_NAME(Purchases.ReceiveIntroEligibilityBlock);
-//    typedef void (^RCReceiveOfferingsBlock)(RCOfferings * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceiveOfferingsBlock);
-//    typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *) NS_SWIFT_NAME(Purchases.ReceiveProductsBlock);
-//    typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable, BOOL userCancelled) NS_SWIFT_NAME(Purchases.PurchaseCompletedBlock);
-//    typedef void (^RCDeferredPromotionalPurchaseBlock)(RCPurchaseCompletedBlock);
-//    typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PaymentDiscountBlock);
+    // TODO: Addresses these blocks
+    // typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceivePurchaserInfoBlock);
+    // typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *) NS_SWIFT_NAME(Purchases.ReceiveIntroEligibilityBlock);
+    // typedef void (^RCReceiveOfferingsBlock)(RCOfferings * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceiveOfferingsBlock);
+    // typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *) NS_SWIFT_NAME(Purchases.ReceiveProductsBlock);
+    // typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable, BOOL userCancelled) NS_SWIFT_NAME(Purchases.PurchaseCompletedBlock);
+    // typedef void (^RCDeferredPromotionalPurchaseBlock)(RCPurchaseCompletedBlock);
+    // typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PaymentDiscountBlock);
 
-    //    [p presentCodeRedemptionSheet]; ///TODO: iOS ONLY, TEST FOR THIS API BY LOOKING UP SELECTOR
+    // TODO: iOS ONLY, TEST FOR THIS API BY LOOKING UP SELECTOR
+    // [p presentCodeRedemptionSheet];
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
     
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];
@@ -115,7 +117,5 @@ BOOL isAnonymous;
     [p.delegate purchases:p didReceiveUpdatedPurchaserInfo:pi];
     [p.delegate purchases:p shouldPurchasePromoProduct:skp defermentBlock:^(RCPurchaseCompletedBlock makeDeferredPurchase) {}];
 }
-
-
 
 @end
