@@ -35,4 +35,17 @@
     NSLog(ri, wr, pt, lpd, opd, ed, s, pi, is, uda, bida, ot);
 }
 
++ (void)checkEnums {
+    RCStore rs = RCAppStore;
+    rs = RCMacAppStore;
+    rs = RCPlayStore;
+    rs = RCStripe;
+    rs = RCPromotional;
+    rs = RCUnknownStore;
+
+    RCPeriodType pr = RCIntro;
+    pr = RCTrial;
+    pr = RCNormal;
+}
+
 @end

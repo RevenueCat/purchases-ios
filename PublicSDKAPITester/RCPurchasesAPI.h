@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCPurchasesAPI<RCPurchasesDelegate> : NSObject
 
 + (void)checkAPI;
-+ (void)enums;
++ (void)checkEnums;
 
 @end
 
