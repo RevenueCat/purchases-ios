@@ -9,6 +9,9 @@ excluded:
   - PublicSDKAPITester
 disabled_rules:
   - trailing_comma
+  - todo
+  - cyclomatic_complexity
+  - function_body_length
 identifier_name: 
   max_length: 
     warning: 60 

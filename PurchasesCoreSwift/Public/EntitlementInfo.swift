@@ -119,7 +119,11 @@ import Foundation
 
     // TODO(post-migration): Make this internal
     // TODO(cleanup): Codable
-    public init(entitlementId: String, entitlementData: Dictionary<String, Any>, productData: Dictionary<String, Any>, dateFormatter: DateFormatter, requestDate: Date?) {
+    public init(entitlementId: String,
+                entitlementData: [String: Any],
+                productData: [String: Any],
+                dateFormatter: DateFormatter,
+                requestDate: Date?) {
         // Entitlement data
         let entitlementExpiresDateString = entitlementData["expires_date"] as? String
         let entitlementPurchaseDateString = entitlementData["purchase_date"] as? String
@@ -137,9 +141,12 @@ import Foundation
 
         let store = Self.parseStore(store: storeString)
         let expirationDate = Self.parseDate(dateString: productExpiresDateString, withDateFormatter: dateFormatter)
-        let unsubscribeDetectedAt = Self.parseDate(dateString: unsubscribeDetectedAtString, withDateFormatter: dateFormatter)
-        let billingIssueDetectedAt = Self.parseDate(dateString: billingIssuesDetectedAtString, withDateFormatter: dateFormatter)
-        let entitlementExpiresDate = Self.parseDate(dateString: entitlementExpiresDateString, withDateFormatter: dateFormatter)
+        let unsubscribeDetectedAt = Self.parseDate(dateString: unsubscribeDetectedAtString,
+                                                   withDateFormatter: dateFormatter)
+        let billingIssueDetectedAt = Self.parseDate(dateString: billingIssuesDetectedAtString,
+                                                    withDateFormatter: dateFormatter)
+        let entitlementExpiresDate = Self.parseDate(dateString: entitlementExpiresDateString,
+                                                    withDateFormatter: dateFormatter)
 
         self.store = store
         self.expirationDate = expirationDate
@@ -149,9 +156,11 @@ import Foundation
         self.productIdentifier = productIdString!
 
         let isSandbox: Bool
-        if maybeSandbox?.responds(to: #selector(getter: NSNumber.boolValue)) ?? false, let unwrapped = maybeSandbox as? NSNumber {
+        if maybeSandbox?.responds(to: #selector(getter: NSNumber.boolValue)) ?? false,
+           let unwrapped = maybeSandbox as? NSNumber {
             isSandbox = unwrapped.boolValue
-        } else if maybeSandbox?.responds(to: #selector(getter: NSString.boolValue)) ?? false, let unwrapped = maybeSandbox as? NSString {
+        } else if maybeSandbox?.responds(to: #selector(getter: NSString.boolValue)) ?? false,
+                  let unwrapped = maybeSandbox as? NSString {
             isSandbox = unwrapped.boolValue
         } else {
             isSandbox = false
@@ -160,10 +169,15 @@ import Foundation
         self.isSandbox = isSandbox
         self.isActive = Self.isDateActive(expirationDate: entitlementExpiresDate, forRequestDate: requestDate)
         self.periodType = Self.parsePeriodType(periodType: periodTypeString)
-        self.latestPurchaseDate = Self.parseDate(dateString: entitlementPurchaseDateString, withDateFormatter: dateFormatter)
-        self.originalPurchaseDate = Self.parseDate(dateString: originalPurchaseDateString, withDateFormatter: dateFormatter)
+        self.latestPurchaseDate = Self.parseDate(dateString: entitlementPurchaseDateString,
+                                                 withDateFormatter: dateFormatter)
+        self.originalPurchaseDate = Self.parseDate(dateString: originalPurchaseDateString,
+                                                   withDateFormatter: dateFormatter)
         self.ownershipType = Self.parseOwnershipType(ownershipType: ownershipType)
-        self.willRenew = Self.willRenewWithExpirationDate(expirationDate: expirationDate, store: store, unsubscribeDetectedAt: unsubscribeDetectedAt, billingIssueDetectedAt: billingIssueDetectedAt)
+        self.willRenew = Self.willRenewWithExpirationDate(expirationDate: expirationDate,
+                                                          store: store,
+                                                          unsubscribeDetectedAt: unsubscribeDetectedAt,
+                                                          billingIssueDetectedAt: billingIssueDetectedAt)
     }
 
     class func parseDate(dateString: String?, withDateFormatter dateFormatter: DateFormatter) -> Date? {
@@ -229,7 +243,10 @@ import Foundation
         }
     }
 
-    class func willRenewWithExpirationDate(expirationDate: Date?, store: Store, unsubscribeDetectedAt: Date?, billingIssueDetectedAt: Date?) -> Bool {
+    class func willRenewWithExpirationDate(expirationDate: Date?,
+                                           store: Store,
+                                           unsubscribeDetectedAt: Date?,
+                                           billingIssueDetectedAt: Date?) -> Bool {
         let isPromo = store == .promotional
         let isLifetime = expirationDate == nil
         let hasUnsubscribed = unsubscribeDetectedAt != nil
@@ -280,7 +297,8 @@ import Foundation
         if self.latestPurchaseDate != info.latestPurchaseDate && self.latestPurchaseDate != info.latestPurchaseDate {
             return false
         }
-        if self.originalPurchaseDate != info.originalPurchaseDate && self.originalPurchaseDate != info.originalPurchaseDate {
+        if self.originalPurchaseDate != info.originalPurchaseDate
+            && self.originalPurchaseDate != info.originalPurchaseDate {
             return false
         }
         if self.expirationDate != info.expirationDate && self.expirationDate != info.expirationDate {
@@ -295,10 +313,12 @@ import Foundation
         if self.isSandbox != info.isSandbox {
             return false
         }
-        if self.unsubscribeDetectedAt != info.unsubscribeDetectedAt && self.unsubscribeDetectedAt != info.unsubscribeDetectedAt {
+        if self.unsubscribeDetectedAt != info.unsubscribeDetectedAt
+            && self.unsubscribeDetectedAt != info.unsubscribeDetectedAt {
             return false
         }
-        if self.billingIssueDetectedAt != info.billingIssueDetectedAt && self.billingIssueDetectedAt != info.billingIssueDetectedAt {
+        if self.billingIssueDetectedAt != info.billingIssueDetectedAt
+            && self.billingIssueDetectedAt != info.billingIssueDetectedAt {
             return false
         }
         if self.ownershipType != info.ownershipType {
