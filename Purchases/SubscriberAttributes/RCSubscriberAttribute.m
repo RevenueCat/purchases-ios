@@ -3,9 +3,10 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
+@import PurchasesCoreSwift;
+
 #import <Foundation/Foundation.h>
 #import "RCSubscriberAttribute.h"
-#import "RCDateProvider.h"
 #import "NSDate+RCExtensions.h"
 
 NS_ASSUME_NONNULL_BEGIN
