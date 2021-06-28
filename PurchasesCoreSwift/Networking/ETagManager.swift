@@ -71,11 +71,15 @@ import Foundation
         self.userDefaults.removePersistentDomain(forName: ETagManager.suiteName)
     }
 
-    private func shouldUseCachedVersion(responseCode: Int) -> Bool {
+}
+
+private extension ETagManager {
+    
+    func shouldUseCachedVersion(responseCode: Int) -> Bool {
         responseCode == HTTPStatusCodes.notModifiedResponseCode.rawValue
     }
 
-    private func storedETagAndResponse(for request: URLRequest) -> ETagAndResponseWrapper? {
+    func storedETagAndResponse(for request: URLRequest) -> ETagAndResponseWrapper? {
         if let cacheKey = eTagDefaultCacheKey(for: request),
             let value = userDefaults.object(forKey: cacheKey),
             let data = value as? Data {
@@ -85,7 +89,7 @@ import Foundation
         return nil
     }
 
-    private func getStoredHTTPResponse(for request: URLRequest) -> HTTPResponse? {
+    func getStoredHTTPResponse(for request: URLRequest) -> HTTPResponse? {
         if let storedETagAndResponse = storedETagAndResponse(for: request) {
             return HTTPResponse(
                     statusCode: storedETagAndResponse.statusCode,
@@ -95,10 +99,10 @@ import Foundation
         return nil
     }
 
-    private func storeStatusCodeAndResponseIfNoError(for request: URLRequest,
-                                                     statusCode: Int,
-                                                     responseObject: [String: Any]?,
-                                                     eTag: String) {
+    func storeStatusCodeAndResponseIfNoError(for request: URLRequest,
+                                              statusCode: Int,
+                                          responseObject: [String: Any]?,
+                                                    eTag: String) {
         if statusCode != HTTPStatusCodes.notModifiedResponseCode.rawValue &&
             statusCode < HTTPStatusCodes.internalServerError.rawValue,
            let responseObject = responseObject,
@@ -111,13 +115,12 @@ import Foundation
         }
     }
 
-    private func eTagDefaultCacheKey(for request: URLRequest) -> String? {
+    func eTagDefaultCacheKey(for request: URLRequest) -> String? {
         return request.url?.absoluteString
     }
 
-    private static var suiteName: String {
+    static var suiteName: String {
         let bundleID = Bundle.main.bundleIdentifier ?? ""
         return bundleID + ".revenuecat.etags"
     }
-
 }
