@@ -240,6 +240,7 @@
 		B387F47A2683FDEA0028701F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46D2683FDAC0028701F /* main.m */; };
 		B3AA35A0268682410007771B /* RCEntitlementInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA359D268682410007771B /* RCEntitlementInfoAPI.m */; };
 		B3AA35A1268682410007771B /* RCPurchasesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA359F268682410007771B /* RCPurchasesAPI.m */; };
+		B3AA6234268A7BA900894871 /* RCEntitlementInfosAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA6232268A7BA900894871 /* RCEntitlementInfosAPI.m */; };
 		B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C46F26856AFF00CB3C21 /* APITester.swift */; };
 		B3D5CFBD267282630056FA67 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBC267282630056FA67 /* Nimble */; };
 		B3D5CFC0267282760056FA67 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBF267282760056FA67 /* OHHTTPStubsSwift */; };
@@ -567,11 +568,12 @@
 		B3AA359E268682410007771B /* RCPurchasesAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesAPI.h; sourceTree = "<group>"; };
 		B3AA359F268682410007771B /* RCPurchasesAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesAPI.m; sourceTree = "<group>"; };
 		B3AA35A2268683540007771B /* EntitlementInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementInfo.swift; sourceTree = "<group>"; };
+		B3AA6232268A7BA900894871 /* RCEntitlementInfosAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfosAPI.m; sourceTree = "<group>"; };
+		B3AA6233268A7BA900894871 /* RCEntitlementInfosAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfosAPI.h; sourceTree = "<group>"; };
 		B3D3C46E26856AFE00CB3C21 /* APITester-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "APITester-Bridging-Header.h"; sourceTree = "<group>"; };
 		B3D3C46F26856AFF00CB3C21 /* APITester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APITester.swift; sourceTree = "<group>"; };
 		B3D3C4712685784800CB3C21 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseOwnershipType.swift; sourceTree = "<group>"; };
-		B3DDB55B26854A1E008CCF23 /* EntitlementInfoEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementInfoEnums.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1297,6 +1299,8 @@
 				B387F46D2683FDAC0028701F /* main.m */,
 				B3AA359C268682410007771B /* RCEntitlementInfoAPI.h */,
 				B3AA359D268682410007771B /* RCEntitlementInfoAPI.m */,
+				B3AA6233268A7BA900894871 /* RCEntitlementInfosAPI.h */,
+				B3AA6232268A7BA900894871 /* RCEntitlementInfosAPI.m */,
 				B3AA359E268682410007771B /* RCPurchasesAPI.h */,
 				B3AA359F268682410007771B /* RCPurchasesAPI.m */,
 			);
@@ -1883,6 +1887,7 @@
 			files = (
 				B3AA35A1268682410007771B /* RCPurchasesAPI.m in Sources */,
 				B3AA35A0268682410007771B /* RCEntitlementInfoAPI.m in Sources */,
+				B3AA6234268A7BA900894871 /* RCEntitlementInfosAPI.m in Sources */,
 				B387F47A2683FDEA0028701F /* main.m in Sources */,
 				B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */,
 			);
