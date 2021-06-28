@@ -169,7 +169,7 @@ import Foundation
                                                           billingIssueDetectedAt: billingIssueDetectedAt)
     }
 
-    class func parseDate(dateString: String?, withDateFormatter dateFormatter: DateFormatter) -> Date? {
+    private class func parseDate(dateString: String?, withDateFormatter dateFormatter: DateFormatter) -> Date? {
         guard let dateString = dateString else {
             return nil
         }
@@ -177,7 +177,7 @@ import Foundation
         return dateFormatter.date(from: dateString)
     }
 
-    class func isDateActive(expirationDate: Date?, forRequestDate requestDate: Date?) -> Bool {
+    private class func isDateActive(expirationDate: Date?, forRequestDate requestDate: Date?) -> Bool {
         guard let expirationDate = expirationDate else {
             return true
         }
@@ -186,7 +186,7 @@ import Foundation
         return expirationDate.timeIntervalSince(referenceDate) > 0
     }
 
-    class func parseOwnershipType(ownershipType: String?) -> PurchaseOwnershipType {
+    private class func parseOwnershipType(ownershipType: String?) -> PurchaseOwnershipType {
         switch ownershipType {
         case nil:
             return .purchased
@@ -200,7 +200,7 @@ import Foundation
         }
     }
 
-    class func parsePeriodType(periodType: String?) -> PeriodType {
+    private class func parsePeriodType(periodType: String?) -> PeriodType {
         switch periodType {
         case "normal":
             return .normal
@@ -214,12 +214,12 @@ import Foundation
         }
     }
 
-    class func parseStore(store: String?) -> Store {
+    private class func parseStore(store: String?) -> Store {
         switch store {
         case "app_store":
             return .appStore
         case "mac_app_store":
-        return .macAppStore
+            return .macAppStore
         case "play_store":
             return .playStore
         case "stripe":
@@ -232,10 +232,10 @@ import Foundation
         }
     }
 
-    class func willRenewWithExpirationDate(expirationDate: Date?,
-                                           store: Store,
-                                           unsubscribeDetectedAt: Date?,
-                                           billingIssueDetectedAt: Date?) -> Bool {
+    private class func willRenewWithExpirationDate(expirationDate: Date?,
+                                                   store: Store,
+                                                   unsubscribeDetectedAt: Date?,
+                                                   billingIssueDetectedAt: Date?) -> Bool {
         let isPromo = store == .promotional
         let isLifetime = expirationDate == nil
         let hasUnsubscribed = unsubscribeDetectedAt != nil
