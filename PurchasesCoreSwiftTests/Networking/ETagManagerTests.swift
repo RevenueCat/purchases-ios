@@ -148,7 +148,7 @@ class ETagManagerTests: XCTestCase {
         expect(eTagAndResponseWrapper.jsonObject as? [String: String]) == responseObject
     }
 
-    func testResponseIsNotStoredIfResponseCodeIst500() {
+    func testResponseIsNotStoredIfResponseCodeIs500() {
         let eTag = "an_etag"
         let url = urlForTest()
         let request = URLRequest(url: url)
