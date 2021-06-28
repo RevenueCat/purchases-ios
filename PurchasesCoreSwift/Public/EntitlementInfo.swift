@@ -38,68 +38,68 @@ import Foundation
     @objc(RCTrial) case trial = 2
 }
 
-@objcMembers @objc(RCEntitlementInfo) public class EntitlementInfo: NSObject {
+@objc(RCEntitlementInfo) public class EntitlementInfo: NSObject {
     /**
      The entitlement identifier configured in the RevenueCat dashboard
      */
-    public let identifier: String
+    @objc public let identifier: String
 
     /**
      True if the user has access to this entitlement
      */
-    public let isActive: Bool
+    @objc public let isActive: Bool
 
     /**
      True if the underlying subscription is set to renew at the end of
      the billing period (expirationDate). Will always be True if entitlement
      is for lifetime access.
      */
-    public let willRenew: Bool
+    @objc public let willRenew: Bool
 
     /**
      The last period type this entitlement was in
      Either: RCNormal, RCIntro, RCTrial
      */
-    public let periodType: PeriodType
+    @objc public let periodType: PeriodType
 
     /**
      The latest purchase or renewal date for the entitlement.
      */
-    public let latestPurchaseDate: Date? // TODO: This used to be NON-NULL
+    @objc public let latestPurchaseDate: Date?
 
     /**
      The first date this entitlement was purchased
      */
-    public let originalPurchaseDate: Date? // TODO: This used to be NON-NULL
+    @objc public let originalPurchaseDate: Date?
 
     /**
      The expiration date for the entitlement, can be `nil` for lifetime access.
      If the `periodType` is `trial`, this is the trial expiration date.
      */
-    public private(set) var expirationDate: Date?
+    @objc public let expirationDate: Date?
 
     /**
      The store where this entitlement was unlocked from
      Either: RCAppStore, RCMacAppStore, RCPlayStore, RCStripe, RCPromotional, RCUnknownStore
      */
-    public let store: Store
+    @objc public let store: Store
 
     /**
      The product identifier that unlocked this entitlement
      */
-    public let productIdentifier: String
+    @objc public let productIdentifier: String
 
     /**
      False if this entitlement is unlocked via a production purchase
      */
-    public let isSandbox: Bool
+    @objc public let isSandbox: Bool
 
     /**
      The date an unsubscribe was detected. Can be `nil`.
 
      Note: Entitlement may still be active even if user has unsubscribed. Check the `isActive` property.
      */
-    public private(set) var unsubscribeDetectedAt: Date?
+    @objc public let unsubscribeDetectedAt: Date?
 
     /**
      The date a billing issue was detected. Can be `nil` if there is no
@@ -108,22 +108,22 @@ import Foundation
      Note: Entitlement may still be active even if there is a billing issue.
      Check the `isActive` property.
      */
-    public private(set) var billingIssueDetectedAt: Date?
+    @objc public let billingIssueDetectedAt: Date?
 
     /**
      Use this property to determine whether a purchase was made by the current user
      or shared to them by a family member. This can be useful for onboarding users who have had
      an entitlement shared with them, but might not be entirely aware of the benefits they now have.
      */
-    public let ownershipType: PurchaseOwnershipType
+    @objc public let ownershipType: PurchaseOwnershipType
 
     // TODO(post-migration): Make this internal
     // TODO(cleanup): Codable
-    public init(entitlementId: String,
-                entitlementData: [String: Any],
-                productData: [String: Any],
-                dateFormatter: DateFormatter,
-                requestDate: Date?) {
+    @objc public init(entitlementId: String,
+                      entitlementData: [String: Any],
+                      productData: [String: Any],
+                      dateFormatter: DateFormatter,
+                      requestDate: Date?) {
         // Entitlement data
         let entitlementExpiresDateString = entitlementData["expires_date"] as? String
         let entitlementPurchaseDateString = entitlementData["purchase_date"] as? String
@@ -134,7 +134,7 @@ import Foundation
         let originalPurchaseDateString = productData["original_purchase_date"] as? String
         let productExpiresDateString = productData["expires_date"] as? String
         let storeString = productData["store"] as? String
-        let maybeSandbox = productData["is_sandbox"] as? NSObject // This could be a String or NSNumber
+        let isSandbox = (productData["is_sandbox"] as? NSNumber)?.boolValue ?? false
         let unsubscribeDetectedAtString = productData["unsubscribe_detected_at"] as? String
         let billingIssuesDetectedAtString = productData["billing_issues_detected_at"] as? String
         let ownershipType = productData["ownership_type"] as? String
@@ -154,19 +154,8 @@ import Foundation
         self.billingIssueDetectedAt = billingIssueDetectedAt
         self.identifier = entitlementId
         self.productIdentifier = productIdString!
-
-        let isSandbox: Bool
-        if maybeSandbox?.responds(to: #selector(getter: NSNumber.boolValue)) ?? false,
-           let unwrapped = maybeSandbox as? NSNumber {
-            isSandbox = unwrapped.boolValue
-        } else if maybeSandbox?.responds(to: #selector(getter: NSString.boolValue)) ?? false,
-                  let unwrapped = maybeSandbox as? NSString {
-            isSandbox = unwrapped.boolValue
-        } else {
-            isSandbox = false
-        }
-
         self.isSandbox = isSandbox
+
         self.isActive = Self.isDateActive(expirationDate: entitlementExpiresDate, forRequestDate: requestDate)
         self.periodType = Self.parsePeriodType(periodType: periodTypeString)
         self.latestPurchaseDate = Self.parseDate(dateString: entitlementPurchaseDateString,
