@@ -32,7 +32,7 @@ struct PaywallView: View {
                 /// - The paywall view list displaying each package
                 List {
                     Section(header: Text("\nMagic Weather Premium"), footer: Text(footerText)) {
-                        ForEach(offering?.availablePackages ?? []) { package in
+                        ForEach(offering?.availablePackages ?? [], id: \.self) { package in
                             PackageCellView(package: package) { (package) in
                                 
                                 /// - Set 'isPurchasing' state to `true`
