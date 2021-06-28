@@ -15,20 +15,13 @@ typedef void(^RCFetchProductsCompletionHandler)(NSArray<SKProduct *> *products);
 
 typedef void(^RCFetchReceiptCompletionHandler)(void);
 
-@class SKProduct, SKProductsRequest;
-
-@interface RCProductsRequestFactory : NSObject
-- (SKProductsRequest *)requestForProductIdentifiers:(NSSet<NSString *> *)identifiers;
+@interface RCReceiptRefreshRequestFactory : NSObject
 - (SKReceiptRefreshRequest *)receiptRefreshRequest;
 @end
 
-@interface RCStoreKitRequestFetcher : NSObject <SKProductsRequestDelegate>
+@interface RCStoreKitRequestFetcher : NSObject
 
-- (nullable instancetype)initWithRequestFactory:(RCProductsRequestFactory *)requestFactory;
-
-- (void)fetchProducts:(NSSet<NSString *> *)identifiers
-           completion:(RCFetchProductsCompletionHandler)completion;
-
+- (nullable instancetype)initWithRequestFactory:(RCReceiptRefreshRequestFactory *)requestFactory;
 - (void)fetchReceiptData:(RCFetchReceiptCompletionHandler)completion;
 
 @end
