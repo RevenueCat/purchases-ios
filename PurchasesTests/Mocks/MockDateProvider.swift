@@ -5,7 +5,7 @@
 
 import Purchases
 
-class MockDateProvider: RCDateProvider {
+class MockDateProvider: DateProvider {
     var invokedNow = false
     var invokedNowCount = 0
     var stubbedNowResult: Date!
