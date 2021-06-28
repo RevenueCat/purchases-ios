@@ -573,6 +573,7 @@
 		B3D3C46F26856AFF00CB3C21 /* APITester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APITester.swift; sourceTree = "<group>"; };
 		B3D3C4712685784800CB3C21 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseOwnershipType.swift; sourceTree = "<group>"; };
+		B3DDB55B26854A1E008CCF23 /* EntitlementInfoEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementInfoEnums.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
