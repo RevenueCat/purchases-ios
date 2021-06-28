@@ -410,7 +410,7 @@ class EntitlementInfosTests: XCTestCase {
         verifyProduct()
     }
 
-    func testSubscriptionIsSandbox() {
+    func testSubscriptionIsSandboxInteger() {
         stubResponse(
                 entitlements: [
                     "pro_cat": [
@@ -472,7 +472,7 @@ class EntitlementInfosTests: XCTestCase {
                      subscriptions: mockSubscriptions(ownershipType: "PURCHASED"))
 
         var subscriberInfo = Purchases.PurchaserInfo(data: response)!
-        var entitlement: Purchases.EntitlementInfo? = subscriberInfo.entitlements.active["pro_cat"]
+        var entitlement: EntitlementInfo? = subscriberInfo.entitlements.active["pro_cat"]
         expect(entitlement).toNot(beNil())
         expect(entitlement!.ownershipType) == .purchased
 
@@ -505,7 +505,7 @@ class EntitlementInfosTests: XCTestCase {
                      subscriptions: mockSubscriptions(ownershipType: nil))
 
         let subscriberInfo = Purchases.PurchaserInfo(data: response)!
-        let entitlement: Purchases.EntitlementInfo? = subscriberInfo.entitlements.active["pro_cat"]
+        let entitlement: EntitlementInfo? = subscriberInfo.entitlements.active["pro_cat"]
         expect(entitlement).toNot(beNil())
         expect(entitlement!.ownershipType) == .purchased
     }
@@ -1028,7 +1028,7 @@ class EntitlementInfosTests: XCTestCase {
 
     func verifyEntitlementActive(_ expectedEntitlementActive: Bool = true, entitlement: String = "pro_cat") {
         let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
-        let proCat: Purchases.EntitlementInfo = subscriberInfo.entitlements[entitlement]!
+        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.identifier) == entitlement
         expect(subscriberInfo.entitlements.all.keys.contains(entitlement)) == true
@@ -1041,7 +1041,7 @@ class EntitlementInfosTests: XCTestCase {
                        expectedBillingIssueDetectedAt: Date? = nil,
                        entitlement: String = "pro_cat") {
         let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
-        let proCat: Purchases.EntitlementInfo = subscriberInfo.entitlements[entitlement]!
+        let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.willRenew) == expectedWillRenew
         
@@ -1060,21 +1060,21 @@ class EntitlementInfosTests: XCTestCase {
 
     func verifyPeriodType(_ expectedPeriodType: PeriodType = PeriodType.normal, expectedEntitlement: String = "pro_cat") {
         let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
-        let proCat: Purchases.EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
+        let proCat: EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
 
         expect(proCat.periodType) == expectedPeriodType
     }
 
     func verifyStore(_ expectedStore: Store = Store.appStore, expectedEntitlement: String = "pro_cat") {
         let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
-        let proCat: Purchases.EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
+        let proCat: EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
 
         expect(proCat.store) == expectedStore
     }
 
     func verifySandbox(_ expectedIsSandbox: Bool = false, expectedEntitlement: String = "pro_cat") {
         let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
-        let proCat: Purchases.EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
+        let proCat: EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
 
         expect(proCat.isSandbox) == expectedIsSandbox
     }
@@ -1094,7 +1094,7 @@ class EntitlementInfosTests: XCTestCase {
                        expectedExpirationDate: Date?,
                        expectedEntitlement: String = "pro_cat") {
         let subscriberInfo: Purchases.PurchaserInfo = Purchases.PurchaserInfo(data: response)!
-        let proCat: Purchases.EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
+        let proCat: EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
 
         if (expectedLatestPurchaseDate != nil) {
             expect(proCat.latestPurchaseDate) == expectedLatestPurchaseDate

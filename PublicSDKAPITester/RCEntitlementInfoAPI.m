@@ -15,7 +15,11 @@
 @implementation RCEntitlementInfoAPI
 
 + (void)checkAPI {
-    RCEntitlementInfo *ri = [[RCEntitlementInfo alloc] init];
+    RCEntitlementInfo *ri = [[RCEntitlementInfo alloc] initWithEntitlementId:@""
+                                                             entitlementData:@{}
+                                                                 productData:@{}
+                                                               dateFormatter:[[NSDateFormatter alloc] init]
+                                                                 requestDate:NSDate.now];
     BOOL wr = [ri willRenew];
     RCPeriodType pt = [ri periodType];
     NSDate *lpd = [ri latestPurchaseDate];
@@ -29,6 +33,19 @@
     RCPurchaseOwnershipType ot = [ri ownershipType];
 
     NSLog(ri, wr, pt, lpd, opd, ed, s, pi, is, uda, bida, ot);
+}
+
++ (void)checkEnums {
+    RCStore rs = RCAppStore;
+    rs = RCMacAppStore;
+    rs = RCPlayStore;
+    rs = RCStripe;
+    rs = RCPromotional;
+    rs = RCUnknownStore;
+
+    RCPeriodType pr = RCIntro;
+    pr = RCTrial;
+    pr = RCNormal;
 }
 
 @end

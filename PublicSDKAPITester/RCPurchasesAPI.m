@@ -117,7 +117,7 @@ BOOL isAnonymous;
     [p.delegate purchases:p shouldPurchasePromoProduct:skp defermentBlock:^(RCPurchaseCompletedBlock makeDeferredPurchase) {}];
 }
 
-+ (void)enums {
++ (void)checkEnums {
     RCPeriodType t = RCNormal;
     t = RCIntro;
     t = RCTrial;
@@ -126,16 +126,10 @@ BOOL isAnonymous;
     o = RCPurchaseOwnershipTypeFamilyShared;
     o = RCPurchaseOwnershipTypeUnknown;
     
-    RCStore rs = RCAppStore;
-    rs = RCMacAppStore;
-    rs = RCPlayStore;
-    rs = RCStripe;
-    rs = RCPromotional;
-    rs = RCUnknownStore;
-    
-    RCPeriodType pr = RCIntro;
-    pr = RCTrial;
-    pr = RCNormal;
+    RCLogLevel l = RCLogLevelInfo;
+    l = RCLogLevelWarn;
+    l = RCLogLevelDebug;
+    l = RCLogLevelError;
 }
 
 @end

@@ -6,12 +6,12 @@
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
-#import "RCPurchaserInfo.h"
-#import "RCPurchaserInfo+Protected.h"
+@import PurchasesCoreSwift;
+
 #import "RCEntitlementInfos.h"
 #import "RCEntitlementInfos+Protected.h"
-#import "RCEntitlementInfo.h"
-@import PurchasesCoreSwift;
+#import "RCPurchaserInfo.h"
+#import "RCPurchaserInfo+Protected.h"
 
 @interface RCPurchaserInfo ()
 

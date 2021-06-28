@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCEntitlementInfoAPI : NSObject
 
 + (void)checkAPI;
++ (void)checkEnums;
 
 @end
 

@@ -14,7 +14,9 @@
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
         [RCPurchasesAPI checkAPI];
+        [RCPurchasesAPI checkEnums];
         [RCEntitlementInfoAPI checkAPI];
+        [RCEntitlementInfoAPI checkEnums];
     }
     return 0;
 }
