@@ -1,6 +1,6 @@
 //
 //  RevenueCatAPI.h
-//  MigrateTester
+//  RCPurchasesAPI
 //
 //  Created by Joshua Liebowitz on 6/18/21.
 //
@@ -11,9 +11,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class RCPurchasesDelegate;
 
-@interface RevenueCatAPI<RCPurchasesDelegate> : NSObject
+@interface RCPurchasesAPI<RCPurchasesDelegate> : NSObject
 
-+ (void)allTheThings;
++ (void)checkAPI;
 + (void)enums;
 
 @end

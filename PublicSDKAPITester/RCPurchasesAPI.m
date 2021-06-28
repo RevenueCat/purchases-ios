@@ -5,15 +5,13 @@
 //  Created by Joshua Liebowitz on 6/18/21.
 //
 
-#import <Purchases/RCEntitlementInfo.h>
-#import <Purchases/RCPurchaserInfo.h>
-#import <Purchases/RCPurchases.h>
-#import "RevenueCatAPI.h"
-
+@import Purchases;
 @import PurchasesCoreSwift;
 @import StoreKit;
 
-@implementation RevenueCatAPI
+#import "RCPurchasesAPI.h"
+
+@implementation RCPurchasesAPI
 
 bool canI;
 NSString *version;
@@ -32,7 +30,7 @@ id<RCPurchasesDelegate> delegate;
 NSString *appUserID;
 BOOL isAnonymous;
 
-+ (void)allTheThings {
++ (void)checkAPI {
     // TODO: Addresses these blocks
     // typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceivePurchaserInfoBlock);
     // typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *) NS_SWIFT_NAME(Purchases.ReceiveIntroEligibilityBlock);
