@@ -9,6 +9,7 @@
 import Foundation
 import StoreKit
 
+// todo: make internal
 @objc(RCReceiptRefreshRequestFactory) public class ReceiptRefreshRequestFactory: NSObject {
 
     @objc public func receiptRefreshRequest() -> SKReceiptRefreshRequest {
@@ -16,6 +17,7 @@ import StoreKit
     }
 }
 
+// todo: make internal
 @objc(RCStoreKitRequestFetcher) public class StoreKitRequestFetcher: NSObject {
     private let requestFactory: ReceiptRefreshRequestFactory
     private var receiptRefreshRequest: SKRequest?
