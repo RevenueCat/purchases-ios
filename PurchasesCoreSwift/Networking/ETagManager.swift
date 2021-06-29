@@ -120,7 +120,9 @@ private extension ETagManager {
     }
 
     static var suiteName: String {
-        let bundleID = Bundle.main.bundleIdentifier ?? ""
+        guard let bundleID = Bundle.main.bundleIdentifier else {
+            return "revenuecat.etags"
+        }
         return bundleID + ".revenuecat.etags"
     }
 }
