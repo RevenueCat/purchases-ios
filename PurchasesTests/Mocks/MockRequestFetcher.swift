@@ -3,10 +3,12 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-class MockRequestFetcher: RCStoreKitRequestFetcher {
+@testable import PurchasesCoreSwift
+
+class MockRequestFetcher: StoreKitRequestFetcher {
     var refreshReceiptCalled = false
 
-    override func fetchReceiptData(_ completion: @escaping RCFetchReceiptCompletionHandler) {
+    override func fetchReceiptData(_ completion: @escaping () -> Void) {
         refreshReceiptCalled = true
         completion()
     }

@@ -9,11 +9,9 @@
 import Foundation
 import StoreKit
 
-typealias RCFetchProductsCompletionHandler = ([SKProduct]?) -> Void
-typealias RCFetchReceiptCompletionHandler = () -> Void
-
 @objc(RCReceiptRefreshRequestFactory) public class ReceiptRefreshRequestFactory: NSObject {
-    func receiptRefreshRequest() -> SKReceiptRefreshRequest? {
+
+    @objc public func receiptRefreshRequest() -> SKReceiptRefreshRequest {
         return SKReceiptRefreshRequest()
     }
 }
@@ -21,10 +19,10 @@ typealias RCFetchReceiptCompletionHandler = () -> Void
 @objc(RCStoreKitRequestFetcher) public class StoreKitRequestFetcher: NSObject {
     private let requestFactory: ReceiptRefreshRequestFactory?
     private var receiptRefreshRequest: SKRequest?
-    private var receiptRefreshCompletionHandlers: [RCFetchReceiptCompletionHandler]
+    private var receiptRefreshCompletionHandlers: [() -> Void]
     private let queue = DispatchQueue(label: "StoreKitRequestFetcher")
 
-    init(requestFactory: ReceiptRefreshRequestFactory) {
+    @objc public init(requestFactory: ReceiptRefreshRequestFactory = ReceiptRefreshRequestFactory()) {
         self.requestFactory = requestFactory
         receiptRefreshRequest = nil
         receiptRefreshCompletionHandlers = []
@@ -49,7 +47,7 @@ extension StoreKitRequestFetcher: SKRequestDelegate {
     public func requestDidFinish(_ request: SKRequest) {
         if request is SKReceiptRefreshRequest {
             let receiptHandlers = finishReceiptRequest(request)
-            for receiptHandler in receiptHandlers ?? [] {
+            for receiptHandler in receiptHandlers {
                 receiptHandler()
             }
         }
@@ -60,7 +58,7 @@ extension StoreKitRequestFetcher: SKRequestDelegate {
         Logger.appleError(String(format: Strings.offering.sk_request_failed, error.localizedDescription))
         if request is SKReceiptRefreshRequest {
             let receiptHandlers = finishReceiptRequest(request)
-            for receiptHandler in receiptHandlers ?? [] {
+            for receiptHandler in receiptHandlers {
                 receiptHandler()
             }
         }
@@ -70,7 +68,7 @@ extension StoreKitRequestFetcher: SKRequestDelegate {
 
 private extension StoreKitRequestFetcher {
 
-    func finishReceiptRequest(_ request: SKRequest?) -> [RCFetchReceiptCompletionHandler]? {
+    func finishReceiptRequest(_ request: SKRequest?) -> [() -> Void] {
         queue.sync {
             receiptRefreshRequest = nil
             let handlers = receiptRefreshCompletionHandlers

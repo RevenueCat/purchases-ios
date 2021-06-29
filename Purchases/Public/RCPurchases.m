@@ -224,7 +224,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   observerMode:(BOOL)observerMode
                 platformFlavor:(nullable NSString *)platformFlavor
          platformFlavorVersion:(nullable NSString *)platformFlavorVersion {
-    RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     NSError *error = nil;
     RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
@@ -266,6 +265,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                 attributionFetcher:attributionFetcher];
     RCProductsRequestFactory *productsRequestFactory = [[RCProductsRequestFactory alloc] init];
     RCProductsManager *productsManager = [[RCProductsManager alloc] initWithProductsRequestFactory:productsRequestFactory];
+    RCReceiptRefreshRequestFactory *receiptRefreshRequestFactory = [[RCReceiptRefreshRequestFactory alloc] init];
+    RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] initWithRequestFactory:receiptRefreshRequestFactory];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher

@@ -11,10 +11,9 @@ import OHHTTPStubs
 import Nimble
 import StoreKit
 
-import Purchases
+@testable import PurchasesCoreSwift
 
-
-class StoreKitRequestFetcher: XCTestCase {
+class StoreKitRequestFetcherTests: XCTestCase {
 
     class MockReceiptRequest: SKReceiptRefreshRequest {
         var startCalled = false
@@ -31,7 +30,7 @@ class StoreKitRequestFetcher: XCTestCase {
         }
     }
 
-    class MockRequestsFactory: RCReceiptRefreshRequestFactory {
+    class MockRequestsFactory: ReceiptRefreshRequestFactory {
         let fails: Bool
 
         init(fails: Bool) {
@@ -48,14 +47,14 @@ class StoreKitRequestFetcher: XCTestCase {
         }
     }
 
-    var fetcher: RCStoreKitRequestFetcher?
+    var fetcher: StoreKitRequestFetcher?
     var factory: MockRequestsFactory?
     var receiptFetched = false
     var receiptFetchedCallbackCount = 0
 
     func setupFetcher(fails: Bool) {
         self.factory = MockRequestsFactory(fails: fails)
-        self.fetcher = RCStoreKitRequestFetcher(requestFactory: self.factory!)
+        self.fetcher = StoreKitRequestFetcher(requestFactory: self.factory!)
 
         self.fetcher!.fetchReceiptData {
             self.receiptFetched = true
