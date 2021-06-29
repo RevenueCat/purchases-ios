@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 #import "RCSubscriberAttribute.h"
-#import "NSDate+RCExtensions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

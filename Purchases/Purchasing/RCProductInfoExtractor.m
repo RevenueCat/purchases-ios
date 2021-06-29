@@ -3,11 +3,12 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
+@import PurchasesCoreSwift;
+
 #import "RCProductInfoExtractor.h"
 #import "RCProductInfo.h"
 #import "RCISOPeriodFormatter.h"
 #import "RCPromotionalOffer.h"
-#import "NSLocale+RCExtensions.h"
 #import <StoreKit/StoreKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
