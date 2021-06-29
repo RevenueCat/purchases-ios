@@ -17,7 +17,7 @@ import StoreKit
 }
 
 @objc(RCStoreKitRequestFetcher) public class StoreKitRequestFetcher: NSObject {
-    private let requestFactory: ReceiptRefreshRequestFactory?
+    private let requestFactory: ReceiptRefreshRequestFactory
     private var receiptRefreshRequest: SKRequest?
     private var receiptRefreshCompletionHandlers: [() -> Void]
     private let queue = DispatchQueue(label: "StoreKitRequestFetcher")
@@ -33,13 +33,12 @@ import StoreKit
             self.receiptRefreshCompletionHandlers.append(completion)
 
             if self.receiptRefreshRequest == nil {
-                self.receiptRefreshRequest = self.requestFactory?.receiptRefreshRequest()
+                self.receiptRefreshRequest = self.requestFactory.receiptRefreshRequest()
                 self.receiptRefreshRequest?.delegate = self
                 self.receiptRefreshRequest?.start()
             }
         }
     }
-
 }
 
 extension StoreKitRequestFetcher: SKRequestDelegate {
