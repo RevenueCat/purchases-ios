@@ -2,9 +2,6 @@
 //  Use this file to import your target's public headers that you would like to expose to Swift.
 //
 @import PurchasesCoreSwift;
-#include <Purchases/NSData+RCExtensions.h>
-#include <Purchases/NSDate+RCExtensions.h>
-#include <Purchases/NSDictionary+RCExtensions.h>
 #include <Purchases/NSError+RCExtensions.h>
 #include <Purchases/RCAttributionData.h>
 #include <Purchases/RCAttributionFetcher.h>
