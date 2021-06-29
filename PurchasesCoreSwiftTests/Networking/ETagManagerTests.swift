@@ -49,10 +49,17 @@ class ETagManagerTests: XCTestCase {
         let request = URLRequest(url: url)
         let cachedResponse = mockStoredETagAndResponse(for: url, statusCode: HTTPStatusCodes.success, eTag: eTag)
        
-        guard let httpURLResponse = HTTPURLResponse(url: url, statusCode: HTTPStatusCodes.notModifiedResponseCode.rawValue, httpVersion: "HTTP/1.1", headerFields: getHeaders(eTag: eTag)) else {
+        guard let httpURLResponse = HTTPURLResponse(url: url,
+                                                    statusCode: HTTPStatusCodes.notModifiedResponseCode.rawValue,
+                                                    httpVersion: "HTTP/1.1",
+                                                    headerFields: getHeaders(eTag: eTag)) else {
             fatalError("Error initializing HTTPURLResponse")
         }
-        let response = eTagManager.getHTTPResultFromCacheOrBackend(with: httpURLResponse, jsonObject: [:], error: nil, request: request, retried: false)
+        let response = eTagManager.getHTTPResultFromCacheOrBackend(with: httpURLResponse,
+                                                                   jsonObject: [:],
+                                                                   error: nil,
+                                                                   request: request,
+                                                                   retried: false)
         expect(response).toNot(beNil())
         expect(response?.statusCode) == HTTPStatusCodes.success.rawValue
         expect(response?.jsonObject as? [String: String]).to(equal(cachedResponse))
