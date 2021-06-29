@@ -18,7 +18,6 @@
                                                                     purchasesData:@{}
                                                                     dateFormatter:[[NSDateFormatter alloc] init]
                                                                       requestDate:nil];
-    RCEntitlementInfos *ei = [[RCEntitlementInfos alloc] init];
     NSDictionary<NSString *, RCEntitlementInfo *> *all = ei.all;
     NSDictionary<NSString *, RCEntitlementInfo *> *active = ei.active;
     RCEntitlementInfo *e = [ei objectForKeyedSubscript:@""];
