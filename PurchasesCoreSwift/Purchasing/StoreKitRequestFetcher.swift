@@ -29,7 +29,7 @@ import StoreKit
     }
 
     @objc public func fetchReceiptData(_ completion: @escaping () -> Void) {
-        queue.sync {
+        queue.async {
             self.receiptRefreshCompletionHandlers.append(completion)
 
             if self.receiptRefreshRequest == nil {
@@ -44,35 +44,31 @@ import StoreKit
 extension StoreKitRequestFetcher: SKRequestDelegate {
 
     public func requestDidFinish(_ request: SKRequest) {
-        if request is SKReceiptRefreshRequest {
-            let receiptHandlers = finishReceiptRequest(request)
-            for receiptHandler in receiptHandlers {
-                receiptHandler()
-            }
-        }
+        guard request is SKReceiptRefreshRequest else { return }
+
+        finishReceiptRequest(request)
         request.cancel()
     }
 
     public func request(_ request: SKRequest, didFailWithError error: Error) {
+        guard request is SKReceiptRefreshRequest else { return }
+
         Logger.appleError(String(format: Strings.offering.sk_request_failed, error.localizedDescription))
-        if request is SKReceiptRefreshRequest {
-            let receiptHandlers = finishReceiptRequest(request)
-            for receiptHandler in receiptHandlers {
-                receiptHandler()
-            }
-        }
+        finishReceiptRequest(request)
         request.cancel()
     }
 }
 
 private extension StoreKitRequestFetcher {
 
-    func finishReceiptRequest(_ request: SKRequest?) -> [() -> Void] {
-        queue.sync {
-            receiptRefreshRequest = nil
-            let handlers = receiptRefreshCompletionHandlers
-            receiptRefreshCompletionHandlers = []
-            return handlers
+    func finishReceiptRequest(_ request: SKRequest?) {
+        queue.async {
+            self.receiptRefreshRequest = nil
+            let handlers = self.receiptRefreshCompletionHandlers
+            self.receiptRefreshCompletionHandlers = []
+            for handler in handlers {
+                handler()
+            }
         }
     }
 }

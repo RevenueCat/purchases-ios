@@ -101,7 +101,7 @@ class StoreKitRequestFetcherTests: XCTestCase {
     
     func testOnlyCreatesOneRefreshRequest() {
         setupFetcher(fails: false)
-        expect(self.factory?.requests).to(haveCount(1))
+        expect(self.factory?.requests).toEventually(haveCount(1))
     }
     
     func testFetchesReceiptMultipleTimes() {
