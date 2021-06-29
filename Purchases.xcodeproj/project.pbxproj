@@ -111,8 +111,6 @@
 		354D50E022E7D014009B870C /* RCOfferings.m in Sources */ = {isa = PBXBuildFile; fileRef = 354D50DE22E7D014009B870C /* RCOfferings.m */; };
 		356D65F620B873AF00576D45 /* Purchases.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3589D15624C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 3589D15524C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		35B54E4A22EA6FBD005918B1 /* RCEntitlementInfos.h in Headers */ = {isa = PBXBuildFile; fileRef = 35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		35B54E4C22EA6FD3005918B1 /* RCEntitlementInfos.m in Sources */ = {isa = PBXBuildFile; fileRef = 35B54E4B22EA6FD3005918B1 /* RCEntitlementInfos.m */; };
 		35CE74FB20C38A7100CE09D8 /* RCOffering.h in Headers */ = {isa = PBXBuildFile; fileRef = 35CE74F920C38A7100CE09D8 /* RCOffering.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35CE74FD20C38A7100CE09D8 /* RCOffering.m in Sources */ = {isa = PBXBuildFile; fileRef = 35CE74FA20C38A7100CE09D8 /* RCOffering.m */; };
 		35D3AB432030B4C600DE42C5 /* RCIntroEligibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -230,13 +228,13 @@
 		9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */; };
 		B32B74FF26868AEB005647BF /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C4712685784800CB3C21 /* Package.swift */; };
 		B32B750126868C1D005647BF /* EntitlementInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32B750026868C1D005647BF /* EntitlementInfo.swift */; };
-		B32B750326868DB7005647BF /* RCEntitlementInfos+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = B32B750226868DB7005647BF /* RCEntitlementInfos+Protected.h */; };
 		B33C43EF267295E2006B8C8C /* RCObjC.m in Sources */ = {isa = PBXBuildFile; fileRef = B33C43EC2672953D006B8C8C /* RCObjC.m */; };
 		B33C43F22672986D006B8C8C /* ObjCThrowExceptionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33C43F12672986D006B8C8C /* ObjCThrowExceptionMatcher.swift */; };
 		B387F47A2683FDEA0028701F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46D2683FDAC0028701F /* main.m */; };
 		B3AA35A0268682410007771B /* RCEntitlementInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA359D268682410007771B /* RCEntitlementInfoAPI.m */; };
 		B3AA35A1268682410007771B /* RCPurchasesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA359F268682410007771B /* RCPurchasesAPI.m */; };
 		B3AA6234268A7BA900894871 /* RCEntitlementInfosAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA6232268A7BA900894871 /* RCEntitlementInfosAPI.m */; };
+		B3AA6236268A81C700894871 /* EntitlementInfos.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AA6235268A81C700894871 /* EntitlementInfos.swift */; };
 		B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C46F26856AFF00CB3C21 /* APITester.swift */; };
 		B3D5CFBD267282630056FA67 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBC267282630056FA67 /* Nimble */; };
 		B3D5CFC0267282760056FA67 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBF267282760056FA67 /* OHHTTPStubsSwift */; };
@@ -409,8 +407,6 @@
 		3589D15524C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCAttributionTypeFactory+Protected.h"; sourceTree = "<group>"; };
 		3597020F24BF6A710010506E /* TransactionsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactory.swift; sourceTree = "<group>"; };
 		3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactoryTests.swift; sourceTree = "<group>"; };
-		35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfos.h; sourceTree = "<group>"; };
-		35B54E4B22EA6FD3005918B1 /* RCEntitlementInfos.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfos.m; sourceTree = "<group>"; };
 		35CE74F920C38A7100CE09D8 /* RCOffering.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOffering.h; sourceTree = "<group>"; };
 		35CE74FA20C38A7100CE09D8 /* RCOffering.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCOffering.m; sourceTree = "<group>"; };
 		35D3AB412030B4C600DE42C5 /* RCIntroEligibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibility.h; sourceTree = "<group>"; };
@@ -549,7 +545,6 @@
 		9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestoreStrings.swift; sourceTree = "<group>"; };
 		A976872C3EDAC0B4F4B45481 /* Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B32B750026868C1D005647BF /* EntitlementInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntitlementInfo.swift; sourceTree = "<group>"; };
-		B32B750226868DB7005647BF /* RCEntitlementInfos+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RCEntitlementInfos+Protected.h"; sourceTree = "<group>"; };
 		B33C43EB2672953D006B8C8C /* RCObjC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCObjC.h; sourceTree = "<group>"; };
 		B33C43EC2672953D006B8C8C /* RCObjC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCObjC.m; sourceTree = "<group>"; };
 		B33C43F12672986D006B8C8C /* ObjCThrowExceptionMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjCThrowExceptionMatcher.swift; sourceTree = "<group>"; };
@@ -562,6 +557,7 @@
 		B3AA35A2268683540007771B /* EntitlementInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementInfo.swift; sourceTree = "<group>"; };
 		B3AA6232268A7BA900894871 /* RCEntitlementInfosAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfosAPI.m; sourceTree = "<group>"; };
 		B3AA6233268A7BA900894871 /* RCEntitlementInfosAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfosAPI.h; sourceTree = "<group>"; };
+		B3AA6235268A81C700894871 /* EntitlementInfos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementInfos.swift; sourceTree = "<group>"; };
 		B3D3C46E26856AFE00CB3C21 /* APITester-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "APITester-Bridging-Header.h"; sourceTree = "<group>"; };
 		B3D3C46F26856AFF00CB3C21 /* APITester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APITester.swift; sourceTree = "<group>"; };
 		B3D3C4712685784800CB3C21 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
@@ -888,8 +884,6 @@
 				354D50DE22E7D014009B870C /* RCOfferings.m */,
 				35CE74F920C38A7100CE09D8 /* RCOffering.h */,
 				35CE74FA20C38A7100CE09D8 /* RCOffering.m */,
-				35B54E4922EA6FBD005918B1 /* RCEntitlementInfos.h */,
-				35B54E4B22EA6FD3005918B1 /* RCEntitlementInfos.m */,
 				2D604CA224E5BF37004821DC /* RCTransaction.h */,
 				37E357903E469CF42667760C /* RCAttributionNetwork.h */,
 				2D4C02E326697E490038F877 /* RCLogLevel.h */,
@@ -1057,7 +1051,6 @@
 			children = (
 				3589D15524C21DBD00A65CBB /* RCAttributionTypeFactory+Protected.h */,
 				37E35DCFDBDCD33B531395A6 /* RCDeviceCache+Protected.h */,
-				B32B750226868DB7005647BF /* RCEntitlementInfos+Protected.h */,
 				2DAF814D25B24243002C621E /* RCIdentityManager+Protected.h */,
 				37E35A6246A6969C7236B29B /* RCInMemoryCachedObject+Protected.h */,
 				37E359D128E667D950598853 /* RCIntroEligibility+Protected.h */,
@@ -1307,6 +1300,7 @@
 			isa = PBXGroup;
 			children = (
 				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
+				B3AA6235268A81C700894871 /* EntitlementInfos.swift */,
 				B3D3C4712685784800CB3C21 /* Package.swift */,
 				B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */,
 			);
@@ -1330,8 +1324,6 @@
 			files = (
 				2D22679125F2D9AD00E6950C /* PurchasesTests-Bridging-Header.h in Headers */,
 				35D3AB432030B4C600DE42C5 /* RCIntroEligibility.h in Headers */,
-				B32B750326868DB7005647BF /* RCEntitlementInfos+Protected.h in Headers */,
-				35B54E4A22EA6FBD005918B1 /* RCEntitlementInfos.h in Headers */,
 				35CE74FB20C38A7100CE09D8 /* RCOffering.h in Headers */,
 				353AB5E4222F624E003754E6 /* RCPurchasesErrors.h in Headers */,
 				353AB5E6222F633D003754E6 /* RCPurchasesErrorUtils.h in Headers */,
@@ -1712,6 +1704,7 @@
 				2DDF41BC24F6F392005BC22D /* ArraySlice_UInt8+Extensions.swift in Sources */,
 				9A65E0A02591A23200DE00B0 /* OfferingStrings.swift in Sources */,
 				2DDF41A224F6F331005BC22D /* ProductsManager.swift in Sources */,
+				B3AA6236268A81C700894871 /* EntitlementInfos.swift in Sources */,
 				B32B74FF26868AEB005647BF /* Package.swift in Sources */,
 				2DDF41B324F6F387005BC22D /* InAppPurchaseBuilder.swift in Sources */,
 				9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */,
@@ -1773,7 +1766,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				35B54E4C22EA6FD3005918B1 /* RCEntitlementInfos.m in Sources */,
 				35D3AB442030B4C600DE42C5 /* RCIntroEligibility.m in Sources */,
 				352E88442229B1A70046A10A /* RCPurchasesErrorUtils.m in Sources */,
 				351F4FB01F803D0700F245F4 /* RCPurchaserInfo.m in Sources */,
