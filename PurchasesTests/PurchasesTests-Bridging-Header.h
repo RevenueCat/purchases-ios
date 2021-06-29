@@ -13,7 +13,6 @@
 #include <Purchases/RCBackend.h>
 #include <Purchases/RCDeviceCache+Protected.h>
 #include <Purchases/RCDeviceCache.h>
-#include <Purchases/RCEntitlementInfos.h>
 #include <Purchases/RCHTTPClient.h>
 #include <Purchases/RCIdentityManager+Protected.h>
 #include <Purchases/RCIdentityManager.h>

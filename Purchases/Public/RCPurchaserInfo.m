@@ -8,8 +8,6 @@
 
 @import PurchasesCoreSwift;
 
-#import "RCEntitlementInfos.h"
-#import "RCEntitlementInfos+Protected.h"
 #import "RCPurchaserInfo.h"
 #import "RCPurchaserInfo+Protected.h"
 
