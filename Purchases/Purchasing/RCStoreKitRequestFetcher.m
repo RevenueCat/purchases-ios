@@ -23,9 +23,6 @@
 @interface RCStoreKitRequestFetcher () <SKRequestDelegate>
 @property (nonatomic) RCReceiptRefreshRequestFactory *requestFactory;
 
-@property (nonatomic) NSMutableDictionary<NSSet *, SKRequest *> *productsRequests;
-@property (nonatomic) NSMutableDictionary<NSSet *, NSMutableArray<RCFetchProductsCompletionHandler> *> *productsCompletionHandlers;
-
 @property (nonatomic) SKRequest *receiptRefreshRequest;
 @property (nonatomic) NSMutableArray<RCFetchReceiptCompletionHandler> *receiptRefreshCompletionHandlers;
 
@@ -41,9 +38,6 @@
 {
     if (self = [super init]) {
         self.requestFactory = requestFactory;
-        self.productsRequests = [NSMutableDictionary new];
-        self.productsCompletionHandlers = [NSMutableDictionary new];
-        
         self.receiptRefreshRequest = nil;
         self.receiptRefreshCompletionHandlers = [NSMutableArray new];
     }
@@ -86,7 +80,7 @@
 
 - (void)request:(SKRequest *)request didFailWithError:(NSError *)error
 {
-    RCAppleErrorLog(RCStrings.offering.fetching_products_failed, error.localizedDescription);
+    RCAppleErrorLog(RCStrings.offering.sk_request_failed, error.localizedDescription);
     if ([request isKindOfClass:SKReceiptRefreshRequest.class]) {
         NSArray<RCFetchReceiptCompletionHandler> *receiptHandlers = [self finishReceiptRequest:request];
         for (RCFetchReceiptCompletionHandler receiptHandler in receiptHandlers) {
