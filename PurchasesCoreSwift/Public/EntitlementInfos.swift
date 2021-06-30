@@ -50,10 +50,10 @@ import Foundation
                 return
             }
             entitlementInfos[identifier] = EntitlementInfo(entitlementId: identifier,
-                                                                  entitlementData: entitlement,
-                                                                  productData: productData,
-                                                                  dateFormatter: dateFormatter,
-                                                                  requestDate: requestDate)
+                                                           entitlementData: entitlement,
+                                                           productData: productData,
+                                                           dateFormatter: dateFormatter,
+                                                           requestDate: requestDate)
         }
         self.all = entitlementInfos
     }
