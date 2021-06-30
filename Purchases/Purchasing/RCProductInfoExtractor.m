@@ -7,7 +7,6 @@
 
 #import "RCProductInfoExtractor.h"
 #import "RCProductInfo.h"
-#import "RCISOPeriodFormatter.h"
 #import "RCPromotionalOffer.h"
 #import <StoreKit/StoreKit.h>
 
