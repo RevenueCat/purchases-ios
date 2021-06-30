@@ -76,7 +76,7 @@ public typealias RCSystemInfo = SystemInfo
         #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
             return UIDevice.current.identifierForVendor?.uuidString
         #elseif os(watchOS)
-            return WKInterfaceDevice.current.identifierForVendor?.uuidString
+            return WKInterfaceDevice.current().identifierForVendor?.uuidString
         #else
             return nil
         #endif
@@ -105,14 +105,14 @@ public typealias RCSystemInfo = SystemInfo
     }
 
     private var isApplicationBackgrounded: Bool {
-    #if os(iOS) || targetEnvironment(simulator)
+    #if os(iOS) || (targetEnvironment(simulator) && os(iOS))
         return self.isApplicationBackgroundedIOS
     #elseif os(tvOS)
-        return UIApplication.sharedApplication.applicationState == UIApplicationStateBackground
+    return UIApplication.shared.applicationState == UIApplication.State.background
     #elseif os(macOS)
         return false
     #elseif os(watchOS)
-        return  WKExtension.sharedExtension.applicationState == WKApplicationStateBackground
+        return  WKExtension.shared().applicationState == WKApplicationState.background
     #endif
     }
 
