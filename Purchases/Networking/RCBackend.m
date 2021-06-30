@@ -15,7 +15,6 @@
 #import "RCPurchasesErrorUtils.h"
 #import "RCPurchasesErrorUtils+Protected.h"
 #import "RCLogUtils.h"
-#import "RCSystemInfo.h"
 #import "RCHTTPStatusCodes.h"
 @import PurchasesCoreSwift;
 

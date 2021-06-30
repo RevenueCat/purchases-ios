@@ -27,48 +27,43 @@ class SystemInfoTests: XCTestCase {
 
     func testPlatformFlavor() {
         let flavor = "flavor"
-        let systemInfo = RCSystemInfo(platformFlavor: flavor,
-                                      platformFlavorVersion: "foo",
-                                      finishTransactions: false)
+        let systemInfo = try! RCSystemInfo(platformFlavor: flavor,
+                                           platformFlavorVersion: "foo",
+                                           finishTransactions: false)
         expect(systemInfo.platformFlavor) == flavor
     }
 
     func testPlatformFlavorVersion() {
         let flavorVersion = "flavorVersion"
-        let systemInfo = RCSystemInfo(platformFlavor: "foo",
-                                      platformFlavorVersion: flavorVersion,
-                                      finishTransactions: false)
+        let systemInfo = try! RCSystemInfo(platformFlavor: "foo",
+                                           platformFlavorVersion: flavorVersion,
+                                           finishTransactions: false)
         expect(systemInfo.platformFlavorVersion) == flavorVersion
     }
 
     func testPlatformFlavorAndPlatformFlavorVersionMustSimultaneouslyExistOrNotExist() {
-        expectToNotThrowException {
-            _ = RCSystemInfo(platformFlavor: "a", platformFlavorVersion: "b", finishTransactions: true)
-        }
-        expectToThrowException(.parameterAssert) {
-            _ = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: "b", finishTransactions: true)
-        }
-        expectToThrowException(.parameterAssert) {
-            _ = RCSystemInfo(platformFlavor: "a", platformFlavorVersion: nil, finishTransactions: true)
-        }
-            
-        expectToNotThrowException {
-            _ = RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
-        }
+        expect(try RCSystemInfo(platformFlavor: "a", platformFlavorVersion: "b", finishTransactions: true)).toNot(throwError(RCSystemInfo.SystemInfoError.invalidInitializationData))
+
+        expect(try RCSystemInfo(platformFlavor: nil, platformFlavorVersion: "b", finishTransactions: true)).to(throwError(RCSystemInfo.SystemInfoError.invalidInitializationData))
+
+        expect(try RCSystemInfo(platformFlavor: "a", platformFlavorVersion: nil, finishTransactions: true)).to(throwError(RCSystemInfo.SystemInfoError.invalidInitializationData))
+
+        expect(try RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)).toNot(throwError(RCSystemInfo.SystemInfoError.invalidInitializationData))
+
     }
 
     func testFinishTransactions() {
         var finishTransactions = false
-        var systemInfo = RCSystemInfo(platformFlavor: nil,
-                                      platformFlavorVersion: nil,
-                                      finishTransactions: finishTransactions)
+        var systemInfo = try! RCSystemInfo(platformFlavor: nil,
+                                           platformFlavorVersion: nil,
+                                           finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
 
         finishTransactions = true
 
-        systemInfo = RCSystemInfo(platformFlavor: nil,
-                                  platformFlavorVersion: nil,
-                                  finishTransactions: finishTransactions)
+        systemInfo = try! RCSystemInfo(platformFlavor: nil,
+                                      platformFlavorVersion: nil,
+                                      finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
     }
 }

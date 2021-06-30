@@ -7,7 +7,7 @@ class PurchaserInfoManagerTests: XCTestCase {
     var mockBackend = MockBackend()
     var mockOperationDispatcher = MockOperationDispatcher()
     var mockDeviceCache = MockDeviceCache()
-    var mockSystemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+    var mockSystemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
     let mockPurchaserInfo = Purchases.PurchaserInfo(data: [
         "subscriber": [
             "subscriptions": [:],

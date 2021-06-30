@@ -7,9 +7,8 @@
 //
 
 #import "RCStoreKitWrapper.h"
-#import "RCCrossPlatformSupport.h"
-
 #import "RCLogUtils.h"
+
 @import PurchasesCoreSwift;
 
 @interface RCStoreKitWrapper ()
@@ -125,7 +124,9 @@ static BOOL _simulatesAskToBuyInSandbox = NO;
     }
 }
 
-#if PURCHASES_INITIATED_FROM_APP_STORE_AVAILABLE
+// Should match available platforms in
+// https://developer.apple.com/documentation/storekit/skpaymenttransactionobserver/2877502-paymentqueue?language=objc
+#if TARGET_OS_TV || (TARGET_OS_IOS && !TARGET_OS_MACCATALYST)
 - (BOOL) paymentQueue:(SKPaymentQueue *)queue
 shouldAddStorePayment:(SKPayment *)payment
            forProduct:(SKProduct *)product {

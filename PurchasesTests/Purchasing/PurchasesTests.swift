@@ -13,7 +13,7 @@ class PurchasesTests: XCTestCase {
     override func setUp() {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
         requestFetcher = MockRequestFetcher()
-        systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+        systemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockOperationDispatcher = MockOperationDispatcher()
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockReceiptParser = MockReceiptParser()
@@ -21,9 +21,9 @@ class PurchasesTests: XCTestCase {
                                                     identityManager: identityManager,
                                                     backend: backend,
                                                     attributionFactory: MockAttributionTypeFactory(),
-                                                    systemInfo: MockSystemInfo(platformFlavor: "iOS",
-                                                                               platformFlavorVersion: "3.2.1",
-                                                                               finishTransactions: true))
+                                                    systemInfo: try! MockSystemInfo(platformFlavor: "iOS",
+                                                                                    platformFlavorVersion: "3.2.1",
+                                                                                    finishTransactions: true))
         purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
                                                     deviceCache: deviceCache,
                                                     backend: backend,
@@ -220,7 +220,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func setupPurchasesObserverModeOn() {
-        systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
+        systemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
         initializePurchasesInstance(appUserId: nil)
     }
 

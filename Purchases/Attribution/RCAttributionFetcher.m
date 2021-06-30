@@ -7,13 +7,11 @@
 //
 
 #import "RCAttributionFetcher.h"
-#import "RCCrossPlatformSupport.h"
 #import "RCLogUtils.h"
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
 #import "RCAttributionData.h"
-#import "RCSystemInfo.h"
 @import PurchasesCoreSwift;
 
 static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
@@ -48,7 +46,8 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
 - (nullable NSString *)identifierForAdvertisers {
     if (@available(iOS 6.0, macOS 10.14, *)) {
-        Class <FakeASIdentifierManager> _Nullable asIdentifierManagerClass = [self.attributionFactory asIdentifierClass];
+        id klass = [self.attributionFactory asIdentifierClass];
+        Class <FakeASIdentifierManager> _Nullable asIdentifierManagerClass = klass;
         if (asIdentifierManagerClass) {
             id sharedManager = [asIdentifierManagerClass sharedManager];
             NSUUID *identifierValue = [sharedManager valueForKey:[self.attributionFactory asIdentifierPropertyName]];
@@ -61,23 +60,27 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 }
 
 - (nullable NSString *)identifierForVendor {
-#if UI_DEVICE_AVAILABLE
+    // Should match available platforms in
+    // https://developer.apple.com/documentation/uikit/uidevice?language=objc
+    #if TARGET_OS_IOS || TARGET_OS_TV
     if ([UIDevice class]) {
         return UIDevice.currentDevice.identifierForVendor.UUIDString;
     }
-#endif
+    #endif
     return nil;
 }
 
 - (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler {
-#if AD_CLIENT_AVAILABLE
+    // Should match available platforms in
+    // https://developer.apple.com/documentation/iad/adclient?language=objc
+    #if TARGET_OS_IOS
     Class<FakeAdClient> _Nullable adClientClass = [self.attributionFactory adClientClass];
     if (!adClientClass) {
         RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_iad_framework);
         return;
     }
     [[adClientClass sharedClient] requestAttributionDetailsWithBlock:completionHandler];
-#endif
+    #endif
 }
 
 - (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network {
@@ -131,7 +134,9 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 }
 
 - (BOOL)isAuthorizedToPostSearchAds {
-#if APP_TRACKING_TRANSPARENCY_REQUIRED
+    // Should match platforms that require permissions detailed in
+    // https://developer.apple.com/app-store/user-privacy-and-data-use/
+    #if !TARGET_OS_WATCH && !TARGET_OS_OSX && !TARGET_OS_MACCATALYST
     if (@available(iOS 14, macos 11, tvos 14, *)) {
         NSOperatingSystemVersion minimumOSVersionRequiringAuthorization = { .majorVersion = 14, .minorVersion = 5, .patchVersion = 0 };
 
@@ -170,7 +175,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         }
 
     }
-#endif
+    #endif
     return YES;
 }
 

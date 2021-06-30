@@ -6,32 +6,29 @@
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
-#import "RCPurchases.h"
-#import "RCPurchases+SubscriberAttributes.h"
-#import "RCPurchases+Protected.h"
+@import PurchasesCoreSwift;
 
-#import "RCStoreKitRequestFetcher.h"
+#import "RCAttributionData.h"
+#import "RCAttributionFetcher.h"
 #import "RCBackend.h"
-#import "RCStoreKitWrapper.h"
-#import "RCPurchaserInfo+Protected.h"
+#import "RCDeviceCache.h"
+#import "RCIdentityManager.h"
+#import "RCIntroEligibility+Protected.h"
 #import "RCLogUtils.h"
-#import "RCCrossPlatformSupport.h"
+#import "RCOfferingsFactory.h"
+#import "RCProductInfoExtractor.h"
+#import "RCPurchaserInfo+Protected.h"
+#import "RCPurchaserInfoManager.h"
+#import "RCPurchases+Protected.h"
+#import "RCPurchases+SubscriberAttributes.h"
+#import "RCPurchases.h"
 #import "RCPurchasesErrors.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCReceiptFetcher.h"
-#import "RCAttributionFetcher.h"
-#import "RCAttributionData.h"
-#import "RCOfferingsFactory.h"
-#import "RCDeviceCache.h"
-#import "RCIdentityManager.h"
-#import "RCSubscriberAttributesManager.h"
-#import "RCSystemInfo.h"
-#import "RCProductInfoExtractor.h"
-#import "RCIntroEligibility+Protected.h"
 #import "RCReceiptRefreshPolicy.h"
-#import "RCPurchaserInfoManager.h"
-@import PurchasesCoreSwift;
-
+#import "RCStoreKitRequestFetcher.h"
+#import "RCStoreKitWrapper.h"
+#import "RCSubscriberAttributesManager.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self.operationDispatcher dispatchOnMainThread:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
@@ -346,6 +343,17 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
     return self;
 }
+
+#if TARGET_OS_IOS || TARGET_OS_TV
+#define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME UIApplicationDidBecomeActiveNotification
+#define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME UIApplicationWillResignActiveNotification
+#elif TARGET_OS_OSX
+#define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME NSApplicationDidBecomeActiveNotification
+#define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME NSApplicationWillResignActiveNotification
+#elif TARGET_OS_WATCH
+#define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME NSExtensionHostDidBecomeActiveNotification
+#define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME NSExtensionHostWillResignActiveNotification
+#endif
 
 - (void)subscribeToAppStateNotifications {
     [self.notificationCenter addObserver:self
