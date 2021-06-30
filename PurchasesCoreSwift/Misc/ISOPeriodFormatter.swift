@@ -15,7 +15,7 @@ import StoreKit
 // TODO(post-migration): remove @objc since this is internal only
 @objc(RCISOPeriodFormatter) public class ISOPeriodFormatter: NSObject {
 
-    @objc public func stringFromProductSubscriptionPeriod(_ period: SKProductSubscriptionPeriod) -> String {
+    @objc public func string(fromProductSubscriptionPeriod period: SKProductSubscriptionPeriod) -> String {
         let unitString = self.period(fromUnit: period.unit)
         let stringResult = "P\(period.numberOfUnits)\(unitString)"
         return stringResult
@@ -32,7 +32,7 @@ import StoreKit
         case .year:
             return "Y"
         @unknown default:
-            fatalError()
+            fatalError("New SKProduct.PeriodUnit \(unit) unaccounted for")
         }
     }
 }
