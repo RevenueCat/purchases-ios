@@ -12,6 +12,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     let mockReceiptFetcher = MockReceiptFetcher()
     let mockRequestFetcher = MockRequestFetcher()
+    let mockProductsManager = MockProductsManager()
     let mockBackend = MockBackend()
     let mockStoreKitWrapper = MockStoreKitWrapper()
     let mockNotificationCenter = MockNotificationCenter()
@@ -89,7 +90,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               operationDispatcher: mockOperationDispatcher,
                               introEligibilityCalculator: mockIntroEligibilityCalculator,
                               receiptParser: mockReceiptParser,
-                              purchaserInfoManager: purchaserInfoManager)
+                              purchaserInfoManager: purchaserInfoManager,
+                              productsManager: mockProductsManager)
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }

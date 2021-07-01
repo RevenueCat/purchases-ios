@@ -1,5 +1,5 @@
 //
-//  RCProductFetcher.m
+//  RCStoreKitRequestFetcher.m
 //  Purchases
 //
 //  Created by RevenueCat.
@@ -11,11 +11,7 @@
 #import "RCLogUtils.h"
 @import PurchasesCoreSwift;
 
-@implementation RCProductsRequestFactory : NSObject
-- (SKProductsRequest *)requestForProductIdentifiers:(NSSet<NSString *> *)identifiers
-{
-    return [[SKProductsRequest alloc] initWithProductIdentifiers:identifiers];
-}
+@implementation RCReceiptRefreshRequestFactory : NSObject
 
 - (SKReceiptRefreshRequest *)receiptRefreshRequest
 {
@@ -24,11 +20,8 @@
 
 @end
 
-@interface RCStoreKitRequestFetcher ()
-@property (nonatomic) RCProductsRequestFactory *requestFactory;
-
-@property (nonatomic) NSMutableDictionary<NSSet *, SKRequest *> *productsRequests;
-@property (nonatomic) NSMutableDictionary<NSSet *, NSMutableArray<RCFetchProductsCompletionHandler> *> *productsCompletionHandlers;
+@interface RCStoreKitRequestFetcher () <SKRequestDelegate>
+@property (nonatomic) RCReceiptRefreshRequestFactory *requestFactory;
 
 @property (nonatomic) SKRequest *receiptRefreshRequest;
 @property (nonatomic) NSMutableArray<RCFetchReceiptCompletionHandler> *receiptRefreshCompletionHandlers;
@@ -38,48 +31,17 @@
 @implementation RCStoreKitRequestFetcher
 
 - (nullable instancetype)init {
-    return [self initWithRequestFactory:[RCProductsRequestFactory new]];
+    return [self initWithRequestFactory:[RCReceiptRefreshRequestFactory new]];
 }
 
-- (nullable instancetype)initWithRequestFactory:(RCProductsRequestFactory *)requestFactory;
+- (nullable instancetype)initWithRequestFactory:(RCReceiptRefreshRequestFactory *)requestFactory;
 {
     if (self = [super init]) {
         self.requestFactory = requestFactory;
-        self.productsRequests = [NSMutableDictionary new];
-        self.productsCompletionHandlers = [NSMutableDictionary new];
-        
         self.receiptRefreshRequest = nil;
         self.receiptRefreshCompletionHandlers = [NSMutableArray new];
     }
     return self;
-}
-
-- (void)fetchProducts:(NSSet<NSString *> *)identifiers
-           completion:(RCFetchProductsCompletionHandler)completion;
-{
-    
-    @synchronized(self) {
-        SKProductsRequest *newRequest = nil;
-        
-        if (self.productsRequests[identifiers] == nil) {
-            RCDebugLog(RCStrings.offering.fetching_products, identifiers);
-            newRequest = [self.requestFactory requestForProductIdentifiers:identifiers];
-            newRequest.delegate = self;
-            
-            self.productsRequests[identifiers] = newRequest;
-            self.productsCompletionHandlers[identifiers] = [NSMutableArray new];
-        }
-        
-        NSMutableArray *handlers = self.productsCompletionHandlers[identifiers];
-        NSAssert(handlers != nil, @"Corrupted handler storage");
-        
-        [handlers addObject:completion];
-        
-        
-        [newRequest start];
-    }
-    
-    NSAssert(self.productsRequests.count == self.productsCompletionHandlers.count, @"Corrupted handler storage");
 }
 
 - (void)fetchReceiptData:(void (^ _Nonnull)(void))completion
@@ -93,28 +55,6 @@
             [self.receiptRefreshRequest start];
         }
     }
-}
-
-- (NSArray<RCFetchProductsCompletionHandler> *)finishProductsRequest:(SKRequest *)request
-{
-    NSMutableArray<RCFetchProductsCompletionHandler> *handlers;
-    @synchronized(self) {
-        NSSet *associatedProductIdentifiers = nil;
-        for (NSSet *productIdentifiers in self.productsRequests) {
-            SKRequest *r = self.productsRequests[productIdentifiers];
-            if (r == request) {
-                NSAssert(associatedProductIdentifiers == nil, @"Request maps to multiple product sets");
-                associatedProductIdentifiers = productIdentifiers;
-            }
-        }
-        NSAssert(associatedProductIdentifiers != nil, @"Could not find request in storage");
-        
-        handlers = self.productsCompletionHandlers[associatedProductIdentifiers];
-        [self.productsRequests removeObjectForKey:associatedProductIdentifiers];
-        [self.productsCompletionHandlers removeObjectForKey:associatedProductIdentifiers];
-    }
-    NSAssert(self.productsRequests.count == self.productsCompletionHandlers.count, @"Corrupted handler storage");
-    return handlers;
 }
 
 - (NSArray<RCFetchReceiptCompletionHandler> *)finishReceiptRequest:(SKRequest *)request
@@ -140,40 +80,14 @@
 
 - (void)request:(SKRequest *)request didFailWithError:(NSError *)error
 {
-    RCAppleErrorLog(RCStrings.offering.fetching_products_failed, error.localizedDescription);
+    RCAppleErrorLog(RCStrings.offering.sk_request_failed, error.localizedDescription);
     if ([request isKindOfClass:SKReceiptRefreshRequest.class]) {
         NSArray<RCFetchReceiptCompletionHandler> *receiptHandlers = [self finishReceiptRequest:request];
         for (RCFetchReceiptCompletionHandler receiptHandler in receiptHandlers) {
             receiptHandler();
         }
-    } else if ([request isKindOfClass:SKProductsRequest.class]) {
-        NSArray<RCFetchProductsCompletionHandler> *productsHandlers = [self finishProductsRequest:request];
-        for (RCFetchProductsCompletionHandler handler in productsHandlers)
-        {
-            handler(@[]);
-        }
     }
     [request cancel];
-}
-
-- (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response
-{
-    RCDebugLog(@"%@", RCStrings.offering.fetching_products_finished);
-    RCPurchaseLog(@"%@", RCStrings.offering.retrieved_products);
-    for (SKProduct *p in response.products)
-    {
-        RCPurchaseLog(RCStrings.offering.list_products, p.productIdentifier, p);
-    }
-    if (response.invalidProductIdentifiers.count > 0) {
-        RCAppleWarningLog(RCStrings.offering.invalid_product_identifiers, response.invalidProductIdentifiers);        
-    }
-
-    NSArray<RCFetchProductsCompletionHandler> *handlers = [self finishProductsRequest:request];
-    RCDebugLog(RCStrings.offering.completion_handlers_waiting_on_products, (unsigned long)handlers.count);
-    for (RCFetchProductsCompletionHandler handler in handlers)
-    {
-        handler(response.products);
-    }
 }
 
 @end

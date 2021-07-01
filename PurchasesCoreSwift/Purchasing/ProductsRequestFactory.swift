@@ -6,7 +6,8 @@
 import Foundation
 import StoreKit
 
-class ProductsRequestFactory {
+// todo: make internal
+@objc(RCProductsRequestFactory) public class ProductsRequestFactory: NSObject {
     func request(productIdentifiers: Set<String>) -> SKProductsRequest {
         return SKProductsRequest(productIdentifiers: productIdentifiers)
     }

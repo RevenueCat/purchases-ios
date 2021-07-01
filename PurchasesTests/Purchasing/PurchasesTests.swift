@@ -14,6 +14,7 @@ class PurchasesTests: XCTestCase {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
         requestFetcher = MockRequestFetcher()
         systemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+        mockProductsManager = MockProductsManager()
         mockOperationDispatcher = MockOperationDispatcher()
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockReceiptParser = MockReceiptParser()
@@ -187,6 +188,7 @@ class PurchasesTests: XCTestCase {
 
     let receiptFetcher = MockReceiptFetcher()
     var requestFetcher: MockRequestFetcher!
+    var mockProductsManager: MockProductsManager!
     let backend = MockBackend()
     let storeKitWrapper = MockStoreKitWrapper()
     let notificationCenter = MockNotificationCenter()
@@ -240,7 +242,8 @@ class PurchasesTests: XCTestCase {
                               operationDispatcher: mockOperationDispatcher,
                               introEligibilityCalculator: mockIntroEligibilityCalculator,
                               receiptParser: mockReceiptParser,
-                              purchaserInfoManager: purchaserInfoManager)
+                              purchaserInfoManager: purchaserInfoManager,
+                              productsManager: mockProductsManager)
 
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -703,7 +706,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        expect(self.requestFetcher.requestedProducts! as NSSet).toEventually(contain([product.productIdentifier]))
+        expect(self.mockProductsManager.invokedProductsParameters).toEventually(contain([product.productIdentifier]))
 
         expect(self.backend.postedProductID).toNot(beNil())
         expect(self.backend.postedPrice).toNot(beNil())
@@ -1647,7 +1650,8 @@ class PurchasesTests: XCTestCase {
     }
 
     func testMissingProductDetailsReturnsNil() {
-        requestFetcher.failProducts = true
+        self.mockProductsManager.stubbedProductsCompletionResult = Set<SKProduct>()
+
         offeringsFactory.emptyOfferings = true
         setupPurchases()
 
@@ -2354,7 +2358,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testProductIsRemovedButPresentInTheQueuedTransaction() {
-        self.requestFetcher.failProducts = true
+        self.mockProductsManager.stubbedProductsCompletionResult = Set<SKProduct>()
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "product")
 
