@@ -82,7 +82,7 @@ class StoreKitRequestFetcherTests: XCTestCase {
 
     func testCallsStartOnRequest() {
         setupFetcher(fails: false)
-        expect((self.factory!.requests[0] as! MockReceiptRequest).startCalled).toEventually(beTrue(), timeout: .seconds(1))
+        expect((self.factory!.requests[0] as! MockReceiptRequest).startCalled).toEventually(beTrue(), timeout: .seconds(2))
     }
     func testFetchesReceipt() {
         setupFetcher(fails: false)
