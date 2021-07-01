@@ -50,6 +50,7 @@ import AppKit
         let receiptURLString = url.path
         return receiptURLString.contains("sandboxReceipt")
     }
+
     @objc public static var frameworkVersion: String { // TODO: automate the setting of this, if it hasn't been.
         return "3.12.0-SNAPSHOT"
     }
@@ -80,6 +81,14 @@ import AppKit
         #endif
     }
 
+    private static var defaultServerHostURL: URL {
+        return URL(string: defaultServerHostName)!
+    }
+
+    @objc public static var serverHostURL: URL {
+        return self.proxyURL ?? Self.defaultServerHostURL
+    }
+
     private static var privateProxyURL: URL?
     @objc public static var proxyURL: URL? {
         get {
@@ -94,12 +103,27 @@ import AppKit
         }
     }
 
-    static var defaultServerHostURL: URL {
-        return URL(string: defaultServerHostName)!
+    @objc required public init(platformFlavor: String?, platformFlavorVersion: String?, finishTransactions: Bool) throws {
+        self.platformFlavor = platformFlavor ?? "native"
+        self.platformFlavorVersion = platformFlavorVersion
+
+        if (platformFlavor == nil && platformFlavorVersion != nil) ||
+            (platformFlavor != nil && platformFlavorVersion == nil) {
+            Logger.error("RCSystemInfo initialized with non-matching platform flavor and platform flavor versions!")
+            throw SystemInfoError.invalidInitializationData
+        }
+
+        self.finishTransactions = finishTransactions
     }
 
-    @objc public static var serverHostURL: URL {
-        return self.proxyURL ?? Self.defaultServerHostURL
+    @objc open func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
+        DispatchQueue.main.async {
+            completion(self.isApplicationBackgrounded)
+        }
+    }
+
+    @objc open func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
+        return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }
 
     private var isApplicationBackgrounded: Bool {
@@ -118,7 +142,7 @@ import AppKit
     // iOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
     // it are made. There are no pre-processor macros available to check if the code is running in an app extension,
     // so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication.
-    @objc private var isApplicationBackgroundedIOS: Bool {
+    private var isApplicationBackgroundedIOS: Bool {
         if self.isAppExtension {
             return true
         }
@@ -126,44 +150,8 @@ import AppKit
         return UIApplication.shared.applicationState == UIApplication.State.background
     }
 
-    @objc private var isAppExtension: Bool {
+    private var isAppExtension: Bool {
         return Bundle.main.bundlePath.hasSuffix(".appex")
     }
     #endif
-
-    @objc required public init(platformFlavor: String?, platformFlavorVersion: String?, finishTransactions: Bool) throws {
-        if let platformFlavor = platformFlavor {
-            self.platformFlavor = platformFlavor
-        } else {
-            self.platformFlavor = "native"
-        }
-
-        if let platformFlavorVersion = platformFlavorVersion {
-            self.platformFlavorVersion = platformFlavorVersion
-        } else {
-            self.platformFlavorVersion = nil
-        }
-
-        if (platformFlavor == nil && platformFlavorVersion != nil) ||
-            (platformFlavor != nil && platformFlavorVersion == nil) {
-            Logger.error("RCSystemInfo initialized with non-matching platform flavor and platform flavor versions!")
-            throw SystemInfoError.invalidInitializationData
-        }
-
-        self.finishTransactions = finishTransactions
-    }
-
-    @objc open func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
-        DispatchQueue.main.async {
-            completion(self.isApplicationBackgrounded)
-        }
-    }
-
-    open func isOperatingSystem(atLeastVersion version: OperatingSystemVersion) -> Bool {
-        return isOperatingSystemAtLeastVersion(version)
-    }
-
-    @objc open func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
-        return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
-    }
 }

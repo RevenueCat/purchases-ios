@@ -42,14 +42,25 @@ class SystemInfoTests: XCTestCase {
     }
 
     func testPlatformFlavorAndPlatformFlavorVersionMustSimultaneouslyExistOrNotExist() {
-        expect(try SystemInfo(platformFlavor: "a", platformFlavorVersion: "b", finishTransactions: true)).toNot(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
+        expect(try SystemInfo(platformFlavor: "a",
+                              platformFlavorVersion: "b",
+                              finishTransactions: true))
+            .toNot(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
 
-        expect(try SystemInfo(platformFlavor: nil, platformFlavorVersion: "b", finishTransactions: true)).to(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
+        expect(try SystemInfo(platformFlavor: nil,
+                              platformFlavorVersion: "b",
+                              finishTransactions: true))
+            .to(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
 
-        expect(try SystemInfo(platformFlavor: "a", platformFlavorVersion: nil, finishTransactions: true)).to(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
+        expect(try SystemInfo(platformFlavor: "a",
+                              platformFlavorVersion: nil,
+                              finishTransactions: true))
+            .to(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
 
-        expect(try SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)).toNot(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
-
+        expect(try SystemInfo(platformFlavor: nil,
+                              platformFlavorVersion: nil,
+                              finishTransactions: true))
+            .toNot(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
     }
 
     func testFinishTransactions() {
