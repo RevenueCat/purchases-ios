@@ -86,7 +86,7 @@ import AppKit
     }
 
     @objc public static var serverHostURL: URL {
-        return self.proxyURL ?? Self.defaultServerHostURL
+        return Self.proxyURL ?? Self.defaultServerHostURL
     }
 
     private static var privateProxyURL: URL?
