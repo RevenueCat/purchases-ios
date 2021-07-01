@@ -17,20 +17,18 @@ import WatchKit
 import AppKit
 #endif
 
-public typealias RCSystemInfo = SystemInfo
-
 @objc(RCSystemInfo) open class SystemInfo: NSObject {
 
     #if targetEnvironment(macCatalyst)
-    static let PLATFORM_HEADER = "uikitformac"
+    static let platformHeaderConstant = "uikitformac"
     #elseif os(iOS)
-    static let PLATFORM_HEADER = "iOS"
+    static let platformHeaderConstant = "iOS"
     #elseif os(watchOS)
-    static let PLATFORM_HEADER = "watchOS"
+    static let platformHeaderConstant = "watchOS"
     #elseif os(tvOS)
-    static let PLATFORM_HEADER = "tvOS"
+    static let platformHeaderConstant = "tvOS"
     #elseif os(macOS)
-    static let PLATFORM_HEADER = "macOS"
+    static let platformHeaderConstant = "macOS"
     #endif
 
     public enum SystemInfoError: Error {
@@ -69,7 +67,7 @@ public typealias RCSystemInfo = SystemInfo
     }
 
     @objc public static func platformHeader() -> String {
-        return Self.forceUniversalAppStore ? "iOS" : PLATFORM_HEADER
+        return Self.forceUniversalAppStore ? "iOS" : platformHeaderConstant
     }
 
     @objc public static func identifierForVendor() -> String? {
@@ -92,8 +90,8 @@ public typealias RCSystemInfo = SystemInfo
         guard let privateProxyURLString = privateProxyURL?.absoluteString else {
             return
         }
-        Logger.info(ConfigureStrings.configuring_purchases_proxy_url_set.replacingOccurrences(of: "%@",
-                                                                                              with: privateProxyURLString))
+        Logger.info(Strings.configure.configuring_purchases_proxy_url_set
+                        .replacingOccurrences(of: "%@", with: privateProxyURLString))
     }
 
     static func defaultServerHostURL() -> URL {
@@ -108,7 +106,7 @@ public typealias RCSystemInfo = SystemInfo
     #if os(iOS) || (targetEnvironment(simulator) && os(iOS))
         return self.isApplicationBackgroundedIOS
     #elseif os(tvOS)
-    return UIApplication.shared.applicationState == UIApplication.State.background
+        return UIApplication.shared.applicationState == UIApplication.State.background
     #elseif os(macOS)
         return false
     #elseif os(watchOS)

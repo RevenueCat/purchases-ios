@@ -17,7 +17,6 @@
     RCSystemInfo *si = [[RCSystemInfo alloc] initWithPlatformFlavor:nil
                                               platformFlavorVersion:nil
                                                  finishTransactions:YES];
-
     BOOL ft = si.finishTransactions;
     NSString *pf = si.platformFlavor;
     NSString *pfv = si.platformFlavorVersion;

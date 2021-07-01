@@ -58,7 +58,7 @@ platform :ios do
     files_to_update = [
       '../PurchasesCoreSwift.podspec',
       '../Purchases.podspec',
-      '../Purchases/Misc/RCSystemInfo.m',
+      '../PurchasesCoreSwift/Misc/SystemInfo.swift',
       '../.jazzy.yaml',
       '../.version',
       '../Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
