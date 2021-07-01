@@ -31,7 +31,7 @@ class StoreKitRequestFetcher: XCTestCase {
         }
     }
 
-    class MockRequestsFactory: RCProductsRequestFactory {
+    class MockRequestsFactory: RCReceiptRefreshRequestFactory {
         let fails: Bool
 
         init(fails: Bool) {
@@ -39,12 +39,6 @@ class StoreKitRequestFetcher: XCTestCase {
         }
 
         var requests: [SKRequest] = []
-        override func request(forProductIdentifiers identifiers: Set<String>) -> SKProductsRequest {
-            let r = MockProductsRequest(productIdentifiers:identifiers)
-            requests.append(r)
-            r.fails = self.fails
-            return r
-        }
 
         override func receiptRefreshRequest() -> SKReceiptRefreshRequest {
             let r = MockReceiptRequest()
@@ -56,17 +50,12 @@ class StoreKitRequestFetcher: XCTestCase {
 
     var fetcher: RCStoreKitRequestFetcher?
     var factory: MockRequestsFactory?
-    var products: [SKProduct]?
     var receiptFetched = false
     var receiptFetchedCallbackCount = 0
 
     func setupFetcher(fails: Bool) {
         self.factory = MockRequestsFactory(fails: fails)
         self.fetcher = RCStoreKitRequestFetcher(requestFactory: self.factory!)
-
-        self.fetcher!.fetchProducts(["com.a.product"]) { (newProducts) in
-            self.products = newProducts
-        }
 
         self.fetcher!.fetchReceiptData {
             self.receiptFetched = true
@@ -84,7 +73,7 @@ class StoreKitRequestFetcher: XCTestCase {
 
     func testCreatesARequest() {
         setupFetcher(fails: false)
-        expect(self.factory!.requests.count).toEventually(equal(2))
+        expect(self.factory!.requests.count).toEventually(equal(1))
     }
 
     func testSetsTheRequestDelegate() {
@@ -94,39 +83,11 @@ class StoreKitRequestFetcher: XCTestCase {
 
     func testCallsStartOnRequest() {
         setupFetcher(fails: false)
-        expect((self.factory!.requests[0] as! MockProductsRequest).startCalled).toEventually(beTrue(), timeout: .seconds(1))
+        expect((self.factory!.requests[0] as! MockReceiptRequest).startCalled).toEventually(beTrue(), timeout: .seconds(1))
     }
-
-    func testReturnsProducts() {
-        setupFetcher(fails: false)
-        expect(self.products).toEventuallyNot(beNil(), timeout: .seconds(1))
-        expect(self.products?.count).toEventually(be(1), timeout: .seconds(1))
-    }
-    
-    func testReusesRequestsForSameProducts() {
-        setupFetcher(fails: false)
-        
-        var callbackCount = 0
-        self.fetcher!.fetchProducts(["com.a.product", "com.b.product"]) { (newProducts) in
-            callbackCount += 1
-        }
-        
-        self.fetcher!.fetchProducts(["com.a.product", "com.b.product"]) { (newProducts) in
-            callbackCount += 1
-        }
-        
-        expect(self.factory?.requests).to(haveCount(3))
-        expect(callbackCount).toEventually(equal(2))
-    }
-
     func testFetchesReceipt() {
         setupFetcher(fails: false)
         expect(self.receiptFetched).toEventually(beTrue())
-    }
-
-    func testCallsDelegateWithEmptyProducts() {
-        setupFetcher(fails: true)
-        expect(self.products).toEventually(beEmpty())
     }
 
     func testStillCallsReceiptFetchDelegate() {
@@ -141,7 +102,7 @@ class StoreKitRequestFetcher: XCTestCase {
     
     func testOnlyCreatesOneRefreshRequest() {
         setupFetcher(fails: false)
-        expect(self.factory?.requests).to(haveCount(2))
+        expect(self.factory?.requests).to(haveCount(1))
     }
     
     func testFetchesReceiptMultipleTimes() {
@@ -155,7 +116,7 @@ class StoreKitRequestFetcher: XCTestCase {
         
         expect(fetchedAgain).toEventually(beTrue())
         
-        expect(self.factory?.requests).to(haveCount(3))
+        expect(self.factory?.requests).to(haveCount(2))
     }
     
 }

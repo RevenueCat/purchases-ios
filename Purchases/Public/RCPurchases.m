@@ -46,6 +46,7 @@
 typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 
 @property (nonatomic) RCStoreKitRequestFetcher *requestFetcher;
+@property (nonatomic) RCProductsManager *productsManager;
 @property (nonatomic) RCReceiptFetcher *receiptFetcher;
 @property (nonatomic) RCBackend *backend;
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
@@ -264,6 +265,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             [[RCSubscriberAttributesManager alloc] initWithBackend:backend
                                                        deviceCache:deviceCache
                                                 attributionFetcher:attributionFetcher];
+    RCProductsRequestFactory *productsRequestFactory = [[RCProductsRequestFactory alloc] init];
+    RCProductsManager *productsManager = [[RCProductsManager alloc] initWithProductsRequestFactory:productsRequestFactory];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher
@@ -279,7 +282,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                operationDispatcher:operationDispatcher
         introEligibilityCalculator:introCalculator
                      receiptParser:receiptParser
-              purchaserInfoManager:purchaserInfoManager];
+              purchaserInfoManager:purchaserInfoManager
+                   productsManager:productsManager];
 }
 
 - (instancetype)initWithAppUserID:(nullable NSString *)appUserID
@@ -297,7 +301,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
               operationDispatcher:(RCOperationDispatcher *)operationDispatcher
        introEligibilityCalculator:(RCIntroEligibilityCalculator *)introEligibilityCalculator
                     receiptParser:(RCReceiptParser *)receiptParser
-             purchaserInfoManager:(RCPurchaserInfoManager *)purchaserInfoManager {
+             purchaserInfoManager:(RCPurchaserInfoManager *)purchaserInfoManager
+                  productsManager:(RCProductsManager *)productsManager {
     if (self = [super init]) {
         RCDebugLog(@"%@", RCStrings.configure.debug_enabled);
         RCDebugLog(RCStrings.configure.sdk_version, self.class.frameworkVersion);
@@ -324,6 +329,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.introEligibilityCalculator = introEligibilityCalculator;
         self.receiptParser = receiptParser;
         self.purchaserInfoManager = purchaserInfoManager;
+        self.productsManager = productsManager;
 
         [self.identityManager configureWithAppUserID:appUserID];
 
@@ -503,17 +509,17 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
     }
 
     if (missingProductIdentifiers.count > 0) {
-        [self.requestFetcher fetchProducts:missingProductIdentifiers
-                                completion:^(NSArray<SKProduct *> * _Nonnull newProducts) {
-                                    @synchronized (self) {
-                                        for (SKProduct *p in newProducts) {
-                                            if (p.productIdentifier) {
-                                                self.productsByIdentifier[p.productIdentifier] = p;
-                                            }
-                                        }
-                                    }
-                                    CALL_IF_SET_ON_MAIN_THREAD(completion, [products arrayByAddingObjectsFromArray:newProducts]);
-                                }];
+        [self.productsManager productsWithIdentifiers:missingProductIdentifiers
+                                           completion:^(NSSet<SKProduct *> * _Nonnull newProducts) {
+            @synchronized (self) {
+                for (SKProduct *p in newProducts) {
+                    if (p.productIdentifier) {
+                        self.productsByIdentifier[p.productIdentifier] = p;
+                    }
+                }
+            }
+            CALL_IF_SET_ON_MAIN_THREAD(completion, [products arrayByAddingObjectsFromArray:newProducts.allObjects]);
+        }];
     } else {
         CALL_IF_SET_ON_MAIN_THREAD(completion, products);
     }

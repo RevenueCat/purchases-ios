@@ -15,7 +15,7 @@ import Foundation
         "\nMore info here: https://errors.rev.cat/configuring-products"}
     @objc public var completion_handlers_waiting_on_products: String { "%lu completion handlers waiting on products" }
     @objc public var fetching_offerings_error: String { "Error fetching offerings - %@" }
-    @objc public var fetching_products_failed: String { "SKRequest failed: %@" }
+    @objc public var sk_request_failed: String { "SKRequest failed: %@" }
     @objc public var fetching_products_finished: String { "Products request finished." }
     @objc public var fetching_products: String { "Requesting products from the store with identifiers: %@" }
     @objc public var found_existing_product_request: String { "Found an existing request for products: %@, appending " +
