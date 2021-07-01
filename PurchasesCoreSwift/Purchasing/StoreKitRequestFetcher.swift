@@ -66,10 +66,14 @@ private extension StoreKitRequestFetcher {
     func finishReceiptRequest(_ request: SKRequest?) {
         queue.async {
             self.receiptRefreshRequest = nil
-            for handler in self.receiptRefreshCompletionHandlers {
-                handler()
-            }
+            let completionHandlers = self.receiptRefreshCompletionHandlers
             self.receiptRefreshCompletionHandlers = []
+
+            self.queue.async {
+                for handler in completionHandlers {
+                    handler()
+                }
+            }
         }
     }
 }
