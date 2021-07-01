@@ -8,7 +8,6 @@
 
 #import "RCHTTPClient.h"
 #import "RCLogUtils.h"
-#import "RCHTTPStatusCodes.h"
 #import "RCPurchasesErrorUtils.h"
 @import PurchasesCoreSwift;
 
@@ -121,7 +120,7 @@ beginNextRequestWhenFinished:performSerially];
                      request:(NSMutableURLRequest *)request
            completionHandler:(RCHTTPClientResponseHandler)completionHandler
 beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished {
-    NSInteger statusCode = RC_NETWORK_CONNECT_TIMEOUT_ERROR;
+    NSInteger statusCode = RCHTTPStatusCodesNetworkConnectTimeoutError;
     NSDictionary *responseObject = nil;
 
     if (error == nil) {

@@ -10,7 +10,6 @@
 
 #import "RCBackend.h"
 #import "RCHTTPClient.h"
-#import "RCHTTPStatusCodes.h"
 #import "RCLogUtils.h"
 #import "RCPurchaserInfo+Protected.h"
 #import "RCPurchasesErrorUtils+Protected.h"
@@ -67,7 +66,7 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
 
     RCPurchaserInfo *info = nil;
     NSError *responseError = nil;
-    BOOL isErrorStatusCode = (statusCode >= RC_REDIRECT);
+    BOOL isErrorStatusCode = (statusCode >= RCHTTPStatusCodesRedirect);
 
     if (!isErrorStatusCode) {
         info = [[RCPurchaserInfo alloc] initWithData:response];
@@ -84,7 +83,7 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
     BOOL hasError = (isErrorStatusCode || subscriberAttributesErrorInfo[RCAttributeErrorsKey] != nil);
 
     if (hasError) {
-        BOOL finishable = (statusCode < RC_INTERNAL_SERVER_ERROR);
+        BOOL finishable = (statusCode < RCHTTPStatusCodesInternalServerError);
         NSMutableDictionary *extraUserInfo = @{
             RCFinishableKey: @(finishable)
         }.mutableCopy;
@@ -108,7 +107,7 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
 
     NSError *responseError = nil;
 
-    if (statusCode > RC_REDIRECT) {
+    if (statusCode > RCHTTPStatusCodesRedirect) {
         responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
                                                             backendMessage:response[@"message"]];
     }
@@ -267,7 +266,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                                       }
                             headers:self.headers
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
-                      if (statusCode >= RC_REDIRECT || error != nil) {
+                      if (statusCode >= RCHTTPStatusCodesRedirect || error != nil) {
                           response = @{};
                       }
 
@@ -311,7 +310,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                                body:nil
                             headers:self.headers
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
-                      if (error == nil && statusCode < RC_REDIRECT) {
+                      if (error == nil && statusCode < RCHTTPStatusCodesRedirect) {
                           for (RCOfferingsResponseHandler callback in [self getCallbacksAndClearForKey:path]) {
                               callback(response, nil);
                           }
@@ -320,7 +319,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 
                       if (error != nil) {
                           error = [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error];
-                      } else if (statusCode > RC_REDIRECT) {
+                      } else if (statusCode > RCHTTPStatusCodesRedirect) {
                           error = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
                                                                       backendMessage:response[@"message"]];
                       }
@@ -386,7 +385,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 
     NSError *responseError = nil;
 
-    if (statusCode > RC_REDIRECT) {
+    if (statusCode > RCHTTPStatusCodesRedirect) {
         responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
                                                             backendMessage:response[@"message"]];
         if (completion != nil) {
@@ -452,7 +451,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 
                       NSArray *offers = nil;
 
-                      if (statusCode < RC_REDIRECT) {
+                      if (statusCode < RCHTTPStatusCodesRedirect) {
                           offers = response[@"offers"];
                           if (offers == nil || offers.count == 0) {
                               error = [RCPurchasesErrorUtils unexpectedBackendResponseError];
@@ -529,7 +528,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     }
     NSError *responseError = nil;
 
-    if (statusCode > RC_REDIRECT) {
+    if (statusCode > RCHTTPStatusCodesRedirect) {
         NSDictionary *extraUserInfo = [self attributesUserInfoFromResponse:response
                                                                 statusCode:statusCode];
         responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
@@ -542,8 +541,8 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 
 - (NSDictionary *)attributesUserInfoFromResponse:(NSDictionary *)response statusCode:(NSInteger)statusCode {
     NSMutableDictionary *resultDict = [[NSMutableDictionary alloc] init];
-    BOOL isInternalServerError = statusCode >= RC_INTERNAL_SERVER_ERROR;
-    BOOL isNotFoundError = statusCode == RC_NOT_FOUND_ERROR;
+    BOOL isInternalServerError = statusCode >= RCHTTPStatusCodesInternalServerError;
+    BOOL isNotFoundError = statusCode == RCHTTPStatusCodesNotFound;
     BOOL successfullySynced = !(isInternalServerError || isNotFoundError);
     resultDict[RCSuccessfullySyncedKey] = @(successfullySynced);
 
