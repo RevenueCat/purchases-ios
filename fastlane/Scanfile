@@ -5,3 +5,5 @@
 # fastlane scan --help
 
 scheme("Unit Tests")
+devices(["iPhone 6", "iPhone 12"])
+

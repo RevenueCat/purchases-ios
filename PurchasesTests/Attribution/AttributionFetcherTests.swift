@@ -18,9 +18,9 @@ class AttributionFetcherTests: XCTestCase {
     var identityManager: MockIdentityManager!
     var backend: MockBackend!
     var attributionFactory: AttributionTypeFactory! = MockAttributionTypeFactory()
-    var systemInfo: MockSystemInfo! = MockSystemInfo(platformFlavor: "iOS",
-                                                     platformFlavorVersion: "3.2.1",
-                                                     finishTransactions: true)
+    var systemInfo: MockSystemInfo! = try! MockSystemInfo(platformFlavor: "iOS",
+                                                          platformFlavorVersion: "3.2.1",
+                                                          finishTransactions: true)
 
     let userDefaultsSuiteName = "testUserDefaults"
     

@@ -24,9 +24,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var subscriberAttributeHeight: RCSubscriberAttribute!
     var subscriberAttributeWeight: RCSubscriberAttribute!
     var mockAttributes: [String: RCSubscriberAttribute]!
-    let systemInfo: RCSystemInfo = MockSystemInfo(platformFlavor: nil,
-                                                  platformFlavorVersion: nil,
-                                                  finishTransactions: true)
+    let systemInfo: SystemInfo = try! MockSystemInfo(platformFlavor: nil,
+                                                       platformFlavorVersion: nil,
+                                                       finishTransactions: true)
     var mockReceiptParser: MockReceiptParser!
     var mockAttributionFetcher: MockAttributionFetcher!
 
@@ -55,9 +55,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                              identityManager: mockIdentityManager,
                                                              backend: mockBackend,
                                                              attributionFactory: AttributionTypeFactory(),
-                                                             systemInfo: MockSystemInfo(platformFlavor: "iOS",
-                                                                                        platformFlavorVersion: "3.2.1",
-                                                                                        finishTransactions: true))
+                                                             systemInfo: try! MockSystemInfo(platformFlavor: "iOS",
+                                                                                             platformFlavorVersion: "3.2.1",
+                                                                                             finishTransactions: true))
         self.purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
                                                          deviceCache: mockDeviceCache,
                                                          backend: mockBackend,

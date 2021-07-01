@@ -38,6 +38,5 @@
 #include <Purchases/RCSubscriberAttribute+Protected.h>
 #include <Purchases/RCSubscriberAttribute.h>
 #include <Purchases/RCSubscriberAttributesManager.h>
-#include <Purchases/RCSystemInfo.h>
 
 #include "RCObjC.h"

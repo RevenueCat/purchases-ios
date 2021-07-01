@@ -8,7 +8,6 @@
 #import "RCDeviceCache.h"
 #import "RCLogUtils.h"
 #import "RCBackend.h"
-#import "RCSystemInfo.h"
 @import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN

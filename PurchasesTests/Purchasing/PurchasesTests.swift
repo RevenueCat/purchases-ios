@@ -13,8 +13,8 @@ class PurchasesTests: XCTestCase {
     override func setUp() {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
         requestFetcher = MockRequestFetcher()
+        systemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockProductsManager = MockProductsManager()
-        systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockOperationDispatcher = MockOperationDispatcher()
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockReceiptParser = MockReceiptParser()
@@ -22,9 +22,9 @@ class PurchasesTests: XCTestCase {
                                                     identityManager: identityManager,
                                                     backend: backend,
                                                     attributionFactory: MockAttributionTypeFactory(),
-                                                    systemInfo: MockSystemInfo(platformFlavor: "iOS",
-                                                                               platformFlavorVersion: "3.2.1",
-                                                                               finishTransactions: true))
+                                                    systemInfo: try! MockSystemInfo(platformFlavor: "iOS",
+                                                                                    platformFlavorVersion: "3.2.1",
+                                                                                    finishTransactions: true))
         purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
                                                     deviceCache: deviceCache,
                                                     backend: backend,
@@ -222,7 +222,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func setupPurchasesObserverModeOn() {
-        systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
+        systemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
         initializePurchasesInstance(appUserId: nil)
     }
 
@@ -2518,18 +2518,18 @@ class PurchasesTests: XCTestCase {
     }
 
     func testProxyURL() {
-        expect(RCSystemInfo.proxyURL()).to(beNil())
+        expect(SystemInfo.proxyURL).to(beNil())
         let defaultHostURL = URL(string: "https://api.revenuecat.com")
-        expect(RCSystemInfo.serverHostURL()) == defaultHostURL
+        expect(SystemInfo.serverHostURL) == defaultHostURL
 
         let testURL = URL(string: "https://test_url")
         Purchases.proxyURL = testURL
 
-        expect(RCSystemInfo.serverHostURL()) == testURL
+        expect(SystemInfo.serverHostURL) == testURL
 
         Purchases.proxyURL = nil
 
-        expect(RCSystemInfo.serverHostURL()) == defaultHostURL
+        expect(SystemInfo.serverHostURL) == defaultHostURL
     }
 
     func testNotifiesIfTransactionIsDeferredFromStoreKit() {

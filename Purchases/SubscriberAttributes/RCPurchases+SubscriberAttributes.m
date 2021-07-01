@@ -6,7 +6,6 @@
 #import "RCPurchases+Protected.h"
 #import "RCPurchases+SubscriberAttributes.h"
 #import "RCSubscriberAttributesManager.h"
-#import "RCCrossPlatformSupport.h"
 #import "RCLogUtils.h"
 #import "NSError+RCExtensions.h"
 #import "RCOffering.h"

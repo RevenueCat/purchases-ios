@@ -6,10 +6,11 @@
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
+@import PurchasesCoreSwift;
+
 #import <Foundation/Foundation.h>
 
 #import "RCAttributionNetwork.h"
-#import "RCLogLevel.h"
 
 @class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility, RCOfferings, RCOffering, RCPackage;
 @protocol RCPurchasesDelegate;

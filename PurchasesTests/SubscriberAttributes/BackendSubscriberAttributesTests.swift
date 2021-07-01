@@ -30,7 +30,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         ]
     ]
 
-    let systemInfo = RCSystemInfo(platformFlavor: "Unity", platformFlavorVersion: "2.3.3", finishTransactions: true)
+    let systemInfo = try! SystemInfo(platformFlavor: "Unity", platformFlavorVersion: "2.3.3", finishTransactions: true)
 
     override func setUp() {
         mockHTTPClient = MockHTTPClient(systemInfo: systemInfo)
