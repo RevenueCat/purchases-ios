@@ -46,8 +46,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
 - (nullable NSString *)identifierForAdvertisers {
     if (@available(iOS 6.0, macOS 10.14, *)) {
-        id klass = [self.attributionFactory asIdentifierClass];
-        Class <FakeASIdentifierManager> _Nullable asIdentifierManagerClass = klass;
+        Class <FakeASIdentifierManager> _Nullable asIdentifierManagerClass = [self.attributionFactory asIdentifierClass];
         if (asIdentifierManagerClass) {
             id sharedManager = [asIdentifierManagerClass sharedManager];
             NSUUID *identifierValue = [sharedManager valueForKey:[self.attributionFactory asIdentifierPropertyName]];
