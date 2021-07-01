@@ -173,7 +173,6 @@ public typealias RCSystemInfo = SystemInfo
             (platformFlavor != nil && platformFlavorVersion == nil) {
             Logger.error("RCSystemInfo initialized with non-matching platform flavor and platform flavor versions!")
             throw SystemInfoError.invalidInitializationData
-
         }
 
         self.finishTransactions = finishTransactions

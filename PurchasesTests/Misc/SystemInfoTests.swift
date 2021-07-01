@@ -62,8 +62,8 @@ class SystemInfoTests: XCTestCase {
         finishTransactions = true
 
         systemInfo = try! RCSystemInfo(platformFlavor: nil,
-                                      platformFlavorVersion: nil,
-                                      finishTransactions: finishTransactions)
+                                       platformFlavorVersion: nil,
+                                       finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
     }
 }
