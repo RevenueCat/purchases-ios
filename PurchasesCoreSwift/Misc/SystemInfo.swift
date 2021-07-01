@@ -17,6 +17,8 @@ import WatchKit
 import AppKit
 #endif
 
+public typealias RCSystemInfo = SystemInfo
+
 @objc(RCSystemInfo) open class SystemInfo: NSObject {
 
     #if targetEnvironment(macCatalyst)
