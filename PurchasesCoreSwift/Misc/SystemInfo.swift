@@ -163,7 +163,7 @@ import AppKit
         return isOperatingSystemAtLeastVersion(version)
     }
 
-    @objc public func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
+    @objc open func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }
 }

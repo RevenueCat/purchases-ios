@@ -16,7 +16,7 @@ class MockSystemInfo: SystemInfo {
     }
 
     var stubbedIsOperatingSystemAtLeastVersion: Bool?
-    override func isOperatingSystem(atLeastVersion version: OperatingSystemVersion) -> Bool {
+    override public func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
         return stubbedIsOperatingSystemAtLeastVersion ?? true
     }
 }
