@@ -222,7 +222,6 @@
 		B32B750126868C1D005647BF /* EntitlementInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32B750026868C1D005647BF /* EntitlementInfo.swift */; };
 		B33C43EF267295E2006B8C8C /* RCObjC.m in Sources */ = {isa = PBXBuildFile; fileRef = B33C43EC2672953D006B8C8C /* RCObjC.m */; };
 		B33C43F22672986D006B8C8C /* ObjCThrowExceptionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33C43F12672986D006B8C8C /* ObjCThrowExceptionMatcher.swift */; };
-		B33CEA9B268BC206008A3144 /* RCSystemInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA623C268BA6C500894871 /* RCSystemInfoAPI.m */; };
 		B33CEA9E268BC39D008A3144 /* RCTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B33CEA9D268BC39D008A3144 /* RCTransactionAPI.m */; };
 		B33CEAA0268CDCC9008A3144 /* ISOPeriodFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33CEA9F268CDCC9008A3144 /* ISOPeriodFormatter.swift */; };
 		B387F47A2683FDEA0028701F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46D2683FDAC0028701F /* main.m */; };
@@ -231,7 +230,6 @@
 		B3AA6234268A7BA900894871 /* RCEntitlementInfosAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA6232268A7BA900894871 /* RCEntitlementInfosAPI.m */; };
 		B3AA6236268A81C700894871 /* EntitlementInfos.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AA6235268A81C700894871 /* EntitlementInfos.swift */; };
 		B3AA6238268B926F00894871 /* SystemInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AA6237268B926F00894871 /* SystemInfo.swift */; };
-		B3AA623D268BA6C500894871 /* RCSystemInfoAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = B3AA623B268BA6C500894871 /* RCSystemInfoAPI.h */; };
 		B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C46F26856AFF00CB3C21 /* APITester.swift */; };
 		B3D5CFBD267282630056FA67 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBC267282630056FA67 /* Nimble */; };
 		B3D5CFC0267282760056FA67 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFBF267282760056FA67 /* OHHTTPStubsSwift */; };
@@ -552,8 +550,6 @@
 		B3AA6233268A7BA900894871 /* RCEntitlementInfosAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfosAPI.h; sourceTree = "<group>"; };
 		B3AA6235268A81C700894871 /* EntitlementInfos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementInfos.swift; sourceTree = "<group>"; };
 		B3AA6237268B926F00894871 /* SystemInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInfo.swift; sourceTree = "<group>"; };
-		B3AA623B268BA6C500894871 /* RCSystemInfoAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCSystemInfoAPI.h; sourceTree = "<group>"; };
-		B3AA623C268BA6C500894871 /* RCSystemInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCSystemInfoAPI.m; sourceTree = "<group>"; };
 		B3D3C46E26856AFE00CB3C21 /* APITester-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "APITester-Bridging-Header.h"; sourceTree = "<group>"; };
 		B3D3C46F26856AFF00CB3C21 /* APITester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APITester.swift; sourceTree = "<group>"; };
 		B3D3C4712685784800CB3C21 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
@@ -1274,8 +1270,6 @@
 				B3AA6232268A7BA900894871 /* RCEntitlementInfosAPI.m */,
 				B3AA359E268682410007771B /* RCPurchasesAPI.h */,
 				B3AA359F268682410007771B /* RCPurchasesAPI.m */,
-				B3AA623B268BA6C500894871 /* RCSystemInfoAPI.h */,
-				B3AA623C268BA6C500894871 /* RCSystemInfoAPI.m */,
 				B33CEA9C268BC39D008A3144 /* RCTransactionAPI.h */,
 				B33CEA9D268BC39D008A3144 /* RCTransactionAPI.m */,
 			);
@@ -1301,7 +1295,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				2DC5622624EC63430031F69B /* PurchasesCoreSwift.h in Headers */,
-				B3AA623D268BA6C500894871 /* RCSystemInfoAPI.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1855,7 +1848,6 @@
 				B3AA35A1268682410007771B /* RCPurchasesAPI.m in Sources */,
 				B33CEA9E268BC39D008A3144 /* RCTransactionAPI.m in Sources */,
 				B3AA35A0268682410007771B /* RCEntitlementInfoAPI.m in Sources */,
-				B33CEA9B268BC206008A3144 /* RCSystemInfoAPI.m in Sources */,
 				B3AA6234268A7BA900894871 /* RCEntitlementInfosAPI.m in Sources */,
 				B387F47A2683FDEA0028701F /* main.m in Sources */,
 				B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */,

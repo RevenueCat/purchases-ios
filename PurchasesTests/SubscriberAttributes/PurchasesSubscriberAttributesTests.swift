@@ -23,7 +23,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var subscriberAttributeHeight: RCSubscriberAttribute!
     var subscriberAttributeWeight: RCSubscriberAttribute!
     var mockAttributes: [String: RCSubscriberAttribute]!
-    let systemInfo: RCSystemInfo = try! MockSystemInfo(platformFlavor: nil,
+    let systemInfo: SystemInfo = try! MockSystemInfo(platformFlavor: nil,
                                                        platformFlavorVersion: nil,
                                                        finishTransactions: true)
     var mockReceiptParser: MockReceiptParser!

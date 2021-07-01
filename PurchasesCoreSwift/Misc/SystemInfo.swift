@@ -17,8 +17,6 @@ import WatchKit
 import AppKit
 #endif
 
-public typealias RCSystemInfo = SystemInfo
-
 @objc(RCSystemInfo) open class SystemInfo: NSObject {
 
     #if targetEnvironment(macCatalyst)
@@ -52,27 +50,27 @@ public typealias RCSystemInfo = SystemInfo
         let receiptURLString = url.path
         return receiptURLString.contains("sandboxReceipt")
     }
-    @objc public static func frameworkVersion() -> String { // TODO: automate the setting of this, if it hasn't been.
+    @objc public static var frameworkVersion: String { // TODO: automate the setting of this, if it hasn't been.
         return "3.12.0-SNAPSHOT"
     }
 
-    @objc public static func systemVersion() -> String {
+    @objc public static var systemVersion: String {
         return ProcessInfo().operatingSystemVersionString
     }
 
-    @objc public static func appVersion() -> String {
+    @objc public static var appVersion: String {
         return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
     }
 
-    @objc public static func buildVersion() -> String {
+    @objc public static var buildVersion: String {
         return Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
     }
 
-    @objc public static func platformHeader() -> String {
+    @objc public static var platformHeader: String {
         return Self.forceUniversalAppStore ? "iOS" : platformHeaderConstant
     }
 
-    @objc public static func identifierForVendor() -> String? {
+    @objc public static var identifierForVendor: String? {
         #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
             return UIDevice.current.identifierForVendor?.uuidString
         #elseif os(watchOS)
@@ -83,25 +81,25 @@ public typealias RCSystemInfo = SystemInfo
     }
 
     private static var privateProxyURL: URL?
-    @objc public static func proxyURL() -> URL? {
-        return privateProxyURL
-    }
-
-    @objc public static func setProxyURL(_ proxyURL: URL?) {
-        privateProxyURL = proxyURL
-        guard let privateProxyURLString = privateProxyURL?.absoluteString else {
-            return
+    @objc public static var proxyURL: URL? {
+        get {
+            return privateProxyURL
         }
-        Logger.info(Strings.configure.configuring_purchases_proxy_url_set
-                        .replacingOccurrences(of: "%@", with: privateProxyURLString))
+        set {
+            privateProxyURL = newValue
+            if let privateProxyURLString = newValue?.absoluteString {
+                Logger.info(Strings.configure.configuring_purchases_proxy_url_set
+                                .replacingOccurrences(of: "%@", with: privateProxyURLString))
+            }
+        }
     }
 
-    static func defaultServerHostURL() -> URL {
+    static var defaultServerHostURL: URL {
         return URL(string: defaultServerHostName)!
     }
 
-    @objc public static func serverHostURL() -> URL {
-        return proxyURL() ?? Self.defaultServerHostURL()
+    @objc public static var serverHostURL: URL {
+        return self.proxyURL ?? Self.defaultServerHostURL
     }
 
     private var isApplicationBackgrounded: Bool {
@@ -120,7 +118,6 @@ public typealias RCSystemInfo = SystemInfo
     // iOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
     // it are made. There are no pre-processor macros available to check if the code is running in an app extension,
     // so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication.
-
     @objc private var isApplicationBackgroundedIOS: Bool {
         if self.isAppExtension {
             return true
@@ -132,29 +129,7 @@ public typealias RCSystemInfo = SystemInfo
     @objc private var isAppExtension: Bool {
         return Bundle.main.bundlePath.hasSuffix(".appex")
     }
-
     #endif
-
-    @available(*, deprecated, message: """
-        Use (Swift) init(platformFlavor:, platformFlavorVersion:, finishTransactions:) throws
-        or (objc)  -initWithPlatformFlavor: platformFlavorVersion: finishTransactions: error:
-        """)
-    @objc public func initWith(platformFlavor: String?, platformFlavorVersion: String?, finishTransactions: Bool) -> Self {
-        do {
-            let newInfo = try type(of: self).init(platformFlavor: platformFlavor,
-                                                  platformFlavorVersion: platformFlavorVersion,
-                                                  finishTransactions: finishTransactions)
-            return newInfo
-        } catch {
-            let errorMessage = """
-                RCSystemInfo initialized with non-matching platform flavor and platform flavor versions!
-                platformFlavor: \(String(describing: platformFlavor)),
-                platformFlavorVersion: \(String(describing: platformFlavorVersion)),
-                finishTransactions: \(finishTransactions)
-                """
-            fatalError(errorMessage)
-        }
-    }
 
     @objc required public init(platformFlavor: String?, platformFlavorVersion: String?, finishTransactions: Bool) throws {
         if let platformFlavor = platformFlavor {

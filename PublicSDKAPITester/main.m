@@ -9,7 +9,6 @@
 #import "RCEntitlementInfoAPI.h"
 #import "RCEntitlementInfosAPI.h"
 #import "RCPurchasesAPI.h"
-#import "RCSystemInfoAPI.h"
 #import "RCTransactionAPI.h"
 
 @import StoreKit;
@@ -21,7 +20,6 @@ int main(int argc, const char * argv[]) {
         [RCEntitlementInfosAPI checkAPI];
         [RCPurchasesAPI checkAPI];
         [RCPurchasesAPI checkEnums];
-        [RCSystemInfoAPI checkAPI];
         [RCTransactionAPI checkAPI];
     }
     return 0;

@@ -227,9 +227,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
          platformFlavorVersion:(nullable NSString *)platformFlavorVersion {
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
+    NSError *error = nil;
     RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
                                                       platformFlavorVersion:platformFlavorVersion
-                                                         finishTransactions:!observerMode];
+                                                         finishTransactions:!observerMode
+                                                                      error:&error];
+    NSAssert(systemInfo, error.localizedDescription);
+
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey systemInfo:systemInfo];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
     RCOfferingsFactory *offeringsFactory = [[RCOfferingsFactory alloc] init];

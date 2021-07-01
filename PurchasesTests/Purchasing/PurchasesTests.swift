@@ -2514,18 +2514,18 @@ class PurchasesTests: XCTestCase {
     }
 
     func testProxyURL() {
-        expect(RCSystemInfo.proxyURL()).to(beNil())
+        expect(SystemInfo.proxyURL).to(beNil())
         let defaultHostURL = URL(string: "https://api.revenuecat.com")
-        expect(RCSystemInfo.serverHostURL()) == defaultHostURL
+        expect(SystemInfo.serverHostURL) == defaultHostURL
 
         let testURL = URL(string: "https://test_url")
         Purchases.proxyURL = testURL
 
-        expect(RCSystemInfo.serverHostURL()) == testURL
+        expect(SystemInfo.serverHostURL) == testURL
 
         Purchases.proxyURL = nil
 
-        expect(RCSystemInfo.serverHostURL()) == defaultHostURL
+        expect(SystemInfo.serverHostURL) == defaultHostURL
     }
 
     func testNotifiesIfTransactionIsDeferredFromStoreKit() {

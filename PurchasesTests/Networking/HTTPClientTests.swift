@@ -16,7 +16,7 @@ import Purchases
 
 class HTTPClientTests: XCTestCase {
 
-    let systemInfo = try! RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+    let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
     var client: RCHTTPClient!
 
     override func setUp() {
@@ -47,7 +47,7 @@ class HTTPClientTests: XCTestCase {
         let path = "/a_random_path"
         var hostCorrect = false
 
-        guard let host = RCSystemInfo.serverHostURL().host else { fatalError() }
+        guard let host = SystemInfo.serverHostURL.host else { fatalError() }
         stub(condition: isHost(host)) { _ in
             hostCorrect = true
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
@@ -308,7 +308,7 @@ class HTTPClientTests: XCTestCase {
         let path = "/a_random_path"
         var headerPresent = false
         
-        let version = RCSystemInfo.appVersion()
+        let version = SystemInfo.appVersion
 
         stub(condition: hasHeaderNamed("X-Client-Version", value: version )) { request in
             headerPresent = true
@@ -378,7 +378,7 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
-        let systemInfo = try! RCSystemInfo(platformFlavor: "react-native",
+        let systemInfo = try! SystemInfo(platformFlavor: "react-native",
                                            platformFlavorVersion: "3.2.1",
                                            finishTransactions: true)
         let client = RCHTTPClient(systemInfo: systemInfo)
@@ -397,7 +397,7 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
-        let systemInfo = try! RCSystemInfo(platformFlavor: "react-native",
+        let systemInfo = try! SystemInfo(platformFlavor: "react-native",
                                            platformFlavorVersion: "1.2.3",
                                            finishTransactions: true)
         let client = RCHTTPClient(systemInfo: systemInfo)
@@ -416,7 +416,7 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
-        let systemInfo = try! RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+        let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         let client = RCHTTPClient(systemInfo: systemInfo)
 
         client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
@@ -433,7 +433,7 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
-        let systemInfo = try! RCSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
+        let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
         let client = RCHTTPClient(systemInfo: systemInfo)
 
         client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
