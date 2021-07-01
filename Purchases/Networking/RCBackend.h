@@ -11,8 +11,8 @@
 
 #import "RCSubscriberAttribute.h"
 #import "RCProductInfo.h"
-#import "RCAttributionNetwork.h"
 
+@import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
 

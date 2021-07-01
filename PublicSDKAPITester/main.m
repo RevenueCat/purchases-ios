@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RCAttributionNetworkAPI.h"
 #import "RCEntitlementInfoAPI.h"
 #import "RCEntitlementInfosAPI.h"
 #import "RCPurchasesAPI.h"
@@ -15,6 +16,7 @@
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
+        [RCAttributionNetworkAPI checkEnums];
         [RCEntitlementInfoAPI checkAPI];
         [RCEntitlementInfoAPI checkEnums];
         [RCEntitlementInfosAPI checkAPI];

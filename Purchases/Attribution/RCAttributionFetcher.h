@@ -8,8 +8,9 @@
 
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
-#import "RCAttributionNetwork.h"
 #import "RCAttributionTypeFactory.h"
+
+@import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
 
