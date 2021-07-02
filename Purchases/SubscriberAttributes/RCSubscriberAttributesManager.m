@@ -3,14 +3,15 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-#import "RCSubscriberAttributesManager.h"
-#import "RCSpecialSubscriberAttributes.h"
+@import PurchasesCoreSwift;
+
+#import "NSError+RCExtensions.h"
+#import "RCAttributionFetcher.h"
 #import "RCBackend.h"
 #import "RCDeviceCache.h"
-#import "NSError+RCExtensions.h"
 #import "RCLogUtils.h"
-#import "RCAttributionFetcher.h"
-@import PurchasesCoreSwift;
+#import "RCSpecialSubscriberAttributes.h"
+#import "RCSubscriberAttributesManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

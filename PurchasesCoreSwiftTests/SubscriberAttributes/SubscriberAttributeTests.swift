@@ -7,39 +7,19 @@ import XCTest
 import OHHTTPStubs
 import Nimble
 
-import Purchases
+@testable import PurchasesCoreSwift
 
 class SubscriberAttributeTests: XCTestCase {
     func testInitWithKeyValueSetsRightValues() {
         let now = Date()
         let dateProvider = MockDateProvider(stubbedNow: now)
-        let subscriberAttribute = RCSubscriberAttribute(key: "a key",
-                                                        value: "a value",
-                                                        dateProvider: dateProvider)
+        let subscriberAttribute = SubscriberAttribute(withKey: "a key",
+                                                      value: "a value",
+                                                      dateProvider: dateProvider)
         expect(subscriberAttribute.key) == "a key"
         expect(subscriberAttribute.value) == "a value"
         expect(subscriberAttribute.setTime) == now
         expect(subscriberAttribute.isSynced) == false
-    }
-
-    func testInitWithDictionarySetsRightValues() {
-        let key = "some key"
-        let value = "some value"
-        let setTime = NSDate()
-        let isSynced = true
-        let subscriberDict: [String: NSObject] = [
-            "key": NSString(string: key),
-            "value": NSString(string: value),
-            "setTime": setTime,
-            "isSynced": NSNumber(booleanLiteral: isSynced),
-        ]
-
-        let subscriberAttribute = RCSubscriberAttribute(dictionary: subscriberDict)
-
-        expect(subscriberAttribute.key) == key
-        expect(subscriberAttribute.value) == value
-        expect(subscriberAttribute.setTime as NSDate) == setTime
-        expect(subscriberAttribute.isSynced) == isSynced
     }
 
     func testAsDictionaryReturnsCorrectFormat() {
@@ -48,9 +28,9 @@ class SubscriberAttributeTests: XCTestCase {
         let now = Date()
         let dateProvider = MockDateProvider(stubbedNow: now)
 
-        let subscriberAttribute = RCSubscriberAttribute(key: key,
-                                                        value: value,
-                                                        dateProvider: dateProvider)
+        let subscriberAttribute = SubscriberAttribute(withKey: key,
+                                                      value: value,
+                                                      dateProvider: dateProvider)
 
         let receivedDictionary = subscriberAttribute.asDictionary()
         expect(receivedDictionary.keys.count) == 4
@@ -67,9 +47,9 @@ class SubscriberAttributeTests: XCTestCase {
         let now = Date()
         let dateProvider = MockDateProvider(stubbedNow: now)
 
-        let subscriberAttribute = RCSubscriberAttribute(key: key,
-                                                        value: value,
-                                                        dateProvider: dateProvider)
+        let subscriberAttribute = SubscriberAttribute(withKey: key,
+                                                      value: value,
+                                                      dateProvider: dateProvider)
 
         let receivedDictionary = subscriberAttribute.asBackendDictionary()
         expect(receivedDictionary.keys.count) == 2

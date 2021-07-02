@@ -15,7 +15,7 @@ class MockBackend: RCBackend {
                                            productInfo: RCProductInfo?,
                                            offeringIdentifier: String?,
                                            observerMode: Bool,
-                                           subscriberAttributesByKey: [String: RCSubscriberAttribute]?,
+                                           subscriberAttributesByKey: [String: SubscriberAttribute]?,
                                            completion: RCBackendPurchaserInfoResponseHandler?)?
     var invokedPostReceiptDataParametersList = [(data: Data?,
         appUserID: String?,
@@ -23,7 +23,7 @@ class MockBackend: RCBackend {
         productInfo: RCProductInfo?,
         offeringIdentifier: String?,
         observerMode: Bool,
-        subscriberAttributesByKey: [String: RCSubscriberAttribute]?,
+        subscriberAttributesByKey: [String: SubscriberAttribute]?,
         completion: RCBackendPurchaserInfoResponseHandler?)]()
 
     override func postReceiptData(_ data: Data,
@@ -32,7 +32,7 @@ class MockBackend: RCBackend {
                                   productInfo: RCProductInfo?,
                                   presentedOfferingIdentifier offeringIdentifier: String?,
                                   observerMode: Bool,
-                                  subscriberAttributes subscriberAttributesByKey: [String: RCSubscriberAttribute]?,
+                                  subscriberAttributes subscriberAttributesByKey: [String: SubscriberAttribute]?,
                                   completion: @escaping RCBackendPurchaserInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
@@ -179,11 +179,11 @@ class MockBackend: RCBackend {
 
     var invokedPostSubscriberAttributes = false
     var invokedPostSubscriberAttributesCount = 0
-    var invokedPostSubscriberAttributesParameters: (subscriberAttributes: [String: RCSubscriberAttribute]?, appUserID: String?)?
+    var invokedPostSubscriberAttributesParameters: (subscriberAttributes: [String: SubscriberAttribute]?, appUserID: String?)?
     var invokedPostSubscriberAttributesParametersList: [InvokedPostSubscriberAttributesParameters] = []
     var stubbedPostSubscriberAttributesCompletionResult: (Error?, Void)?
 
-    override func postSubscriberAttributes(_ subscriberAttributes: [String: RCSubscriberAttribute],
+    override func postSubscriberAttributes(_ subscriberAttributes: [String: SubscriberAttribute],
                                            appUserID: String,
                                            completion: ((Error?) -> ())?) {
         invokedPostSubscriberAttributes = true
@@ -200,7 +200,7 @@ class MockBackend: RCBackend {
     }
 
     struct InvokedPostSubscriberAttributesParameters: Equatable {
-        let subscriberAttributes: [String: RCSubscriberAttribute]?
+        let subscriberAttributes: [String: SubscriberAttribute]?
         let appUserID: String?
     }
 

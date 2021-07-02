@@ -7,9 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "RCSubscriberAttribute.h"
 
-@class RCOfferings;
+#import "RCTypeDefsPreMigration.h"
+
+@class RCOfferings, RCSubscriberAttribute;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -80,6 +81,10 @@ NS_ASSUME_NONNULL_BEGIN
                                  forAppUserID:(nullable NSString *)appUserID;
 
 - (void)clearLatestNetworkAndAdvertisingIdsSentForAppUserID:(nullable NSString *)appUserID;
+
+#pragma mark - Testing
+
++ (RCSubscriberAttribute *)newAttributeWithDictionary:(NSDictionary<NSString *, NSObject *> *)dictionary;
 
 @end
 

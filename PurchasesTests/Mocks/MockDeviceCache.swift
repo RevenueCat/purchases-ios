@@ -104,10 +104,10 @@ class MockDeviceCache: RCDeviceCache {
 
     var invokedStore = false
     var invokedStoreCount = 0
-    var invokedStoreParameters: (attribute: RCSubscriberAttribute, appUserID: String)?
-    var invokedStoreParametersList = [(attribute: RCSubscriberAttribute, appUserID: String)]()
+    var invokedStoreParameters: (attribute: SubscriberAttribute, appUserID: String)?
+    var invokedStoreParametersList = [(attribute: SubscriberAttribute, appUserID: String)]()
 
-    override func store(_ attribute: RCSubscriberAttribute, appUserID: String) {
+    override func store(_ attribute: SubscriberAttribute, appUserID: String) {
         invokedStore = true
         invokedStoreCount += 1
         invokedStoreParameters = (attribute, appUserID)
@@ -116,11 +116,11 @@ class MockDeviceCache: RCDeviceCache {
 
     var invokedStoreSubscriberAttributes = false
     var invokedStoreSubscriberAttributesCount = 0
-    var invokedStoreSubscriberAttributesParameters: (attributesByKey: [String: RCSubscriberAttribute], appUserID: String)?
-    var invokedStoreSubscriberAttributesParametersList = [(attributesByKey: [String: RCSubscriberAttribute],
+    var invokedStoreSubscriberAttributesParameters: (attributesByKey: [String: SubscriberAttribute], appUserID: String)?
+    var invokedStoreSubscriberAttributesParametersList = [(attributesByKey: [String: SubscriberAttribute],
         appUserID: String)]()
 
-    override func storeSubscriberAttributes(_ attributesByKey: [String: RCSubscriberAttribute],
+    override func storeSubscriberAttributes(_ attributesByKey: [String: SubscriberAttribute],
                                             appUserID: String) {
         invokedStoreSubscriberAttributes = true
         invokedStoreSubscriberAttributesCount += 1
@@ -132,10 +132,10 @@ class MockDeviceCache: RCDeviceCache {
     var invokedSubscriberAttributeCount = 0
     var invokedSubscriberAttributeParameters: (attributeKey: String, appUserID: String)?
     var invokedSubscriberAttributeParametersList = [(attributeKey: String, appUserID: String)]()
-    var stubbedSubscriberAttributeResult: RCSubscriberAttribute!
+    var stubbedSubscriberAttributeResult: SubscriberAttribute!
 
     override func subscriberAttribute(withKey attributeKey: String,
-                                      appUserID: String) -> RCSubscriberAttribute? {
+                                      appUserID: String) -> SubscriberAttribute? {
         invokedSubscriberAttribute = true
         invokedSubscriberAttributeCount += 1
         invokedSubscriberAttributeParameters = (attributeKey, appUserID)
@@ -147,9 +147,9 @@ class MockDeviceCache: RCDeviceCache {
     var invokedUnsyncedAttributesByKeyCount = 0
     var invokedUnsyncedAttributesByKeyParameters: (appUserID: String, Void)?
     var invokedUnsyncedAttributesByKeyParametersList = [(appUserID: String, Void)]()
-    var stubbedUnsyncedAttributesByKeyResult: [String: RCSubscriberAttribute]! = [:]
+    var stubbedUnsyncedAttributesByKeyResult: [String: SubscriberAttribute]! = [:]
 
-    override func unsyncedAttributesByKey(forAppUserID appUserID: String) -> [String: RCSubscriberAttribute] {
+    override func unsyncedAttributesByKey(forAppUserID appUserID: String) -> [String: SubscriberAttribute] {
         invokedUnsyncedAttributesByKey = true
         invokedUnsyncedAttributesByKeyCount += 1
         invokedUnsyncedAttributesByKeyParameters = (appUserID, ())
@@ -181,9 +181,9 @@ class MockDeviceCache: RCDeviceCache {
 
     var invokedUnsyncedAttributesForAllUsers = false
     var invokedUnsyncedAttributesForAllUsersCount = 0
-    var stubbedUnsyncedAttributesForAllUsersResult: [String: [String: RCSubscriberAttribute]]!
+    var stubbedUnsyncedAttributesForAllUsersResult: [String: [String: SubscriberAttribute]]!
 
-    override func unsyncedAttributesForAllUsers() -> [String: [String: RCSubscriberAttribute]] {
+    override func unsyncedAttributesForAllUsers() -> [String: [String: SubscriberAttribute]] {
         invokedUnsyncedAttributesForAllUsers = true
         invokedUnsyncedAttributesForAllUsersCount += 1
         return stubbedUnsyncedAttributesForAllUsersResult

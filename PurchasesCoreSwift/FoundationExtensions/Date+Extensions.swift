@@ -13,3 +13,9 @@ public extension NSDate {
         return UInt64(self.timeIntervalSince1970 * 1000.0)
     }
 }
+
+public extension Date {
+    func rc_millisecondsSince1970AsUInt64() -> UInt64 {
+        return UInt64(self.timeIntervalSince1970 * 1000.0)
+    }
+}

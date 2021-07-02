@@ -35,8 +35,7 @@
 #include <Purchases/RCSpecialSubscriberAttributes.h>
 #include <Purchases/RCStoreKitRequestFetcher.h>
 #include <Purchases/RCStoreKitWrapper.h>
-#include <Purchases/RCSubscriberAttribute+Protected.h>
-#include <Purchases/RCSubscriberAttribute.h>
 #include <Purchases/RCSubscriberAttributesManager.h>
+#include <Purchases/RCTypeDefsPreMigration.h>
 
 #include "RCObjC.h"

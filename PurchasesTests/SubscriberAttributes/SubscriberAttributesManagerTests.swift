@@ -14,9 +14,9 @@ class SubscriberAttributesManagerTests: XCTestCase {
     var mockDeviceCache: MockDeviceCache!
     var mockAttributionFetcher: MockAttributionFetcher!
     var subscriberAttributesManager: RCSubscriberAttributesManager!
-    var subscriberAttributeHeight: RCSubscriberAttribute!
-    var subscriberAttributeWeight: RCSubscriberAttribute!
-    var mockAttributes: [String: RCSubscriberAttribute]!
+    var subscriberAttributeHeight: SubscriberAttribute!
+    var subscriberAttributeWeight: SubscriberAttribute!
+    var mockAttributes: [String: SubscriberAttribute]!
 
     override func setUp() {
         super.setUp()
@@ -29,14 +29,13 @@ class SubscriberAttributesManagerTests: XCTestCase {
                                                              systemInfo: try! MockSystemInfo(platformFlavor: "iOS",
                                                                                              platformFlavorVersion: "3.2.1",
                                                                                              finishTransactions: true))
-        self.subscriberAttributesManager = RCSubscriberAttributesManager(
-                backend: mockBackend,
-                deviceCache: mockDeviceCache,
-                attributionFetcher: mockAttributionFetcher)
-        self.subscriberAttributeHeight = RCSubscriberAttribute(key: "height",
-                                                               value: "183")
-        self.subscriberAttributeWeight = RCSubscriberAttribute(key: "weight",
-                                                               value: "160")
+        self.subscriberAttributesManager = RCSubscriberAttributesManager(backend: mockBackend,
+                                                                         deviceCache: mockDeviceCache,
+                                                                         attributionFetcher: mockAttributionFetcher)
+        self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
+                                                             value: "183")
+        self.subscriberAttributeWeight = SubscriberAttribute(withKey: "weight",
+                                                             value: "160")
         self.mockAttributes = [
             subscriberAttributeHeight.key: subscriberAttributeHeight,
             subscriberAttributeWeight.key: subscriberAttributeWeight
@@ -46,20 +45,20 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testInitializerCrashesIfNilParams() {
         expectToThrowException(.parameterAssert) {
             _ = RCSubscriberAttributesManager(backend: nil,
-                                          deviceCache: self.mockDeviceCache,
-                                          attributionFetcher: self.mockAttributionFetcher)
+                                              deviceCache: self.mockDeviceCache,
+                                              attributionFetcher: self.mockAttributionFetcher)
         }
 
         expectToThrowException(.parameterAssert) {
             _ = RCSubscriberAttributesManager(backend: self.mockBackend,
-                                          deviceCache: nil,
-                                          attributionFetcher: self.mockAttributionFetcher)
+                                              deviceCache: nil,
+                                              attributionFetcher: self.mockAttributionFetcher)
         }
 
         expectToThrowException(.parameterAssert) {
             _ = RCSubscriberAttributesManager(backend: self.mockBackend,
-                                          deviceCache: self.mockDeviceCache,
-                                          attributionFetcher: nil)
+                                              deviceCache: self.mockDeviceCache,
+                                              attributionFetcher: nil)
         }
     }
 
@@ -72,7 +71,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(self.mockDeviceCache.invokedStoreCount) == 2
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
         expect(invokedParams).toNot(beEmpty())
-        var attributesByKey: [String: RCSubscriberAttribute] = [:]
+        var attributesByKey: [String: SubscriberAttribute] = [:]
         for (attribute, _) in invokedParams {
             attributesByKey[attribute.key] = attribute
         }
@@ -87,8 +86,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
     }
 
     func testSetAttributesSkipsIfSameValue() {
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "genre",
-                                                                                      value: "blues")
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "genre",
+                                                                                    value: "blues")
 
         self.subscriberAttributesManager.setAttributes(["genre": "blues",
                                                         "instrument": "guitar"], appUserID: "Stevie Ray Vaughan")
@@ -104,8 +103,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
     }
 
     func testSetAttributesUpdatesIfDifferentValue() {
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "genre",
-                                                                                      value: "texas blues")
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "genre",
+                                                                                    value: "texas blues")
 
         self.subscriberAttributesManager.setAttributes(["genre": "blues",
                                                         "instrument": "guitar"], appUserID: "Stevie Ray Vaughan")
@@ -113,7 +112,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(self.mockDeviceCache.invokedStoreCount) == 2
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
         expect(invokedParams).toNot(beEmpty())
-        var attributesByKey: [String: RCSubscriberAttribute] = [:]
+        var attributesByKey: [String: SubscriberAttribute] = [:]
         for (attribute, _) in invokedParams {
             attributesByKey[attribute.key] = attribute
         }
@@ -155,8 +154,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
     }
 
     func testSetEmailSkipsIfSameValue() {
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$email",
-                                                                                      value: "kratos@sparta.com")
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$email",
+                                                                                    value: "kratos@sparta.com")
 
         self.subscriberAttributesManager.setEmail("kratos@sparta.com", appUserID: "kratos")
 
@@ -165,10 +164,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
     func testSetEmailOverwritesIfNewValue() {
         let oldSyncTime = Date()
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$email",
-                                                                                      value: "kratos@sparta.com",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$email",
+                                                                                    value: "kratos@sparta.com",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
 
         self.subscriberAttributesManager.setEmail("kratos@protonmail.com", appUserID: "kratos")
 
@@ -212,18 +211,18 @@ class SubscriberAttributesManagerTests: XCTestCase {
     }
 
     func testSetPhoneNumberSkipsIfSameValue() {
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$displayName",
-                                                                                      value: "Kratos")
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$displayName",
+                                                                                    value: "Kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 0
     }
 
     func testSetPhoneNumberOverwritesIfNewValue() {
         let oldSyncTime = Date()
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$phoneNumber",
-                                                                                      value: "9823523",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$phoneNumber",
+                                                                                    value: "9823523",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
 
         self.subscriberAttributesManager.setPhoneNumber("25235325", appUserID: "kratos")
 
@@ -267,8 +266,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
     }
 
     func testSetDisplayNameSkipsIfSameValue() {
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$apnsTokens",
-                                                                                      value: "Kratos")
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$apnsTokens",
+                                                                                    value: "Kratos")
 
         self.subscriberAttributesManager.setDisplayName("Kratos", appUserID: "kratos")
 
@@ -277,10 +276,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
     func testSetDisplayNameOverwritesIfNewValue() {
         let oldSyncTime = Date()
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$displayName",
-                                                                                      value: "Kratos",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$displayName",
+                                                                                    value: "Kratos",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
 
         self.subscriberAttributesManager.setDisplayName("Ghost of Sparta", appUserID: "kratos")
 
@@ -330,8 +329,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetPushTokenSkipsIfSameValue() {
         let tokenData = "ligai32g32ig".data(using: .utf8)!
         let tokenString = (tokenData as NSData).rc_asString()
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$apnsTokens",
-                                                                                      value: tokenString)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$apnsTokens",
+                                                                                    value: tokenString)
 
         self.subscriberAttributesManager.setPushToken(tokenData, appUserID: "kratos")
 
@@ -343,10 +342,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let tokenString = (tokenData as NSData).rc_asString()
         let oldSyncTime = Date()
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$apnsTokens",
-                                                                                      value: "other value",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$apnsTokens",
+                                                                                    value: "other value",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
 
         self.subscriberAttributesManager.setPushToken(tokenData, appUserID: "kratos")
 
@@ -394,8 +393,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
 
     func testSetPushTokenStringSkipsIfSameValue() {
         let tokenString = "oiag023jkgsop"
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$apnsTokens",
-                                                                                      value: tokenString)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$apnsTokens",
+                                                                                    value: tokenString)
 
         self.subscriberAttributesManager.setPushTokenString(tokenString, appUserID: "kratos")
 
@@ -406,10 +405,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let tokenString = "oiag023jkgsop"
         let oldSyncTime = Date()
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$apnsTokens",
-                                                                                      value: "other value",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$apnsTokens",
+                                                                                    value: "other value",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
 
         self.subscriberAttributesManager.setPushTokenString(tokenString, appUserID: "kratos")
 
@@ -453,20 +452,20 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let userID3 = "userID3"
 
         let userID1Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "The Doors"),
-            "song": RCSubscriberAttribute(key: "song", value: "Riders on the storm"),
-            "album": RCSubscriberAttribute(key: "album", value: "L.A. Woman")
+            "band": SubscriberAttribute(withKey: "band", value: "The Doors"),
+            "song": SubscriberAttribute(withKey: "song", value: "Riders on the storm"),
+            "album": SubscriberAttribute(withKey: "album", value: "L.A. Woman")
         ]
         let userID2Attributes = [
-            "instrument": RCSubscriberAttribute(key: "instrument", value: "Guitar"),
-            "name": RCSubscriberAttribute(key: "name", value: "Robert Krieger")
+            "instrument": SubscriberAttribute(withKey: "instrument", value: "Guitar"),
+            "name": SubscriberAttribute(withKey: "name", value: "Robert Krieger")
         ]
         let userID3Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "Dire Straits"),
-            "song": RCSubscriberAttribute(key: "song", value: "Sultans of Swing"),
-            "album": RCSubscriberAttribute(key: "album", value: "Dire Straits")
+            "band": SubscriberAttribute(withKey: "band", value: "Dire Straits"),
+            "song": SubscriberAttribute(withKey: "song", value: "Sultans of Swing"),
+            "album": SubscriberAttribute(withKey: "album", value: "Dire Straits")
         ]
-        let allAttributes: [String: [String: RCSubscriberAttribute]] = [
+        let allAttributes: [String: [String: SubscriberAttribute]] = [
             userID1: userID1Attributes,
             userID2: userID2Attributes,
             userID3: userID3Attributes,
@@ -493,15 +492,15 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let currentUserID = "userID3"
 
         let userID1Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "The Doors"),
-            "song": RCSubscriberAttribute(key: "song", value: "Riders on the storm"),
-            "album": RCSubscriberAttribute(key: "album", value: "L.A. Woman")
+            "band": SubscriberAttribute(withKey: "band", value: "The Doors"),
+            "song": SubscriberAttribute(withKey: "song", value: "Riders on the storm"),
+            "album": SubscriberAttribute(withKey: "album", value: "L.A. Woman")
         ]
         let userID2Attributes = [
-            "instrument": RCSubscriberAttribute(key: "instrument", value: "Guitar"),
-            "name": RCSubscriberAttribute(key: "name", value: "Robert Krieger")
+            "instrument": SubscriberAttribute(withKey: "instrument", value: "Guitar"),
+            "name": SubscriberAttribute(withKey: "name", value: "Robert Krieger")
         ]
-        let allAttributes: [String: [String: RCSubscriberAttribute]] = [
+        let allAttributes: [String: [String: SubscriberAttribute]] = [
             userID1: userID1Attributes,
             userID2: userID2Attributes,
         ]
@@ -518,15 +517,15 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let currentUserID = "userID3"
 
         let userID1Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "The Doors"),
-            "song": RCSubscriberAttribute(key: "song", value: "Riders on the storm"),
-            "album": RCSubscriberAttribute(key: "album", value: "L.A. Woman")
+            "band": SubscriberAttribute(withKey: "band", value: "The Doors"),
+            "song": SubscriberAttribute(withKey: "song", value: "Riders on the storm"),
+            "album": SubscriberAttribute(withKey: "album", value: "L.A. Woman")
         ]
         let userID2Attributes = [
-            "instrument": RCSubscriberAttribute(key: "instrument", value: "Guitar"),
-            "name": RCSubscriberAttribute(key: "name", value: "Robert Krieger")
+            "instrument": SubscriberAttribute(withKey: "instrument", value: "Guitar"),
+            "name": SubscriberAttribute(withKey: "name", value: "Robert Krieger")
         ]
-        let allAttributes: [String: [String: RCSubscriberAttribute]] = [
+        let allAttributes: [String: [String: SubscriberAttribute]] = [
             userID1: userID1Attributes,
             userID2: userID2Attributes,
         ]
@@ -544,15 +543,15 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let otherUserID = "userID2"
 
         let userID1Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "The Doors"),
-            "song": RCSubscriberAttribute(key: "song", value: "Riders on the storm"),
-            "album": RCSubscriberAttribute(key: "album", value: "L.A. Woman")
+            "band": SubscriberAttribute(withKey: "band", value: "The Doors"),
+            "song": SubscriberAttribute(withKey: "song", value: "Riders on the storm"),
+            "album": SubscriberAttribute(withKey: "album", value: "L.A. Woman")
         ]
         let userID2Attributes = [
-            "instrument": RCSubscriberAttribute(key: "instrument", value: "Guitar"),
-            "name": RCSubscriberAttribute(key: "name", value: "Robert Krieger")
+            "instrument": SubscriberAttribute(withKey: "instrument", value: "Guitar"),
+            "name": SubscriberAttribute(withKey: "name", value: "Robert Krieger")
         ]
-        let allAttributes: [String: [String: RCSubscriberAttribute]] = [
+        let allAttributes: [String: [String: SubscriberAttribute]] = [
             currentUserID: userID1Attributes,
             otherUserID: userID2Attributes,
         ]
@@ -595,7 +594,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetAdjustIDSkipsIfSameValue() {
         let adjustID = "adjustID"
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$adjustId", value: adjustID)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$adjustId",
+                                                                                    value: adjustID)
 
         self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
 
@@ -607,10 +607,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let adjustID = "adjustID"
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$adjustId",
-                                                                                      value: "old_id",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$adjustId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
 
         self.subscriberAttributesManager.setAdjustID(adjustID, appUserID: "kratos")
 
@@ -668,7 +668,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetAppsflyerIDSkipsIfSameValue() {
         let appsflyerID = "appsflyerID"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$appsflyerId", value: appsflyerID)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$appsflyerId",
+                                                                                    value: appsflyerID)
         
         self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
         
@@ -680,10 +681,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let appsflyerID = "appsflyerID"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$appsflyerId",
-                                                                                      value: "old_id",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$appsflyerId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
         
         self.subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: "kratos")
         
@@ -741,7 +742,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetFBAnonymousIDSkipsIfSameValue() {
         let fbAnonID = "fbAnonID"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$fbAnonId", value: fbAnonID)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$fbAnonId",
+                                                                                    value: fbAnonID)
         
         self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
         
@@ -752,10 +754,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let fbAnonID = "fbAnonID"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$fbAnonId",
-                                                                                      value: "old_adjust_id",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$fbAnonId",
+                                                                                    value: "old_adjust_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
         
         self.subscriberAttributesManager.setFBAnonymousID(fbAnonID, appUserID: "kratos")
         
@@ -813,7 +815,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetMparticleIDSkipsIfSameValue() {
         let mparticleID = "mparticleID"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$mparticleId", value: mparticleID)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$mparticleId",
+                                                                                    value: mparticleID)
         
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
         
@@ -825,10 +828,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let mparticleID = "mparticleID"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$mparticleId",
-                                                                                      value: "old_id",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$mparticleId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
         
         self.subscriberAttributesManager.setMparticleID(mparticleID, appUserID: "kratos")
         
@@ -886,7 +889,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetOnesignalIDSkipsIfSameValue() {
         let onesignalID = "onesignalID"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$onesignalId", value: onesignalID)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$onesignalId",value: onesignalID)
         
         self.subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: "kratos")
         
@@ -898,10 +901,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let onesignalID = "onesignalID"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$onesignalId",
-                                                                                      value: "old_id",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$onesignalId",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
         
         self.subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: "kratos")
         
@@ -959,7 +962,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetMediaSourceSkipsIfSameValue() {
         let mediaSource = "mediaSource"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$mediaSource", value: mediaSource)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$mediaSource", value: mediaSource)
         
         self.subscriberAttributesManager.setMediaSource(mediaSource, appUserID: "kratos")
         
@@ -971,10 +974,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let mediaSource = "mediaSource"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$mediaSource",
-                                                                                      value: "old_id",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$mediaSource",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
         
         self.subscriberAttributesManager.setMediaSource(mediaSource, appUserID: "kratos")
         
@@ -1022,7 +1025,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetCampaignSkipsIfSameValue() {
         let campaign = "campaign"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$campaign", value: campaign)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$campaign",
+                                                                                    value: campaign)
         
         self.subscriberAttributesManager.setCampaign(campaign, appUserID: "kratos")
         
@@ -1034,10 +1038,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let campaign = "campaign"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$campaign",
-                                                                                      value: "old_id",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$campaign",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
         
         self.subscriberAttributesManager.setCampaign(campaign, appUserID: "kratos")
         
@@ -1085,7 +1089,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetAdGroupSkipsIfSameValue() {
         let adGroup = "adGroup"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$adGroup", value: adGroup)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$adGroup", value: adGroup)
         
         self.subscriberAttributesManager.setAdGroup(adGroup, appUserID: "kratos")
         
@@ -1097,10 +1101,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let adGroup = "adGroup"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$adGroup",
-                                                                                      value: "old_id",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$adGroup",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
         
         self.subscriberAttributesManager.setAdGroup(adGroup, appUserID: "kratos")
         
@@ -1148,7 +1152,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetAdSkipsIfSameValue() {
         let ad = "ad"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$ad", value: ad)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$ad", value: ad)
         
         self.subscriberAttributesManager.setAd(ad, appUserID: "kratos")
         
@@ -1160,10 +1164,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let ad = "ad"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$ad",
-                                                                                      value: "old_id",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$ad",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
         
         self.subscriberAttributesManager.setAd(ad, appUserID: "kratos")
         
@@ -1211,7 +1215,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetKeywordSkipsIfSameValue() {
         let keyword = "keyword"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$keyword", value: keyword)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$keyword", value: keyword)
         
         self.subscriberAttributesManager.setKeyword(keyword, appUserID: "kratos")
         
@@ -1223,10 +1227,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let keyword = "keyword"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$keyword",
-                                                                                      value: "old_id",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$keyword",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
         
         self.subscriberAttributesManager.setKeyword(keyword, appUserID: "kratos")
         
@@ -1274,7 +1278,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetCreativeSkipsIfSameValue() {
         let creative = "creative"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$creative", value: creative)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$creative", value: creative)
         
         self.subscriberAttributesManager.setCreative(creative, appUserID: "kratos")
         
@@ -1286,10 +1290,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let creative = "creative"
         
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$creative",
-                                                                                      value: "old_id",
-                                                                                      isSynced: true,
-                                                                                      setTime: oldSyncTime)
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$creative",
+                                                                                    value: "old_id",
+                                                                                    isSynced: true,
+                                                                                    setTime: oldSyncTime)
         
         self.subscriberAttributesManager.setCreative(creative, appUserID: "kratos")
         
@@ -1331,7 +1335,7 @@ private extension SubscriberAttributesManagerTests {
             .toEventually(equal(true))
     }
 
-    func findInvokedAttribute(withName name: String) -> RCSubscriberAttribute {
+    func findInvokedAttribute(withName name: String) -> SubscriberAttribute {
         let invokedParams = self.mockDeviceCache.invokedStoreParametersList
         guard let params = invokedParams.first(where: { $0.attribute.key == name }) else { fatalError() }
         return params.attribute

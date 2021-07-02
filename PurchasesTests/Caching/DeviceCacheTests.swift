@@ -68,8 +68,10 @@ class DeviceCacheTests: XCTestCase {
         let userID = "andy"
         let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let key = "band"
-        let unsyncedSubscriberAttribute = RCSubscriberAttribute(key: key, value: "La Renga",
-                                                                isSynced: false, setTime: Date()).asDictionary()
+        let unsyncedSubscriberAttribute = SubscriberAttribute(withKey: key,
+                                                              value: "La Renga",
+                                                              isSynced: false,
+                                                              setTime: Date()).asDictionary()
         let mockAttributes: [String: [String: [String: NSObject]]] = [
             userID: [key: unsyncedSubscriberAttribute]
         ]
@@ -84,8 +86,10 @@ class DeviceCacheTests: XCTestCase {
         let userID = "andy"
         let attributesKey = "com.revenuecat.userdefaults.subscriberAttributes"
         let key = "band"
-        let unsyncedSubscriberAttribute = RCSubscriberAttribute(key: key, value: "La Renga",
-                                                                isSynced: true, setTime: Date()).asDictionary()
+        let unsyncedSubscriberAttribute = SubscriberAttribute(withKey: key,
+                                                              value: "La Renga",
+                                                              isSynced: true,
+                                                              setTime: Date()).asDictionary()
 
         mockUserDefaults.mockValues[attributesKey] = [
             userID: [key: unsyncedSubscriberAttribute]
@@ -355,5 +359,25 @@ class DeviceCacheTests: XCTestCase {
         mockCachedObject.updateCacheTimestamp(with: cacheDateValidForBoth)
         expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: false)) == false
         expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: true)) == false
+    }
+
+    func testInitWithDictionarySetsRightValues() {
+        let key = "some key"
+        let value = "some value"
+        let setTime = NSDate()
+        let isSynced = true
+        let subscriberDict: [String: NSObject] = [
+            "key": NSString(string: key),
+            "value": NSString(string: value),
+            "setTime": setTime,
+            "isSynced": NSNumber(booleanLiteral: isSynced),
+        ]
+
+        let subscriberAttribute = RCDeviceCache.newAttribute(with: subscriberDict)
+
+        expect(subscriberAttribute.key) == key
+        expect(subscriberAttribute.value) == value
+        expect(subscriberAttribute.setTime as NSDate) == setTime
+        expect(subscriberAttribute.isSynced) == isSynced
     }
 }

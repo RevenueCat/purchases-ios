@@ -5,7 +5,7 @@
 
 #import <Foundation/Foundation.h>
 #import "RCPurchases.h"
-#import "RCSubscriberAttribute.h"
+#import "RCTypeDefsPreMigration.h"
 
 @class RCSubscriberAttribute, RCSubscriberAttributesManager, RCOperationDispatcher;
 

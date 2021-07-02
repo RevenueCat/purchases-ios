@@ -6,6 +6,8 @@
 //  Copyright © 2019 Purchases. All rights reserved.
 //
 
+@import PurchasesCoreSwift;
+
 #import "RCDeviceCache.h"
 #import "RCDeviceCache+Protected.h"
 
@@ -273,8 +275,7 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 25;
     for (NSString *key in allAttributesObjectsByKey) {
         NSDictionary <NSString *, NSString *> *attributeAsDict =
             (NSDictionary <NSString *, NSString *> *) allAttributesObjectsByKey[key];
-        allSubscriberAttributesByKey[key] = [[RCSubscriberAttribute alloc]
-                                                                    initWithDictionary:attributeAsDict];
+        allSubscriberAttributesByKey[key] = [RCDeviceCache newAttributeWithDictionary:attributeAsDict];
     }
     return allSubscriberAttributesByKey;
 }
@@ -301,7 +302,7 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 25;
 
         for (NSString *attributeKey in attributesDictForUser.allKeys) {
             NSDictionary *attributeDict = (NSDictionary *) attributesDictForUser[attributeKey];
-            RCSubscriberAttribute *attribute = [[RCSubscriberAttribute alloc] initWithDictionary:attributeDict];
+            RCSubscriberAttribute *attribute = [RCDeviceCache newAttributeWithDictionary: attributeDict];
             if (!attribute.isSynced) {
                 attributesForUser[attributeKey] = attribute;
             }
@@ -311,6 +312,14 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 25;
         }
     }
     return attributes;
+}
+
++ (RCSubscriberAttribute *)newAttributeWithDictionary:(NSDictionary<NSString *, NSObject *> *)dictionary {
+    NSString *key = (NSString *)dictionary[RCSubscriberAttribute.keyKey];
+    NSString *value = (NSString *)dictionary[RCSubscriberAttribute.valueKey];
+    BOOL isSynced = ((NSNumber *)dictionary[RCSubscriberAttribute.isSyncedKey]).boolValue;
+    NSDate *setTime = (NSDate *)dictionary[RCSubscriberAttribute.setTimeKey];
+    return [[RCSubscriberAttribute alloc] initWithKey:key value:value isSynced:isSynced setTime:setTime];
 }
 
 - (void)deleteAttributesIfSyncedForAppUserID:(NSString *)appUserID {
@@ -366,9 +375,7 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 25;
             for (NSString *attributeKey in allStoredAttributes[appUserID].allKeys) {
                 NSDictionary<NSString *, NSObject *>
                     *storedAttributesForUser = allStoredAttributes[appUserID][attributeKey];
-
-                RCSubscriberAttribute *attribute = [[RCSubscriberAttribute alloc]
-                                                                           initWithDictionary:storedAttributesForUser];
+                RCSubscriberAttribute *attribute = [RCDeviceCache newAttributeWithDictionary:storedAttributesForUser];
                 if (!attribute.isSynced) {
                     unsyncedAttributesForUser[attributeKey] = storedAttributesForUser;
                 }
