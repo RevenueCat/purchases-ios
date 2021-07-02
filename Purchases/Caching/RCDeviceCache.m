@@ -275,7 +275,7 @@ int cacheDurationInSecondsInBackground = 60 * 60 * 25;
     for (NSString *key in allAttributesObjectsByKey) {
         NSDictionary <NSString *, NSString *> *attributeAsDict =
             (NSDictionary <NSString *, NSString *> *) allAttributesObjectsByKey[key];
-        allSubscriberAttributesByKey[key] = [RCDeviceCache newAttributeWithDictionary: attributeAsDict];
+        allSubscriberAttributesByKey[key] = [RCDeviceCache newAttributeWithDictionary:attributeAsDict];
     }
     return allSubscriberAttributesByKey;
 }

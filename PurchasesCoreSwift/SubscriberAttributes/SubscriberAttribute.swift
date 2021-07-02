@@ -9,20 +9,20 @@
 import Foundation
 
 @objc(RCSubscriberAttribute) public class SubscriberAttribute: NSObject {
+    static private let backendValueKey = "value"
+    static private let backendTimestampKey = "updated_at_ms"
 
+    // TODO (Post-migration): remove public.
     @objc public static let keyKey = "key"
     @objc public static let valueKey = "value"
     @objc public static let setTimeKey = "setTime"
     @objc public static let isSyncedKey = "isSynced"
 
-    static let backendValueKey = "value"
-    static let backendTimestampKey = "updated_at_ms"
-
-    public let setTime: Date
-
     @objc public let key: String
     @objc public let value: String
     @objc public var isSynced: Bool
+
+    private let setTime: Date
 
     @objc required public init(withKey key: String, value: String?, isSynced: Bool, setTime: Date) {
         self.key = key
