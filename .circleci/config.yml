@@ -114,7 +114,7 @@ jobs:
       - install-gems
       - run:
           name: Install 12.4
-          command: xcversion simulators --install="12.4"
+          command: xcversion simulators --install="iOS 12.4 Simulator"
       - run:
           name: Run tests
           command: bundle exec fastlane scan
