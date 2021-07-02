@@ -111,9 +111,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      
       - install-gems
-      
       - run:
           name: Run tests
           command: bundle exec fastlane scan
@@ -124,6 +122,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/report.html
           destination: test_report.html
+    parallelism: 3
   apitest:
     macos:
       xcode: "12.5.1"
