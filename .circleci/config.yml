@@ -113,6 +113,9 @@ jobs:
       - checkout
       - install-gems
       - run:
+          name: Install 12.4
+          command: xcversion simulators --install="12.4"
+      - run:
           name: Run tests
           command: bundle exec fastlane scan
           environment:
@@ -122,7 +125,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/report.html
           destination: test_report.html
-    parallelism: 3
   apitest:
     macos:
       xcode: "12.5.1"
