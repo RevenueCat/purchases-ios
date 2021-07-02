@@ -825,7 +825,7 @@ class BackendTests: XCTestCase {
 
         let data = ["a" : "b", "c" : "d"];
 
-        backend?.postAttributionData(data, from: RCAttributionNetwork.appleSearchAds, forAppUserID: userID)
+        backend?.postAttributionData(data, from: AttributionNetwork.appleSearchAds, forAppUserID: userID)
 
         expect(self.httpClient.calls.count).to(equal(1))
         if (self.httpClient.calls.count == 0) {

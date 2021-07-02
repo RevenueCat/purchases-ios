@@ -10,8 +10,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "RCAttributionNetwork.h"
-
 @class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility, RCOfferings, RCOffering, RCPackage;
 @protocol RCPurchasesDelegate;
 
