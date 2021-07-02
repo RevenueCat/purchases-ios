@@ -89,14 +89,9 @@ import AppKit
         return Self.proxyURL ?? Self.defaultServerHostURL
     }
 
-    private static var privateProxyURL: URL?
     @objc public static var proxyURL: URL? {
-        get {
-            return privateProxyURL
-        }
-        set {
-            privateProxyURL = newValue
-            if let privateProxyURLString = newValue?.absoluteString {
+        didSet {
+            if let privateProxyURLString = proxyURL?.absoluteString {
                 Logger.info(Strings.configure.configuring_purchases_proxy_url_set
                                 .replacingOccurrences(of: "%@", with: privateProxyURLString))
             }
