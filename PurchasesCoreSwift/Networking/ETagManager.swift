@@ -74,7 +74,7 @@ import Foundation
 }
 
 private extension ETagManager {
-    
+
     func shouldUseCachedVersion(responseCode: Int) -> Bool {
         responseCode == HTTPStatusCodes.notModifiedResponseCode.rawValue
     }
@@ -100,9 +100,9 @@ private extension ETagManager {
     }
 
     func storeStatusCodeAndResponseIfNoError(for request: URLRequest,
-                                              statusCode: Int,
-                                          responseObject: [String: Any]?,
-                                                    eTag: String) {
+                                             statusCode: Int,
+                                             responseObject: [String: Any]?,
+                                             eTag: String) {
         if statusCode != HTTPStatusCodes.notModifiedResponseCode.rawValue &&
             statusCode < HTTPStatusCodes.internalServerError.rawValue,
            let responseObject = responseObject,
