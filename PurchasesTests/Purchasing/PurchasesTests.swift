@@ -167,7 +167,7 @@ class PurchasesTests: XCTestCase {
 
         var postedAttributionData: [RCAttributionData]?
 
-        override func postAttributionData(_ data: [AnyHashable: Any], from network: RCAttributionNetwork, forAppUserID appUserID: String, completion: ((Error?) -> Void)? = nil) {
+        override func postAttributionData(_ data: [AnyHashable: Any], from network: AttributionNetwork, forAppUserID appUserID: String, completion: ((Error?) -> Void)? = nil) {
             if (postedAttributionData == nil) {
                 postedAttributionData = []
             }
@@ -1667,7 +1667,7 @@ class PurchasesTests: XCTestCase {
     func testAddAttributionAlwaysAddsAdIdsEmptyDict() {
         setupPurchases()
 
-        Purchases.addAttributionData([:], from: RCAttributionNetwork.adjust)
+        Purchases.addAttributionData([:], from: AttributionNetwork.adjust)
 
         expect(self.backend.postedAttributionData?[0].data.count).toEventually(equal(2))
         expect(self.backend.postedAttributionData?[0].data["rc_idfa"] as? String).toEventually(equal("rc_idfa"))
@@ -1678,14 +1678,14 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [AnyHashable: Any]
 
-        Purchases.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds)
+        Purchases.addAttributionData(data, from: AttributionNetwork.appleSearchAds)
 
         for key in data.keys {
             expect(self.backend.postedAttributionData?[0].data.keys.contains(key)).toEventually(beTrue())
         }
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfa")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfv")).toEventually(beTrue())
-        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
+        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(AttributionNetwork.appleSearchAds))
         expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.purchases?.appUserID))
     }
 
@@ -2113,7 +2113,7 @@ class PurchasesTests: XCTestCase {
     func testAttributionDataIsPostponedIfThereIsNoInstance() {
         let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [AnyHashable : Any]
 
-        Purchases.addAttributionData(data, from: RCAttributionNetwork.appsFlyer)
+        Purchases.addAttributionData(data, from: AttributionNetwork.appsFlyer)
 
         setupPurchases()
 
@@ -2125,14 +2125,14 @@ class PurchasesTests: XCTestCase {
 
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfa")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfv")).toEventually(beTrue())
-        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appsFlyer))
+        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(AttributionNetwork.appsFlyer))
         expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.purchases?.appUserID))
     }
 
     func testAttributionDataSendsNetworkAppUserId() {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [AnyHashable: Any]
 
-        Purchases.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds, forNetworkUserId: "newuser")
+        Purchases.addAttributionData(data, from: AttributionNetwork.appleSearchAds, forNetworkUserId: "newuser")
 
         setupPurchases()
 
@@ -2144,14 +2144,14 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfv")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_attribution_network_id")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data["rc_attribution_network_id"] as? String).toEventually(equal("newuser"))
-        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
+        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(AttributionNetwork.appleSearchAds))
         expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.identityManager.currentAppUserID))
     }
 
     func testAttributionDataDontSendNetworkAppUserIdIfNotProvided() {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [AnyHashable: Any]
 
-        Purchases.addAttributionData(data, from: RCAttributionNetwork.appleSearchAds)
+        Purchases.addAttributionData(data, from: AttributionNetwork.appleSearchAds)
 
         setupPurchases()
 
@@ -2162,14 +2162,14 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfa")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_idfv")).toEventually(beTrue())
         expect(self.backend.postedAttributionData?[0].data.keys.contains("rc_attribution_network_id")).toEventually(beFalse())
-        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
+        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(AttributionNetwork.appleSearchAds))
         expect(self.backend.postedAttributionData?[0].networkUserId).toEventually(equal(self.identityManager.currentAppUserID))
     }
 
     func testAdClientAttributionDataIsAutomaticallyCollected() {
         setupPurchases(automaticCollection: true)
         expect(self.backend.postedAttributionData).toEventuallyNot(beNil())
-        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(RCAttributionNetwork.appleSearchAds))
+        expect(self.backend.postedAttributionData?[0].network).toEventually(equal(AttributionNetwork.appleSearchAds))
         expect((self.backend.postedAttributionData?[0].data["Version3.1"] as! NSDictionary)["iad-campaign-id"]).toEventuallyNot(beNil())
     }
 
@@ -2181,7 +2181,7 @@ class PurchasesTests: XCTestCase {
     func testAttributionDataPostponesMultiple() {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [AnyHashable: Any]
 
-        Purchases.addAttributionData(data, from: RCAttributionNetwork.adjust, forNetworkUserId: "newuser")
+        Purchases.addAttributionData(data, from: AttributionNetwork.adjust, forNetworkUserId: "newuser")
 
         setupPurchases(automaticCollection: true)
         expect(self.backend.postedAttributionData).toEventuallyNot(beNil())

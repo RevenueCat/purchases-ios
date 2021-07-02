@@ -13,6 +13,8 @@
 #import "RCProductInfo.h"
 #import "RCTypeDefsPreMigration.h"
 
+@import PurchasesCoreSwift;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCPromotionalOffer, RCSubscriberAttribute, RCSystemInfo;

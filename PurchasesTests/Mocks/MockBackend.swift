@@ -108,14 +108,14 @@ class MockBackend: RCBackend {
 
     var invokedPostAttributionData = false
     var invokedPostAttributionDataCount = 0
-    var invokedPostAttributionDataParameters: (data: [AnyHashable: Any]?, network: RCAttributionNetwork, appUserID: String?)?
+    var invokedPostAttributionDataParameters: (data: [AnyHashable: Any]?, network: AttributionNetwork, appUserID: String?)?
     var invokedPostAttributionDataParametersList = [(data: [AnyHashable: Any]?,
-        network: RCAttributionNetwork,
+                                                     network: AttributionNetwork,
         appUserID: String?)]()
     var stubbedPostAttributionDataCompletionResult: (Error?, Void)?
 
     override func postAttributionData(_ data: [AnyHashable: Any],
-                                      from network: RCAttributionNetwork,
+                                      from network: AttributionNetwork,
                                       forAppUserID appUserID: String,
                                       completion: ((Error?) -> ())?) {
         invokedPostAttributionData = true
