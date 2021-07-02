@@ -50,7 +50,7 @@ import Foundation
     }
 
     @objc public func asBackendDictionary() -> [String: Any] {
-        let timestamp = (self.setTime as NSDate).rc_millisecondsSince1970AsUInt64()
+        let timestamp = self.setTime.rc_millisecondsSince1970AsUInt64()
 
         return [Self.backendValueKey: self.value,
                 Self.backendTimestampKey: timestamp]

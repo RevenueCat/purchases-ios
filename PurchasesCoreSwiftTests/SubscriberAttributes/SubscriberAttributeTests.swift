@@ -7,7 +7,7 @@ import XCTest
 import OHHTTPStubs
 import Nimble
 
-import Purchases
+@testable import PurchasesCoreSwift
 
 class SubscriberAttributeTests: XCTestCase {
     func testInitWithKeyValueSetsRightValues() {

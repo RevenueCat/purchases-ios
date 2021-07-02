@@ -29,7 +29,6 @@
 		2D50332A2406EA61009CAE61 /* RCSubscriberAttributesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D50332B2406EA61009CAE61 /* RCSubscriberAttributesManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D5033282406EA61009CAE61 /* RCSubscriberAttributesManager.m */; };
 		2D80736A268A691A0072284E /* MockProductsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C9439E087F63ECC4F59 /* MockProductsManager.swift */; };
-		2D8DB34B24072AAE00BE3D31 /* SubscriberAttributeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */; };
 		2D8E9D482523747D00AFEE11 /* NSDictionaryExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD269162522A20A006AC4BC /* NSDictionaryExtensionsTests.swift */; };
 		2DAF814E25B24243002C621E /* RCIdentityManager+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DAF814D25B24243002C621E /* RCIdentityManager+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2DC19195255F36D10039389A /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19194255F36D10039389A /* Logger.swift */; };
@@ -146,7 +145,6 @@
 		37E35537842F30D829D76252 /* RCIdentityManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E358CFE61BD929C7FDE4CD /* RCIdentityManager.m */; };
 		37E3554836D4DA9336B9FA70 /* MockProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3572040A16F10B957563A /* MockProductDiscount.swift */; };
 		37E3555F3FB596CAB8F46868 /* BackendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E358BF58C99AC39073B96C /* BackendTests.swift */; };
-		37E355E7EB509047724841F4 /* BackendSubscriberAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357F69438004E1F443C03 /* BackendSubscriberAttributesTests.swift */; };
 		37E35616A3D5D204B8BB2503 /* RCStoreKitWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E359B77C1E588C9C009D2B /* RCStoreKitWrapper.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E356538C6A9A05887CAE12 /* NSError+RCExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E353AF2CAD3CEDE6D9B368 /* NSError+RCExtensionsTests.swift */; };
 		37E3567EAB98594B4912E305 /* RCLogUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35EB9B60477A7AD2C2EB5 /* RCLogUtils.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -222,10 +220,14 @@
 		B33C43F22672986D006B8C8C /* ObjCThrowExceptionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33C43F12672986D006B8C8C /* ObjCThrowExceptionMatcher.swift */; };
 		B33CEA9E268BC39D008A3144 /* RCTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B33CEA9D268BC39D008A3144 /* RCTransactionAPI.m */; };
 		B33CEAA0268CDCC9008A3144 /* ISOPeriodFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33CEA9F268CDCC9008A3144 /* ISOPeriodFormatter.swift */; };
+		B36824BE268FBC5B00957E4C /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B36824BD268FBC5B00957E4C /* XCTest.framework */; };
+		B36824BF268FBC8700957E4C /* SubscriberAttributeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */; };
+		B36824C1268FBCE000957E4C /* MockDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3578BD602C7B8E2274279 /* MockDateProvider.swift */; };
+		B36824C3268FBE1500957E4C /* BackendSubscriberAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357F69438004E1F443C03 /* BackendSubscriberAttributesTests.swift */; };
 		B387F47A2683FDEA0028701F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46D2683FDAC0028701F /* main.m */; };
-		B39E811D268E887500D31189 /* SubscriberAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39E811C268E887500D31189 /* SubscriberAttribute.swift */; };
 		B39E8118268E832000D31189 /* RCAttributionNetworkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B39E8117268E832000D31189 /* RCAttributionNetworkAPI.m */; };
 		B39E811A268E849900D31189 /* AttributionNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39E8119268E849900D31189 /* AttributionNetwork.swift */; };
+		B39E811D268E887500D31189 /* SubscriberAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39E811C268E887500D31189 /* SubscriberAttribute.swift */; };
 		B3AA35A0268682410007771B /* RCEntitlementInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA359D268682410007771B /* RCEntitlementInfoAPI.m */; };
 		B3AA35A1268682410007771B /* RCPurchasesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA359F268682410007771B /* RCPurchasesAPI.m */; };
 		B3AA6234268A7BA900894871 /* RCEntitlementInfosAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA6232268A7BA900894871 /* RCEntitlementInfosAPI.m */; };
@@ -537,12 +539,13 @@
 		B33CEA9C268BC39D008A3144 /* RCTransactionAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTransactionAPI.h; sourceTree = "<group>"; };
 		B33CEA9D268BC39D008A3144 /* RCTransactionAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTransactionAPI.m; sourceTree = "<group>"; };
 		B33CEA9F268CDCC9008A3144 /* ISOPeriodFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISOPeriodFormatter.swift; sourceTree = "<group>"; };
+		B36824BD268FBC5B00957E4C /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		B387F46D2683FDAC0028701F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		B387F4732683FDDB0028701F /* APITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = APITester; sourceTree = BUILT_PRODUCTS_DIR; };
-		B39E811C268E887500D31189 /* SubscriberAttribute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttribute.swift; sourceTree = "<group>"; };
 		B39E8116268E832000D31189 /* RCAttributionNetworkAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCAttributionNetworkAPI.h; sourceTree = "<group>"; };
 		B39E8117268E832000D31189 /* RCAttributionNetworkAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCAttributionNetworkAPI.m; sourceTree = "<group>"; };
 		B39E8119268E849900D31189 /* AttributionNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionNetwork.swift; sourceTree = "<group>"; };
+		B39E811C268E887500D31189 /* SubscriberAttribute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttribute.swift; sourceTree = "<group>"; };
 		B3AA359C268682410007771B /* RCEntitlementInfoAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfoAPI.h; sourceTree = "<group>"; };
 		B3AA359D268682410007771B /* RCEntitlementInfoAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfoAPI.m; sourceTree = "<group>"; };
 		B3AA359E268682410007771B /* RCPurchasesAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesAPI.h; sourceTree = "<group>"; };
@@ -570,6 +573,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B36824BE268FBC5B00957E4C /* XCTest.framework in Frameworks */,
 				B3D5CFC82672827D0056FA67 /* OHHTTPStubsSwift in Frameworks */,
 				B3D5CFC62672827D0056FA67 /* OHHTTPStubs in Frameworks */,
 				B3D5CFC42672827D0056FA67 /* Nimble in Frameworks */,
@@ -715,12 +719,13 @@
 		2DC5622224EC63430031F69B /* PurchasesCoreSwiftTests */ = {
 			isa = PBXGroup;
 			children = (
-				2DDE559824C8B5D100DCB087 /* Resources */,
-				37E35A5970D1604E8C8011FC /* TestHelpers */,
-				2DDF41DD24F6F4F9005BC22D /* Mocks */,
-				2DC5622524EC63430031F69B /* Info.plist */,
-				354235D624C11160008C84EE /* Purchasing */,
 				2DD02D5924AD128A00419CD9 /* LocalReceiptParsing */,
+				2DDF41DD24F6F4F9005BC22D /* Mocks */,
+				354235D624C11160008C84EE /* Purchasing */,
+				2DDE559824C8B5D100DCB087 /* Resources */,
+				B36824BB268FBB9B00957E4C /* SubscriberAttributes */,
+				37E35A5970D1604E8C8011FC /* TestHelpers */,
+				2DC5622524EC63430031F69B /* Info.plist */,
 				37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */,
 			);
 			path = PurchasesCoreSwiftTests;
@@ -956,6 +961,7 @@
 		3530C18722653E8F00D6DF52 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B36824BD268FBC5B00957E4C /* XCTest.framework */,
 				2DE20B9126409ECF004C597D /* StoreKit.framework */,
 				2DE20B7526408806004C597D /* StoreKitTest.framework */,
 				357C9BC022725CFA006BC624 /* iAd.framework */,
@@ -1189,7 +1195,6 @@
 		37E35E77A60AC8D3F0E1A23D /* SubscriberAttributes */ = {
 			isa = PBXGroup;
 			children = (
-				2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */,
 				37E357F69438004E1F443C03 /* BackendSubscriberAttributesTests.swift */,
 				37E3567E972B9B04FE079ABA /* SubscriberAttributesManagerTests.swift */,
 				37E3508E52201122137D4B4A /* PurchasesSubscriberAttributesTests.swift */,
@@ -1256,6 +1261,14 @@
 				B33C43F12672986D006B8C8C /* ObjCThrowExceptionMatcher.swift */,
 			);
 			path = TestHelpers;
+			sourceTree = "<group>";
+		};
+		B36824BB268FBB9B00957E4C /* SubscriberAttributes */ = {
+			isa = PBXGroup;
+			children = (
+				2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */,
+			);
+			path = SubscriberAttributes;
 			sourceTree = "<group>";
 		};
 		B387F46B2683FD730028701F /* PublicSDKAPITester */ = {
@@ -1716,6 +1729,7 @@
 			files = (
 				2DDF41E824F6F61B005BC22D /* MockSKDiscount.swift in Sources */,
 				2DDF41CB24F6F4C3005BC22D /* ASN1ObjectIdentifierBuilderTests.swift in Sources */,
+				B36824BF268FBC8700957E4C /* SubscriberAttributeTests.swift in Sources */,
 				2DDF41CF24F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift in Sources */,
 				2DDF41C924F6F4C3005BC22D /* UInt8+ExtensionsTests.swift in Sources */,
 				2D4D6AF524F717B800B656BE /* ContainerFactory.swift in Sources */,
@@ -1735,6 +1749,7 @@
 				2DC5623724EC68090031F69B /* TransactionsFactoryTests.swift in Sources */,
 				2D4D6AF424F717B800B656BE /* ASN1ObjectIdentifierEncoder.swift in Sources */,
 				2DDF41EA24F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift in Sources */,
+				B36824C1268FBCE000957E4C /* MockDateProvider.swift in Sources */,
 				2DDF41CE24F6F4C3005BC22D /* InAppPurchaseBuilderTests.swift in Sources */,
 				2DDF41E424F6F527005BC22D /* MockProductsRequestFactory.swift in Sources */,
 				2DDF41E024F6F527005BC22D /* MockInAppPurchaseBuilder.swift in Sources */,
@@ -1797,7 +1812,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D8DB34B24072AAE00BE3D31 /* SubscriberAttributeTests.swift in Sources */,
 				2DEB976B247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift in Sources */,
 				37E354BE25CE61E55E4FD89C /* MockDeviceCache.swift in Sources */,
 				37E3585E0B39722838F235BD /* MockUserDefaults.swift in Sources */,
@@ -1806,7 +1820,6 @@
 				37E35AF213F2F79CB067FDC2 /* InMemoryCachedObjectTests.swift in Sources */,
 				37E353851D42047D5B0A57D0 /* MockDateProvider.swift in Sources */,
 				B33C43F22672986D006B8C8C /* ObjCThrowExceptionMatcher.swift in Sources */,
-				37E355E7EB509047724841F4 /* BackendSubscriberAttributesTests.swift in Sources */,
 				2DD02D5724AD0B0500419CD9 /* RCIntroEligibilityTests.swift in Sources */,
 				37E354C46A8A3C2DC861C224 /* MockHTTPClient.swift in Sources */,
 				37E351A24D613F0DFE6AF05F /* MockBackend.swift in Sources */,
@@ -1829,6 +1842,7 @@
 				2D3E29CE25E8009000456FA8 /* MockAttributionTypeFactory.swift in Sources */,
 				37E3524CB70618E6C5F3DB49 /* MockPurchasesDelegate.swift in Sources */,
 				37E35B1F34D1624509012749 /* MockSubscriberAttributesManager.swift in Sources */,
+				B36824C3268FBE1500957E4C /* BackendSubscriberAttributesTests.swift in Sources */,
 				37E35AD3BB8E99D2AA325825 /* DeviceCacheSubscriberAttributesTests.swift in Sources */,
 				2D80736A268A691A0072284E /* MockProductsManager.swift in Sources */,
 				37E35F549AEB655AB6DA83B3 /* MockSKDiscount.swift in Sources */,
