@@ -17,12 +17,11 @@ import Foundation
     @objc public static let valueKey = "value"
     @objc public static let setTimeKey = "setTime"
     @objc public static let isSyncedKey = "isSynced"
+    public let setTime: Date
 
     @objc public let key: String
     @objc public let value: String
     @objc public var isSynced: Bool
-
-    private let setTime: Date
 
     @objc required public init(withKey key: String, value: String?, isSynced: Bool, setTime: Date) {
         self.key = key
