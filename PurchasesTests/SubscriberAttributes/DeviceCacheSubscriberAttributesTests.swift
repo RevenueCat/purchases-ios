@@ -21,15 +21,15 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
     private var now = Date()
     private var mockDateProvider: MockDateProvider!
-    private var subscriberAttributeHeight: RCSubscriberAttribute!
-    private var subscriberAttributeWeight: RCSubscriberAttribute!
+    private var subscriberAttributeHeight: SubscriberAttribute!
+    private var subscriberAttributeWeight: SubscriberAttribute!
 
     private func setUpSubscriberAttributes() {
         self.mockDateProvider = MockDateProvider(stubbedNow: now)
-        self.subscriberAttributeHeight = RCSubscriberAttribute(key: "height",
+        self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
                                                                value: "183",
                                                                dateProvider: mockDateProvider)
-        self.subscriberAttributeWeight = RCSubscriberAttribute(key: "weight",
+        self.subscriberAttributeWeight = SubscriberAttribute(withKey: "weight",
                                                                value: "160",
                                                                dateProvider: mockDateProvider)
     }
@@ -60,7 +60,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
 
         expect(self.mockUserDefaults.mockValues.count) == 1
 
-        let subscriberAttributeWeight = RCSubscriberAttribute(key: "weight",
+        let subscriberAttributeWeight = SubscriberAttribute(withKey: "weight",
                                                               value: "160",
                                                               dateProvider: mockDateProvider)
         self.deviceCache.store(subscriberAttributeWeight, appUserID: appUserID)
@@ -83,13 +83,13 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
     }
 
     func testStoreSubscriberAttributeUpdatesExistingValue() {
-        let oldSubscriberAttribute = RCSubscriberAttribute(key: "height",
+        let oldSubscriberAttribute = SubscriberAttribute(withKey: "height",
                                                            value: "183",
                                                            dateProvider: mockDateProvider)
         let appUserID = "waldo"
         self.deviceCache.store(oldSubscriberAttribute, appUserID: appUserID)
 
-        let newSubscriberAttribute = RCSubscriberAttribute(key: "height",
+        let newSubscriberAttribute = SubscriberAttribute(withKey: "height",
                                                            value: "250",
                                                            dateProvider: mockDateProvider)
         self.deviceCache.store(newSubscriberAttribute, appUserID: appUserID)
@@ -143,7 +143,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
     }
 
     func testStoreSubscriberAttributesDoesNotModifyExistingValuesWithDifferentKeys() {
-        let otherSubscriberAttribute = RCSubscriberAttribute(key: "age",
+        let otherSubscriberAttribute = SubscriberAttribute(withKey: "age",
                                                              value: "46",
                                                              dateProvider: mockDateProvider)
         let appUserID = "waldo"
@@ -176,7 +176,7 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let appUserID = "waldo"
         self.deviceCache.store(subscriberAttributeHeight, appUserID: appUserID)
 
-        let subscriberAttributeNewHeight = RCSubscriberAttribute(key: "height",
+        let subscriberAttributeNewHeight = SubscriberAttribute(withKey: "height",
                                                                  value: "460",
                                                                  dateProvider: mockDateProvider)
 
@@ -228,21 +228,21 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
     }
 
     func testUnsyncedAttributesByKeyReturnsCorrectlyWhenFound() {
-        let subscriberAttribute1 = RCSubscriberAttribute(key: "height",
+        let subscriberAttribute1 = SubscriberAttribute(withKey: "height",
                                                          value: "460",
                                                          isSynced: true,
                                                          setTime: now)
 
-        let subscriberAttribute2 = RCSubscriberAttribute(key: "weight",
+        let subscriberAttribute2 = SubscriberAttribute(withKey: "weight",
                                                          value: "120",
                                                          isSynced: false,
                                                          setTime: now)
 
-        let subscriberAttribute3 = RCSubscriberAttribute(key: "age",
+        let subscriberAttribute3 = SubscriberAttribute(withKey: "age",
                                                          value: "66",
                                                          isSynced: false,
                                                          setTime: now)
-        let subscriberAttribute4 = RCSubscriberAttribute(key: "device",
+        let subscriberAttribute4 = SubscriberAttribute(withKey: "device",
                                                          value: "iPhone",
                                                          isSynced: true,
                                                          setTime: now)
@@ -272,21 +272,21 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
     }
 
     func testNumberOfUnsyncedAttributesReturnsCorrectlyWhenFound() {
-        let subscriberAttribute1 = RCSubscriberAttribute(key: "height",
+        let subscriberAttribute1 = SubscriberAttribute(withKey: "height",
                                                          value: "460",
                                                          isSynced: true,
                                                          setTime: now)
 
-        let subscriberAttribute2 = RCSubscriberAttribute(key: "weight",
+        let subscriberAttribute2 = SubscriberAttribute(withKey: "weight",
                                                          value: "120",
                                                          isSynced: false,
                                                          setTime: now)
 
-        let subscriberAttribute3 = RCSubscriberAttribute(key: "age",
+        let subscriberAttribute3 = SubscriberAttribute(withKey: "age",
                                                          value: "66",
                                                          isSynced: false,
                                                          setTime: now)
-        let subscriberAttribute4 = RCSubscriberAttribute(key: "device",
+        let subscriberAttribute4 = SubscriberAttribute(withKey: "device",
                                                          value: "iPhone",
                                                          isSynced: true,
                                                          setTime: now)
@@ -307,12 +307,12 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let userID1 = "userID1"
         let userID2 = "userID2"
         let userID1Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "Led Zeppelin").asDictionary(),
-            "song": RCSubscriberAttribute(key: "song", value: "Whole Lotta Love").asDictionary()
+            "band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin").asDictionary(),
+            "song": SubscriberAttribute(withKey: "song", value: "Whole Lotta Love").asDictionary()
         ]
         let userID2Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "Metallica").asDictionary(),
-            "song": RCSubscriberAttribute(key: "song", value: "Ride the Lightning").asDictionary()
+            "band": SubscriberAttribute(withKey: "band", value: "Metallica").asDictionary(),
+            "song": SubscriberAttribute(withKey: "song", value: "Ride the Lightning").asDictionary()
         ]
         let newSubscriberAttributes = [
             userID1: userID1Attributes,
@@ -337,12 +337,12 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let userID1 = "userID1"
         let userID2 = "userID2"
         let userID1Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "Led Zeppelin").asDictionary(),
-            "song": RCSubscriberAttribute(key: "song", value: "Whole Lotta Love").asDictionary()
+            "band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin").asDictionary(),
+            "song": SubscriberAttribute(withKey: "song", value: "Whole Lotta Love").asDictionary()
         ]
         let userID2Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "Metallica").asDictionary(),
-            "song": RCSubscriberAttribute(key: "song", value: "Ride the Lightning").asDictionary()
+            "band": SubscriberAttribute(withKey: "band", value: "Metallica").asDictionary(),
+            "song": SubscriberAttribute(withKey: "song", value: "Ride the Lightning").asDictionary()
         ]
 
         let subscriberAttributesNewKey = "com.revenuecat.userdefaults.subscriberAttributes"
@@ -369,12 +369,12 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let userID1 = "userID1"
         let userID2 = "userID2"
         let userID1Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "Led Zeppelin").asDictionary(),
-            "song": RCSubscriberAttribute(key: "song", value: "Whole Lotta Love").asDictionary()
+            "band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin").asDictionary(),
+            "song": SubscriberAttribute(withKey: "song", value: "Whole Lotta Love").asDictionary()
         ]
         let userID2Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "Metallica").asDictionary(),
-            "song": RCSubscriberAttribute(key: "song", value: "Ride the Lightning").asDictionary()
+            "band": SubscriberAttribute(withKey: "band", value: "Metallica").asDictionary(),
+            "song": SubscriberAttribute(withKey: "song", value: "Ride the Lightning").asDictionary()
         ]
         let userID1AttributesKey = "com.revenuecat.userdefaults.subscriberAttributes.\(userID1)"
         let userID2AttributesKey = "com.revenuecat.userdefaults.subscriberAttributes.\(userID2)"
@@ -393,14 +393,14 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
     func testCleanupSubscriberAttributesMergesAttributesInOldAndNewFormat() {
         let userID = "userID"
 
-        let legacyAttributeBand = RCSubscriberAttribute(key: "band", value: "Led Zeppelin")
-        let legacyAttributeSong = RCSubscriberAttribute(key: "song", value: "Whole Lotta Love")
+        let legacyAttributeBand = SubscriberAttribute(withKey: "band", value: "Led Zeppelin")
+        let legacyAttributeSong = SubscriberAttribute(withKey: "song", value: "Whole Lotta Love")
         let legacyFormatAttributes = [
             legacyAttributeBand.key: legacyAttributeBand.asDictionary(),
             legacyAttributeSong.key: legacyAttributeSong.asDictionary()
         ]
-        let newAttributeBand = RCSubscriberAttribute(key: "band", value: "Metallica")
-        let newAttributeDrummer = RCSubscriberAttribute(key: "drummer", value: "Lars Ulrich")
+        let newAttributeBand = SubscriberAttribute(withKey: "band", value: "Metallica")
+        let newAttributeDrummer = SubscriberAttribute(withKey: "drummer", value: "Lars Ulrich")
         let newFormatAttributes = [
             newAttributeBand.key: newAttributeBand.asDictionary(),
             newAttributeDrummer.key: newAttributeDrummer.asDictionary()
@@ -434,15 +434,15 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let userID2 = "userID2"
         let currentUserID = "currentUserID"
         let date = Date()
-        let unsyncedAttribute = RCSubscriberAttribute(key: "song", value: "Ride the Lightning", isSynced: false, setTime: date)
+        let unsyncedAttribute = SubscriberAttribute(withKey: "song", value: "Ride the Lightning", isSynced: false, setTime: date)
         let userID1Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "Led Zeppelin", isSynced: true, setTime: date)
+            "band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin", isSynced: true, setTime: date)
                 .asDictionary(),
-            "song": RCSubscriberAttribute(key: "song", value: "Whole Lotta Love", isSynced: true, setTime: date)
+            "song": SubscriberAttribute(withKey: "song", value: "Whole Lotta Love", isSynced: true, setTime: date)
                 .asDictionary()
         ]
         let userID2Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "Metallica", isSynced: true, setTime: date)
+            "band": SubscriberAttribute(withKey: "band", value: "Metallica", isSynced: true, setTime: date)
                 .asDictionary(),
             unsyncedAttribute.key: unsyncedAttribute.asDictionary()
         ]
@@ -471,12 +471,12 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let userID1 = "userID1"
         let currentUserID = "currentUserID"
         let date = Date()
-        let unsyncedAttribute = RCSubscriberAttribute(key: "song", value: "Ride the Lightning", isSynced: false, setTime: date)
-        let syncedAttribute = RCSubscriberAttribute(key: "band", value: "Metallica", isSynced: true, setTime: date)
+        let unsyncedAttribute = SubscriberAttribute(withKey: "song", value: "Ride the Lightning", isSynced: false, setTime: date)
+        let syncedAttribute = SubscriberAttribute(withKey: "band", value: "Metallica", isSynced: true, setTime: date)
         let userID1Attributes = [
-            "band": RCSubscriberAttribute(key: "band", value: "Led Zeppelin", isSynced: true, setTime: date)
+            "band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin", isSynced: true, setTime: date)
                 .asDictionary(),
-            "song": RCSubscriberAttribute(key: "song", value: "Whole Lotta Love", isSynced: true, setTime: date)
+            "song": SubscriberAttribute(withKey: "song", value: "Whole Lotta Love", isSynced: true, setTime: date)
                 .asDictionary()
         ]
         let currentUserIDAttributes = [
@@ -509,11 +509,11 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
     // mark: unsyncedAttributesForAllUsers
 
     func testUnsyncedAttributesByKeyForAllUsersReturnsCorrectly() {
-        let attributeLedZeppelin = RCSubscriberAttribute(key: "band", value: "Led Zeppelin")
-        let attributeWholeLottaLove = RCSubscriberAttribute(key: "song", value: "Whole Lotta Love")
-        let attributeMetallica = RCSubscriberAttribute(key: "band", value: "Metallica")
-        let attributeRideTheLightning = RCSubscriberAttribute(key: "song", value: "Ride the Lightning")
-        let syncedAttribute = RCSubscriberAttribute(key: "album", value: "... And Justice for All", isSynced: true,
+        let attributeLedZeppelin = SubscriberAttribute(withKey: "band", value: "Led Zeppelin")
+        let attributeWholeLottaLove = SubscriberAttribute(withKey: "song", value: "Whole Lotta Love")
+        let attributeMetallica = SubscriberAttribute(withKey: "band", value: "Metallica")
+        let attributeRideTheLightning = SubscriberAttribute(withKey: "song", value: "Ride the Lightning")
+        let syncedAttribute = SubscriberAttribute(withKey: "album", value: "... And Justice for All", isSynced: true,
                                                     setTime: Date())
         mockUserDefaults.mockValues = [
             "com.revenuecat.userdefaults.subscriberAttributes": [
@@ -543,9 +543,9 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
     }
 
     func testUnsyncedAttributesByKeyForAllUsersOnlyIncludesUsersWithUnsyncedAttributes() {
-        let attributeLedZeppelin = RCSubscriberAttribute(key: "band", value: "Led Zeppelin")
-        let attributeWholeLottaLove = RCSubscriberAttribute(key: "song", value: "Whole Lotta Love")
-        let syncedAttribute = RCSubscriberAttribute(key: "album", value: "... And Justice for All", isSynced: true,
+        let attributeLedZeppelin = SubscriberAttribute(withKey: "band", value: "Led Zeppelin")
+        let attributeWholeLottaLove = SubscriberAttribute(withKey: "song", value: "Whole Lotta Love")
+        let syncedAttribute = SubscriberAttribute(withKey: "album", value: "... And Justice for All", isSynced: true,
                                                     setTime: Date())
         mockUserDefaults.mockValues = [
             "com.revenuecat.userdefaults.subscriberAttributes": [
@@ -572,11 +572,11 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let userID = "userID"
         let subscriberAttributes = [
             userID: [
-                "band": RCSubscriberAttribute(key: "band",
+                "band": SubscriberAttribute(withKey: "band",
                                               value: "Led Zeppelin",
                                               isSynced: true,
                                               setTime: Date()).asDictionary(),
-                "song": RCSubscriberAttribute(key: "song",
+                "song": SubscriberAttribute(withKey: "song",
                                               value: "Whole Lotta Love",
                                               isSynced: true,
                                               setTime: Date()).asDictionary()
@@ -599,17 +599,17 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let userIDWithUnsyncedAttributes = "userIDWithUnsyncedAttributes"
         let subscriberAttributes: [String: [String: [String: NSObject]]] = [
             userIDToDelete: [
-                "band": RCSubscriberAttribute(key: "band",
+                "band": SubscriberAttribute(withKey: "band",
                                               value: "Led Zeppelin",
                                               isSynced: true,
                                               setTime: Date()).asDictionary(),
-                "song": RCSubscriberAttribute(key: "song",
+                "song": SubscriberAttribute(withKey: "song",
                                               value: "Whole Lotta Love",
                                               isSynced: true,
                                               setTime: Date()).asDictionary()
             ],
             userIDWithUnsyncedAttributes: [
-                "band": RCSubscriberAttribute(key: "band",
+                "band": SubscriberAttribute(withKey: "band",
                                               value: "Metallica").asDictionary()
             ]
         ]
@@ -629,8 +629,8 @@ class DeviceCacheSubscriberAttributesTests: XCTestCase {
         let userID = "userID"
         let subscriberAttributes = [
             userID: [
-                "band": RCSubscriberAttribute(key: "band", value: "Led Zeppelin").asDictionary(),
-                "song": RCSubscriberAttribute(key: "song", value: "Whole Lotta Love").asDictionary()
+                "band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin").asDictionary(),
+                "song": SubscriberAttribute(withKey: "song", value: "Whole Lotta Love").asDictionary()
             ]
         ]
         mockUserDefaults.mockValues = [

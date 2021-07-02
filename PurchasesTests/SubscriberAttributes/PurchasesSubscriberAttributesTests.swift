@@ -21,9 +21,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     let mockDeviceCache = MockDeviceCache()
     let mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user");
     let mockSubscriberAttributesManager = MockSubscriberAttributesManager()
-    var subscriberAttributeHeight: RCSubscriberAttribute!
-    var subscriberAttributeWeight: RCSubscriberAttribute!
-    var mockAttributes: [String: RCSubscriberAttribute]!
+    var subscriberAttributeHeight: SubscriberAttribute!
+    var subscriberAttributeWeight: SubscriberAttribute!
+    var mockAttributes: [String: SubscriberAttribute]!
     let systemInfo: SystemInfo = try! MockSystemInfo(platformFlavor: nil,
                                                        platformFlavorVersion: nil,
                                                        finishTransactions: true)
@@ -40,10 +40,10 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     override func setUp() {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
-        self.subscriberAttributeHeight = RCSubscriberAttribute(key: "height",
-                                                               value: "183")
-        self.subscriberAttributeWeight = RCSubscriberAttribute(key: "weight",
-                                                               value: "160")
+        self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
+                                                             value: "183")
+        self.subscriberAttributeWeight = SubscriberAttribute(withKey: "weight",
+                                                             value: "160")
         self.mockAttributes = [
             subscriberAttributeHeight.key: subscriberAttributeHeight,
             subscriberAttributeWeight.key: subscriberAttributeWeight

@@ -87,7 +87,7 @@ class PurchasesTests: XCTestCase {
                                       productInfo: RCProductInfo?,
                                       presentedOfferingIdentifier: String?,
                                       observerMode: Bool,
-                                      subscriberAttributes: [String: RCSubscriberAttribute]?,
+                                      subscriberAttributes: [String: SubscriberAttribute]?,
                                       completion: @escaping RCBackendPurchaserInfoResponseHandler) {
             postReceiptDataCalled = true
             postedReceiptData = data

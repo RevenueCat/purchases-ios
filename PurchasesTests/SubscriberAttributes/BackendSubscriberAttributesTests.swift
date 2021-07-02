@@ -15,8 +15,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
     let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
 
     var dateProvider: MockDateProvider!
-    var subscriberAttribute1: RCSubscriberAttribute!
-    var subscriberAttribute2: RCSubscriberAttribute!
+    var subscriberAttribute1: SubscriberAttribute!
+    var subscriberAttribute2: SubscriberAttribute!
     var mockHTTPClient: MockHTTPClient!
     var backend: RCBackend!
 
@@ -37,11 +37,11 @@ class BackendSubscriberAttributesTests: XCTestCase {
         guard let backend = RCBackend(httpClient: mockHTTPClient, apiKey: "key") else { fatalError() }
         self.backend = backend
         dateProvider = MockDateProvider(stubbedNow: now)
-        subscriberAttribute1 = RCSubscriberAttribute(key: "a key",
+        subscriberAttribute1 = SubscriberAttribute(withKey: "a key",
                                                      value: "a value",
                                                      dateProvider: dateProvider)
 
-        subscriberAttribute2 = RCSubscriberAttribute(key: "another key",
+        subscriberAttribute2 = SubscriberAttribute(withKey: "another key",
                                                      value: "another value",
                                                      dateProvider: dateProvider)
     }
@@ -264,7 +264,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
     func testPostReceiptWithSubscriberAttributesSendsThemCorrectly() {
         var completionCallCount = 0
 
-        let subscriberAttributesByKey: [String: RCSubscriberAttribute] = [
+        let subscriberAttributesByKey: [String: SubscriberAttribute] = [
             subscriberAttribute1.key: subscriberAttribute1,
             subscriberAttribute2.key: subscriberAttribute2
         ]
@@ -339,7 +339,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         ]
         self.mockHTTPClient.stubbedCompletionResponse = attributesErrorsResponse
 
-        let subscriberAttributesByKey: [String: RCSubscriberAttribute] = [
+        let subscriberAttributesByKey: [String: SubscriberAttribute] = [
             subscriberAttribute1.key: subscriberAttribute1,
             subscriberAttribute2.key: subscriberAttribute2
         ]
@@ -376,7 +376,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         response[RCAttributeErrorsResponseKey] = attributeErrors
         self.mockHTTPClient.stubbedCompletionResponse = response
 
-        let subscriberAttributesByKey: [String: RCSubscriberAttribute] = [
+        let subscriberAttributesByKey: [String: SubscriberAttribute] = [
             subscriberAttribute1.key: subscriberAttribute1,
             subscriberAttribute2.key: subscriberAttribute2
         ]

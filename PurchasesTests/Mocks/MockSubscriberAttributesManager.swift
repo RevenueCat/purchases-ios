@@ -213,9 +213,9 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
     var invokedUnsyncedAttributesByKeyCount = 0
     var invokedUnsyncedAttributesByKeyParameters: (appUserID: String, Void)?
     var invokedUnsyncedAttributesByKeyParametersList = [(appUserID: String, Void)]()
-    var stubbedUnsyncedAttributesByKeyResult: [String: RCSubscriberAttribute]! = [:]
+    var stubbedUnsyncedAttributesByKeyResult: [String: SubscriberAttribute]! = [:]
 
-    override func unsyncedAttributesByKey(forAppUserID appUserID: String) -> [String: RCSubscriberAttribute] {
+    override func unsyncedAttributesByKey(forAppUserID appUserID: String) -> [String: SubscriberAttribute] {
         invokedUnsyncedAttributesByKey = true
         invokedUnsyncedAttributesByKeyCount += 1
         invokedUnsyncedAttributesByKeyParameters = (appUserID, ())
@@ -225,10 +225,10 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
 
     var invokedMarkAttributes = false
     var invokedMarkAttributesCount = 0
-    var invokedMarkAttributesParameters: (syncedAttributes: [String: RCSubscriberAttribute], appUserID: String)?
-    var invokedMarkAttributesParametersList = [(syncedAttributes: [String: RCSubscriberAttribute], appUserID: String)]()
+    var invokedMarkAttributesParameters: (syncedAttributes: [String: SubscriberAttribute], appUserID: String)?
+    var invokedMarkAttributesParametersList = [(syncedAttributes: [String: SubscriberAttribute], appUserID: String)]()
 
-    override func markAttributes(asSynced syncedAttributes: [String: RCSubscriberAttribute],
+    override func markAttributes(asSynced syncedAttributes: [String: SubscriberAttribute],
                                  appUserID: String) {
         invokedMarkAttributes = true
         invokedMarkAttributesCount += 1

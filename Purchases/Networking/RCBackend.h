@@ -9,10 +9,9 @@
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
 
-#import "RCSubscriberAttribute.h"
-#import "RCProductInfo.h"
 #import "RCAttributionNetwork.h"
-
+#import "RCProductInfo.h"
+#import "RCTypeDefsPreMigration.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
