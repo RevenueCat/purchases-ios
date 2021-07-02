@@ -5,5 +5,7 @@
 # fastlane scan --help
 
 scheme("Unit Tests")
-devices(["iPhone 6 (12.4)", "iPhone 11 Pro (14.2)"])
+devices(["iPhone 6 (12.4)", "iPhone 11 Pro (14.5)"])
+concurrent_workers(2)
+max_concurrent_simulators(4)
 
