@@ -64,7 +64,6 @@ import Foundation
 
         if self === attribute {
             return true
-
         } else if self.key != attribute.key {
             return false
         } else if self.value != attribute.value {

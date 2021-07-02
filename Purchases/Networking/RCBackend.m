@@ -159,7 +159,7 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
                 productInfo:(nullable RCProductInfo *)productInfo
 presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                observerMode:(BOOL)observerMode
-       subscriberAttributes:(nullable NSDictionary<NSString *, RCSubscriberAttribute *> *)subscriberAttributesByKey
+       subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributesByKey
                  completion:(RCBackendPurchaserInfoResponseHandler)completion {
     NSString *fetchToken = [data base64EncodedStringWithOptions:0];
     NSMutableDictionary *body = [NSMutableDictionary dictionaryWithDictionary:
