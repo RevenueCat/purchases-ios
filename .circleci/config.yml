@@ -113,6 +113,24 @@ jobs:
       - checkout
       - install-gems
       - run:
+          name: Run tests
+          command: bundle exec fastlane scan
+          environment:
+            SCAN_SCHEME: Unit Tests
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/report.html
+          destination: test_report.html
+  testOlderiOS:
+    macos:
+      xcode: "12.5.1"
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - install-gems
+      - run:
           name: Install 12.4
           command: xcversion simulators --install="iOS 12.4 Simulator"
       - run:
