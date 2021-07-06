@@ -261,7 +261,7 @@ class BackendTests: XCTestCase {
                                  completion: { (purchaserInfo, error) in
             completionCalled += 1
         })
-        let productInfo: RCProductInfo = .createMockProductInfo(currencyCode: "USD")
+        let productInfo: ProductInfo = .createMockProductInfo(currencyCode: "USD")
 
         backend?.postReceiptData(receiptData2,
                                  appUserID: userID,
@@ -352,10 +352,10 @@ class BackendTests: XCTestCase {
 
         let currencyCode = "BFD"
 
-        let paymentMode: RCPaymentMode = .none
+        let paymentMode: ProductInfo.PaymentMode = .none
 
         var completionCalled = false
-        let productInfo: RCProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
+        let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
                                                                 paymentMode: paymentMode,
                                                                 currencyCode: currencyCode,
                                                                 price: price,
@@ -409,7 +409,7 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
 
-        let productInfo: RCProductInfo = .createMockProductInfo()
+        let productInfo: ProductInfo = .createMockProductInfo()
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
                                  isRestore: false,
@@ -428,10 +428,10 @@ class BackendTests: XCTestCase {
         expect(call.body!["price"]).toNot(beNil())
     }
 
-    func postPaymentMode(paymentMode: RCPaymentMode) {
+    func postPaymentMode(paymentMode: ProductInfo.PaymentMode) {
         var completionCalled = false
 
-        let productInfo: RCProductInfo = .createMockProductInfo(paymentMode: paymentMode)
+        let productInfo: ProductInfo = .createMockProductInfo(paymentMode: paymentMode)
 
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
@@ -1005,6 +1005,7 @@ class BackendTests: XCTestCase {
         expect((receivedError! as NSError).code) == Purchases.ErrorCode.invalidAppUserIdError.rawValue
     }
 
+    @available(iOS 11.2, *)
     func testDoesntCacheForDifferentDiscounts() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
@@ -1025,11 +1026,8 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        let discount = RCPromotionalOffer()
-        discount.offerIdentifier = "offerid"
-        discount.paymentMode = .payAsYouGo
-        discount.price = 12
-        let productInfo: RCProductInfo = .createMockProductInfo(discounts: [discount])
+        let discount = PromotionalOffer(offerIdentifier: "offerid", price: 12, paymentMode: .payAsYouGo)
+        let productInfo: ProductInfo = .createMockProductInfo(discounts: [discount])
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
@@ -1045,6 +1043,7 @@ class BackendTests: XCTestCase {
         expect(completionCalled).toEventually(equal(2))
     }
 
+    @available(iOS 11.2, *)
     func testPostsReceiptDataWithDiscountInfoCorrectly() {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
@@ -1055,16 +1054,13 @@ class BackendTests: XCTestCase {
         
         let currencyCode = "BFD"
         
-        let paymentMode: RCPaymentMode = .none
+        let paymentMode: ProductInfo.PaymentMode = .none
         
         var completionCalled = false
-        
-        let discount = RCPromotionalOffer()
-        discount.offerIdentifier = "offerid"
-        discount.paymentMode = .payAsYouGo
-        discount.price = 12
 
-        let productInfo: RCProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
+        let discount = PromotionalOffer(offerIdentifier: "offerid", price: 12, paymentMode: .payAsYouGo)
+
+        let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: productIdentifier,
                                                                 paymentMode: paymentMode,
                                                                 currencyCode: currencyCode,
                                                                 price: price,
@@ -1385,11 +1381,8 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        let discount = RCPromotionalOffer()
-        discount.offerIdentifier = "offerid"
-        discount.paymentMode = .payAsYouGo
-        discount.price = 12
-
+        _ = PromotionalOffer(offerIdentifier: "offerid", price: 12, paymentMode: .payAsYouGo)
+        
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,

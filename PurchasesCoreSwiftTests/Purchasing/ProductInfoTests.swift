@@ -1,18 +1,19 @@
 import XCTest
 import Nimble
 
-import Purchases
+import PurchasesCoreSwift
 
+@available(iOS 12.2, *)
 class ProductInfoTests: XCTestCase {
     func testAsDictionaryConvertsProductIdentifierCorrectly() {
         let productIdentifier = "cool_product"
-        let productInfo: RCProductInfo = .createMockProductInfo(productIdentifier: productIdentifier)
+        let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: productIdentifier)
         expect(productInfo.asDictionary()["product_id"] as? String) == productIdentifier
     }
 
     func testAsDictionaryConvertsPaymentModeCorrectly() {
-        var paymentMode: RCPaymentMode = .none
-        var productInfo: RCProductInfo = .createMockProductInfo(paymentMode: paymentMode)
+        var paymentMode: ProductInfo.PaymentMode = .none
+        var productInfo: ProductInfo = .createMockProductInfo(paymentMode: paymentMode)
         expect(productInfo.asDictionary()["payment_mode"]).to(beNil())
 
         paymentMode = .payAsYouGo
@@ -36,25 +37,25 @@ class ProductInfoTests: XCTestCase {
 
     func testAsDictionaryConvertsCurrencyCodeCorrectly() {
         let currencyCode = "USD"
-        let productInfo: RCProductInfo = .createMockProductInfo(currencyCode: currencyCode)
+        let productInfo: ProductInfo = .createMockProductInfo(currencyCode: currencyCode)
         expect(productInfo.asDictionary()["currency"] as? String) == currencyCode
     }
 
     func testAsDictionaryConvertsPriceCorrectly() {
         let price: NSDecimalNumber = 9.99
-        let productInfo: RCProductInfo = .createMockProductInfo(price: price)
+        let productInfo: ProductInfo = .createMockProductInfo(price: price)
         expect(productInfo.asDictionary()["price"] as? NSDecimalNumber) == price
     }
 
     func testAsDictionaryConvertsNormalDurationCorrectly() {
         let normalDuration = "P3Y"
-        let productInfo: RCProductInfo = .createMockProductInfo(normalDuration: normalDuration)
+        let productInfo: ProductInfo = .createMockProductInfo(normalDuration: normalDuration)
         expect(productInfo.asDictionary()["normal_duration"] as? String) == normalDuration
     }
 
     func testAsDictionaryConvertsIntroDurationCorrectlyForFreeTrial() {
         let trialDuration = "P3M"
-        let productInfo: RCProductInfo = .createMockProductInfo(introDuration: trialDuration,
+        let productInfo: ProductInfo = .createMockProductInfo(introDuration: trialDuration,
                                                                 introDurationType: .freeTrial)
         expect(productInfo.asDictionary()["trial_duration"] as? String) == trialDuration
         expect(productInfo.asDictionary()["intro_duration"]).to(beNil())
@@ -62,7 +63,7 @@ class ProductInfoTests: XCTestCase {
 
     func testAsDictionaryConvertsIntroDurationCorrectlyForIntroPrice() {
         let introDuration = "P3M"
-        let productInfo: RCProductInfo = .createMockProductInfo(introDuration: introDuration,
+        let productInfo: ProductInfo = .createMockProductInfo(introDuration: introDuration,
                                                                 introDurationType: .introPrice)
         expect(productInfo.asDictionary()["intro_duration"] as? String) == introDuration
         expect(productInfo.asDictionary()["trial_duration"]).to(beNil())
@@ -70,7 +71,7 @@ class ProductInfoTests: XCTestCase {
 
     func testAsDictionaryDoesntAddIntroDurationIfDurationTypeNone() {
         let introDuration = "P3M"
-        let productInfo: RCProductInfo = .createMockProductInfo(introDuration: introDuration,
+        let productInfo: ProductInfo = .createMockProductInfo(introDuration: introDuration,
                                                                 introDurationType: .none)
         expect(productInfo.asDictionary()["trial_duration"]).to(beNil())
         expect(productInfo.asDictionary()["intro_duration"]).to(beNil())
@@ -78,34 +79,31 @@ class ProductInfoTests: XCTestCase {
 
     func testAsDictionaryConvertsIntroPriceCorrectly() {
         let introPrice: NSDecimalNumber = 6.99
-        let productInfo: RCProductInfo = .createMockProductInfo(introPrice: 6.99)
+        let productInfo: ProductInfo = .createMockProductInfo(introPrice: 6.99)
         expect(productInfo.asDictionary()["introductory_price"] as? NSDecimalNumber) == introPrice
     }
 
     func testAsDictionaryConvertsSubscriptionGroupCorrectly() {
         let subscriptionGroup = "cool_group"
-        let productInfo: RCProductInfo = .createMockProductInfo(subscriptionGroup: subscriptionGroup)
+        let productInfo: ProductInfo = .createMockProductInfo(subscriptionGroup: subscriptionGroup)
         expect(productInfo.asDictionary()["subscription_group_id"] as? String) == subscriptionGroup
     }
 
     func testAsDictionaryConvertsDiscountsCorrectly() {
-        if #available(iOS 12.2, macOS 10.14.4, *) {
-            let discount1 = RCPromotionalOffer()
-            discount1.offerIdentifier = "offerid1"
-            discount1.paymentMode = .payAsYouGo
-            discount1.price = 11
+        if #available(macOS 10.14.4, *) {
 
-            let discount2 = RCPromotionalOffer()
-            discount2.offerIdentifier = "offerid2"
-            discount2.paymentMode = .payUpFront
-            discount2.price = 12
 
-            let discount3 = RCPromotionalOffer()
-            discount3.offerIdentifier = "offerid3"
-            discount3.paymentMode = .freeTrial
-            discount3.price = 13
+            let discount1 = PromotionalOffer(withProductDiscount: MockSKProductDiscount(identifier: "offerid1",
+                                                                                        paymentMode: .payAsYouGo,
+                                                                                        price: 11))
+            let discount2 = PromotionalOffer(withProductDiscount: MockSKProductDiscount(identifier: "offerid2",
+                                                                                        paymentMode: .payUpFront,
+                                                                                        price: 12))
+            let discount3 = PromotionalOffer(withProductDiscount: MockSKProductDiscount(identifier: "offerid3",
+                                                                                        paymentMode: .freeTrial,
+                                                                                        price: 13))
 
-            let productInfo: RCProductInfo = .createMockProductInfo(discounts: [discount1, discount2, discount3])
+            let productInfo: ProductInfo = .createMockProductInfo(discounts: [discount1, discount2, discount3])
 
             expect(productInfo.asDictionary()["offers"] as? [[String: NSObject]]).toNot(beNil())
             guard let receivedOffers = productInfo.asDictionary()["offers"] as? [[String: NSObject]] else { fatalError() }
@@ -125,23 +123,18 @@ class ProductInfoTests: XCTestCase {
     }
 
     func testCacheKey() {
-        if #available(iOS 12.2, macOS 10.14.4, *) {
-            let discount1 = RCPromotionalOffer()
-            discount1.offerIdentifier = "offerid1"
-            discount1.paymentMode = .payAsYouGo
-            discount1.price = 11
+        if #available(macOS 10.14.4, *) {
+            let discount1 = PromotionalOffer(withProductDiscount: MockSKProductDiscount(identifier: "offerid1",
+                                                                                        paymentMode: .payAsYouGo,
+                                                                                        price: 11))
+            let discount2 = PromotionalOffer(withProductDiscount: MockSKProductDiscount(identifier: "offerid2",
+                                                                                        paymentMode: .payUpFront,
+                                                                                        price: 12))
+            let discount3 = PromotionalOffer(withProductDiscount: MockSKProductDiscount(identifier: "offerid3",
+                                                                                        paymentMode: .freeTrial,
+                                                                                        price: 13))
 
-            let discount2 = RCPromotionalOffer()
-            discount2.offerIdentifier = "offerid2"
-            discount2.paymentMode = .payUpFront
-            discount2.price = 12
-
-            let discount3 = RCPromotionalOffer()
-            discount3.offerIdentifier = "offerid3"
-            discount3.paymentMode = .freeTrial
-            discount3.price = 13
-
-            let productInfo: RCProductInfo = .createMockProductInfo(productIdentifier: "cool_product",
+            let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: "cool_product",
                                                                     paymentMode: .payUpFront,
                                                                     currencyCode: "UYU",
                                                                     price: 49.99,
@@ -151,7 +144,7 @@ class ProductInfoTests: XCTestCase {
                                                                     introPrice: 0,
                                                                     subscriptionGroup: "cool_group",
                                                                     discounts: [discount1, discount2, discount3])
-            expect(productInfo.cacheKey()) == "cool_product-49.99-UYU-1-0-cool_group-P3Y-P3W-0-offerid1-offerid2-offerid3"
+            expect(productInfo.cacheKey) == "cool_product-49.99-UYU-1-0-cool_group-P3Y-P3W-0-offerid1-offerid2-offerid3"
         }
     }
 }

@@ -8,8 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
-
-#import "RCProductInfo.h"
 #import "RCTypeDefsPreMigration.h"
 
 @import PurchasesCoreSwift;

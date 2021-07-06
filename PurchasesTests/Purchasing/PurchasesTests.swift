@@ -68,11 +68,11 @@ class PurchasesTests: XCTestCase {
         var postedIsRestore: Bool?
         var postedProductID: String?
         var postedPrice: NSDecimalNumber?
-        var postedPaymentMode: RCPaymentMode?
+        var postedPaymentMode: ProductInfo.PaymentMode?
         var postedIntroPrice: NSDecimalNumber?
         var postedCurrencyCode: String?
         var postedSubscriptionGroup: String?
-        var postedDiscounts: Array<RCPromotionalOffer>?
+        var postedDiscounts: Array<PromotionalOffer>?
         var postedOfferingIdentifier: String?
         var postedObserverMode: Bool?
 
@@ -84,7 +84,7 @@ class PurchasesTests: XCTestCase {
         override func postReceiptData(_ data: Data,
                                       appUserID: String,
                                       isRestore: Bool,
-                                      productInfo: RCProductInfo?,
+                                      productInfo: ProductInfo?,
                                       presentedOfferingIdentifier: String?,
                                       observerMode: Bool,
                                       subscriberAttributes: [String: SubscriberAttribute]?,
@@ -668,10 +668,10 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postedPrice).to(equal(product.price))
 
             if #available(iOS 11.2, *) {
-                expect(self.backend.postedPaymentMode).to(equal(RCPaymentMode.payAsYouGo))
+                expect(self.backend.postedPaymentMode).to(equal(ProductInfo.PaymentMode.payAsYouGo))
                 expect(self.backend.postedIntroPrice).to(equal(product.introductoryPrice?.price))
             } else {
-                expect(self.backend.postedPaymentMode).to(equal(RCPaymentMode.none))
+                expect(self.backend.postedPaymentMode).to(equal(ProductInfo.PaymentMode.none))
                 expect(self.backend.postedIntroPrice).to(beNil())
             }
 
@@ -681,9 +681,10 @@ class PurchasesTests: XCTestCase {
 
             if #available(iOS 12.2, *) {
                 expect(self.backend.postedDiscounts?.count).to(equal(1))
-                expect(self.backend.postedDiscounts?[0].offerIdentifier).to(equal("discount_id"))
-                expect(self.backend.postedDiscounts?[0].price).to(equal(1.99))
-                expect(self.backend.postedDiscounts?[0].paymentMode).to(equal(RCPaymentMode.payAsYouGo))
+                let postedDiscount: PromotionalOffer = self.backend.postedDiscounts![0]
+                expect(postedDiscount.offerIdentifier).to(equal("discount_id"))
+                expect(postedDiscount.price).to(equal(1.99))
+                expect(postedDiscount.paymentMode.rawValue).to(equal(PaymentMode.payAsYouGo.rawValue))
             }
 
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))

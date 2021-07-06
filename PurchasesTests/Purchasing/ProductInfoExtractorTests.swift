@@ -52,13 +52,13 @@ class ProductInfoExtractorTests: XCTestCase {
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.paymentMode.rawValue) == RCPaymentMode.freeTrial.rawValue
+            expect(receivedProductInfo.paymentMode.rawValue) == ProductInfo.PaymentMode.freeTrial.rawValue
         } else {
             let productInfoExtractor = RCProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.paymentMode) == RCPaymentMode.none
+            expect(receivedProductInfo.paymentMode) == ProductInfo.PaymentMode.none
         }
     }
 
@@ -203,11 +203,11 @@ class ProductInfoExtractorTests: XCTestCase {
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.discounts.count) == 1
-            let receivedPromotionalOffer = receivedProductInfo.discounts[0]
-            expect(receivedPromotionalOffer.offerIdentifier) == discountID
-            expect(receivedPromotionalOffer.price) == price
-            expect(receivedPromotionalOffer.paymentMode.rawValue) == Int(paymentMode.rawValue)
+            expect(receivedProductInfo.discounts?.count) == 1
+            let receivedPromotionalOffer = receivedProductInfo.discounts?[0]
+            expect(receivedPromotionalOffer?.offerIdentifier) == discountID
+            expect(receivedPromotionalOffer?.price) == price
+            expect(receivedPromotionalOffer?.paymentMode.rawValue) == Int(paymentMode.rawValue)
         } else {
             let productInfoExtractor = RCProductInfoExtractor()
 
