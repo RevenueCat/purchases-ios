@@ -242,6 +242,7 @@
 		B3D5CFC82672827D0056FA67 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFC72672827D0056FA67 /* OHHTTPStubsSwift */; };
 		B3D5CFCA267282860056FA67 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = B3D5CFC9267282860056FA67 /* Nimble */; };
 		B3DDB55926854865008CCF23 /* PurchaseOwnershipType.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */; };
+		B3DF6A4E269522040030D57C /* RCIntroEligibilityAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3DF6A4D269522040030D57C /* RCIntroEligibilityAPI.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -559,6 +560,8 @@
 		B3D3C46F26856AFF00CB3C21 /* APITester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APITester.swift; sourceTree = "<group>"; };
 		B3D3C4712685784800CB3C21 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseOwnershipType.swift; sourceTree = "<group>"; };
+		B3DF6A4C269522040030D57C /* RCIntroEligibilityAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibilityAPI.h; sourceTree = "<group>"; };
+		B3DF6A4D269522040030D57C /* RCIntroEligibilityAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCIntroEligibilityAPI.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1283,6 +1286,8 @@
 				B3AA359D268682410007771B /* RCEntitlementInfoAPI.m */,
 				B3AA6233268A7BA900894871 /* RCEntitlementInfosAPI.h */,
 				B3AA6232268A7BA900894871 /* RCEntitlementInfosAPI.m */,
+				B3DF6A4C269522040030D57C /* RCIntroEligibilityAPI.h */,
+				B3DF6A4D269522040030D57C /* RCIntroEligibilityAPI.m */,
 				B3AA359E268682410007771B /* RCPurchasesAPI.h */,
 				B3AA359F268682410007771B /* RCPurchasesAPI.m */,
 				B33CEA9C268BC39D008A3144 /* RCTransactionAPI.h */,
@@ -1882,6 +1887,7 @@
 				B3AA35A1268682410007771B /* RCPurchasesAPI.m in Sources */,
 				B33CEA9E268BC39D008A3144 /* RCTransactionAPI.m in Sources */,
 				B3AA35A0268682410007771B /* RCEntitlementInfoAPI.m in Sources */,
+				B3DF6A4E269522040030D57C /* RCIntroEligibilityAPI.m in Sources */,
 				B3AA6234268A7BA900894871 /* RCEntitlementInfosAPI.m in Sources */,
 				B387F47A2683FDEA0028701F /* main.m in Sources */,
 				B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */,
