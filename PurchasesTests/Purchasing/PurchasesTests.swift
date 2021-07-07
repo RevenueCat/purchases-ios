@@ -112,12 +112,15 @@ class PurchasesTests: XCTestCase {
 
         var postedProductIdentifiers: [String]?
 
-        override func getIntroEligibility(forAppUserID appUserID: String, receiptData: Data?, productIdentifiers: [String], completion: @escaping RCIntroEligibilityResponseHandler) {
+        override func getIntroEligibility(forAppUserID appUserID: String,
+                                          receiptData: Data?,
+                                          productIdentifiers: [String],
+                                          completion: @escaping RCIntroEligibilityResponseHandler) {
             postedProductIdentifiers = productIdentifiers
 
-            var eligibilities = [String: RCIntroEligibility]()
+            var eligibilities = [String: IntroEligibility]()
             for productID in productIdentifiers {
-                eligibilities[productID] = RCIntroEligibility(eligibilityStatus: RCIntroEligibilityStatus.eligible)
+                eligibilities[productID] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)
             }
 
             completion(eligibilities)

@@ -13,7 +13,6 @@
 #import "RCBackend.h"
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
-#import "RCIntroEligibility+Protected.h"
 #import "RCLogUtils.h"
 #import "RCOfferingsFactory.h"
 #import "RCProductInfoExtractor.h"
@@ -731,7 +730,13 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                         NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
                         
                         for (NSString *key in receivedEligibility.allKeys) {
-                            convertedEligibility[key] = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedEligibility[key]];
+                            NSError *error = nil;
+                            RCIntroEligibility *eligibility = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedEligibility[key] error:&error];
+                            if (!eligibility) {
+                                RCErrorLog(@"Unable to create an RCIntroEligibility: %@", error.localizedDescription);
+                            } else {
+                                convertedEligibility[key] = eligibility;
+                            }
                         }
                         
                         CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);

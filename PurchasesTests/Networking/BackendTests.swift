@@ -649,7 +649,7 @@ class BackendTests: XCTestCase {
         let path = "/subscribers/" + userID + "/intro_eligibility"
         httpClient.mock(requestPath: path, response: response)
 
-        var eligibility: [String: RCIntroEligibility]?
+        var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc", "productd"]
         backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(1...3), productIdentifiers: products, completion: {(productEligibility) in
@@ -672,10 +672,10 @@ class BackendTests: XCTestCase {
 
         expect(eligibility).toEventuallyNot(beNil())
         expect(eligibility?.keys).toEventually(contain(products))
-        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibilityStatus.eligible))
-        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibilityStatus.ineligible))
-        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
-        expect(eligibility!["productd"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
+        expect(eligibility!["producta"]!.status).toEventually(equal(IntroEligibilityStatus.eligible))
+        expect(eligibility!["productb"]!.status).toEventually(equal(IntroEligibilityStatus.ineligible))
+        expect(eligibility!["productc"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
+        expect(eligibility!["productd"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
     }
 
     func testEligibilityUnknownIfError() {
@@ -683,16 +683,16 @@ class BackendTests: XCTestCase {
         let path = "/subscribers/" + userID + "/intro_eligibility"
         httpClient.mock(requestPath: path, response: response)
 
-        var eligibility: [String: RCIntroEligibility]?
+        var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
         backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligibility) in
             eligibility = productEligibility
         })
 
-        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
-        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
-        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
+        expect(eligibility!["producta"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
+        expect(eligibility!["productb"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
+        expect(eligibility!["productc"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
     }
 
     func testEligibilityUnknownIfUnknownError() {
@@ -701,16 +701,16 @@ class BackendTests: XCTestCase {
         let path = "/subscribers/" + userID + "/intro_eligibility"
         httpClient.mock(requestPath: path, response: response)
 
-        var eligibility: [String: RCIntroEligibility]?
+        var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
         backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligbility) in
             eligibility = productEligbility
         })
 
-        expect(eligibility!["producta"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
-        expect(eligibility!["productb"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
-        expect(eligibility!["productc"]!.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
+        expect(eligibility!["producta"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
+        expect(eligibility!["productb"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
+        expect(eligibility!["productc"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
     }
 
     let noOfferingsResponse: [String: Any?] = [
@@ -929,7 +929,7 @@ class BackendTests: XCTestCase {
     }
 
     func testEligibilityUnknownIfNoReceipt() {
-        var eligibility: [String: RCIntroEligibility]?
+        var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
         backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligibility) in
@@ -937,9 +937,9 @@ class BackendTests: XCTestCase {
         })
 
         expect(eligibility).toEventuallyNot(beNil())
-        expect(eligibility?["producta"]?.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
-        expect(eligibility?["productb"]?.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
-        expect(eligibility?["productc"]?.status).toEventually(equal(RCIntroEligibilityStatus.unknown))
+        expect(eligibility?["producta"]?.status).toEventually(equal(IntroEligibilityStatus.unknown))
+        expect(eligibility?["productb"]?.status).toEventually(equal(IntroEligibilityStatus.unknown))
+        expect(eligibility?["productc"]?.status).toEventually(equal(IntroEligibilityStatus.unknown))
     }
 
     func testGetOfferingsNetworkErrorSendsNilAndError() {

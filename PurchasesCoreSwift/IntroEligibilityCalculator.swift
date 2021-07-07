@@ -95,12 +95,6 @@ private extension IntroEligibilityCalculator {
     }
 }
 
-enum IntroEligibilityStatus: Int {
-    case unknown,
-         ineligible,
-         eligible
-}
-
 extension IntroEligibilityStatus {
     func toNSNumber() -> NSNumber {
         return self.rawValue as NSNumber
