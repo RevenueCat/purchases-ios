@@ -5,20 +5,16 @@
 
 @import PurchasesCoreSwift;
 
-#import "RCProductInfoExtractor.h"
-#import "RCProductInfo.h"
-#import "RCPromotionalOffer.h"
 #import <StoreKit/StoreKit.h>
+#import "RCProductInfoExtractor.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
 
 @interface RCProductInfoExtractor ()
 
 @property (nonatomic) RCISOPeriodFormatter *formatter API_AVAILABLE(ios(11.2), macos(10.13.2), tvos(11.2));
 
 @end
-
 
 @implementation RCProductInfoExtractor
 
@@ -103,7 +99,8 @@ NS_ASSUME_NONNULL_BEGIN
     RCPaymentMode paymentMode = RCPaymentModeNone;
     if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)) {
         if (product.introductoryPrice) {
-            paymentMode = RCPaymentModeFromSKProductDiscountPaymentMode(product.introductoryPrice.paymentMode);
+            SKProductDiscountPaymentMode pricePaymentMode = product.introductoryPrice.paymentMode;
+            paymentMode = [RCProductInfo paymentModeFromSKProductDiscountPaymentMode:pricePaymentMode];
         }
     }
     return paymentMode;
