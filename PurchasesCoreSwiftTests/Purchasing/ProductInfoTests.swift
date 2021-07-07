@@ -93,15 +93,15 @@ class ProductInfoTests: XCTestCase {
         if #available(macOS 10.14.4, *) {
 
 
-            let discount1 = PromotionalOffer(withProductDiscount: MockSKProductDiscount(identifier: "offerid1",
-                                                                                        paymentMode: .payAsYouGo,
-                                                                                        price: 11))
-            let discount2 = PromotionalOffer(withProductDiscount: MockSKProductDiscount(identifier: "offerid2",
-                                                                                        paymentMode: .payUpFront,
-                                                                                        price: 12))
-            let discount3 = PromotionalOffer(withProductDiscount: MockSKProductDiscount(identifier: "offerid3",
-                                                                                        paymentMode: .freeTrial,
-                                                                                        price: 13))
+            let discount1 = PromotionalOffer(withProductDiscount: MockProductDiscount(identifier: "offerid1",
+                                                                                      paymentMode: .payAsYouGo,
+                                                                                      price: 11))
+            let discount2 = PromotionalOffer(withProductDiscount: MockProductDiscount(identifier: "offerid2",
+                                                                                      paymentMode: .payUpFront,
+                                                                                      price: 12))
+            let discount3 = PromotionalOffer(withProductDiscount: MockProductDiscount(identifier: "offerid3",
+                                                                                      paymentMode: .freeTrial,
+                                                                                      price: 13))
 
             let productInfo: ProductInfo = .createMockProductInfo(discounts: [discount1, discount2, discount3])
 
@@ -124,15 +124,15 @@ class ProductInfoTests: XCTestCase {
 
     func testCacheKey() {
         if #available(macOS 10.14.4, *) {
-            let discount1 = PromotionalOffer(withProductDiscount: MockSKProductDiscount(identifier: "offerid1",
-                                                                                        paymentMode: .payAsYouGo,
-                                                                                        price: 11))
-            let discount2 = PromotionalOffer(withProductDiscount: MockSKProductDiscount(identifier: "offerid2",
-                                                                                        paymentMode: .payUpFront,
-                                                                                        price: 12))
-            let discount3 = PromotionalOffer(withProductDiscount: MockSKProductDiscount(identifier: "offerid3",
-                                                                                        paymentMode: .freeTrial,
-                                                                                        price: 13))
+            let discount1 = PromotionalOffer(withProductDiscount: MockProductDiscount(identifier: "offerid1",
+                                                                                      paymentMode: .payAsYouGo,
+                                                                                      price: 11))
+            let discount2 = PromotionalOffer(withProductDiscount: MockProductDiscount(identifier: "offerid2",
+                                                                                      paymentMode: .payUpFront,
+                                                                                      price: 12))
+            let discount3 = PromotionalOffer(withProductDiscount: MockProductDiscount(identifier: "offerid3",
+                                                                                      paymentMode: .freeTrial,
+                                                                                      price: 13))
 
             let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: "cool_product",
                                                                     paymentMode: .payUpFront,

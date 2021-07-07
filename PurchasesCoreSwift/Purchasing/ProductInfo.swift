@@ -123,7 +123,7 @@ import StoreKit
 
                         offers.add(["offer_identifier": offerIdentifier,
                                     "price": discount.price,
-                                    "payment_mode": NSNumber(value: discount.paymentMode.rawValue)])
+                                    "payment_mode": discount.paymentMode.rawValue])
 
                     }
                     discountDict["offers"] = offers

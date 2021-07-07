@@ -2036,7 +2036,7 @@ class PurchasesTests: XCTestCase {
             let keyIdentifier = "key_id"
             let nonce = UUID()
             let timestamp = 1234
-            let productDiscount = MockProductDiscount(mockIdentifier: discountIdentifier)
+            let productDiscount = MockProductDiscount(identifier: discountIdentifier)
             self.backend.postOfferForSigningPaymentDiscountResponse["signature"] = signature
             self.backend.postOfferForSigningPaymentDiscountResponse["keyIdentifier"] = keyIdentifier
             self.backend.postOfferForSigningPaymentDiscountResponse["nonce"] = nonce
@@ -2067,7 +2067,7 @@ class PurchasesTests: XCTestCase {
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
             let discountIdentifier = "id"
-            let productDiscount = MockProductDiscount(mockIdentifier: discountIdentifier)
+            let productDiscount = MockProductDiscount(identifier: discountIdentifier)
 
             self.receiptFetcher.shouldReturnReceipt = false
             var completionCalled = false
@@ -2093,7 +2093,7 @@ class PurchasesTests: XCTestCase {
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
             let discountIdentifier = "id"
-            let productDiscount = MockProductDiscount(mockIdentifier: discountIdentifier)
+            let productDiscount = MockProductDiscount(identifier: discountIdentifier)
 
             self.receiptFetcher.shouldReturnReceipt = true
             self.receiptFetcher.shouldReturnZeroBytesReceipt = true
