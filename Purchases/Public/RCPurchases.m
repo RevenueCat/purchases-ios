@@ -24,7 +24,6 @@
 #import "RCPurchasesErrors.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCReceiptFetcher.h"
-#import "RCReceiptRefreshPolicy.h"
 #import "RCStoreKitRequestFetcher.h"
 #import "RCStoreKitWrapper.h"
 #import "RCSubscriberAttributesManager.h"
