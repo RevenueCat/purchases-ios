@@ -8,6 +8,7 @@
 
 import Foundation
 
+// TODO(Post-migration): switch this back to internal
 @objc(RCReceiptRefreshPolicy) public enum ReceiptRefreshPolicy: Int {
     case always = 0
     case onlyIfEmpty
