@@ -171,10 +171,10 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
         }
 
         httpResponse = [self.eTagManager getHTTPResultFromCacheOrBackendWith:((NSHTTPURLResponse *) response)
-                                                              jsonObject:jsonObject
-                                                                   error:error
-                                                                 request:request
-                                                                 retried:retried];
+                                                                  jsonObject:jsonObject
+                                                                       error:error
+                                                                     request:request
+                                                                     retried:retried];
         if (httpResponse == nil) {
             RCDebugLog(RCStrings.network.retrying_request, queableRequest.httpMethod, queableRequest.path);
             RCHTTPRequest *retriedRequest = [[RCHTTPRequest alloc] initWithRCHTTPRequest:queableRequest
