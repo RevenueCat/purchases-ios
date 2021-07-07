@@ -29,10 +29,10 @@ class IntroEligibilityTests: XCTestCase {
     
     func testInitWithEligibilityStatusCodeFailsIfInvalid() {
         expect(try IntroEligibility(eligibilityStatusCode: -1)).to(
-            throwError(closure: { expect($0.localizedDescription).to(equal("Invalid status code: -1"))})
+            throwError(closure: { expect($0.localizedDescription).to(equal("😿 Invalid status code: -1"))})
         )
         expect(try IntroEligibility(eligibilityStatusCode: 3)).to(
-            throwError(closure: { expect($0.localizedDescription).to(equal("Invalid status code: 3"))})
+            throwError(closure: { expect($0.localizedDescription).to(equal("😿 Invalid status code: 3"))})
         )
     }
 }
