@@ -32,7 +32,6 @@
 #include <Purchases/RCPurchasesErrorUtils.h>
 #include <Purchases/RCReceiptFetcher.h>
 #include <Purchases/RCSpecialSubscriberAttributes.h>
-#include <Purchases/RCStoreKitRequestFetcher.h>
 #include <Purchases/RCStoreKitWrapper.h>
 #include <Purchases/RCSubscriberAttributesManager.h>
 #include <Purchases/RCTypeDefsPreMigration.h>
