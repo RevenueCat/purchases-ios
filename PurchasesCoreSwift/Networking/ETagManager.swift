@@ -42,20 +42,17 @@ import Foundation
 
         if eTagInResponse != nil {
             if shouldUseCachedVersion(responseCode: statusCode) {
-                guard let storedResponse = getStoredHTTPResponse(for: request) else {
+                if let storedResponse = getStoredHTTPResponse(for: request) {
+                    return storedResponse
+                } else {
                     if retried {
-                        Logger.warn(
-                                String(
-                                        format: Strings.network.could_not_find_cached_response_in_already_retried,
-                                        resultFromBackend
-                                )
-                        )
+                        Logger.warn(String(format: Strings.network.could_not_find_cached_response_in_already_retried,
+                                resultFromBackend))
                         return resultFromBackend
                     } else {
                         return nil
                     }
                 }
-                return storedResponse
             }
             storeStatusCodeAndResponseIfNoError(
                     for: request,
