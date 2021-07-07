@@ -27,11 +27,11 @@ import Foundation
         return [ETagManager.eTagHeaderName: storedETag]
     }
 
-    @objc public func getHTTPResultFromCacheOrBackend(with response: HTTPURLResponse,
-                                                      jsonObject: [String: Any]?,
-                                                      error: Error?,
-                                                      request: URLRequest,
-                                                      retried: Bool) -> HTTPResponse? {
+    @objc public func httpResultFromCacheOrBackend(with response: HTTPURLResponse,
+                                                   jsonObject: [String: Any]?,
+                                                   error: Error?,
+                                                   request: URLRequest,
+                                                   retried: Bool) -> HTTPResponse? {
         let statusCode = response.statusCode
         let resultFromBackend = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
         guard error == nil else { return resultFromBackend }

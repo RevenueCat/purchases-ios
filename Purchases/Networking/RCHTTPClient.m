@@ -170,7 +170,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
             error = jsonError;
         }
 
-        httpResponse = [self.eTagManager getHTTPResultFromCacheOrBackendWith:((NSHTTPURLResponse *) response)
+        httpResponse = [self.eTagManager httpResultFromCacheOrBackendWith:((NSHTTPURLResponse *) response)
                                                                   jsonObject:jsonObject
                                                                        error:error
                                                                      request:request

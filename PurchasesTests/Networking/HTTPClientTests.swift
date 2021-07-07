@@ -712,7 +712,7 @@ class HTTPClientTests: XCTestCase {
         }
 
         self.eTagManager.shouldReturnResultFromBackend = false
-        self.eTagManager.stubbedGetHTTPResultFromCacheOrBackendResult = nil
+        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
         self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, error) in
             completionCalled = true
         }

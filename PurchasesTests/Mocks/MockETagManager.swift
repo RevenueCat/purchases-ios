@@ -26,26 +26,26 @@ class MockETagManager: ETagManager {
         return stubbedETagHeaderResult
     }
 
-    var invokedGetHTTPResultFromCacheOrBackend = false
-    var invokedGetHTTPResultFromCacheOrBackendCount = 0
-    var invokedGetHTTPResultFromCacheOrBackendParameters: (response: HTTPURLResponse, responseObject: [String: Any]?, error: Error?, request: URLRequest, retried: Bool)?
-    var invokedGetHTTPResultFromCacheOrBackendParametersList = [(response: HTTPURLResponse, responseObject: [String: Any]?, error: Error?, request: URLRequest, retried: Bool)]()
-    var stubbedGetHTTPResultFromCacheOrBackendResult: HTTPResponse!
+    var invokedHTTPResultFromCacheOrBackend = false
+    var invokedHTTPResultFromCacheOrBackendCount = 0
+    var invokedHTTPResultFromCacheOrBackendParameters: (response: HTTPURLResponse, responseObject: [String: Any]?, error: Error?, request: URLRequest, retried: Bool)?
+    var invokedHTTPResultFromCacheOrBackendParametersList = [(response: HTTPURLResponse, responseObject: [String: Any]?, error: Error?, request: URLRequest, retried: Bool)]()
+    var stubbedHTTPResultFromCacheOrBackendResult: HTTPResponse!
     var shouldReturnResultFromBackend = true
 
-    override func getHTTPResultFromCacheOrBackend(with response: HTTPURLResponse,
-        jsonObject: [String: Any]?,
-        error: Error?,
-        request: URLRequest,
-        retried: Bool) -> HTTPResponse? {
-        invokedGetHTTPResultFromCacheOrBackend = true
-        invokedGetHTTPResultFromCacheOrBackendCount += 1
-        invokedGetHTTPResultFromCacheOrBackendParameters = (response, jsonObject, error, request, retried)
-        invokedGetHTTPResultFromCacheOrBackendParametersList.append((response, jsonObject, error, request, retried))
+    override func httpResultFromCacheOrBackend(with response: HTTPURLResponse,
+                                               jsonObject: [String: Any]?,
+                                               error: Error?,
+                                               request: URLRequest,
+                                               retried: Bool) -> HTTPResponse? {
+        invokedHTTPResultFromCacheOrBackend = true
+        invokedHTTPResultFromCacheOrBackendCount += 1
+        invokedHTTPResultFromCacheOrBackendParameters = (response, jsonObject, error, request, retried)
+        invokedHTTPResultFromCacheOrBackendParametersList.append((response, jsonObject, error, request, retried))
         if shouldReturnResultFromBackend {
             return HTTPResponse(statusCode: response.statusCode, jsonObject: jsonObject)
         }
-        return stubbedGetHTTPResultFromCacheOrBackendResult
+        return stubbedHTTPResultFromCacheOrBackendResult
     }
 
     var invokedClearCaches = false
