@@ -29,11 +29,7 @@ struct ETagAndResponseWrapper {
     func asData() -> Data? {
         let dictionary = asDictionary()
         if JSONSerialization.isValidJSONObject(dictionary) {
-            do {
-                return try JSONSerialization.data(withJSONObject: dictionary, options: .prettyPrinted)
-            } catch {
-                return nil
-            }
+            return try? JSONSerialization.data(withJSONObject: dictionary, options: .prettyPrinted)
         }
         return nil
     }
