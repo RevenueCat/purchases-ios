@@ -11,7 +11,6 @@
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
-#import "RCAttributionData.h"
 @import PurchasesCoreSwift;
 
 static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;

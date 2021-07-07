@@ -8,7 +8,6 @@
 
 @import PurchasesCoreSwift;
 
-#import "RCAttributionData.h"
 #import "RCAttributionFetcher.h"
 #import "RCBackend.h"
 #import "RCDeviceCache.h"
