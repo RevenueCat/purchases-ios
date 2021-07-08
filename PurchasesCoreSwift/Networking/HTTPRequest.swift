@@ -8,16 +8,16 @@
 
 import Foundation
 
-public typealias HTTPClientResponseHandler = (Int, [String: Any]?, NSError?) -> Void
+public typealias HTTPClientResponseHandler = (Int, [String: Any]?, Error?) -> Void
 
 // TODO(post migration): Change back to internal
 @objc(RCHTTPRequest)
 public class HTTPRequest: NSObject, NSCopying {
-    @objc public var httpMethod: String
-    @objc public var path: String
-    @objc public var requestBody: [String: Any]?
-    @objc public var headers: [String: String]?
-    @objc public var completionHandler: HTTPClientResponseHandler?
+    @objc public let httpMethod: String
+    @objc public let path: String
+    @objc public let requestBody: [String: Any]?
+    @objc public let headers: [String: String]?
+    @objc public let completionHandler: HTTPClientResponseHandler?
 
     @objc(initWithHTTPMethod:path:body:headers:completionHandler:)
     public init(httpMethod: String, path: String, requestBody: [String: Any]?, headers: [String: String]?, completionHandler: HTTPClientResponseHandler?) {
