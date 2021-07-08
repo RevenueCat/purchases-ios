@@ -23,7 +23,6 @@
 #import "RCPurchases.h"
 #import "RCPurchasesErrors.h"
 #import "RCPurchasesErrorUtils.h"
-#import "RCReceiptFetcher.h"
 #import "RCStoreKitWrapper.h"
 #import "RCSubscriberAttributesManager.h"
 
