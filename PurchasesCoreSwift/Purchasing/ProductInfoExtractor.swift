@@ -17,7 +17,7 @@ public class ProductInfoExtractor: NSObject {
 
     // TODO(post migration): Change back to internal
     @objc(extractInfoFromSKProduct:)
-    public func extractInfo(from product: SKProduct) -> ProductInfo? {
+    public func extractInfo(from product: SKProduct) -> ProductInfo {
         let paymentMode = extractPaymentMode(for: product)
         let introPrice = extractIntroPrice(for: product)
 
