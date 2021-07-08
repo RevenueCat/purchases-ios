@@ -95,13 +95,13 @@ typedef void (^RetryRequestBlock)();
                           [RCPurchasesErrorUtils networkErrorWithUnderlyingError:RCPurchasesErrorUtils.unknownError]);
         return;
     }
-    
+
     RCHTTPRequest *rcRequest = [[RCHTTPRequest alloc] initWithHTTPMethod:httpMethod
-                                                                         path:path
-                                                                         body:requestBody
-                                                                      headers:headers
-                                                                      retried:retried
-                                                            completionHandler:completionHandler];
+                                                                    path:path
+                                                                    body:requestBody
+                                                                 headers:headers
+                                                                 retried:retried
+                                                       completionHandler:completionHandler];
     if (performSerially && !retried) {
         @synchronized (self) {
             if (self.currentSerialRequest) {
