@@ -27,7 +27,6 @@
 #include <Purchases/RCPurchases.h>
 #include <Purchases/RCPurchasesErrorUtils+Protected.h>
 #include <Purchases/RCPurchasesErrorUtils.h>
-#include <Purchases/RCReceiptFetcher.h>
 #include <Purchases/RCSpecialSubscriberAttributes.h>
 #include <Purchases/RCStoreKitWrapper.h>
 #include <Purchases/RCSubscriberAttributesManager.h>
