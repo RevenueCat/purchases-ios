@@ -18,10 +18,6 @@ public class ProductInfoExtractor: NSObject {
     // TODO(post migration): Change back to internal
     @objc(extractInfoFromSKProduct:)
     public func extractInfo(from product: SKProduct) -> ProductInfo? {
-        guard let currencyCode = product.priceLocale.rc_currencyCode() else {
-            return nil
-        }
-
         let paymentMode = extractPaymentMode(for: product)
         let introPrice = extractIntroPrice(for: product)
 
@@ -35,7 +31,7 @@ public class ProductInfoExtractor: NSObject {
         return ProductInfo(
             productIdentifier: product.productIdentifier,
             paymentMode: paymentMode,
-            currencyCode: currencyCode,
+            currencyCode: product.priceLocale.rc_currencyCode(),
             price: product.price,
             normalDuration: normalDuration,
             introDuration: introDuration,

@@ -14,7 +14,7 @@ import StoreKit
     // TODO(post migration): Change back to internal
     @objc public let productIdentifier: String
     @objc public let paymentMode: PaymentMode
-    @objc public let currencyCode: String
+    @objc public let currencyCode: String?
     @objc public let price: NSDecimalNumber
     @objc public let normalDuration: String?
     @objc public let introDuration: String?
@@ -46,7 +46,7 @@ import StoreKit
 
     @objc public init(productIdentifier: String,
                       paymentMode: PaymentMode,
-                      currencyCode: String,
+                      currencyCode: String?,
                       price: NSDecimalNumber,
                       normalDuration: String?,
                       introDuration: String?,
@@ -70,7 +70,10 @@ import StoreKit
         var dict: [String: NSObject] = [:]
         dict["product_id"] = productIdentifier as NSString
         dict["price"] = price
-        dict["currency"] = currencyCode as NSObject
+
+        if let currencyCode = currencyCode {
+            dict["currency"] = currencyCode as NSObject
+        }
 
         if paymentMode != .none {
             dict["payment_mode"] = NSNumber(value: paymentMode.rawValue)
@@ -95,7 +98,7 @@ import StoreKit
 
     @objc public var cacheKey: String {
         var key = """
-        \(productIdentifier)-\(price)-\(currencyCode)-\(paymentMode.rawValue)-\(introPrice ?? 0)-\
+        \(productIdentifier)-\(price)-\(currencyCode ?? "")-\(paymentMode.rawValue)-\(introPrice ?? 0)-\
         \(subscriptionGroup ?? "")-\(normalDuration ?? "")-\(introDuration ?? "")-\(introDurationType.rawValue)
         """
 
