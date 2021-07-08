@@ -31,7 +31,7 @@ public class ProductInfoExtractor: NSObject {
         return ProductInfo(
             productIdentifier: product.productIdentifier,
             paymentMode: paymentMode,
-            currencyCode: product.priceLocale.rc_currencyCode() ?? "",
+            currencyCode: product.priceLocale.rc_currencyCode() ?? "USD",
             price: product.price,
             normalDuration: normalDuration,
             introDuration: introDuration,
