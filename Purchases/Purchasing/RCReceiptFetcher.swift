@@ -8,13 +8,13 @@
 
 import Foundation
 
-public class RCReceiptFetcher: NSObject {
+@objc open class RCReceiptFetcher: NSObject {
 
-    @objc public var receiptData: NSData {
+    @objc open func receiptData() -> Data? {
 
         guard let receiptURL: URL = Bundle.main.appStoreReceiptURL else {
-            Logger.debug(Strings.receipt.unable_to_load_receipt)
-            return NSData()
+            Logger.debug(Strings.receipt.no_sandbox_receipt_restore)
+            return nil
         }
 
         #if TARGET_OS_WATCH
@@ -34,8 +34,13 @@ public class RCReceiptFetcher: NSObject {
         }
         #endif
 
-        let data: NSData = NSData(contentsOf: receiptURL)!
+        guard let data: Data = try? Data(contentsOf: receiptURL) else {
+            Logger.debug(Strings.receipt.unable_to_load_receipt)
+            return nil
+        }
+
         Logger.debug(String(format: Strings.receipt.loaded_receipt, receiptURL as CVarArg))
+
         return data
     }
 }
