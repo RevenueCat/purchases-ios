@@ -15,7 +15,6 @@
 #import "RCIdentityManager.h"
 #import "RCLogUtils.h"
 #import "RCOfferingsFactory.h"
-#import "RCProductInfoExtractor.h"
 #import "RCPurchaserInfo+Protected.h"
 #import "RCPurchaserInfoManager.h"
 #import "RCPurchases+Protected.h"
@@ -1201,7 +1200,7 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
     NSString *presentedOffering = nil;
     if (product) {
         RCProductInfoExtractor *productInfoExtractor = [[RCProductInfoExtractor alloc] init];
-        productInfo = [productInfoExtractor extractInfoFromProduct:product];
+        productInfo = [productInfoExtractor extractInfoFromSKProduct:product];
 
         @synchronized (self) {
             presentedOffering = self.presentedOfferingsByProductIdentifier[productInfo.productIdentifier];

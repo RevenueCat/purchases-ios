@@ -1,43 +1,43 @@
 import XCTest
 import Nimble
-
-import Purchases
+import StoreKit
+import PurchasesCoreSwift
 
 class ProductInfoExtractorTests: XCTestCase {
 
     func testExtractInfoFromProductExtractsProductIdentifier() {
         let productID = "cool_product"
         let product = MockSKProduct(mockProductIdentifier: productID)
-        let productInfoExtractor = RCProductInfoExtractor()
+        let productInfoExtractor = ProductInfoExtractor()
 
         let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-        expect(receivedProductInfo.productIdentifier) == productID
+        expect(receivedProductInfo?.productIdentifier) == productID
     }
 
     func testExtractInfoFromProductExtractsPrice() {
         let product = MockSKProduct(mockProductIdentifier: "cool_product")
         let price: NSDecimalNumber = 10.99
         product.mockPrice = price
-        let productInfoExtractor = RCProductInfoExtractor()
+        let productInfoExtractor = ProductInfoExtractor()
 
         let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-        expect(receivedProductInfo.price) == price
+        expect(receivedProductInfo?.price) == price
     }
 
     func testExtractInfoFromProductExtractsCurrencyCode() {
         let product = MockSKProduct(mockProductIdentifier: "cool_product")
         product.mockPriceLocale = Locale(identifier: "es_UY")
-        let productInfoExtractor = RCProductInfoExtractor()
+        let productInfoExtractor = ProductInfoExtractor()
 
         var receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-        expect(receivedProductInfo.currencyCode) == "UYU"
+        expect(receivedProductInfo?.currencyCode) == "UYU"
 
         product.mockPriceLocale = Locale(identifier: "en_US")
         receivedProductInfo = productInfoExtractor.extractInfo(from: product)
-        expect(receivedProductInfo.currencyCode) == "USD"
+        expect(receivedProductInfo?.currencyCode) == "USD"
     }
 
     func testExtractInfoFromProductExtractsPaymentMode() {
@@ -48,17 +48,17 @@ class ProductInfoExtractorTests: XCTestCase {
             mockDiscount.mockPaymentMode = .freeTrial
 
             product.mockDiscount = mockDiscount
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.paymentMode.rawValue) == ProductInfo.PaymentMode.freeTrial.rawValue
+            expect(receivedProductInfo?.paymentMode.rawValue) == ProductInfo.PaymentMode.freeTrial.rawValue
         } else {
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.paymentMode) == ProductInfo.PaymentMode.none
+            expect(receivedProductInfo?.paymentMode) == ProductInfo.PaymentMode.none
         }
     }
 
@@ -70,17 +70,17 @@ class ProductInfoExtractorTests: XCTestCase {
             mockDiscount.mockPrice = 10.99
 
             product.mockDiscount = mockDiscount
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.introPrice) == 10.99
+            expect(receivedProductInfo?.introPrice) == 10.99
         } else {
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.introPrice).to(beNil())
+            expect(receivedProductInfo?.introPrice).to(beNil())
         }
     }
 
@@ -89,17 +89,17 @@ class ProductInfoExtractorTests: XCTestCase {
 
         if #available(iOS 11.2, *) {
             product.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 2, unit: .month)
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.normalDuration) == "P2M"
+            expect(receivedProductInfo?.normalDuration) == "P2M"
         } else {
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.normalDuration).to(beNil())
+            expect(receivedProductInfo?.normalDuration).to(beNil())
         }
     }
 
@@ -108,17 +108,17 @@ class ProductInfoExtractorTests: XCTestCase {
 
         if #available(iOS 11.2, *) {
             product.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 0, unit: .month)
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.normalDuration).to(beNil())
+            expect(receivedProductInfo?.normalDuration).to(beNil())
         } else {
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.normalDuration).to(beNil())
+            expect(receivedProductInfo?.normalDuration).to(beNil())
         }
     }
 
@@ -130,17 +130,17 @@ class ProductInfoExtractorTests: XCTestCase {
             mockDiscount.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 3, unit: .year)
 
             product.mockDiscount = mockDiscount
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.introDuration) == "P3Y"
+            expect(receivedProductInfo?.introDuration) == "P3Y"
         } else {
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.introDuration).to(beNil())
+            expect(receivedProductInfo?.introDuration).to(beNil())
         }
     }
 
@@ -152,17 +152,17 @@ class ProductInfoExtractorTests: XCTestCase {
             mockDiscount.mockPaymentMode = .freeTrial
 
             product.mockDiscount = mockDiscount
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.introDurationType) == .freeTrial
+            expect(receivedProductInfo?.introDurationType) == .freeTrial
         } else {
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.introDurationType) == RCIntroDurationType.none
+            expect(receivedProductInfo?.introDurationType) == RCIntroDurationType.none
         }
     }
 
@@ -172,17 +172,17 @@ class ProductInfoExtractorTests: XCTestCase {
         if #available(iOS 12.0, *) {
             let group = "mock_group"
             product.mockSubscriptionGroupIdentifier = group
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.subscriptionGroup) == group
+            expect(receivedProductInfo?.subscriptionGroup) == group
         } else {
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.subscriptionGroup).to(beEmpty())
+            expect(receivedProductInfo?.subscriptionGroup).to(beEmpty())
         }
     }
 
@@ -199,21 +199,21 @@ class ProductInfoExtractorTests: XCTestCase {
             mockDiscount.mockIdentifier = discountID
 
             product.mockDiscount = mockDiscount
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.discounts?.count) == 1
-            let receivedPromotionalOffer = receivedProductInfo.discounts?[0]
+            expect(receivedProductInfo?.discounts?.count) == 1
+            let receivedPromotionalOffer = receivedProductInfo?.discounts?[0]
             expect(receivedPromotionalOffer?.offerIdentifier) == discountID
             expect(receivedPromotionalOffer?.price) == price
             expect(receivedPromotionalOffer?.paymentMode.rawValue) == Int(paymentMode.rawValue)
         } else {
-            let productInfoExtractor = RCProductInfoExtractor()
+            let productInfoExtractor = ProductInfoExtractor()
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.discounts).to(beEmpty())
+            expect(receivedProductInfo?.discounts).to(beEmpty())
         }
     }
 }

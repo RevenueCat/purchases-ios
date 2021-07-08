@@ -18,7 +18,6 @@
 #include <Purchases/RCOffering.h>
 #include <Purchases/RCOfferings+Protected.h>
 #include <Purchases/RCOfferingsFactory.h>
-#include <Purchases/RCProductInfoExtractor.h>
 #include <Purchases/RCPurchaserInfo+Protected.h>
 #include <Purchases/RCPurchaserInfo.h>
 #include <Purchases/RCPurchaserInfoManager+Protected.h>
