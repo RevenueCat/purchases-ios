@@ -12,8 +12,8 @@ import Purchases
 class ExtensionDelegate: NSObject, WKExtensionDelegate {
 
     func applicationDidFinishLaunching() {
-        Purchases.debugLogsEnabled = true
         Purchases.configure(withAPIKey: <your_public_sdk_key_here>)
+        Purchases.logLevel = .debug
     }
 
     func applicationDidBecomeActive() {
