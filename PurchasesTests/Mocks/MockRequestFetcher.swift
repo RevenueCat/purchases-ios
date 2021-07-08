@@ -12,4 +12,8 @@ class MockRequestFetcher: StoreKitRequestFetcher {
         refreshReceiptCalled = true
         completion()
     }
+
+    convenience init() {
+        self.init(operationDispatcher: OperationDispatcher())
+    }
 }

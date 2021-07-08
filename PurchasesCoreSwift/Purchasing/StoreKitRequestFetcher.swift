@@ -22,16 +22,18 @@ import StoreKit
     private let requestFactory: ReceiptRefreshRequestFactory
     private var receiptRefreshRequest: SKRequest?
     private var receiptRefreshCompletionHandlers: [() -> Void]
-    private let queue = DispatchQueue(label: "StoreKitRequestFetcher")
+    private let operationDispatcher: OperationDispatcher
 
-    @objc public init(requestFactory: ReceiptRefreshRequestFactory = ReceiptRefreshRequestFactory()) {
+    @objc public init(requestFactory: ReceiptRefreshRequestFactory = ReceiptRefreshRequestFactory(),
+                      operationDispatcher: OperationDispatcher) {
         self.requestFactory = requestFactory
+        self.operationDispatcher = operationDispatcher
         receiptRefreshRequest = nil
         receiptRefreshCompletionHandlers = []
     }
 
     @objc public func fetchReceiptData(_ completion: @escaping () -> Void) {
-        queue.async {
+        operationDispatcher.dispatchOnWorkerThread {
             self.receiptRefreshCompletionHandlers.append(completion)
 
             if self.receiptRefreshRequest == nil {
@@ -64,12 +66,12 @@ extension StoreKitRequestFetcher: SKRequestDelegate {
 private extension StoreKitRequestFetcher {
 
     func finishReceiptRequest(_ request: SKRequest?) {
-        queue.async {
+        operationDispatcher.dispatchOnWorkerThread {
             self.receiptRefreshRequest = nil
             let completionHandlers = self.receiptRefreshCompletionHandlers
             self.receiptRefreshCompletionHandlers = []
 
-            self.queue.async {
+            self.operationDispatcher.dispatchOnWorkerThread {
                 for handler in completionHandlers {
                     handler()
                 }

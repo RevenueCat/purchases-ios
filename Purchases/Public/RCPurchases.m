@@ -263,7 +263,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCProductsRequestFactory *productsRequestFactory = [[RCProductsRequestFactory alloc] init];
     RCProductsManager *productsManager = [[RCProductsManager alloc] initWithProductsRequestFactory:productsRequestFactory];
     RCReceiptRefreshRequestFactory *receiptRefreshRequestFactory = [[RCReceiptRefreshRequestFactory alloc] init];
-    RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] initWithRequestFactory:receiptRefreshRequestFactory];
+    RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] initWithRequestFactory:receiptRefreshRequestFactory
+                                                                             operationDispatcher:operationDispatcher];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher

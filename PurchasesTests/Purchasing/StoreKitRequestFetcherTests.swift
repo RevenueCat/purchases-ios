@@ -49,12 +49,14 @@ class StoreKitRequestFetcherTests: XCTestCase {
 
     var fetcher: StoreKitRequestFetcher?
     var factory: MockRequestsFactory?
+    var operationDispatcher = MockOperationDispatcher()
     var receiptFetched = false
     var receiptFetchedCallbackCount = 0
 
     func setupFetcher(fails: Bool) {
+        self.operationDispatcher = MockOperationDispatcher()
         self.factory = MockRequestsFactory(fails: fails)
-        self.fetcher = StoreKitRequestFetcher(requestFactory: self.factory!)
+        self.fetcher = StoreKitRequestFetcher(requestFactory: self.factory!, operationDispatcher: operationDispatcher)
 
         self.fetcher!.fetchReceiptData {
             self.receiptFetched = true
@@ -82,7 +84,7 @@ class StoreKitRequestFetcherTests: XCTestCase {
 
     func testCallsStartOnRequest() {
         setupFetcher(fails: false)
-        expect((self.factory!.requests[0] as! MockReceiptRequest).startCalled).toEventually(beTrue(), timeout: .seconds(2))
+        expect((self.factory!.requests[0] as! MockReceiptRequest).startCalled).toEventually(beTrue(), timeout: .seconds(1))
     }
     func testFetchesReceipt() {
         setupFetcher(fails: false)
