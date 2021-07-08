@@ -112,10 +112,11 @@ private extension ETagManager {
         return request.url?.absoluteString
     }
 
+    private static let suiteNameBase: String  = "revenuecat.etags"
     static var suiteName: String {
         guard let bundleID = Bundle.main.bundleIdentifier else {
-            return "revenuecat.etags"
+            return suiteNameBase
         }
-        return bundleID + ".revenuecat.etags"
+        return bundleID + ".\(suiteNameBase)"
     }
 }
