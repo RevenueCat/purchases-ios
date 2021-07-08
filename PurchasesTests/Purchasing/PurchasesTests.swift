@@ -168,13 +168,13 @@ class PurchasesTests: XCTestCase {
             }
         }
 
-        var postedAttributionData: [RCAttributionData]?
+        var postedAttributionData: [AttributionData]?
 
         override func postAttributionData(_ data: [AnyHashable: Any], from network: AttributionNetwork, forAppUserID appUserID: String, completion: ((Error?) -> Void)? = nil) {
             if (postedAttributionData == nil) {
                 postedAttributionData = []
             }
-            postedAttributionData?.append(RCAttributionData(data: data, from: network, forNetworkUserId: appUserID)!)
+            postedAttributionData?.append(AttributionData(data: data, from: network, forNetworkUserId: appUserID)!)
             completion!(nil)
         }
 

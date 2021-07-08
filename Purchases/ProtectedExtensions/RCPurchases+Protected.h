@@ -6,7 +6,6 @@
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
-
 @class RCPurchases,
     RCStoreKitRequestFetcher,
     RCBackend,
@@ -24,6 +23,7 @@
     RCPurchaserInfoManager,
     RCProductsManager;
 
+#import "Purchases.h"
 #import "RCStoreKitWrapper.h"
 
 NS_ASSUME_NONNULL_BEGIN
