@@ -269,13 +269,13 @@ class SwiftPaywall: UIViewController {
         }
     }
     
-    private func shouldShowDiscount(package: Purchases.Package?) -> (Bool, Purchases.Package?) {
+    private func shouldShowDiscount(package: Package?) -> (Bool, Package?) {
         return (showDiscountPercentage == true
             && mostAffordablePackages.count > 1
             && mostAffordablePackages.first?.product.productIdentifier == package?.product.productIdentifier, mostAffordablePackages.last)
     }
     
-    private var mostAffordablePackages : [Purchases.Package] {
+    private var mostAffordablePackages : [Package] {
         guard let sorted = offering?.availablePackages
             .filter({$0.packageType != .lifetime && $0.packageType != .custom})
             .sorted(by: { $1.annualCost() > $0.annualCost() }) else {
@@ -693,8 +693,8 @@ private class PackageCell : UICollectionViewCell {
     }
     
     func setupWith(
-        package: Purchases.Package?,
-        discount: (Bool, Purchases.Package?),
+        package: Package?,
+        discount: (Bool, Package?),
         edgeStyle: PayWallEdgeStyle = .round,
         productSelectedColor: UIColor? = nil,
         productDeselectedColor: UIColor? = nil) {
@@ -765,7 +765,7 @@ private class PackageCell : UICollectionViewCell {
         }
     }
     
-    func discountBetween(highest: Purchases.Package, current: Purchases.Package) -> NSNumber {
+    func discountBetween(highest: Package, current: Package) -> NSNumber {
         let highestAnnualCost : NSNumber!
         switch highest.packageType {
         case .annual:
@@ -854,7 +854,7 @@ private class PackageCell : UICollectionViewCell {
     }
 }
 
-fileprivate extension Purchases.Package {
+fileprivate extension Package {
     
     func annualCost() -> Double {
         switch self.packageType {
