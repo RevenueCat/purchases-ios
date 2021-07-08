@@ -8,8 +8,10 @@
 
 import Foundation
 
+// TODO: Make internal after migration to Swift is complete
 @objc open class RCReceiptFetcher: NSObject {
 
+    // TODO: Make internal after migration to Swift is complete
     @objc open func receiptData() -> Data? {
 
         guard let receiptURL: URL = Bundle.main.appStoreReceiptURL else {
@@ -17,7 +19,7 @@ import Foundation
             return nil
         }
 
-        #if TARGET_OS_WATCH
+        #if os(watchOS)
         // as of watchOS 6.2.8, there's a bug where the receipt is stored in the sandbox receipt location,
         // but the appStoreReceiptURL method returns the URL for the production receipt.
         // This code replaces "sandboxReceipt" with "receipt" as the last component of the receiptURL so that we get the
