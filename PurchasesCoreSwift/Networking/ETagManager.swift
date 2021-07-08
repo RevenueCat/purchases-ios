@@ -40,27 +40,23 @@ import Foundation
         let eTagInResponse: String? = headersInResponse[ETagManager.eTagHeaderName] as? String ??
                 headersInResponse[ETagManager.eTagHeaderName.lowercased()] as? String
 
-        if eTagInResponse != nil {
-            if shouldUseCachedVersion(responseCode: statusCode) {
-                if let storedResponse = getStoredHTTPResponse(for: request) {
-                    return storedResponse
-                } else {
-                    if retried {
-                        Logger.warn(String(format: Strings.network.could_not_find_cached_response_in_already_retried,
-                                resultFromBackend))
-                        return resultFromBackend
-                    } else {
-                        return nil
-                    }
-                }
+        guard let eTagInResponse = eTagInResponse else { return resultFromBackend }
+        if shouldUseCachedVersion(responseCode: statusCode) {
+            if let storedResponse = getStoredHTTPResponse(for: request) {
+                return storedResponse
             }
-            storeStatusCodeAndResponseIfNoError(
-                    for: request,
-                    statusCode: statusCode,
-                    responseObject: jsonObject,
-                    eTag: eTagInResponse!)
+            if retried {
+                Logger.warn(String(format: Strings.network.could_not_find_cached_response_in_already_retried,
+                        resultFromBackend))
+                return resultFromBackend
+            }
+            return nil
         }
-
+        storeStatusCodeAndResponseIfNoError(
+                for: request,
+                statusCode: statusCode,
+                responseObject: jsonObject,
+                eTag: eTagInResponse)
         return resultFromBackend
     }
 
