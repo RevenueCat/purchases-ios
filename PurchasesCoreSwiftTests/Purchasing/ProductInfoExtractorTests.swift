@@ -35,9 +35,9 @@ class ProductInfoExtractorTests: XCTestCase {
 
         expect(receivedProductInfo?.currencyCode) == "UYU"
 
-
+        product.mockPriceLocale = Locale(identifier: "en_US")
         receivedProductInfo = productInfoExtractor.extractInfo(from: product)
-        expect(receivedProductInfo?.currencyCode).toNot(equal("USD"))
+        expect(receivedProductInfo?.currencyCode) == "USD"
     }
 
     func testExtractInfoFromProductExtractsPaymentMode() {
