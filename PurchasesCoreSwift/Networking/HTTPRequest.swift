@@ -42,11 +42,10 @@ public class HTTPRequest: NSObject, NSCopying {
 
     public override var description: String {
         """
-        <\(type(of: self))
-        httpMethod=\(httpMethod)
+        <\(type(of: self)): httpMethod=\(httpMethod)
         path=\(path)
-        requestBody=\(requestBody?.description ?? "")
-        headers=\(headers?.description ?? "")
+        requestBody=\(requestBody?.description ?? "(null)")
+        headers=\(headers?.description ?? "(null)")
         >
         """
     }
