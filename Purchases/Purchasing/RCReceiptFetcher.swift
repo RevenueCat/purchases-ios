@@ -14,7 +14,7 @@ import Foundation
     // TODO: Make internal after migration to Swift is complete
     @objc open func receiptData() -> Data? {
 
-        guard let receiptURL: URL = Bundle.main.appStoreReceiptURL else {
+        guard var receiptURL: URL = Bundle.main.appStoreReceiptURL else {
             Logger.debug(Strings.receipt.no_sandbox_receipt_restore)
             return nil
         }
@@ -29,9 +29,9 @@ import Foundation
         let minimumOSVersionWithoutBug: OperatingSystemVersion = OperatingSystemVersion(majorVersion: 7, minorVersion: 0, patchVersion: 0)
         let isBelowMinimumOSVersionWithoutBug: Bool = ProcessInfo.processInfo.isOperatingSystemAtLeast(minimumOSVersionWithoutBug)
 
-        if isBelowMinimumOSVersionWithoutBug && RCSystemInfo.isSandbox {
-            let receiptURLFolder: URL = receiptURL.lastPathComponent
-            let productionReceiptURL: URL = URL(string: receiptURLFolder.appendingPathComponent("receipt"))
+        if isBelowMinimumOSVersionWithoutBug && SystemInfo.isSandbox {
+            let receiptURLFolder: URL = receiptURL.deletingLastPathComponent()
+            let productionReceiptURL: URL = receiptURLFolder.appendingPathComponent("receipt")
             receiptURL = productionReceiptURL
         }
         #endif
