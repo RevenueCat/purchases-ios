@@ -93,6 +93,7 @@
     NSString *oldAppUserID = self.currentAppUserID;
     [self.deviceCache clearCachesForAppUserID:oldAppUserID andSaveNewUserID:randomId];
     [self.deviceCache clearLatestNetworkAndAdvertisingIdsSentForAppUserID:oldAppUserID];
+    [self.backend clearCaches];
 }
 
 - (NSString *)currentAppUserID {

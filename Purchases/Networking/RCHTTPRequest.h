@@ -16,7 +16,10 @@ NS_ASSUME_NONNULL_BEGIN
                               path:(NSString *)path
                               body:(nullable NSDictionary *)requestBody
                            headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+                           retried:(BOOL)retried
                  completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler;
+- (instancetype)initWithRCHTTPRequest:(RCHTTPRequest *)rcHTTPRequest
+                              retried:(BOOL)retried;
 - (id)copyWithZone:(nullable NSZone *)zone;
 - (NSString *)description;
 
@@ -24,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, copy, nonatomic) NSString *path;
 @property (readonly, copy, nonatomic, nullable) NSDictionary *requestBody;
 @property (readonly, copy, nonatomic, nullable) NSDictionary<NSString *, NSString *> *headers;
+@property (readonly, nonatomic) BOOL retried;
 @property (readonly, copy, nonatomic, nullable) RCHTTPClientResponseHandler completionHandler;
 
 @end

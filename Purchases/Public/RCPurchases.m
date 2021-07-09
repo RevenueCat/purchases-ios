@@ -235,7 +235,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
                                                       platformFlavorVersion:platformFlavorVersion
                                                          finishTransactions:!observerMode];
-    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey systemInfo:systemInfo];
+
+    RCETagManager *eTagManager = [[RCETagManager alloc] init];
+
+    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey
+                                                systemInfo:systemInfo
+                                               eTagManager:eTagManager];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
     RCOfferingsFactory *offeringsFactory = [[RCOfferingsFactory alloc] init];
 

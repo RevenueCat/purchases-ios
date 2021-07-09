@@ -16,7 +16,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCPromotionalOffer, RCSubscriberAttribute, RCSystemInfo;
+@class RCPurchaserInfo, RCHTTPClient, RCIntroEligibility, RCPromotionalOffer, RCSubscriberAttribute, RCSystemInfo,
+        RCETagManager;
 
 extern NSErrorUserInfoKey const RCSuccessfullySyncedKey;
 extern NSString * const RCAttributeErrorsKey;
@@ -38,7 +39,9 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
 
 @interface RCBackend : NSObject
 
-- (nullable instancetype)initWithAPIKey:(NSString *)APIKey systemInfo:(RCSystemInfo *)systemInfo;
+- (nullable instancetype)initWithAPIKey:(NSString *)APIKey
+                             systemInfo:(RCSystemInfo *)systemInfo
+                            eTagManager:(RCETagManager *)eTagManager;
 
 - (nullable instancetype)initWithHTTPClient:(RCHTTPClient *)client
                                      APIKey:(NSString *)APIKey;
@@ -88,6 +91,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                        completion:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo,
                                             BOOL created,
                                             NSError * _Nullable error))completion;
+
+- (void)clearCaches;
+
 @end
 
 
