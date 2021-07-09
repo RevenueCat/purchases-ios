@@ -42,7 +42,7 @@ import Foundation
 
         guard let eTagInResponse = eTagInResponse else { return resultFromBackend }
         if shouldUseCachedVersion(responseCode: statusCode) {
-            if let storedResponse = getStoredHTTPResponse(for: request) {
+            if let storedResponse = storedHTTPResponse(for: request) {
                 return storedResponse
             }
             if retried {
@@ -82,7 +82,7 @@ private extension ETagManager {
         return nil
     }
 
-    func getStoredHTTPResponse(for request: URLRequest) -> HTTPResponse? {
+    func storedHTTPResponse(for request: URLRequest) -> HTTPResponse? {
         if let storedETagAndResponse = storedETagAndResponse(for: request) {
             return HTTPResponse(
                     statusCode: storedETagAndResponse.statusCode,
