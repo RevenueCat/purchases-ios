@@ -24,7 +24,7 @@ class MockSKProduct: SKProduct {
 
     var mockPriceLocale: Locale?
     override var priceLocale: Locale {
-        return mockPriceLocale ?? Locale.current
+        return mockPriceLocale ?? Locale(identifier: "en_US")
     }
 
     var mockPrice: NSDecimalNumber?

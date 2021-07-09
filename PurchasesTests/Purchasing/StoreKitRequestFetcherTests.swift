@@ -11,10 +11,9 @@ import OHHTTPStubs
 import Nimble
 import StoreKit
 
-import Purchases
+@testable import PurchasesCoreSwift
 
-
-class StoreKitRequestFetcher: XCTestCase {
+class StoreKitRequestFetcherTests: XCTestCase {
 
     class MockReceiptRequest: SKReceiptRefreshRequest {
         var startCalled = false
@@ -31,7 +30,7 @@ class StoreKitRequestFetcher: XCTestCase {
         }
     }
 
-    class MockRequestsFactory: RCReceiptRefreshRequestFactory {
+    class MockRequestsFactory: ReceiptRefreshRequestFactory {
         let fails: Bool
 
         init(fails: Bool) {
@@ -48,14 +47,16 @@ class StoreKitRequestFetcher: XCTestCase {
         }
     }
 
-    var fetcher: RCStoreKitRequestFetcher?
+    var fetcher: StoreKitRequestFetcher?
     var factory: MockRequestsFactory?
+    var operationDispatcher = MockOperationDispatcher()
     var receiptFetched = false
     var receiptFetchedCallbackCount = 0
 
     func setupFetcher(fails: Bool) {
+        self.operationDispatcher = MockOperationDispatcher()
         self.factory = MockRequestsFactory(fails: fails)
-        self.fetcher = RCStoreKitRequestFetcher(requestFactory: self.factory!)
+        self.fetcher = StoreKitRequestFetcher(requestFactory: self.factory!, operationDispatcher: operationDispatcher)
 
         self.fetcher!.fetchReceiptData {
             self.receiptFetched = true
@@ -102,7 +103,7 @@ class StoreKitRequestFetcher: XCTestCase {
     
     func testOnlyCreatesOneRefreshRequest() {
         setupFetcher(fails: false)
-        expect(self.factory?.requests).to(haveCount(1))
+        expect(self.factory?.requests).toEventually(haveCount(1))
     }
     
     func testFetchesReceiptMultipleTimes() {

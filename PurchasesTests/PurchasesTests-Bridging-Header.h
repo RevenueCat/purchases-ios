@@ -17,9 +17,6 @@
 #include <Purchases/RCOffering.h>
 #include <Purchases/RCOfferings+Protected.h>
 #include <Purchases/RCOfferingsFactory.h>
-#include <Purchases/RCProductInfo.h>
-#include <Purchases/RCProductInfoExtractor.h>
-#include <Purchases/RCPromotionalOffer+Protected.h>
 #include <Purchases/RCPurchaserInfo+Protected.h>
 #include <Purchases/RCPurchaserInfo.h>
 #include <Purchases/RCPurchaserInfoManager+Protected.h>
@@ -29,9 +26,7 @@
 #include <Purchases/RCPurchases.h>
 #include <Purchases/RCPurchasesErrorUtils+Protected.h>
 #include <Purchases/RCPurchasesErrorUtils.h>
-#include <Purchases/RCReceiptFetcher.h>
 #include <Purchases/RCSpecialSubscriberAttributes.h>
-#include <Purchases/RCStoreKitRequestFetcher.h>
 #include <Purchases/RCStoreKitWrapper.h>
 #include <Purchases/RCSubscriberAttributesManager.h>
 #include <Purchases/RCTypeDefsPreMigration.h>

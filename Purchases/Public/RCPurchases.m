@@ -14,7 +14,6 @@
 #import "RCIdentityManager.h"
 #import "RCLogUtils.h"
 #import "RCOfferingsFactory.h"
-#import "RCProductInfoExtractor.h"
 #import "RCPurchaserInfo+Protected.h"
 #import "RCPurchaserInfoManager.h"
 #import "RCPurchases+Protected.h"
@@ -22,9 +21,6 @@
 #import "RCPurchases.h"
 #import "RCPurchasesErrors.h"
 #import "RCPurchasesErrorUtils.h"
-#import "RCReceiptFetcher.h"
-#import "RCReceiptRefreshPolicy.h"
-#import "RCStoreKitRequestFetcher.h"
 #import "RCStoreKitWrapper.h"
 #import "RCSubscriberAttributesManager.h"
 
@@ -224,7 +220,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   observerMode:(BOOL)observerMode
                 platformFlavor:(nullable NSString *)platformFlavor
          platformFlavorVersion:(nullable NSString *)platformFlavorVersion {
-    RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     NSError *error = nil;
     RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
@@ -266,6 +261,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                 attributionFetcher:attributionFetcher];
     RCProductsRequestFactory *productsRequestFactory = [[RCProductsRequestFactory alloc] init];
     RCProductsManager *productsManager = [[RCProductsManager alloc] initWithProductsRequestFactory:productsRequestFactory];
+    RCReceiptRefreshRequestFactory *receiptRefreshRequestFactory = [[RCReceiptRefreshRequestFactory alloc] init];
+    RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] initWithRequestFactory:receiptRefreshRequestFactory
+                                                                             operationDispatcher:operationDispatcher];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher
@@ -1201,7 +1199,7 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
     NSString *presentedOffering = nil;
     if (product) {
         RCProductInfoExtractor *productInfoExtractor = [[RCProductInfoExtractor alloc] init];
-        productInfo = [productInfoExtractor extractInfoFromProduct:product];
+        productInfo = [productInfoExtractor extractInfoFromSKProduct:product];
 
         @synchronized (self) {
             presentedOffering = self.presentedOfferingsByProductIdentifier[productInfo.productIdentifier];
