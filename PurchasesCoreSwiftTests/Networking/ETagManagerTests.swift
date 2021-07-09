@@ -159,7 +159,7 @@ class ETagManagerTests: XCTestCase {
         let eTag = "an_etag"
         let url = urlForTest()
         let request = URLRequest(url: url)
-        let responseObject = ["a": "response"]
+        let responseObject: [String: String] = [:]
 
         let httpURLResponse = httpURLResponseForTest(
                 url: url,
