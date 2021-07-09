@@ -5,8 +5,6 @@
 #include <Purchases/NSError+RCExtensions.h>
 #include <Purchases/RCAttributionData.h>
 #include <Purchases/RCAttributionFetcher.h>
-#include <Purchases/RCAttributionTypeFactory+Protected.h>
-#include <Purchases/RCAttributionTypeFactory.h>
 #include <Purchases/RCBackend.h>
 #include <Purchases/RCDeviceCache+Protected.h>
 #include <Purchases/RCDeviceCache.h>

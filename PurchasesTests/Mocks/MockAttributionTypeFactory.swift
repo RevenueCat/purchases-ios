@@ -8,8 +8,8 @@ import AppTrackingTransparency
 import Purchases
 
 class MockAdClient: NSObject, FakeAdClient {
-    static func shared() -> Self {
-        return sharedInstance as! Self
+    static func sharedClient() -> FakeAdClient {
+        return sharedInstance
     }
 
     static var sharedInstance = MockAdClient()
@@ -24,7 +24,7 @@ class MockAdClient: NSObject, FakeAdClient {
     static var mockError: Error?
     static var requestAttributionDetailsCallCount = 0
 
-    func requestAttributionDetails(_ completionHandler: RCAttributionDetailsBlock) {
+    func requestAttributionDetails(_ completionHandler: ([String : Any]?, Error?) -> Void) {
         Self.requestAttributionDetailsCallCount += 1
         completionHandler(Self.mockAttributionDetails, Self.mockError)
     }

@@ -6,7 +6,7 @@
 import Foundation
 import XCTest
 import Nimble
-import Purchases
+@testable import PurchasesCoreSwift
 
 class AttributionTypeFactoryTests: XCTestCase {
 
@@ -19,61 +19,61 @@ class AttributionTypeFactoryTests: XCTestCase {
 
     func testCanRotateASIdentifierManager() {
         let expected = "ASIdentifierManager"
-        let randomized = attributionTypeFactory.rot13(expected)
+        let randomized = expected.rot13()
 
         expect { randomized }.notTo(equal(expected))
-        expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
+        expect { randomized.rot13() }.to(equal(expected))
     }
 
     func testCanRotateASIdentifierManagerBack() {
         let expected = "ASIdentifierManager"
         let randomized = self.attributionTypeFactory.mangledIdentifierClassName
 
-        expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
+        expect { randomized.rot13() }.to(equal(expected))
     }
 
     func testCanRotateAdvertisingIdentifier() {
         let expected = "advertisingIdentifier"
 
-        let randomized = attributionTypeFactory.rot13(expected)
+        let randomized = expected.rot13()
         expect { randomized }.notTo(equal(expected))
-        expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
+        expect { randomized.rot13() }.to(equal(expected))
     }
 
     func testCanRotateAdvertisingIdentifierBack() {
         let expected = "advertisingIdentifier"
         let randomized = self.attributionTypeFactory.mangledIdentifierPropertyName
 
-        expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
+        expect { randomized.rot13() }.to(equal(expected))
     }
 
     func testCanRotateTrackingManager() {
         let expected = "ATTrackingManager"
-        let randomized = attributionTypeFactory.rot13(expected)
+        let randomized = expected.rot13()
 
         expect { randomized }.notTo(equal(expected))
-        expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
+        expect { randomized.rot13() }.to(equal(expected))
     }
 
     func testCanRotateTrackingManagerBack() {
         let expected = "ATTrackingManager"
         let randomized = self.attributionTypeFactory.mangledTrackingClassName
 
-        expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
+        expect { randomized.rot13() }.to(equal(expected))
     }
 
     func testCanRotateTrackingAuthorizationStatus() {
         let expected = "trackingAuthorizationStatus"
 
-        let randomized = attributionTypeFactory.rot13(expected)
+        let randomized = expected.rot13()
         expect { randomized }.notTo(equal(expected))
-        expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
+        expect { randomized.rot13() }.to(equal(expected))
     }
 
     func testCanRotateTrackingAuthorizationStatusBack() {
         let expected = "trackingAuthorizationStatus"
         let randomized = self.attributionTypeFactory.mangledAuthStatusPropertyName
 
-        expect { self.attributionTypeFactory.rot13(randomized) }.to(equal(expected))
+        expect { randomized.rot13() }.to(equal(expected))
     }
 }
