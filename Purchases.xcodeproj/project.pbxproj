@@ -122,7 +122,6 @@
 		35F6FD62267426D600ABCB53 /* ETagAndResponseWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F6FD61267426D600ABCB53 /* ETagAndResponseWrapper.swift */; };
 		37E3500156786798CB166571 /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E352DAD631B3A45C041148 /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35010ECA71A4CE6E16307 /* RCDeviceCache+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35DCFDBDCD33B531395A6 /* RCDeviceCache+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		37E35024A14FBDD9A5DF0B7C /* NSLocale+RCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E35548F15DE7CFFCE3AA8A /* NSLocale+RCExtensions.m */; };
 		37E35054EF6315E99DC20AEC /* RCAttributionTypeFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3557795D5EC2CE5A6CCB5 /* RCAttributionTypeFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E3509E9E39B1FFE93351B1 /* NSError+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35D12020065BE7D6E473D /* NSError+RCExtensions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E351A24D613F0DFE6AF05F /* MockBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35645928A0009F4C105A7 /* MockBackend.swift */; };
@@ -153,7 +152,6 @@
 		37E3575B0FFDD90D01861D81 /* RCPurchasesErrorUtils+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35CF71E13B58F4AC8998F /* RCPurchasesErrorUtils+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E357712F2A42935CD05062 /* RCAttributionData.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E354501D2D2EC61F702958 /* RCAttributionData.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E357E33F0E20D92EE6372E /* MockSKProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357FBA3184BDE6E95DED4 /* MockSKProduct.swift */; };
-		37E3585E0B39722838F235BD /* MockUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357D16038F07915D7825D /* MockUserDefaults.swift */; };
 		37E35861EE73539B60226BC2 /* EntitlementInfosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3582920E16E065502E5FC /* EntitlementInfosTests.swift */; };
 		37E358D3F3C7C0388FF5C2BD /* RCOfferingsFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E352CB6BD9FE3D1F4946C5 /* RCOfferingsFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E358DB4F4016AC297D6B00 /* RCOfferingsFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 37E35105C5C36A30D084954C /* RCOfferingsFactory.m */; };
@@ -712,7 +710,6 @@
 				35D832CB262A5B3400E60AC5 /* Networking */,
 				2D11F5DE250FF63E005A70E8 /* Logging */,
 				2DDA3E4524DB0B4500EDFE5B /* Misc */,
-				F5BE443B26977F8900254A30 /* Networking */,
 				B3DDB55726854850008CCF23 /* Public */,
 				354235D524C11138008C84EE /* Purchasing */,
 				B39E811B268E885900D31189 /* SubscriberAttributes */,
@@ -1017,8 +1014,9 @@
 			isa = PBXGroup;
 			children = (
 				35D832CC262A5B7500E60AC5 /* ETagManager.swift */,
-				35D832D1262E56DB00E60AC5 /* HTTPStatusCodes.swift */,
 				35D832F3262E606500E60AC5 /* HTTPResponse.swift */,
+				F5BE443C26977F9B00254A30 /* HTTPRequest.swift */,
+				35D832D1262E56DB00E60AC5 /* HTTPStatusCodes.swift */,
 				35F6FD61267426D600ABCB53 /* ETagAndResponseWrapper.swift */,
 			);
 			path = Networking;
@@ -1075,7 +1073,6 @@
 				37E35E282619939718FC7DBE /* RCBackend.m */,
 				37E356C39D29EB6C8EC2D6BD /* RCHTTPClient.h */,
 				37E35EDEA372C1D8E03118FF /* RCHTTPClient.m */,
-				37E35331DBA29B3C17D0F507 /* RCHTTPStatusCodes.h */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -1341,14 +1338,6 @@
 				B39E8119268E849900D31189 /* AttributionNetwork.swift */,
 			);
 			path = Public;
-			sourceTree = "<group>";
-		};
-		F5BE443B26977F8900254A30 /* Networking */ = {
-			isa = PBXGroup;
-			children = (
-				F5BE443C26977F9B00254A30 /* HTTPRequest.swift */,
-			);
-			path = Networking;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

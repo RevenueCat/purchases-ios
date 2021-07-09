@@ -8,7 +8,6 @@
 
 #import "RCHTTPClient.h"
 #import "RCLogUtils.h"
-#import "RCHTTPStatusCodes.h"
 #import "RCPurchasesErrorUtils.h"
 @import PurchasesCoreSwift;
 
@@ -27,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation RCHTTPClient
 
-typedef void (^RetryRequestBlock)();
+typedef void (^RetryRequestBlock)(void);
 
 - (instancetype)initWithSystemInfo:(RCSystemInfo *)systemInfo
                        eTagManager:(RCETagManager *)eTagManager {

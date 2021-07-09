@@ -10,7 +10,6 @@
 
 #import "RCBackend.h"
 #import "RCHTTPClient.h"
-#import "RCHTTPStatusCodes.h"
 #import "RCLogUtils.h"
 #import "RCPurchaserInfo+Protected.h"
 #import "RCPurchasesErrorUtils+Protected.h"
