@@ -3,7 +3,7 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-class MockReceiptFetcher: RCReceiptFetcher {
+class MockReceiptFetcher: ReceiptFetcher {
     var receiptDataCalled = false
     var shouldReturnReceipt = true
     var shouldReturnZeroBytesReceipt = false
