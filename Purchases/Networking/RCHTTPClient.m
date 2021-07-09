@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void (^RetryRequestBlock)();
 
 - (instancetype)initWithSystemInfo:(RCSystemInfo *)systemInfo
-                       eTagManager:(RCETagManager *)eTagManager{
+                       eTagManager:(RCETagManager *)eTagManager {
     if (self = [super init]) {
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
         config.HTTPMaximumConnectionsPerHost = 1;
