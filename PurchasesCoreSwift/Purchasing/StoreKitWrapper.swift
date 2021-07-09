@@ -14,43 +14,41 @@ import StoreKit
                                removedTransaction transaction: SKPaymentTransaction)
 
     @objc func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
-                               shouldAddStore payment: SKPayment,
-                               for product: SKProduct) -> Bool
+                               shouldAddStorePayment payment: SKPayment,
+                               forProduct product: SKProduct) -> Bool
 
     @objc func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                                didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String])
 }
 
 @objc(RCStoreKitWrapper) public class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
-    public weak var delegate: StoreKitWrapperDelegate?
 
-    public private(set) static var _simulatesAskToBuyInSandbox = false
+    @objc public static var simulatesAskToBuyInSandbox = false
+
+    @objc public weak var delegate: StoreKitWrapperDelegate?
+
     private var paymentQueue: SKPaymentQueue
 
-    init(paymentQueue: SKPaymentQueue) {
+    @objc public init(paymentQueue: SKPaymentQueue) {
         self.paymentQueue = paymentQueue
         super.init()
+    }
+
+    @objc override public convenience init() {
+        self.init(paymentQueue: .default())
     }
 
     deinit {
         paymentQueue.remove(self)
     }
 
-    class func simulatesAskToBuyInSandbox() -> Bool {
-        return _simulatesAskToBuyInSandbox
-    }
-
-    class func setSimulatesAskToBuyInSandbox(_ simulatesAskToBuyInSandbox: Bool) {
-        _simulatesAskToBuyInSandbox = simulatesAskToBuyInSandbox
-    }
-
-    func add(_ payment: SKPayment?) {
+    @objc public func addPayment(_ payment: SKPayment?) {
         if let payment = payment {
             paymentQueue.add(payment)
         }
     }
 
-    func finish(_ transaction: SKPaymentTransaction?) {
+    @objc public func finishTransaction(_ transaction: SKPaymentTransaction?) {
         //        Logger.purchase(String(format:
         //                                Strings.purchase.finishing_transaction,
         //                               transaction?.payment.productIdentifier,
@@ -62,7 +60,7 @@ import StoreKit
         }
     }
 
-    func presentCodeRedemptionSheet() {
+    @objc public func presentCodeRedemptionSheet() {
         if #available(iOS 14.0, *) {
             paymentQueue.presentCodeRedemptionSheet()
         } else {
@@ -70,18 +68,18 @@ import StoreKit
         }
     }
 
-    func payment(with product: SKProduct) -> SKMutablePayment {
+    @objc public func payment(withProduct product: SKProduct) -> SKMutablePayment {
         let payment = SKMutablePayment(product: product)
         // todo: check that it's fine to omit tvOS and iOS since the relevant methods exist in targets lower than ours
         if #available(macOS 10.14, watchOS 6.2, macCatalyst 13.0, *) {
-            payment.simulatesAskToBuyInSandbox = StoreKitWrapper.simulatesAskToBuyInSandbox()
+            payment.simulatesAskToBuyInSandbox = Self.simulatesAskToBuyInSandbox
         }
         return payment
     }
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    func payment(with product: SKProduct, discount: SKPaymentDiscount) -> SKMutablePayment {
-        let payment = self.payment(with: product)
+    @objc public func payment(withProduct product: SKProduct, discount: SKPaymentDiscount) -> SKMutablePayment {
+        let payment = self.payment(withProduct: product)
         payment.paymentDiscount = discount
         return payment
     }
@@ -133,7 +131,7 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
         shouldAddStorePayment payment: SKPayment,
         for product: SKProduct
     ) -> Bool {
-        return delegate?.storeKitWrapper(self, shouldAddStore: payment, for: product) ?? false
+        return delegate?.storeKitWrapper(self, shouldAddStorePayment: payment, forProduct: product) ?? false
     }
 
     #endif

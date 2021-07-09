@@ -3,7 +3,7 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-class MockStoreKitWrapper: RCStoreKitWrapper {
+class MockStoreKitWrapper: StoreKitWrapper {
     var payment: SKPayment?
     var addPaymentCallCount = 0
 
@@ -18,8 +18,8 @@ class MockStoreKitWrapper: RCStoreKitWrapper {
         finishCalled = true
     }
 
-    var mockDelegate: RCStoreKitWrapperDelegate?
-    override var delegate: RCStoreKitWrapperDelegate? {
+    var mockDelegate: StoreKitWrapperDelegate?
+    override var delegate: StoreKitWrapperDelegate? {
         get {
             return mockDelegate
         }

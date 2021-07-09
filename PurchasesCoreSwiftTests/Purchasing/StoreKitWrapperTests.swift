@@ -11,7 +11,7 @@ import XCTest
 import OHHTTPStubs
 import Nimble
 
-import Purchases
+@testable import PurchasesCoreSwift
 
 class MockPaymentQueue: SKPaymentQueue {
     var addedPayments: [SKPayment] = []
