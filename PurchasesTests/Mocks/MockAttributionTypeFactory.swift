@@ -24,7 +24,7 @@ class MockAdClient: NSObject, FakeAdClient {
     static var mockError: Error?
     static var requestAttributionDetailsCallCount = 0
 
-    func requestAttributionDetails(_ completionHandler: ([String : Any]?, Error?) -> Void) {
+    func requestAttributionDetails(_ completionHandler: AttributionDetailsBlock) {
         Self.requestAttributionDetailsCallCount += 1
         completionHandler(Self.mockAttributionDetails, Self.mockError)
     }
