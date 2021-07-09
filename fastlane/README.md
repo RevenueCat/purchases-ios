@@ -51,11 +51,11 @@ Create sandbox account
 fastlane ios deployment_checks
 ```
 Deployment checks
-### ios build_tv_and_watch
+### ios build_tv_watch_mac
 ```
-fastlane ios build_tv_and_watch
+fastlane ios build_tv_watch_mac
 ```
-tvOS and watchOS build
+tvOS, watchOS, and macOS build
 ### ios carthage_archive
 ```
 fastlane ios carthage_archive

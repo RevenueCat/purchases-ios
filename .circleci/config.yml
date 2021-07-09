@@ -124,7 +124,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/report.html
           destination: test_report.html
-  buildTvAndWatch:
+  buildTvWatchAndMacOS:
     macos:
       xcode: "12.5.1"
     working_directory: ~/purchases-ios
@@ -133,8 +133,8 @@ jobs:
       - checkout
       - install-gems
       - run:
-          name: Build AppleTV and WatchOS
-          command: bundle exec fastlane build_tv_and_watch            
+          name: Build AppleTV, WatchOS, and macOS
+          command: bundle exec fastlane build_tv_watch_mac            
   apitest:
     macos:
       xcode: "12.5.1"
@@ -345,6 +345,7 @@ workflows:
       - lint
       - runtest
       - apitest
+      - buildTvWatchAndMacOS
       - storekit_tests: *release-tags-and-branches
       - deployment-checks: *release-branches
       - integration-tests-cocoapods: *release-tags-and-branches
