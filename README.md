@@ -1,7 +1,4 @@
-<p align="center">
-  <img src="https://d2jzmbury1aqmc.cloudfront.net/assets/images/build.svg" alt="RevenueCat"/>
-</p>
-<h3 align="center">😻 In-app Subscriptions Made Easy 😻</h1>
+<h3 align="center">😻 In-App Subscriptions Made Easy 😻</h1>
 
 [![License](https://img.shields.io/cocoapods/l/Purchases.svg?style=flat)](http://cocoapods.org/pods/Purchases)
 [![Version](https://img.shields.io/cocoapods/v/Purchases.svg?style=flat)](https://cocoapods.org/pods/Purchases)
