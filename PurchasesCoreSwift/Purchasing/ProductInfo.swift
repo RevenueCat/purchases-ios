@@ -30,7 +30,7 @@ import StoreKit
         case freeTrial = 2
     }
 
-    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc static public func paymentMode(fromSKProductDiscountPaymentMode paymentMode: SKProductDiscount.PaymentMode) -> ProductInfo.PaymentMode {
         switch paymentMode {
         case .payUpFront:
