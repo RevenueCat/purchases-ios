@@ -25,7 +25,15 @@ import StoreKit
 
     @objc public static var simulatesAskToBuyInSandbox = false
 
-    @objc public weak var delegate: StoreKitWrapperDelegate?
+    @objc public weak var delegate: StoreKitWrapperDelegate? {
+        didSet {
+            if delegate != nil {
+                paymentQueue.add(self)
+            } else {
+                paymentQueue.remove(self)
+            }
+        }
+    }
 
     private var paymentQueue: SKPaymentQueue
 
@@ -42,22 +50,18 @@ import StoreKit
         paymentQueue.remove(self)
     }
 
-    @objc public func addPayment(_ payment: SKPayment?) {
-        if let payment = payment {
-            paymentQueue.add(payment)
-        }
+    @objc public func addPayment(_ payment: SKPayment) {
+        paymentQueue.add(payment)
     }
 
-    @objc public func finishTransaction(_ transaction: SKPaymentTransaction?) {
+    @objc public func finishTransaction(_ transaction: SKPaymentTransaction) {
         //        Logger.purchase(String(format:
         //                                Strings.purchase.finishing_transaction,
         //                               transaction?.payment.productIdentifier,
         //                               transaction?.transactionIdentifier,
         //                               transaction?.original?.transactionIdentifier))
 
-        if let transaction = transaction {
-            paymentQueue.finishTransaction(transaction)
-        }
+        paymentQueue.finishTransaction(transaction)
     }
 
     @objc public func presentCodeRedemptionSheet() {

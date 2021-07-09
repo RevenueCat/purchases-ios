@@ -3,18 +3,20 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
+@testable import PurchasesCoreSwift
+
 class MockStoreKitWrapper: StoreKitWrapper {
     var payment: SKPayment?
     var addPaymentCallCount = 0
 
-    override func add(_ newPayment: SKPayment) {
+    override func addPayment(_ newPayment: SKPayment) {
         payment = newPayment
         addPaymentCallCount += 1
     }
 
     var finishCalled = false
 
-    override func finish(_ transaction: SKPaymentTransaction) {
+    override func finishTransaction(_ transaction: SKPaymentTransaction) {
         finishCalled = true
     }
 
