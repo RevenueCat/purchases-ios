@@ -15,7 +15,7 @@ import StoreKit
     @objc public let price: NSDecimalNumber
     @objc public let paymentMode: ProductInfo.PaymentMode
 
-    @available(iOS 12.2, macOS 10.14.4, tvOS 11.2, watchOS 4.2, *)
+    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     @objc public convenience init(withProductDiscount productDiscount: SKProductDiscount) {
         let skPaymentMode = productDiscount.paymentMode
         let rcPaymentMode = ProductInfo.paymentMode(fromSKProductDiscountPaymentMode: skPaymentMode)

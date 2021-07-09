@@ -127,7 +127,7 @@ platform :ios do
   desc "tvOS, watchOS, and macOS build"
   lane :build_tv_watch_mac do |options|
     check_pods
-    carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS,macOS", use_xcframeworks: true)
+    carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS,Mac", use_xcframeworks: true)
   end
 
   desc "Run the carthage archive steps to prepare for carthage distribution"
