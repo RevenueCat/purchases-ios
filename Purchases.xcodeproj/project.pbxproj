@@ -967,6 +967,7 @@
 		354235D524C11138008C84EE /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
+				80E80EF026970DC3008F245A /* RCReceiptFetcher.swift */,
 				B372EC55268FEF020099171E /* ProductInfo.swift */,
 				37E35C7060D7E486F5958BED /* ProductsManager.swift */,
 				37E35E8DCF998D9DB63850F8 /* ProductsRequestFactory.swift */,
@@ -1159,7 +1160,6 @@
 				37E35105C5C36A30D084954C /* RCOfferingsFactory.m */,
 				37E359B77C1E588C9C009D2B /* RCStoreKitWrapper.h */,
 				37E35CE6628D07BD2C4A07C0 /* RCStoreKitWrapper.m */,
-				80E80EF026970DC3008F245A /* RCReceiptFetcher.swift */,
 			);
 			path = Purchasing;
 			sourceTree = "<group>";
