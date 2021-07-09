@@ -24,6 +24,7 @@
 		2D4D6AF524F717B800B656BE /* ContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35092F0E41512E0D610BA /* ContainerFactory.swift */; };
 		2D4D6AF624F7193700B656BE /* verifyReceiptSample1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2DDE559A24C8B5E300DCB087 /* verifyReceiptSample1.txt */; };
 		2D4D6AF724F7193700B656BE /* base64encodedreceiptsample1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2DDE559B24C8B5E300DCB087 /* base64encodedreceiptsample1.txt */; };
+		2D4E926526990AB1000E10B0 /* StoreKitWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */; };
 		2D5033242406E4E8009CAE61 /* RCTypeDefsPreMigration.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033212406E4E8009CAE61 /* RCTypeDefsPreMigration.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D5033262406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033232406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2D50332A2406EA61009CAE61 /* RCSubscriberAttributesManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -318,6 +319,7 @@
 		2D390254259CF46000DB19C0 /* MockPaymentDiscount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPaymentDiscount.swift; sourceTree = "<group>"; };
 		2D4C18A824F47E4400F268CD /* Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Purchases.swift; sourceTree = "<group>"; };
 		2D4D6AF224F7172900B656BE /* MockProductsRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockProductsRequest.swift; sourceTree = "<group>"; };
+		2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWrapper.swift; sourceTree = "<group>"; };
 		2D5033212406E4E8009CAE61 /* RCTypeDefsPreMigration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCTypeDefsPreMigration.h; path = Purchases/SwiftObjcCompatibility/RCTypeDefsPreMigration.h; sourceTree = SOURCE_ROOT; };
 		2D5033232406E4E8009CAE61 /* RCSpecialSubscriberAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCSpecialSubscriberAttributes.h; path = Purchases/SubscriberAttributes/RCSpecialSubscriberAttributes.h; sourceTree = SOURCE_ROOT; };
 		2D5033272406EA61009CAE61 /* RCSubscriberAttributesManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RCSubscriberAttributesManager.h; path = Purchases/SubscriberAttributes/RCSubscriberAttributesManager.h; sourceTree = SOURCE_ROOT; };
@@ -991,6 +993,7 @@
 				F5BE423F26962ACF00254A30 /* ReceiptRefreshPolicy.swift */,
 				2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */,
 				F5BE424126965F9F00254A30 /* ProductInfoExtractor.swift */,
+				2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */,
 			);
 			path = Purchasing;
 			sourceTree = "<group>";
@@ -1688,6 +1691,7 @@
 				2D991ACA268BA56900085481 /* StoreKitRequestFetcher.swift in Sources */,
 				2DDF41B624F6F387005BC22D /* ASN1ObjectIdentifierBuilder.swift in Sources */,
 				35D832D2262E56DB00E60AC5 /* HTTPStatusCodes.swift in Sources */,
+				2D4E926526990AB1000E10B0 /* StoreKitWrapper.swift in Sources */,
 				2DDF419624F6F331005BC22D /* ProductsRequestFactory.swift in Sources */,
 				2DDF419724F6F331005BC22D /* DateExtensions.swift in Sources */,
 				9A65E0A52591A23500DE00B0 /* PurchaseStrings.swift in Sources */,
