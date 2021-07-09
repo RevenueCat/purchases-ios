@@ -55,11 +55,11 @@ import StoreKit
     }
 
     @objc public func finishTransaction(_ transaction: SKPaymentTransaction) {
-        //        Logger.purchase(String(format:
-        //                                Strings.purchase.finishing_transaction,
-        //                               transaction?.payment.productIdentifier,
-        //                               transaction?.transactionIdentifier,
-        //                               transaction?.original?.transactionIdentifier))
+                Logger.purchase(String(format:
+                                        Strings.purchase.finishing_transaction,
+                                       transaction.payment.productIdentifier,
+                                       transaction.transactionIdentifier ?? "",
+                                       transaction.original?.transactionIdentifier ?? ""))
 
         paymentQueue.finishTransaction(transaction)
     }
@@ -92,36 +92,32 @@ import StoreKit
 
 extension StoreKitWrapper: SKPaymentQueueDelegate {
 
-    public func paymentQueue(
-        _ queue: SKPaymentQueue,
-        updatedTransactions transactions: [SKPaymentTransaction]
-    ) {
+    public func paymentQueue(_ queue: SKPaymentQueue,
+                             updatedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
-            //            Logger.debug(String(format:
-            //                Strings.purchase.paymentqueue_updatedtransaction,
-            //                transaction.payment.productIdentifier,
-            //                transaction.transactionIdentifier ?? "",
-            //                transaction.error ?? "",
-            //                transaction.original?.transactionIdentifier ?? "",
-            //                transaction.transactionState.rawValue))
+            Logger.debug(String(format:
+                                    Strings.purchase.paymentqueue_updatedtransaction,
+                                transaction.payment.productIdentifier,
+                                transaction.transactionIdentifier ?? "",
+                                transaction.error?.localizedDescription ?? "",
+                                transaction.original?.transactionIdentifier ?? "",
+                                transaction.transactionState.rawValue))
             delegate?.storeKitWrapper(self, updatedTransaction: transaction)
         }
     }
 
     // Sent when transactions are removed from the queue (via finishTransaction:).
-    public func paymentQueue(
-        _ queue: SKPaymentQueue,
-        removedTransactions transactions: [SKPaymentTransaction]
-    ) {
+    public func paymentQueue(_ queue: SKPaymentQueue,
+                             removedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
-            //            Logger.debug(String(format:
-            //                                    Strings.purchase.paymentqueue_removedtransaction,
-            //                                transaction.payment.productIdentifier,
-            //                                transaction.transactionIdentifier,
-            //                                transaction.original?.transactionIdentifier,
-            //                                transaction.error,
-            //                                (transaction.error as NSError?)?.userInfo,
-            //                                transaction.transactionState.rawValue))
+            Logger.debug(String(format:
+                                    Strings.purchase.paymentqueue_removedtransaction,
+                                transaction.payment.productIdentifier,
+                                transaction.transactionIdentifier ?? "",
+                                transaction.original?.transactionIdentifier ?? "",
+                                transaction.error?.localizedDescription ?? "",
+                                (transaction.error as NSError?)?.userInfo ?? "",
+                                transaction.transactionState.rawValue))
             delegate?.storeKitWrapper(self, removedTransaction: transaction)
         }
     }
