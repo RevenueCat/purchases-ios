@@ -35,10 +35,10 @@ public typealias AttributionDetailsBlock = ([String: Any]?, Error?) -> Void
 
 @objc(RCAttributionTypeFactory)
 open class AttributionTypeFactory: NSObject {
-    @objc public var mangledIdentifierClassName = "NFVqragvsvreZnantre"
-    @objc public var mangledIdentifierPropertyName = "nqiregvfvatVqragvsvre"
-    @objc public var mangledAuthStatusPropertyName = "genpxvatNhgubevmngvbaFgnghf"
-    @objc public var mangledTrackingClassName = "NGGenpxvatZnantre"
+    let mangledIdentifierClassName = "NFVqragvsvreZnantre"
+    let mangledIdentifierPropertyName = "nqiregvfvatVqragvsvre"
+    let mangledAuthStatusPropertyName = "genpxvatNhgubevmngvbaFgnghf"
+    let mangledTrackingClassName = "NGGenpxvatZnantre"
 
     @objc open func adClientClass() -> FakeAdClient.Type? {
         NSClassFromString("ADClient") as? FakeAdClient.Type
