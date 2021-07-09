@@ -126,7 +126,7 @@ jobs:
           destination: test_report.html
   buildTvWatchAndMacOS:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
