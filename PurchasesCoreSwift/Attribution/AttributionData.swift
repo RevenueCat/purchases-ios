@@ -15,7 +15,7 @@ import Foundation
     @objc public let network: AttributionNetwork
     @objc public let networkUserId: String?
 
-    @objc public init(data: [AnyHashable: Any], fromNetwork network: AttributionNetwork, forNetworkUserId networkUserId: String?) {
+    @objc public init(data: [AnyHashable: Any], network: AttributionNetwork, networkUserId: String?) {
         self.data = data
         self.network = network
         self.networkUserId = networkUserId

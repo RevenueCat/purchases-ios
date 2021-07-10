@@ -222,8 +222,8 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         postponedAttributionData = [NSMutableArray array];
     }
     [postponedAttributionData addObject:[[RCAttributionData alloc] initWithData:data
-                                                                    fromNetwork:network
-                                                               forNetworkUserId:networkUserId]];
+                                                                        network:network
+                                                                  networkUserId:networkUserId]];
 }
 
 @end
