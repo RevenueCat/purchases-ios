@@ -7,7 +7,6 @@
 //
 
 #import "RCOfferings+Protected.h"
-#import "RCOffering+Protected.h"
 
 @interface RCOfferings ()
 @property (readwrite, nullable) NSString *currentOfferingID;

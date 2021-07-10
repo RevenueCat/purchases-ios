@@ -8,10 +8,8 @@
 
 #import <StoreKit/StoreKit.h>
 #import "RCOfferingsFactory.h"
-#import "RCOffering.h"
 #import "RCOfferings.h"
 #import "RCOfferings+Protected.h"
-#import "RCOffering+Protected.h"
 @import PurchasesCoreSwift;
 
 @interface RCOfferingsFactory ()

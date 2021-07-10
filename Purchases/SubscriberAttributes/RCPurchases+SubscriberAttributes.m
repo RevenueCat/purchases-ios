@@ -8,7 +8,6 @@
 #import "RCSubscriberAttributesManager.h"
 #import "RCLogUtils.h"
 #import "NSError+RCExtensions.h"
-#import "RCOffering.h"
 #import "RCOfferings.h"
 @import PurchasesCoreSwift;
 
