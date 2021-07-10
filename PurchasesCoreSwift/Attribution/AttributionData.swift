@@ -11,9 +11,9 @@ import Foundation
 // TODO(post-migration): Make this internal
 @objc(RCAttributionData) public class AttributionData: NSObject {
 
-    @objc public let data: [AnyHashable: Any]
-    @objc public let network: AttributionNetwork
-    @objc public let networkUserId: String?
+    @objc public var data: [AnyHashable: Any]
+    @objc public var network: AttributionNetwork
+    @objc public var networkUserId: String?
 
     @objc public init(data: [AnyHashable: Any], network: AttributionNetwork, networkUserId: String?) {
         self.data = data
