@@ -7,6 +7,7 @@ import XCTest
 import Nimble
 
 import Purchases
+@testable import PurchasesCoreSwift
 
 class PurchasesTests: XCTestCase {
 
@@ -1265,7 +1266,9 @@ class PurchasesTests: XCTestCase {
         let product = MockSKProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init()
 
-        storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
+        _ = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper,
+                                                      shouldAddStorePayment: payment,
+                                                      for: product)
 
         expect(self.purchasesDelegate.promoProduct).to(be(product))
     }
@@ -1275,7 +1278,9 @@ class PurchasesTests: XCTestCase {
         let product = MockSKProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init()
 
-        let result = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
+        let result = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper,
+                                                               shouldAddStorePayment: payment,
+                                                               for: product)
 
         expect(result).to(beFalse())
     }
@@ -1285,7 +1290,9 @@ class PurchasesTests: XCTestCase {
         let product = MockSKProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init(product: product)
 
-        storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
+        _ = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper,
+                                                      shouldAddStorePayment: payment,
+                                                      for: product)
 
         let transaction = MockTransaction()
         transaction.mockPayment = payment
@@ -1306,7 +1313,9 @@ class PurchasesTests: XCTestCase {
         let product = MockSKProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init(product: product)
 
-        storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
+        _ = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper,
+                                                      shouldAddStorePayment: payment,
+                                                      for: product)
 
         expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
 
@@ -1990,7 +1999,9 @@ class PurchasesTests: XCTestCase {
         let product = MockSKProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init(product: product)
 
-        storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper, shouldAddStore: payment, for: product)
+        _ = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper,
+                                                      shouldAddStorePayment: payment,
+                                                      for: product)
 
         expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
 
@@ -2563,7 +2574,8 @@ class PurchasesTests: XCTestCase {
             setupPurchases()
             guard let purchases = purchases else { fatalError() }
             expect(self.backend.postReceiptDataCalled).to(beFalse())
-            purchases.storeKitWrapper(storeKitWrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
+            (purchases as StoreKitWrapperDelegate)
+                .storeKitWrapper(storeKitWrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
             expect(self.backend.postReceiptDataCalled).to(beTrue())
         }
     }

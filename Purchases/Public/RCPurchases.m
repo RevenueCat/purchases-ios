@@ -22,7 +22,6 @@
 #import "RCPurchases.h"
 #import "RCPurchasesErrors.h"
 #import "RCPurchasesErrorUtils.h"
-#import "RCStoreKitWrapper.h"
 #import "RCSubscriberAttributesManager.h"
 
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self.operationDispatcher dispatchOnMainThread:^{ completion(__VA_ARGS__); }];
@@ -1143,7 +1142,9 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
      removedTransaction:(SKPaymentTransaction *)transaction {
 }
 
-- (BOOL)storeKitWrapper:(nonnull RCStoreKitWrapper *)storeKitWrapper shouldAddStorePayment:(nonnull SKPayment *)payment forProduct:(nonnull SKProduct *)product {
+- (BOOL)storeKitWrapper:(nonnull RCStoreKitWrapper *)storeKitWrapper
+  shouldAddStorePayment:(nonnull SKPayment *)payment
+             forProduct:(nonnull SKProduct *)product {
     @synchronized(self) {
         self.productsByIdentifier[product.productIdentifier] = product;
     }
@@ -1159,6 +1160,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
     return NO;
 }
+
 - (void)                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
 didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
 API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
