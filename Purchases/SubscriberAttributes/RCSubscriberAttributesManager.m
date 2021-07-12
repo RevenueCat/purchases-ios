@@ -9,7 +9,6 @@
 #import "RCAttributionFetcher.h"
 #import "RCBackend.h"
 #import "RCDeviceCache.h"
-#import "RCLogUtils.h"
 #import "RCSpecialSubscriberAttributes.h"
 #import "RCSubscriberAttributesManager.h"
 
@@ -184,7 +183,8 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    RCLog(RCStrings.attribution.marking_attributes_synced, appUserID, syncedAttributes);
+    [RCLog info:[NSString stringWithFormat:RCStrings.attribution.marking_attributes_synced,
+                 appUserID, syncedAttributes]];
     @synchronized (self) {
         RCSubscriberAttributeMutableDict
             unsyncedAttributes = [self unsyncedAttributesByKeyForAppUserID:appUserID].mutableCopy;

@@ -33,4 +33,5 @@ import Foundation
         "SKPaymentTransaction missing an SKPayment - this is an issue with the App Store." }
     @objc public var skpayment_missing_product_identifier: String { "There is a problem with the SKPayment missing " +
         "a product identifier - this is an issue with the App Store." }
+    
 }

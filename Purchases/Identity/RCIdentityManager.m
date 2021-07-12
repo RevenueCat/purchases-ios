@@ -4,7 +4,6 @@
 //
 
 #import "RCIdentityManager.h"
-#import "RCLogUtils.h"
 #import "RCBackend.h"
 #import "RCDeviceCache.h"
 #import "RCPurchasesErrorUtils.h"
@@ -145,13 +144,13 @@
 }
 
 - (void)logOutWithCompletion:(void (^)(NSError * _Nullable error))completion {
-    RCLog(RCStrings.identity.logging_out_user, self.currentAppUserID);
+    [RCLog info:[NSString stringWithFormat:RCStrings.identity.logging_out_user, self.currentAppUserID]];
     if (self.currentUserIsAnonymous) {
         completion(RCPurchasesErrorUtils.logOutAnonymousUserError);
         return;
     }
     [self resetAppUserID];
-    RCLog(@"%@", RCStrings.identity.log_out_success);
+    [RCLog info:[NSString stringWithFormat:@"%@", RCStrings.identity.log_out_success]];
     completion(nil);
 }
 

@@ -7,7 +7,6 @@
 //
 
 #import "RCAttributionFetcher.h"
-#import "RCLogUtils.h"
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
@@ -172,7 +171,8 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
                           || (!needsTrackingAuthorization
                               && authorizationStatus == FakeTrackingManagerAuthorizationStatusNotDetermined);
         if (!authorized) {
-            RCLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_not_authorized);
+            [RCLog info:[NSString stringWithFormat:@"%@",
+                         RCStrings.attribution.search_ads_attribution_cancelled_not_authorized]];
             return NO;
         }
 

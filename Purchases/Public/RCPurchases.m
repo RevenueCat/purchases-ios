@@ -13,7 +13,6 @@
 #import "RCBackend.h"
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
-#import "RCLogUtils.h"
 #import "RCOfferingsFactory.h"
 #import "RCPurchaserInfo+Protected.h"
 #import "RCPurchaserInfoManager.h"
@@ -153,7 +152,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 + (void)setDefaultInstance:(RCPurchases *)instance {
     @synchronized([RCPurchases class]) {
         if (_sharedPurchases) {
-            RCLog(@"%@", RCStrings.configure.purchase_instance_already_set);
+            [RCLog info:[NSString stringWithFormat:@"%@", RCStrings.configure.purchase_instance_already_set]];
         }
         _sharedPurchases = instance;
     }
@@ -587,7 +586,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     } else if (payment.productIdentifier) {
         productIdentifier = payment.productIdentifier;
     } else {
-        RCLog(@"makePurchase - Could not purchase SKProduct. Couldn't find its product identifier. This is possibly an App Store quirk.");
+        [RCLog info:[NSString
+                     stringWithFormat:@"makePurchase - Could not purchase SKProduct. Couldn't find its product identifier. This is possibly an App Store quirk."]];
         completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
                                                  code:RCUnknownError
                                              userInfo:@{
