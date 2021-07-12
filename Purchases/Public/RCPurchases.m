@@ -736,7 +736,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                             NSError *error = nil;
                             RCIntroEligibility *eligibility = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedEligibility[key] error:&error];
                             if (!eligibility) {
-                                RCErrorLog(@"Unable to create an RCIntroEligibility: %@", error.localizedDescription);
+                                [RCLog error:[NSString stringWithFormat:@"Unable to create an RCIntroEligibility: %@",
+                                              error.localizedDescription]];
                             } else {
                                 convertedEligibility[key] = eligibility;
                             }
@@ -744,8 +745,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                         
                         CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
                     } else {
-                        RCErrorLog(RCStrings.receipt.parse_receipt_locally_error,
-                                   error.localizedDescription);
+                        [RCLog error:[NSString stringWithFormat:RCStrings.receipt.parse_receipt_locally_error,
+                                      error.localizedDescription]];
                         [self.backend getIntroEligibilityForAppUserID:self.appUserID
                                                           receiptData:data
                                                    productIdentifiers:productIdentifiers
@@ -1083,7 +1084,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         } else if (![error.userInfo[RCFinishableKey] boolValue]) {
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
         } else {
-            RCErrorLog(@"%@", RCStrings.receipt.unknown_backend_error);
+            [RCLog error:[NSString stringWithFormat:@"%@", RCStrings.receipt.unknown_backend_error]];
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
         }
     }];

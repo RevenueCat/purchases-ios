@@ -145,9 +145,9 @@ NS_ASSUME_NONNULL_BEGIN
             [self.deviceCache deleteAttributesIfSyncedForAppUserID:syncingAppUserID];
         }
     } else {
-        RCErrorLog(RCStrings.attribution.attributes_sync_error,
-                   error.localizedDescription,
-                   error.userInfo);
+        [RCLog error:[NSString stringWithFormat:RCStrings.attribution.attributes_sync_error,
+                      error.localizedDescription,
+                      error.userInfo]];
     }
 }
 

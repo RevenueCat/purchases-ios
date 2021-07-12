@@ -16,7 +16,4 @@ NS_ASSUME_NONNULL_BEGIN
 #define RCWarnLog(args, ...) \
     [RCLog warn: [NSString stringWithFormat: args, ##__VA_ARGS__]]
 
-#define RCErrorLog(args, ...) \
-    [RCLog error: [NSString stringWithFormat: args, ##__VA_ARGS__]]
-
 NS_ASSUME_NONNULL_END

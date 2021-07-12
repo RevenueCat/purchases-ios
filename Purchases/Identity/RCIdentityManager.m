@@ -115,7 +115,7 @@
     if (!currentAppUserID || !newAppUserID || [newAppUserID isEqualToString:@""]) {
         NSString *errorMessage = currentAppUserID == nil ? RCStrings.identity.logging_in_with_initial_appuserid_nil
                                                          : RCStrings.identity.logging_in_with_nil_appuserid;
-        RCErrorLog(@"%@", errorMessage);
+        [RCLog error:[NSString stringWithFormat:@"%@", errorMessage]];
         completion(nil, NO, RCPurchasesErrorUtils.missingAppUserIDError);
         return;
     }

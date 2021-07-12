@@ -39,7 +39,8 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (error.rc_subscriberAttributesErrors) {
-        RCErrorLog(RCStrings.attribution.subscriber_attributes_error, error.rc_subscriberAttributesErrors);
+        [RCLog error:[NSString stringWithFormat:RCStrings.attribution.subscriber_attributes_error,
+                      error.rc_subscriberAttributesErrors]];
     }
     [self.subscriberAttributesManager markAttributesAsSynced:syncedAttributes appUserID:appUserID];
 }

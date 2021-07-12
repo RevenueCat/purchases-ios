@@ -87,7 +87,7 @@ typedef void (^RetryRequestBlock)(void);
                                                                        headers:defaultHeaders
                                                                    refreshETag:retried];
     if (!urlRequest) {
-        RCErrorLog(@"Could not create request to %@ with body %@", path, requestBody);
+        [RCLog error:[NSString stringWithFormat:@"Could not create request to %@ with body %@", path, requestBody]];
         completionHandler(-1,
                           nil,
                           [RCPurchasesErrorUtils networkErrorWithUnderlyingError:RCPurchasesErrorUtils.unknownError]);
@@ -167,8 +167,9 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
         }
         
         if (jsonError) {
-            RCErrorLog(RCStrings.network.parsing_json_error, jsonError.localizedDescription);
-            RCErrorLog(RCStrings.network.json_data_received, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            [RCLog error:[NSString stringWithFormat:RCStrings.network.parsing_json_error, jsonError.localizedDescription]];
+            [RCLog error:[NSString stringWithFormat:RCStrings.network.json_data_received,
+                          [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]]];
             error = jsonError;
         }
 
@@ -243,7 +244,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
             body = [NSJSONSerialization dataWithJSONObject:requestBody options:0 error:&jsonParseError];
         }
         if (!isValidJSONObject || jsonParseError) {
-            RCErrorLog(RCStrings.network.creating_json_error, requestBody);
+            [RCLog error:[NSString stringWithFormat:RCStrings.network.creating_json_error, requestBody]];
             return nil;
         }
         request.HTTPBody = body;

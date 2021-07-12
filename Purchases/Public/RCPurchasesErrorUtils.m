@@ -279,7 +279,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
         case RCUnknownBackendError:
         case RCInvalidSubscriberAttributesError:
         case RCLogOutAnonymousUserError:
-            RCErrorLog(@"%@", RCPurchasesErrorDescription(code));
+            [RCLog error:[NSString stringWithFormat:@"%@", RCPurchasesErrorDescription(code)]];
             break;
         case RCPurchaseCancelledError:
         case RCStoreProblemError:
