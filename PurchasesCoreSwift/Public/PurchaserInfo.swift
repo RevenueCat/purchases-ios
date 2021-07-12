@@ -10,6 +10,11 @@ import Foundation
 
 @objc public class PurchaserInfo: NSObject {
     
+    @objc public init?(data: NSDictionary) {
+        // TODO implement this
+        return nil
+    }
+    
     // Entitlements attached to this purchaser info
     let entitlements: EntitlementInfos
     
