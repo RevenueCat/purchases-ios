@@ -293,7 +293,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
         case RCIneligibleError:
         case RCInsufficientPermissionsError:
         case RCPaymentPendingError:
-            RCAppleErrorLog(@"%@", RCPurchasesErrorDescription(code));
+            [RCLog appleError:[NSString stringWithFormat:@"%@", RCPurchasesErrorDescription(code)]];
             break;
         default:
             break;

@@ -1022,7 +1022,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)handleOfferingsUpdateError:(NSError *)error completion:(RCReceiveOfferingsBlock)completion {
-    RCAppleErrorLog(RCStrings.offering.fetching_offerings_error, error);
+    [RCLog appleError:[NSString stringWithFormat:RCStrings.offering.fetching_offerings_error, error]];
     [self.deviceCache clearOfferingsCacheTimestamp];
     CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
 }
