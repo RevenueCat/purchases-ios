@@ -607,9 +607,10 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.deviceCache setOfferingsCacheTimestampToNow];
 
     if (presentedOfferingIdentifier) {
-        RCPurchaseLog(RCStrings.purchase.purchasing_product_from_package, productIdentifier, presentedOfferingIdentifier);
+        [RCLog purchase:[NSString stringWithFormat:RCStrings.purchase.purchasing_product_from_package,
+                          productIdentifier, presentedOfferingIdentifier]];
     } else {
-        RCPurchaseLog(RCStrings.purchase.purchasing_product, productIdentifier);
+        [RCLog purchase:[NSString stringWithFormat:RCStrings.purchase.purchasing_product, productIdentifier]];
     }
 
     @synchronized (self) {

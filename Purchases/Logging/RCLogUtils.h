@@ -25,10 +25,4 @@ NS_ASSUME_NONNULL_BEGIN
 #define RCAppleWarningLog(args, ...) \
     [RCLog appleWarning: [NSString stringWithFormat: args, ##__VA_ARGS__]]
 
-#define RCPurchaseLog(args, ...) \
-    [RCLog purchase: [NSString stringWithFormat: args, ##__VA_ARGS__]]
-
-#define RCPurchaseSuccessLog(args, ...) \
-    [RCLog rcPurchaseSuccess: [NSString stringWithFormat: args, ##__VA_ARGS__]]
-
 NS_ASSUME_NONNULL_END
