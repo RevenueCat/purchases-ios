@@ -82,14 +82,14 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     func testAddsPaymentsToTheQueue() {
         let payment = SKPayment.init(product: SKProduct.init())
 
-        wrapper?.addPayment(payment)
+        wrapper?.add(payment)
 
         expect(self.paymentQueue.addedPayments).to(contain(payment))
     }
 
     func testCallsDelegateWhenTransactionsAreUpdated() {
         let payment = SKPayment.init(product: SKProduct.init())
-        wrapper?.addPayment(payment)
+        wrapper?.add(payment)
 
         let transaction = MockTransaction()
         transaction.mockPayment = payment
@@ -123,10 +123,10 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
 
     func testCallsDelegateOncePerTransaction() {
         let payment1 = SKPayment.init(product: SKProduct.init())
-        wrapper?.addPayment(payment1)
+        wrapper?.add(payment1)
 
         let payment2 = SKPayment.init(product: SKProduct.init())
-        wrapper?.addPayment(payment2)
+        wrapper?.add(payment2)
 
         let transaction1 = MockTransaction()
         transaction1.mockPayment = payment1
@@ -141,7 +141,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
 
     func testFinishesTransactions() {
         let payment = SKPayment.init(product: SKProduct.init())
-        wrapper?.addPayment(payment)
+        wrapper?.add(payment)
 
         let transaction = MockTransaction()
         transaction.mockPayment = payment

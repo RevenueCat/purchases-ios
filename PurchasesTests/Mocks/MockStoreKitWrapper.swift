@@ -9,7 +9,7 @@ class MockStoreKitWrapper: StoreKitWrapper {
     var payment: SKPayment?
     var addPaymentCallCount = 0
 
-    override func addPayment(_ newPayment: SKPayment) {
+    override func add(_ newPayment: SKPayment) {
         payment = newPayment
         addPaymentCallCount += 1
     }
