@@ -64,12 +64,12 @@ import StoreKit
         paymentQueue.finishTransaction(transaction)
     }
 
+    @available(iOS 14.0, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     @objc public func presentCodeRedemptionSheet() {
-        if #available(iOS 14.0, *) {
-            paymentQueue.presentCodeRedemptionSheet()
-        } else {
-            Logger.info(String(format: "%@", Strings.purchase.presenting_code_redemption_sheet_unavailable))
-        }
+        paymentQueue.presentCodeRedemptionSheet()
     }
 
     @objc public func payment(withProduct product: SKProduct) -> SKMutablePayment {
