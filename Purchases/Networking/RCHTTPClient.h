@@ -11,6 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class RCSystemInfo;
+@class RCETagManager;
 
 typedef void(^RCHTTPClientResponseHandler)(NSInteger statusCode,
                                            NSDictionary *_Nullable response,
@@ -19,7 +20,9 @@ typedef void(^RCHTTPClientResponseHandler)(NSInteger statusCode,
 
 @interface RCHTTPClient : NSObject
 
-- (instancetype)initWithSystemInfo:(RCSystemInfo *)systemInfo NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithSystemInfo:(RCSystemInfo *)systemInfo
+                       eTagManager:(RCETagManager *)eTagManager NS_DESIGNATED_INITIALIZER;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)performRequest:(NSString *)httpMethod
@@ -28,6 +31,8 @@ typedef void(^RCHTTPClientResponseHandler)(NSInteger statusCode,
                   body:(nullable NSDictionary *)requestBody
                headers:(nullable NSDictionary<NSString *, NSString *> *)headers
      completionHandler:(nullable RCHTTPClientResponseHandler)completionHandler;
+
+- (void)clearCaches;
 
 @end
 
