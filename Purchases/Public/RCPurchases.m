@@ -586,8 +586,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     } else if (payment.productIdentifier) {
         productIdentifier = payment.productIdentifier;
     } else {
-        [RCLog info:[NSString
-                     stringWithFormat:@"makePurchase - Could not purchase SKProduct. Couldn't find its product identifier. This is possibly an App Store quirk."]];
+        [RCLog info:[NSString stringWithFormat:@"%@", RCStrings.purchase.could_not_purchase_product_id_not_found]];
         completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
                                                  code:RCUnknownError
                                              userInfo:@{
