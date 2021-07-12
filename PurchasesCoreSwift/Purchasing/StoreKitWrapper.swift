@@ -26,6 +26,7 @@ import StoreKit
 // todo: make internal
 @objc(RCStoreKitWrapper) public class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
 
+    @available(macOS 10.14, macCatalyst 13.0, *)
     @objc public static var simulatesAskToBuyInSandbox = false
 
     @objc public weak var delegate: StoreKitWrapperDelegate? {
