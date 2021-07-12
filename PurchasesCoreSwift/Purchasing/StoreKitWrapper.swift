@@ -2,7 +2,7 @@
 //  Purchases
 //
 //  Created by RevenueCat.
-//  Copyright © 2019 RevenueCat. All rights reserved.
+//  Copyright © 2021 RevenueCat. All rights reserved.
 //
 import StoreKit
 
@@ -43,7 +43,6 @@ import StoreKit
 
     @objc public init(paymentQueue: SKPaymentQueue) {
         self.paymentQueue = paymentQueue
-        super.init()
     }
 
     @objc override public convenience init() {
