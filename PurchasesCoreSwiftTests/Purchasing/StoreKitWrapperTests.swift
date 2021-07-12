@@ -61,7 +61,9 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     var promoPayment: SKPayment?
     var promoProduct: SKProduct?
     var shouldAddPromo = false
-    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, shouldAddStorePayment payment: SKPayment, forProduct product: SKProduct) -> Bool {
+    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
+                         shouldAddStorePayment payment: SKPayment,
+                         for product: SKProduct) -> Bool {
         promoPayment = payment
         promoProduct = product
         return shouldAddPromo

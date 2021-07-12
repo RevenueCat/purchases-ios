@@ -14,9 +14,10 @@ import StoreKit
     @objc func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                                removedTransaction transaction: SKPaymentTransaction)
 
-    @objc func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
-                               shouldAddStorePayment payment: SKPayment,
-                               forProduct product: SKProduct) -> Bool
+    @objc(storeKitWrapper:shouldAddStorePayment:forProduct:)
+    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
+                         shouldAddStorePayment payment: SKPayment,
+                         for product: SKProduct) -> Bool
 
     @objc func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                                didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String])
@@ -132,7 +133,7 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
         shouldAddStorePayment payment: SKPayment,
         for product: SKProduct
     ) -> Bool {
-        return delegate?.storeKitWrapper(self, shouldAddStorePayment: payment, forProduct: product) ?? false
+        return delegate?.storeKitWrapper(self, shouldAddStorePayment: payment, for: product) ?? false
     }
 
     // Sent when access to a family shared subscription is revoked from a family member or canceled the subscription.
