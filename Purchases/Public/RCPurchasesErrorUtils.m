@@ -9,7 +9,6 @@
 #import <StoreKit/StoreKit.h>
 #import "RCPurchasesErrors.h"
 #import "RCPurchasesErrorUtils.h"
-#import "RCLogUtils.h"
 @import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -279,7 +278,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
         case RCUnknownBackendError:
         case RCInvalidSubscriberAttributesError:
         case RCLogOutAnonymousUserError:
-            RCErrorLog(@"%@", RCPurchasesErrorDescription(code));
+            [RCLog error:[NSString stringWithFormat:@"%@", RCPurchasesErrorDescription(code)]];
             break;
         case RCPurchaseCancelledError:
         case RCStoreProblemError:
@@ -293,7 +292,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
         case RCIneligibleError:
         case RCInsufficientPermissionsError:
         case RCPaymentPendingError:
-            RCAppleErrorLog(@"%@", RCPurchasesErrorDescription(code));
+            [RCLog appleError:[NSString stringWithFormat:@"%@", RCPurchasesErrorDescription(code)]];
             break;
         default:
             break;

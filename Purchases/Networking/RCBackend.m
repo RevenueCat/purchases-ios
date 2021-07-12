@@ -10,7 +10,6 @@
 
 #import "RCBackend.h"
 #import "RCHTTPClient.h"
-#import "RCLogUtils.h"
 #import "RCPurchaserInfo+Protected.h"
 #import "RCPurchasesErrorUtils+Protected.h"
 #import "RCPurchasesErrorUtils.h"
@@ -246,7 +245,8 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     }
     if (receiptData.length == 0) {
         if (RCSystemInfo.isSandbox) {
-            RCAppleWarningLog(@"%@", RCStrings.receipt.no_sandbox_receipt_intro_eligibility);
+            [RCLog appleWarning:[NSString stringWithFormat:@"%@",
+                                 RCStrings.receipt.no_sandbox_receipt_intro_eligibility]];
         }
         NSMutableDictionary *eligibilities = [NSMutableDictionary new];
         for (NSString *productID in productIdentifiers) {
@@ -296,7 +296,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                       completion:(RCOfferingsResponseHandler)completion {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     if (!escapedAppUserID || [escapedAppUserID isEqualToString:@""]) {
-        RCWarnLog(@"called getOfferings with an empty appUserID!");
+        [RCLog warn:[NSString stringWithFormat:@"called getOfferings with an empty appUserID!"]];
         completion(nil, RCPurchasesErrorUtils.missingAppUserIDError);
         return;
     }
@@ -486,7 +486,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                        appUserID:(NSString *)appUserID
                       completion:(nullable void (^)(NSError *_Nullable error))completion {
     if (subscriberAttributes.count == 0) {
-        RCWarnLog(@"%@", RCStrings.attribution.empty_subscriber_attributes);
+        [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.attribution.empty_subscriber_attributes]];
         return;
     }
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
