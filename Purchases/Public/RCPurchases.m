@@ -597,7 +597,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }
 
     if (!self.finishTransactions) {
-        RCWarnLog(@"%@", RCStrings.purchase.purchasing_with_observer_mode_and_finish_transactions_false_warning);
+        [RCLog warn:[NSString stringWithFormat:@"%@",
+                     RCStrings.purchase.purchasing_with_observer_mode_and_finish_transactions_false_warning]];
     }
     NSString *appUserID = self.appUserID;
     payment.applicationUsername = appUserID;
@@ -659,7 +660,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     if (!self.allowSharingAppStoreAccount) {
 #pragma GCC diagnostic pop
-        RCWarnLog(@"%@", RCStrings.restore.restoretransactions_called_with_allow_sharing_appstore_account_false_warning);
+        [RCLog warn:[NSString stringWithFormat:@"%@",
+                     RCStrings.restore.restoretransactions_called_with_allow_sharing_appstore_account_false_warning]];
     }
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html

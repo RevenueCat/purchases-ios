@@ -297,7 +297,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                       completion:(RCOfferingsResponseHandler)completion {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     if (!escapedAppUserID || [escapedAppUserID isEqualToString:@""]) {
-        RCWarnLog(@"called getOfferings with an empty appUserID!");
+        [RCLog warn:[NSString stringWithFormat:@"called getOfferings with an empty appUserID!"]];
         completion(nil, RCPurchasesErrorUtils.missingAppUserIDError);
         return;
     }
@@ -487,7 +487,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                        appUserID:(NSString *)appUserID
                       completion:(nullable void (^)(NSError *_Nullable error))completion {
     if (subscriberAttributes.count == 0) {
-        RCWarnLog(@"%@", RCStrings.attribution.empty_subscriber_attributes);
+        [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.attribution.empty_subscriber_attributes]];
         return;
     }
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];

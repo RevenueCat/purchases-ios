@@ -74,7 +74,7 @@
 - (void)createAliasForAppUserID:(NSString *)alias completion:(void (^)(NSError *_Nullable error))completion {
     NSString *currentAppUserID = self.currentAppUserID;
     if (!currentAppUserID) {
-        RCWarnLog(@"%@", RCStrings.identity.creating_alias_failed_null_currentappuserid);
+        [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.identity.creating_alias_failed_null_currentappuserid]];
         completion(RCPurchasesErrorUtils.missingAppUserIDError);
         return;
     }
@@ -121,7 +121,7 @@
     }
 
     if ([newAppUserID isEqualToString:currentAppUserID]) {
-        RCWarnLog(@"%@", RCStrings.identity.logging_in_with_same_appuserid);
+        [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.identity.logging_in_with_same_appuserid]];
         [self.purchaserInfoManager purchaserInfoWithAppUserID:currentAppUserID
                                               completionBlock:^(RCPurchaserInfo *purchaserInfo, NSError *error) {
                                                   completion(purchaserInfo, NO, error);
