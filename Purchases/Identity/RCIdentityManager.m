@@ -47,7 +47,7 @@
             appUserID = [self.deviceCache cachedLegacyAppUserID];
             if (appUserID == nil) {
                 appUserID = [self generateRandomID];
-                RCUserLog(RCStrings.identity.identifying_app_user_id, appUserID);
+                [RCLog user:[NSString stringWithFormat:RCStrings.identity.identifying_app_user_id, appUserID]];
             }
         }
     }
@@ -58,10 +58,10 @@
 
 - (void)identifyAppUserID:(NSString *)appUserID completion:(void (^)(NSError *_Nullable error))completion {
     if (self.currentUserIsAnonymous) {
-        RCUserLog(RCStrings.identity.identifying_anon_id, self.currentAppUserID);
+        [RCLog user:[NSString stringWithFormat:RCStrings.identity.identifying_anon_id, self.currentAppUserID]];
         [self createAliasForAppUserID:appUserID completion:completion];
     } else {
-        RCUserLog(RCStrings.identity.changing_app_user_id, self.currentAppUserID, appUserID);
+        [RCLog user:[NSString stringWithFormat:RCStrings.identity.changing_app_user_id, self.currentAppUserID, appUserID]];
         [self.deviceCache clearCachesForAppUserID:self.currentAppUserID andSaveNewUserID:appUserID];
         completion(nil);
     }
@@ -78,10 +78,10 @@
         completion(RCPurchasesErrorUtils.missingAppUserIDError);
         return;
     }
-    RCUserLog(RCStrings.identity.creating_alias, currentAppUserID, alias);
+    [RCLog user:[NSString stringWithFormat:RCStrings.identity.creating_alias, currentAppUserID, alias]];
     [self.backend createAliasForAppUserID:currentAppUserID withNewAppUserID:alias completion:^(NSError *_Nullable error) {
         if (error == nil) {
-            RCUserLog(@"%@", RCStrings.identity.creating_alias_success);
+            [RCLog user:[NSString stringWithFormat:@"%@", RCStrings.identity.creating_alias_success]];
             [self.deviceCache clearCachesForAppUserID:currentAppUserID andSaveNewUserID:alias];
         }
         completion(error);
@@ -133,7 +133,7 @@
                                newAppUserID:newAppUserID
                                  completion:^(RCPurchaserInfo *purchaserInfo, BOOL created, NSError * _Nullable error) {
                                      if (error == nil) {
-                                         RCUserLog(@"%@", RCStrings.identity.login_success);
+                                         [RCLog user:[NSString stringWithFormat:@"%@", RCStrings.identity.login_success]];
 
                                          [self.deviceCache clearCachesForAppUserID:currentAppUserID
                                                                   andSaveNewUserID:newAppUserID];

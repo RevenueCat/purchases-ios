@@ -34,7 +34,4 @@ NS_ASSUME_NONNULL_BEGIN
 #define RCSuccessLog(args, ...) \
     [RCLog rcSuccess: [NSString stringWithFormat: args, ##__VA_ARGS__]]
 
-#define RCUserLog(args, ...) \
-    [RCLog user: [NSString stringWithFormat: args, ##__VA_ARGS__]]
-
 NS_ASSUME_NONNULL_END
