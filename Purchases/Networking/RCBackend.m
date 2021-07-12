@@ -246,7 +246,8 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     }
     if (receiptData.length == 0) {
         if (RCSystemInfo.isSandbox) {
-            RCAppleWarningLog(@"%@", RCStrings.receipt.no_sandbox_receipt_intro_eligibility);
+            [RCLog appleWarning:[NSString stringWithFormat:@"%@",
+                                 RCStrings.receipt.no_sandbox_receipt_intro_eligibility]];
         }
         NSMutableDictionary *eligibilities = [NSMutableDictionary new];
         for (NSString *productID in productIdentifiers) {

@@ -22,7 +22,4 @@ NS_ASSUME_NONNULL_BEGIN
 #define RCAppleErrorLog(args, ...) \
     [RCLog appleError: [NSString stringWithFormat: args, ##__VA_ARGS__]]
 
-#define RCAppleWarningLog(args, ...) \
-    [RCLog appleWarning: [NSString stringWithFormat: args, ##__VA_ARGS__]]
-
 NS_ASSUME_NONNULL_END
