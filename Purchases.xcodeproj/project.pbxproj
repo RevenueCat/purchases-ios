@@ -328,6 +328,7 @@
 		2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitRequestFetcher.swift; sourceTree = "<group>"; };
 		2DA0068E24E2E515002C59D3 /* MockIntroEligibilityCalculator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockIntroEligibilityCalculator.swift; sourceTree = "<group>"; };
 		2DAF814D25B24243002C621E /* RCIdentityManager+Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RCIdentityManager+Protected.h"; sourceTree = "<group>"; };
+		2DBB3E10269C9B8700BBF431 /* SwiftStyleGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftStyleGuide.swift; sourceTree = "<group>"; };
 		2DC19194255F36D10039389A /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		2DC5621624EC63420031F69B /* PurchasesCoreSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PurchasesCoreSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DC5621824EC63430031F69B /* PurchasesCoreSwift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PurchasesCoreSwift.h; sourceTree = "<group>"; };
@@ -888,6 +889,7 @@
 		352629F41F7C4B9100C04F2C = {
 			isa = PBXGroup;
 			children = (
+				2DBB3E10269C9B8700BBF431 /* SwiftStyleGuide.swift */,
 				B387F46B2683FD730028701F /* PublicSDKAPITester */,
 				2D4C18A824F47E4400F268CD /* Purchases.swift */,
 				2DEC0CFB24A2A1B100B0E5BB /* Package.swift */,
