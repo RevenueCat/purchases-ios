@@ -30,7 +30,8 @@ struct MyStruct {
 
     // public properties, then internal, then private.
     public let mercury = false
-    public var venus: String?
+    // use `maybe` prefix for optionals
+    public var maybeVenus: String?
 
     public static var Earth = "earth"
 
