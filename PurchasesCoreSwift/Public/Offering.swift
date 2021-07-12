@@ -98,16 +98,9 @@ import Foundation
         """
     }
 
-    private func valueOrEmpty<T: CustomStringConvertible>(_ value: T?) -> String {
-        if let value = value {
-            return value.description
-        } else {
-            return ""
-        }
-    }
-
     /**
-     Retrieves a specific package by identifier, use this to access custom package types configured in the RevenueCat dashboard, e.g. `[offering packageWithIdentifier:@"custom_package_id"]` or `offering[@"custom_package_id"]`.
+     Retrieves a specific package by identifier, use this to access custom package types configured in the RevenueCat
+     dashboard, e.g. `[offering packageWithIdentifier:@"custom_package_id"]` or `offering[@"custom_package_id"]`.
      */
     @objc public func package(identifier: String?) -> Package? {
         guard let identifier = identifier else {
@@ -122,6 +115,14 @@ import Foundation
     /// :nodoc:
     @objc public func object(forKeyedSubscript key: String) -> Package? {
         return package(identifier: key)
+    }
+
+    private func valueOrEmpty<T: CustomStringConvertible>(_ value: T?) -> String {
+        if let value = value {
+            return value.description
+        } else {
+            return ""
+        }
     }
 
 }
