@@ -1,11 +1,19 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  SwiftStyleGuide.swift
 //  PurchasesCoreSwift
 //
 //  Created by Andrés Boedo on 7/12/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
+// imports should be alphabetized
 import Foundation
 
 protocol ValuePrintable {
@@ -23,19 +31,27 @@ extension ValuePrintable where Self: NSNumber {
 // prefer structs to classes whenever possible.
 // keep in mind that structs are value types.
 // More info here: https://developer.apple.com/documentation/swift/choosing_between_structures_and_classes
+
+// documentation is required for each public entity.
+// Use jazzy-compatible syntax for documentation: https://github.com/realm/jazzy#supported-documentation-keywords
+/// The MyStruct struct is responsible for ...
 struct MyStruct {
 
     // don't explicitly define types unless needed.
     // prefer let to var whenever possible.
 
     // public properties, then internal, then private.
+    /// mercury is used for ...
     public let mercury = false
     // use `maybe` prefix for optionals
+    /// maybeVenus is used for ...
     public var maybeVenus: String?
 
+    /// eath is used for ...
     public static var Earth = "earth"
 
     // use public private(set) when a public var is only written to within the class scope
+    /// this variable will be readonly to the outside, but variable from inside the scope
     public private(set) var onlyReadFromOutside = 2.0
 
     // for internal properties, omit `internal` keyword since it's default
@@ -79,5 +95,5 @@ private extension MyStruct {
 // use private extensions of basic types to define constants
 private extension String {
     static let saturn = "saturn"
-    static let nepturn = "nepturn"
+    static let neptune = "neptune"
 }
