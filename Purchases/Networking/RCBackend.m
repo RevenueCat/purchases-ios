@@ -87,7 +87,7 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
     if (hasError) {
         BOOL finishable = (statusCode < RCHTTPStatusCodesInternalServerError);
         NSMutableDictionary *extraUserInfo = @{
-            RCFinishableKey: @(finishable)
+            RCErrorDetails.RCFinishableKey: @(finishable)
         }.mutableCopy;
         [extraUserInfo addEntriesFromDictionary:subscriberAttributesErrorInfo];
         responseError = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]

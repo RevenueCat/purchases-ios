@@ -19,7 +19,6 @@
 #import "RCPurchases+Protected.h"
 #import "RCPurchases+SubscriberAttributes.h"
 #import "RCPurchases.h"
-#import "RCPurchasesErrors.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCSubscriberAttributesManager.h"
 
@@ -572,7 +571,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     if (!product || !payment) {
         [RCLog appleWarning:[NSString stringWithFormat:@"%@",
                              RCStrings.purchase.cannot_purchase_product_appstore_configuration_error]];
-        completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
+        completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorCodeDomain
                                                  code:RCProductNotAvailableForPurchaseError
                                              userInfo:@{
                                                      NSLocalizedDescriptionKey: @"There was problem purchasing the product."
@@ -587,7 +586,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         productIdentifier = payment.productIdentifier;
     } else {
         [RCLog info:[NSString stringWithFormat:@"%@", RCStrings.purchase.could_not_purchase_product_id_not_found]];
-        completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
+        completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorCodeDomain
                                                  code:RCUnknownError
                                              userInfo:@{
                                                      NSLocalizedDescriptionKey: @"There was problem purchasing the product."
@@ -624,7 +623,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
     @synchronized (self) {
         if (self.purchaseCompleteCallbacks[productIdentifier]) {
-            completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
+            completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorCodeDomain
                                                      code:RCOperationAlreadyInProgressError
                                                  userInfo:@{
                                                          NSLocalizedDescriptionKey: @"Purchase already in progress for this product."
@@ -1077,12 +1076,12 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
-        } else if ([error.userInfo[RCFinishableKey] boolValue]) {
+        } else if ([error.userInfo[RCErrorDetails.RCFinishableKey] boolValue]) {
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
-        } else if (![error.userInfo[RCFinishableKey] boolValue]) {
+        } else if (![error.userInfo[RCErrorDetails.RCFinishableKey] boolValue]) {
             CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
         } else {
             [RCLog error:[NSString stringWithFormat:@"%@", RCStrings.receipt.unknown_backend_error]];
