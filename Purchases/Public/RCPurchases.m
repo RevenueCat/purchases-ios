@@ -571,7 +571,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [RCLog debug:[NSString stringWithFormat:@"makePurchase"]];
 
     if (!product || !payment) {
-        RCAppleWarningLog(@"%@", RCStrings.purchase.cannot_purchase_product_appstore_configuration_error);
+        [RCLog appleWarning:[NSString stringWithFormat:@"%@",
+                             RCStrings.purchase.cannot_purchase_product_appstore_configuration_error]];
         completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorDomain
                                                  code:RCProductNotAvailableForPurchaseError
                                              userInfo:@{
@@ -665,7 +666,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self receiptDataWithReceiptRefreshPolicy:refreshPolicy completion:^(NSData *_Nonnull data) {
         if (data.length == 0) {
             if (RCSystemInfo.isSandbox) {
-                RCAppleWarningLog(@"%@", RCStrings.receipt.no_sandbox_receipt_restore);
+                [RCLog appleWarning:[NSString stringWithFormat:@"%@", RCStrings.receipt.no_sandbox_receipt_restore]];
             }
             CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
             return;
@@ -1008,7 +1009,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             }];
 
             if (missingProducts.count > 0) {
-                RCAppleWarningLog(RCStrings.offering.cannot_find_product_configuration_error, missingProducts);
+                [RCLog appleWarning:[NSString stringWithFormat:RCStrings.offering.cannot_find_product_configuration_error,
+                                     missingProducts]];
             }
             [self.deviceCache cacheOfferings:offerings];
 
@@ -1051,7 +1053,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.requestFetcher fetchReceiptData:^{
         NSData *newReceiptData = [self.receiptFetcher receiptData];
         if (newReceiptData == nil || newReceiptData.length == 0) {
-            RCAppleWarningLog(@"%@", RCStrings.receipt.unable_to_load_receipt);
+            [RCLog appleWarning:[NSString stringWithFormat:@"%@", RCStrings.receipt.unable_to_load_receipt]];
         }
         completion(newReceiptData ?: [NSData data]);
     }];
@@ -1165,7 +1167,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
 didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
 API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
-    [RCLog debug:[NSString stringWithFormat:RCStrings.purchase.entitlements_revoked_syncing_purchases, productIdentifiers]];
+    [RCLog debug:[NSString stringWithFormat:RCStrings.purchase.entitlements_revoked_syncing_purchases,
+                  productIdentifiers]];
     [self syncPurchasesWithCompletionBlock:^(RCPurchaserInfo * _Nullable purchaserInfo, NSError * _Nullable error) {
         [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchase.purchases_synced]];
     }];
@@ -1235,9 +1238,11 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
 
 - (nullable NSString *)productIdentifierFrom:(SKPaymentTransaction *)transaction {
     if (transaction.payment == nil) {
-        RCAppleWarningLog(@"%@", RCStrings.purchase.skpayment_missing_from_skpaymenttransaction);
+        [RCLog appleWarning:[NSString stringWithFormat:@"%@",
+                             RCStrings.purchase.skpayment_missing_from_skpaymenttransaction]];
     } else if (transaction.payment.productIdentifier == nil) {
-        RCAppleWarningLog(@"%@", RCStrings.purchase.skpayment_missing_product_identifier);
+        [RCLog appleWarning:[NSString stringWithFormat:@"%@",
+                             RCStrings.purchase.skpayment_missing_product_identifier]];
     }
     return transaction.payment.productIdentifier;
 }
