@@ -14,8 +14,6 @@
 #include <Purchases/RCIdentityManager+Protected.h>
 #include <Purchases/RCIdentityManager.h>
 #include <Purchases/RCInMemoryCachedObject+Protected.h>
-#include <Purchases/RCOffering+Protected.h>
-#include <Purchases/RCOffering.h>
 #include <Purchases/RCOfferings+Protected.h>
 #include <Purchases/RCOfferingsFactory.h>
 #include <Purchases/RCPurchaserInfo+Protected.h>
