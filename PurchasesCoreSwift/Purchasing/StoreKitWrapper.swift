@@ -6,6 +6,7 @@
 //
 import StoreKit
 
+// todo: make internal
 @objc(RCStoreKitWrapperDelegate) public protocol StoreKitWrapperDelegate: AnyObject {
     @objc func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                                updatedTransaction transaction: SKPaymentTransaction)
@@ -21,6 +22,7 @@ import StoreKit
                                didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String])
 }
 
+// todo: make internal
 @objc(RCStoreKitWrapper) public class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
 
     @objc public static var simulatesAskToBuyInSandbox = false
@@ -122,10 +124,9 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
         }
     }
 
-    // Should match available platforms in
-    // https://developer.apple.com/documentation/storekit/skpaymenttransactionobserver/2877502-paymentqueuelanguage=objc
-    #if os(tvOS) || os(iOS) && !targetEnvironment(macCatalyst)
-
+    // Sent when a user initiated an in-app purchase from the App Store.
+    @available(iOS 11.0, macOS 11.0, macCatalyst 14.0, tvOS 11.0, *)
+    @available(watchOS, unavailable)
     public func paymentQueue(
         _ queue: SKPaymentQueue,
         shouldAddStorePayment payment: SKPayment,
@@ -134,15 +135,14 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
         return delegate?.storeKitWrapper(self, shouldAddStorePayment: payment, forProduct: product) ?? false
     }
 
-    #endif
-
-    // Sent when access to a family shared subscription is revoked from a family member or canceled the subscription
+    // Sent when access to a family shared subscription is revoked from a family member or canceled the subscription.
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
     public func paymentQueue(
         _ queue: SKPaymentQueue,
         didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]
     ) {
-        Logger.debug(String(format: Strings.purchase.paymentqueue_revoked_entitlements_for_product_identifiers, productIdentifiers))
+        Logger.debug(String(format: Strings.purchase.paymentqueue_revoked_entitlements_for_product_identifiers,
+                            productIdentifiers))
         delegate?.storeKitWrapper(self, didRevokeEntitlementsForProductIdentifiers: productIdentifiers)
     }
 }
