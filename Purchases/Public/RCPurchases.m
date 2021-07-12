@@ -955,7 +955,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                               isAppBackgrounded ? RCStrings.offering.offerings_stale_updating_in_background
                                                 : RCStrings.offering.offerings_stale_updating_in_foreground]];
                 [self updateOfferingsCacheWithIsAppBackgrounded:isAppBackgrounded completion:nil];
-                RCSuccessLog(@"%@", RCStrings.offering.offerings_stale_updated_from_network);
+                [RCLog rcSuccess:[NSString stringWithFormat:@"%@",
+                                  RCStrings.offering.offerings_stale_updated_from_network]];
             }
         }];
     } else {

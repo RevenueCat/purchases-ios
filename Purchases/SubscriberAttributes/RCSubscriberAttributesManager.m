@@ -140,7 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
                           currentAppUserID:(NSString *)currentAppUserID
                                      error:(NSError *)error {
     if (error == nil) {
-        RCSuccessLog(RCStrings.attribution.attributes_sync_success, syncingAppUserID);
+        [RCLog rcSuccess:[NSString stringWithFormat:RCStrings.attribution.attributes_sync_success, syncingAppUserID]];
         if (![syncingAppUserID isEqualToString:currentAppUserID]) {
             [self.deviceCache deleteAttributesIfSyncedForAppUserID:syncingAppUserID];
         }

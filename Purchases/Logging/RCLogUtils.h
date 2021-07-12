@@ -31,7 +31,4 @@ NS_ASSUME_NONNULL_BEGIN
 #define RCPurchaseSuccessLog(args, ...) \
     [RCLog rcPurchaseSuccess: [NSString stringWithFormat: args, ##__VA_ARGS__]]
 
-#define RCSuccessLog(args, ...) \
-    [RCLog rcSuccess: [NSString stringWithFormat: args, ##__VA_ARGS__]]
-
 NS_ASSUME_NONNULL_END

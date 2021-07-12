@@ -128,7 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
         [self fetchAndCachePurchaserInfoWithAppUserID:appUserID
                                     isAppBackgrounded:isAppBackgrounded
                                            completion:completion];
-        RCSuccessLog(@"%@", RCStrings.purchaserInfo.purchaserinfo_updated_from_network);
+        [RCLog rcSuccess:[NSString stringWithFormat:@"%@", RCStrings.purchaserInfo.purchaserinfo_updated_from_network]];
     } else {
         if (completion) {
             [self.operationDispatcher dispatchOnMainThread:^{
