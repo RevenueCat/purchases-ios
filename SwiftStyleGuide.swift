@@ -16,16 +16,21 @@
 // imports should be alphabetized
 import Foundation
 
+// keep one empty line after type declarations, and one before the end of it
 protocol ValuePrintable {
+
     // make protocol variables read-only unless needed
     func foo() -> String
+
 }
 
 // use protocol extensions for default implementations of protocols for types
 extension ValuePrintable where Self: NSNumber {
+
     func foo() -> String {
         return "the number as float is: \(self.floatValue)"
     }
+
 }
 
 // prefer structs to classes whenever possible.
@@ -66,8 +71,10 @@ struct MyStruct {
 // separate protocol conformance into extension
 // so methods from the protocol are easy to locate
 extension MyStruct: MyProtocol {
+
     // return can be omitted for one-liners
     func foo() -> String { "foo" }
+
 }
 
 // use protocol-oriented programming to add behaviors to types
@@ -76,12 +83,15 @@ extension MyStruct: PrettyPrintable { }
 
 // add error extensions to make it easy to map errors to situations
 enum MyCustomError: Error {
+
     case invalidDateComponents(_ dateComponents: DateComponents)
     case networkError
+
 }
 
 // private methods in an extension
 private extension MyStruct {
+
     func somethingPrivate() -> String {
         return Bool.random() ? .saturn : .nepturn
     }
@@ -90,10 +100,13 @@ private extension MyStruct {
         throw Bool.random() ? MyCustomError.invalidDateComponents(DateComponents())
                             : MyCustomError.networkError
     }
+
 }
 
 // use private extensions of basic types to define constants
 private extension String {
+
     static let saturn = "saturn"
     static let neptune = "neptune"
+
 }
