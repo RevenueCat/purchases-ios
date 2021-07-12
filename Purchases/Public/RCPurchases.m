@@ -305,8 +305,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
              purchaserInfoManager:(RCPurchaserInfoManager *)purchaserInfoManager
                   productsManager:(RCProductsManager *)productsManager {
     if (self = [super init]) {
-        RCDebugLog(@"%@", RCStrings.configure.debug_enabled);
-        RCDebugLog(RCStrings.configure.sdk_version, self.class.frameworkVersion);
+        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.configure.debug_enabled]];
+        [RCLog debug:[NSString stringWithFormat:RCStrings.configure.sdk_version, self.class.frameworkVersion]];
         RCUserLog(RCStrings.configure.initial_app_user_id, appUserID);
 
         self.requestFetcher = requestFetcher;
@@ -388,7 +388,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     _delegate = delegate;
     self.purchaserInfoManager.delegate = self;
     [self.purchaserInfoManager sendCachedPurchaserInfoIfAvailableForAppUserID:self.appUserID];
-    RCDebugLog(@"%@", RCStrings.configure.delegate_set);
+    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.configure.delegate_set]];
 }
 
 #pragma mark - Public Methods
@@ -412,10 +412,10 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                fromNetwork:(RCAttributionNetwork)network
           forNetworkUserId:(nullable NSString *)networkUserId {
     if (_sharedPurchases) {
-        RCDebugLog(@"%@", RCStrings.attribution.instance_configured_posting_attribution);
+        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.instance_configured_posting_attribution]];
         [_sharedPurchases postAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
     } else {
-        RCDebugLog(@"%@", RCStrings.attribution.no_instance_configured_caching_attribution);
+        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.no_instance_configured_caching_attribution]];
         [RCAttributionFetcher storePostponedAttributionData:data
                                                 fromNetwork:network
                                            forNetworkUserId:networkUserId];
@@ -568,7 +568,7 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
                     withPayment:(SKMutablePayment *)payment
 withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                      completion:(RCPurchaseCompletedBlock)completion {
-    RCDebugLog(@"makePurchase");
+    [RCLog debug:[NSString stringWithFormat:@"makePurchase"]];
 
     if (!product || !payment) {
         RCAppleWarningLog(@"%@", RCStrings.purchase.cannot_purchase_product_appstore_configuration_error);
@@ -800,105 +800,105 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)invalidatePurchaserInfoCache {
-    RCDebugLog(@"%@", RCStrings.purchaserInfo.invalidating_purchaserinfo_cache);
+    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchaserInfo.invalidating_purchaserinfo_cache]];
     [self.purchaserInfoManager clearPurchaserInfoCacheForAppUserID:self.appUserID];
 }
 
 - (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos) {
-    RCDebugLog(@"%@", RCStrings.purchase.presenting_code_redemption_sheet);
+    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchase.presenting_code_redemption_sheet]];
     [self.storeKitWrapper presentCodeRedemptionSheet];
 }
 
 #pragma mark Subcriber Attributes
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
-    RCDebugLog(RCStrings.attribution.method_called, "setAttributes");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAttributes"]];
     [self.subscriberAttributesManager setAttributes:attributes appUserID:self.appUserID];
 }
 
 - (void)setEmail:(nullable NSString *)email {
-    RCDebugLog(RCStrings.attribution.method_called, "setEmail");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setEmail"]];
     [self.subscriberAttributesManager setEmail:email appUserID:self.appUserID];
 }
 
 - (void)setPhoneNumber:(nullable NSString *)phoneNumber {
-    RCDebugLog(RCStrings.attribution.method_called, "setPhoneNumber");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPhoneNumber"]];
     [self.subscriberAttributesManager setPhoneNumber:phoneNumber appUserID:self.appUserID];
 }
 
 - (void)setDisplayName:(nullable NSString *)displayName {
-    RCDebugLog(RCStrings.attribution.method_called, "setDisplayName");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setDisplayName"]];
     [self.subscriberAttributesManager setDisplayName:displayName appUserID:self.appUserID];
 }
 
 - (void)setPushToken:(nullable NSData *)pushToken {
-    RCDebugLog(RCStrings.attribution.method_called, "setPushToken");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPushToken"]];
     [self.subscriberAttributesManager setPushToken:pushToken appUserID:self.appUserID];
 }
 
 - (void)_setPushTokenString:(nullable NSString *)pushToken {
-    RCDebugLog(RCStrings.attribution.method_called, "setPushTokenString");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPushTokenString"]];
     [self.subscriberAttributesManager setPushTokenString:pushToken appUserID:self.appUserID];
 }
 
 - (void)setAdjustID:(nullable NSString *)adjustID {
-    RCDebugLog(RCStrings.attribution.method_called, "setAdjustID");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAdjustID"]];
     [self.subscriberAttributesManager setAdjustID:adjustID appUserID:self.appUserID];
 }
 
 - (void)setAppsflyerID:(nullable NSString *)appsflyerID {
-    RCDebugLog(RCStrings.attribution.method_called, "setAppsflyerID");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAppsflyerID"]];
     [self.subscriberAttributesManager setAppsflyerID:appsflyerID appUserID:self.appUserID];
 }
 
 - (void)setFBAnonymousID:(nullable NSString *)fbAnonymousID {
-    RCDebugLog(RCStrings.attribution.method_called, "setFBAnonymousID");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setFBAnonymousID"]];
     [self.subscriberAttributesManager setFBAnonymousID:fbAnonymousID appUserID:self.appUserID];
 }
 
 - (void)setMparticleID:(nullable NSString *)mparticleID {
-    RCDebugLog(RCStrings.attribution.method_called, "setMparticleID");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setMparticleID"]];
     [self.subscriberAttributesManager setMparticleID:mparticleID appUserID:self.appUserID];
 }
 
 - (void)setOnesignalID:(nullable NSString *)onesignalID {
-    RCDebugLog(RCStrings.attribution.method_called, "setOnesignalID");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setOnesignalID"]];
     [self.subscriberAttributesManager setOnesignalID:onesignalID appUserID:self.appUserID];
 }
 
 - (void)setMediaSource:(nullable NSString *)mediaSource {
-    RCDebugLog(RCStrings.attribution.method_called, "setMediaSource");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setMediaSource"]];
     [self.subscriberAttributesManager setMediaSource:mediaSource appUserID:self.appUserID];
 }
 
 - (void)setCampaign:(nullable NSString *)campaign {
-    RCDebugLog(RCStrings.attribution.method_called, "setCampaign");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setCampaign"]];
     [self.subscriberAttributesManager setCampaign:campaign appUserID:self.appUserID];
 }
 
 - (void)setAdGroup:(nullable NSString *)adGroup {
-    RCDebugLog(RCStrings.attribution.method_called, "setAdGroup");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAdGroup"]];
     [self.subscriberAttributesManager setAdGroup:adGroup appUserID:self.appUserID];
 }
 
 - (void)setAd:(nullable NSString *)ad {
-    RCDebugLog(RCStrings.attribution.method_called, "setAd");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAd"]];
     [self.subscriberAttributesManager setAd:ad appUserID:self.appUserID];
 }
 
 - (void)setKeyword:(nullable NSString *)keyword {
-    RCDebugLog(RCStrings.attribution.method_called, "setKeyword");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setKeyword"]];
     [self.subscriberAttributesManager setKeyword:keyword appUserID:self.appUserID];
 }
 
 - (void)setCreative:(nullable NSString *)creative {
-    RCDebugLog(RCStrings.attribution.method_called, "setCreative");
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setCreative"]];
     [self.subscriberAttributesManager setCreative:creative appUserID:self.appUserID];
 }
 
 - (void)collectDeviceIdentifiers {
-    RCDebugLog(@"collectDeviceIdentifiers called");
-    RCDebugLog(RCStrings.attribution.method_called, "setAttributes");
+    [RCLog debug:[NSString stringWithFormat:@"collectDeviceIdentifiers called"]];
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAttributes"]];
     [self.subscriberAttributesManager collectDeviceIdentifiersForAppUserID:self.appUserID];
 }
 
@@ -915,13 +915,13 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)updateAllCachesIfNeeded {
-    RCDebugLog(@"%@", RCStrings.configure.application_active);
+    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.configure.application_active]];
     [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
         [self.purchaserInfoManager fetchAndCachePurchaserInfoIfStaleWithAppUserID:self.appUserID
                                                                 isAppBackgrounded:isAppBackgrounded
                                                                        completion:nil];
         if ([self.deviceCache isOfferingsCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
-            RCDebugLog(@"Offerings cache is stale, updating caches");
+            [RCLog debug:[NSString stringWithFormat:@"Offerings cache is stale, updating caches"]];
             [self updateOfferingsCacheWithIsAppBackgrounded:isAppBackgrounded completion:nil];
         }
     }];
@@ -947,20 +947,19 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)offeringsWithCompletionBlock:(RCReceiveOfferingsBlock)completion {
     if (self.deviceCache.cachedOfferings) {
-        RCDebugLog(@"%@", RCStrings.offering.vending_offerings_cache);
+        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.offering.vending_offerings_cache]];
         CALL_IF_SET_ON_MAIN_THREAD(completion, self.deviceCache.cachedOfferings, nil);
         [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
             if ([self.deviceCache isOfferingsCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
-                RCDebugLog(@"%@",
-                           isAppBackgrounded
-                           ? RCStrings.offering.offerings_stale_updating_in_background
-                           : RCStrings.offering.offerings_stale_updating_in_foreground);
+                [RCLog debug:[NSString stringWithFormat:@"%@",
+                              isAppBackgrounded ? RCStrings.offering.offerings_stale_updating_in_background
+                                                : RCStrings.offering.offerings_stale_updating_in_foreground]];
                 [self updateOfferingsCacheWithIsAppBackgrounded:isAppBackgrounded completion:nil];
                 RCSuccessLog(@"%@", RCStrings.offering.offerings_stale_updated_from_network);
             }
         }];
     } else {
-        RCDebugLog(@"%@", RCStrings.offering.no_cached_offerings_fetching_from_network);
+        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.offering.no_cached_offerings_fetching_from_network]];
         [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
             [self updateOfferingsCacheWithIsAppBackgrounded:isAppBackgrounded completion:completion];
         }];
@@ -1032,14 +1031,14 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)receiptDataWithReceiptRefreshPolicy:(RCReceiptRefreshPolicy)refreshPolicy
                                  completion:(RCReceiveReceiptDataBlock)completion {
     if (refreshPolicy == RCReceiptRefreshPolicyAlways) {
-        RCDebugLog(@"%@", RCStrings.receipt.force_refreshing_receipt);
+        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.receipt.force_refreshing_receipt]];
         [self refreshReceipt:completion];
         return;
     }
     NSData *receiptData = [self.receiptFetcher receiptData];
     BOOL receiptIsEmpty = receiptData == nil || receiptData.length == 0;
     if (receiptIsEmpty && refreshPolicy == RCReceiptRefreshPolicyOnlyIfEmpty) {
-        RCDebugLog(@"%@", RCStrings.receipt.refreshing_empty_receipt);
+        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.receipt.refreshing_empty_receipt]];
         [self refreshReceipt:completion];
     } else {
         completion(receiptData);
@@ -1164,9 +1163,9 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
 didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
 API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
-    RCDebugLog(RCStrings.purchase.entitlements_revoked_syncing_purchases, productIdentifiers);
+    [RCLog debug:[NSString stringWithFormat:RCStrings.purchase.entitlements_revoked_syncing_purchases, productIdentifiers]];
     [self syncPurchasesWithCompletionBlock:^(RCPurchaserInfo * _Nullable purchaserInfo, NSError * _Nullable error) {
-        RCDebugLog(@"%@", RCStrings.purchase.purchases_synced);
+        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchase.purchases_synced]];
     }];
 }
 

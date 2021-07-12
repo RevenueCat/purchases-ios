@@ -86,7 +86,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)invalidatePurchaserInfoCacheForAppUserID:(NSString *)appUserID __unused {
-    RCDebugLog(@"%@", RCStrings.purchaserInfo.invalidating_purchaserinfo_cache);
+    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchaserInfo.invalidating_purchaserinfo_cache]];
     [self.deviceCache clearPurchaserInfoCacheForAppUserID:appUserID];
 }
 
@@ -121,9 +121,9 @@ NS_ASSUME_NONNULL_BEGIN
                                                               isAppBackgrounded:isAppBackgrounded];
     BOOL needsToRefresh = isCacheStale || !cachedPurchaserInfo;
     if (needsToRefresh) {
-        RCDebugLog(@"%@", isAppBackgrounded
+        [RCLog debug:[NSString stringWithFormat:@"%@", isAppBackgrounded
                           ? RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_background
-                          : RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_foreground);
+                          : RCStrings.purchaserInfo.purchaserinfo_stale_updating_in_foreground]];
 
         [self fetchAndCachePurchaserInfoWithAppUserID:appUserID
                                     isAppBackgrounded:isAppBackgrounded
@@ -144,9 +144,11 @@ NS_ASSUME_NONNULL_BEGIN
         @synchronized (self) {
             if (![self.lastSentPurchaserInfo isEqual:info]) {
                 if (self.lastSentPurchaserInfo) {
-                    RCDebugLog(@"%@", RCStrings.purchaserInfo.sending_updated_purchaserinfo_to_delegate);
+                    [RCLog debug:[NSString stringWithFormat:@"%@",
+                                  RCStrings.purchaserInfo.sending_updated_purchaserinfo_to_delegate]];
                 } else {
-                    RCDebugLog(@"%@", RCStrings.purchaserInfo.sending_latest_purchaserinfo_to_delegate);
+                    [RCLog debug:[NSString stringWithFormat:@"%@",
+                                  RCStrings.purchaserInfo.sending_latest_purchaserinfo_to_delegate]];
                 }
                 self.lastSentPurchaserInfo = info;
                 [self.operationDispatcher dispatchOnMainThread:^{
@@ -162,7 +164,7 @@ NS_ASSUME_NONNULL_BEGIN
     RCPurchaserInfo * _Nullable infoFromCache = [self cachedPurchaserInfoForAppUserID:appUserID];
     BOOL completionCalled = NO;
     if (infoFromCache) {
-        RCDebugLog(@"%@", RCStrings.purchaserInfo.vending_cache);
+        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchaserInfo.vending_cache]];
         if (completion) {
             completionCalled = YES;
             [self.operationDispatcher dispatchOnMainThread:^{

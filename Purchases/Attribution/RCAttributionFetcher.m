@@ -107,7 +107,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", identifierForAdvertisers, networkUserId];
 
     if ([latestSentToNetwork isEqualToString:newValueForNetwork]) {
-        RCDebugLog(@"%@", RCStrings.attribution.skip_same_attributes);
+        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.skip_same_attributes]];
     } else {
         NSMutableDictionary<NSString *, NSString *> *newDictToCache =
             [NSMutableDictionary dictionaryWithDictionary:dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks];

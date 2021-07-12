@@ -103,14 +103,14 @@ typedef void (^RetryRequestBlock)(void);
     if (performSerially && !retried) {
         @synchronized (self) {
             if (self.currentSerialRequest) {
-                RCDebugLog(RCStrings.network.serial_request_queued,
-                           (unsigned long)self.queuedRequests.count,
-                           httpMethod,
-                           path);
+                [RCLog debug:[NSString stringWithFormat:RCStrings.network.serial_request_queued,
+                              (unsigned long)self.queuedRequests.count,
+                              httpMethod,
+                              path]];
                 [self.queuedRequests addObject:rcRequest];
                 return;
             } else {
-                RCDebugLog(RCStrings.network.starting_request, httpMethod, path);
+                [RCLog debug:[NSString stringWithFormat:RCStrings.network.starting_request, httpMethod, path]];
                 self.currentSerialRequest = rcRequest;
             }
         }
@@ -131,7 +131,9 @@ beginNextRequestWhenFinished:performSerially
                      retried:retried];
     };
 
-    RCDebugLog(RCStrings.network.api_request_started, urlRequest.HTTPMethod, urlRequest.URL.path);
+    [RCLog debug:[NSString stringWithFormat:RCStrings.network.api_request_started,
+                  urlRequest.HTTPMethod,
+                  urlRequest.URL.path]];
     NSURLSessionTask *task = [self.session dataTaskWithRequest:urlRequest
                                              completionHandler:block];
     [task resume];
@@ -150,8 +152,10 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
     RCHTTPResponse *httpResponse = [[RCHTTPResponse alloc] initWithStatusCode:statusCode jsonObject:jsonObject];
     if (error == nil) {
         statusCode = ((NSHTTPURLResponse *) response).statusCode;
-
-        RCDebugLog(RCStrings.network.api_request_completed, request.HTTPMethod, request.URL.path, (long) statusCode);
+        [RCLog debug:[NSString stringWithFormat:RCStrings.network.api_request_completed,
+                      request.HTTPMethod,
+                      request.URL.path,
+                      (long) statusCode]];
 
         NSError *jsonError;
         if (statusCode == RCHTTPStatusCodesNotModifiedResponseCode) {
@@ -174,7 +178,9 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
                                                                   request:request
                                                                   retried:retried];
         if (httpResponse == nil) {
-            RCDebugLog(RCStrings.network.retrying_request, queableRequest.httpMethod, queableRequest.path);
+            [RCLog debug:[NSString stringWithFormat:RCStrings.network.retrying_request,
+                          queableRequest.httpMethod,
+                          queableRequest.path]];
             RCHTTPRequest *retriedRequest = [[RCHTTPRequest alloc] initWithRCHTTPRequest:queableRequest
                                                                                  retried:YES];
             [self.queuedRequests insertObject:retriedRequest atIndex:0];
@@ -188,10 +194,10 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
 
     if (beginNextRequestWhenFinished) {
         @synchronized (self) {
-            RCDebugLog(RCStrings.network.serial_request_done,
-                    self.currentSerialRequest.httpMethod,
-                    self.currentSerialRequest.path,
-                    (unsigned long)self.queuedRequests.count);
+            [RCLog debug:[NSString stringWithFormat:RCStrings.network.serial_request_done,
+                          self.currentSerialRequest.httpMethod,
+                          self.currentSerialRequest.path,
+                          (unsigned long)self.queuedRequests.count]];
             RCHTTPRequest *nextRequest = nil;
             self.currentSerialRequest = nil;
             if (self.queuedRequests.count > 0) {
@@ -199,7 +205,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
                 [self.queuedRequests removeObjectAtIndex:0];
             }
             if (nextRequest) {
-                RCDebugLog(RCStrings.network.starting_next_request, nextRequest);
+                [RCLog debug:[NSString stringWithFormat:RCStrings.network.starting_next_request, nextRequest]];
                 [self performRequest:nextRequest.httpMethod
                             serially:YES
                                 path:nextRequest.path
