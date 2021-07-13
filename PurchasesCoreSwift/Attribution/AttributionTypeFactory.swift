@@ -20,10 +20,12 @@ public typealias AttributionDetailsBlock = ([String: Any]?, Error?) -> Void
 }
 
 class FakeAdClient: NSObject {
+    // We need this method to make it available as implicitly unwrapped optional method for `AnyClass`.
     @objc static func sharedClient() -> FakeAdClient {
         FakeAdClient()
     }
 
+    // We need this method to make it available as implicitly unwrapped optional method for `AnyClass`.
     @objc func requestAttributionDetails(_ completionHandler: AttributionDetailsBlock) {
         // do nothing
     }
@@ -44,6 +46,7 @@ class FakeAdClient: NSObject {
 }
 
 class FakeTrackingManager: NSObject {
+    // We need this method to make it available as implicitly unwrapped optional method for `AnyClass`.
     @objc static func trackingAuthorizationStatus() -> Int {
         -1
     }
@@ -72,6 +75,7 @@ class FakeTrackingManager: NSObject {
 }
 
 class FakeASIdentifierManager: NSObject {
+    // We need this method to make it available as implicitly unwrapped optional method for `AnyClass`.
     @objc static func sharedManager() -> FakeASIdentifierManager {
         FakeASIdentifierManager()
     }
