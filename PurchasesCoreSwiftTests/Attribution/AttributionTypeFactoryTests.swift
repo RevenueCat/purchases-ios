@@ -27,7 +27,7 @@ class AttributionTypeFactoryTests: XCTestCase {
 
     func testCanRotateASIdentifierManagerBack() {
         let expected = "ASIdentifierManager"
-        let randomized = self.attributionTypeFactory.mangledIdentifierClassName
+        let randomized = ASIdentifierManagerProxy.mangledIdentifierClassName
 
         expect { randomized.rot13() }.to(equal(expected))
     }
@@ -42,7 +42,7 @@ class AttributionTypeFactoryTests: XCTestCase {
 
     func testCanRotateAdvertisingIdentifierBack() {
         let expected = "advertisingIdentifier"
-        let randomized = self.attributionTypeFactory.mangledIdentifierPropertyName
+        let randomized = ASIdentifierManagerProxy.mangledIdentifierPropertyName
 
         expect { randomized.rot13() }.to(equal(expected))
     }
@@ -57,7 +57,7 @@ class AttributionTypeFactoryTests: XCTestCase {
 
     func testCanRotateTrackingManagerBack() {
         let expected = "ATTrackingManager"
-        let randomized = self.attributionTypeFactory.mangledTrackingClassName
+        let randomized = TrackingManagerProxy.mangledTrackingClassName
 
         expect { randomized.rot13() }.to(equal(expected))
     }
@@ -72,7 +72,7 @@ class AttributionTypeFactoryTests: XCTestCase {
 
     func testCanRotateTrackingAuthorizationStatusBack() {
         let expected = "trackingAuthorizationStatus"
-        let randomized = self.attributionTypeFactory.mangledAuthStatusPropertyName
+        let randomized = TrackingManagerProxy.mangledAuthStatusPropertyName
 
         expect { randomized.rot13() }.to(equal(expected))
     }

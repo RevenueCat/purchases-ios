@@ -19,54 +19,98 @@ public typealias AttributionDetailsBlock = ([String: Any]?, Error?) -> Void
     case authorized
 }
 
-@objc public protocol FakeAdClient: AnyObject {
-    static func sharedClient() -> FakeAdClient
-    @objc(requestAttributionDetailsWithBlock:)
-    func requestAttributionDetails(_ completionHandler: AttributionDetailsBlock)
-}
-
-@objc public protocol FakeASIdentifierManager: AnyObject {
-    static func sharedManager() -> FakeASIdentifierManager
-}
-
-@objc public protocol FakeTrackingManager: AnyObject {
-    static func trackingAuthorizationStatus() -> Int
-}
-
-@objc(RCAttributionTypeFactory)
-open class AttributionTypeFactory: NSObject {
-    let mangledIdentifierClassName = "NFVqragvsvreZnantre"
-    let mangledIdentifierPropertyName = "nqiregvfvatVqragvsvre"
-    let mangledAuthStatusPropertyName = "genpxvatNhgubevmngvbaFgnghf"
-    let mangledTrackingClassName = "NGGenpxvatZnantre"
-
-    @objc open func adClientClass() -> FakeAdClient.Type? {
-        NSClassFromString("ADClient") as? FakeAdClient.Type
+class FakeAdClient: NSObject {
+    @objc static func sharedClient() -> FakeAdClient {
+        FakeAdClient()
     }
 
-    @objc open func atTrackingClass() -> FakeTrackingManager.Type? {
+    @objc func requestAttributionDetails(_ completionHandler: AttributionDetailsBlock) {
+        // do nothing
+    }
+}
+
+@objc open class AdClientProxy: NSObject {
+    private static let className = "ADClient"
+
+    static var adClientClass: AnyClass? {
+        NSClassFromString(Self.className.rot13())
+    }
+
+    @objc(requestAttributionDetailsWithBlock:)
+    open func requestAttributionDetails(_ completionHandler: AttributionDetailsBlock) {
+        let classType: AnyClass = Self.adClientClass ?? FakeAdClient.self
+        classType.sharedClient().requestAttributionDetails(completionHandler)
+    }
+}
+
+class FakeTrackingManager: NSObject {
+    @objc static func trackingAuthorizationStatus() -> Int {
+        -1
+    }
+}
+
+@objc open class TrackingManagerProxy: NSObject {
+    static let mangledTrackingClassName = "NGGenpxvatZnantre"
+    @objc static let mangledAuthStatusPropertyName = "genpxvatNhgubevmngvbaFgnghf"
+
+    static var trackingClass: AnyClass? {
+        NSClassFromString(mangledTrackingClassName.rot13())
+    }
+
+    @objc public var authorizationStatusPropertyName: String {
+        Self.mangledAuthStatusPropertyName.rot13()
+    }
+
+    @objc open func trackingAuthorizationStatus() -> Int {
         // We need to do this mangling to avoid Kid apps being rejected for getting idfa.
         // It looks like during the app review process Apple does some string matching looking for
         // functions in ATTrackingTransparency. We apply rot13 on these functions and classes names
         // so that Apple can't find them during the review, but we can still access them on runtime.
-        let className = mangledTrackingClassName.rot13()
-        return NSClassFromString(className) as? FakeTrackingManager.Type
+        let classType: AnyClass = Self.trackingClass ?? FakeTrackingManager.self
+        return classType.trackingAuthorizationStatus()
+    }
+}
+
+class FakeASIdentifierManager: NSObject {
+    @objc static func sharedManager() -> FakeASIdentifierManager {
+        FakeASIdentifierManager()
+    }
+}
+
+@objc public class ASIdentifierManagerProxy: NSObject {
+    static let mangledIdentifierClassName = "NFVqragvsvreZnantre"
+    static let mangledIdentifierPropertyName = "nqiregvfvatVqragvsvre"
+
+    static var identifierClass: AnyClass? {
+        NSClassFromString(Self.mangledIdentifierClassName.rot13())
     }
 
-    @objc public func asIdentifierClass() -> FakeASIdentifierManager.Type? {
+    @objc public var adsIdentifier: UUID? {
         // We need to do this mangling to avoid Kid apps being rejected for getting idfa.
         // It looks like during the app review process Apple does some string matching looking for
         // functions in the AdSupport.framework. We apply rot13 on these functions and classes names
         // so that Apple can't find them during the review, but we can still access them on runtime.
-        let className = mangledIdentifierClassName.rot13()
-        return NSClassFromString(className) as? FakeASIdentifierManager.Type
+        guard let classType: AnyClass = Self.identifierClass else {
+            return nil
+        }
+        return classType.sharedManager().value(forKey: Self.mangledIdentifierPropertyName.rot13()) as? UUID
+    }
+}
+
+@objc(RCAttributionTypeFactory)
+open class AttributionTypeFactory: NSObject {
+    @objc open func adClientProxy() -> AdClientProxy? {
+        guard AdClientProxy.adClientClass != nil else { return nil }
+        return AdClientProxy()
     }
 
-    @objc public var asIdentifierPropertyName: String {
-        mangledIdentifierPropertyName.rot13()
+    @objc open func atTrackingProxy() -> TrackingManagerProxy? {
+        guard TrackingManagerProxy.trackingClass != nil else { return nil }
+        return TrackingManagerProxy()
     }
 
-    @objc public var authorizationStatusPropertyName: String {
-        mangledAuthStatusPropertyName.rot13()
+    @objc open func asIdentifierProxy() -> ASIdentifierManagerProxy? {
+        guard ASIdentifierManagerProxy.identifierClass != nil else { return nil }
+        return ASIdentifierManagerProxy()
     }
 }

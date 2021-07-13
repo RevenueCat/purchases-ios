@@ -1330,14 +1330,6 @@
 			path = Public;
 			sourceTree = "<group>";
 		};
-		F5BE443B26977F8900254A30 /* Networking */ = {
-			isa = PBXGroup;
-			children = (
-				F5BE443C26977F9B00254A30 /* HTTPRequest.swift */,
-			);
-			path = Networking;
-			sourceTree = "<group>";
-		};
 		F5BE44412698580200254A30 /* Attribution */ = {
 			isa = PBXGroup;
 			children = (

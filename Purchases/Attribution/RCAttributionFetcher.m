@@ -45,11 +45,12 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
 - (nullable NSString *)identifierForAdvertisers {
     if (@available(iOS 6.0, macOS 10.14, *)) {
-        Class <FakeASIdentifierManager> _Nullable asIdentifierManagerClass = [self.attributionFactory asIdentifierClass];
-        if (asIdentifierManagerClass) {
-            id sharedManager = [asIdentifierManagerClass sharedManager];
-            NSUUID *identifierValue = [sharedManager valueForKey:[self.attributionFactory asIdentifierPropertyName]];
-            return identifierValue.UUIDString;
+        ASIdentifierManagerProxy * _Nullable asIdentifierProxy = [self.attributionFactory asIdentifierProxy];
+        if (asIdentifierProxy) {
+            NSUUID * _Nullable identifierValue = [asIdentifierProxy adsIdentifier];
+            if (identifierValue) {
+                return identifierValue.UUIDString;
+            }
         } else {
             [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.configure.adsupport_not_imported]];
         }
@@ -72,13 +73,13 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     // Should match available platforms in
     // https://developer.apple.com/documentation/iad/adclient?language=objc
     #if TARGET_OS_IOS
-    Class<FakeAdClient> _Nullable adClientClass = [self.attributionFactory adClientClass];
-    if (!adClientClass) {
+    AdClientProxy * _Nullable adClientProxy = [self.attributionFactory adClientProxy];
+    if (!adClientProxy) {
         [RCLog warn:[NSString stringWithFormat:@"%@",
                      RCStrings.attribution.search_ads_attribution_cancelled_missing_iad_framework]];
         return;
     }
-    [[adClientClass sharedClient] requestAttributionDetailsWithBlock:completionHandler];
+    [adClientProxy requestAttributionDetailsWithBlock:completionHandler];
     #endif
 }
 
@@ -141,16 +142,17 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
         BOOL needsTrackingAuthorization = [self.systemInfo isOperatingSystemAtLeastVersion:minimumOSVersionRequiringAuthorization];
 
-        Class _Nullable trackingManagerClass = [self.attributionFactory atTrackingClass];
-        if (!trackingManagerClass) {
+        TrackingManagerProxy * _Nullable trackingProxy = [self.attributionFactory atTrackingProxy];
+        if (!trackingProxy) {
             if (needsTrackingAuthorization) {
                 [RCLog warn:[NSString stringWithFormat:@"%@",
                              RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework]];
             }
             return !needsTrackingAuthorization;
         }
-        SEL authStatusSelector = NSSelectorFromString(self.attributionFactory.authorizationStatusPropertyName);
-        BOOL canPerformSelector = [trackingManagerClass respondsToSelector:authStatusSelector];
+        
+        SEL authStatusSelector = NSSelectorFromString(trackingProxy.authorizationStatusPropertyName);
+        BOOL canPerformSelector = [trackingProxy respondsToSelector:authStatusSelector];
         if (!canPerformSelector) {
             [RCLog warn:[NSString stringWithFormat:@"%@",
                          RCStrings.attribution.att_framework_present_but_couldnt_call_tracking_authorization_status]];
@@ -158,9 +160,9 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         }
         // we use NSInvocation to prevent direct references to tracking frameworks, which cause issues for
         // kids apps when going through app review, even if they don't actually use them at all. 
-        NSMethodSignature *methodSignature = [trackingManagerClass methodSignatureForSelector:authStatusSelector];
+        NSMethodSignature *methodSignature = [trackingProxy methodSignatureForSelector:authStatusSelector];
         NSInvocation *myInvocation = [NSInvocation invocationWithMethodSignature:methodSignature];
-        [myInvocation setTarget:trackingManagerClass];
+        [myInvocation setTarget:trackingProxy];
         [myInvocation setSelector:authStatusSelector];
 
         [myInvocation invoke];

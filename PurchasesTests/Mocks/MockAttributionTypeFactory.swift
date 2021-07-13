@@ -5,15 +5,8 @@
 
 import Foundation
 import AppTrackingTransparency
-import Purchases
 
-class MockAdClient: NSObject, FakeAdClient {
-    static func sharedClient() -> FakeAdClient {
-        return sharedInstance
-    }
-
-    static var sharedInstance = MockAdClient()
-
+class MockAdClientProxy: AdClientProxy {
     static var mockAttributionDetails: [String: NSObject] = [
         "Version3.1":
             [
@@ -24,33 +17,33 @@ class MockAdClient: NSObject, FakeAdClient {
     static var mockError: Error?
     static var requestAttributionDetailsCallCount = 0
 
-    func requestAttributionDetails(_ completionHandler: AttributionDetailsBlock) {
+    override func requestAttributionDetails(_ completionHandler: ([String : Any]?, Error?) -> Void) {
         Self.requestAttributionDetailsCallCount += 1
         completionHandler(Self.mockAttributionDetails, Self.mockError)
     }
 }
 
 @available(iOS 14, macOS 11, tvOS 14, *)
-class MockTrackingManager: NSObject, FakeTrackingManager {
+class MockTrackingManagerProxy: TrackingManagerProxy {
     static var mockAuthorizationStatus: ATTrackingManager.AuthorizationStatus = .authorized
-
-    static func trackingAuthorizationStatus() -> Int {
-        return Int(mockAuthorizationStatus.rawValue)
+    
+    override func trackingAuthorizationStatus() -> Int {
+        Int(Self.mockAuthorizationStatus.rawValue)
     }
 }
 
 class MockAttributionTypeFactory: AttributionTypeFactory {
-    static var shouldReturnAdClientClass = true
+    static var shouldReturnAdClientProxy = true
 
-    override func adClientClass() -> FakeAdClient.Type? {
-        return Self.shouldReturnAdClientClass ? MockAdClient.self : nil
+    override func adClientProxy() -> AdClientProxy? {
+        Self.shouldReturnAdClientProxy ? MockAdClientProxy() : nil
     }
 
-    static var shouldReturnTrackingManagerClass = true
+    static var shouldReturnTrackingManagerProxy = true
 
-    override func atTrackingClass() -> FakeTrackingManager.Type? {
+    override func atTrackingProxy() -> TrackingManagerProxy? {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
-            return Self.shouldReturnTrackingManagerClass ? MockTrackingManager.self : nil
+            return Self.shouldReturnTrackingManagerProxy ? MockTrackingManagerProxy() : nil
         } else {
             return nil
         }
