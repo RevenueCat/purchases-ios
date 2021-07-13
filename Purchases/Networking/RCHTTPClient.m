@@ -28,8 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation RCHTTPClient
 
-typedef void (^RetryRequestBlock)();
-
 - (instancetype)initWithSystemInfo:(RCSystemInfo *)systemInfo
                        eTagManager:(RCETagManager *)eTagManager {
     if (self = [super init]) {
