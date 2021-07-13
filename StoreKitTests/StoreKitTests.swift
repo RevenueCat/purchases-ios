@@ -264,7 +264,7 @@ private extension StoreKitTests {
                             appUserID: nil,
                             observerMode: false,
                             userDefaults: userDefaults)
-        Purchases.debugLogsEnabled = true
+        Purchases.logLevel = .debug
         Purchases.shared.delegate = purchasesDelegate
     }
 
