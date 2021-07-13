@@ -8,13 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
-#import "RCAttributionNetwork.h"
 #import "RCAttributionTypeFactory.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCDeviceCache, RCIdentityManager, RCBackend, RCAttributionData;
-@class RCSystemInfo;
+@class RCDeviceCache, RCIdentityManager, RCBackend, RCSystemInfo;
 
 
 @interface RCAttributionFetcher : NSObject
@@ -33,17 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler;
 
-- (void)postAttributionData:(NSDictionary *)data
-                fromNetwork:(RCAttributionNetwork)network
-           forNetworkUserId:(nullable NSString *)networkUserId;
-
-- (void)postAppleSearchAdsAttributionIfNeeded;
-
-- (void)postPostponedAttributionDataIfNeeded;
-
-+ (void)storePostponedAttributionData:(NSDictionary *)data
-                          fromNetwork:(RCAttributionNetwork)network
-                     forNetworkUserId:(nullable NSString *)networkUserId;
+- (BOOL) isAuthorizedToPostSearchAds;
 
 @end
 

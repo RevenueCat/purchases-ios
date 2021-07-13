@@ -20,6 +20,7 @@
 #import "RCPurchasesErrorUtils.h"
 #import "RCReceiptFetcher.h"
 #import "RCAttributionFetcher.h"
+#import "RCAttributionPoster.h"
 #import "RCAttributionData.h"
 #import "RCOfferingsFactory.h"
 #import "RCPackage+Protected.h"
@@ -57,6 +58,7 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 @property (nonatomic) NSMutableDictionary<NSString *, NSString *> *presentedOfferingsByProductIdentifier;
 @property (nonatomic) NSMutableDictionary<NSString *, RCPurchaseCompletedBlock> *purchaseCompleteCallbacks;
 @property (nonatomic) RCAttributionFetcher *attributionFetcher;
+@property (nonatomic) RCAttributionPoster *attributionPoster;
 @property (nonatomic) RCOfferingsFactory *offeringsFactory;
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCIdentityManager *identityManager;
@@ -261,20 +263,28 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                                      backend:backend
                                                         purchaserInfoManager:purchaserInfoManager];
     RCAttributionTypeFactory *attributionTypeFactory = [[RCAttributionTypeFactory alloc] init];
-    RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc]
-                                                initWithDeviceCache:deviceCache
-                                                identityManager:identityManager
-                                                backend:backend
-                                                attributionFactory:attributionTypeFactory
-                                                systemInfo:systemInfo];
+    RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] initWithDeviceCache:deviceCache
+                                                                                 identityManager:identityManager
+                                                                                         backend:backend
+                                                                              attributionFactory:attributionTypeFactory
+                                                                                      systemInfo:systemInfo];
+    RCAttributionDataMigrator *attributionDataMigrator = [[RCAttributionDataMigrator alloc] init];
     RCSubscriberAttributesManager *subscriberAttributesManager =
             [[RCSubscriberAttributesManager alloc] initWithBackend:backend
                                                        deviceCache:deviceCache
-                                                attributionFetcher:attributionFetcher];
+                                                attributionFetcher:attributionFetcher
+                                           attributionDataMigrator:attributionDataMigrator];
+    RCAttributionPoster *attributionPoster = [[RCAttributionPoster alloc] initWithDeviceCache:deviceCache
+                                                                              identityManager:identityManager
+                                                                                      backend:backend
+                                                                                   systemInfo:systemInfo
+                                                                           attributionFetcher:attributionFetcher
+                                                                  subscriberAttributesManager:subscriberAttributesManager];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher
                 attributionFetcher:attributionFetcher
+                 attributionPoster:attributionPoster
                            backend:backend
                    storeKitWrapper:storeKitWrapper
                 notificationCenter:[NSNotificationCenter defaultCenter]
@@ -293,6 +303,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                    requestFetcher:(RCStoreKitRequestFetcher *)requestFetcher
                    receiptFetcher:(RCReceiptFetcher *)receiptFetcher
                attributionFetcher:(RCAttributionFetcher *)attributionFetcher
+                attributionPoster:(RCAttributionPoster *)attributionPoster
                           backend:(RCBackend *)backend
                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                notificationCenter:(NSNotificationCenter *)notificationCenter
@@ -313,6 +324,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.requestFetcher = requestFetcher;
         self.receiptFetcher = receiptFetcher;
         self.attributionFetcher = attributionFetcher;
+        self.attributionPoster = attributionPoster;
         self.backend = backend;
         self.storeKitWrapper = storeKitWrapper;
         self.offeringsFactory = offeringsFactory;
@@ -347,7 +359,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
         [self subscribeToAppStateNotifications];
 
-        [self.attributionFetcher postPostponedAttributionDataIfNeeded];
+        [self.attributionPoster postPostponedAttributionDataIfNeeded];
         [self postAppleSearchAddsAttributionCollectionIfNeeded];
     }
 
@@ -387,9 +399,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
            forNetworkUserId:(nullable NSString *)networkUserId {
-    [self.attributionFetcher postAttributionData:data
-                                     fromNetwork:network
-                                forNetworkUserId:networkUserId];
+    [self.attributionPoster postAttributionData:data
+                                    fromNetwork:network
+                               forNetworkUserId:networkUserId];
 }
 
 + (void)addAttributionData:(NSDictionary *)data
@@ -405,7 +417,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         [_sharedPurchases postAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
     } else {
         RCDebugLog(@"%@", RCStrings.attribution.no_instance_configured_caching_attribution);
-        [RCAttributionFetcher storePostponedAttributionData:data
+        [RCAttributionPoster storePostponedAttributionData:data
                                                 fromNetwork:network
                                            forNetworkUserId:networkUserId];
     }
@@ -413,7 +425,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)postAppleSearchAddsAttributionCollectionIfNeeded {
     if (_automaticAppleSearchAdsAttributionCollection) {
-        [self.attributionFetcher postAppleSearchAdsAttributionIfNeeded];
+        [self.attributionPoster postAppleSearchAdsAttributionIfNeeded];
     }
 }
 

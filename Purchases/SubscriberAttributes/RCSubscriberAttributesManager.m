@@ -4,7 +4,6 @@
 //
 
 #import "RCSubscriberAttributesManager.h"
-#import "RCSpecialSubscriberAttributes.h"
 #import "RCBackend.h"
 #import "RCDeviceCache.h"
 #import "NSError+RCExtensions.h"
@@ -21,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) RCDeviceCache *deviceCache;
 @property (nonatomic) RCBackend *backend;
 @property (nonatomic) RCAttributionFetcher *attributionFetcher;
+@property (nonatomic) RCAttributionDataMigrator *attributionDataMigrator;
 
 @end
 
@@ -31,14 +31,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithBackend:(nullable RCBackend *)backend
                     deviceCache:(nullable RCDeviceCache *)deviceCache
-             attributionFetcher:(nullable RCAttributionFetcher *)attributionFetcher{
+             attributionFetcher:(nullable RCAttributionFetcher *)attributionFetcher
+        attributionDataMigrator:(nullable RCAttributionDataMigrator *)attributionDataMigrator {
     if (self = [super init]) {
         NSParameterAssert(backend);
         NSParameterAssert(deviceCache);
         NSParameterAssert(attributionFetcher);
+        NSParameterAssert(attributionDataMigrator);
         self.backend = backend;
         self.deviceCache = deviceCache;
         self.attributionFetcher = attributionFetcher;
+        self.attributionDataMigrator = attributionDataMigrator;
     }
     return self;
 }
@@ -50,15 +53,15 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setEmail:(nullable NSString *)email appUserID:(NSString *)appUserID {
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_EMAIL value:email appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.email value:email appUserID:appUserID];
 }
 
 - (void)setPhoneNumber:(nullable NSString *)phoneNumber appUserID:(NSString *)appUserID {
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_PHONE_NUMBER value:phoneNumber appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.phoneNumber value:phoneNumber appUserID:appUserID];
 }
 
 - (void)setDisplayName:(nullable NSString *)displayName appUserID:(NSString *)appUserID {
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_DISPLAY_NAME value:displayName appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.displayName value:displayName appUserID:appUserID];
 }
 
 - (void)setPushToken:(nullable NSData *)pushToken appUserID:(NSString *)appUserID {
@@ -67,59 +70,59 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setPushTokenString:(nullable NSString *)pushTokenString appUserID:(NSString *)appUserID {
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_PUSH_TOKEN value:pushTokenString appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.pushToken value:pushTokenString appUserID:appUserID];
 }
 
 - (void)setAdjustID:(nullable NSString *)adjustID appUserID:(NSString *)appUserID {
-    [self setAttributionID:adjustID networkKey:SPECIAL_ATTRIBUTE_ADJUST_ID appUserID:appUserID];
+    [self setAttributionID:adjustID networkKey:RCSpecialSubscriberAttributes.adjustID appUserID:appUserID];
 }
 
 - (void)setAppsflyerID:(nullable NSString *)appsflyerID appUserID:(NSString *)appUserID {
-    [self setAttributionID:appsflyerID networkKey:SPECIAL_ATTRIBUTE_APPSFLYER_ID appUserID:appUserID];
+    [self setAttributionID:appsflyerID networkKey:RCSpecialSubscriberAttributes.appsFlyerID appUserID:appUserID];
 }
 
 - (void)setFBAnonymousID:(nullable NSString *)fbAnonymousID appUserID:(NSString *)appUserID {
-    [self setAttributionID:fbAnonymousID networkKey:SPECIAL_ATTRIBUTE_FB_ANON_ID appUserID:appUserID];
+    [self setAttributionID:fbAnonymousID networkKey:RCSpecialSubscriberAttributes.fBAnonID appUserID:appUserID];
 }
 
 - (void)setMparticleID:(nullable NSString *)mparticleID appUserID:(NSString *)appUserID {
-    [self setAttributionID:mparticleID networkKey:SPECIAL_ATTRIBUTE_MPARTICLE_ID appUserID:appUserID];
+    [self setAttributionID:mparticleID networkKey:RCSpecialSubscriberAttributes.mpParticleID appUserID:appUserID];
 }
 
 - (void)setOnesignalID:(nullable NSString *)onesignalID appUserID:(NSString *)appUserID {
-    [self setAttributionID:onesignalID networkKey:SPECIAL_ATTRIBUTE_ONESIGNAL_ID appUserID:appUserID];
+    [self setAttributionID:onesignalID networkKey:RCSpecialSubscriberAttributes.oneSignalID appUserID:appUserID];
 }
 
 - (void)setMediaSource:(nullable NSString *)mediaSource appUserID:(NSString *)appUserID {
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_MEDIA_SOURCE value:mediaSource appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.mediaSource value:mediaSource appUserID:appUserID];
 }
 
 - (void)setCampaign:(nullable NSString *)campaign appUserID:(NSString *)appUserID {
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_CAMPAIGN value:campaign appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.campaign value:campaign appUserID:appUserID];
 }
 
 - (void)setAdGroup:(nullable NSString *)adGroup appUserID:(NSString *)appUserID {
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_AD_GROUP value:adGroup appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.adGroup value:adGroup appUserID:appUserID];
 }
 
 - (void)setAd:(nullable NSString *)ad appUserID:(NSString *)appUserID {
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_AD value:ad appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.ad value:ad appUserID:appUserID];
 }
 
 - (void)setKeyword:(nullable NSString *)keyword appUserID:(NSString *)appUserID {
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_KEYWORD value:keyword appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.keyword value:keyword appUserID:appUserID];
 }
 
 - (void)setCreative:(nullable NSString *)creative appUserID:(NSString *)appUserID {
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_CREATIVE value:creative appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.creative value:creative appUserID:appUserID];
 }
 
 - (void)collectDeviceIdentifiersForAppUserID:(NSString *)appUserID {
     NSString *identifierForAdvertisers = [self.attributionFetcher identifierForAdvertisers];
     NSString *identifierForVendor = [self.attributionFetcher identifierForVendor];
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_IDFA value:identifierForAdvertisers appUserID:appUserID];
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_IDFV value:identifierForVendor appUserID:appUserID];
-    [self setAttributeWithKey:SPECIAL_ATTRIBUTE_IP value:@"true" appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.idfa value:identifierForAdvertisers appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.idfv value:identifierForVendor appUserID:appUserID];
+    [self setAttributeWithKey:RCSpecialSubscriberAttributes.ip value:@"true" appUserID:appUserID];
 }
 
 - (void)syncAttributesForAllUsersWithCurrentAppUserID:(NSString *)currentAppUserID {
@@ -227,6 +230,15 @@ NS_ASSUME_NONNULL_BEGIN
                appUserID:(NSString *)appUserID {
     [self collectDeviceIdentifiersForAppUserID:appUserID];
     [self setAttributeWithKey:networkKey value:networkID appUserID:appUserID];
+}
+
+- (void)convertAttributionDataAndSetAsSubscriberAttributes:(NSDictionary *)attributionData
+                                                   network:(RCAttributionNetwork)network
+                                                 appUserID:(NSString *)appUserID {
+    NSDictionary *convertedAttribution =
+    [self.attributionDataMigrator convertAttributionDataToSubscriberAttributesWithAttributionData:attributionData
+                                                                                          network:network];
+    [self setAttributes:convertedAttribution appUserID:appUserID];
 }
 
 @end

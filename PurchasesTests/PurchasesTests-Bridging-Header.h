@@ -7,6 +7,7 @@
 #include <Purchases/NSError+RCExtensions.h>
 #include <Purchases/RCAttributionData.h>
 #include <Purchases/RCAttributionFetcher.h>
+#include <Purchases/RCAttributionPoster.h>
 #include <Purchases/RCAttributionTypeFactory+Protected.h>
 #include <Purchases/RCAttributionTypeFactory.h>
 #include <Purchases/RCBackend.h>
@@ -41,7 +42,6 @@
 #include <Purchases/RCPurchasesErrorUtils+Protected.h>
 #include <Purchases/RCPurchasesErrorUtils.h>
 #include <Purchases/RCReceiptFetcher.h>
-#include <Purchases/RCSpecialSubscriberAttributes.h>
 #include <Purchases/RCStoreKitRequestFetcher.h>
 #include <Purchases/RCStoreKitWrapper.h>
 #include <Purchases/RCSubscriberAttribute+Protected.h>
