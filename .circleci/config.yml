@@ -323,8 +323,7 @@ workflows:
     jobs:
       - lint
       - runtest
-      # - storekit_tests: *release-tags-and-branches
-      - storekit_tests # TODO: restrict back to release tags and branches
+      - storekit_tests: *release-tags-and-branches
       - deployment-checks: *release-branches
       - integration-tests-cocoapods: *release-tags-and-branches
       - integration-tests-swift-package-manager: *release-tags-and-branches
