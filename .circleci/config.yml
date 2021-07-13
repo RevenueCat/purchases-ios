@@ -71,8 +71,8 @@ commands:
         type: string
     steps:
       - run:
-        name: Install swiftlint
-        command: brew install swiftlint
+          name: Install swiftlint
+          command: brew install swiftlint
       - install-gems:
           directory: << parameters.directory >>
       - scan-and-archive:
