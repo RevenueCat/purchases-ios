@@ -65,7 +65,7 @@ class StoreKitTests: XCTestCase {
         configurePurchases()
         purchaseMonthlyOffering()
 
-        waitUntilPurchaseGoesThrough()
+        waitUntilEntitlementsGoThrough()
         let entitlements = purchasesDelegate.purchaserInfo?.entitlements
         expect(entitlements?["premium"]?.isActive) == true
     }
@@ -93,7 +93,7 @@ class StoreKitTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
     }
 
-    func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedAfterUntilRestore() {
+    func testPurchaseMadeBeforeLogInWithExistingUserIsNotRetainedUnlessRestoreCalled() {
         configurePurchases()
         var completionCalled = false
         let existingUserID = "\(#function)\(UUID().uuidString)"
@@ -110,13 +110,13 @@ class StoreKitTests: XCTestCase {
 
         // purchase as anonymous user, then log in
         purchaseMonthlyOffering()
-        waitUntilPurchaseGoesThrough()
+        waitUntilEntitlementsGoThrough()
 
         completionCalled = false
 
         Purchases.shared.logIn(existingUserID) { purchaserInfo, created, logInError in
             completionCalled = true
-            expect(purchaserInfo?.entitlements.all.count) == 0
+            self.assertNoPurchases(purchaserInfo)
             expect(created).to(beFalse())
             expect(logInError).to(beNil())
         }
@@ -125,7 +125,7 @@ class StoreKitTests: XCTestCase {
 
         Purchases.shared.restoreTransactions()
 
-        waitUntilPurchaseGoesThrough()
+        waitUntilEntitlementsGoThrough()
     }
 
     func testPurchaseAsIdentifiedThenLogOutThenRestoreGrantsEntitlements() {
@@ -141,12 +141,12 @@ class StoreKitTests: XCTestCase {
 
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
 
-        waitUntilPurchaseGoesThrough()
+        waitUntilEntitlementsGoThrough()
 
         completionCalled = false
 
         Purchases.shared.logOut { purchaserInfo, error in
-            expect(purchaserInfo?.entitlements.all.count) == 0
+            self.assertNoPurchases(purchaserInfo)
             expect(error).to(beNil())
             completionCalled = true
         }
@@ -155,7 +155,7 @@ class StoreKitTests: XCTestCase {
 
         Purchases.shared.restoreTransactions()
 
-        waitUntilPurchaseGoesThrough()
+        waitUntilEntitlementsGoThrough()
     }
 
     func testLogInReturnsCreatedTrueWhenNewAndFalseWhenExisting() {
@@ -190,18 +190,18 @@ class StoreKitTests: XCTestCase {
             self.purchaseMonthlyOffering()
         }
 
-        waitUntilPurchaseGoesThrough()
+        waitUntilEntitlementsGoThrough()
 
         testSession.clearTransactions()
 
         Purchases.shared.logIn(userID2) { identifiedPurchaserInfo, created, error in
-            expect(identifiedPurchaserInfo?.entitlements.all.count) == 0
+            self.assertNoPurchases(identifiedPurchaserInfo)
             expect(error).to(beNil())
         }
 
         expect(self.purchasesDelegate.purchaserInfo?.originalAppUserId)
             .toEventually(equal(userID2), timeout: .seconds(10))
-        expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count) == 0
+        assertNoPurchases(purchasesDelegate.purchaserInfo)
     }
 
     func testLogOutRemovesEntitlements() {
@@ -219,12 +219,12 @@ class StoreKitTests: XCTestCase {
             self.purchaseMonthlyOffering()
         }
 
-        waitUntilPurchaseGoesThrough()
+        waitUntilEntitlementsGoThrough()
 
         var completionCalled = false
         Purchases.shared.logOut { loggedOutPurchaserInfo, logOutError in
             expect(logOutError).to(beNil())
-            expect(loggedOutPurchaserInfo?.entitlements.all.count) == 0
+            self.assertNoPurchases(loggedOutPurchaserInfo)
             completionCalled = true
         }
 
@@ -268,8 +268,12 @@ private extension StoreKitTests {
         Purchases.shared.delegate = purchasesDelegate
     }
 
-    func waitUntilPurchaseGoesThrough() {
+    func waitUntilEntitlementsGoThrough() {
         expect(self.purchasesDelegate.purchaserInfo?.entitlements.all.count)
             .toEventually(equal(1), timeout: .seconds(10))
+    }
+
+    func assertNoPurchases(_ purchaserInfo: Purchases.PurchaserInfo?) {
+        expect(purchaserInfo?.entitlements.all.count) == 0
     }
 }
