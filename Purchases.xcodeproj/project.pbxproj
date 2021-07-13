@@ -1480,7 +1480,7 @@
 				352629FA1F7C4B9100C04F2C /* Frameworks */,
 				352629FB1F7C4B9100C04F2C /* Headers */,
 				352629FC1F7C4B9100C04F2C /* Resources */,
-				B385A1532674324500C6F132 /* ShellScript */,
+				B385A1532674324500C6F132 /* Swiftlint */,
 			);
 			buildRules = (
 			);
@@ -1633,7 +1633,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		B385A1532674324500C6F132 /* ShellScript */ = {
+		B385A1532674324500C6F132 /* Swiftlint */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1642,6 +1642,7 @@
 			);
 			inputPaths = (
 			);
+			name = Swiftlint;
 			outputFileListPaths = (
 			);
 			outputPaths = (
