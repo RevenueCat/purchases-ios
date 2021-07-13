@@ -45,7 +45,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
 - (nullable NSString *)identifierForAdvertisers {
     if (@available(iOS 6.0, macOS 10.14, *)) {
-        ASIdentifierManagerProxy * _Nullable asIdentifierProxy = [self.attributionFactory asIdentifierProxy];
+        RCASIdentifierManagerProxy * _Nullable asIdentifierProxy = [self.attributionFactory asIdentifierProxy];
         if (asIdentifierProxy) {
             NSUUID * _Nullable identifierValue = [asIdentifierProxy adsIdentifier];
             if (identifierValue) {
@@ -73,7 +73,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     // Should match available platforms in
     // https://developer.apple.com/documentation/iad/adclient?language=objc
     #if TARGET_OS_IOS
-    AdClientProxy * _Nullable adClientProxy = [self.attributionFactory adClientProxy];
+    RCAdClientProxy * _Nullable adClientProxy = [self.attributionFactory adClientProxy];
     if (!adClientProxy) {
         [RCLog warn:[NSString stringWithFormat:@"%@",
                      RCStrings.attribution.search_ads_attribution_cancelled_missing_iad_framework]];
@@ -142,7 +142,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
         BOOL needsTrackingAuthorization = [self.systemInfo isOperatingSystemAtLeastVersion:minimumOSVersionRequiringAuthorization];
 
-        TrackingManagerProxy * _Nullable trackingProxy = [self.attributionFactory atTrackingProxy];
+        RCTrackingManagerProxy * _Nullable trackingProxy = [self.attributionFactory atTrackingProxy];
         if (!trackingProxy) {
             if (needsTrackingAuthorization) {
                 [RCLog warn:[NSString stringWithFormat:@"%@",

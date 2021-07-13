@@ -31,7 +31,8 @@ class FakeAdClient: NSObject {
     }
 }
 
-@objc open class AdClientProxy: NSObject {
+@objc(RCAdClientProxy)
+open class AdClientProxy: NSObject {
     private static let className = "ADClient"
 
     static var adClientClass: AnyClass? {
@@ -52,9 +53,10 @@ class FakeTrackingManager: NSObject {
     }
 }
 
-@objc open class TrackingManagerProxy: NSObject {
+@objc(RCTrackingManagerProxy)
+open class TrackingManagerProxy: NSObject {
     static let mangledTrackingClassName = "NGGenpxvatZnantre"
-    @objc static let mangledAuthStatusPropertyName = "genpxvatNhgubevmngvbaFgnghf"
+    static let mangledAuthStatusPropertyName = "genpxvatNhgubevmngvbaFgnghf"
 
     static var trackingClass: AnyClass? {
         // We need to do this mangling to avoid Kid apps being rejected for getting idfa.
@@ -81,7 +83,8 @@ class FakeASIdentifierManager: NSObject {
     }
 }
 
-@objc public class ASIdentifierManagerProxy: NSObject {
+@objc(RCASIdentifierManagerProxy)
+public class ASIdentifierManagerProxy: NSObject {
     static let mangledIdentifierClassName = "NFVqragvsvreZnantre"
     static let mangledIdentifierPropertyName = "nqiregvfvatVqragvsvre"
 
