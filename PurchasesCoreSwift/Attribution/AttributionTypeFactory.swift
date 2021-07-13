@@ -20,12 +20,12 @@ public typealias AttributionDetailsBlock = ([String: Any]?, Error?) -> Void
 }
 
 class FakeAdClient: NSObject {
-    // We need this method to make it available as implicitly unwrapped optional method for `AnyClass`.
+    // We need this method to be available as an optional implicitly unwrapped method for `AnyClass`.
     @objc static func sharedClient() -> FakeAdClient {
         FakeAdClient()
     }
 
-    // We need this method to make it available as implicitly unwrapped optional method for `AnyClass`.
+    // We need this method to be available as an optional implicitly unwrapped method for `AnyClass`.
     @objc func requestAttributionDetails(_ completionHandler: AttributionDetailsBlock) {
         // do nothing
     }
@@ -46,7 +46,7 @@ class FakeAdClient: NSObject {
 }
 
 class FakeTrackingManager: NSObject {
-    // We need this method to make it available as implicitly unwrapped optional method for `AnyClass`.
+    // We need this method to be available as an optional implicitly unwrapped method for `AnyClass`.
     @objc static func trackingAuthorizationStatus() -> Int {
         -1
     }
@@ -57,6 +57,10 @@ class FakeTrackingManager: NSObject {
     @objc static let mangledAuthStatusPropertyName = "genpxvatNhgubevmngvbaFgnghf"
 
     static var trackingClass: AnyClass? {
+        // We need to do this mangling to avoid Kid apps being rejected for getting idfa.
+        // It looks like during the app review process Apple does some string matching looking for
+        // functions in ATTrackingTransparency. We apply rot13 on these functions and classes names
+        // so that Apple can't find them during the review, but we can still access them on runtime.
         NSClassFromString(mangledTrackingClassName.rot13())
     }
 
@@ -65,17 +69,13 @@ class FakeTrackingManager: NSObject {
     }
 
     @objc open func trackingAuthorizationStatus() -> Int {
-        // We need to do this mangling to avoid Kid apps being rejected for getting idfa.
-        // It looks like during the app review process Apple does some string matching looking for
-        // functions in ATTrackingTransparency. We apply rot13 on these functions and classes names
-        // so that Apple can't find them during the review, but we can still access them on runtime.
         let classType: AnyClass = Self.trackingClass ?? FakeTrackingManager.self
         return classType.trackingAuthorizationStatus()
     }
 }
 
 class FakeASIdentifierManager: NSObject {
-    // We need this method to make it available as implicitly unwrapped optional method for `AnyClass`.
+    // We need this method to be available as an optional implicitly unwrapped method for `AnyClass`.
     @objc static func sharedManager() -> FakeASIdentifierManager {
         FakeASIdentifierManager()
     }
@@ -86,14 +86,14 @@ class FakeASIdentifierManager: NSObject {
     static let mangledIdentifierPropertyName = "nqiregvfvatVqragvsvre"
 
     static var identifierClass: AnyClass? {
-        NSClassFromString(Self.mangledIdentifierClassName.rot13())
-    }
-
-    @objc public var adsIdentifier: UUID? {
         // We need to do this mangling to avoid Kid apps being rejected for getting idfa.
         // It looks like during the app review process Apple does some string matching looking for
         // functions in the AdSupport.framework. We apply rot13 on these functions and classes names
         // so that Apple can't find them during the review, but we can still access them on runtime.
+        NSClassFromString(Self.mangledIdentifierClassName.rot13())
+    }
+
+    @objc public var adsIdentifier: UUID? {
         guard let classType: AnyClass = Self.identifierClass else {
             return nil
         }
