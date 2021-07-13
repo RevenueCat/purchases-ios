@@ -1581,7 +1581,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         expect(self.backend.gotOfferings).toEventually(equal(1))
 
-        var offerings: Purchases.Offerings?
+        var offerings: Offerings?
         self.purchases?.offerings { (newOfferings, _) in
             offerings = newOfferings
         }
@@ -1639,7 +1639,7 @@ class PurchasesTests: XCTestCase {
         self.backend.failOfferings = true
         setupPurchases()
 
-        var offerings: Purchases.Offerings?
+        var offerings: Offerings?
         self.purchases?.offerings({ (newOfferings, _) in
             offerings = newOfferings
         })
@@ -1668,7 +1668,7 @@ class PurchasesTests: XCTestCase {
         offeringsFactory.emptyOfferings = true
         setupPurchases()
 
-        var offerings: Purchases.Offerings?
+        var offerings: Offerings?
         self.purchases?.offerings({ (newOfferings, _) in
             offerings = newOfferings
         })
