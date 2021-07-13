@@ -15,6 +15,7 @@
 
     https://github.com/RevenueCat/purchases-ios/pull/453
     https://github.com/RevenueCat/purchases-ios/pull/438
+    https://github.com/RevenueCat/purchases-ios/pull/506
 
 
 ### Other changes: 
