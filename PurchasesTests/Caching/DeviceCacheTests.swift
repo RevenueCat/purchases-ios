@@ -44,7 +44,7 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testClearCachesForAppUserIDAndSaveNewUserIDRemovesCachedOfferings() {
-        let offerings = Purchases.Offerings()
+        let offerings = Offerings(offerings: [:], currentOfferingID: "")
         self.deviceCache.cacheOfferings(offerings)
         expect(self.deviceCache.cachedOfferings).to(equal(offerings))
         self.deviceCache.clearCaches(forAppUserID: "cesar", andSaveNewUserID: "newUser")
@@ -150,11 +150,11 @@ class DeviceCacheTests: XCTestCase {
     }
 
     func testOfferingsCacheIsStaleIfCachedObjectIsStale() {
-        let mockCachedObject = MockInMemoryCachedOfferings<Purchases.Offerings>()
+        let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
         self.deviceCache = RCDeviceCache(mockUserDefaults,
                                          offeringsCachedObject: mockCachedObject,
                                          notificationCenter: nil)
-        let offerings = Purchases.Offerings()
+        let offerings = Offerings(offerings: [:], currentOfferingID: "")
         self.deviceCache.cacheOfferings(offerings)
         let isAppBackgrounded = false
 
@@ -197,7 +197,7 @@ class DeviceCacheTests: XCTestCase {
             ]
         ])
         guard let offering = optionalOffering else { fatalError("couldn't create offering for tests") }
-        let expectedOfferings = Purchases.Offerings(offerings: ["offering1": offering], currentOfferingID: "base")
+        let expectedOfferings = Offerings(offerings: ["offering1": offering], currentOfferingID: "base")
         self.deviceCache.cacheOfferings(expectedOfferings)
 
         expect(self.deviceCache.cachedOfferings).to(beIdenticalTo(expectedOfferings))
@@ -339,7 +339,7 @@ class DeviceCacheTests: XCTestCase {
 
     func testIsOfferingsCacheStaleDifferentCacheLengthsForBackgroundAndForeground() {
         let mockNotificationCenter = MockNotificationCenter()
-        let mockCachedObject = RCInMemoryCachedObject<Purchases.Offerings>()
+        let mockCachedObject = RCInMemoryCachedObject<Offerings>()
 
         self.deviceCache = RCDeviceCache(mockUserDefaults,
                                          offeringsCachedObject: mockCachedObject,

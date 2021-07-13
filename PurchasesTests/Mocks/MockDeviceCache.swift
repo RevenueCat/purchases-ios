@@ -78,13 +78,13 @@ class MockDeviceCache: RCDeviceCache {
     var clearOfferingsCacheTimestampCount = 0
     var setOfferingsCacheTimestampToNowCount = 0
     var stubbedIsOfferingsCacheStale = false
-    var stubbedOfferings: Purchases.Offerings?
+    var stubbedOfferings: Offerings?
 
-    override var cachedOfferings: Purchases.Offerings? {
+    override var cachedOfferings: Offerings? {
         return stubbedOfferings
     }
 
-    override func cacheOfferings(_ offerings: Purchases.Offerings) {
+    override func cacheOfferings(_ offerings: Offerings) {
         cachedOfferingsCount += 1
     }
 

@@ -13,7 +13,7 @@
 @implementation RCOfferingsAPI
 
 + (void)checkAPI {
-    RCOfferings *o = [[RCOfferings alloc] init];
+    RCOfferings *o = [[RCOfferings alloc] initWithOfferings:@{} currentOfferingID:nil];
     RCOffering *of = o.current;
     NSDictionary<NSString *, RCOffering *> *a = o.all;
     of = [o offeringWithIdentifier:nil];
