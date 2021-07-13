@@ -6,9 +6,7 @@
 #import "RCPurchases+Protected.h"
 #import "RCPurchases+SubscriberAttributes.h"
 #import "RCSubscriberAttributesManager.h"
-#import "RCLogUtils.h"
 #import "NSError+RCExtensions.h"
-#import "RCOffering.h"
 #import "RCOfferings.h"
 @import PurchasesCoreSwift;
 
@@ -23,9 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *appUserID = self.appUserID;
     RCSubscriberAttributeDict unsyncedAttributes = [self.subscriberAttributesManager
                                                     unsyncedAttributesByKeyForAppUserID:appUserID];
-    RCDebugLog(RCStrings.attribution.unsynced_attributes_count, (unsigned long)unsyncedAttributes.count, appUserID);
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.unsynced_attributes_count,
+                  (unsigned long)unsyncedAttributes.count, appUserID]];
     if (unsyncedAttributes.count > 0) {
-        RCDebugLog(RCStrings.attribution.unsynced_attributes, unsyncedAttributes);
+        [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.unsynced_attributes, unsyncedAttributes]];
     }
 
     return unsyncedAttributes;
@@ -39,7 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (error.rc_subscriberAttributesErrors) {
-        RCErrorLog(RCStrings.attribution.subscriber_attributes_error, error.rc_subscriberAttributesErrors);
+        [RCLog error:[NSString stringWithFormat:RCStrings.attribution.subscriber_attributes_error,
+                      error.rc_subscriberAttributesErrors]];
     }
     [self.subscriberAttributesManager markAttributesAsSynced:syncedAttributes appUserID:appUserID];
 }

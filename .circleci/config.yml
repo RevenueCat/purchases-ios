@@ -124,6 +124,20 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/report.html
           destination: test_report.html
+  buildTvWatchAndMacOS:
+    macos:
+      xcode: "12.5.1"
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - run:
+          name: Install swiftlint
+          command: brew install swiftlint
+      - install-gems
+      - run:
+          name: Build AppleTV, WatchOS, and macOS
+          command: bundle exec fastlane build_tv_watch_mac            
   apitest:
     macos:
       xcode: "12.5.1"
@@ -334,6 +348,7 @@ workflows:
       - lint
       - runtest
       - apitest
+      - buildTvWatchAndMacOS
       - storekit_tests: *release-tags-and-branches
       - deployment-checks: *release-branches
       - integration-tests-cocoapods: *release-tags-and-branches

@@ -19,7 +19,7 @@ class MockOfferingsFactory: RCOfferingsFactory {
         }
         return Purchases.Offerings(
             offerings: [
-                "base": Purchases.Offering(
+                "base": Offering(
                     identifier: "base",
                     serverDescription: "This is the base offering",
                     availablePackages: [

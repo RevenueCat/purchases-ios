@@ -11,7 +11,7 @@ import Foundation
 import Purchases
 
 class InterfaceController: WKInterfaceController {
-    private var offering : Purchases.Offering?
+    private var offering : Offering?
     
     @IBOutlet weak var expiryDateLabel: WKInterfaceLabel!
     @IBOutlet weak var purchaseDateLabel: WKInterfaceLabel!

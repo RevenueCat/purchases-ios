@@ -24,7 +24,7 @@
     RCPurchaserInfoManager,
     RCProductsManager;
 
-#import "RCStoreKitWrapper.h"
+@protocol RCStoreKitWrapperDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
 
