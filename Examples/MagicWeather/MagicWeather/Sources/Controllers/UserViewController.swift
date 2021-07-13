@@ -69,7 +69,7 @@ extension UserViewController {
                 
                 #warning("Public-facing usernames aren't optimal for user ID's - you should use something non-guessable, like a non-public database ID. For more information, visit https://docs.revenuecat.com/docs/user-ids.")
                 /// - Call `identify` with the Purchases SDK with the unique user ID
-                Purchases.shared.identify(username) { (purchaserInfo, error) in
+                Purchases.shared.logIn(username) { (purchaserInfo, created, error) in
                     if let error = error {
                         self.present(UIAlertController.errorAlert(message: error.localizedDescription), animated: true, completion: nil)
                     }
@@ -92,7 +92,7 @@ extension UserViewController {
          
          Note: Each time you call `reset`, a new installation will be logged in the RevenueCat dashboard as that metric tracks unique user ID's that are in-use. Since this method generates a new anonymous ID, it counts as a new user ID in-use.
          */
-        Purchases.shared.reset { (purchaserInfo, error) in
+        Purchases.shared.logOut { (purchaserInfo, error) in
             if let error = error {
                 self.present(UIAlertController.errorAlert(message: error.localizedDescription), animated: true, completion: nil)
             } else {
