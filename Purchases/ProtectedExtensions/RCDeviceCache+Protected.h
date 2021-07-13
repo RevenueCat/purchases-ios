@@ -6,7 +6,6 @@
 #import <Foundation/Foundation.h>
 #import "RCDeviceCache.h"
 #import "RCInMemoryCachedObject.h"
-#import "RCOfferings.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

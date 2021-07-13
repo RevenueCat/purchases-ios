@@ -113,7 +113,7 @@ import Foundation
     }
 
     /// :nodoc:
-    @objc public func object(forKeyedSubscript key: String) -> Package? {
+    @objc public subscript(key: String) -> Package? {
         return package(identifier: key)
     }
 
