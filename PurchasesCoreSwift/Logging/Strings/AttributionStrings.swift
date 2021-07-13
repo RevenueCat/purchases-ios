@@ -40,6 +40,9 @@ import Foundation
     @objc public var att_framework_present_but_couldnt_call_tracking_authorization_status: String {
         "ATT Framework was found but it didn't respond to authorization status selector!"
     }
+    @objc public var iad_framework_present_but_couldnt_call_request_attribution_details: String {
+        "iAd Framework was found but it didn't respond to attribution details request!"
+    }
     @objc public var search_ads_attribution_cancelled_missing_iad_framework: String {
         "Tried to post Apple Search Ads Attribution, but iAd Framework is is required for it" +
             " and it isn't included"

@@ -240,6 +240,9 @@
 		F5BE44432698581100254A30 /* AttributionTypeFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE44422698581100254A30 /* AttributionTypeFactory.swift */; };
 		F5BE444526985A0900254A30 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE444426985A0900254A30 /* String+Extensions.swift */; };
 		F5BE444726985E7B00254A30 /* AttributionTypeFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E350420D54B99BB39448E0 /* AttributionTypeFactoryTests.swift */; };
+		F5BE4479269E4A4C00254A30 /* AdClientProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE4478269E4A4C00254A30 /* AdClientProxy.swift */; };
+		F5BE447B269E4A7500254A30 /* TrackingManagerProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */; };
+		F5BE447D269E4ADB00254A30 /* ASIdentifierManagerProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE447C269E4ADB00254A30 /* ASIdentifierManagerProxy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -556,6 +559,9 @@
 		F5BE443C26977F9B00254A30 /* HTTPRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequest.swift; sourceTree = "<group>"; };
 		F5BE44422698581100254A30 /* AttributionTypeFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionTypeFactory.swift; sourceTree = "<group>"; };
 		F5BE444426985A0900254A30 /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
+		F5BE4478269E4A4C00254A30 /* AdClientProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdClientProxy.swift; sourceTree = "<group>"; };
+		F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingManagerProxy.swift; sourceTree = "<group>"; };
+		F5BE447C269E4ADB00254A30 /* ASIdentifierManagerProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASIdentifierManagerProxy.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1327,6 +1333,9 @@
 			isa = PBXGroup;
 			children = (
 				F5BE44422698581100254A30 /* AttributionTypeFactory.swift */,
+				F5BE4478269E4A4C00254A30 /* AdClientProxy.swift */,
+				F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */,
+				F5BE447C269E4ADB00254A30 /* ASIdentifierManagerProxy.swift */,
 			);
 			path = Attribution;
 			sourceTree = "<group>";
@@ -1696,6 +1705,7 @@
 				B3AA6238268B926F00894871 /* SystemInfo.swift in Sources */,
 				2DDF41B524F6F387005BC22D /* AppleReceiptBuilder.swift in Sources */,
 				B39E811D268E887500D31189 /* SubscriberAttribute.swift in Sources */,
+				F5BE4479269E4A4C00254A30 /* AdClientProxy.swift in Sources */,
 				B33CEAA0268CDCC9008A3144 /* ISOPeriodFormatter.swift in Sources */,
 				2DDF41A324F6F331005BC22D /* ReceiptParser.swift in Sources */,
 				2DDF41BA24F6F392005BC22D /* ISO3601DateFormatter.swift in Sources */,
@@ -1714,6 +1724,7 @@
 				F5BE424026962ACF00254A30 /* ReceiptRefreshPolicy.swift in Sources */,
 				9A65E0762591977200DE00B0 /* IdentityStrings.swift in Sources */,
 				80E80EF226970E04008F245A /* RCReceiptFetcher.swift in Sources */,
+				F5BE447D269E4ADB00254A30 /* ASIdentifierManagerProxy.swift in Sources */,
 				2CD7294A268A828F00BFC976 /* Dictionary+Extensions.swift in Sources */,
 				F5BE443D26977F9B00254A30 /* HTTPRequest.swift in Sources */,
 				2DDF41AB24F6F37C005BC22D /* AppleReceipt.swift in Sources */,
@@ -1733,6 +1744,7 @@
 				F5BE44432698581100254A30 /* AttributionTypeFactory.swift in Sources */,
 				B32B74FF26868AEB005647BF /* Package.swift in Sources */,
 				2DDF41B324F6F387005BC22D /* InAppPurchaseBuilder.swift in Sources */,
+				F5BE447B269E4A7500254A30 /* TrackingManagerProxy.swift in Sources */,
 				B34D2AA0269606E400D88C3A /* IntroEligibility.swift in Sources */,
 				B372EC54268FEDC60099171E /* PromotionalOffer.swift in Sources */,
 				9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */,

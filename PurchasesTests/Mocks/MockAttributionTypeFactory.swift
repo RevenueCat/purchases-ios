@@ -26,7 +26,7 @@ class MockAdClientProxy: AdClientProxy {
 @available(iOS 14, macOS 11, tvOS 14, *)
 class MockTrackingManagerProxy: TrackingManagerProxy {
     static var mockAuthorizationStatus: ATTrackingManager.AuthorizationStatus = .authorized
-    
+
     override func trackingAuthorizationStatus() -> Int {
         Int(Self.mockAuthorizationStatus.rawValue)
     }
