@@ -64,6 +64,9 @@ struct MyStruct {
 
     private var jupiter = 2
 
+    // use the valuesByKey naming convention for dictionary types
+    private var productsByIdentifier: [String: Product]
+
     // public methods in the main declaration
 
 }
