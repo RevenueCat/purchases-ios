@@ -140,11 +140,8 @@ platform :ios do
     replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../StoreKitTests/Constants.swift')
     replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
 
-    proxy_url = ENV["REVENUECAT_PROXY_URL"].to_s
-    next if proxy_url.empty?
-
-    replace_in("REVENUECAT_PROXY_URL", proxy_url, '../StoreKitTests/Constants.swift')
-    replace_in("REVENUECAT_PROXY_URL", proxy_url, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
+    replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../StoreKitTests/Constants.swift', allow_empty: true)
+    replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m', allow_empty: true)
   end
 
   desc "Deploy"
@@ -269,8 +266,8 @@ def attach_changelog_to_master(version_number)
   }
 end
 
-def replace_in(previous_text, new_text, path)
-  if new_text.to_s.strip.empty?
+def replace_in(previous_text, new_text, path, allow_empty=false)
+  if new_text.to_s.strip.empty? and not allow_empty
     fail "Missing `new_text` in call to `replace_in`, looking for replacement for #{previous_text} 😵."
   end
   sed_regex = 's|' + previous_text + '|' + new_text + '|'
