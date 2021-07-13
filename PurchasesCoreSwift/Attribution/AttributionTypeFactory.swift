@@ -33,7 +33,7 @@ class FakeAdClient: NSObject {
     private static let className = "ADClient"
 
     static var adClientClass: AnyClass? {
-        NSClassFromString(Self.className.rot13())
+        NSClassFromString(Self.className)
     }
 
     @objc(requestAttributionDetailsWithBlock:)
