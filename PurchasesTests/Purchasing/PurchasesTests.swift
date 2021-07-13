@@ -175,7 +175,7 @@ class PurchasesTests: XCTestCase {
             if (postedAttributionData == nil) {
                 postedAttributionData = []
             }
-            postedAttributionData?.append(AttributionData(data: data, fromNetwork: network, forNetworkUserId: appUserID))
+            postedAttributionData?.append(AttributionData(data: data, network: network, networkUserId: appUserID))
             completion!(nil)
         }
 
