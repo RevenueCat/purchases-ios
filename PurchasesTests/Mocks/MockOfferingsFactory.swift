@@ -2,15 +2,15 @@
 // Created by RevenueCat on 3/2/20.
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
-import PurchasesCoreSwift
+@testable import PurchasesCoreSwift
 
-class MockOfferingsFactory: RCOfferingsFactory {
+class MockOfferingsFactory: OfferingsFactory {
     
     var emptyOfferings = false
     var badOfferings = false
     
     override func createOfferings(withProducts products: [String: SKProduct],
-                                  data: [AnyHashable: Any]) -> Offerings? {
+                                  data: [String: Any]) -> Offerings? {
         if (emptyOfferings) {
             return Offerings(offerings: [:], currentOfferingID: "base")
         }
