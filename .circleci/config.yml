@@ -127,14 +127,14 @@ jobs:
 
   storekit_tests:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
       - run:
           name: Open simulator
-          command: xcrun instruments -w "iPhone 11 Pro (14.2) [" || true
+          command: xcrun instruments -w "iPhone 11 Pro (14.5) [" || true
       
       - install-gems
       
@@ -142,7 +142,7 @@ jobs:
           name: Run StoreKit Tests
           command: bundle exec fastlane storekit_tests
           environment:
-            SCAN_DEVICE: iPhone 11 Pro (14.2)
+            SCAN_DEVICE: iPhone 11 Pro (14.5)
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
