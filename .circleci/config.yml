@@ -70,6 +70,9 @@ commands:
       directory:
         type: string
     steps:
+      - run:
+        name: Install swiftlint
+        command: brew install swiftlint
       - install-gems:
           directory: << parameters.directory >>
       - scan-and-archive:
@@ -158,6 +161,9 @@ jobs:
     steps:
       - checkout
       - trust-github-key
+      - run:
+          name: Install swiftlint
+          command: brew install swiftlint
 
       # Bundler
       - restore_cache:
