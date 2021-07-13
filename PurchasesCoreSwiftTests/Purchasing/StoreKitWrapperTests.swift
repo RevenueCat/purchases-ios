@@ -11,7 +11,7 @@ import XCTest
 import OHHTTPStubs
 import Nimble
 
-import Purchases
+@testable import PurchasesCoreSwift
 
 class MockPaymentQueue: SKPaymentQueue {
     var addedPayments: [SKPayment] = []
@@ -35,33 +35,35 @@ class MockPaymentQueue: SKPaymentQueue {
     }
 }
 
-class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
+class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     let paymentQueue = MockPaymentQueue()
 
-    var wrapper: RCStoreKitWrapper?
+    var wrapper: StoreKitWrapper?
 
     override func setUp() {
         super.setUp()
-        wrapper = RCStoreKitWrapper.init(paymentQueue: paymentQueue)
+        wrapper = StoreKitWrapper.init(paymentQueue: paymentQueue)
         wrapper?.delegate = self
     }
 
     var updatedTransactions: [SKPaymentTransaction] = []
 
-    func storeKitWrapper(_ storeKitWrapper: RCStoreKitWrapper, updatedTransaction transaction: SKPaymentTransaction) {
+    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, updatedTransaction transaction: SKPaymentTransaction) {
         updatedTransactions.append(transaction)
     }
 
     var removedTransactions: [SKPaymentTransaction] = []
 
-    func storeKitWrapper(_ storeKitWrapper: RCStoreKitWrapper, removedTransaction transaction: SKPaymentTransaction) {
+    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, removedTransaction transaction: SKPaymentTransaction) {
         removedTransactions.append(transaction)
     }
     
     var promoPayment: SKPayment?
     var promoProduct: SKProduct?
     var shouldAddPromo = false
-    func storeKitWrapper(_ storeKitWrapper: RCStoreKitWrapper, shouldAddStore payment: SKPayment, for product: SKProduct) -> Bool {
+    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
+                         shouldAddStorePayment payment: SKPayment,
+                         for product: SKProduct) -> Bool {
         promoPayment = payment
         promoProduct = product
         return shouldAddPromo
@@ -69,7 +71,7 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
 
     var productIdentifiersWithRevokedEntitlements: [String]?
 
-    func storeKitWrapper(_ storeKitWrapper: RCStoreKitWrapper, didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
+    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
         productIdentifiersWithRevokedEntitlements = productIdentifiers
     }
 
@@ -102,7 +104,7 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
         let product = SKProduct.init();
         let payment = SKPayment.init(product: product)
         
-        wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
+        _ = wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
         expect(self.promoPayment).to(be(payment));
         expect(self.promoProduct).to(be(product))
     }
@@ -146,7 +148,7 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
 
         wrapper?.paymentQueue(paymentQueue, updatedTransactions: [transaction])
 
-        wrapper?.finish(transaction)
+        wrapper?.finishTransaction(transaction)
 
         expect(self.paymentQueue.finishedTransactions).to(contain(transaction))
     }
@@ -193,7 +195,7 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
 
         let productId = "mySuperProduct"
         let mockProduct = MockSKProduct(mockProductIdentifier: productId)
-        let payment = wrapper.payment(with: mockProduct)
+        let payment = wrapper.payment(withProduct: mockProduct)
         expect(payment.productIdentifier) == productId
     }
 
@@ -202,12 +204,12 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
 
         let mockProduct = MockSKProduct(mockProductIdentifier: "mySuperProduct")
 
-        RCStoreKitWrapper.simulatesAskToBuyInSandbox = false
-        let payment1 = wrapper.payment(with: mockProduct)
+        StoreKitWrapper.simulatesAskToBuyInSandbox = false
+        let payment1 = wrapper.payment(withProduct: mockProduct)
         expect(payment1.simulatesAskToBuyInSandbox) == false
 
-        RCStoreKitWrapper.simulatesAskToBuyInSandbox = true
-        let payment2 = wrapper.payment(with: mockProduct)
+        StoreKitWrapper.simulatesAskToBuyInSandbox = true
+        let payment2 = wrapper.payment(withProduct: mockProduct)
         expect(payment2.simulatesAskToBuyInSandbox) == true
     }
 
@@ -220,7 +222,7 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
 
             let mockProduct = MockSKProduct(mockProductIdentifier: productId)
             let mockDiscount = MockPaymentDiscount(mockIdentifier: discountId)
-            let payment = wrapper.payment(with: mockProduct, discount: mockDiscount)
+            let payment = wrapper.payment(withProduct: mockProduct, discount: mockDiscount)
             expect(payment.productIdentifier) == productId
             expect(payment.paymentDiscount) == mockDiscount
         }
@@ -233,12 +235,12 @@ class StoreKitWrapperTests: XCTestCase, RCStoreKitWrapperDelegate {
             let mockProduct = MockSKProduct(mockProductIdentifier: "mySuperProduct")
             let mockDiscount = MockPaymentDiscount(mockIdentifier: "mySuperDiscount")
 
-            RCStoreKitWrapper.simulatesAskToBuyInSandbox = false
-            let payment1 = wrapper.payment(with: mockProduct, discount: mockDiscount)
+            StoreKitWrapper.simulatesAskToBuyInSandbox = false
+            let payment1 = wrapper.payment(withProduct: mockProduct, discount: mockDiscount)
             expect(payment1.simulatesAskToBuyInSandbox) == false
 
-            RCStoreKitWrapper.simulatesAskToBuyInSandbox = true
-            let payment2 = wrapper.payment(with: mockProduct)
+            StoreKitWrapper.simulatesAskToBuyInSandbox = true
+            let payment2 = wrapper.payment(withProduct: mockProduct)
             expect(payment2.simulatesAskToBuyInSandbox) == true
         }
     }

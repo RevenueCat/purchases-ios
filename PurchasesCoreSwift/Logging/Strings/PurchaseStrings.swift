@@ -25,8 +25,6 @@ import Foundation
     @objc public var paymentqueue_revoked_entitlements_for_product_identifiers: String { "PaymentQueue " +
         "didRevokeEntitlementsForProductIdentifiers: %@" }
     @objc public var paymentqueue_updatedtransaction: String { "PaymentQueue updatedTransaction: %@ %@ (%@) %@ - %d" }
-    @objc public var presenting_code_redemption_sheet_unavailable: String { "Attempted to present code redemption " +
-        "sheet, but it's not available on this device." }
     @objc public var presenting_code_redemption_sheet: String { "Presenting code redemption sheet." }
     @objc public var purchases_synced: String { "Purchases synced." }
     @objc public var purchasing_product_from_package: String { "Purchasing product from package  - %@ in Offering %@" }
@@ -35,4 +33,6 @@ import Foundation
         "SKPaymentTransaction missing an SKPayment - this is an issue with the App Store." }
     @objc public var skpayment_missing_product_identifier: String { "There is a problem with the SKPayment missing " +
         "a product identifier - this is an issue with the App Store." }
+    @objc public var could_not_purchase_product_id_not_found: String { "makePurchase - Could not purchase SKProduct. " +
+        "Couldn't find its product identifier. This is possibly an App Store quirk." }
 }

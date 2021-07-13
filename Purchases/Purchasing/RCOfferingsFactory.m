@@ -8,10 +8,6 @@
 
 #import <StoreKit/StoreKit.h>
 #import "RCOfferingsFactory.h"
-#import "RCOffering.h"
-#import "RCOfferings.h"
-#import "RCOfferings+Protected.h"
-#import "RCOffering+Protected.h"
 @import PurchasesCoreSwift;
 
 @interface RCOfferingsFactory ()
@@ -32,7 +28,14 @@
                 offerings[offering.identifier] = offering;
             }
         }
-        
+
+        // TODO (during migration of this file): remove this NSNull handling. We have a test that was failing since
+        // nil was getting bridged to NSNull and that was passed in to the Offerings.init which only expects String?.
+        if (currentOfferingID == (NSString *)NSNull.null) {
+            currentOfferingID = nil;
+        }
+        // End NSNull handling
+
         return [[RCOfferings alloc] initWithOfferings:[NSDictionary dictionaryWithDictionary:offerings] currentOfferingID:currentOfferingID];
     }
     return nil;

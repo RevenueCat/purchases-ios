@@ -9,7 +9,7 @@
 import Foundation
 
 // TODO: Make internal after migration to Swift is complete
-@objc open class RCReceiptFetcher: NSObject {
+@objc(RCReceiptFetcher) open class ReceiptFetcher: NSObject {
 
     // TODO: Make internal after migration to Swift is complete
     @objc open func receiptData() -> Data? {
