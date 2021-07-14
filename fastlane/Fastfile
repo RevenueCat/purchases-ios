@@ -254,8 +254,13 @@ end
 
 def carthage_archive
   Dir.chdir("..") do
-    sh("carthage", "build", "--no-skip-current", "--use-xcframeworks")
-    sh("carthage", "archive", "Purchases")
+    # As of Carthage 0.38.0, we still can't archive xcframeworks directly. 
+    # there are also some issues which prevent us from archiving frameworks directly, since
+    # carthage can't deal with architectures for simulators and for Apple Silicon correctly.
+    # We use this script as a workaround until this is fixed. 
+    # https://github.com/Carthage/Carthage/releases/0.38.0
+    sh("./scripts/carthage.sh", "build", "--no-skip-current")
+    sh("./scripts/carthage.sh", "archive", "Purchases")
   end
 end
 
