@@ -12,7 +12,6 @@
 #import "RCBackend.h"
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
-#import "RCOfferingsFactory.h"
 #import "RCPurchaserInfo+Protected.h"
 #import "RCPurchaserInfoManager.h"
 #import "RCPurchases+Protected.h"
