@@ -15,6 +15,14 @@ Install _fastlane_ using
 or alternatively using `brew install fastlane`
 
 # Available Actions
+### update_swift_package_commit
+```
+fastlane update_swift_package_commit
+```
+Update swift package commit
+
+----
+
 ## iOS
 ### ios setup_dev
 ```
@@ -86,11 +94,6 @@ Export XCFramework
 fastlane ios storekit_tests
 ```
 Run StoreKitTests
-### ios update_swift_package_commit
-```
-fastlane ios update_swift_package_commit
-```
-Update swift package commit
 
 ----
 

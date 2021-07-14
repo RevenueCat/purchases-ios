@@ -212,6 +212,27 @@ platform :ios do
     scan(scheme: "StoreKitTests", derived_data_path: "scan_derived_data")
   end
 
+  desc "Update swift package commit"
+  lane :update_swift_package_commit do
+    project_file_locations = [
+      '../IntegrationTests/SPMIntegration/SPMIntegration.xcodeproj/project.pbxproj',
+      '../Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
+      '../Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj',
+    ]
+
+    old_kind_line = "kind = branch;"
+    new_kind_line = "kind = revision;"
+
+    commit_hash = last_git_commit[:commit_hash]
+    old_branch_line = "branch = main;"
+    new_revision_line = "revision = #{commit_hash};"
+
+    project_file_locations.each { |project_file_location|
+      replace_in(old_kind_line, new_kind_line, project_file_location)
+      replace_in(old_branch_line, new_revision_line, project_file_location)
+    }
+  end
+
 end
 
 def push_pods

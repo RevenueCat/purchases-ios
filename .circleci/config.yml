@@ -92,8 +92,7 @@ commands:
     steps:
       - install-gems
       - run:
-          name: Update git commit in SPM package
-          working_directory: IntegrationTests/SPMIntegration/
+          name: Update git commit in targets that use SPM for dependencies
           command: |
               bundle exec fastlane update_swift_package_commit
 
