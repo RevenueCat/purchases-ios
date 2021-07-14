@@ -6,7 +6,7 @@
 import Foundation
 import Purchases
 
-class MockInMemoryCachedOfferings<T: Purchases.Offerings> : RCInMemoryCachedObject<Purchases.Offerings> {
+class MockInMemoryCachedOfferings<T: Offerings> : RCInMemoryCachedObject<Offerings> {
 
     var invokedIsCacheStale = false
     var invokedIsCacheStaleCount = 0
@@ -48,10 +48,10 @@ class MockInMemoryCachedOfferings<T: Purchases.Offerings> : RCInMemoryCachedObje
 
     var invokedCacheInstance = false
     var invokedCacheInstanceCount = 0
-    var invokedCacheInstanceParameters: (instance: Purchases.Offerings, Void)?
-    var invokedCacheInstanceParametersList = [(instance: Purchases.Offerings, Void)]()
+    var invokedCacheInstanceParameters: (instance: Offerings, Void)?
+    var invokedCacheInstanceParametersList = [(instance: Offerings, Void)]()
 
-    override func cacheInstance(_ instance: Purchases.Offerings) {
+    override func cacheInstance(_ instance: Offerings) {
         invokedCacheInstance = true
         invokedCacheInstanceCount += 1
         invokedCacheInstanceParameters = (instance, ())
@@ -60,9 +60,9 @@ class MockInMemoryCachedOfferings<T: Purchases.Offerings> : RCInMemoryCachedObje
 
     var invokedCachedInstance = false
     var invokedCachedInstanceCount = 0
-    var stubbedCachedInstanceResult: Purchases.Offerings!
+    var stubbedCachedInstanceResult: Offerings!
 
-    override func cachedInstance() -> Purchases.Offerings? {
+    override func cachedInstance() -> Offerings? {
         invokedCachedInstance = true
         invokedCachedInstanceCount += 1
         return stubbedCachedInstanceResult

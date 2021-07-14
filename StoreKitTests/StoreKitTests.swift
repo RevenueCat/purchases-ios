@@ -39,7 +39,7 @@ class StoreKitTests: XCTestCase {
         Purchases.debugLogsEnabled = true
         var completionCalled = false
         var receivedError: Error? = nil
-        var receivedOfferings: Purchases.Offerings? = nil
+        var receivedOfferings: Offerings? = nil
         Purchases.shared.offerings { offerings, error in
             completionCalled = true
             receivedError = error

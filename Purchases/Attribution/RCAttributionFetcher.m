@@ -10,7 +10,6 @@
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
-#import "RCAttributionData.h"
 @import PurchasesCoreSwift;
 
 static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
@@ -226,8 +225,8 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         postponedAttributionData = [NSMutableArray array];
     }
     [postponedAttributionData addObject:[[RCAttributionData alloc] initWithData:data
-                                                                    fromNetwork:network
-                                                               forNetworkUserId:networkUserId]];
+                                                                        network:network
+                                                                  networkUserId:networkUserId]];
 }
 
 @end

@@ -3,7 +3,6 @@
 //
 @import PurchasesCoreSwift;
 #include <Purchases/NSError+RCExtensions.h>
-#include <Purchases/RCAttributionData.h>
 #include <Purchases/RCAttributionFetcher.h>
 #include <Purchases/RCAttributionTypeFactory+Protected.h>
 #include <Purchases/RCAttributionTypeFactory.h>
@@ -14,8 +13,6 @@
 #include <Purchases/RCIdentityManager+Protected.h>
 #include <Purchases/RCIdentityManager.h>
 #include <Purchases/RCInMemoryCachedObject+Protected.h>
-#include <Purchases/RCOfferings+Protected.h>
-#include <Purchases/RCOfferingsFactory.h>
 #include <Purchases/RCPurchaserInfo+Protected.h>
 #include <Purchases/RCPurchaserInfo.h>
 #include <Purchases/RCPurchaserInfoManager+Protected.h>

@@ -19,5 +19,4 @@ FOUNDATION_EXPORT const unsigned char PurchasesVersionString[];
 
 #import "RCPurchases.h"
 #import "RCPurchaserInfo.h"
-#import "RCOfferings.h"
 #import "RCPurchasesErrorUtils.h"
