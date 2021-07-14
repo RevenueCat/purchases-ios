@@ -41,11 +41,12 @@ import StoreKit
         let availablePackages = packagesData.compactMap { packageData -> Package? in
             createPackage(withData: packageData, products: products, offeringIdentifier: offeringIdentifier)
         }
-        if availablePackages.count != 0 {
-            return Offering(identifier: offeringIdentifier, serverDescription: serverDescription,
-                            availablePackages: availablePackages)
+        guard !availablePackages.isEmpty else {
+            return nil
         }
-        return nil
+
+        return Offering(identifier: offeringIdentifier, serverDescription: serverDescription,
+                availablePackages: availablePackages)
     }
 
     @objc public func createPackage(withData data: [String: Any],
