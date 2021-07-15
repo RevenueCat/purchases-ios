@@ -222,6 +222,8 @@
 		B3AA6238268B926F00894871 /* SystemInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AA6237268B926F00894871 /* SystemInfo.swift */; };
 		B3B5FBBA269D100400104A0C /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBB9269D100400104A0C /* RCOfferingsAPI.m */; };
 		B3B5FBBC269D121B00104A0C /* Offerings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBBB269D121B00104A0C /* Offerings.swift */; };
+		B3B5FBBF269E081E00104A0C /* InMemoryCachedObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBBE269E081E00104A0C /* InMemoryCachedObject.swift */; };
+		B3B5FBC1269E17CE00104A0C /* DeviceCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBC0269E17CE00104A0C /* DeviceCache.swift */; };
 		B3C1AEFA268FF4DB0013D50D /* ProductInfoEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C1AEF9268FF4DB0013D50D /* ProductInfoEnums.swift */; };
 		B3C1AEFB268FF7210013D50D /* ProductInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E350E57B0A393455A72B40 /* ProductInfoTests.swift */; };
 		B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C46F26856AFF00CB3C21 /* APITester.swift */; };
@@ -545,6 +547,8 @@
 		B3B5FBB8269D100400104A0C /* RCOfferingsAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOfferingsAPI.h; sourceTree = "<group>"; };
 		B3B5FBB9269D100400104A0C /* RCOfferingsAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCOfferingsAPI.m; sourceTree = "<group>"; };
 		B3B5FBBB269D121B00104A0C /* Offerings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Offerings.swift; sourceTree = "<group>"; };
+		B3B5FBBE269E081E00104A0C /* InMemoryCachedObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryCachedObject.swift; sourceTree = "<group>"; };
+		B3B5FBC0269E17CE00104A0C /* DeviceCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCache.swift; sourceTree = "<group>"; };
 		B3C1AEF9268FF4DB0013D50D /* ProductInfoEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductInfoEnums.swift; sourceTree = "<group>"; };
 		B3D3C46E26856AFE00CB3C21 /* APITester-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "APITester-Bridging-Header.h"; sourceTree = "<group>"; };
 		B3D3C46F26856AFF00CB3C21 /* APITester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APITester.swift; sourceTree = "<group>"; };
@@ -691,6 +695,7 @@
 		2DC5621724EC63420031F69B /* PurchasesCoreSwift */ = {
 			isa = PBXGroup;
 			children = (
+				B3B5FBBD269E080A00104A0C /* Caching */,
 				2CD72940268A820E00BFC976 /* FoundationExtensions */,
 				2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */,
 				35D832CB262A5B3400E60AC5 /* Networking */,
@@ -1309,6 +1314,15 @@
 			path = SwiftObjcCompatibility;
 			sourceTree = "<group>";
 		};
+		B3B5FBBD269E080A00104A0C /* Caching */ = {
+			isa = PBXGroup;
+			children = (
+				B3B5FBBE269E081E00104A0C /* InMemoryCachedObject.swift */,
+				B3B5FBC0269E17CE00104A0C /* DeviceCache.swift */,
+			);
+			path = Caching;
+			sourceTree = "<group>";
+		};
 		B3DDB55726854850008CCF23 /* Public */ = {
 			isa = PBXGroup;
 			children = (
@@ -1692,6 +1706,7 @@
 				2DC19195255F36D10039389A /* Logger.swift in Sources */,
 				2DDF419F24F6F331005BC22D /* ReceiptParsingError.swift in Sources */,
 				2DDF419D24F6F331005BC22D /* IntroEligibilityCalculator.swift in Sources */,
+				B3B5FBBF269E081E00104A0C /* InMemoryCachedObject.swift in Sources */,
 				9A65E0802591977900DE00B0 /* ReceiptStrings.swift in Sources */,
 				B3DDB55926854865008CCF23 /* PurchaseOwnershipType.swift in Sources */,
 				2DC5623224EC63730031F69B /* TransactionsFactory.swift in Sources */,
@@ -1705,6 +1720,7 @@
 				F5BE443D26977F9B00254A30 /* HTTPRequest.swift in Sources */,
 				2DDF41AB24F6F37C005BC22D /* AppleReceipt.swift in Sources */,
 				2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */,
+				B3B5FBC1269E17CE00104A0C /* DeviceCache.swift in Sources */,
 				F5BE424226965F9F00254A30 /* ProductInfoExtractor.swift in Sources */,
 				2DDF41AD24F6F37C005BC22D /* ASN1ObjectIdentifier.swift in Sources */,
 				2CD72948268A828400BFC976 /* Locale+Extensions.swift in Sources */,

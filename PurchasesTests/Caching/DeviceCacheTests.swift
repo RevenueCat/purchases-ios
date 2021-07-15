@@ -11,11 +11,11 @@ import Purchases
 class DeviceCacheTests: XCTestCase {
 
     private var mockUserDefaults: MockUserDefaults! = nil
-    private var deviceCache: RCDeviceCache! = nil
+    private var deviceCache: DeviceCache! = nil
 
     override func setUp() {
         self.mockUserDefaults = MockUserDefaults()
-        self.deviceCache = RCDeviceCache(mockUserDefaults)
+        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults)
     }
 
     func testLegacyCachedUserIDUsesRightKey() {
@@ -32,7 +32,7 @@ class DeviceCacheTests: XCTestCase {
 
     func testCacheUserIDUsesRightKey() {
         let userID = "cesar"
-        self.deviceCache.cacheAppUserID(userID)
+        self.deviceCache.cache(appUserID: userID)
         expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] as? String)
             .to(equal(userID))
     }
@@ -151,9 +151,9 @@ class DeviceCacheTests: XCTestCase {
 
     func testOfferingsCacheIsStaleIfCachedObjectIsStale() {
         let mockCachedObject = MockInMemoryCachedOfferings<Offerings>()
-        self.deviceCache = RCDeviceCache(mockUserDefaults,
-                                         offeringsCachedObject: mockCachedObject,
-                                         notificationCenter: nil)
+        self.deviceCache = DeviceCache(mockUserDefaults,
+                                       offeringsCachedObject: mockCachedObject,
+                                       notificationCenter: nil)
         let offerings = Offerings(offerings: [:], currentOfferingID: "")
         self.deviceCache.cacheOfferings(offerings)
         let isAppBackgrounded = false
@@ -339,24 +339,24 @@ class DeviceCacheTests: XCTestCase {
 
     func testIsOfferingsCacheStaleDifferentCacheLengthsForBackgroundAndForeground() {
         let mockNotificationCenter = MockNotificationCenter()
-        let mockCachedObject = RCInMemoryCachedObject<Offerings>()
+        let mockCachedObject = InMemoryCachedObject<Offerings>()
 
-        self.deviceCache = RCDeviceCache(mockUserDefaults,
-                                         offeringsCachedObject: mockCachedObject,
-                                         notificationCenter: mockNotificationCenter)
+        self.deviceCache = DeviceCache(mockUserDefaults,
+                                       offeringsCachedObject: mockCachedObject,
+                                       notificationCenter: mockNotificationCenter)
 
         let outdatedCacheDate = Calendar.current.date(byAdding: .hour, value: -25, to: Date())!
-        mockCachedObject.updateCacheTimestamp(with: outdatedCacheDate)
+        mockCachedObject.updateCacheTimestamp(date: outdatedCacheDate)
         expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: false)) == true
         expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: true)) == true
 
         let cacheDateStaleForForeground = Calendar.current.date(byAdding: .hour, value: -23, to: Date())!
-        mockCachedObject.updateCacheTimestamp(with: cacheDateStaleForForeground)
+        mockCachedObject.updateCacheTimestamp(date: cacheDateStaleForForeground)
         expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: false)) == true
         expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: true)) == false
 
         let cacheDateValidForBoth = Calendar.current.date(byAdding: .minute, value: -3, to: Date())!
-        mockCachedObject.updateCacheTimestamp(with: cacheDateValidForBoth)
+        mockCachedObject.updateCacheTimestamp(date: cacheDateValidForBoth)
         expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: false)) == false
         expect(self.deviceCache.isOfferingsCacheStale(withIsAppBackgrounded: true)) == false
     }
@@ -373,7 +373,7 @@ class DeviceCacheTests: XCTestCase {
             "isSynced": NSNumber(booleanLiteral: isSynced),
         ]
 
-        let subscriberAttribute = RCDeviceCache.newAttribute(with: subscriberDict)
+        let subscriberAttribute = DeviceCache.newAttribute(dictionary: subscriberDict)
 
         expect(subscriberAttribute.key) == key
         expect(subscriberAttribute.value) == value
