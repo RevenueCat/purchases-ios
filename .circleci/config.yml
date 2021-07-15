@@ -22,7 +22,7 @@ release-tags: &release-tags
 
 version: 2.1
 commands:
-  install-gems:
+  install-dependencies:
     parameters:
       directory:
         type: string
@@ -40,6 +40,10 @@ commands:
           key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
+      - run:
+          name: Install swiftlint
+          command: brew install swiftlint
+
   scan-and-archive:
     parameters:
       directory:
@@ -65,15 +69,12 @@ commands:
           command: |
               bundle exec fastlane archive
   
-  install-gems-scan-and-archive:
+  install-dependencies-scan-and-archive:
     parameters:
       directory:
         type: string
     steps:
-      - run:
-          name: Install swiftlint
-          command: brew install swiftlint
-      - install-gems:
+      - install-dependencies:
           directory: << parameters.directory >>
       - scan-and-archive:
           directory: << parameters.directory >>
@@ -90,7 +91,7 @@ commands:
 
   update-spm-integration-commit:
     steps:
-      - install-gems
+      - install-dependencies
       - run:
           name: Update git commit in targets that use SPM for dependencies
           command: |
@@ -98,7 +99,7 @@ commands:
 
   update-carthage-integration-commit:
     steps:
-      - install-gems
+      - install-dependencies
       - run:
           name: Update git commit in Carthage Integration tests
           working_directory: IntegrationTests/CarthageIntegration/
@@ -114,7 +115,7 @@ jobs:
     steps:
       - checkout
       
-      - install-gems
+      - install-dependencies
       
       - run:
           name: Run tests
@@ -138,7 +139,7 @@ jobs:
           name: Open simulator
           command: xcrun instruments -w "iPhone 11 Pro (14.5) [" || true
       
-      - install-gems
+      - install-dependencies
       
       - run:
           name: Run StoreKit Tests
@@ -160,9 +161,6 @@ jobs:
     steps:
       - checkout
       - trust-github-key
-      - run:
-          name: Install swiftlint
-          command: brew install swiftlint
 
       # Bundler
       - restore_cache:
@@ -194,7 +192,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-gems
+      - install-dependencies
       - run:
           name: Build docs
           command: bundle exec fastlane run jazzy
@@ -228,7 +226,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-gems
+      - install-dependencies
       - trust-github-key
       - run:
           name: Prepare next version
@@ -242,8 +240,8 @@ jobs:
     steps:
       - checkout
       
-      - install-gems
-      - install-gems:
+      - install-dependencies
+      - install-dependencies:
           directory: IntegrationTests/CocoapodsIntegration
 
       - run:
@@ -264,7 +262,7 @@ jobs:
       - checkout
       - trust-github-key
       - update-spm-integration-commit
-      - install-gems-scan-and-archive:
+      - install-dependencies-scan-and-archive:
           directory: IntegrationTests/SPMIntegration/
 
   integration-tests-carthage:
@@ -294,7 +292,7 @@ jobs:
           paths:
             - Carthage
 
-      - install-gems-scan-and-archive:
+      - install-dependencies-scan-and-archive:
           directory: IntegrationTests/CarthageIntegration/
 
   integration-tests-xcode-direct-integration:
@@ -305,7 +303,7 @@ jobs:
     steps:
       - checkout
 
-      - install-gems-scan-and-archive:
+      - install-dependencies-scan-and-archive:
           directory: IntegrationTests/XcodeDirectIntegration/
 
   lint:
@@ -315,9 +313,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - run:
-          name: Install swiftlint
-          command: brew install swiftlint
+      - install-dependencies
       - run:
           name: Run fastlane swiftlint lane
           command: fastlane run swiftlint raise_if_swiftlint_error:true strict:true
