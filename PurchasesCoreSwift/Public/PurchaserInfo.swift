@@ -12,11 +12,11 @@ import Foundation
 //    typealias TransactionsByProductId =  NSDictionary
 
     // Entitlements attached to this purchaser info
-    var entitlements: EntitlementInfos?
+    public var entitlements: EntitlementInfos?
 
     // All *subscription* product identifiers with expiration dates in the future.
-    // TODO iplement
-    var activeSubscriptions: Set<String>?
+    // TODO implement
+    public var activeSubscriptions: Set<String>?
 
     // All product identifiers purchases by the user regardless of expiration.
     let allPurchasedProductIdentifiers: Set<String> = Set()
@@ -32,24 +32,16 @@ import Foundation
     // Returns all the non-subscription purchases a user has made.
     // The purchases are ordered by purchase date in ascending order.
     var nonSubscriptionTransactions: [Transaction] = []
+    
+    // TODO is this equivalent to dispatch_once_t
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
 
-    /**
-    Returns the build number (in iOS) or the marketing version (in macOS) for the version of the application when the user bought the app.
-    This corresponds to the value of CFBundleVersion (in iOS) or CFBundleShortVersionString (in macOS) in the Info.plist file when the purchase was originally made.
-    Use this for grandfathering users when migrating to subscriptions.
-
-     
-     @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
-     */
-    var originalApplicationVersion: String?
-
-    /**
-    Returns the purchase date for the version of the application when the user bought the app.
-    Use this for grandfathering users when migrating to subscriptions.
-
-    @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
-     */
-    var originalPurchaseDate: Date?
 
     /**
      Returns the fetch date of this Purchaser info.
@@ -63,6 +55,8 @@ import Foundation
     // The original App User Id recorded for this user.
     var originalAppUserId: String?
 
+    private let originalData: NSDictionary
+    
     // URL to manage the active subscription of the user.
     // If this user has an active iOS subscription, this will point to the App Store,
     // if the user has an active Play Store subscription it will point there.
@@ -70,23 +64,30 @@ import Foundation
     // If there are multiple for different platforms, it will point to the App Store
     var managementURL: URL?
 
-    // TODO figure out if these should really be private?
-    private var expirationDatesByProduct: [String: Date]?
-    private var purchaseDatesByProduct: [String: Date]?
-    private let originalData: NSDictionary
-    private let schemaVersion: String?
+    // from rcpurchaserinfo+protected
+    var expirationDatesByProduct: [String: Date]?
+    var purchaseDatesByProduct: [String: Date]?
+    let schemaVersion: String?
+    
+    /**
+    Returns the purchase date for the version of the application when the user bought the app.
+    Use this for grandfathering users when migrating to subscriptions.
 
-    // TODO is this equivalent to dispatch_once_t
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter
-    }()
+    @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
+     */
+    var originalPurchaseDate: Date?
+    
+    /**
+    Returns the build number (in iOS) or the marketing version (in macOS) for the version of the application when the user bought the app.
+    This corresponds to the value of CFBundleVersion (in iOS) or CFBundleShortVersionString (in macOS) in the Info.plist file when the purchase was originally made.
+    Use this for grandfathering users when migrating to subscriptions.
 
+     
+     @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
+     */
+    var originalApplicationVersion: String?
+    
     @objc public init?(data: NSDictionary) {
-        // TODO avoid force casting
         if let subscriberObject = data["subscriber"] as? [String: Any] {
             if let subscriberData = SubscriberData.init(subscriberData: subscriberObject) {
                 self.originalData = data
@@ -102,9 +103,7 @@ import Foundation
                 self.originalAppUserId = subscriberData.originalAppUserId
                 self.managementURL = subscriberData.managementURL
 
-                guard let nonSubscriptionProductIds = subscriberData.nonSubscriptions.allKeys as? [String] else {
-                    return nil
-                }
+                let nonSubscriptionProductIds = subscriberData.nonSubscriptions.keys
                 self.nonConsumablePurchases = Set(nonSubscriptionProductIds)
 
                 self.entitlements = EntitlementInfos.init(entitlementsData: subscriberData.entitlements, purchasesData: subscriberData.allPurchases, dateFormatter: PurchaserInfo.dateFormatter, requestDate: requestDate)
@@ -163,7 +162,7 @@ import Foundation
         let originalPurchaseDate: Date?
         let firstSeen: Date
         let subscriptions: [String: Any]
-        let nonSubscriptions: NSDictionary
+        let nonSubscriptions: [String: [[String: Any]]]
         let entitlements: [String: Any]
         let nonConsumablePurchases: Set<String>
         let nonSubscriptionLatestTransactions: NSDictionary
@@ -206,17 +205,17 @@ import Foundation
                 self.managementURL = nil
             }
 
-            self.nonSubscriptions = subscriberData["non_subscriptions"] as? NSDictionary ?? NSDictionary()
+            self.nonSubscriptions = subscriberData["non_subscriptions"] as? [String: [[String: Any]]] ?? [String: [[String: Any]]]()
             self.entitlements = subscriberData["entitlements"] as? [String: Any] ?? [String: Any]()
 
-            self.nonConsumablePurchases = Set(nonSubscriptions.allKeys as? [String] ?? [String]())
+            self.nonConsumablePurchases = Set(nonSubscriptions.keys)
 
-            self.nonSubscriptionTransactions = TransactionsFactory().nonSubscriptionTransactions(withSubscriptionsData: nonSubscriptions as? [String: [[String: Any]]] ?? [String: [[String: Any]]](), dateFormatter: PurchaserInfo.dateFormatter)
+            self.nonSubscriptionTransactions = TransactionsFactory().nonSubscriptionTransactions(withSubscriptionsData: nonSubscriptions, dateFormatter: PurchaserInfo.dateFormatter)
 
             // nonSubscriptionLatestTransactions
             let productIdToLatestTransaction = NSMutableDictionary()
-            for productId in nonSubscriptions.allKeys {
-                let purchasesArray = nonSubscriptions[productId] as? [Any] ?? [Any]()
+            for productId in nonSubscriptions.keys {
+                let purchasesArray = nonSubscriptions[productId] ?? [[String: Any]]()
                 if let latestTransaction = purchasesArray.last {
                     productIdToLatestTransaction[productId] = latestTransaction
                 }
