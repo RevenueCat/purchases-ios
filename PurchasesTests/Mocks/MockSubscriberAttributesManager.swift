@@ -259,4 +259,17 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
         invokedCollectDeviceIdentifiersParameters = (appUserID, ())
         invokedCollectDeviceIdentifiersParametersList.append((appUserID, ()))
     }
+
+    var invokedConvertAttributionDataAndSet = false
+    var invokedConvertAttributionDataAndSetCount = 0
+    var invokedConvertAttributionDataAndSetParameters: (attributionData: [AnyHashable: Any], network: RCAttributionNetwork, appUserID: String)?
+    var invokedConvertAttributionDataAndSetParametersList = [(attributionData: [AnyHashable: Any], network: RCAttributionNetwork, appUserID: String)]()
+
+    override func convertAttributionDataAndSet(asSubscriberAttributes attributionData: [AnyHashable: Any], network: RCAttributionNetwork, appUserID: String) {
+        invokedConvertAttributionDataAndSet = true
+        invokedConvertAttributionDataAndSetCount += 1
+        invokedConvertAttributionDataAndSetParameters = (attributionData, network, appUserID)
+        invokedConvertAttributionDataAndSetParametersList.append((attributionData, network, appUserID))
+    }
+
 }

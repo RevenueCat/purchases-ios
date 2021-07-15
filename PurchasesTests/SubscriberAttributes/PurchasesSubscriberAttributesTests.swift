@@ -28,7 +28,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                   finishTransactions: true)
     var mockReceiptParser: MockReceiptParser!
     var mockAttributionFetcher: MockAttributionFetcher!
-
+    var mockAttributionPoster: RCAttributionPoster!
+    
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
 
@@ -50,13 +51,20 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         self.mockReceiptParser = MockReceiptParser()
+        let systemInfoAttribution = MockSystemInfo(platformFlavor: "iOS",
+                                                   platformFlavorVersion: "3.2.1",
+                                                   finishTransactions: true)
         self.mockAttributionFetcher = MockAttributionFetcher(deviceCache: mockDeviceCache,
                                                              identityManager: mockIdentityManager,
                                                              backend: mockBackend,
                                                              attributionFactory: AttributionTypeFactory(),
-                                                             systemInfo: MockSystemInfo(platformFlavor: "iOS",
-                                                                                        platformFlavorVersion: "3.2.1",
-                                                                                        finishTransactions: true))
+                                                             systemInfo: systemInfoAttribution)
+        self.mockAttributionPoster = RCAttributionPoster(deviceCache: mockDeviceCache,
+                                                         identityManager: mockIdentityManager,
+                                                         backend: mockBackend,
+                                                         systemInfo: systemInfoAttribution,
+                                                         attributionFetcher: mockAttributionFetcher,
+                                                         subscriberAttributesManager: mockSubscriberAttributesManager)
         self.purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
                                                          deviceCache: mockDeviceCache,
                                                          backend: mockBackend,
@@ -78,6 +86,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               requestFetcher: mockRequestFetcher,
                               receiptFetcher: mockReceiptFetcher,
                               attributionFetcher: mockAttributionFetcher,
+                              attributionPoster: mockAttributionPoster,
                               backend: mockBackend,
                               storeKitWrapper: mockStoreKitWrapper,
                               notificationCenter: mockNotificationCenter,

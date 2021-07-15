@@ -4,10 +4,7 @@
 //
 
 class MockAttributionFetcher: RCAttributionFetcher {
-    var receiptDataCalled = false
-    var shouldReturnReceipt = true
-    var receiptDataTimesCalled = 0
-
+    
     override func identifierForAdvertisers() -> String? {
         return "rc_idfa"
     }
