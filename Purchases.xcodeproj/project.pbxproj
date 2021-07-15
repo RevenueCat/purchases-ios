@@ -1684,7 +1684,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if grep -rl 2>/dev/null --include=\"*.swift\" \"TARGET_OS\" \"${SRCROOT}\"; then\n  echo \"error: TARGET_OS macro has been found in some files\"\n  exit 1\nfi\n\n";
+			shellScript = "if grep -rl 2>/dev/null --include=\"*.swift\" \"TARGET_OS\" \"${SRCROOT}\"; then\n  echo \"error: TARGET_OS macro has been found in some Swift files\"\n  exit 1\nfi\n\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
