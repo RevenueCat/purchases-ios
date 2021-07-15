@@ -155,8 +155,8 @@ platform :ios do
 
   desc "Prepare next version"
   lane :prepare_next_version do |options|
-    current_version_number = current_version_number
-    major, minor, _ = current_version_number.split('.')
+    old_version_number = current_version_number
+    major, minor, _ = old_version_number.split('.')
     next_version = "#{major}.#{minor.to_i + 1}.0"
     next_version_snapshot = "#{next_version}-SNAPSHOT"
 
