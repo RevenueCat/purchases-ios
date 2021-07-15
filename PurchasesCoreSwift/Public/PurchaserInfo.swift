@@ -12,13 +12,14 @@ import Foundation
 //    typealias TransactionsByProductId =  NSDictionary
 
     // Entitlements attached to this purchaser info
-    public var entitlements: EntitlementInfos?
+    public let entitlements: EntitlementInfos
 
     // All *subscription* product identifiers with expiration dates in the future.
     // TODO implement
-    public var activeSubscriptions: Set<String>?
+    public var activeSubscriptions: Set<String>? = nil
 
     // All product identifiers purchases by the user regardless of expiration.
+    // TODO implement
     public let allPurchasedProductIdentifiers: Set<String> = Set()
 
     // Returns the latest expiration date of all products, nil if there are none
@@ -27,11 +28,11 @@ import Foundation
 
     // Returns all product IDs of the non-subscription purchases a user has made.
     // TODO add deprecation message:  DEPRECATED_MSG_ATTRIBUTE("use nonSubscriptionTransactions");
-    public var nonConsumablePurchases: Set<String> = Set()
+    public let nonConsumablePurchases: Set<String>
 
     // Returns all the non-subscription purchases a user has made.
     // The purchases are ordered by purchase date in ascending order.
-    public var nonSubscriptionTransactions: [Transaction] = []
+    public let nonSubscriptionTransactions: [Transaction]
     
     /**
      Returns the fetch date of this Purchaser info.
@@ -40,10 +41,10 @@ import Foundation
     public let requestDate: Date?
 
     // The date this user was first seen in RevenueCat.
-    public var firstSeen: Date?
+    public let firstSeen: Date
 
     // The original App User Id recorded for this user.
-    public var originalAppUserId: String?
+    public let originalAppUserId: String
     
     // TODO is this equivalent to dispatch_once_t
     private static let dateFormatter: DateFormatter = {
@@ -59,7 +60,7 @@ import Foundation
     // if the user has an active Play Store subscription it will point there.
     // If there are no active subscriptions it will be null.
     // If there are multiple for different platforms, it will point to the App Store
-    public var managementURL: URL?
+    public let managementURL: URL?
 
     private let originalData: NSDictionary
 
@@ -107,6 +108,8 @@ import Foundation
 
                 let nonSubscriptionProductIds = subscriberData.nonSubscriptions.keys
                 self.nonConsumablePurchases = Set(nonSubscriptionProductIds)
+                
+                self.nonSubscriptionTransactions = subscriberData.nonSubscriptionTransactions
 
                 self.entitlements = EntitlementInfos.init(entitlementsData: subscriberData.entitlements, purchasesData: subscriberData.allPurchases, dateFormatter: PurchaserInfo.dateFormatter, requestDate: requestDate)
             } else {
