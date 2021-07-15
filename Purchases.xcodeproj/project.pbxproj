@@ -1393,6 +1393,7 @@
 				2DC5621224EC63420031F69B /* Sources */,
 				2DC5621324EC63420031F69B /* Frameworks */,
 				2DC5621424EC63420031F69B /* Resources */,
+				F578415E26A0407A00EA3D8A /* Check TARGET_OS macro */,
 			);
 			buildRules = (
 			);
@@ -1666,6 +1667,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "scripts/swiftlint.sh\n";
+		};
+		F578415E26A0407A00EA3D8A /* Check TARGET_OS macro */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Check TARGET_OS macro";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if grep -rl 2>/dev/null --include=\"*.swift\" \"TARGET_OS\" \"${SRCROOT}\"; then\n  echo \"error: TARGET_OS macro has been found in some files\"\n  exit 1\nfi\n\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
