@@ -19,19 +19,31 @@ import Foundation
     public var activeSubscriptions: Set<String>?
 
     // All product identifiers purchases by the user regardless of expiration.
-    let allPurchasedProductIdentifiers: Set<String> = Set()
+    public let allPurchasedProductIdentifiers: Set<String> = Set()
 
     // Returns the latest expiration date of all products, nil if there are none
     // TODO implement
-    var latestExpirationDate: Date?
+    public var latestExpirationDate: Date?
 
     // Returns all product IDs of the non-subscription purchases a user has made.
     // TODO add deprecation message:  DEPRECATED_MSG_ATTRIBUTE("use nonSubscriptionTransactions");
-    var nonConsumablePurchases: Set<String> = Set()
+    public var nonConsumablePurchases: Set<String> = Set()
 
     // Returns all the non-subscription purchases a user has made.
     // The purchases are ordered by purchase date in ascending order.
-    var nonSubscriptionTransactions: [Transaction] = []
+    public var nonSubscriptionTransactions: [Transaction] = []
+    
+    /**
+     Returns the fetch date of this Purchaser info.
+     @note Can be nil if was cached before we added this
+     */
+    public let requestDate: Date?
+
+    // The date this user was first seen in RevenueCat.
+    public var firstSeen: Date?
+
+    // The original App User Id recorded for this user.
+    public var originalAppUserId: String?
     
     // TODO is this equivalent to dispatch_once_t
     private static let dateFormatter: DateFormatter = {
@@ -41,33 +53,22 @@ import Foundation
         formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter
     }()
-
-
-    /**
-     Returns the fetch date of this Purchaser info.
-     @note Can be nil if was cached before we added this
-     */
-    let requestDate: Date?
-
-    // The date this user was first seen in RevenueCat.
-    var firstSeen: Date?
-
-    // The original App User Id recorded for this user.
-    var originalAppUserId: String?
-
-    private let originalData: NSDictionary
     
     // URL to manage the active subscription of the user.
     // If this user has an active iOS subscription, this will point to the App Store,
     // if the user has an active Play Store subscription it will point there.
     // If there are no active subscriptions it will be null.
     // If there are multiple for different platforms, it will point to the App Store
-    var managementURL: URL?
+    public var managementURL: URL?
+
+    private let originalData: NSDictionary
 
     // from rcpurchaserinfo+protected
+    // public in android
     var expirationDatesByProduct: [String: Date]?
+    //public in android
     var purchaseDatesByProduct: [String: Date]?
-    let schemaVersion: String?
+    private let schemaVersion: String?
     
     /**
     Returns the purchase date for the version of the application when the user bought the app.
@@ -75,7 +76,7 @@ import Foundation
 
     @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
      */
-    var originalPurchaseDate: Date?
+    public var originalPurchaseDate: Date?
     
     /**
     Returns the build number (in iOS) or the marketing version (in macOS) for the version of the application when the user bought the app.
@@ -85,7 +86,8 @@ import Foundation
      
      @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
      */
-    var originalApplicationVersion: String?
+    public var originalApplicationVersion: String?
+    
     
     @objc public init?(data: NSDictionary) {
         if let subscriberObject = data["subscriber"] as? [String: Any] {
@@ -154,8 +156,12 @@ import Foundation
         }
         return parsedDates
     }
+    
+    class func currentSchemaVersion() -> String {
+        return "2"
+    }
 
-    struct SubscriberData {
+    private struct SubscriberData {
         let originalAppUserId: String
         let managementURL: URL?
         let originalApplicationVersion: String?
