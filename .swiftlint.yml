@@ -6,6 +6,7 @@ excluded:
   - Examples
   - IntegrationTests
   - StoreKitTests
+  - vendor
 disabled_rules:
   - trailing_comma
 identifier_name: 

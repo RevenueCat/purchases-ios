@@ -208,7 +208,7 @@ NS_SWIFT_NAME(Purchases)
  @param completion An optional completion block called when the aliasing has been successful. This completion block will receive an error if there's been one.
  */
 - (void)createAlias:(NSString *)alias completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-NS_SWIFT_NAME(createAlias(_:_:));
+NS_SWIFT_NAME(createAlias(_:_:)) __attribute((deprecated("Use logIn instead.")));
 
 /**
  This function will identify the current user with an appUserID. Typically this would be used after a logout to identify a new user without calling configure.
