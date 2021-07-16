@@ -8,27 +8,23 @@
 
 import Foundation
 
-@objc public class PurchaserInfo: NSObject {
+@objc(RCPurchaserInfo) public class PurchaserInfo: NSObject {
 //    typealias TransactionsByProductId =  NSDictionary
 
     // Entitlements attached to this purchaser info
-    public let entitlements: EntitlementInfos
+    @objc public let entitlements: EntitlementInfos
 
     // All *subscription* product identifiers with expiration dates in the future.
-    public var activeSubscriptions: Set<String> {
-        get {
-            return activeKeys(dates: expirationDatesByProduct)
-        }
+    @objc public var activeSubscriptions: Set<String> {
+        return activeKeys(dates: expirationDatesByProduct)
     }
 
     // All product identifiers purchases by the user regardless of expiration.
-    public var allPurchasedProductIdentifiers: Set<String> {
-        get {
-            return self.nonConsumablePurchases.union(expirationDatesByProduct.keys)
-        }
+    @objc public var allPurchasedProductIdentifiers: Set<String> {
+        return self.nonConsumablePurchases.union(expirationDatesByProduct.keys)
     }
-    
-    public func activeKeys(dates: [String: Date?]) -> Set<String> {
+
+    private func activeKeys(dates: [String: Date?]) -> Set<String> {
         return Set<String>(dates.keys.filter({ dates[$0] == nil || isAfterReferenceDate(date: dates[$0]!! )}))
     }
 
@@ -36,31 +32,31 @@ import Foundation
         let referenceDate = self.requestDate ?? Date()
         return date.timeIntervalSince(referenceDate) > 0
     }
-    
+
     // Returns the latest expiration date of all products, nil if there are none
     // TODO implement
-    public var latestExpirationDate: Date?
+    @objc public var latestExpirationDate: Date?
 
     // Returns all product IDs of the non-subscription purchases a user has made.
     // TODO add deprecation message:  DEPRECATED_MSG_ATTRIBUTE("use nonSubscriptionTransactions");
-    public let nonConsumablePurchases: Set<String>
+    @objc public let nonConsumablePurchases: Set<String>
 
     // Returns all the non-subscription purchases a user has made.
     // The purchases are ordered by purchase date in ascending order.
-    public let nonSubscriptionTransactions: [Transaction]
-    
+    @objc public let nonSubscriptionTransactions: [Transaction]
+
     /**
      Returns the fetch date of this Purchaser info.
      @note Can be nil if was cached before we added this
      */
-    public let requestDate: Date?
+    @objc public let requestDate: Date?
 
     // The date this user was first seen in RevenueCat.
-    public let firstSeen: Date
+    @objc public let firstSeen: Date
 
     // The original App User Id recorded for this user.
-    public let originalAppUserId: String
-    
+    @objc public let originalAppUserId: String
+
     // TODO is this equivalent to dispatch_once_t
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -69,31 +65,31 @@ import Foundation
         formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter
     }()
-    
+
     // URL to manage the active subscription of the user.
     // If this user has an active iOS subscription, this will point to the App Store,
     // if the user has an active Play Store subscription it will point there.
     // If there are no active subscriptions it will be null.
     // If there are multiple for different platforms, it will point to the App Store
-    public let managementURL: URL?
+    @objc public let managementURL: URL?
 
-    private let originalData: NSDictionary
+    private let originalData: [AnyHashable: Any]
 
     // from rcpurchaserinfo+protected
-    // public in android
+    // @objc public in android
     let expirationDatesByProduct: [String: Date?]
-    // public in android
+    // @objc public in android
     let purchaseDatesByProduct: [String: Date?]
-    private let schemaVersion: String?
-    
+    @objc public let schemaVersion: String?
+
     /**
     Returns the purchase date for the version of the application when the user bought the app.
     Use this for grandfathering users when migrating to subscriptions.
 
     @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
      */
-    public var originalPurchaseDate: Date?
-    
+    @objc public var originalPurchaseDate: Date?
+
     /**
     Returns the build number (in iOS) or the marketing version (in macOS) for the version of the application when the user bought the app.
     This corresponds to the value of CFBundleVersion (in iOS) or CFBundleShortVersionString (in macOS) in the Info.plist file when the purchase was originally made.
@@ -102,39 +98,41 @@ import Foundation
      
      @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
      */
-    public var originalApplicationVersion: String?
-    
-    @objc public init?(data: NSDictionary) {
-        if let subscriberObject = data["subscriber"] as? [String: Any] {
-            if let subscriberData = SubscriberData.init(subscriberData: subscriberObject) {
-                self.originalData = data
-                self.schemaVersion = data["schema_version"] as? String
+    @objc public var originalApplicationVersion: String?
 
-                guard let requestDateString = data["request_date"] as? String else {
-                    return nil
-                }
-                self.requestDate = PurchaserInfo.dateFormatter.date(from: requestDateString)
-
-                self.originalPurchaseDate = subscriberData.originalPurchaseDate
-                self.firstSeen = subscriberData.firstSeen
-                self.originalAppUserId = subscriberData.originalAppUserId
-                self.managementURL = subscriberData.managementURL
-
-                let nonSubscriptionProductIds = subscriberData.nonSubscriptions.keys
-                self.nonConsumablePurchases = Set(nonSubscriptionProductIds)
-                
-                self.nonSubscriptionTransactions = subscriberData.nonSubscriptionTransactions
-
-                self.entitlements = EntitlementInfos.init(entitlementsData: subscriberData.entitlements, purchasesData: subscriberData.allPurchases, dateFormatter: PurchaserInfo.dateFormatter, requestDate: requestDate)
-                
-                self.expirationDatesByProduct = subscriberData.expirationDatesByProduct
-                self.purchaseDatesByProduct = subscriberData.purchaseDatesByProduct
-            } else {
-                return nil
-            }
-        } else {
+    @objc public init?(data: [AnyHashable: Any]) {
+        guard let subscriberObject = data["subscriber"] as? [String: Any]
+            else {
             return nil
         }
+            
+        guard let subscriberData = SubscriberData.init(subscriberData: subscriberObject) else {
+            return nil
+        }
+        
+        self.originalData = data
+        self.schemaVersion = data["schema_version"] as? String
+
+        guard let requestDateString = data["request_date"] as? String else {
+            return nil
+        }
+        
+        self.requestDate = PurchaserInfo.dateFormatter.date(from: requestDateString)
+
+        self.originalPurchaseDate = subscriberData.originalPurchaseDate
+        self.firstSeen = subscriberData.firstSeen
+        self.originalAppUserId = subscriberData.originalAppUserId
+        self.managementURL = subscriberData.managementURL
+
+        let nonSubscriptionProductIds = subscriberData.nonSubscriptions.keys
+        self.nonConsumablePurchases = Set(nonSubscriptionProductIds)
+
+        self.nonSubscriptionTransactions = subscriberData.nonSubscriptionTransactions
+
+        self.entitlements = EntitlementInfos.init(entitlementsData: subscriberData.entitlements, purchasesData: subscriberData.allPurchases, dateFormatter: PurchaserInfo.dateFormatter, requestDate: requestDate)
+
+        self.expirationDatesByProduct = subscriberData.expirationDatesByProduct
+        self.purchaseDatesByProduct = subscriberData.purchaseDatesByProduct
     }
 
     class func parseURL(url: Any) -> URL? {
@@ -172,56 +170,59 @@ import Foundation
         }
         return parsedDates
     }
-    
-    class func currentSchemaVersion() -> String {
+
+    @objc public class func currentSchemaVersion() -> String {
         return "2"
     }
-    
+
     /**
      Get the expiration date for a given product identifier. You should use Entitlements though!
     
-     @param productIdentifier Product identifier for product
+     @param forProductIdentifier Product identifier for product
     
      @return The expiration date for `productIdentifier`, `nil` if product never purchased
      */
-//    func expirationDateForProductIdentifier(productIdentifier: String) -> Date? {
-//        // todo why is this ?? necessary
-//        return expirationDatesByProduct[productIdentifier] ?? nil
-//    }
+    @objc public func expirationDate(forProductIdentifier: String) -> Date? {
+        // todo why is this ?? necessary
+        return expirationDatesByProduct[forProductIdentifier] ?? nil
+    }
+
+     /**
+     Get the latest purchase or renewal date for a given product identifier. You should use Entitlements though!
     
-     /**Get the latest purchase or renewal date for a given product identifier. You should use Entitlements though!
-    
-     @param productIdentifier Product identifier for subscription product
+     @param forProductIdentifier Product identifier for subscription product
     
      @return The purchase date for `productIdentifier`, `nil` if product never purchased
      */
-    func purchaseDateForProductIdentifier(productIdentifier: String) -> Date? {
-        return purchaseDatesByProduct[productIdentifier] ?? nil
+    @objc public func purchaseDate(forProductIdentifier: String) -> Date? {
+        return purchaseDatesByProduct[forProductIdentifier] ?? nil
     }
+
+    /**
+     Get the expiration date for a given entitlement.
     
-    /** Get the expiration date for a given entitlement.
-    
-     @param entitlementId The id of the entitlement.
+     @param forEntitlement The id of the entitlement.
     
      @return The expiration date for the passed in `entitlement`, can be `nil`
      */
-    func expirationDateForEntitlement(entitlementId: String) -> Date? {
-        return entitlements[entitlementId]?.expirationDate
+    @objc public func expirationDate(forEntitlement: String) -> Date? {
+        return entitlements[forEntitlement]?.expirationDate
     }
 
     /**
      Get the latest purchase or renewal date for a given entitlement identifier.
     
-     @param entitlementId Entitlement identifier for entitlement
+     @param forEntitlement Entitlement identifier for entitlement
     
-     @return The purchase date for `entitlementId`, `nil` if product never purchased
+     @return The purchase date for `entitlement`, `nil` if product never purchased
      */
-    func purchaseDateForEntitlement(entitlementId: String) -> Date? {
-        return entitlements[entitlementId]?.latestPurchaseDate
+    @objc public func purchaseDate(forEntitlement: String) -> Date? {
+        return entitlements[forEntitlement]?.latestPurchaseDate
     }
-    
-    func JSONObject() -> NSDictionary {
-        let dictionary: NSMutableDictionary = self.originalData.mutableCopy() as? NSMutableDictionary ?? NSMutableDictionary()
+
+    // TODO why were we previously able to call with lowercase from swift?
+    @objc(JSONObject) public func jsonObject() -> [AnyHashable: Any] {
+        var dictionary = self.originalData
         dictionary["schema_version"] = PurchaserInfo.currentSchemaVersion()
         return dictionary
     }
@@ -248,10 +249,8 @@ import Foundation
             }
             self.subscriptions = subscriptionsDictionary
 
-            guard let originalApplicationVersionString = subscriberData["original_application_version"] as? String else {
-                return nil
-            }
-            self.originalApplicationVersion = originalApplicationVersionString
+            self.originalApplicationVersion = subscriberData["original_application_version"] as? String ?? nil
+        
 
             if let originalPurchaseDateString = subscriberData["original_purchase_date"] as? String {
                 self.originalPurchaseDate = PurchaserInfo.parseDate(date: originalPurchaseDateString, withDateFormatter: PurchaserInfo.dateFormatter)
@@ -259,17 +258,17 @@ import Foundation
                 self.originalPurchaseDate = nil
             }
 
-            guard let firstSeenDateString = subscriberData["first_seen"] as? String else {
+            guard let firstSeenDateString = subscriberData["first_seen"] as? String, let firstSeenDate = PurchaserInfo.parseDate(date: firstSeenDateString, withDateFormatter: PurchaserInfo.dateFormatter) else {
                 return nil
             }
 
-            self.firstSeen = PurchaserInfo.parseDate(date: firstSeenDateString, withDateFormatter: PurchaserInfo.dateFormatter)!
+            self.firstSeen = firstSeenDate
 
             guard let originalAppUserIdString = subscriberData["original_app_user_id"] as? String else {
                 return nil
             }
             self.originalAppUserId = originalAppUserIdString
-
+            
             if let managementUrlString = subscriberData["management_url"] as? String {
                 self.managementURL = parseURL(url: managementUrlString)
             } else {
@@ -277,7 +276,7 @@ import Foundation
             }
 
             self.nonSubscriptions = subscriberData["non_subscriptions"] as? [String: [[String: Any]]] ?? [String: [[String: Any]]]()
-            self.entitlements = subscriberData["entitlements"] as? [String: Any] ?? [String: Any]()
+            self.entitlements = subscriberData["entitlements"] as? [String: Any] ?? [:]
 
             self.nonConsumablePurchases = Set(nonSubscriptions.keys)
 

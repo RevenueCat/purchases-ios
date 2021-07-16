@@ -4,7 +4,6 @@
 //
 
 #import "RCPurchaserInfoManager.h"
-#import "RCPurchaserInfo+Protected.h"
 #import "RCDeviceCache.h"
 #import "RCLogUtils.h"
 #import "RCBackend.h"

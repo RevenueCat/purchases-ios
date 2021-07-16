@@ -14,7 +14,7 @@
 @implementation RCPurchaserInfoAPI
 
 + (void)checkAPI {
-    RCPurchaserInfo *pi = [[RCPurchaserInfo alloc]init];
+    RCPurchaserInfo *pi = [[RCPurchaserInfo alloc]initWithData: [[NSDictionary alloc] init]];
     RCEntitlementInfos *ei = pi.entitlements;
     NSSet<NSString *> *as = pi.activeSubscriptions;
     NSDate *led = pi.latestExpirationDate;
@@ -27,12 +27,13 @@
     NSString *oaud = pi.originalAppUserId;
     NSURL *murl = pi.managementURL;
     
-    [pi expirationDateForProductIdentifier:@""];
-    [pi purchaseDateForProductIdentifier:@""];
-    [pi expirationDateForEntitlement:@""];
-    [pi purchaseDateForEntitlement:@""];
+    NSDate *edfpi = [pi expirationDateForProductIdentifier:@""];
+    NSDate *pdfpi = [pi purchaseDateForProductIdentifier:@""];
+    NSDate *exdf = [pi expirationDateForEntitlement:@""];
+    NSDate *pdfe = [pi purchaseDateForEntitlement:@""];
     
-    NSLog(pi, ei, as, led, ncp, nst, oav, opd, rd, fs, oaud, murl);
+    NSDictionary *jo = [pi JSONObject];
+    
+    NSLog(pi, ei, as, led, ncp, nst, oav, opd, rd, fs, oaud, murl, edfpi, pdfpi, exdf, pdfe, jo);
 }
-
 @end

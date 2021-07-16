@@ -15,7 +15,6 @@
 #import "RCIdentityManager.h"
 #import "RCLogUtils.h"
 #import "RCOfferingsFactory.h"
-#import "RCPurchaserInfo+Protected.h"
 #import "RCPurchaserInfoManager.h"
 #import "RCPurchases+Protected.h"
 #import "RCPurchases+SubscriberAttributes.h"
