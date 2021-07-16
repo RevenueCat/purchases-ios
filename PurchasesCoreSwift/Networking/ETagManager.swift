@@ -37,10 +37,10 @@ import Foundation
         guard error == nil else { return resultFromBackend }
         let headersInResponse = response.allHeaderFields
 
-        let eTagInResponse: String? = headersInResponse[ETagManager.eTagHeaderName] as? String ??
+        let maybeETagInResponse: String? = headersInResponse[ETagManager.eTagHeaderName] as? String ??
                 headersInResponse[ETagManager.eTagHeaderName.lowercased()] as? String
 
-        guard let eTagInResponse = eTagInResponse else { return resultFromBackend }
+        guard let eTagInResponse = maybeETagInResponse else { return resultFromBackend }
         if shouldUseCachedVersion(responseCode: statusCode) {
             if let storedResponse = storedHTTPResponse(for: request) {
                 return storedResponse
