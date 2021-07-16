@@ -142,7 +142,9 @@ import AppKit
             return true
         }
 
-        guard let sharedApplication: UIApplication = UIApplication.value(forKey: "sharedApplication") as? UIApplication else { return false }
+        guard let sharedApplication = UIApplication.value(forKey: "sharedApplication") as? UIApplication else {
+            return false
+        }
         return sharedApplication.applicationState == UIApplication.State.background
     }
 
