@@ -121,11 +121,19 @@ import AppKit
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }
 
-    private var isApplicationBackgrounded: Bool {
+}
+
+private extension SystemInfo {
+
+    var isApplicationBackgrounded: Bool {
     #if os(iOS)
         return self.isApplicationBackgroundedIOS
     #elseif os(tvOS)
-        return UIApplication.shared.applicationState == UIApplication.State.background
+        // iOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
+        // it are made. There are no pre-processor macros available to check if the code is running in an app extension,
+        // so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication.
+        guard let sharedUIApplication = self.sharedUIApplication else { return false }
+        return sharedUIApplication.applicationState == UIApplication.State.background
     #elseif os(macOS)
         return false
     #elseif os(watchOS)
@@ -137,19 +145,23 @@ import AppKit
     // iOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
     // it are made. There are no pre-processor macros available to check if the code is running in an app extension,
     // so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication.
-    private var isApplicationBackgroundedIOS: Bool {
+    var isApplicationBackgroundedIOS: Bool {
         if self.isAppExtension {
             return true
         }
 
-        guard let sharedApplication = UIApplication.value(forKey: "sharedApplication") as? UIApplication else {
-            return false
-        }
-        return sharedApplication.applicationState == UIApplication.State.background
+        guard let sharedUIApplication = self.sharedUIApplication else { return false }
+        return sharedUIApplication.applicationState == UIApplication.State.background
     }
 
-    private var isAppExtension: Bool {
+    var isAppExtension: Bool {
         return Bundle.main.bundlePath.hasSuffix(".appex")
+    }
+    #endif
+
+    #if os(iOS) || os(tvOS)
+    var sharedUIApplication: UIApplication? {
+        UIApplication.value(forKey: "sharedApplication") as? UIApplication
     }
     #endif
 }
