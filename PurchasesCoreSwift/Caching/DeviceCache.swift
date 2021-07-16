@@ -8,7 +8,7 @@
 
 import Foundation
 
-// swiftlint:disable file_length type_body_length
+// swiftlint:disable file_length
 @objc(RCDeviceCache) open class DeviceCache: NSObject {
 
     // Thread-safe
@@ -494,4 +494,4 @@ extension UserDefaults {
 
 }
 
-// swiftlint:enable file_length type_body_length
+// swiftlint:enable file_length
