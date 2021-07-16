@@ -15,13 +15,28 @@ import Foundation
     public let entitlements: EntitlementInfos
 
     // All *subscription* product identifiers with expiration dates in the future.
-    // TODO implement
-    public var activeSubscriptions: Set<String>? = nil
+    public var activeSubscriptions: Set<String> {
+        get {
+            return activeKeys(dates: expirationDatesByProduct)
+        }
+    }
 
     // All product identifiers purchases by the user regardless of expiration.
-    // TODO implement
-    public let allPurchasedProductIdentifiers: Set<String> = Set()
+    public var allPurchasedProductIdentifiers: Set<String> {
+        get {
+            return self.nonConsumablePurchases.union(expirationDatesByProduct.keys)
+        }
+    }
+    
+    public func activeKeys(dates: [String: Date?]) -> Set<String> {
+        return Set<String>(dates.keys.filter({ dates[$0] == nil || isAfterReferenceDate(date: dates[$0]!! )}))
+    }
 
+    private func isAfterReferenceDate(date: Date) -> Bool {
+        let referenceDate = self.requestDate ?? Date()
+        return date.timeIntervalSince(referenceDate) > 0
+    }
+    
     // Returns the latest expiration date of all products, nil if there are none
     // TODO implement
     public var latestExpirationDate: Date?
@@ -66,9 +81,9 @@ import Foundation
 
     // from rcpurchaserinfo+protected
     // public in android
-    var expirationDatesByProduct: [String: Date]?
-    //public in android
-    var purchaseDatesByProduct: [String: Date]?
+    let expirationDatesByProduct: [String: Date?]
+    // public in android
+    let purchaseDatesByProduct: [String: Date?]
     private let schemaVersion: String?
     
     /**
@@ -88,7 +103,6 @@ import Foundation
      @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
      */
     public var originalApplicationVersion: String?
-    
     
     @objc public init?(data: NSDictionary) {
         if let subscriberObject = data["subscriber"] as? [String: Any] {
@@ -112,6 +126,9 @@ import Foundation
                 self.nonSubscriptionTransactions = subscriberData.nonSubscriptionTransactions
 
                 self.entitlements = EntitlementInfos.init(entitlementsData: subscriberData.entitlements, purchasesData: subscriberData.allPurchases, dateFormatter: PurchaserInfo.dateFormatter, requestDate: requestDate)
+                
+                self.expirationDatesByProduct = subscriberData.expirationDatesByProduct
+                self.purchaseDatesByProduct = subscriberData.purchaseDatesByProduct
             } else {
                 return nil
             }
@@ -134,25 +151,21 @@ import Foundation
         return nil
     }
 
-    class func parseExpirationDate(expirationDates: [String: Any]) -> NSDictionary {
+    class func parseExpirationDate(expirationDates: [String: Any]) -> [String: Date?] {
         return parseDatesIn(dates: expirationDates, label: "expires_date")
     }
 
-    class func parsePurchaseDate(purchaseDates: [String: Any]) -> NSDictionary {
+    class func parsePurchaseDate(purchaseDates: [String: Any]) -> [String: Date?] {
         return parseDatesIn(dates: purchaseDates, label: "purchase_date")
     }
 
-    class func parseDatesIn(dates: [String: Any], label: String) -> NSDictionary {
-        let parsedDates = NSMutableDictionary()
+    class func parseDatesIn(dates: [String: Any], label: String) -> [String: Date?] {
+        var parsedDates = [String: Date?]()
 
         for (identifier, _) in dates {
-            let date = (dates[identifier] as? NSDictionary ?? NSDictionary())[label]
-
-            if let dateString = date as? String {
+            if let dateString = (dates[identifier] as? [String: String] ?? [String: String]())[label] {
                 let date = PurchaserInfo.dateFormatter.date(from: dateString)
-                if date != nil {
-                    parsedDates[identifier] = date
-                }
+                parsedDates[identifier] = date
             } else {
                 parsedDates[identifier] = nil
             }
@@ -162,6 +175,55 @@ import Foundation
     
     class func currentSchemaVersion() -> String {
         return "2"
+    }
+    
+    /**
+     Get the expiration date for a given product identifier. You should use Entitlements though!
+    
+     @param productIdentifier Product identifier for product
+    
+     @return The expiration date for `productIdentifier`, `nil` if product never purchased
+     */
+//    func expirationDateForProductIdentifier(productIdentifier: String) -> Date? {
+//        // todo why is this ?? necessary
+//        return expirationDatesByProduct[productIdentifier] ?? nil
+//    }
+    
+     /**Get the latest purchase or renewal date for a given product identifier. You should use Entitlements though!
+    
+     @param productIdentifier Product identifier for subscription product
+    
+     @return The purchase date for `productIdentifier`, `nil` if product never purchased
+     */
+    func purchaseDateForProductIdentifier(productIdentifier: String) -> Date? {
+        return purchaseDatesByProduct[productIdentifier] ?? nil
+    }
+    
+    /** Get the expiration date for a given entitlement.
+    
+     @param entitlementId The id of the entitlement.
+    
+     @return The expiration date for the passed in `entitlement`, can be `nil`
+     */
+    func expirationDateForEntitlement(entitlementId: String) -> Date? {
+        return entitlements[entitlementId]?.expirationDate
+    }
+
+    /**
+     Get the latest purchase or renewal date for a given entitlement identifier.
+    
+     @param entitlementId Entitlement identifier for entitlement
+    
+     @return The purchase date for `entitlementId`, `nil` if product never purchased
+     */
+    func purchaseDateForEntitlement(entitlementId: String) -> Date? {
+        return entitlements[entitlementId]?.latestPurchaseDate
+    }
+    
+    func JSONObject() -> NSDictionary {
+        let dictionary: NSMutableDictionary = self.originalData.mutableCopy() as? NSMutableDictionary ?? NSMutableDictionary()
+        dictionary["schema_version"] = PurchaserInfo.currentSchemaVersion()
+        return dictionary
     }
 
     private struct SubscriberData {
@@ -177,8 +239,8 @@ import Foundation
         let nonSubscriptionLatestTransactions: NSDictionary
         let nonSubscriptionTransactions: [Transaction]
         let allPurchases: [String: Any]
-        let expirationDatesByProduct: NSDictionary
-        let purchaseDatesByProduct: NSDictionary
+        let expirationDatesByProduct: [String: Date?]
+        let purchaseDatesByProduct: [String: Date?]
 
         init?(subscriberData: [String: Any]) {
             guard let subscriptionsDictionary = subscriberData["subscriptions"] as? [String: Any] else {
@@ -243,38 +305,3 @@ import Foundation
     }
 
 }
-
-/// **
-// Get the expiration date for a given product identifier. You should use Entitlements though!
-//
-// @param productIdentifier Product identifier for product
-//
-// @return The expiration date for `productIdentifier`, `nil` if product never purchased
-// */
-// - (nullable NSDate *)expirationDateForProductIdentifier:(NSString *)productIdentifier;
-//
-/// **
-// Get the latest purchase or renewal date for a given product identifier. You should use Entitlements though!
-//
-// @param productIdentifier Product identifier for subscription product
-//
-// @return The purchase date for `productIdentifier`, `nil` if product never purchased
-// */
-// - (nullable NSDate *)purchaseDateForProductIdentifier:(NSString *)productIdentifier;
-//
-/// ** Get the expiration date for a given entitlement.
-//
-// @param entitlementId The id of the entitlement.
-//
-// @return The expiration date for the passed in `entitlement`, can be `nil`
-// */
-// - (nullable NSDate *)expirationDateForEntitlement:(NSString *)entitlementId;
-//
-/// **
-// Get the latest purchase or renewal date for a given entitlement identifier.
-//
-// @param entitlementId Entitlement identifier for entitlement
-//
-// @return The purchase date for `entitlementId`, `nil` if product never purchased
-// */
-// - (nullable NSDate *)purchaseDateForEntitlement:(NSString *)entitlementId;
