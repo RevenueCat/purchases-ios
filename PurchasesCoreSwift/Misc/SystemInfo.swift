@@ -151,7 +151,7 @@ private extension SystemInfo {
     var isAppExtension: Bool {
         return Bundle.main.bundlePath.hasSuffix(".appex")
     }
-    
+
     var sharedUIApplication: UIApplication? {
         UIApplication.value(forKey: "sharedApplication") as? UIApplication
     }
