@@ -126,14 +126,8 @@ import AppKit
 private extension SystemInfo {
 
     var isApplicationBackgrounded: Bool {
-    #if os(iOS)
-        return self.isApplicationBackgroundedIOS
-    #elseif os(tvOS)
-        // iOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
-        // it are made. There are no pre-processor macros available to check if the code is running in an app extension,
-        // so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication.
-        guard let sharedUIApplication = self.sharedUIApplication else { return false }
-        return sharedUIApplication.applicationState == UIApplication.State.background
+    #if os(iOS) || os(tvOS)
+        return self.isApplicationBackgroundedIOSAndTVOS
     #elseif os(macOS)
         return false
     #elseif os(watchOS)
@@ -141,11 +135,11 @@ private extension SystemInfo {
     #endif
     }
 
-    #if os(iOS)
-    // iOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
+    #if os(iOS) || os(tvOS)
+    // iOS/tvOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
     // it are made. There are no pre-processor macros available to check if the code is running in an app extension,
     // so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication.
-    var isApplicationBackgroundedIOS: Bool {
+    var isApplicationBackgroundedIOSAndTVOS: Bool {
         if self.isAppExtension {
             return true
         }
@@ -157,11 +151,10 @@ private extension SystemInfo {
     var isAppExtension: Bool {
         return Bundle.main.bundlePath.hasSuffix(".appex")
     }
-    #endif
-
-    #if os(iOS) || os(tvOS)
+    
     var sharedUIApplication: UIApplication? {
         UIApplication.value(forKey: "sharedApplication") as? UIApplication
     }
+
     #endif
 }
