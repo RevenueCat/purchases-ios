@@ -11,7 +11,6 @@
 #import "RCAttributionData.h"
 #import "RCAttributionFetcher.h"
 #import "RCBackend.h"
-#import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
 #import "RCOfferingsFactory.h"
 #import "RCPurchaserInfo+Protected.h"
@@ -239,7 +238,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         userDefaults = [NSUserDefaults standardUserDefaults];
     }
 
-    RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWith:userDefaults];
+    RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWithUserDefaults:userDefaults];
     RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
     RCIntroEligibilityCalculator *introCalculator = [[RCIntroEligibilityCalculator alloc] init];
     RCReceiptParser *receiptParser = [[RCReceiptParser alloc] init];

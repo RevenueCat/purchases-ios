@@ -33,26 +33,27 @@ open class InMemoryCachedObject<T> {
     }
 
     open func clearCacheTimestamp() {
-        accessQueue.async(flags: .barrier) {
+        accessQueue.sync(flags: .barrier) {
             self.lastUpdated = nil
         }
     }
 
     open func clearCache() {
-        accessQueue.async(flags: .barrier) {
+        accessQueue.sync(flags: .barrier) {
             self.lastUpdated = nil
             self.cachedObject = nil
         }
     }
 
     open func updateCacheTimestamp(date: Date) {
-        accessQueue.async(flags: .barrier) {
+        accessQueue.sync(flags: .barrier) {
             self.lastUpdated = date
         }
     }
 
     open func cache(instance: T) {
-        accessQueue.async(flags: .barrier) {
+        accessQueue.sync(flags: .barrier) {
+            self.lastUpdated = Date()
             self.cachedObject = instance
         }
     }
