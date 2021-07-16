@@ -11,7 +11,7 @@ import Purchases
 class IdentityManagerTests: XCTestCase {
 
     private var identityManager: RCIdentityManager!
-    private let mockDeviceCache = MockDeviceCache()
+    private var mockDeviceCache: MockDeviceCache!
     private let mockBackend = MockBackend()
     private let mockPurchaserInfoManager = MockPurchaserInfoManager()
 
@@ -24,6 +24,7 @@ class IdentityManagerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        self.mockDeviceCache = MockDeviceCache()
         self.identityManager = RCIdentityManager(mockDeviceCache,
                                                  backend: mockBackend,
                                                  purchaserInfoManager: mockPurchaserInfoManager)
@@ -105,7 +106,7 @@ class IdentityManagerTests: XCTestCase {
     }
 
     func testCreateAliasIdentifiesWhenSuccessful() {
-        self.mockDeviceCache.cacheAppUserID("appUserID")
+        self.mockDeviceCache.cache(appUserID: "appUserID")
         mockBackend.stubbedCreateAliasCompletionResult = (nil, ())
 
         self.identityManager.createAlias(forAppUserID: "cesar"){ (error: Error?) in
@@ -151,7 +152,7 @@ class IdentityManagerTests: XCTestCase {
     func testIdentifyingWhenUserIsAnonymousCreatesAlias() {
         self.identityManager.configure(withAppUserID: nil)
         self.mockBackend.stubbedCreateAliasCompletionResult = (nil, ())
-        self.mockDeviceCache.cacheAppUserID("$RCAnonymousID:5d73fc46744f4e0b99e524c6763dd7fc")
+        self.mockDeviceCache.cache(appUserID: "$RCAnonymousID:5d73fc46744f4e0b99e524c6763dd7fc")
 
         self.identityManager.identifyAppUserID("cesar"){ (error: Error?) in }
         expect(self.mockBackend.invokedCreateAlias).toEventually(beTrue())

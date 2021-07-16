@@ -18,7 +18,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     let mockNotificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
     let mockOfferingsFactory = MockOfferingsFactory()
-    let mockDeviceCache = MockDeviceCache()
+    var mockDeviceCache: MockDeviceCache!
     let mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user");
     let mockSubscriberAttributesManager = MockSubscriberAttributesManager()
     var subscriberAttributeHeight: SubscriberAttribute!
@@ -40,6 +40,13 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     override func setUp() {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        for (key, _) in self.userDefaults.dictionaryRepresentation() {
+            self.userDefaults.removeObject(forKey: key)
+        }
+        self.userDefaults.synchronize()
+
+        self.mockDeviceCache = MockDeviceCache()
+
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
                                                              value: "183")
         self.subscriberAttributeWeight = SubscriberAttribute(withKey: "weight",

@@ -5,7 +5,6 @@
 
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
-#import "RCDeviceCache.h"
 #import "RCPurchasesErrorUtils.h"
 #import "RCPurchaserInfoManager.h"
 @import PurchasesCoreSwift;
@@ -61,7 +60,7 @@
         [self createAliasForAppUserID:appUserID completion:completion];
     } else {
         [RCLog user:[NSString stringWithFormat:RCStrings.identity.changing_app_user_id, self.currentAppUserID, appUserID]];
-        [self.deviceCache clearCachesForAppUserID:self.currentAppUserID andSaveNewUserID:appUserID];
+        [self.deviceCache clearCachesWithOldAppUserID:self.currentAppUserID andSaveWithNewUserID:appUserID];
         completion(nil);
     }
 }
@@ -81,7 +80,7 @@
     [self.backend createAliasForAppUserID:currentAppUserID withNewAppUserID:alias completion:^(NSError *_Nullable error) {
         if (error == nil) {
             [RCLog user:[NSString stringWithFormat:@"%@", RCStrings.identity.creating_alias_success]];
-            [self.deviceCache clearCachesForAppUserID:currentAppUserID andSaveNewUserID:alias];
+            [self.deviceCache clearCachesWithOldAppUserID:currentAppUserID andSaveWithNewUserID:alias];
         }
         completion(error);
     }];
@@ -90,8 +89,8 @@
 - (void)resetAppUserID {
     NSString *randomId = [self generateRandomID];
     NSString *oldAppUserID = self.currentAppUserID;
-    [self.deviceCache clearCachesForAppUserID:oldAppUserID andSaveNewUserID:randomId];
-    [self.deviceCache clearLatestNetworkAndAdvertisingIdsSentForAppUserID:oldAppUserID];
+    [self.deviceCache clearCachesWithOldAppUserID:oldAppUserID andSaveWithNewUserID:randomId];
+    [self.deviceCache clearLatestNetworkAndAdvertisingIdsSentWithAppUserID:oldAppUserID];
     [self.backend clearCaches];
 }
 
@@ -134,8 +133,8 @@
                                      if (error == nil) {
                                          [RCLog user:[NSString stringWithFormat:@"%@", RCStrings.identity.login_success]];
 
-                                         [self.deviceCache clearCachesForAppUserID:currentAppUserID
-                                                                  andSaveNewUserID:newAppUserID];
+                                         [self.deviceCache clearCachesWithOldAppUserID:currentAppUserID
+                                                                  andSaveWithNewUserID:newAppUserID];
                                          [self.purchaserInfoManager cachePurchaserInfo:purchaserInfo
                                                                           forAppUserID:newAppUserID];
                                      }

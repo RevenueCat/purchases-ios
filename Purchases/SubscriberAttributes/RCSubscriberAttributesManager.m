@@ -8,7 +8,6 @@
 #import "NSError+RCExtensions.h"
 #import "RCAttributionFetcher.h"
 #import "RCBackend.h"
-#import "RCDeviceCache.h"
 #import "RCSpecialSubscriberAttributes.h"
 #import "RCSubscriberAttributesManager.h"
 
@@ -141,7 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (error == nil) {
         [RCLog rcSuccess:[NSString stringWithFormat:RCStrings.attribution.attributes_sync_success, syncingAppUserID]];
         if (![syncingAppUserID isEqualToString:currentAppUserID]) {
-            [self.deviceCache deleteAttributesIfSyncedForAppUserID:syncingAppUserID];
+            [self.deviceCache deleteAttributesIfSyncedWithAppUserID:syncingAppUserID];
         }
     } else {
         [RCLog error:[NSString stringWithFormat:RCStrings.attribution.attributes_sync_error,
@@ -151,7 +150,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (RCSubscriberAttributeDict)unsyncedAttributesByKeyForAppUserID:(NSString *)appUserID {
-    return [self.deviceCache unsyncedAttributesByKeyForAppUserID:appUserID];
+    return [self.deviceCache unsyncedAttributesByKeyWithAppUserID:appUserID];
 }
 
 - (NSDictionary <NSString *, RCSubscriberAttributeDict> *)unsyncedAttributesByKeyForAllUsers {
