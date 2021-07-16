@@ -11,26 +11,19 @@ import Foundation
 // swiftlint:disable file_length
 @objc(RCDeviceCache) open class DeviceCache: NSObject {
 
-    // Thread-safe
+    // Thread-safe, but don't call from anywhere inside this class.
     @objc open var cachedAppUserID: String? { readCache { self.threadUnsafeCachedAppUserID } }
     @objc open var cachedLegacyAppUserID: String? {
         return readCache {
             return self.userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
         }
     }
-    @objc open var cachedOfferings: Offerings? {
-        return offeringsCachedObject.cachedInstance()
-    }
+    @objc open var cachedOfferings: Offerings? { offeringsCachedObject.cachedInstance() }
 
     private let cacheDurationInSecondsInForeground = 60 * 5.0
     private let cacheDurationInSecondsInBackground = 60 * 60 * 25.0
-    private let accessQueue = DispatchQueue(label: "DeviceCacheQueue", attributes: .concurrent)
-    private var threadUnsafeCachedAppUserID: String? {
-        let cacheKey = CacheKeys.appUserDefaults.rawValue
-        let appUserID = userDefaults.string(forKey: cacheKey)
-        return appUserID
-    }
-
+    private let accessQueue = DispatchQueue(label: "DeviceCacheQueue")
+    private var threadUnsafeCachedAppUserID: String? { userDefaults.string(forKey: CacheKeys.appUserDefaults.rawValue) }
     private let userDefaults: UserDefaults
     private let notificationCenter: NotificationCenter
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
@@ -66,13 +59,13 @@ import Foundation
         }
 
         if appUserIDHasBeenSet && notificationObject == self.userDefaults {
-            if self.cachedAppUserID == nil {
+            if threadUnsafeCachedAppUserID == nil {
                 assertionFunction(
                     """
                     [Purchases] - Cached appUserID has been deleted from user defaults.
-                     This leaves the SDK in an undetermined state. Please make sure that RevenueCat
-                     entries in user defaults don't get deleted by anything other than the SDK.
-                     More info: https://rev.cat/userdefaults-crash
+                    This leaves the SDK in an undetermined state. Please make sure that RevenueCat
+                    entries in user defaults don't get deleted by anything other than the SDK.
+                    More info: https://rev.cat/userdefaults-crash
                     """
                 )
             }
