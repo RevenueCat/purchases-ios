@@ -98,7 +98,7 @@ class IdentityManagerTests: XCTestCase {
 
             guard let receivedError = error else { fatalError() }
             receivedNSError = receivedError as NSError
-            expect(receivedNSError!.code) == Purchases.ErrorCode.invalidAppUserIdError.rawValue
+            expect(receivedNSError!.code) == ErrorCodes.invalidAppUserIdError.rawValue
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -124,7 +124,7 @@ class IdentityManagerTests: XCTestCase {
     }
 
     func testCreateAliasForwardsErrors() {
-        self.mockBackend.stubbedCreateAliasCompletionResult = (Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber,
+        self.mockBackend.stubbedCreateAliasCompletionResult = (Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCodes.invalidAPIKey.rawValue as NSNumber,
                                                                         backendMessage: "Invalid credentials",
                                                                         finishable: false), ())
         var error: Error? = nil
@@ -191,7 +191,7 @@ class IdentityManagerTests: XCTestCase {
         expect(receivedError).toNot(beNil())
 
         let receivedNSError = (receivedError! as NSError)
-        expect(receivedNSError.code) == Purchases.ErrorCode.invalidAppUserIdError.rawValue
+        expect(receivedNSError.code) == ErrorCodes.invalidAppUserIdError.rawValue
     }
 
     func testLogInErrorsOutIfOldAppUserIDEmpty() {
@@ -217,7 +217,7 @@ class IdentityManagerTests: XCTestCase {
         expect(receivedPurchaserInfo).to(beNil())
         expect(receivedError).toNot(beNil())
         let receivedNSError = (receivedError! as NSError)
-        expect(receivedNSError.code) == Purchases.ErrorCode.invalidAppUserIdError.rawValue
+        expect(receivedNSError.code) == ErrorCodes.invalidAppUserIdError.rawValue
 
         expect(self.mockBackend.invokedLogInCount) == 0
         expect(self.mockPurchaserInfoManager.invokedPurchaserInfoCount) == 0
@@ -245,8 +245,8 @@ class IdentityManagerTests: XCTestCase {
         var receivedPurchaserInfo: Purchases.PurchaserInfo?
         var receivedError: NSError?
 
-        let stubbedError = NSError(domain: Purchases.ErrorDomain,
-                                   code: Purchases.ErrorCode.invalidAppUserIdError.rawValue,
+        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
+                                   code: ErrorCodes.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
 
         self.mockPurchaserInfoManager.stubbedError = stubbedError
@@ -304,8 +304,8 @@ class IdentityManagerTests: XCTestCase {
         var receivedPurchaserInfo: Purchases.PurchaserInfo?
         var receivedError: NSError?
 
-        let stubbedError = NSError(domain: Purchases.ErrorDomain,
-                                   code: Purchases.ErrorCode.invalidAppUserIdError.rawValue,
+        let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
+                                   code: ErrorCodes.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
         self.mockBackend.stubbedLogInCompletionResult = (nil, false, stubbedError)
 
@@ -377,7 +377,7 @@ class IdentityManagerTests: XCTestCase {
         }
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).toNot(beNil())
-        expect((receivedError! as NSError).code) == Purchases.ErrorCode.logOutAnonymousUserError.rawValue
+        expect((receivedError! as NSError).code) == ErrorCodes.logOutAnonymousUserError.rawValue
     }
 
     func testLogOutCallsCompletionWithNoErrorIfSuccessful() {

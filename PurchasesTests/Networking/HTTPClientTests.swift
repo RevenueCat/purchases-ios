@@ -667,7 +667,7 @@ class HTTPClientTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).toNot(beNil())
         let receivedNSError = receivedError! as NSError
-        expect(receivedNSError.code) == Purchases.ErrorCode.networkError.rawValue
+        expect(receivedNSError.code) == ErrorCodes.networkError.rawValue
         expect(receivedData).to(beNil())
         expect(receivedStatus) == -1
     }

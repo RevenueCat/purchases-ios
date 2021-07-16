@@ -52,7 +52,6 @@ import Foundation
     }
 
     // TODO (Post-migration): Remove @objc and make it internal again.
-    // TODO: currentOfferingID probably shouldn't be optional, but 1 of our tests fail if it is.
     @objc public init(offerings: [String: Offering], currentOfferingID: String?) {
         all = offerings
         self.currentOfferingID = currentOfferingID

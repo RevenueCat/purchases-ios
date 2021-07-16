@@ -531,7 +531,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         ]
         mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = allAttributes
 
-        let mockError = NSError(domain: Purchases.ErrorDomain, code: 123, userInfo: [:])
+        let mockError = NSError(domain: RCPurchasesErrorCodeDomain, code: 123, userInfo: [:])
         mockBackend.stubbedPostSubscriberAttributesCompletionResult = (mockError, ())
 
         self.subscriberAttributesManager.syncAttributesForAllUsers(withCurrentAppUserID: currentUserID)

@@ -15,7 +15,7 @@ import PurchasesCoreSwift
 
 class OfferingsTests: XCTestCase {
 
-    let offeringsFactory = RCOfferingsFactory()
+    let offeringsFactory = OfferingsFactory()
 
     func testPackageIsNotCreatedIfNoValidProducts() {
         let package = offeringsFactory.createPackage(withData: [
@@ -192,7 +192,7 @@ class OfferingsTests: XCTestCase {
             "offerings": [],
             "current_offering_id": nil
         ]
-        let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [AnyHashable : Any])
+        let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [String : Any])
 
         expect(offerings).toNot(beNil())
         expect(offerings!.current).to(beNil())
@@ -203,7 +203,7 @@ class OfferingsTests: XCTestCase {
             "offerings": [],
             "current_offering_id": "offering_with_broken_product"
         ] as [String : Any]
-        let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [AnyHashable : Any])
+        let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [String : Any])
 
         expect(offerings).toNot(beNil())
         expect(offerings!.current).to(beNil())
@@ -211,7 +211,7 @@ class OfferingsTests: XCTestCase {
 
     func testBadOfferingsDataReturnsNil() {
         let data = [:] as [String : Any]
-        let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [AnyHashable : Any])
+        let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [String : Any])
 
         expect(offerings).to(beNil())
     }
