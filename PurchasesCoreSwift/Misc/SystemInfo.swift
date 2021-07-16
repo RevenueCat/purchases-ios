@@ -122,7 +122,7 @@ import AppKit
     }
 
     private var isApplicationBackgrounded: Bool {
-    #if os(iOS) || (targetEnvironment(simulator) && os(iOS))
+    #if os(iOS)
         return self.isApplicationBackgroundedIOS
     #elseif os(tvOS)
         return UIApplication.shared.applicationState == UIApplication.State.background
@@ -133,7 +133,7 @@ import AppKit
     #endif
     }
 
-    #if os(iOS) || (targetEnvironment(simulator) && os(iOS))
+    #if os(iOS)
     // iOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
     // it are made. There are no pre-processor macros available to check if the code is running in an app extension,
     // so we check if we're running in an app extension at runtime, and if not, we use KVC to call sharedApplication.
