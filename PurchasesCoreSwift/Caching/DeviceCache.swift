@@ -34,10 +34,10 @@ import Foundation
         self.init(userDefaults: userDefaults, offeringsCachedObject: InMemoryCachedObject<Offerings>())
     }
 
-    required public init(userDefaults: UserDefaults = UserDefaults.standard,
-                         offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject(),
-                         notificationCenter: NotificationCenter? = NotificationCenter.default,
-                         assertionFunction: @escaping (String) -> Void = { assertionFailure($0) }) {
+    public init(userDefaults: UserDefaults = UserDefaults.standard,
+                offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject(),
+                notificationCenter: NotificationCenter? = NotificationCenter.default,
+                assertionFunction: @escaping (String) -> Void = { assertionFailure($0) }) {
 
         self.offeringsCachedObject = offeringsCachedObject ?? InMemoryCachedObject()
         self.notificationCenter = notificationCenter ?? NotificationCenter.default
@@ -207,7 +207,7 @@ import Foundation
 
     @objc(subscriberAttributeWithKey:appUserID:)
     open func subscriberAttribute(attributeKey: String, appUserID: String) -> SubscriberAttribute? {
-        readCache { self.threadUnsafeStoredSubscriberAttributes(appUserID: appUserID)[attributeKey] }
+        return readCache { self.threadUnsafeStoredSubscriberAttributes(appUserID: appUserID)[attributeKey] }
     }
 
     // Threadsafe using accessQueue, however accessQueue is not reentrant. If you're calling this from somewhere
@@ -218,7 +218,7 @@ import Foundation
     }
 
     open func numberOfUnsyncedAttributes(appUserID: String) -> Int {
-        readCache {
+        return readCache {
             return self.threadUnsafeUnsyncedAttributesByKey(appUserID: appUserID).count
         }
     }
@@ -269,9 +269,10 @@ import Foundation
     // MARK: - attribution
 
     @objc public func latestNetworkAndAdvertisingIdsSent(appUserID: String) -> [String: Any] {
-        readCache {
+        return readCache {
             let key = CacheKeyBases.attributionDataDefaults + appUserID
-            return self.userDefaults.object(forKey: key) as? [String: Any] ?? [:]
+            let latestNetworkAndAdvertisingIdsSent = self.userDefaults.object(forKey: key) as? [String: Any] ?? [:]
+            return latestNetworkAndAdvertisingIdsSent
         }
     }
 

@@ -12,8 +12,8 @@ import Purchases
 class PurchasesTests: XCTestCase {
 
     override func setUp() {
-        
-        self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        deviceCache = MockDeviceCache()
+        userDefaults = UserDefaults(suiteName: "TestDefaults")
         requestFetcher = MockRequestFetcher()
         systemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockProductsManager = MockProductsManager()
@@ -34,6 +34,7 @@ class PurchasesTests: XCTestCase {
     }
 
     override func tearDown() {
+        deviceCache = nil
         purchases?.delegate = nil
         purchases = nil
         Purchases.setDefaultInstance(nil)
@@ -199,7 +200,7 @@ class PurchasesTests: XCTestCase {
     let notificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
-    let deviceCache = MockDeviceCache()
+    var deviceCache: MockDeviceCache!
     let subscriberAttributesManager = MockSubscriberAttributesManager()
     let identityManager = MockIdentityManager(mockAppUserID: "app_user");
     var systemInfo: MockSystemInfo!

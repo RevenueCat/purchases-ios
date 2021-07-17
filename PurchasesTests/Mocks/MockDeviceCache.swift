@@ -146,7 +146,7 @@ class MockDeviceCache: DeviceCache {
     var invokedUnsyncedAttributesByKeyParametersList = [(appUserID: String, Void)]()
     var stubbedUnsyncedAttributesByKeyResult: [String: SubscriberAttribute]! = [:]
 
-    override func unsyncedAttributesByKey(appUserID: String) -> [String : SubscriberAttribute] {
+    override func unsyncedAttributesByKey(appUserID: String) -> [String: SubscriberAttribute] {
         invokedUnsyncedAttributesByKey = true
         invokedUnsyncedAttributesByKeyCount += 1
         invokedUnsyncedAttributesByKeyParameters = (appUserID, ())

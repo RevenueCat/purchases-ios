@@ -40,11 +40,6 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     override func setUp() {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
-        for (key, _) in self.userDefaults.dictionaryRepresentation() {
-            self.userDefaults.removeObject(forKey: key)
-        }
-        self.userDefaults.synchronize()
-
         self.mockDeviceCache = MockDeviceCache()
 
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
