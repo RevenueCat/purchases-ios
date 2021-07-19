@@ -34,8 +34,13 @@ import Foundation
     }
 
     // Returns the latest expiration date of all products, nil if there are none
-    // TODO implement
-    @objc public var latestExpirationDate: Date?
+    @objc public var latestExpirationDate: Date? {
+        let mostRecentDate = expirationDatesByProduct.values.filter({ $0 != nil }).max(by: {
+           $0!.timeIntervalSinceReferenceDate < $1!.timeIntervalSinceReferenceDate
+        })
+        
+        return mostRecentDate ?? nil
+    }
 
     // Returns all product IDs of the non-subscription purchases a user has made.
     // TODO add deprecation message:  DEPRECATED_MSG_ATTRIBUTE("use nonSubscriptionTransactions");
@@ -52,7 +57,7 @@ import Foundation
     @objc public let requestDate: Date?
 
     // The date this user was first seen in RevenueCat.
-    @objc public let firstSeen: Date
+    @objc public let firstSeen: Date?
 
     // The original App User Id recorded for this user.
     @objc public let originalAppUserId: String
@@ -113,16 +118,17 @@ import Foundation
         self.originalData = data
         self.schemaVersion = data["schema_version"] as? String
 
-        guard let requestDateString = data["request_date"] as? String else {
-            return nil
+        if let requestDateString = data["request_date"] as? String {
+            self.requestDate = PurchaserInfo.dateFormatter.date(from: requestDateString)
+        } else {
+            self.requestDate = nil
         }
-        
-        self.requestDate = PurchaserInfo.dateFormatter.date(from: requestDateString)
 
         self.originalPurchaseDate = subscriberData.originalPurchaseDate
         self.firstSeen = subscriberData.firstSeen
-        self.originalAppUserId = subscriberData.originalAppUserId
+        self.originalAppUserId = subscriberData.originalAppUserId 
         self.managementURL = subscriberData.managementURL
+        self.originalApplicationVersion = subscriberData.originalApplicationVersion
 
         let nonSubscriptionProductIds = subscriberData.nonSubscriptions.keys
         self.nonConsumablePurchases = Set(nonSubscriptionProductIds)
@@ -137,7 +143,7 @@ import Foundation
 
     class func parseURL(url: Any) -> URL? {
         if let urlString = url as? String {
-            return URL.init(fileURLWithPath: urlString)
+            return URL.init(string: urlString)
         }
         return nil
     }
@@ -232,7 +238,7 @@ import Foundation
         let managementURL: URL?
         let originalApplicationVersion: String?
         let originalPurchaseDate: Date?
-        let firstSeen: Date
+        let firstSeen: Date?
         let subscriptions: [String: Any]
         let nonSubscriptions: [String: [[String: Any]]]
         let entitlements: [String: Any]
@@ -244,30 +250,26 @@ import Foundation
         let purchaseDatesByProduct: [String: Date?]
 
         init?(subscriberData: [String: Any]) {
-            guard let subscriptionsDictionary = subscriberData["subscriptions"] as? [String: Any] else {
-                return nil
-            }
-            self.subscriptions = subscriptionsDictionary
+            self.subscriptions = subscriberData["subscriptions"] as? [String: Any] ?? [String: Any]()
 
             self.originalApplicationVersion = subscriberData["original_application_version"] as? String ?? nil
         
-
             if let originalPurchaseDateString = subscriberData["original_purchase_date"] as? String {
                 self.originalPurchaseDate = PurchaserInfo.parseDate(date: originalPurchaseDateString, withDateFormatter: PurchaserInfo.dateFormatter)
             } else {
                 self.originalPurchaseDate = nil
             }
 
-            guard let firstSeenDateString = subscriberData["first_seen"] as? String, let firstSeenDate = PurchaserInfo.parseDate(date: firstSeenDateString, withDateFormatter: PurchaserInfo.dateFormatter) else {
-                return nil
+            if let firstSeenDateString = subscriberData["first_seen"] as? String {
+                guard let firstSeenDate = PurchaserInfo.parseDate(date: firstSeenDateString, withDateFormatter: PurchaserInfo.dateFormatter) else {
+                    return nil
+                }
+                self.firstSeen = firstSeenDate
+            } else {
+                self.firstSeen = nil
             }
-
-            self.firstSeen = firstSeenDate
-
-            guard let originalAppUserIdString = subscriberData["original_app_user_id"] as? String else {
-                return nil
-            }
-            self.originalAppUserId = originalAppUserIdString
+            
+            self.originalAppUserId = subscriberData["original_app_user_id"] as? String ?? ""
             
             if let managementUrlString = subscriberData["management_url"] as? String {
                 self.managementURL = parseURL(url: managementUrlString)
@@ -294,6 +296,7 @@ import Foundation
 
             // all purchases
             guard let nonSubsLatest = nonSubscriptionLatestTransactions as? [String: Any] else {
+                NSLog("nonsubscriptionlatesttransactions")
                 return nil
             }
             self.allPurchases = nonSubsLatest.merging(subscriptions) { (current, _) in current }

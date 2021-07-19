@@ -1642,11 +1642,13 @@ private extension BackendTests {
     }
 
     var mockPurchaserInfoDict: [String: Any] { [
-            "subscriber": [
-                "subscriptions": [:],
-                "other_purchases": [:],
-                "original_application_version": NSNull()
-            ]
+        "request_date": "2019-08-16T10:30:42Z",
+        "subscriber": [
+            "subscriptions": [],
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "",
+            "other_purchases": [:],
         ]
-    }
+    ]
+}
 }

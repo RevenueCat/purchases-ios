@@ -123,7 +123,9 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testOriginalApplicationVersionNilIfNotPresent() {
         let purchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
@@ -132,7 +134,9 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testOriginalApplicationVersionNilIfNull() {
         let purchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": NSNull()
@@ -142,7 +146,9 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testOriginalApplicationVersion() {
         let purchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "original_application_version": "1.0",
                 "subscriptions": [:],
                 "other_purchases": [:]
@@ -152,7 +158,9 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testOriginalPurchaseDate() {
         let purchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "original_application_version": "1.0",
                 "original_purchase_date": "2018-10-26T23:17:53Z",
                 "subscriptions": [:],
@@ -164,7 +172,10 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testManagementURLNullIfNotPresent() {
         let purchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
@@ -173,8 +184,11 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testManagementURLIsPresentWithValidURL() {
         let purchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "management_url": "https://apple.com/manage_subscription",
+                "original_app_user_id": "",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
@@ -184,18 +198,24 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testManagementURLIsNullWithInvalidURL() {
         var purchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "management_url": "this isnt' a URL!",
+                "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
-                "other_purchases": [:]
+                "other_purchases": [:],
+                "original_app_user_id": "",
             ]])
         expect(purchaserInfo!.managementURL).to(beNil())
 
         purchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "management_url": 68546984,
+                "original_app_user_id": "",
+                "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
-                "other_purchases": [:]
+                "other_purchases": [:],
             ]])
         expect(purchaserInfo!.managementURL).to(beNil())
 
@@ -244,6 +264,7 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testIfRequestDateIsNilUsesCurrentTime() {
         let response = [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
@@ -319,7 +340,9 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testPurchaseDateEmpty() {
         let response = [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "other_purchases": [
                     "onetime_purchase": [
                         "expires_date": "1990-08-30T02:40:36Z"

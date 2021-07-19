@@ -23,6 +23,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
     let validSubscriberResponse = [
         "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
             "subscriptions": [
                 "onemonth_freetrial": [
                     "expires_date": "2017-08-30T02:40:36Z"
@@ -316,7 +317,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                 observerMode: false,
                                 subscriberAttributes: nil,
                                 completion: { (purchaserInfo, error) in
-                                    completionCallCount += 1
+                                     completionCallCount += 1
                                 })
 
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 1

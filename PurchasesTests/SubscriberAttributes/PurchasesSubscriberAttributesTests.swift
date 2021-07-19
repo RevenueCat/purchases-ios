@@ -143,7 +143,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     func testSubscriberAttributesSyncIsPerformedAfterPurchaserInfoSync() {
         mockBackend.stubbedGetSubscriberDataPurchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "1.0",

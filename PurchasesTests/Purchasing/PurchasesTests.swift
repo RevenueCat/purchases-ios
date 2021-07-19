@@ -47,6 +47,7 @@ class PurchasesTests: XCTestCase {
         var getSubscriberCallCount = 0
         var overridePurchaserInfoError: Error? = nil
         var overridePurchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "subscriptions": [:],
                 "other_purchases": [:]
@@ -290,7 +291,9 @@ class PurchasesTests: XCTestCase {
     func testFirstInitializationFromBackgroundCallsDelegateForAnonIfInfoCached() {
         systemInfo.stubbedIsApplicationBackgrounded = true
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -999,7 +1002,9 @@ class PurchasesTests: XCTestCase {
 
     func testRestoringPurchasesDoesntPostIfReceiptEmptyAndPurchaserInfoLoaded() {
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "1.0",
@@ -1425,7 +1430,9 @@ class PurchasesTests: XCTestCase {
 
     func testCachedPurchaserInfoHasSchemaVersion() {
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -1449,7 +1456,9 @@ class PurchasesTests: XCTestCase {
 
     func testCachedPurchaserInfoHandlesNullSchema() {
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -1496,7 +1505,9 @@ class PurchasesTests: XCTestCase {
 
     func testPurchaserInfoCompletionBlockCalledExactlyOnceWhenInfoCached() {
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -1518,7 +1529,9 @@ class PurchasesTests: XCTestCase {
 
     func testDoesntSendsCachedPurchaserInfoToGetterIfSchemaVersionDiffers() {
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -1542,7 +1555,9 @@ class PurchasesTests: XCTestCase {
 
     func testDoesntSendsCachedPurchaserInfoToGetterIfNoSchemaVersionInCached() {
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);

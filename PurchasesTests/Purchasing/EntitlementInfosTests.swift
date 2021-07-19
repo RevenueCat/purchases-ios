@@ -16,7 +16,7 @@ import PurchasesCoreSwift
 class EntitlementInfosTests: XCTestCase {
 
     private let formatter = DateFormatter()
-    private var response: [String: Dictionary<String, Any>] = [:]
+    private var response: [String: Any] = [:]
 
     override func setUp() {
         formatter.timeZone = TimeZone(abbreviation: "GMT")
@@ -29,6 +29,7 @@ class EntitlementInfosTests: XCTestCase {
                       nonSubscriptions: [String: Any] = [:],
                       subscriptions: [String: Any] = [:]) {
         response = [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "entitlements": entitlements,
                 "first_seen": "2019-07-26T23:29:50Z",
