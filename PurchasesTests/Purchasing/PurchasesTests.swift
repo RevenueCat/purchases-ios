@@ -12,8 +12,10 @@ import Purchases
 class PurchasesTests: XCTestCase {
 
     override func setUp() {
-        deviceCache = MockDeviceCache()
         userDefaults = UserDefaults(suiteName: "TestDefaults")
+        userDefaults.dictionaryRepresentation().keys.forEach { userDefaults.removeObject(forKey: $0) }
+
+        deviceCache = MockDeviceCache(userDefaults: userDefaults)
         requestFetcher = MockRequestFetcher()
         systemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockProductsManager = MockProductsManager()

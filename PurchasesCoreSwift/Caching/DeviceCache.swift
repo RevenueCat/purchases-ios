@@ -31,7 +31,7 @@ import Foundation
     private let assertionFunction: (String) -> Void
 
     @objc convenience public init(userDefaults: UserDefaults = UserDefaults.standard) {
-        self.init(userDefaults: userDefaults, offeringsCachedObject: InMemoryCachedObject<Offerings>())
+        self.init(userDefaults: userDefaults, offeringsCachedObject: nil, notificationCenter: nil)
     }
 
     public init(userDefaults: UserDefaults = UserDefaults.standard,
@@ -98,7 +98,7 @@ import Foundation
 
             // Delete attributes if synced for the old app user id.
             if self.threadUnsafeUnsyncedAttributesByKey(appUserID: oldAppUserID).isEmpty {
-                var attributes = self.threadUnsafeStoredAttributes
+                var attributes = self.threadUnsafeStoredAttributesForAllUsers
                 attributes.removeValue(forKey: oldAppUserID)
                 self.userDefaults.setValue(attributes, forKey: CacheKeys.subscriberAttributes)
             }
@@ -195,7 +195,7 @@ import Foundation
         }
 
         writeCache {
-            var groupedSubscriberAttributes = self.threadUnsafeStoredAttributes
+            var groupedSubscriberAttributes = self.threadUnsafeStoredAttributesForAllUsers
             var subscriberAttributesForAppUserID = groupedSubscriberAttributes[appUserID] as? [String: Any] ?? [:]
             for (key, attributes) in subscriberAttributesByKey {
                 subscriberAttributesForAppUserID[key] = attributes.asDictionary()
@@ -256,7 +256,7 @@ import Foundation
             guard self.threadUnsafeUnsyncedAttributesByKey(appUserID: appUserID).isEmpty else {
                 return
             }
-            var groupedAttributes = self.threadUnsafeStoredAttributes
+            var groupedAttributes = self.threadUnsafeStoredAttributesForAllUsers
             let attibutesForAppUserID = groupedAttributes.removeValue(forKey: appUserID)
             guard attibutesForAppUserID != nil else {
                 Logger.warn("Attempt to delete synced attributes for \(appUserID), but there were none to delete")
@@ -371,7 +371,7 @@ extension DeviceCache {
         return appUserIDsWithLegacyAttributes
     }
 
-    private var threadUnsafeStoredAttributes: [String: Any] {
+    private var threadUnsafeStoredAttributesForAllUsers: [String: Any] {
         let attributes = userDefaults.dictionary(forKey: CacheKeys.subscriberAttributes) ?? [:]
         return attributes
     }
@@ -402,7 +402,7 @@ extension DeviceCache {
     }
 
     private func threadUnsafeSubscriberAttributes(appUserID: String) -> [String: Any] {
-        return threadUnsafeStoredAttributes[appUserID] as? [String: Any] ?? [:]
+        return threadUnsafeStoredAttributesForAllUsers[appUserID] as? [String: Any] ?? [:]
     }
 
     private func threadUnsafeStoredSubscriberAttributes(appUserID: String) -> [String: SubscriberAttribute] {
