@@ -32,7 +32,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
     ]
 
     let systemInfo = try! SystemInfo(platformFlavor: "Unity", platformFlavorVersion: "2.3.3", finishTransactions: true)
-    
+
     override func setUp() {
         mockETagManager = MockETagManager(userDefaults: MockUserDefaults())
         mockHTTPClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: mockETagManager)
