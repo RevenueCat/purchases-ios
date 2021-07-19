@@ -3,8 +3,9 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
+@import PurchasesCoreSwift;
+
 #import "NSError+RCExtensions.h"
-#import "RCPurchasesErrors.h"
 #import "RCBackend.h"
 
 NS_ASSUME_NONNULL_BEGIN

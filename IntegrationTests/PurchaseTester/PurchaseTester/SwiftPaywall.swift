@@ -48,7 +48,7 @@ class SwiftPaywall: UIViewController {
     
     // Internal variables
     private var scrollView : UIScrollView!
-    private var offering : Purchases.Offering?
+    private var offering : Offering?
     private var offeringCollectionView : UICollectionView!
     private let maxItemsPerRow : CGFloat = 3
     private let aspectRatio : CGFloat = 1.3

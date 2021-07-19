@@ -14,7 +14,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCDeviceCache, RCIdentityManager, RCBackend, RCAttributionData;
+@class RCDeviceCache, RCIdentityManager, RCBackend;
 @class RCSystemInfo;
 
 

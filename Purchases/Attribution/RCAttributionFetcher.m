@@ -7,11 +7,9 @@
 //
 
 #import "RCAttributionFetcher.h"
-#import "RCLogUtils.h"
 #import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
-#import "RCAttributionData.h"
 @import PurchasesCoreSwift;
 
 static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
@@ -52,7 +50,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
             NSUUID *identifierValue = [sharedManager valueForKey:[self.attributionFactory asIdentifierPropertyName]];
             return identifierValue.UUIDString;
         } else {
-            RCWarnLog(@"%@", RCStrings.configure.adsupport_not_imported);
+            [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.configure.adsupport_not_imported]];
         }
     }
     return nil;
@@ -75,7 +73,8 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     #if TARGET_OS_IOS
     Class<FakeAdClient> _Nullable adClientClass = [self.attributionFactory adClientClass];
     if (!adClientClass) {
-        RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_iad_framework);
+        [RCLog warn:[NSString stringWithFormat:@"%@",
+                     RCStrings.attribution.search_ads_attribution_cancelled_missing_iad_framework]];
         return;
     }
     [[adClientClass sharedClient] requestAttributionDetailsWithBlock:completionHandler];
@@ -93,10 +92,10 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
                 fromNetwork:(RCAttributionNetwork)network
            forNetworkUserId:(nullable NSString *)networkUserId {
     if (data[@"rc_appsflyer_id"]) {
-        RCWarnLog(@"%@", RCStrings.attribution.appsflyer_id_deprecated);
+        [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.attribution.appsflyer_id_deprecated]];
     }
     if (network == RCAttributionNetworkAppsFlyer && networkUserId == nil) {
-        RCWarnLog(@"%@", RCStrings.attribution.networkuserid_required_for_appsflyer);
+        [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.attribution.networkuserid_required_for_appsflyer]];
     }
     NSString *appUserID = self.identityManager.currentAppUserID;
     NSString *networkKey = [NSString stringWithFormat:@"%ld", (long) network];
@@ -107,7 +106,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", identifierForAdvertisers, networkUserId];
 
     if ([latestSentToNetwork isEqualToString:newValueForNetwork]) {
-        RCDebugLog(@"%@", RCStrings.attribution.skip_same_attributes);
+        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.skip_same_attributes]];
     } else {
         NSMutableDictionary<NSString *, NSString *> *newDictToCache =
             [NSMutableDictionary dictionaryWithDictionary:dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks];
@@ -144,14 +143,16 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         Class _Nullable trackingManagerClass = [self.attributionFactory atTrackingClass];
         if (!trackingManagerClass) {
             if (needsTrackingAuthorization) {
-                RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
+                [RCLog warn:[NSString stringWithFormat:@"%@",
+                             RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework]];
             }
             return !needsTrackingAuthorization;
         }
         SEL authStatusSelector = NSSelectorFromString(self.attributionFactory.authorizationStatusPropertyName);
         BOOL canPerformSelector = [trackingManagerClass respondsToSelector:authStatusSelector];
         if (!canPerformSelector) {
-            RCWarnLog(@"%@", RCStrings.attribution.att_framework_present_but_couldnt_call_tracking_authorization_status);
+            [RCLog warn:[NSString stringWithFormat:@"%@",
+                         RCStrings.attribution.att_framework_present_but_couldnt_call_tracking_authorization_status]];
             return NO;
         }
         // we use NSInvocation to prevent direct references to tracking frameworks, which cause issues for
@@ -169,7 +170,8 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
                           || (!needsTrackingAuthorization
                               && authorizationStatus == FakeTrackingManagerAuthorizationStatusNotDetermined);
         if (!authorized) {
-            RCLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_not_authorized);
+            [RCLog info:[NSString stringWithFormat:@"%@",
+                         RCStrings.attribution.search_ads_attribution_cancelled_not_authorized]];
             return NO;
         }
 
@@ -223,8 +225,8 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         postponedAttributionData = [NSMutableArray array];
     }
     [postponedAttributionData addObject:[[RCAttributionData alloc] initWithData:data
-                                                                    fromNetwork:network
-                                                               forNetworkUserId:networkUserId]];
+                                                                        network:network
+                                                                  networkUserId:networkUserId]];
 }
 
 @end

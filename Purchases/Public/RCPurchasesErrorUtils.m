@@ -7,19 +7,10 @@
 //
 
 #import <StoreKit/StoreKit.h>
-#import "RCPurchasesErrors.h"
 #import "RCPurchasesErrorUtils.h"
-#import "RCLogUtils.h"
 @import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
-
-#pragma mark - Error Domains and UserInfo keys
-
-NSErrorDomain const RCPurchasesErrorDomain = @"RCPurchasesErrorDomain";
-NSErrorDomain const RCBackendErrorDomain = @"RCBackendErrorDomain";
-NSErrorUserInfoKey const RCFinishableKey = @"finishable";
-NSErrorUserInfoKey const RCReadableErrorCodeKey = @"readable_error_code";
 
 #pragma mark - Standard Error Messages
 
@@ -262,7 +253,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
     if (underlyingError) {
         userInfo[NSUnderlyingErrorKey] = underlyingError;
     }
-    userInfo[RCReadableErrorCodeKey] = RCPurchasesErrorCodeString(code);
+    userInfo[RCErrorDetails.RCReadableErrorCodeKey] = RCPurchasesErrorCodeString(code);
     return [self errorWithCode:code userInfo:userInfo];
 }
 
@@ -279,7 +270,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
         case RCUnknownBackendError:
         case RCInvalidSubscriberAttributesError:
         case RCLogOutAnonymousUserError:
-            RCErrorLog(@"%@", RCPurchasesErrorDescription(code));
+            [RCLog error:[NSString stringWithFormat:@"%@", RCPurchasesErrorDescription(code)]];
             break;
         case RCPurchaseCancelledError:
         case RCStoreProblemError:
@@ -293,12 +284,12 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
         case RCIneligibleError:
         case RCInsufficientPermissionsError:
         case RCPaymentPendingError:
-            RCAppleErrorLog(@"%@", RCPurchasesErrorDescription(code));
+            [RCLog appleError:[NSString stringWithFormat:@"%@", RCPurchasesErrorDescription(code)]];
             break;
         default:
             break;
     }
-    return [NSError errorWithDomain:RCPurchasesErrorDomain code:code userInfo:userInfo];
+    return [NSError errorWithDomain:RCPurchasesErrorCodeDomain code:code userInfo:userInfo];
 }
 
 + (NSError *)networkErrorWithUnderlyingError:(NSError *)underlyingError {
@@ -309,7 +300,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
 + (NSError *)backendUnderlyingError:(nullable NSNumber *)backendCode
                      backendMessage:(nullable NSString *)backendMessage {
 
-    return [NSError errorWithDomain:RCBackendErrorDomain
+    return [NSError errorWithDomain:RCBackendErrorCodeDomain
                                code:[backendCode integerValue] ?: RCUnknownError
                            userInfo:@{
                                    NSLocalizedDescriptionKey: backendMessage ?: @""
@@ -327,7 +318,7 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
     return [self backendErrorWithBackendCode:backendCode
                               backendMessage:backendMessage
                                extraUserInfo:@{
-                                       RCFinishableKey: @(finishable)
+                                       RCErrorDetails.RCFinishableKey: @(finishable)
                                }];
 }
 

@@ -18,14 +18,30 @@ public class HTTPRequest: NSObject, NSCopying {
     @objc public let requestBody: [String: Any]?
     @objc public let headers: [String: String]?
     @objc public let completionHandler: HTTPClientResponseHandler?
+    @objc public let retried: Bool
 
-    @objc(initWithHTTPMethod:path:body:headers:completionHandler:)
-    public init(httpMethod: String, path: String, requestBody: [String: Any]?, headers: [String: String]?, completionHandler: HTTPClientResponseHandler?) {
+    @objc public convenience init(RCHTTPRequest request: HTTPRequest, retried: Bool) {
+        self.init(httpMethod: request.httpMethod,
+                  path: request.path,
+                  requestBody: request.requestBody,
+                  headers: request.headers,
+                  retried: request.retried,
+                  completionHandler: request.completionHandler)
+    }
+
+    @objc(initWithHTTPMethod:path:body:headers:retried:completionHandler:)
+    public required init(httpMethod: String,
+                         path: String,
+                         requestBody: [String: Any]?,
+                         headers: [String: String]?,
+                         retried: Bool,
+                         completionHandler: HTTPClientResponseHandler?) {
         self.httpMethod = httpMethod
         self.path = path
         self.requestBody = requestBody
         self.headers = headers
         self.completionHandler = completionHandler
+        self.retried = retried
     }
 
     public func copy(with zone: NSZone? = nil) -> Any {
@@ -34,6 +50,7 @@ public class HTTPRequest: NSObject, NSCopying {
             path: path,
             requestBody: requestBody,
             headers: headers,
+            retried: retried,
             completionHandler: completionHandler
         )
 
@@ -46,6 +63,7 @@ public class HTTPRequest: NSObject, NSCopying {
         path=\(path)
         requestBody=\(requestBody?.description ?? "(null)")
         headers=\(headers?.description ?? "(null)")
+        retried=\(retried)
         >
         """
     }
