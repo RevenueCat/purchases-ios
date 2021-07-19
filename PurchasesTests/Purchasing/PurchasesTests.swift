@@ -734,7 +734,7 @@ class PurchasesTests: XCTestCase {
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
-        self.backend.postReceiptError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCodes.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
+        self.backend.postReceiptError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -753,7 +753,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCodes.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
+        self.backend.postReceiptError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -772,7 +772,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptError = Purchases.ErrorUtils.backendError(withBackendCode: ErrorCodes.invalidCredentialsError.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
+        self.backend.postReceiptError = Purchases.ErrorUtils.backendError(withBackendCode: ErrorCode.invalidCredentialsError.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -910,7 +910,7 @@ class PurchasesTests: XCTestCase {
         expect(receivedInfo).toEventually(beNil())
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(ErrorCodes.operationAlreadyInProgressError.rawValue))
+        expect(receivedError?.code).toEventually(equal(ErrorCode.operationAlreadyInProgressError.rawValue))
         expect(self.storeKitWrapper.addPaymentCallCount).to(equal(1))
         expect(receivedUserCancelled).toEventually(beFalse())
     }
@@ -1099,7 +1099,7 @@ class PurchasesTests: XCTestCase {
     func testRestorePurchasesPassesErrorOnFailure() {
         setupPurchases()
 
-        let errorCode = BackendErrorCodes.invalidAPIKey.rawValue as NSNumber
+        let errorCode = BackendErrorCode.invalidAPIKey.rawValue as NSNumber
         let error = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
                                                       backendMessage: "Invalid credentials",
                                                       finishable: true)
@@ -1244,7 +1244,7 @@ class PurchasesTests: XCTestCase {
     func testSyncPurchasesPassesErrorOnFailure() {
         setupPurchases()
 
-        let errorCode = BackendErrorCodes.invalidAPIKey.rawValue as NSNumber
+        let errorCode = BackendErrorCode.invalidAPIKey.rawValue as NSNumber
         let error = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
                                                       backendMessage: "Invalid credentials",
                                                       finishable: true)
@@ -1659,7 +1659,7 @@ class PurchasesTests: XCTestCase {
 
         expect(receivedError).toEventuallyNot(beNil());
         expect(receivedError?.domain).to(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).to(be(ErrorCodes.unexpectedBackendResponseError.rawValue))
+        expect(receivedError?.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
     }
 
     func testMissingProductDetailsReturnsNil() {
@@ -1739,7 +1739,7 @@ class PurchasesTests: XCTestCase {
         expect(self.identityManager.aliasCalled).toEventually(beTrue())
         expect(info).toEventuallyNot(beNil())
 
-        self.identityManager.aliasError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCodes.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
+        self.identityManager.aliasError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
 
         self.purchases?.createAlias("cesardro") { (info, error) in
             completionCalled = (error == nil)
@@ -1784,7 +1784,7 @@ class PurchasesTests: XCTestCase {
         expect(self.identityManager.identifyCalled).toEventually(beTrue())
         expect(info).toEventuallyNot(beNil())
 
-        self.identityManager.identifyError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCodes.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
+        self.identityManager.identifyError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
 
         self.purchases?.identify("cesardro") { (info, error) in
             completionCalled = (error == nil)
@@ -1924,7 +1924,7 @@ class PurchasesTests: XCTestCase {
             receivedError = error as NSError?
         }
 
-        expect(receivedError?.code).toEventually(be(ErrorCodes.missingReceiptFileError.rawValue))
+        expect(receivedError?.code).toEventually(be(ErrorCode.missingReceiptFileError.rawValue))
     }
 
     func testUserCancelledFalseIfPurchaseSuccessful() {
@@ -1966,7 +1966,7 @@ class PurchasesTests: XCTestCase {
         expect(receivedUserCancelled).toEventually(beTrue())
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(ErrorCodes.purchaseCancelledError.rawValue))
+        expect(receivedError?.code).toEventually(equal(ErrorCode.purchaseCancelledError.rawValue))
         expect(receivedUnderlyingError?.domain).toEventually(be(SKErrorDomain))
         expect(receivedUnderlyingError?.code).toEventually(equal(SKError.Code.paymentCancelled.rawValue))
     }
@@ -1990,7 +1990,7 @@ class PurchasesTests: XCTestCase {
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
         expect(receivedUserCancelled).toEventually(beFalse())
-        expect(receivedError?.code).toEventually(be(ErrorCodes.missingReceiptFileError.rawValue))
+        expect(receivedError?.code).toEventually(be(ErrorCode.missingReceiptFileError.rawValue))
         expect(self.backend.postReceiptDataCalled).toEventually(beFalse())
     }
 
@@ -2094,7 +2094,7 @@ class PurchasesTests: XCTestCase {
             expect(receivedPaymentDiscount).to(beNil())
             expect(completionCalled).toEventually(beTrue())
             expect(self.backend.postOfferForSigningCalled) == false
-            expect((receivedError! as NSError).code) == ErrorCodes.missingReceiptFileError.rawValue
+            expect((receivedError! as NSError).code) == ErrorCode.missingReceiptFileError.rawValue
         }
     }
 
@@ -2121,7 +2121,7 @@ class PurchasesTests: XCTestCase {
             expect(receivedPaymentDiscount).to(beNil())
             expect(completionCalled).toEventually(beTrue())
             expect(self.backend.postOfferForSigningCalled) == false
-            expect((receivedError! as NSError).code) == ErrorCodes.missingReceiptFileError.rawValue
+            expect((receivedError! as NSError).code) == ErrorCode.missingReceiptFileError.rawValue
         }
     }
 
@@ -2491,7 +2491,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testGetPurchaserInfoAfterInvalidatingCallsCompletionWithErrorIfBackendError() {
-        let backendError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCodes.invalidAPIKey.rawValue as NSNumber,
+        let backendError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber,
                                                              backendMessage: "Invalid credentials", finishable: true)
         self.backend.overridePurchaserInfoError = backendError
         self.backend.overridePurchaserInfo = nil
@@ -2565,7 +2565,7 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.finishCalled).to(beFalse())
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(ErrorCodes.paymentPendingError.rawValue))
+        expect(receivedError?.code).toEventually(equal(ErrorCode.paymentPendingError.rawValue))
     }
 
 
