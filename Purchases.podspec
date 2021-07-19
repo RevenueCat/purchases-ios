@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "Purchases"
-  s.version          = "3.13.0-SNAPSHOT"
+  s.version          = "3.12.2"
   s.summary          = "Subscription and in-app-purchase backend service."
 
   s.description      = <<-DESC
@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = '9.0'
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
-  s.dependency 'PurchasesCoreSwift', '3.13.0-SNAPSHOT'
+  s.dependency 'PurchasesCoreSwift', '3.12.2'
 
 
   s.source_files = ['Purchases/**/*.{h,m}']
