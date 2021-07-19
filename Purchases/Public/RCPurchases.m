@@ -96,11 +96,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 + (void)setDebugLogsEnabled:(BOOL)enabled {
-    if (enabled) {
-        [self setLogLevel:RCLogLevelDebug];
-    } else {
-        [self setLogLevel:RCLogLevelInfo];
-    }
+    RCLogLevel level = enabled ? RCLogLevelDebug : RCLogLevelInfo;
+    [self setLogLevel:level];
 }
 
 + (BOOL)debugLogsEnabled {
