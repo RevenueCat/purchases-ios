@@ -498,7 +498,7 @@ class BackendTests: XCTestCase {
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect(error?.code).toEventually(be(PurchasesCoreSwift.ErrorCodes.invalidCredentialsError.rawValue))
+        expect(error?.code).toEventually(be(PurchasesCoreSwift.ErrorCode.invalidCredentialsError.rawValue))
         expect(error?.userInfo["finishable"]).to(be(false))
 
         expect(underlyingError).toEventuallyNot(beNil())
@@ -524,7 +524,7 @@ class BackendTests: XCTestCase {
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect((error as NSError?)?.code).toEventually(be(PurchasesCoreSwift.ErrorCodes.invalidCredentialsError.rawValue))
+        expect((error as NSError?)?.code).toEventually(be(PurchasesCoreSwift.ErrorCode.invalidCredentialsError.rawValue))
         expect((error as NSError?)?.userInfo["finishable"]).to(be(true))
 
         underlyingError = (error as NSError?)?.userInfo[NSUnderlyingErrorKey] as? Error
@@ -635,7 +635,7 @@ class BackendTests: XCTestCase {
 
         expect(error).toEventuallyNot(beNil())
         expect(error?.domain).to(equal(RCPurchasesErrorCodeDomain))
-        expect(error?.code).to(be(ErrorCodes.unexpectedBackendResponseError.rawValue))
+        expect(error?.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
     }
 
     func testEmptyEligibilityCheckDoesNothing() {
@@ -886,7 +886,7 @@ class BackendTests: XCTestCase {
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCodes.networkError.rawValue))
+        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCode.networkError.rawValue))
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
         expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
@@ -904,7 +904,7 @@ class BackendTests: XCTestCase {
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCodes.networkError.rawValue))
+        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCode.networkError.rawValue))
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
         expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
@@ -923,7 +923,7 @@ class BackendTests: XCTestCase {
         })
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.code).toEventually(be(PurchasesCoreSwift.ErrorCodes.invalidCredentialsError.rawValue))
+        expect(receivedError?.code).toEventually(be(PurchasesCoreSwift.ErrorCode.invalidCredentialsError.rawValue))
 
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
@@ -956,8 +956,8 @@ class BackendTests: XCTestCase {
         })
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(ErrorCodes._nsErrorDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCodes.networkError.rawValue))
+        expect(receivedError?.domain).toEventually(equal(ErrorCode._nsErrorDomain))
+        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCode.networkError.rawValue))
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
         expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
@@ -976,7 +976,7 @@ class BackendTests: XCTestCase {
         })
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.code).toEventually(be(PurchasesCoreSwift.ErrorCodes.invalidCredentialsError.rawValue))
+        expect(receivedError?.code).toEventually(be(PurchasesCoreSwift.ErrorCode.invalidCredentialsError.rawValue))
 
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
@@ -1003,7 +1003,7 @@ class BackendTests: XCTestCase {
         })
 
         expect(completionCalled).toEventually(beTrue())
-        expect((receivedError! as NSError).code) == PurchasesCoreSwift.ErrorCodes.invalidAppUserIdError.rawValue
+        expect((receivedError! as NSError).code) == PurchasesCoreSwift.ErrorCode.invalidAppUserIdError.rawValue
     }
 
     @available(iOS 11.2, *)
@@ -1210,7 +1210,7 @@ class BackendTests: XCTestCase {
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCodes.networkError.rawValue))
+        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCode.networkError.rawValue))
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.domain).toEventually(equal(NSURLErrorDomain))
         expect(receivedUnderlyingError?.code).toEventually(equal(-1009))
@@ -1244,7 +1244,7 @@ class BackendTests: XCTestCase {
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCodes.unexpectedBackendResponseError.rawValue))
+        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCode.unexpectedBackendResponseError.rawValue))
         expect(receivedUnderlyingError).toEventually(beNil())
     }
     
@@ -1287,7 +1287,7 @@ class BackendTests: XCTestCase {
         
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCodes.invalidAppleSubscriptionKeyError.rawValue))
+        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCode.invalidAppleSubscriptionKeyError.rawValue))
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.code).toEventually(equal(7234))
         expect(receivedUnderlyingError?.domain).toEventually(equal(RCBackendErrorCodeDomain))
@@ -1330,7 +1330,7 @@ class BackendTests: XCTestCase {
 
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCodes.unexpectedBackendResponseError.rawValue))
+        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCode.unexpectedBackendResponseError.rawValue))
         expect(receivedUnderlyingError).toEventually(beNil())
 
     }
@@ -1356,7 +1356,7 @@ class BackendTests: XCTestCase {
         }
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.code).toEventually(be(PurchasesCoreSwift.ErrorCodes.invalidCredentialsError.rawValue))
+        expect(receivedError?.code).toEventually(be(PurchasesCoreSwift.ErrorCode.invalidCredentialsError.rawValue))
 
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))
@@ -1458,7 +1458,7 @@ class BackendTests: XCTestCase {
 
         expect(receivedError).toNot(beNil())
         let receivedNSError = receivedError! as NSError
-        expect(receivedNSError.code) == PurchasesCoreSwift.ErrorCodes.networkError.rawValue
+        expect(receivedNSError.code) == PurchasesCoreSwift.ErrorCode.networkError.rawValue
         expect((receivedNSError.userInfo[NSUnderlyingErrorKey] as! NSError)) == stubbedError
     }
 
@@ -1493,7 +1493,7 @@ class BackendTests: XCTestCase {
 
         expect(receivedError).toNot(beNil())
         let receivedNSError = receivedError! as NSError
-        expect(receivedNSError.code) == PurchasesCoreSwift.ErrorCodes.networkError.rawValue
+        expect(receivedNSError.code) == PurchasesCoreSwift.ErrorCode.networkError.rawValue
         expect((receivedNSError.userInfo[NSUnderlyingErrorKey] as! NSError)) == stubbedError
     }
 
@@ -1528,7 +1528,7 @@ class BackendTests: XCTestCase {
 
         expect(receivedError).toNot(beNil())
         let receivedNSError = receivedError! as NSError
-        expect(receivedNSError.code) == PurchasesCoreSwift.ErrorCodes.networkError.rawValue
+        expect(receivedNSError.code) == PurchasesCoreSwift.ErrorCode.networkError.rawValue
 
         // custom errors get wrapped in a backendError
         let backendUnderlyingError = receivedNSError.userInfo[NSUnderlyingErrorKey] as? NSError
@@ -1565,7 +1565,7 @@ class BackendTests: XCTestCase {
 
         expect(receivedError).toNot(beNil())
         let receivedNSError = receivedError! as NSError
-        expect(receivedNSError.code) == PurchasesCoreSwift.ErrorCodes.unexpectedBackendResponseError.rawValue
+        expect(receivedNSError.code) == PurchasesCoreSwift.ErrorCode.unexpectedBackendResponseError.rawValue
     }
 
     func testLoginCallsCompletionWithPurchaserInfoAndCreatedFalseIf201() {

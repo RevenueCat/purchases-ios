@@ -1,9 +1,16 @@
 //
-//  BackendErrorCodes.swift
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  BackendErrorCode.swift
 //  PurchasesCoreSwift
 //
 //  Created by Joshua Liebowitz on 7/12/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
@@ -11,7 +18,7 @@ import Foundation
 /**
  Error codes sent by the RevenueCat backend. This only includes the errors that matter to the SDK
  */
-@objc(RCBackendErrorCode) public enum BackendErrorCodes: Int, Error {
+@objc(RCBackendErrorCode) public enum BackendErrorCode: Int, Error {
 
     @objc(RCBackendInvalidPlatform) case invalidPlatform = 7000
     @objc(RCBackendStoreProblem) case storeProblem = 7101
