@@ -137,7 +137,7 @@ jobs:
       - run:
           name: Install swiftlint
           command: brew install swiftlint
-      - install-gems
+      - install-dependencies
       - run:
           name: Build AppleTV, WatchOS, and macOS
           command: bundle exec fastlane build_tv_watch_mac            
