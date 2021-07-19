@@ -1,3 +1,7 @@
+## 3.12.2
+- Fixed a bug where calling setDebugLogsEnabled(false) enables debug logs when it should not. 
+    https://github.com/RevenueCat/purchases-ios/pull/663
+
 ## 3.12.1
 - Fixed an issue in some versions of Xcode where compiling would fail with `Definition conflicts with previous value` in `ETagManager.swift`
     https://github.com/revenuecat/purchases-ios/pull/659
