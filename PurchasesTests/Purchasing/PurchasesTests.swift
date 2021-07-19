@@ -2580,6 +2580,16 @@ class PurchasesTests: XCTestCase {
         }
     }
 
+    func testSetDebugLogsEnabledSetsTheCorrectValue() {
+        Logger.logLevel = .warn
+        
+        Purchases.debugLogsEnabled = true
+        expect(Logger.logLevel) == .debug
+
+        Purchases.debugLogsEnabled = false
+        expect(Logger.logLevel) == .info
+    }
+
 
     private func verifyUpdatedCaches(newAppUserID: String) {
         let expectedCallCount = 2

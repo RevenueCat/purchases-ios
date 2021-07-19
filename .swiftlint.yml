@@ -8,6 +8,7 @@ excluded:
   - StoreKitTests
   - PublicSDKAPITester
   - vendor
+  - scan_derived_data
 disabled_rules:
   - trailing_comma
   - todo
