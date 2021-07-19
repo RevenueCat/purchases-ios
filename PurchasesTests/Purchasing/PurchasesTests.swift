@@ -7,6 +7,7 @@ import XCTest
 import Nimble
 
 import Purchases
+import PurchasesCoreSwift
 
 class PurchasesTests: XCTestCase {
 
@@ -2558,6 +2559,16 @@ class PurchasesTests: XCTestCase {
             purchases.storeKitWrapper(storeKitWrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
             expect(self.backend.postReceiptDataCalled).to(beTrue())
         }
+    }
+
+    func testSetDebugLogsEnabledSetsTheCorrectValue() {
+        Logger.logLevel = .warn
+        
+        Purchases.debugLogsEnabled = true
+        expect(Logger.logLevel) == .debug
+
+        Purchases.debugLogsEnabled = false
+        expect(Logger.logLevel) == .info
     }
 
 
