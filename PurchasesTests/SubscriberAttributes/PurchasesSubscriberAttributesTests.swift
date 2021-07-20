@@ -35,6 +35,12 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     let purchasesDelegate = MockPurchasesDelegate()
     var purchaserInfoManager: PurchaserInfoManager!
+    let emptyPurchaserInfoData = [
+    "subscriber": [
+        "subscriptions": [:],
+        "other_purchases": [:],
+        "original_application_version": NSNull()
+    ]]
 
     var purchases: Purchases!
 
@@ -370,7 +376,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
-        self.mockBackend.stubbedPostReceiptPurchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+        self.mockBackend.stubbedPostReceiptPurchaserInfo = PurchaserInfo(data: emptyPurchaserInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)

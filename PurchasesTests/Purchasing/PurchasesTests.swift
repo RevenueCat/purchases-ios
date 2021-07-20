@@ -11,6 +11,13 @@ import Purchases
 
 class PurchasesTests: XCTestCase {
 
+    let emptyPurchaserInfoData = [
+    "subscriber": [
+        "subscriptions": [:],
+        "other_purchases": [:],
+        "original_application_version": NSNull()
+    ]]
+    
     override func setUp() {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
         requestFetcher = MockRequestFetcher()
@@ -344,7 +351,7 @@ class PurchasesTests: XCTestCase {
     func testDelegateIsCalledForRandomPurchaseSuccess() {
         setupPurchases()
         
-        let purchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+        let purchaserInfo = PurchaserInfo(data: emptyPurchaserInfoData)
         self.backend.postReceiptPurchaserInfo = purchaserInfo
 
         let product = MockSKProduct(mockProductIdentifier: "product")
@@ -613,7 +620,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: emptyPurchaserInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -636,7 +643,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: self.emptyPurchaserInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -660,7 +667,7 @@ class PurchasesTests: XCTestCase {
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
             
-            self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+            self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: self.emptyPurchaserInfoData)
             
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -709,7 +716,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
         
-        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: emptyPurchaserInfoData)
         
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -858,7 +865,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
         
-        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: emptyPurchaserInfoData)
         
         transaction.mockState = SKPaymentTransactionState.purchased
 
@@ -882,7 +889,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = SKPayment.init(product: otherProduct)
         
-        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: self.emptyPurchaserInfoData)
         
         transaction.mockState = SKPaymentTransactionState.purchased
 
@@ -1089,7 +1096,7 @@ class PurchasesTests: XCTestCase {
     func testRestoringPurchasesCallsSuccessDelegateMethod() {
         setupPurchases()
 
-        let purchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+        let purchaserInfo = PurchaserInfo(data: self.emptyPurchaserInfoData)
         self.backend.postReceiptPurchaserInfo = purchaserInfo
 
         var receivedPurchaserInfo: PurchaserInfo?
@@ -1234,7 +1241,7 @@ class PurchasesTests: XCTestCase {
     func testSyncPurchasesCallsSuccessDelegateMethod() {
         setupPurchases()
 
-        let purchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+        let purchaserInfo = PurchaserInfo(data: self.emptyPurchaserInfoData)
         self.backend.postReceiptPurchaserInfo = purchaserInfo
 
         var receivedPurchaserInfo: PurchaserInfo?
@@ -1634,7 +1641,7 @@ class PurchasesTests: XCTestCase {
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-            self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+            self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: self.emptyPurchaserInfoData)
 
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2231,7 +2238,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: self.emptyPurchaserInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2253,7 +2260,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: self.emptyPurchaserInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2320,7 +2327,7 @@ class PurchasesTests: XCTestCase {
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-            self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+            self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: self.emptyPurchaserInfoData)
 
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2361,7 +2368,7 @@ class PurchasesTests: XCTestCase {
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [AnyHashable: Any]())
+        self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: self.emptyPurchaserInfoData)
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
     }

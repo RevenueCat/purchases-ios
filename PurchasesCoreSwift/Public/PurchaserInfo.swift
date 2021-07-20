@@ -232,6 +232,19 @@ import Foundation
         dictionary["schema_version"] = PurchaserInfo.currentSchemaVersion()
         return dictionary
     }
+    
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? PurchaserInfo else {
+            return false
+        }
+
+        var selfJson = self.jsonObject()
+        selfJson.removeValue(forKey: "request_date")
+        var otherJson = other.jsonObject()
+        otherJson.removeValue(forKey: "request_date")
+        
+        return NSDictionary(dictionary: selfJson).isEqual(to: otherJson)
+    }
 
     private struct SubscriberData {
         let originalAppUserId: String
@@ -305,5 +318,4 @@ import Foundation
             self.purchaseDatesByProduct = PurchaserInfo.parsePurchaseDate(purchaseDates: allPurchases)
         }
     }
-
 }
