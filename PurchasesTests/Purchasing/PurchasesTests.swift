@@ -12,7 +12,8 @@ import Purchases
 class PurchasesTests: XCTestCase {
 
     override func setUp() {
-        self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        userDefaults = UserDefaults(suiteName: "TestDefaults")
+        deviceCache = MockDeviceCache(userDefaults: userDefaults)
         requestFetcher = MockRequestFetcher()
         systemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockProductsManager = MockProductsManager()
@@ -33,6 +34,7 @@ class PurchasesTests: XCTestCase {
     }
 
     override func tearDown() {
+        deviceCache = nil
         purchases?.delegate = nil
         purchases = nil
         Purchases.setDefaultInstance(nil)
@@ -198,7 +200,7 @@ class PurchasesTests: XCTestCase {
     let notificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
-    let deviceCache = MockDeviceCache()
+    var deviceCache: MockDeviceCache!
     let subscriberAttributesManager = MockSubscriberAttributesManager()
     let identityManager = MockIdentityManager(mockAppUserID: "app_user");
     var systemInfo: MockSystemInfo!
@@ -318,8 +320,8 @@ class PurchasesTests: XCTestCase {
 
     func testFirstInitializationFromForegroundUpdatesPurchaserInfoCacheIfUserDefaultsCacheStale() {
         let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -20, to: Date())!
-        self.deviceCache.setPurchaserInfoCacheTimestamp(staleCacheDateForForeground,
-                                                        forAppUserID: identityManager.currentAppUserID)
+        self.deviceCache.setPurchaserInfoCache(timestamp: staleCacheDateForForeground,
+                                               appUserID: identityManager.currentAppUserID)
         systemInfo.stubbedIsApplicationBackgrounded = false
 
         setupPurchases()
@@ -329,8 +331,9 @@ class PurchasesTests: XCTestCase {
 
     func testFirstInitializationFromForegroundUpdatesPurchaserInfoEvenIfCacheValid() {
         let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -2, to: Date())!
-        self.deviceCache.setPurchaserInfoCacheTimestamp(staleCacheDateForForeground,
-                                                        forAppUserID: identityManager.currentAppUserID)
+        self.deviceCache.setPurchaserInfoCache(timestamp: staleCacheDateForForeground,
+                                               appUserID: identityManager.currentAppUserID)
+
         systemInfo.stubbedIsApplicationBackgrounded = false
 
         setupPurchases()
@@ -2450,12 +2453,12 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
         let appUserID = self.identityManager.currentAppUserID
-        self.deviceCache.cachePurchaserInfo(Data(), forAppUserID: appUserID)
-        expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: appUserID)).toNot(beNil())
+        self.deviceCache.cache(purchaserInfo: Data(), appUserID: appUserID)
+        expect(self.deviceCache.cachedPurchaserInfoData(appUserID: appUserID)).toNot(beNil())
         expect(self.deviceCache.invokedClearPurchaserInfoCacheCount) == 0
 
         nonOptionalPurchases.invalidatePurchaserInfoCache()
-        expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: appUserID)).to(beNil())
+        expect(self.deviceCache.cachedPurchaserInfoData(appUserID: appUserID)).to(beNil())
         expect(self.deviceCache.invokedClearPurchaserInfoCacheCount) == 1
     }
 
@@ -2465,7 +2468,7 @@ class PurchasesTests: XCTestCase {
 
         let appUserID = self.identityManager.currentAppUserID
         let oldAppUserInfo = Data()
-        self.deviceCache.cachePurchaserInfo(oldAppUserInfo, forAppUserID: appUserID)
+        self.deviceCache.cache(purchaserInfo: oldAppUserInfo, appUserID: appUserID)
         let overridePurchaserInfo = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
@@ -2502,7 +2505,7 @@ class PurchasesTests: XCTestCase {
 
         let appUserID = self.identityManager.currentAppUserID
         let oldAppUserInfo = Data()
-        self.deviceCache.cachePurchaserInfo(oldAppUserInfo, forAppUserID: appUserID)
+        self.deviceCache.cache(purchaserInfo: oldAppUserInfo, appUserID: appUserID)
 
 
         var receivedPurchaserInfo: Purchases.PurchaserInfo? = nil
