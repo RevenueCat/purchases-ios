@@ -9,13 +9,11 @@ func resolveTargets() -> [Target] {
                        "Purchases/Attribution",
                        "Purchases/Caching",
                        "Purchases/FoundationExtensions",
-                       "Purchases/Misc",
-                       "Purchases/Logging",
                        "Purchases/Networking",
                        "Purchases/Public",
-                       "Purchases/Purchasing",
                        "Purchases/ProtectedExtensions",
                        "Purchases/SubscriberAttributes",
+                       "Purchases/SwiftObjcCompatibility",
                        "Purchases/Identity"]
     let infoPlist = "Purchases/Info.plist"
 

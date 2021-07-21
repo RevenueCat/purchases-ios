@@ -6,7 +6,7 @@ import Nimble
 class PurchaserInfoManagerTests: XCTestCase {
     var mockBackend = MockBackend()
     var mockOperationDispatcher = MockOperationDispatcher()
-    var mockDeviceCache = MockDeviceCache()
+    var mockDeviceCache: MockDeviceCache!
     var mockSystemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
     let mockPurchaserInfo = Purchases.PurchaserInfo(data: [
         "subscriber": [
@@ -22,6 +22,7 @@ class PurchaserInfoManagerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        mockDeviceCache = MockDeviceCache()
         purchaserInfoManagerDelegateCallCount = 0
         purchaserInfoManagerDelegateCallPurchaserInfo = nil
         purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,

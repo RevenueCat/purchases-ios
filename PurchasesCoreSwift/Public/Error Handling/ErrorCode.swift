@@ -1,9 +1,16 @@
 //
-//  ErrorCodes.swift
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  ErrorCode.swift
 //  PurchasesCoreSwift
 //
 //  Created by Joshua Liebowitz on 7/8/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
@@ -11,7 +18,7 @@ import Foundation
 /**
  Error codes used by the Purchases SDK
  */
-@objc(RCPurchasesErrorCode) public enum ErrorCodes: Int, Error {
+@objc(RCPurchasesErrorCode) public enum ErrorCode: Int, Error {
 
     @objc(RCUnknownError) case unknownError = 0
     @objc(RCPurchaseCancelledError) case purchaseCancelledError = 1

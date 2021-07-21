@@ -5,14 +5,15 @@
 
 import Foundation
 import Purchases
+import PurchasesCoreSwift
 
-class MockInMemoryCachedOfferings<T: Offerings> : RCInMemoryCachedObject<Offerings> {
+class MockInMemoryCachedOfferings<T: Offerings> : InMemoryCachedObject<Offerings> {
 
     var invokedIsCacheStale = false
     var invokedIsCacheStaleCount = 0
     var stubbedIsCacheStaleResult: Bool! = false
 
-    override func isCacheStaleWithDuration(inSeconds durationInSeconds: Int32) -> Bool {
+    override func isCacheStale(durationInSeconds: Double) -> Bool {
         invokedIsCacheStale = true
         invokedIsCacheStaleCount += 1
         return stubbedIsCacheStaleResult
@@ -39,7 +40,7 @@ class MockInMemoryCachedOfferings<T: Offerings> : RCInMemoryCachedObject<Offerin
     var invokedUpdateCacheTimestampParameters: (date: Date, Void)?
     var invokedUpdateCacheTimestampParametersList = [(date: Date, Void)]()
 
-    override func updateCacheTimestamp(with date: Date) {
+    override func updateCacheTimestamp(date: Date) {
         invokedUpdateCacheTimestamp = true
         invokedUpdateCacheTimestampCount += 1
         invokedUpdateCacheTimestampParameters = (date, ())
@@ -51,7 +52,7 @@ class MockInMemoryCachedOfferings<T: Offerings> : RCInMemoryCachedObject<Offerin
     var invokedCacheInstanceParameters: (instance: Offerings, Void)?
     var invokedCacheInstanceParametersList = [(instance: Offerings, Void)]()
 
-    override func cacheInstance(_ instance: Offerings) {
+    override func cache(instance: Offerings) {
         invokedCacheInstance = true
         invokedCacheInstanceCount += 1
         invokedCacheInstanceParameters = (instance, ())
