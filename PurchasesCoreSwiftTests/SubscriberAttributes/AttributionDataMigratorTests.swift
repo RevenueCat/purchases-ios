@@ -582,23 +582,23 @@ private extension AttributionDataMigratorTests {
             "trackerName": "Instagram Profile::IG Spanish"
         ]
 
-        function(keyPresence: idfa, data: &data, key: AttributionKey.idfa.rawValue,
+        updateMapping(inData: &data, keyPresence: idfa, key: AttributionKey.idfa.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIdfa)
-        function(keyPresence: idfv, data: &data, key: AttributionKey.idfv.rawValue,
+        updateMapping(inData: &data, keyPresence: idfv, key: AttributionKey.idfv.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIdfv)
-        function(keyPresence: adjustId, data: &data, key: AttributionKey.Adjust.id.rawValue,
+        updateMapping(inData: &data, keyPresence: adjustId, key: AttributionKey.Adjust.id.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultNetworkId)
-        function(keyPresence: networkID, data: &data, key: AttributionKey.networkID.rawValue,
+        updateMapping(inData: &data, keyPresence: networkID, key: AttributionKey.networkID.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultRCNetworkId)
-        function(keyPresence: ip, data: &data, key: AttributionKey.ip.rawValue,
+        updateMapping(inData: &data, keyPresence: ip, key: AttributionKey.ip.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIp)
-        function(keyPresence: campaign, data: &data, key: AttributionKey.Adjust.campaign.rawValue,
+        updateMapping(inData: &data, keyPresence: campaign, key: AttributionKey.Adjust.campaign.rawValue,
                 defaultValue: "IG Spanish")
-        function(keyPresence: adGroup, data: &data, key: AttributionKey.Adjust.adGroup.rawValue,
+        updateMapping(inData: &data, keyPresence: adGroup, key: AttributionKey.Adjust.adGroup.rawValue,
                 defaultValue: "an_ad_group")
-        function(keyPresence: creative, data: &data, key: AttributionKey.Adjust.creative.rawValue,
+        updateMapping(inData: &data, keyPresence: creative, key: AttributionKey.Adjust.creative.rawValue,
                 defaultValue: "a_creative")
-        function(keyPresence: network, data: &data, key: AttributionKey.Adjust.network.rawValue,
+        updateMapping(inData: &data, keyPresence: network, key: AttributionKey.Adjust.network.rawValue,
                 defaultValue: "Instagram Profile")
         return data
     }
@@ -635,31 +635,31 @@ private extension AttributionDataMigratorTests {
             "af_siteid": NSNull(),
             "af_message": "organic install"
         ]
-        function(keyPresence: idfa, data: &data, key: AttributionKey.idfa.rawValue,
+        updateMapping(inData: &data, keyPresence: idfa, key: AttributionKey.idfa.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIdfa)
-        function(keyPresence: idfv, data: &data, key: AttributionKey.idfv.rawValue,
+        updateMapping(inData: &data, keyPresence: idfv, key: AttributionKey.idfv.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIdfv)
-        function(keyPresence: appsFlyerId, data: &data, key: AttributionKey.AppsFlyer.id.rawValue,
+        updateMapping(inData: &data, keyPresence: appsFlyerId, key: AttributionKey.AppsFlyer.id.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultNetworkId)
-        function(keyPresence: networkID, data: &data, key: AttributionKey.networkID.rawValue,
+        updateMapping(inData: &data, keyPresence: networkID, key: AttributionKey.networkID.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultRCNetworkId)
-        function(keyPresence: channel, data: &data, key: AttributionKey.AppsFlyer.channel.rawValue,
+        updateMapping(inData: &data, keyPresence: channel, key: AttributionKey.AppsFlyer.channel.rawValue,
                 defaultValue: "Facebook")
-        function(keyPresence: mediaSource, data: &data, key: AttributionKey.AppsFlyer.mediaSource.rawValue,
+        updateMapping(inData: &data, keyPresence: mediaSource, key: AttributionKey.AppsFlyer.mediaSource.rawValue,
                 defaultValue: "Facebook Ads")
-        function(keyPresence: ad, data: &data, key: AttributionKey.AppsFlyer.ad.rawValue,
+        updateMapping(inData: &data, keyPresence: ad, key: AttributionKey.AppsFlyer.ad.rawValue,
                 defaultValue: "ad.mp4")
-        function(keyPresence: adGroup, data: &data, key: AttributionKey.AppsFlyer.adGroup.rawValue,
+        updateMapping(inData: &data, keyPresence: adGroup, key: AttributionKey.AppsFlyer.adGroup.rawValue,
                 defaultValue: "1111 - tm - aaa - US - 999 v1")
-        function(keyPresence: adId, data: &data, key: AttributionKey.AppsFlyer.adId.rawValue,
+        updateMapping(inData: &data, keyPresence: adId, key: AttributionKey.AppsFlyer.adId.rawValue,
                 defaultValue: "23847301457860211")
-        function(keyPresence: campaign, data: &data, key: AttributionKey.AppsFlyer.campaign.rawValue,
+        updateMapping(inData: &data, keyPresence: campaign, key: AttributionKey.AppsFlyer.campaign.rawValue,
                 defaultValue: "0111 - mm - aaa - US - best creo 10 - Copy")
-        function(keyPresence: adSet, data: &data, key: AttributionKey.AppsFlyer.adSet.rawValue,
+        updateMapping(inData: &data, keyPresence: adSet, key: AttributionKey.AppsFlyer.adSet.rawValue,
                 defaultValue: "0005 - tm - aaa - US - best 8")
-        function(keyPresence: adKeywords, data: &data, key: AttributionKey.AppsFlyer.adKeywords.rawValue,
+        updateMapping(inData: &data, keyPresence: adKeywords, key: AttributionKey.AppsFlyer.adKeywords.rawValue,
                 defaultValue: "keywords for ad")
-        function(keyPresence: ip, data: &data, key: AttributionKey.ip.rawValue,
+        updateMapping(inData: &data, keyPresence: ip, key: AttributionKey.ip.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIp)
         return data
     }
@@ -673,15 +673,15 @@ private extension AttributionDataMigratorTests {
             "+is_first_session": false,
             "+clicked_branch_link": false
         ]
-        function(keyPresence: idfa, data: &data, key: AttributionKey.idfa.rawValue,
+        updateMapping(inData: &data, keyPresence: idfa, key: AttributionKey.idfa.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIdfa)
-        function(keyPresence: idfv, data: &data, key: AttributionKey.idfv.rawValue,
+        updateMapping(inData: &data, keyPresence: idfv, key: AttributionKey.idfv.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIdfv)
-        function(keyPresence: ip, data: &data, key: AttributionKey.ip.rawValue,
+        updateMapping(inData: &data, keyPresence: ip, key: AttributionKey.ip.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIp)
-        function(keyPresence: channel, data: &data, key: AttributionKey.Branch.channel.rawValue,
+        updateMapping(inData: &data, keyPresence: channel, key: AttributionKey.Branch.channel.rawValue,
                 defaultValue: "Facebook")
-        function(keyPresence: campaign, data: &data, key: AttributionKey.Branch.campaign.rawValue,
+        updateMapping(inData: &data, keyPresence: campaign, key: AttributionKey.Branch.campaign.rawValue,
                 defaultValue: "Facebook Ads 01293")
 
         return data
@@ -694,15 +694,15 @@ private extension AttributionDataMigratorTests {
                        ip: KeyPresence = .defaultValue) -> [String: Any] {
         var data: [String: Any] = [:]
 
-        function(keyPresence: idfa, data: &data, key: AttributionKey.idfa.rawValue,
+        updateMapping(inData: &data, keyPresence: idfa, key: AttributionKey.idfa.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIdfa)
-        function(keyPresence: idfv, data: &data, key: AttributionKey.idfv.rawValue,
+        updateMapping(inData: &data, keyPresence: idfv, key: AttributionKey.idfv.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIdfv)
-        function(keyPresence: mParticleId, data: &data, key: AttributionKey.MParticle.id.rawValue,
+        updateMapping(inData: &data, keyPresence: mParticleId, key: AttributionKey.MParticle.id.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultNetworkId)
-        function(keyPresence: networkID, data: &data, key: AttributionKey.networkID.rawValue,
+        updateMapping(inData: &data, keyPresence: networkID, key: AttributionKey.networkID.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultRCNetworkId)
-        function(keyPresence: ip, data: &data, key: AttributionKey.ip.rawValue,
+        updateMapping(inData: &data, keyPresence: ip, key: AttributionKey.ip.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIp)
         return data
     }
@@ -710,21 +710,21 @@ private extension AttributionDataMigratorTests {
     func facebookOrTenjinData(withIDFA idfa: KeyPresence = .defaultValue,
                               idfv: KeyPresence = .defaultValue, ip: KeyPresence = .defaultValue) -> [String: Any] {
         var data: [String: Any] = [:]
-        function(keyPresence: idfa, data: &data, key: AttributionKey.idfa.rawValue,
+        updateMapping(inData: &data, keyPresence: idfa, key: AttributionKey.idfa.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIdfa)
-        function(keyPresence: idfv, data: &data, key: AttributionKey.idfv.rawValue,
+        updateMapping(inData: &data, keyPresence: idfv, key: AttributionKey.idfv.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIdfv)
-        function(keyPresence: ip, data: &data, key: AttributionKey.ip.rawValue,
+        updateMapping(inData: &data, keyPresence: ip, key: AttributionKey.ip.rawValue,
                 defaultValue: AttributionDataMigratorTests.defaultIp)
         return data
     }
 
-    private func function(keyPresence: KeyPresence, data: inout [String: Any], key: String, defaultValue: String) {
+    private func updateMapping(inData: inout [String: Any], keyPresence: KeyPresence, key: String, defaultValue: String) {
         switch keyPresence {
         case .defaultValue:
-            data[key] = defaultValue
+            inData[key] = defaultValue
         case .nsNull:
-            data[key] = NSNull()
+            inData[key] = NSNull()
         case .notPresent:
             break
         }
