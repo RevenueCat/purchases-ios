@@ -236,8 +236,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                    network:(RCAttributionNetwork)network
                                                  appUserID:(NSString *)appUserID {
     NSDictionary *convertedAttribution =
-    [self.attributionDataMigrator convertAttributionDataToSubscriberAttributesWithAttributionData:attributionData
-                                                                                          network:network];
+                        [self.attributionDataMigrator convertToSubscriberAttributesWithAttributionData:attributionData
+                                                                                               network:network];
     [self setAttributes:convertedAttribution appUserID:appUserID];
 }
 
