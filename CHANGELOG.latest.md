@@ -1,4 +1,2 @@
-- Updates log message for `createAlias` to improve clarity
-    https://github.com/RevenueCat/purchases-ios/pull/498
-- Adds `rc_` to all Foundation extensions to prevent name collisions
-    https://github.com/RevenueCat/purchases-ios/pull/500
+- Fixed an issue in some versions of Xcode where compiling would fail with `Definition conflicts with previous value` in `ETagManager.swift`
+    https://github.com/revenuecat/purchases-ios/pull/659
