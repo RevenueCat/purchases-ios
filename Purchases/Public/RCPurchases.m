@@ -418,8 +418,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     } else {
         RCDebugLog(@"%@", RCStrings.attribution.no_instance_configured_caching_attribution);
         [RCAttributionPoster storePostponedAttributionData:data
-                                                fromNetwork:network
-                                           forNetworkUserId:networkUserId];
+                                               fromNetwork:network
+                                          forNetworkUserId:networkUserId];
     }
 }
 
