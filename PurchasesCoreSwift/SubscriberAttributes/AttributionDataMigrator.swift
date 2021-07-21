@@ -10,9 +10,7 @@ import Foundation
 
 @objc(RCAttributionDataMigrator) public class AttributionDataMigrator: NSObject {
 
-    @objc public func convertAttributionDataToSubscriberAttributes(
-            attributionData: [String: Any], network: Int
-    ) -> [String: Any] {
+    @objc public func convertToSubscriberAttributes(attributionData: [String: Any], network: Int) -> [String: Any] {
         let network = AttributionNetwork(rawValue: network)
         let attributionData = attributionData.removingNSNullValues()
         var convertedAttribution: [String: Any] = [:]

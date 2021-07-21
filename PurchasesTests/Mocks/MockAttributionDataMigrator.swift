@@ -17,7 +17,7 @@ class MockAttributionDataMigrator: AttributionDataMigrator {
     var invokedConvertAttributionDataToSubscriberAttributesParametersList = [(attributionData: [String: Any], network: Int)]()
     var stubbedConvertAttributionDataToSubscriberAttributesResult: [String: Any]! = [:]
 
-    override func convertAttributionDataToSubscriberAttributes(
+    override func convertToSubscriberAttributes(
         attributionData: [String: Any], network: Int
     ) -> [String: Any] {
         invokedConvertAttributionDataToSubscriberAttributes = true
