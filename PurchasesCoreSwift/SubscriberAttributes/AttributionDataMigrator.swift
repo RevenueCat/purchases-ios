@@ -14,7 +14,7 @@ import Foundation
             attributionData: [String: Any], network: Int
     ) -> [String: Any] {
         let network = AttributionNetwork(rawValue: network)
-        let attributionData = attributionData.filter { !($0.1 is NSNull) }
+        let attributionData = attributionData.removingNSNullValues()
         var convertedAttribution: [String: Any] = [:]
         if let value = attributionData[AttributionKey.idfa.rawValue] {
             convertedAttribution[SpecialSubscriberAttributes.idfa] = value
