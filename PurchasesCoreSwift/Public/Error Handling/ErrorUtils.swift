@@ -1,9 +1,16 @@
 //
-//  PurchasesErrorUtils.swift
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  RCPurchasesErrorUtils.swift
 //  PurchasesCoreSwift
 //
-//  Created by César de la Vega on 7/19/21.
-//  Copyright © 2021 Purchases. All rights reserved.
+//  Created by Cesar de la Vega on 7/21/21.
 //
 
 import Foundation
@@ -12,7 +19,7 @@ import StoreKit
 @objc(RCPurchasesErrorUtils) public class ErrorUtils: NSObject {
 
     /**
-     * Constructs an NSError with the [RCNetworkError] code and a populated [RCUnderlyingErrorKey] in
+     * Constructs an NSError with the [ErrorCode.networkError] code and a populated [NSUnderlyingErrorKey] in
      * the [NSError.userInfo] dictionary.
      *
      * @param underlyingError The value of the [NSUnderlyingErrorKey] key.
@@ -27,12 +34,12 @@ import StoreKit
     }
 
     /**
-     * Maps an RCBackendError code to a RCPurchasesErrorCode code. Constructs an NSError with the mapped code and adds a
+     * Maps an [BackendErrorCode] code to a [ErrorCode]. code. Constructs an Error with the mapped code and adds a
      * [RCUnderlyingErrorKey] in the [NSError.userInfo] dictionary. The backend error code will be mapped using
-     * [RCPurchasesErrorCodeFromRCBackendErrorCode].
+     * [BackendErrorCode.toPurchasesErrorCode()].
      *
-     * @param backendCode The value of the error key.
-     * @param backendMessage The value of the [NSUnderlyingErrorKey] key.
+     * @param backendCode The numerical value of the error.
+     * @param backendMessage The message of the errror contained under the [NSUnderlyingErrorKey] key.
      *
      * @note This error is used when an network request returns an error. The backend error returned is wrapped in
      * this internal error code.
@@ -43,12 +50,12 @@ import StoreKit
     }
 
     /**
-     * Maps an RCBackendError code to a [RCPurchasesErrorCode] code. Constructs an NSError with the mapped code and adds a
+     * Maps an [BackendErrorCode] code to a [ErrorCode]. code. Constructs an Error with the mapped code and adds a
      * [RCUnderlyingErrorKey] in the [NSError.userInfo] dictionary. The backend error code will be mapped using
-     * [RCPurchasesErrorCodeFromRCBackendErrorCode].
+     * [BackendErrorCode.toPurchasesErrorCode()].
      *
-     * @param backendCode The value of the error key.
-     * @param backendMessage The value of the [NSUnderlyingErrorKey] key.
+     * @param backendCode The numerical value of the error.
+     * @param backendMessage The message of the errror contained under the [NSUnderlyingErrorKey] key in the UserInfo dictionary.
      * @param finishable Will be added to the UserInfo dictionary under the [RCFinishableKey] to indicate if the transaction
      * should be finished after this error.
      *
@@ -66,7 +73,7 @@ import StoreKit
     }
 
     /**
-     * Constructs an NSError with the [RCUnexpectedBackendResponseError] code.
+     * Constructs an Error with the [ErrorCode.unexpectedBackendResponseError] code.
      *
      * @note This error is used when an network request returns an unexpected response.
      */
@@ -77,7 +84,7 @@ import StoreKit
     }
 
     /**
-     * Constructs an NSError with the [RCMissingReceiptFileError] code.
+     * Constructs an Error with the [ErrorCode.missingReceiptFileError] code.
      *
      * @note This error is used when the receipt is missing in the device. This can happen if the user is in sandbox or
      * if there are no previous purchases.
@@ -89,7 +96,7 @@ import StoreKit
     }
 
     /**
-     * Constructs an NSError with the [RCInvalidAppUserIdError] code.
+     * Constructs an Error with the [ErrorCode.invalidAppUserIdError] code.
      *
      * @note This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
      * are removed manually or if the OS deletes entries when running out of space.
@@ -101,7 +108,7 @@ import StoreKit
     }
 
     /**
-     * Constructs an NSError with the [RCLogOutAnonymousUserError] code.
+     * Constructs an Error with the [ErrorCode.logOutAnonymousUserError] code.
      *
      * @note This error is used when logOut is called but the current user is anonymous,
      * as noted by RCPurchaserInfo's isAnonymous property.
@@ -113,7 +120,7 @@ import StoreKit
     }
 
     /**
-     * Constructs an NSError with the [RCPaymentPendingError] code.
+     * Constructs an Error with the [ErrorCode.paymentPendingError] code.
      *
      * @note This error is used during an “ask to buy” flow for a payment. The completion block of the purchasing function
      * will get this error to indicate the guardian has to complete the purchase.
@@ -125,7 +132,7 @@ import StoreKit
     }
 
     /**
-     * Constructs an NSError with the [RCUnknownError] code.
+     * Constructs an Error with the [ErrorCode.unknownError] code.
      */
     @objc public static func unknownError() -> Error {
 
@@ -134,9 +141,8 @@ import StoreKit
     }
 
     /**
-     * Maps an SKErrorCode code to a RCPurchasesErrorCode code. Constructs an NSError with the mapped code and adds a
-     * [RCUnderlyingErrorKey] in the NSError.userInfo dictionary. The SKErrorCode code will be mapped using
-     * [RCPurchasesErrorCodeFromSKError].
+     * Maps an SKError to a Error with a [ErrorCode]. Adds a underlying error in the NSError.userInfo dictionary. The SKError code will be mapped using
+     * [SKError.toPurchasesErrorCode()].
      *
      * @param skError The originating [SKError].
      */
