@@ -28,6 +28,22 @@ import Foundation
         if let value = attributionData[AttributionKey.gpsAdId.rawValue] {
             convertedAttribution[SpecialSubscriberAttributes.gpsAdId] = value
         }
+
+        let networkSpecificSubscriberAttributes = convertNetworkSpecificSubscriberAttributes(for: network,
+                attributionData: attributionData)
+
+        return convertedAttribution.merging(networkSpecificSubscriberAttributes) { (_, new) -> Any? in
+            new
+        }
+    }
+
+}
+
+private extension AttributionDataMigrator {
+
+    // This implementation follows the backend mapping of the attribution data to subscriber attributes
+    func convertNetworkSpecificSubscriberAttributes(for network: AttributionNetwork?,
+                                                    attributionData: [String: Any]) -> [String: Any] {
         let networkSpecificSubscriberAttributes: [String: Any]
         switch network {
         case .adjust:
@@ -45,14 +61,9 @@ import Foundation
             // Apple Search Ads uses standard attribution system
             networkSpecificSubscriberAttributes = [:]
         }
-        return convertedAttribution.merging(networkSpecificSubscriberAttributes) { (_, new) -> Any? in
-            new
-        }
+
+        return networkSpecificSubscriberAttributes
     }
-
-}
-
-private extension AttributionDataMigrator {
 
     func convertMParticleAttribution(_ data: [String: Any]) -> [String: Any] {
         var convertedAttribution: [String: Any] = [:]

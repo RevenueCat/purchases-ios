@@ -9,9 +9,9 @@
 import Foundation
 
 extension Dictionary {
-    
+
     func removingNSNullValues() -> Dictionary {
         self.filter { !($0.value is NSNull) }
     }
-    
+
 }
