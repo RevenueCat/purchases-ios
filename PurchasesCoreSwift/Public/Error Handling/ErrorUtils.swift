@@ -275,8 +275,6 @@ private extension ErrorUtils {
 
         let error: Error
         if let maybeBackendCode = backendCode,
-           // NOTE: Behavior change here, before we would make an error with the code that
-           // came from the backend. Now we create a BackendErrorCode or an Unknown
            let backendError = BackendErrorCode.init(rawValue: maybeBackendCode.intValue) {
             error = backendError
         } else {
