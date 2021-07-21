@@ -1502,7 +1502,7 @@ class BackendTests: XCTestCase {
 
         let currentAppUserID = "old id"
         let underlyingErrorMessage = "header fields too large"
-        let underlyingErrorCode = BackendErrorCode.cannotTransferPurchase.rawValue // NOTE: changed because now we create unknown errors
+        let underlyingErrorCode = BackendErrorCode.cannotTransferPurchase.rawValue
         _ = mockLoginRequest(appUserID: currentAppUserID,
                              statusCode: 431,
                              response: ["code": underlyingErrorCode, "message": underlyingErrorMessage])
