@@ -1,14 +1,14 @@
 import Foundation
 
 // swiftlint:disable identifier_name
-internal enum AttributionKey: String {
+enum AttributionKey: String {
     case idfa = "rc_idfa",
          idfv = "rc_idfv",
          ip = "rc_ip_address",
          gpsAdId = "rc_gps_adid",
          networkID = "rc_attribution_network_id"
 
-    internal enum Adjust: String {
+    enum Adjust: String {
         case id = "adid",
              network = "network",
              campaign = "campaign",
@@ -16,7 +16,7 @@ internal enum AttributionKey: String {
              creative = "creative"
     }
 
-    internal enum AppsFlyer: String {
+    enum AppsFlyer: String {
         case id = "rc_appsflyer_id",
              campaign = "campaign",
              channel = "af_channel",
@@ -30,12 +30,12 @@ internal enum AttributionKey: String {
              statusKey = "status"
     }
 
-    internal enum Branch: String {
+    enum Branch: String {
         case campaign,
              channel
     }
 
-    internal enum MParticle: String {
+    enum MParticle: String {
         case id = "mpid"
     }
 }
