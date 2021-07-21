@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler;
 
-- (BOOL) isAuthorizedToPostSearchAds;
+- (BOOL)isAuthorizedToPostSearchAds;
 
 @end
 
