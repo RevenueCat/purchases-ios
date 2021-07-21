@@ -1,5 +1,5 @@
 //
-//  RCAttributionFetcher.m
+//  RCAttributionPoster.m
 //  Purchases
 //
 //  Created by RevenueCat.
