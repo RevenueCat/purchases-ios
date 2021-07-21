@@ -20,6 +20,7 @@ import Foundation
  */
 @objc(RCBackendErrorCode) public enum BackendErrorCode: Int, Error {
 
+    @objc(RCBackendUnknownError) case unknownError = 0
     @objc(RCBackendInvalidPlatform) case invalidPlatform = 7000
     @objc(RCBackendStoreProblem) case storeProblem = 7101
     @objc(RCBackendCannotTransferPurchase) case cannotTransferPurchase = 7102
@@ -40,5 +41,51 @@ import Foundation
     @objc(RCBackendInvalidAppleSubscriptionKey) case invalidAppleSubscriptionKey = 7234
     @objc(RCBackendInvalidSubscriberAttributes) case invalidSubscriberAttributes = 7263
     @objc(RCBackendInvalidSubscriberAttributesBody) case invalidSubscriberAttributesBody = 7264
+
+}
+
+extension BackendErrorCode {
+
+    func toPurchasesErrorCode() -> ErrorCode {
+
+        switch self {
+        case .invalidPlatform:
+            return .configurationError
+        case .storeProblem:
+            return .storeProblemError
+        case .cannotTransferPurchase:
+            return .receiptAlreadyInUseError
+        case .invalidReceiptToken:
+            return .invalidReceiptError
+        case .invalidAppStoreSharedSecret,
+             .invalidAuthToken,
+             .invalidAPIKey:
+            return .invalidCredentialsError
+        case .invalidPaymentModeOrIntroPriceNotProvided,
+             .productIdForGoogleReceiptNotProvided:
+            return .purchaseInvalidError
+        case .emptyAppUserId:
+            return .invalidAppUserIdError
+        case .invalidAppleSubscriptionKey:
+            return .invalidAppleSubscriptionKeyError
+        case .userIneligibleForPromoOffer:
+            return .ineligibleError
+        case .invalidSubscriberAttributes,
+             .invalidSubscriberAttributesBody:
+            return .invalidSubscriberAttributesError
+        case .playStoreInvalidPackageName,
+             .playStoreQuotaExceeded,
+             .playStoreGenericError,
+             .invalidPlayStoreCredentials,
+             .badRequest,
+             .internalServerError:
+            return .unknownBackendError
+        case .unknownError:
+            return .unknownError
+        @unknown default:
+            return .unknownError
+        }
+
+    }
 
 }

@@ -107,7 +107,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         mockHTTPClient.shouldInvokeCompletion = true
         let underlyingError = NSError(domain: "domain", code: 0, userInfo: nil)
 
-        mockHTTPClient.stubbedCompletionError = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
+        mockHTTPClient.stubbedCompletionError = ErrorUtils.networkError(withUnderlyingError: underlyingError)
 
         var receivedError: Error? = nil
         backend.postSubscriberAttributes([
