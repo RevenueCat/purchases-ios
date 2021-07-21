@@ -13,28 +13,28 @@ enum AttributionNetwork: Int {
      Apple's search ads
      */
     case appleSearchAds = 0,
-        /**
+         /**
          Adjust https://www.adjust.com/
          */
          adjust,
-        /**
+         /**
          AppsFlyer https://www.appsflyer.com/
          */
          appsFlyer,
-        /**
+         /**
          Branch https://www.branch.io/
          */
          branch,
-        /**
+         /**
          Tenjin https://www.tenjin.io/
          */
          tenjin,
-        /**
+         /**
          Facebook https://developers.facebook.com/
          */
          facebook,
-        /**
-        mParticle https://www.mparticle.com/
-        */
+         /**
+         mParticle https://www.mparticle.com/
+         */
          mParticle
 }
