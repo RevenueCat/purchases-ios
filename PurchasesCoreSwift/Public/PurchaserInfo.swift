@@ -32,7 +32,7 @@ import Foundation
     }
 
     /// Returns all product IDs of the non-subscription purchases a user has made.
-    /// TODO add deprecation message:  DEPRECATED_MSG_ATTRIBUTE("use nonSubscriptionTransactions");
+    @available(*, deprecated, message: "use nonSubscriptionTransactions")
     @objc public let nonConsumablePurchases: Set<String>
 
     /**
@@ -173,6 +173,7 @@ import Foundation
     }
 
     // TODO why were we previously able to call with lowercase from swift?
+    // TODO after migration make this internal
     @objc(JSONObject) public func jsonObject() -> [AnyHashable: Any] {
         var dictionary = self.originalData
         dictionary["schema_version"] = PurchaserInfo.currentSchemaVersion()
@@ -190,6 +191,39 @@ import Foundation
         otherJson.removeValue(forKey: "request_date")
         
         return NSDictionary(dictionary: selfJson).isEqual(to: otherJson)
+    }
+    
+    public override var description: String {
+        var activeSubsDescription = [String: String]()
+        // TODO switify this
+        for activeSubId in self.activeSubscriptions {
+            activeSubsDescription[activeSubId] = "expiresDate: \(String(describing: self.expirationDate(forProductIdentifier: activeSubId)))"
+        }
+        
+        // TODO switify this
+        var activeEntitlementsDescription = [String: String]()
+        for (entitlementId, entitlement) in self.entitlements.active {
+            activeEntitlementsDescription[entitlementId] = entitlement.description
+        }
+        
+        var allEntitlementsDescription = [String: String]()
+        for (entitlementId, entitlement) in self.entitlements.all {
+            allEntitlementsDescription[entitlementId] = entitlement.description
+        }
+        
+        var description = "<\(NSStringFromClass(type(of: self))): "
+        description += "originalApplicationVersion=\(String(describing: self.originalApplicationVersion)),\n"
+        description += "latestExpirationDate=\(String(describing: self.latestExpirationDate)),\n"
+        description += "activeEntitlements=\(activeEntitlementsDescription),\n"
+        description += "activeSubscriptions=\(activeSubsDescription),\n"
+        description += "nonSubscriptionTransactions=\(self.nonSubscriptionTransactions),\n"
+        description += "requestDate=\(String(describing: self.requestDate)),\n"
+        description += "firstSeen=\(String(describing: self.firstSeen)),\n"
+        description += "originalAppUserId=\(self.originalAppUserId),\n"
+        description += "entitlements=\(allEntitlementsDescription),\n"
+        description += ">"
+        
+        return description
     }
 
     private struct SubscriberData {
@@ -211,7 +245,8 @@ import Foundation
 
         init?(subscriberData: [String: Any]) {
             self.subscriptions = subscriberData["subscriptions"] as? [String: Any] ?? [String: Any]()
-
+            
+            // Metadata
             self.originalApplicationVersion = subscriberData["original_application_version"] as? String ?? nil
         
             if let originalPurchaseDateString = subscriberData["original_purchase_date"] as? String {
@@ -236,15 +271,14 @@ import Foundation
             } else {
                 self.managementURL = nil
             }
-
+            
+            
+            // Purchases and entitlements
             self.nonSubscriptions = subscriberData["non_subscriptions"] as? [String: [[String: Any]]] ?? [String: [[String: Any]]]()
             self.entitlements = subscriberData["entitlements"] as? [String: Any] ?? [:]
-
             self.nonConsumablePurchases = Set(nonSubscriptions.keys)
-
             self.nonSubscriptionTransactions = TransactionsFactory().nonSubscriptionTransactions(withSubscriptionsData: nonSubscriptions, dateFormatter: DateFormatter.dateFormatter)
 
-            // nonSubscriptionLatestTransactions
             let productIdToLatestTransaction = NSMutableDictionary()
             for productId in nonSubscriptions.keys {
                 let purchasesArray = nonSubscriptions[productId] ?? [[String: Any]]()
@@ -254,7 +288,6 @@ import Foundation
             }
             self.nonSubscriptionLatestTransactions = productIdToLatestTransaction
 
-            // all purchases
             guard let nonSubsLatest = nonSubscriptionLatestTransactions as? [String: Any] else {
                 return nil
             }
