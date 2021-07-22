@@ -17,7 +17,7 @@ class MockAdClientProxy: AdClientProxy {
     static var mockError: Error?
     static var requestAttributionDetailsCallCount = 0
 
-    override func requestAttributionDetails(_ completionHandler: ([String : Any]?, Error?) -> Void) {
+    override func requestAttributionDetails(_ completionHandler: AttributionDetailsBlock) {
         Self.requestAttributionDetailsCallCount += 1
         completionHandler(Self.mockAttributionDetails, Self.mockError)
     }

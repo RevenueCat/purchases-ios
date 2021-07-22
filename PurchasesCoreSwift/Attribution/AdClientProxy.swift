@@ -10,7 +10,7 @@ import Foundation
 
 // TODO(Post-migration): switch this back to internal the class and all these protocols and properties.
 
-public typealias AttributionDetailsBlock = ([String: Any]?, Error?) -> Void
+public typealias AttributionDetailsBlock = ([String: NSObject]?, Error?) -> Void
 
 // We need this class to avoid Kid apps being rejected for getting idfa. It seems like App
 // Review uses some grep to find the class names, so we ended up creating a fake class that
