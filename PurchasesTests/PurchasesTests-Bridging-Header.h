@@ -18,8 +18,6 @@
 #include <Purchases/RCPurchases+Protected.h>
 #include <Purchases/RCPurchases+SubscriberAttributes.h>
 #include <Purchases/RCPurchases.h>
-#include <Purchases/RCPurchasesErrorUtils+Protected.h>
-#include <Purchases/RCPurchasesErrorUtils.h>
 #include <Purchases/RCSpecialSubscriberAttributes.h>
 #include <Purchases/RCSubscriberAttributesManager.h>
 #include <Purchases/RCTypeDefsPreMigration.h>

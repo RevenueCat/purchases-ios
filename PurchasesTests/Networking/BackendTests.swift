@@ -1502,7 +1502,7 @@ class BackendTests: XCTestCase {
 
         let currentAppUserID = "old id"
         let underlyingErrorMessage = "header fields too large"
-        let underlyingErrorCode = "123456"
+        let underlyingErrorCode = BackendErrorCode.cannotTransferPurchase.rawValue
         _ = mockLoginRequest(appUserID: currentAppUserID,
                              statusCode: 431,
                              response: ["code": underlyingErrorCode, "message": underlyingErrorMessage])
@@ -1534,7 +1534,7 @@ class BackendTests: XCTestCase {
         let backendUnderlyingError = receivedNSError.userInfo[NSUnderlyingErrorKey] as? NSError
         expect(backendUnderlyingError).toNot(beNil())
         let underlyingError = backendUnderlyingError?.userInfo[NSUnderlyingErrorKey] as? NSError
-        expect(underlyingError?.code) == Int(underlyingErrorCode)
+        expect(underlyingError?.code) == underlyingErrorCode
         expect(underlyingError?.localizedDescription) == underlyingErrorMessage
     }
 

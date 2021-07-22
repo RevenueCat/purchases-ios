@@ -11,8 +11,6 @@
 #import "RCBackend.h"
 #import "RCHTTPClient.h"
 #import "RCPurchaserInfo+Protected.h"
-#import "RCPurchasesErrorUtils+Protected.h"
-#import "RCPurchasesErrorUtils.h"
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
 NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"rc_successfullySynced";
