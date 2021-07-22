@@ -52,7 +52,7 @@ import AppKit
     }
 
     @objc public static var frameworkVersion: String { // TODO: automate the setting of this, if it hasn't been.
-        return "3.12.0-SNAPSHOT"
+        return "3.13.0-SNAPSHOT"
     }
 
     @objc public static var systemVersion: String {
