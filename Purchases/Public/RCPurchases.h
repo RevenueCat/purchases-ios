@@ -179,8 +179,10 @@ NS_SWIFT_NAME(Purchases)
 /** Set this to true if you are passing in an appUserID but it is anonymous, this is true by default if you didn't pass an appUserID
  If a user tries to purchase a product that is active on the current app store account, we will treat it as a restore and alias
  the new ID with the previous id.
+ See https://docs.revenuecat.com/docs/user-ids
  */
-@property (nonatomic) BOOL allowSharingAppStoreAccount;
+@property (nonatomic) BOOL allowSharingAppStoreAccount
+    __attribute((deprecated("Configure behavior through the RevenueCat dashboard instead.")));
 
 /// Default to YES, set this to NO if you are finishing transactions with your own StoreKit queue listener
 @property (nonatomic) BOOL finishTransactions;
@@ -205,20 +207,39 @@ NS_SWIFT_NAME(Purchases)
  @param completion An optional completion block called when the aliasing has been successful. This completion block will receive an error if there's been one.
  */
 - (void)createAlias:(NSString *)alias completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-NS_SWIFT_NAME(createAlias(_:_:));
+NS_SWIFT_NAME(createAlias(_:_:)) __attribute((deprecated("Use logIn instead.")));
 
 /**
- This function will identify the current user with an appUserID. Typically this would be used after a logout to identify a new user without calling configure
- @param appUserID The appUserID that should be linked to the currently user
+ This function will identify the current user with an appUserID. Typically this would be used after a logout to identify a new user without calling configure.
+ @param appUserID The appUserID that should be linked to the current user.
  */
 - (void)identify:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-NS_SWIFT_NAME(identify(_:_:));
+NS_SWIFT_NAME(identify(_:_:)) __attribute((deprecated("Use logIn instead.")));
 
 /**
  * Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
  */
 - (void)resetWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
-NS_SWIFT_NAME(reset(_:));
+NS_SWIFT_NAME(reset(_:)) __attribute((deprecated("Use logOut instead.")));
+
+/**
+ This function will logIn the current user with an appUserID.
+ @param appUserID The appUserID that should be linked to the current user.
+ The callback will be called with the latest PurchaserInfo for the user, as well as a boolean indicating whether the user was created for the first
+ time in the RevenueCat backend.
+ See https://docs.revenuecat.com/docs/user-ids
+ */
+- (void)  logIn:(NSString *)appUserID
+completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL created, NSError * _Nullable error))completion
+NS_SWIFT_NAME(logIn(_:_:));
+
+/**
+ Logs out the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
+ If this method is called and the current user is anonymous, it will return an error.
+ See https://docs.revenuecat.com/docs/user-ids
+ */
+- (void)logOutWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion
+NS_SWIFT_NAME(logOut(_:));
 
 #pragma mark Attribution
 

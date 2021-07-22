@@ -27,8 +27,8 @@ class AttributionFetcherTests: XCTestCase {
     override func setUp() {
         super.setUp()
         let userID = "userID"
-        deviceCache = MockDeviceCache(UserDefaults(suiteName: userDefaultsSuiteName)!)
-        deviceCache.cacheAppUserID(userID)
+        deviceCache = MockDeviceCache(userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
+        deviceCache.cache(appUserID: userID)
         backend = MockBackend()
         identityManager = MockIdentityManager(mockAppUserID: userID)
         attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,

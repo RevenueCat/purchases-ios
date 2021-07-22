@@ -12,7 +12,8 @@ import Purchases
 class PurchasesTests: XCTestCase {
 
     override func setUp() {
-        self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        userDefaults = UserDefaults(suiteName: "TestDefaults")
+        deviceCache = MockDeviceCache(userDefaults: userDefaults)
         requestFetcher = MockRequestFetcher()
         systemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockProductsManager = MockProductsManager()
@@ -33,6 +34,7 @@ class PurchasesTests: XCTestCase {
     }
 
     override func tearDown() {
+        deviceCache = nil
         purchases?.delegate = nil
         purchases = nil
         Purchases.setDefaultInstance(nil)
@@ -198,7 +200,7 @@ class PurchasesTests: XCTestCase {
     let notificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
-    let deviceCache = MockDeviceCache()
+    var deviceCache: MockDeviceCache!
     let subscriberAttributesManager = MockSubscriberAttributesManager()
     let identityManager = MockIdentityManager(mockAppUserID: "app_user");
     var systemInfo: MockSystemInfo!
@@ -318,8 +320,8 @@ class PurchasesTests: XCTestCase {
 
     func testFirstInitializationFromForegroundUpdatesPurchaserInfoCacheIfUserDefaultsCacheStale() {
         let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -20, to: Date())!
-        self.deviceCache.setPurchaserInfoCacheTimestamp(staleCacheDateForForeground,
-                                                        forAppUserID: identityManager.currentAppUserID)
+        self.deviceCache.setPurchaserInfoCache(timestamp: staleCacheDateForForeground,
+                                               appUserID: identityManager.currentAppUserID)
         systemInfo.stubbedIsApplicationBackgrounded = false
 
         setupPurchases()
@@ -329,8 +331,9 @@ class PurchasesTests: XCTestCase {
 
     func testFirstInitializationFromForegroundUpdatesPurchaserInfoEvenIfCacheValid() {
         let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -2, to: Date())!
-        self.deviceCache.setPurchaserInfoCacheTimestamp(staleCacheDateForForeground,
-                                                        forAppUserID: identityManager.currentAppUserID)
+        self.deviceCache.setPurchaserInfoCache(timestamp: staleCacheDateForForeground,
+                                               appUserID: identityManager.currentAppUserID)
+
         systemInfo.stubbedIsApplicationBackgrounded = false
 
         setupPurchases()
@@ -734,7 +737,7 @@ class PurchasesTests: XCTestCase {
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
-        self.backend.postReceiptError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
+        self.backend.postReceiptError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -753,7 +756,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
+        self.backend.postReceiptError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -772,7 +775,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.ErrorCode.invalidCredentialsError.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
+        self.backend.postReceiptError = Purchases.ErrorUtils.backendError(withBackendCode: ErrorCode.invalidCredentialsError.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -909,8 +912,8 @@ class PurchasesTests: XCTestCase {
 
         expect(receivedInfo).toEventually(beNil())
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
-        expect(receivedError?.code).toEventually(equal(Purchases.ErrorCode.operationAlreadyInProgressError.rawValue))
+        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.code).toEventually(equal(ErrorCode.operationAlreadyInProgressError.rawValue))
         expect(self.storeKitWrapper.addPaymentCallCount).to(equal(1))
         expect(receivedUserCancelled).toEventually(beFalse())
     }
@@ -1099,7 +1102,7 @@ class PurchasesTests: XCTestCase {
     func testRestorePurchasesPassesErrorOnFailure() {
         setupPurchases()
 
-        let errorCode = Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber
+        let errorCode = BackendErrorCode.invalidAPIKey.rawValue as NSNumber
         let error = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
                                                       backendMessage: "Invalid credentials",
                                                       finishable: true)
@@ -1244,7 +1247,7 @@ class PurchasesTests: XCTestCase {
     func testSyncPurchasesPassesErrorOnFailure() {
         setupPurchases()
 
-        let errorCode = Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber
+        let errorCode = BackendErrorCode.invalidAPIKey.rawValue as NSNumber
         let error = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
                                                       backendMessage: "Invalid credentials",
                                                       finishable: true)
@@ -1658,8 +1661,8 @@ class PurchasesTests: XCTestCase {
         })
 
         expect(receivedError).toEventuallyNot(beNil());
-        expect(receivedError?.domain).to(equal(Purchases.ErrorDomain))
-        expect(receivedError?.code).to(be(Purchases.ErrorCode.unexpectedBackendResponseError.rawValue))
+        expect(receivedError?.domain).to(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
     }
 
     func testMissingProductDetailsReturnsNil() {
@@ -1739,7 +1742,7 @@ class PurchasesTests: XCTestCase {
         expect(self.identityManager.aliasCalled).toEventually(beTrue())
         expect(info).toEventuallyNot(beNil())
 
-        self.identityManager.aliasError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
+        self.identityManager.aliasError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
 
         self.purchases?.createAlias("cesardro") { (info, error) in
             completionCalled = (error == nil)
@@ -1784,7 +1787,7 @@ class PurchasesTests: XCTestCase {
         expect(self.identityManager.identifyCalled).toEventually(beTrue())
         expect(info).toEventuallyNot(beNil())
 
-        self.identityManager.identifyError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
+        self.identityManager.identifyError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
 
         self.purchases?.identify("cesardro") { (info, error) in
             completionCalled = (error == nil)
@@ -1924,7 +1927,7 @@ class PurchasesTests: XCTestCase {
             receivedError = error as NSError?
         }
 
-        expect(receivedError?.code).toEventually(be(Purchases.ErrorCode.missingReceiptFileError.rawValue))
+        expect(receivedError?.code).toEventually(be(ErrorCode.missingReceiptFileError.rawValue))
     }
 
     func testUserCancelledFalseIfPurchaseSuccessful() {
@@ -1965,8 +1968,8 @@ class PurchasesTests: XCTestCase {
 
         expect(receivedUserCancelled).toEventually(beTrue())
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(be(Purchases.ErrorDomain))
-        expect(receivedError?.code).toEventually(be(Purchases.ErrorCode.purchaseCancelledError.rawValue))
+        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.code).toEventually(equal(ErrorCode.purchaseCancelledError.rawValue))
         expect(receivedUnderlyingError?.domain).toEventually(be(SKErrorDomain))
         expect(receivedUnderlyingError?.code).toEventually(equal(SKError.Code.paymentCancelled.rawValue))
     }
@@ -1990,7 +1993,7 @@ class PurchasesTests: XCTestCase {
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
         expect(receivedUserCancelled).toEventually(beFalse())
-        expect(receivedError?.code).toEventually(be(Purchases.ErrorCode.missingReceiptFileError.rawValue))
+        expect(receivedError?.code).toEventually(be(ErrorCode.missingReceiptFileError.rawValue))
         expect(self.backend.postReceiptDataCalled).toEventually(beFalse())
     }
 
@@ -2094,7 +2097,7 @@ class PurchasesTests: XCTestCase {
             expect(receivedPaymentDiscount).to(beNil())
             expect(completionCalled).toEventually(beTrue())
             expect(self.backend.postOfferForSigningCalled) == false
-            expect((receivedError! as NSError).code) == Purchases.ErrorCode.missingReceiptFileError.rawValue
+            expect((receivedError! as NSError).code) == ErrorCode.missingReceiptFileError.rawValue
         }
     }
 
@@ -2121,7 +2124,7 @@ class PurchasesTests: XCTestCase {
             expect(receivedPaymentDiscount).to(beNil())
             expect(completionCalled).toEventually(beTrue())
             expect(self.backend.postOfferForSigningCalled) == false
-            expect((receivedError! as NSError).code) == Purchases.ErrorCode.missingReceiptFileError.rawValue
+            expect((receivedError! as NSError).code) == ErrorCode.missingReceiptFileError.rawValue
         }
     }
 
@@ -2450,12 +2453,12 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
         let appUserID = self.identityManager.currentAppUserID
-        self.deviceCache.cachePurchaserInfo(Data(), forAppUserID: appUserID)
-        expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: appUserID)).toNot(beNil())
+        self.deviceCache.cache(purchaserInfo: Data(), appUserID: appUserID)
+        expect(self.deviceCache.cachedPurchaserInfoData(appUserID: appUserID)).toNot(beNil())
         expect(self.deviceCache.invokedClearPurchaserInfoCacheCount) == 0
 
         nonOptionalPurchases.invalidatePurchaserInfoCache()
-        expect(self.deviceCache.cachedPurchaserInfoData(forAppUserID: appUserID)).to(beNil())
+        expect(self.deviceCache.cachedPurchaserInfoData(appUserID: appUserID)).to(beNil())
         expect(self.deviceCache.invokedClearPurchaserInfoCacheCount) == 1
     }
 
@@ -2465,7 +2468,7 @@ class PurchasesTests: XCTestCase {
 
         let appUserID = self.identityManager.currentAppUserID
         let oldAppUserInfo = Data()
-        self.deviceCache.cachePurchaserInfo(oldAppUserInfo, forAppUserID: appUserID)
+        self.deviceCache.cache(purchaserInfo: oldAppUserInfo, appUserID: appUserID)
         let overridePurchaserInfo = Purchases.PurchaserInfo(data: [
             "subscriber": [
                 "subscriptions": [:],
@@ -2491,7 +2494,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testGetPurchaserInfoAfterInvalidatingCallsCompletionWithErrorIfBackendError() {
-        let backendError = Purchases.ErrorUtils.backendError(withBackendCode: Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber,
+        let backendError = Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber,
                                                              backendMessage: "Invalid credentials", finishable: true)
         self.backend.overridePurchaserInfoError = backendError
         self.backend.overridePurchaserInfo = nil
@@ -2502,7 +2505,7 @@ class PurchasesTests: XCTestCase {
 
         let appUserID = self.identityManager.currentAppUserID
         let oldAppUserInfo = Data()
-        self.deviceCache.cachePurchaserInfo(oldAppUserInfo, forAppUserID: appUserID)
+        self.deviceCache.cache(purchaserInfo: oldAppUserInfo, appUserID: appUserID)
 
 
         var receivedPurchaserInfo: Purchases.PurchaserInfo? = nil
@@ -2564,8 +2567,8 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(beFalse())
         expect(self.storeKitWrapper.finishCalled).to(beFalse())
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.domain).toEventually(equal(Purchases.ErrorDomain))
-        expect(receivedError?.code).toEventually(equal(Purchases.ErrorCode.paymentPendingError.rawValue))
+        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.code).toEventually(equal(ErrorCode.paymentPendingError.rawValue))
     }
 
 
@@ -2578,6 +2581,16 @@ class PurchasesTests: XCTestCase {
                 .storeKitWrapper(storeKitWrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
             expect(self.backend.postReceiptDataCalled).to(beTrue())
         }
+    }
+
+    func testSetDebugLogsEnabledSetsTheCorrectValue() {
+        Logger.logLevel = .warn
+        
+        Purchases.debugLogsEnabled = true
+        expect(Logger.logLevel) == .debug
+
+        Purchases.debugLogsEnabled = false
+        expect(Logger.logLevel) == .info
     }
 
 

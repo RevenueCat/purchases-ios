@@ -146,8 +146,8 @@ platform :ios do
     replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../StoreKitTests/Constants.swift')
     replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
 
-    replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../StoreKitTests/Constants.swift')
-    replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
+    replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../StoreKitTests/Constants.swift', allow_empty: true)
+    replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m', allow_empty: true)
   end
 
   desc "Deploy"
@@ -161,8 +161,8 @@ platform :ios do
 
   desc "Prepare next version"
   lane :prepare_next_version do |options|
-    current_version_number = current_version_number
-    major, minor, _ = current_version_number.split('.')
+    old_version_number = current_version_number
+    major, minor, _ = old_version_number.split('.')
     next_version = "#{major}.#{minor.to_i + 1}.0"
     next_version_snapshot = "#{next_version}-SNAPSHOT"
 
@@ -218,6 +218,27 @@ platform :ios do
     scan(scheme: "StoreKitTests", derived_data_path: "scan_derived_data")
   end
 
+  desc "Update swift package commit"
+  lane :update_swift_package_commit do
+    project_file_locations = [
+      '../IntegrationTests/SPMIntegration/SPMIntegration.xcodeproj/project.pbxproj',
+      '../Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
+      '../Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj',
+    ]
+
+    old_kind_line = "kind = branch;"
+    new_kind_line = "kind = revision;"
+
+    commit_hash = last_git_commit[:commit_hash]
+    old_branch_line = "branch = main;"
+    new_revision_line = "revision = #{commit_hash};"
+
+    project_file_locations.each { |project_file_location|
+      replace_in(old_kind_line, new_kind_line, project_file_location)
+      replace_in(old_branch_line, new_revision_line, project_file_location)
+    }
+  end
+
 end
 
 def push_pods
@@ -239,8 +260,13 @@ end
 
 def carthage_archive
   Dir.chdir("..") do
-    sh("carthage", "build", "--no-skip-current", "--use-xcframeworks")
-    sh("carthage", "archive", "Purchases")
+    # As of Carthage 0.38.0, we still can't archive xcframeworks directly. 
+    # there are also some issues which prevent us from archiving frameworks directly, since
+    # carthage can't deal with architectures for simulators and for Apple Silicon correctly.
+    # We use this script as a workaround until this is fixed. 
+    # https://github.com/Carthage/Carthage/releases/0.38.0
+    sh("./scripts/carthage.sh", "build", "--no-skip-current")
+    sh("./scripts/carthage.sh", "archive", "Purchases")
   end
 end
 
@@ -272,8 +298,8 @@ def attach_changelog_to_master(version_number)
   }
 end
 
-def replace_in(previous_text, new_text, path)
-  if new_text.to_s.strip.empty?
+def replace_in(previous_text, new_text, path, allow_empty=false)
+  if new_text.to_s.strip.empty? and not allow_empty
     fail "Missing `new_text` in call to `replace_in`, looking for replacement for #{previous_text} 😵."
   end
   sed_regex = 's|' + previous_text + '|' + new_text + '|'

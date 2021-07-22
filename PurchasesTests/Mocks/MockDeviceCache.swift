@@ -5,7 +5,7 @@
 
 import Purchases
 
-class MockDeviceCache: RCDeviceCache {
+class MockDeviceCache: DeviceCache {
 
     // MARK: appUserID
 
@@ -17,8 +17,8 @@ class MockDeviceCache: RCDeviceCache {
     var clearCachesCalleNewUserID: String? = nil
     var invokedClearCachesForAppUserID: Bool = false
 
-    override func clearCaches(forAppUserID oldUserId: String, andSaveNewUserID newUserID: String) {
-        clearCachesCalledOldUserID = oldUserId
+    override func clearCaches(oldAppUserID: String, andSaveWithNewUserID newUserID: String) {
+        clearCachesCalledOldUserID = oldAppUserID
         clearCachesCalleNewUserID = newUserID
         userIDStoredInCache = newUserID
         invokedClearCachesForAppUserID = true
@@ -36,7 +36,7 @@ class MockDeviceCache: RCDeviceCache {
         }
     }
 
-    override func cacheAppUserID(_ appUserID: String) {
+    override func cache(appUserID: String) {
         userIDStoredInCache = appUserID
     }
 
@@ -48,26 +48,25 @@ class MockDeviceCache: RCDeviceCache {
     var stubbedIsPurchaserInfoCacheStale = false
     var cachedPurchaserInfo = [String: Data]()
 
-    override func cachePurchaserInfo(_ data: Data, forAppUserID appUserID: String) {
+    override func cache(purchaserInfo: Data, appUserID: String) {
         cachePurchaserInfoCount += 1
-        cachedPurchaserInfo[appUserID] = data as Data?
+        cachedPurchaserInfo[appUserID] = purchaserInfo as Data?
     }
 
-    override func cachedPurchaserInfoData(forAppUserID appUserID: Swift.String) -> Data? {
+    override func cachedPurchaserInfoData(appUserID: String) -> Data? {
         cachedPurchaserInfoCount += 1
         return cachedPurchaserInfo[appUserID];
     }
 
-    override func isPurchaserInfoCacheStale(forAppUserID appUserID: String,
-                                            isAppBackgrounded: Bool) -> Bool {
+    override func isPurchaserInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
         return stubbedIsPurchaserInfoCacheStale
     }
 
-    override func clearPurchaserInfoCacheTimestamp(forAppUserID appUserID: String) {
+    override func clearPurchaserInfoCacheTimestamp(appUserID: String) {
         clearPurchaserInfoCacheTimestampCount += 1
     }
 
-    override func setPurchaserInfoCacheTimestampToNowForAppUserID(_ appUserID: String) {
+    override func setPurchaserInfoCacheTimestampToNow(appUserID: String) {
         setPurchaserInfoCacheTimestampToNowCount += 1
     }
 
@@ -84,11 +83,11 @@ class MockDeviceCache: RCDeviceCache {
         return stubbedOfferings
     }
 
-    override func cacheOfferings(_ offerings: Offerings) {
+    override func cache(offerings: Offerings) {
         cachedOfferingsCount += 1
     }
 
-    override func isOfferingsCacheStale(withIsAppBackgrounded isAppBackgrounded: Bool) -> Bool {
+    override func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
         return stubbedIsOfferingsCacheStale
     }
 
@@ -107,11 +106,11 @@ class MockDeviceCache: RCDeviceCache {
     var invokedStoreParameters: (attribute: SubscriberAttribute, appUserID: String)?
     var invokedStoreParametersList = [(attribute: SubscriberAttribute, appUserID: String)]()
 
-    override func store(_ attribute: SubscriberAttribute, appUserID: String) {
+    override func store(subscriberAttribute: SubscriberAttribute, appUserID: String) {
         invokedStore = true
         invokedStoreCount += 1
-        invokedStoreParameters = (attribute, appUserID)
-        invokedStoreParametersList.append((attribute, appUserID))
+        invokedStoreParameters = (subscriberAttribute, appUserID)
+        invokedStoreParametersList.append((subscriberAttribute, appUserID))
     }
 
     var invokedStoreSubscriberAttributes = false
@@ -120,12 +119,11 @@ class MockDeviceCache: RCDeviceCache {
     var invokedStoreSubscriberAttributesParametersList = [(attributesByKey: [String: SubscriberAttribute],
         appUserID: String)]()
 
-    override func storeSubscriberAttributes(_ attributesByKey: [String: SubscriberAttribute],
-                                            appUserID: String) {
+    override func store(subscriberAttributesByKey: [String: SubscriberAttribute], appUserID: String) {
         invokedStoreSubscriberAttributes = true
         invokedStoreSubscriberAttributesCount += 1
-        invokedStoreSubscriberAttributesParameters = (attributesByKey, appUserID)
-        invokedStoreSubscriberAttributesParametersList.append((attributesByKey, appUserID))
+        invokedStoreSubscriberAttributesParameters = (subscriberAttributesByKey, appUserID)
+        invokedStoreSubscriberAttributesParametersList.append((subscriberAttributesByKey, appUserID))
     }
 
     var invokedSubscriberAttribute = false
@@ -134,8 +132,7 @@ class MockDeviceCache: RCDeviceCache {
     var invokedSubscriberAttributeParametersList = [(attributeKey: String, appUserID: String)]()
     var stubbedSubscriberAttributeResult: SubscriberAttribute!
 
-    override func subscriberAttribute(withKey attributeKey: String,
-                                      appUserID: String) -> SubscriberAttribute? {
+    override func subscriberAttribute(attributeKey: String, appUserID: String) -> SubscriberAttribute? {
         invokedSubscriberAttribute = true
         invokedSubscriberAttributeCount += 1
         invokedSubscriberAttributeParameters = (attributeKey, appUserID)
@@ -149,7 +146,7 @@ class MockDeviceCache: RCDeviceCache {
     var invokedUnsyncedAttributesByKeyParametersList = [(appUserID: String, Void)]()
     var stubbedUnsyncedAttributesByKeyResult: [String: SubscriberAttribute]! = [:]
 
-    override func unsyncedAttributesByKey(forAppUserID appUserID: String) -> [String: SubscriberAttribute] {
+    override func unsyncedAttributesByKey(appUserID: String) -> [String: SubscriberAttribute] {
         invokedUnsyncedAttributesByKey = true
         invokedUnsyncedAttributesByKeyCount += 1
         invokedUnsyncedAttributesByKeyParameters = (appUserID, ())
@@ -169,9 +166,9 @@ class MockDeviceCache: RCDeviceCache {
     var invokedNumberOfUnsyncedAttributesCount = 0
     var invokedNumberOfUnsyncedAttributesParameters: (appUserID: String, Void)?
     var invokedNumberOfUnsyncedAttributesParametersList = [(appUserID: String, Void)]()
-    var stubbedNumberOfUnsyncedAttributesResult: UInt! = 0
+    var stubbedNumberOfUnsyncedAttributesResult: Int! = 0
 
-    override func numberOfUnsyncedAttributes(forAppUserID appUserID: String) -> UInt {
+    override func numberOfUnsyncedAttributes(appUserID: String) -> Int {
         invokedNumberOfUnsyncedAttributes = true
         invokedNumberOfUnsyncedAttributesCount += 1
         invokedNumberOfUnsyncedAttributesParameters = (appUserID, ())
@@ -194,7 +191,7 @@ class MockDeviceCache: RCDeviceCache {
     var invokedDeleteAttributesIfSyncedParameters: (appUserID: String?, Void)?
     var invokedDeleteAttributesIfSyncedParametersList: [String] = []
 
-    override func deleteAttributesIfSynced(forAppUserID appUserID: String) {
+    override func deleteAttributesIfSynced(appUserID: String) {
         invokedDeleteAttributesIfSynced = true
         invokedDeleteAttributesIfSyncedCount += 1
         invokedDeleteAttributesIfSyncedParameters = (appUserID, ())
@@ -206,7 +203,7 @@ class MockDeviceCache: RCDeviceCache {
     var invokedClearPurchaserInfoCacheParameters: (appUserID: String, Void)?
     var invokedClearPurchaserInfoCacheParametersList = [(appUserID: String, Void)]()
 
-    override func clearPurchaserInfoCache(forAppUserID appUserID: String) {
+    override func clearPurchaserInfoCache(appUserID: String) {
         cachedPurchaserInfo.removeValue(forKey: appUserID)
         invokedClearPurchaserInfoCache = true
         invokedClearPurchaserInfoCacheCount += 1
@@ -219,7 +216,7 @@ class MockDeviceCache: RCDeviceCache {
     var invokedClearLatestNetworkAndAdvertisingIdsSentParameters: (appUserID: String?, Void)?
     var invokedClearLatestNetworkAndAdvertisingIdsSentParametersList = [(appUserID: String?, Void)]()
 
-    override func clearLatestNetworkAndAdvertisingIdsSent(forAppUserID appUserID: String?) {
+    override func clearLatestNetworkAndAdvertisingIdsSent(appUserID: String?) {
         invokedClearLatestNetworkAndAdvertisingIdsSent = true
         invokedClearLatestNetworkAndAdvertisingIdsSentCount += 1
         invokedClearLatestNetworkAndAdvertisingIdsSentParameters = (appUserID, ())

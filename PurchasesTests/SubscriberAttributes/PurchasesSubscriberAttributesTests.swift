@@ -18,7 +18,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     let mockNotificationCenter = MockNotificationCenter()
     var userDefaults: UserDefaults! = nil
     let mockOfferingsFactory = MockOfferingsFactory()
-    let mockDeviceCache = MockDeviceCache()
+    var mockDeviceCache: MockDeviceCache!
     let mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user");
     let mockSubscriberAttributesManager = MockSubscriberAttributesManager()
     var subscriberAttributeHeight: SubscriberAttribute!
@@ -39,7 +39,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var purchases: Purchases!
 
     override func setUp() {
-        self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        userDefaults = UserDefaults(suiteName: "TestDefaults")
+        self.mockDeviceCache = MockDeviceCache(userDefaults: userDefaults)
+
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
                                                              value: "183")
         self.subscriberAttributeWeight = SubscriberAttribute(withKey: "weight",
@@ -393,7 +395,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
-        let errorCode = Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber
+        let errorCode = BackendErrorCode.invalidAPIKey.rawValue as NSNumber
         let extraUserInfo = [RCSuccessfullySyncedKey: true]
         self.mockBackend.stubbedPostReceiptPurchaserError = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
                                                                                               backendMessage: "Invalid credentials",
@@ -421,7 +423,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
-        let errorCode = Purchases.RevenueCatBackendErrorCode.invalidAPIKey.rawValue as NSNumber
+        let errorCode = BackendErrorCode.invalidAPIKey.rawValue as NSNumber
         let extraUserInfo = [RCSuccessfullySyncedKey: false]
         self.mockBackend.stubbedPostReceiptPurchaserError = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
                                                                                               backendMessage: "Invalid credentials",

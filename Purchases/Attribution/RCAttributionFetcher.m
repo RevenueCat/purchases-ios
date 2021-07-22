@@ -7,7 +7,6 @@
 //
 
 #import "RCAttributionFetcher.h"
-#import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
 @import PurchasesCoreSwift;
@@ -85,7 +84,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 - (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network {
     NSString *networkID = [NSString stringWithFormat:@"%ld", (long) network];
     NSDictionary *cachedDict =
-        [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:self.identityManager.currentAppUserID];
+        [self.deviceCache latestNetworkAndAdvertisingIdsSentWithAppUserID:self.identityManager.currentAppUserID];
     return cachedDict[networkID];
 }
 
@@ -102,7 +101,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     NSString *networkKey = [NSString stringWithFormat:@"%ld", (long) network];
     NSString *identifierForAdvertisers = [self identifierForAdvertisers];
     NSDictionary *dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks =
-        [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:appUserID];
+        [self.deviceCache latestNetworkAndAdvertisingIdsSentWithAppUserID:appUserID];
     NSString *latestSentToNetwork = dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks[networkKey];
     NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", identifierForAdvertisers, networkUserId];
 
