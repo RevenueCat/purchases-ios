@@ -15,9 +15,9 @@ public protocol Product {
 
     //    var localizedTitle: String { get }
     //
-    //    var price: NSDecimalNumber { get }
+        var price: Decimal { get }
     //
-    //    var priceLocale: Locale { get }
+        var localizedPriceString: String { get }
     //
     //    var productIdentifier: String { get }
     //
@@ -60,9 +60,19 @@ public struct SK2ProductWrapper: Product {
     init(sk2Product: StoreKit.Product) {
         self.underlyingSK2Product = sk2Product
     }
+
+    public var price: Decimal {
+        return underlyingSK2Product.price
+    }
+
+    public var localizedPriceString: String {
+        return underlyingSK2Product.displayPrice
+    }
 }
 
 public struct SK1ProductWrapper: Product {
+    private let formatter: NumberFormatter
+
     public let underlyingSK1Product: SKProduct
     public var localizedDescription: String {
         return underlyingSK1Product.localizedDescription
@@ -72,13 +82,13 @@ public struct SK1ProductWrapper: Product {
     //        return underlyingSK1Product.localizedTitle
     //    }
     //
-    //    public var price: NSDecimalNumber {
-    //        return underlyingSK1Product.price
-    //    }
-    //
-    //    public var priceLocale: Locale {
-    //        return underlyingSK1Product.priceLocale
-    //    }
+    public var price: Decimal {
+        return underlyingSK1Product.price as Decimal
+    }
+
+    public var localizedPriceString: String {
+        return formatter.string(from: underlyingSK1Product.price) ?? ""
+    }
     //
     //    public var productIdentifier: String {
     //        return underlyingSK1Product.productIdentifier
@@ -110,5 +120,9 @@ public struct SK1ProductWrapper: Product {
 
     init(sk1Product: SKProduct) {
         self.underlyingSK1Product = sk1Product
+
+        self.formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = underlyingSK1Product.priceLocale
     }
 }

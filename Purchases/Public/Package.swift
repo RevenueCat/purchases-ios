@@ -88,9 +88,9 @@ private extension PackageType {
             formatter.numberStyle = .currency
             formatter.locale = product.priceLocale
 
-            if let price = product.introductoryPrice?.price {
-                return formatter.string(from: price) ?? ""
-            }
+//            if let price = product.introductoryPrice?.price {
+//                return formatter.string(from: price) ?? ""
+//            }
             return ""
         } else {
             return ""
