@@ -7,7 +7,6 @@
 //
 
 #import "RCHTTPClient.h"
-#import "RCPurchasesErrorUtils.h"
 @import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -24,8 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 @implementation RCHTTPClient
-
-typedef void (^RetryRequestBlock)(void);
 
 - (instancetype)initWithSystemInfo:(RCSystemInfo *)systemInfo
                        eTagManager:(RCETagManager *)eTagManager {
@@ -164,7 +161,7 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
                                                          options:0
                                                            error:&jsonError];
         }
-        
+
         if (jsonError) {
             [RCLog error:[NSString stringWithFormat:RCStrings.network.parsing_json_error, jsonError.localizedDescription]];
             [RCLog error:[NSString stringWithFormat:RCStrings.network.json_data_received,

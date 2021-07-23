@@ -7,7 +7,6 @@
 //
 
 #import "RCAttributionFetcher.h"
-#import "RCDeviceCache.h"
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
 @import PurchasesCoreSwift;
@@ -81,56 +80,6 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     #endif
 }
 
-- (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network {
-    NSString *networkID = [NSString stringWithFormat:@"%ld", (long) network];
-    NSDictionary *cachedDict =
-        [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:self.identityManager.currentAppUserID];
-    return cachedDict[networkID];
-}
-
-- (void)postAttributionData:(NSDictionary *)data
-                fromNetwork:(RCAttributionNetwork)network
-           forNetworkUserId:(nullable NSString *)networkUserId {
-    if (data[@"rc_appsflyer_id"]) {
-        [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.attribution.appsflyer_id_deprecated]];
-    }
-    if (network == RCAttributionNetworkAppsFlyer && networkUserId == nil) {
-        [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.attribution.networkuserid_required_for_appsflyer]];
-    }
-    NSString *appUserID = self.identityManager.currentAppUserID;
-    NSString *networkKey = [NSString stringWithFormat:@"%ld", (long) network];
-    NSString *identifierForAdvertisers = [self identifierForAdvertisers];
-    NSDictionary *dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks =
-        [self.deviceCache latestNetworkAndAdvertisingIdsSentForAppUserID:appUserID];
-    NSString *latestSentToNetwork = dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks[networkKey];
-    NSString *newValueForNetwork = [NSString stringWithFormat:@"%@_%@", identifierForAdvertisers, networkUserId];
-
-    if ([latestSentToNetwork isEqualToString:newValueForNetwork]) {
-        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.skip_same_attributes]];
-    } else {
-        NSMutableDictionary<NSString *, NSString *> *newDictToCache =
-            [NSMutableDictionary dictionaryWithDictionary:dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks];
-        newDictToCache[networkKey] = newValueForNetwork;
-
-        NSMutableDictionary *newData = [NSMutableDictionary dictionaryWithDictionary:data];
-        newData[@"rc_idfa"] = identifierForAdvertisers;
-        newData[@"rc_idfv"] = [self identifierForVendor];
-        newData[@"rc_attribution_network_id"] = networkUserId;
-
-        if (newData.count > 0) {
-            [self.backend postAttributionData:newData
-                                  fromNetwork:network
-                                 forAppUserID:appUserID
-                                   completion:^(NSError *_Nullable error) {
-                                       if (error == nil) {
-                                           [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newDictToCache
-                                                                                      forAppUserID:appUserID];
-                                       }
-                                   }];
-        }
-    }
-}
-
 - (BOOL)isAuthorizedToPostSearchAds {
     // Should match platforms that require permissions detailed in
     // https://developer.apple.com/app-store/user-privacy-and-data-use/
@@ -178,55 +127,6 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     }
     #endif
     return YES;
-}
-
-- (void)postAppleSearchAdsAttributionIfNeeded {
-    if (!self.isAuthorizedToPostSearchAds) {
-        return;
-    }
-
-    NSString *latestNetworkIdAndAdvertisingIdSentToAppleSearchAds = [self
-        latestNetworkIdAndAdvertisingIdentifierSentForNetwork:RCAttributionNetworkAppleSearchAds];
-    if (latestNetworkIdAndAdvertisingIdSentToAppleSearchAds != nil) {
-        return;
-    }
-
-    [self adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails,
-                                                          NSError *_Nullable error) {
-        NSArray *values = [attributionDetails allValues];
-
-        bool hasIadAttribution = values.count != 0 && [values[0][@"iad-attribution"] boolValue];
-        if (hasIadAttribution) {
-            [self postAttributionData:attributionDetails
-                          fromNetwork:RCAttributionNetworkAppleSearchAds
-                     forNetworkUserId:nil];
-        }
-    }];
-}
-
-- (void)postPostponedAttributionDataIfNeeded {
-    if (postponedAttributionData) {
-        for (RCAttributionData *attributionData in postponedAttributionData) {
-            [self postAttributionData:attributionData.data
-                          fromNetwork:attributionData.network
-                     forNetworkUserId:attributionData.networkUserId];
-        }
-    }
-
-    postponedAttributionData = nil;
-}
-
-static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
-
-+ (void)storePostponedAttributionData:(NSDictionary *)data
-                          fromNetwork:(RCAttributionNetwork)network
-                     forNetworkUserId:(nullable NSString *)networkUserId {
-    if (postponedAttributionData == nil) {
-        postponedAttributionData = [NSMutableArray array];
-    }
-    [postponedAttributionData addObject:[[RCAttributionData alloc] initWithData:data
-                                                                        network:network
-                                                                  networkUserId:networkUserId]];
 }
 
 @end

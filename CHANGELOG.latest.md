@@ -1,4 +1,2 @@
-- Updates log message for `createAlias` to improve clarity
-    https://github.com/RevenueCat/purchases-ios/pull/498
-- Adds `rc_` to all Foundation extensions to prevent name collisions
-    https://github.com/RevenueCat/purchases-ios/pull/500
+- Fixed a bug where calling setDebugLogsEnabled(false) enables debug logs when it should not. 
+    https://github.com/RevenueCat/purchases-ios/pull/663

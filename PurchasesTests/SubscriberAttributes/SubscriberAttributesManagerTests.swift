@@ -13,6 +13,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
     var mockBackend: MockBackend!
     var mockDeviceCache: MockDeviceCache!
     var mockAttributionFetcher: MockAttributionFetcher!
+    var mockAttributionDataMigrator: MockAttributionDataMigrator!
     var subscriberAttributesManager: RCSubscriberAttributesManager!
     var subscriberAttributeHeight: SubscriberAttribute!
     var subscriberAttributeWeight: SubscriberAttribute!
@@ -29,9 +30,11 @@ class SubscriberAttributesManagerTests: XCTestCase {
                                                              systemInfo: try! MockSystemInfo(platformFlavor: "iOS",
                                                                                              platformFlavorVersion: "3.2.1",
                                                                                              finishTransactions: true))
+        self.mockAttributionDataMigrator = MockAttributionDataMigrator()
         self.subscriberAttributesManager = RCSubscriberAttributesManager(backend: mockBackend,
                                                                          deviceCache: mockDeviceCache,
-                                                                         attributionFetcher: mockAttributionFetcher)
+                                                                         attributionFetcher: mockAttributionFetcher,
+                                                                         attributionDataMigrator: mockAttributionDataMigrator)
         self.subscriberAttributeHeight = SubscriberAttribute(withKey: "height",
                                                              value: "183")
         self.subscriberAttributeWeight = SubscriberAttribute(withKey: "weight",
@@ -46,19 +49,28 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expectToThrowException(.parameterAssert) {
             _ = RCSubscriberAttributesManager(backend: nil,
                                               deviceCache: self.mockDeviceCache,
-                                              attributionFetcher: self.mockAttributionFetcher)
+                                              attributionFetcher: self.mockAttributionFetcher,
+                                              attributionDataMigrator: self.mockAttributionDataMigrator)
         }
-
+        
         expectToThrowException(.parameterAssert) {
             _ = RCSubscriberAttributesManager(backend: self.mockBackend,
                                               deviceCache: nil,
-                                              attributionFetcher: self.mockAttributionFetcher)
+                                              attributionFetcher: self.mockAttributionFetcher,
+                                              attributionDataMigrator: self.mockAttributionDataMigrator)
         }
-
+        
         expectToThrowException(.parameterAssert) {
             _ = RCSubscriberAttributesManager(backend: self.mockBackend,
                                               deviceCache: self.mockDeviceCache,
-                                              attributionFetcher: nil)
+                                              attributionFetcher: nil,
+                                              attributionDataMigrator: self.mockAttributionDataMigrator)
+        }
+        expectToThrowException(.parameterAssert) {
+            _ = RCSubscriberAttributesManager(backend: self.mockBackend,
+                                              deviceCache: self.mockDeviceCache,
+                                              attributionFetcher: self.mockAttributionFetcher,
+                                              attributionDataMigrator: nil)
         }
     }
 
@@ -1306,6 +1318,52 @@ class SubscriberAttributesManagerTests: XCTestCase {
         expect(receivedAttribute.value) == creative
         expect(receivedAttribute.isSynced) == false
         expect(receivedAttribute.setTime) > oldSyncTime
+    }
+    // endregion
+    // region Attribution Data conversion
+
+    func testConvertAttributionDataAndSetAsSubscriberAttributesConvertsAndSetsTheAttributes() {
+        let expectedConversionKey = "converted"
+        let expectedConvertedValue = "that"
+        self.mockAttributionDataMigrator.stubbedConvertAttributionDataToSubscriberAttributesResult = [expectedConversionKey: expectedConvertedValue]
+        let expectedAttributionData = ["convert": "any", "to": "something"]
+
+        self.subscriberAttributesManager.convertAttributionDataAndSet(asSubscriberAttributes: expectedAttributionData,
+                                                                      network: .adjust,
+                                                                      appUserID: "user_id")
+        expect(self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributes) == true
+        let invokedParameters = self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributesParameters
+        expect(invokedParameters!.attributionData.count) == expectedAttributionData.count
+        for (key, value) in expectedAttributionData {
+            expect(invokedParameters!.attributionData[key] as? String) == value
+        }
+        expect(invokedParameters!.network) == AttributionNetwork.adjust.rawValue
+
+        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
+            fatalError("no attributes received")
+        }
+        let receivedAttribute = invokedParams.attribute
+        expect(receivedAttribute.key) == expectedConversionKey
+        expect(receivedAttribute.value) == expectedConvertedValue
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testWhenConvertingAttributionDataProducesAnEmptyConversionSubscriberAttributesNothingIsSet() {
+        self.mockAttributionDataMigrator.stubbedConvertAttributionDataToSubscriberAttributesResult = [:]
+        let expectedAttributionData = ["convert": "any", "to": "something"]
+
+        self.subscriberAttributesManager.convertAttributionDataAndSet(asSubscriberAttributes: expectedAttributionData,
+                                                                      network: .adjust,
+                                                                      appUserID: "user_id")
+        expect(self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributes) == true
+        let invokedParameters = self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributesParameters
+        expect(invokedParameters!.attributionData.count) == expectedAttributionData.count
+        for (key, value) in expectedAttributionData {
+            expect(invokedParameters!.attributionData[key] as? String) == value
+        }
+        expect(invokedParameters!.network) == AttributionNetwork.adjust.rawValue
+
+        expect(self.mockDeviceCache.invokedStoreParameters).to(beNil())
     }
     // endregion
 }

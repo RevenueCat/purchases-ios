@@ -12,13 +12,14 @@ NS_ASSUME_NONNULL_BEGIN
 @class RCDeviceCache;
 @class RCSubscriberAttribute;
 @class RCAttributionFetcher;
-
+@class RCAttributionDataMigrator;
 
 @interface RCSubscriberAttributesManager : NSObject
 
 - (instancetype)initWithBackend:(nullable RCBackend *)backend
                     deviceCache:(nullable RCDeviceCache *)deviceCache
-             attributionFetcher:(nullable RCAttributionFetcher *)attributionFetcher;
+             attributionFetcher:(nullable RCAttributionFetcher *)attributionFetcher
+        attributionDataMigrator:(nullable RCAttributionDataMigrator *)attributionDataMigrator;
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes appUserID:(NSString *)appUserID;
 
@@ -62,6 +63,10 @@ NS_ASSUME_NONNULL_BEGIN
                      appUserID:(NSString *)appUserID;
 
 - (void)collectDeviceIdentifiersForAppUserID:(NSString *)appUserID;
+
+- (void)convertAttributionDataAndSetAsSubscriberAttributes:(NSDictionary *)attributionData
+                                                   network:(RCAttributionNetwork)network
+                                                 appUserID:(NSString *)appUserID;
 
 @end
 

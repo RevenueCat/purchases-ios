@@ -44,7 +44,7 @@ class HTTPClientTests: XCTestCase {
         expectToThrowException(.parameterAssert) {
             self.client.performRequest("GE", serially: true, path: "/", body: Dictionary.init(),
                                        headers: nil, completionHandler: nil)
-            }
+        }
     }
 
     func testUsesTheCorrectHost() {
@@ -213,9 +213,9 @@ class HTTPClientTests: XCTestCase {
         self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, responseError) in
             if let responseNSError = responseError as NSError? {
                 successFailed = (status >= 500
-                                 && data == nil
-                                 && error.domain == responseNSError.domain
-                                 && error.code == responseNSError.code)
+                                    && data == nil
+                                    && error.domain == responseNSError.domain
+                                    && error.code == responseNSError.code)
             } else {
                 successFailed = false
             }
@@ -387,7 +387,7 @@ class HTTPClientTests: XCTestCase {
         let client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
 
         client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+                              headers: ["test_header": "value"], completionHandler:nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -406,7 +406,7 @@ class HTTPClientTests: XCTestCase {
         let client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
 
         client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+                              headers: ["test_header": "value"], completionHandler:nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -423,7 +423,7 @@ class HTTPClientTests: XCTestCase {
         let client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
 
         client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+                              headers: ["test_header": "value"], completionHandler:nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -440,7 +440,7 @@ class HTTPClientTests: XCTestCase {
         let client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
 
         client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+                              headers: ["test_header": "value"], completionHandler:nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -667,7 +667,7 @@ class HTTPClientTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).toNot(beNil())
         let receivedNSError = receivedError! as NSError
-        expect(receivedNSError.code) == ErrorCodes.networkError.rawValue
+        expect(receivedNSError.code) == ErrorCode.networkError.rawValue
         expect(receivedData).to(beNil())
         expect(receivedStatus) == -1
     }
