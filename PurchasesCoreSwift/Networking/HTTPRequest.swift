@@ -8,7 +8,7 @@
 
 import Foundation
 
-public typealias HTTPClientResponseHandler = (Int, [String: Any]?, Error?) -> Void
+public typealias HTTPClientResponseHandler = (_ statusCode: Int, _ response: [AnyHashable: Any]?, _ error: Error?) -> Void
 
 // TODO(post migration): Change back to internal
 @objc(RCHTTPRequest)

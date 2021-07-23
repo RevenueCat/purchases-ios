@@ -12,6 +12,7 @@ import OHHTTPStubs
 import Nimble
 
 import Purchases
+@testable import PurchasesCoreSwift
 
 class BackendTests: XCTestCase {
     struct HTTPRequest {
@@ -28,24 +29,24 @@ class BackendTests: XCTestCase {
         let error: Error?
     }
 
-    class MockHTTPClient: RCHTTPClient {
+    class MockHTTPClient: HTTPClient {
 
         var mocks: [String: HTTPResponse] = [:]
         var calls: [HTTPRequest] = []
 
         var shouldFinish = true
 
-        override func performRequest(_ HTTPMethod: String,
-                                     serially: Bool,
+        override func performRequest(_ httpMethod: String,
+                                     performSerially: Bool = false,
                                      path: String,
-                                     body requestBody: [AnyHashable : Any]?,
+                                     requestBody: [String : Any]?,
                                      headers: [String : String]?,
-                                     completionHandler: RCHTTPClientResponseHandler? = nil) {
+                                     completionHandler: HTTPClientResponseHandler?) {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
 
-            calls.append(HTTPRequest(HTTPMethod: HTTPMethod,
-                                     serially: serially,
+            calls.append(HTTPRequest(HTTPMethod: httpMethod,
+                                     serially: performSerially,
                                      path: path,
                                      body: requestBody,
                                      headers: headers))

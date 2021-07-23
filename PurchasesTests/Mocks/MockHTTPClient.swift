@@ -1,6 +1,7 @@
 import Purchases
+@testable import PurchasesCoreSwift
 
-class MockHTTPClient: RCHTTPClient {
+class MockHTTPClient: HTTPClient {
 
     var invokedPerformRequest = false
     var invokedPerformRequestCount = 0
@@ -11,29 +12,29 @@ class MockHTTPClient: RCHTTPClient {
     var stubbedCompletionError: Error? = nil
 
     var invokedPerformRequestParameters: (HTTPMethod: String,
-                                          serially: Bool,
+                                          performSerially: Bool,
                                           path: String,
                                           requestBody: [AnyHashable: Any]?,
                                           headers: [String: String]?,
-                                          completionHandler: RCHTTPClientResponseHandler?)?
+                                          completionHandler: HTTPClientResponseHandler?)?
     var invokedPerformRequestParametersList = [
         (HTTPMethod: String,
-            serially: Bool,
+            performSerially: Bool,
             path: String,
             requestBody: [AnyHashable: Any]?,
             headers: [String: String]?,
-            completionHandler: RCHTTPClientResponseHandler?)]()
+            completionHandler: HTTPClientResponseHandler?)]()
 
-    override func performRequest(_ HTTPMethod: String,
-                                 serially: Bool,
+    override func performRequest(_ httpMethod: String,
+                                 performSerially: Bool = false,
                                  path: String,
-                                 body requestBody: [AnyHashable: Any]?,
-                                 headers: [String: String]?,
-                                 completionHandler: RCHTTPClientResponseHandler?) {
+                                 requestBody: [String : Any]?,
+                                 headers: [String : String]?,
+                                 completionHandler: HTTPClientResponseHandler?) {
         invokedPerformRequest = true
         invokedPerformRequestCount += 1
-        invokedPerformRequestParameters = (HTTPMethod, serially, path, requestBody, headers, completionHandler)
-        invokedPerformRequestParametersList.append((HTTPMethod, serially, path, requestBody, headers, completionHandler))
+        invokedPerformRequestParameters = (httpMethod, performSerially, path, requestBody, headers, completionHandler)
+        invokedPerformRequestParametersList.append((httpMethod, performSerially, path, requestBody, headers, completionHandler))
         if (shouldInvokeCompletion) {
             completionHandler?(stubbedCompletionStatusCode,
                                stubbedCompletionResponse,

@@ -9,7 +9,6 @@
 @import PurchasesCoreSwift;
 
 #import "RCBackend.h"
-#import "RCHTTPClient.h"
 #import "RCPurchaserInfo+Protected.h"
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
@@ -194,9 +193,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     }
 
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:@"/receipts"
-                               body:body
+                        requestBody:body
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
                       NSArray *callbacks = [self getCallbacksAndClearForKey:cacheKey];
@@ -219,9 +218,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     }
 
     [self.httpClient performRequest:@"GET"
-                           serially:YES
+                    performSerially:YES
                                path:path
-                               body:nil
+                        requestBody:nil
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
                       for (RCBackendPurchaserInfoResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
@@ -259,9 +258,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/intro_eligibility", escapedAppUserID];
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:path
-                               body:@{
+                        requestBody:@{
                                       @"product_identifiers": productIdentifiers,
                                       @"fetch_token": fetchToken
                                       }
@@ -306,9 +305,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     }
 
     [self.httpClient performRequest:@"GET"
-                           serially:NO
+                    performSerially:NO
                                path:path
-                               body:nil
+                        requestBody:nil
                             headers:self.headers
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
                       if (error == nil && statusCode < RCHTTPStatusCodesRedirect) {
@@ -338,9 +337,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attribution", escapedAppUserID];
 
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:path
-                               body:@{
+                        requestBody:@{
                                       @"network": @(network),
                                       @"data": data
                                       }
@@ -359,9 +358,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSParameterAssert(newAppUserID);
     NSString *path = @"/subscribers/identify";
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:path
-                               body:@{
+                        requestBody:@{
                                    @"app_user_id": currentAppUserID,
                                    @"new_app_user_id": newAppUserID
                                }
@@ -413,9 +412,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/alias", escapedAppUserID];
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:path
-                               body:@{
+                        requestBody:@{
                                        @"new_app_user_id": newAppUserID
                                }
                             headers:self.headers
@@ -432,9 +431,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                  completion:(RCOfferSigningResponseHandler)completion {
     NSString *fetchToken = [receiptData base64EncodedStringWithOptions:0];
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:@"/offers"
-                               body:@{
+                        requestBody:@{
                                        @"app_user_id": appUserID,
                                        @"fetch_token": fetchToken,
                                        @"generate_offers": @[@{
@@ -491,9 +490,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attributes", escapedAppUserID];
     NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributes];
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:path
-                               body:@{
+                        requestBody:@{
                                    @"attributes": attributesInBackendFormat
                                }
                             headers:self.headers
