@@ -9,17 +9,20 @@
 import Foundation
 import StoreKit
 
-public protocol Product {
+public class ProductWrapper: Hashable {
+    public static func == (lhs: ProductWrapper, rhs: ProductWrapper) -> Bool {
+        return lhs.productIdentifier == rhs.productIdentifier
+    }
 
-    var localizedDescription: String { get }
+    var localizedDescription: String { fatalError() }
 
     //    var localizedTitle: String { get }
     //
-        var price: Decimal { get }
+    var price: Decimal { fatalError() }
     //
-        var localizedPriceString: String { get }
+    var localizedPriceString: String { fatalError() }
     //
-    //    var productIdentifier: String { get }
+    var productIdentifier: String { fatalError() }
     //
     //    // YES if this product has content downloadable using SKDownload
     //    var isDownloadable: Bool { get }
@@ -47,34 +50,64 @@ public protocol Product {
     //
     //    @available(iOS 12.2, *)
     //    var discounts: [SKProductDiscount] { get }
+
+    public func hash(into hasher: inout Hasher) {
+        fatalError()
+    }
 }
 
-@available(iOS 15.0, tvOS 15.0, watchOS 7.0, macOS 12.0, *)
-public struct SK2ProductWrapper: Product {
-    public let underlyingSK2Product: StoreKit.Product
+// struct AnyProductWrapper: ProductWrapper {
+//    static func == (lhs: AnyProductWrapper, rhs: AnyProductWrapper) -> Bool {
+//        lhs.localizedDescription == rhs.localizedDescription
+//    }
+//
+//    let wrappedProduct: ProductWrapper
+//
+//    var localizedDescription: String { return wrappedProduct.localizedDescription }
+//    var price: Decimal { wrappedProduct.price }
+//    var localizedPriceString: String { wrappedProduct.localizedPriceString }
+//
+//    init<Version: ProductWrapper>(_ productWrapper: Version) {
+//        self.wrappedProduct = productWrapper
+//    }
+// }
 
-    public var localizedDescription: String {
-        return underlyingSK2Product.description
-    }
+@available(iOS 15.0, tvOS 15.0, watchOS 7.0, macOS 12.0, *)
+public class SK2ProductWrapper: ProductWrapper {
 
     init(sk2Product: StoreKit.Product) {
         self.underlyingSK2Product = sk2Product
     }
 
-    public var price: Decimal {
+    public let underlyingSK2Product: StoreKit.Product
+
+    public override var localizedDescription: String {
+        return underlyingSK2Product.description
+    }
+
+    public override var price: Decimal {
         return underlyingSK2Product.price
     }
 
-    public var localizedPriceString: String {
+    public override var localizedPriceString: String {
         return underlyingSK2Product.displayPrice
+    }
+
+    public override var productIdentifier: String {
+        return underlyingSK2Product.id
+    }
+
+    public override func hash(into hasher: inout Hasher) {
+        underlyingSK2Product.hash(into: &hasher)
     }
 }
 
-public struct SK1ProductWrapper: Product {
+public class SK1ProductWrapper: ProductWrapper {
+
     private let formatter: NumberFormatter
 
     public let underlyingSK1Product: SKProduct
-    public var localizedDescription: String {
+    public override var localizedDescription: String {
         return underlyingSK1Product.localizedDescription
     }
     //
@@ -82,17 +115,17 @@ public struct SK1ProductWrapper: Product {
     //        return underlyingSK1Product.localizedTitle
     //    }
     //
-    public var price: Decimal {
+    public override var price: Decimal {
         return underlyingSK1Product.price as Decimal
     }
 
-    public var localizedPriceString: String {
+    public override var localizedPriceString: String {
         return formatter.string(from: underlyingSK1Product.price) ?? ""
     }
-    //
-    //    public var productIdentifier: String {
-    //        return underlyingSK1Product.productIdentifier
-    //    }
+
+    public override var productIdentifier: String {
+        return underlyingSK1Product.productIdentifier
+    }
 
     // YES if this product has content downloadable using SKDownload
     //    public var isDownloadable: Bool
@@ -125,4 +158,9 @@ public struct SK1ProductWrapper: Product {
         formatter.numberStyle = .currency
         formatter.locale = underlyingSK1Product.priceLocale
     }
+
+    public override func hash(into hasher: inout Hasher) {
+        underlyingSK1Product.hash(into: &hasher)
+    }
+
 }
