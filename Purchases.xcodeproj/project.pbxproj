@@ -101,7 +101,6 @@
 		351F4FB01F803D0700F245F4 /* RCPurchaserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 351F4FAE1F803D0700F245F4 /* RCPurchaserInfo.m */; };
 		35262A0F1F7C4B9100C04F2C /* Purchases.h in Headers */ = {isa = PBXBuildFile; fileRef = 35262A011F7C4B9100C04F2C /* Purchases.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35262A231F7D77E600C04F2C /* Purchases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; };
-		354895D2267AE383001DC5B1 /* AttributionDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D1267AE383001DC5B1 /* AttributionDataMigrator.swift */; };
 		354895D4267AE4B4001DC5B1 /* AttributionKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D3267AE4B4001DC5B1 /* AttributionKey.swift */; };
 		354895D6267BEDE3001DC5B1 /* SpecialSubscriberAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D5267BEDE3001DC5B1 /* SpecialSubscriberAttributes.swift */; };
 		35549323269E298B005F9AE9 /* OfferingsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35549322269E298B005F9AE9 /* OfferingsFactory.swift */; };
@@ -125,8 +124,6 @@
 		35F82BAC26A988810051DF03 /* RCAttributionPoster.h in Headers */ = {isa = PBXBuildFile; fileRef = 35D5DE06268FB39C002B2DBA /* RCAttributionPoster.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35F82BB226A98EC50051DF03 /* AttributionDataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BB126A98EC50051DF03 /* AttributionDataMigratorTests.swift */; };
 		35F82BB626A9B8040051DF03 /* AttributionDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BB526A9B8030051DF03 /* AttributionDataMigrator.swift */; };
-		35F82BB826A9B8200051DF03 /* AttributionKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BB726A9B8200051DF03 /* AttributionKey.swift */; };
-		35F82BBA26A9B8290051DF03 /* SpecialSubscriberAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BB926A9B8290051DF03 /* SpecialSubscriberAttributes.swift */; };
 		37E3500156786798CB166571 /* RCPurchases+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E352DAD631B3A45C041148 /* RCPurchases+Protected.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E35054EF6315E99DC20AEC /* RCAttributionTypeFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E3557795D5EC2CE5A6CCB5 /* RCAttributionTypeFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		37E3509E9E39B1FFE93351B1 /* NSError+RCExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 37E35D12020065BE7D6E473D /* NSError+RCExtensions.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1759,7 +1756,6 @@
 				9A65E0762591977200DE00B0 /* IdentityStrings.swift in Sources */,
 				80E80EF226970E04008F245A /* RCReceiptFetcher.swift in Sources */,
 				F5BE443D26977F9B00254A30 /* HTTPRequest.swift in Sources */,
-				35F82BB826A9B8200051DF03 /* AttributionKey.swift in Sources */,
 				2DDF41AB24F6F37C005BC22D /* AppleReceipt.swift in Sources */,
 				2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */,
 				B3B5FBC1269E17CE00104A0C /* DeviceCache.swift in Sources */,
@@ -1782,12 +1778,10 @@
 				B32B74FF26868AEB005647BF /* Package.swift in Sources */,
 				2DDF41B324F6F387005BC22D /* InAppPurchaseBuilder.swift in Sources */,
 				B34D2AA0269606E400D88C3A /* IntroEligibility.swift in Sources */,
-				35F82BBA26A9B8290051DF03 /* SpecialSubscriberAttributes.swift in Sources */,
 				35D0E5D026A5886C0099EAD8 /* ErrorUtils.swift in Sources */,
 				B372EC54268FEDC60099171E /* PromotionalOffer.swift in Sources */,
 				9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */,
 				0313FD41268A506400168386 /* DateProvider.swift in Sources */,
-				354895D2267AE383001DC5B1 /* AttributionDataMigrator.swift in Sources */,
 				B39E811A268E849900D31189 /* AttributionNetwork.swift in Sources */,
 				37E35C8515C5E2D01B0AF5C1 /* Strings.swift in Sources */,
 			);
