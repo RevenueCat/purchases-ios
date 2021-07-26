@@ -16,7 +16,7 @@ import Foundation
 // TODO (post-migration): set this back to internal
 @objc(RCHTTPClient) public class HTTPClient: NSObject {
 
-    private let accessQueue = DispatchQueue(label: "HTTPClientQueue")
+    private let accessQueue = DispatchQueue(label: "HTTPClientQueue", attributes: .concurrent)
 
     let session: URLSession
     let systemInfo: SystemInfo
@@ -118,7 +118,7 @@ private extension HTTPClient {
                                     retried: retried, completionHandler: completionHandler)
 
         if performSerially && !retried {
-            accessQueue.async {
+            accessQueue.sync(flags: .barrier) { [self] in
                 if self.currentSerialRequest != nil {
                     let message =
                         String(format: Strings.network.serial_request_queued, self.queuedRequests.count, httpMethod, path)
@@ -216,7 +216,7 @@ private extension HTTPClient {
         }
 
         if shouldBeginNextRequestWhenFinished {
-            accessQueue.async {
+            accessQueue.sync(flags: .barrier) { [self] in
                 let message = String(
                     format: Strings.network.serial_request_done,
                     self.currentSerialRequest?.httpMethod ?? "",
@@ -231,9 +231,11 @@ private extension HTTPClient {
                 }
                 if let maybeNextRequest = nextRequest {
                     Logger.debug(String(format: Strings.network.starting_next_request, maybeNextRequest))
-                    self.performRequest(maybeNextRequest.httpMethod, performSerially: true,
-                                        path: maybeNextRequest.path, requestBody: maybeNextRequest.requestBody,
-                                        headers: maybeNextRequest.headers, completionHandler: maybeNextRequest.completionHandler)
+                    DispatchQueue.main.async {
+                        self.performRequest(maybeNextRequest.httpMethod, performSerially: true,
+                                            path: maybeNextRequest.path, requestBody: maybeNextRequest.requestBody,
+                                            headers: maybeNextRequest.headers, completionHandler: maybeNextRequest.completionHandler)
+                    }
                 }
             }
         }
