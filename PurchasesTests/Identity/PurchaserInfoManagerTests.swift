@@ -9,7 +9,10 @@ class PurchaserInfoManagerTests: XCTestCase {
     var mockDeviceCache: MockDeviceCache!
     var mockSystemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
     let mockPurchaserInfo = PurchaserInfo(data: [
+        "request_date": "2018-12-21T02:40:36Z",
         "subscriber": [
+            "original_app_user_id": "app_user_id",
+            "first_seen": "2019-06-17T16:05:33Z",
             "subscriptions": [:],
             "other_purchases": [:],
             "original_application_version": NSNull()
@@ -182,7 +185,10 @@ class PurchaserInfoManagerTests: XCTestCase {
 
     func testSendCachedPurchaserInfoIfAvailableForAppUserIDSendsIfNeverSent() {
         let info = PurchaserInfo(data: [
+        "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -200,7 +206,10 @@ class PurchaserInfoManagerTests: XCTestCase {
 
     func testSendCachedPurchaserInfoIfAvailableForAppUserIDSendsIfDifferent() {
         let oldInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -214,7 +223,10 @@ class PurchaserInfoManagerTests: XCTestCase {
         purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(forAppUserID: appUserID)
 
         let newInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
             ]]);
@@ -230,7 +242,10 @@ class PurchaserInfoManagerTests: XCTestCase {
 
     func testSendCachedPurchaserInfoIfAvailableForAppUserIDSendsOnMainThread() {
         let oldInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -296,7 +311,10 @@ class PurchaserInfoManagerTests: XCTestCase {
     func testCachedPurchaserInfoParsesCorrectly() {
         let appUserID = "myUser"
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
             ]]);
@@ -319,7 +337,10 @@ class PurchaserInfoManagerTests: XCTestCase {
 
     func testCachedPurchaserInfoReturnsNilIfNotAvailableForTheAppUserID() {
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
             ]]);
@@ -345,8 +366,11 @@ class PurchaserInfoManagerTests: XCTestCase {
     func testCachedPurchaserInfoReturnsNilIfDifferentSchema() {
         let oldSchemaVersion = Int(PurchaserInfo.currentSchemaVersion())! - 1
         let data: [String: Any] = [
+            "request_date": "2019-08-16T10:30:42Z",
             "schema_version": "\(oldSchemaVersion)",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
             ]
@@ -382,6 +406,7 @@ class PurchaserInfoManagerTests: XCTestCase {
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": NSNull()

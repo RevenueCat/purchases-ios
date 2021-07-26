@@ -17,6 +17,7 @@
     RCPurchaserInfo *pi = [[RCPurchaserInfo alloc]initWithData: [[NSDictionary alloc] init]];
     RCEntitlementInfos *ei = pi.entitlements;
     NSSet<NSString *> *as = pi.activeSubscriptions;
+    NSSet<NSString *> *appis = pi.allPurchasesProductIdentifiers;
     NSDate *led = pi.latestExpirationDate;
     NSSet<NSString *> *ncp = pi.nonConsumablePurchases;
     NSArray<RCTransaction *> *nst = pi.nonSubscriptionTransactions;
@@ -32,8 +33,8 @@
     NSDate *exdf = [pi expirationDateForEntitlement:@""];
     NSDate *pdfe = [pi purchaseDateForEntitlement:@""];
     
-    NSDictionary *jo = [pi JSONObject];
+    NSString *d = [pi description];
     
-    NSLog(pi, ei, as, led, ncp, nst, oav, opd, rd, fs, oaud, murl, edfpi, pdfpi, exdf, pdfe, jo);
+    NSLog(pi, ei, as, led, ncp, nst, oav, opd, rd, fs, oaud, murl, edfpi, pdfpi, exdf, pdfe, d);
 }
 @end

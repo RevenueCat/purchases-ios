@@ -72,7 +72,9 @@ class BasicPurchaserInfoTests: XCTestCase {
     let validTwoProductsJSON = "{" +
             "\"request_date\": \"2018-05-20T06:24:50Z\"," +
             "\"subscriber\": {" +
+            "\"first_seen\": \"2018-05-20T06:24:50Z\"," +
             "\"original_application_version\": \"1.0\"," +
+            "\"original_app_user_id\": \"abcd\"," +
             "\"other_purchases\": {}," +
             "\"subscriptions\":{" +
                 "\"product_a\": {\"expires_date\": \"2018-05-27T06:24:50Z\",\"period_type\": \"normal\"}," +
@@ -125,6 +127,7 @@ class BasicPurchaserInfoTests: XCTestCase {
         let purchaserInfo = PurchaserInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
                 "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
@@ -136,6 +139,7 @@ class BasicPurchaserInfoTests: XCTestCase {
         let purchaserInfo = PurchaserInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
                 "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:],
@@ -149,6 +153,7 @@ class BasicPurchaserInfoTests: XCTestCase {
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "original_application_version": "1.0",
                 "subscriptions": [:],
                 "other_purchases": [:]
@@ -162,6 +167,7 @@ class BasicPurchaserInfoTests: XCTestCase {
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_application_version": "1.0",
+                "original_app_user_id": "app_user_id",
                 "original_purchase_date": "2018-10-26T23:17:53Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
@@ -343,6 +349,7 @@ class BasicPurchaserInfoTests: XCTestCase {
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "other_purchases": [
                     "onetime_purchase": [
                         "expires_date": "1990-08-30T02:40:36Z"
@@ -376,12 +383,18 @@ class BasicPurchaserInfoTests: XCTestCase {
     
     func testEmptyInfosEqual() {
         let info1 = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
         let info2 = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
@@ -390,14 +403,18 @@ class BasicPurchaserInfoTests: XCTestCase {
     
     func testDifferentFetchDatesStillEqual() {
         let info1 = PurchaserInfo(data: [
-            "request_date": "2018-12-19T02:40:36Z",
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
         let info2 = PurchaserInfo(data: [
             "request_date": "2018-11-19T02:40:36Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
@@ -408,6 +425,8 @@ class BasicPurchaserInfoTests: XCTestCase {
         let info1 = PurchaserInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
                 "subscriptions": [
                     "pro.1": [
                         "expires_date": "2018-12-19T02:40:36Z"
@@ -423,6 +442,8 @@ class BasicPurchaserInfoTests: XCTestCase {
         let info2 = PurchaserInfo(data: [
             "request_date": "2018-11-19T02:40:36Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
                 "subscriptions": [
                     "pro.1": [
                         "expires_date": "2018-12-19T02:40:36Z"
@@ -443,6 +464,8 @@ class BasicPurchaserInfoTests: XCTestCase {
         let info1 = PurchaserInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
                 "subscriptions": [
                     "monthly_freetrial": [
                         "billing_issues_detected_at": nil,
@@ -467,6 +490,8 @@ class BasicPurchaserInfoTests: XCTestCase {
         let info2 = PurchaserInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
                 "subscriptions": [
                     "monthly_freetrial": [
                         "billing_issues_detected_at": "2019-07-26T23:51:19Z",
@@ -495,6 +520,8 @@ class BasicPurchaserInfoTests: XCTestCase {
         let info1 = PurchaserInfo(data: [
             "request_date": "2018-12-21T02:40:36Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
                 "subscriptions": [
                     "monthly_freetrial": [
                         "billing_issues_detected_at": nil,
@@ -519,6 +546,8 @@ class BasicPurchaserInfoTests: XCTestCase {
         let info2 = PurchaserInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
                 "subscriptions": [
                     "monthly_freetrial": [
                         "billing_issues_detected_at": nil,

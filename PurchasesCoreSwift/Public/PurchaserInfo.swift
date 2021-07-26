@@ -45,10 +45,10 @@ import Foundation
      Returns the fetch date of this Purchaser info.
      @note Can be nil if was cached before we added this
      */
-    @objc public let requestDate: Date?
+    @objc public let requestDate: Date
 
     /// The date this user was first seen in RevenueCat.
-    @objc public let firstSeen: Date?
+    @objc public let firstSeen: Date
 
     /// The original App User Id recorded for this user.
     @objc public let originalAppUserId: String
@@ -89,24 +89,21 @@ import Foundation
     private let originalData: [AnyHashable: Any]
 
     @objc public init?(data: [AnyHashable: Any]) {
-        guard let subscriberObject = data["subscriber"] as? [String: Any]
+        guard let subscriberObject = data["subscriber"] as? [String: Any],
+              let subscriberData = SubscriberData.init(subscriberData: subscriberObject)
             else {
-            return nil
-        }
-            
-        guard let subscriberData = SubscriberData.init(subscriberData: subscriberObject) else {
             return nil
         }
         
         self.originalData = data
         self.schemaVersion = data["schema_version"] as? String
 
-        if let requestDateString = data["request_date"] as? String {
-            self.requestDate = DateFormatter.dateFormatter.date(from: requestDateString)
-        } else {
-            self.requestDate = nil
+        guard let requestDateString = data["request_date"] as? String,
+              let formattedRequestDate = DateFormatter.dateFormatter.date(from: requestDateString) else {
+            return nil
         }
-
+        self.requestDate = formattedRequestDate
+        
         self.originalPurchaseDate = subscriberData.originalPurchaseDate
         self.firstSeen = subscriberData.firstSeen
         self.originalAppUserId = subscriberData.originalAppUserId 
@@ -194,23 +191,14 @@ import Foundation
     }
     
     public override var description: String {
-        var activeSubsDescription = [String: String]()
-        // TODO switify this
-        for activeSubId in self.activeSubscriptions {
-            activeSubsDescription[activeSubId] = "expiresDate: \(String(describing: self.expirationDate(forProductIdentifier: activeSubId)))"
+        let activeSubsDescription = self.activeSubscriptions.reduce(into: [String: String]()) { dict, subId in
+            dict[subId] = "expiresDate: \(String(describing: self.expirationDate(forProductIdentifier: subId)))"
         }
+
+        let activeEntitlementsDescription = self.entitlements.active.mapValues { $0.description }
         
-        // TODO switify this
-        var activeEntitlementsDescription = [String: String]()
-        for (entitlementId, entitlement) in self.entitlements.active {
-            activeEntitlementsDescription[entitlementId] = entitlement.description
-        }
-        
-        var allEntitlementsDescription = [String: String]()
-        for (entitlementId, entitlement) in self.entitlements.all {
-            allEntitlementsDescription[entitlementId] = entitlement.description
-        }
-        
+        let allEntitlementsDescription = self.entitlements.all.mapValues { $0.description }
+
         var description = "<\(NSStringFromClass(type(of: self))): "
         description += "originalApplicationVersion=\(String(describing: self.originalApplicationVersion)),\n"
         description += "latestExpirationDate=\(String(describing: self.latestExpirationDate)),\n"
@@ -232,19 +220,16 @@ import Foundation
         let managementURL: URL?
         let originalApplicationVersion: String?
         let originalPurchaseDate: Date?
-        let firstSeen: Date?
-        let subscriptions: [String: Any]
+        let firstSeen: Date
         let nonSubscriptions: [String: [[String: Any]]]
         let entitlements: [String: Any]
-        let nonConsumablePurchases: Set<String>
-        let nonSubscriptionLatestTransactions: NSDictionary
         let nonSubscriptionTransactions: [Transaction]
         let allPurchases: [String: Any]
         let expirationDatesByProduct: [String: Date?]
         let purchaseDatesByProduct: [String: Date?]
 
         init?(subscriberData: [String: Any]) {
-            self.subscriptions = subscriberData["subscriptions"] as? [String: Any] ?? [String: Any]()
+            let subscriptions = subscriberData["subscriptions"] as? [String: [String: Any]] ?? [String: [String: Any]]()
             
             // Metadata
             self.originalApplicationVersion = subscriberData["original_application_version"] as? String ?? nil
@@ -255,16 +240,16 @@ import Foundation
                 self.originalPurchaseDate = nil
             }
 
-            if let firstSeenDateString = subscriberData["first_seen"] as? String {
-                guard let firstSeenDate = PurchaserInfo.parseDate(date: firstSeenDateString, withDateFormatter: DateFormatter.dateFormatter) else {
-                    return nil
-                }
-                self.firstSeen = firstSeenDate
-            } else {
-                self.firstSeen = nil
+            guard let firstSeenDateString = subscriberData["first_seen"] as? String,
+                  let firstSeenDate = PurchaserInfo.parseDate(date: firstSeenDateString, withDateFormatter: DateFormatter.dateFormatter) else {
+                return nil
             }
+            self.firstSeen = firstSeenDate
             
-            self.originalAppUserId = subscriberData["original_app_user_id"] as? String ?? ""
+            guard let originalAppUserIdString = subscriberData["original_app_user_id"] as? String else {
+                return nil
+            }
+            self.originalAppUserId = originalAppUserIdString
             
             if let managementUrlString = subscriberData["management_url"] as? String {
                 self.managementURL = parseURL(url: managementUrlString)
@@ -272,26 +257,16 @@ import Foundation
                 self.managementURL = nil
             }
             
-            
             // Purchases and entitlements
             self.nonSubscriptions = subscriberData["non_subscriptions"] as? [String: [[String: Any]]] ?? [String: [[String: Any]]]()
-            self.entitlements = subscriberData["entitlements"] as? [String: Any] ?? [:]
-            self.nonConsumablePurchases = Set(nonSubscriptions.keys)
+            self.entitlements = subscriberData["entitlements"] as? [String: Any] ?? [String: Any]()
             self.nonSubscriptionTransactions = TransactionsFactory().nonSubscriptionTransactions(withSubscriptionsData: nonSubscriptions, dateFormatter: DateFormatter.dateFormatter)
+            
+            let latestNonSubscriptionTransactionsByProductId = [String: Any](uniqueKeysWithValues: nonSubscriptions.map { productId, transactionsArray in
+                (productId, transactionsArray.last)
+            })
 
-            let productIdToLatestTransaction = NSMutableDictionary()
-            for productId in nonSubscriptions.keys {
-                let purchasesArray = nonSubscriptions[productId] ?? [[String: Any]]()
-                if let latestTransaction = purchasesArray.last {
-                    productIdToLatestTransaction[productId] = latestTransaction
-                }
-            }
-            self.nonSubscriptionLatestTransactions = productIdToLatestTransaction
-
-            guard let nonSubsLatest = nonSubscriptionLatestTransactions as? [String: Any] else {
-                return nil
-            }
-            self.allPurchases = nonSubsLatest.merging(subscriptions) { (current, _) in current }
+            self.allPurchases = latestNonSubscriptionTransactionsByProductId.merging(subscriptions) { (current, _) in current }
 
             self.expirationDatesByProduct = PurchaserInfo.parseExpirationDate(expirationDates: subscriptions)
             self.purchaseDatesByProduct = PurchaserInfo.parsePurchaseDate(purchaseDates: allPurchases)
@@ -307,8 +282,7 @@ private extension PurchaserInfo {
     }
 
     func isAfterReferenceDate(date: Date) -> Bool {
-        let referenceDate = self.requestDate ?? Date()
-        return date.timeIntervalSince(referenceDate) > 0
+        return date.timeIntervalSince(self.requestDate) > 0
     }
     
     class func parseURL(url: Any) -> URL? {

@@ -72,8 +72,11 @@ class BackendTests: XCTestCase {
     let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
     let receiptData2 = "an awesomeer receipt".data(using: String.Encoding.utf8)!
 
-    let validSubscriberResponse = [
+    let validSubscriberResponse: [String: Any] = [
+        "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "",
             "subscriptions": [
                 "onemonth_freetrial": [
                     "expires_date": "2017-08-30T02:40:36Z"
@@ -1640,7 +1643,7 @@ private extension BackendTests {
         httpClient.mock(requestPath: requestPath, response: response)
         return requestPath
     }
-
+    
     var mockPurchaserInfoDict: [String: Any] { [
         "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
@@ -1649,6 +1652,5 @@ private extension BackendTests {
             "original_app_user_id": "",
             "other_purchases": [:],
         ]
-    ]
-}
+    ]}
 }

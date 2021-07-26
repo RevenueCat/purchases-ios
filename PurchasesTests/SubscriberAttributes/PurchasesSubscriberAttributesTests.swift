@@ -36,8 +36,11 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     let purchasesDelegate = MockPurchasesDelegate()
     var purchaserInfoManager: PurchaserInfoManager!
-    let emptyPurchaserInfoData = [
+    let emptyPurchaserInfoData: [String: Any] = [
+    "request_date": "2019-08-16T10:30:42Z",
     "subscriber": [
+        "first_seen": "2019-07-17T00:05:54Z",
+        "original_app_user_id": "",
         "subscriptions": [:],
         "other_purchases": [:],
         "original_application_version": NSNull()
@@ -163,6 +166,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "1.0",

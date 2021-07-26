@@ -64,6 +64,7 @@ BOOL isAnonymous;
     appUserID = [p appUserID];
     isAnonymous = [p isAnonymous];
     
+    // TODO init an actually useful pi
     RCPurchaserInfo *pi = [[RCPurchaserInfo alloc] initWithData: [[NSDictionary alloc] init]];
     SKProduct *skp = [[SKProduct alloc] init];
     SKProductDiscount *skpd = [[SKProductDiscount alloc] init];

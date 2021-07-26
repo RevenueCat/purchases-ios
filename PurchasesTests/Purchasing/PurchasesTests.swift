@@ -11,11 +11,14 @@ import Purchases
 
 class PurchasesTests: XCTestCase {
 
-    let emptyPurchaserInfoData = [
-    "subscriber": [
-        "subscriptions": [:],
-        "other_purchases": [:],
-        "original_application_version": NSNull()
+    let emptyPurchaserInfoData: [String: Any] = [
+        "request_date": "2019-08-16T10:30:42Z",
+        "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "app_user_id",
+            "subscriptions": [:],
+            "other_purchases": [:],
+            "original_application_version": NSNull()
     ]]
     
     override func setUp() {
@@ -65,6 +68,8 @@ class PurchasesTests: XCTestCase {
         var overridePurchaserInfo = PurchaserInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
@@ -323,6 +328,7 @@ class PurchasesTests: XCTestCase {
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -381,12 +387,18 @@ class PurchasesTests: XCTestCase {
         let payment = SKPayment(product: product)
 
         let purchaserInfoBeforePurchase = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "non_subscriptions": [:]
             ]])
         let purchaserInfoAfterPurchase = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "non_subscriptions": [product.mockProductIdentifier: []]
             ]])
@@ -411,7 +423,10 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         
         let purchaserInfo1 = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "1.0"
@@ -446,7 +461,10 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         
         let purchaserInfo1 = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "1.0"
@@ -454,7 +472,10 @@ class PurchasesTests: XCTestCase {
             ])
         
         let purchaserInfo2 = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "2.0"
@@ -845,12 +866,18 @@ class PurchasesTests: XCTestCase {
         var receivedUserCancelled: Bool?
 
         let purchaserInfoBeforePurchase = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "non_subscriptions": [:]
             ]])
         let purchaserInfoAfterPurchase = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "non_subscriptions": [product.mockProductIdentifier: []]
             ]])
@@ -1034,6 +1061,7 @@ class PurchasesTests: XCTestCase {
         let info = PurchaserInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
                 "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:],
                 "other_purchases": [:],
@@ -1065,7 +1093,10 @@ class PurchasesTests: XCTestCase {
 
     func testRestoringPurchasesPostsIfReceiptHasTransactionsAndPurchaserInfoLoaded() {
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "1.0",
@@ -1159,7 +1190,10 @@ class PurchasesTests: XCTestCase {
 
     func testSyncPurchasesDoesntPostIfReceiptEmptyAndPurchaserInfoLoaded() {
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "1.0",
@@ -1190,7 +1224,10 @@ class PurchasesTests: XCTestCase {
 
     func testSyncPurchasesPostsIfReceiptHasTransactionsAndPurchaserInfoLoaded() {
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "1.0",
@@ -1391,7 +1428,10 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
 
         self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "1.0",
@@ -1434,7 +1474,10 @@ class PurchasesTests: XCTestCase {
         expect(self.deviceCache.cachedPurchaserInfo.count).toEventually(equal(1))
 
         self.backend.postReceiptPurchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -1463,6 +1506,7 @@ class PurchasesTests: XCTestCase {
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -1489,6 +1533,7 @@ class PurchasesTests: XCTestCase {
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -1514,7 +1559,10 @@ class PurchasesTests: XCTestCase {
 
     func testSendsCachedPurchaserInfoToGetter() {
         let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -1538,6 +1586,7 @@ class PurchasesTests: XCTestCase {
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -1562,6 +1611,7 @@ class PurchasesTests: XCTestCase {
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -1588,6 +1638,7 @@ class PurchasesTests: XCTestCase {
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -1798,7 +1849,10 @@ class PurchasesTests: XCTestCase {
     func testCreateAliasUpdatesCaches() {
         setupPurchases()
         self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "2"
@@ -1844,8 +1898,10 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         
         self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "subscriptions": [:],
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "other_purchases": [:],
                 "original_application_version": "2"
             ]])
@@ -1879,7 +1935,10 @@ class PurchasesTests: XCTestCase {
     func testResetUpdatesCaches() {
         setupPurchases()
         self.backend.overridePurchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": "2"
@@ -2425,12 +2484,18 @@ class PurchasesTests: XCTestCase {
         let product = MockSKProduct(mockProductIdentifier: "product")
 
         let purchaserInfoBeforePurchase = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "non_subscriptions": [:]
             ]])
         let purchaserInfoAfterPurchase = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "non_subscriptions": [product.mockProductIdentifier: []]
             ]])
@@ -2514,7 +2579,10 @@ class PurchasesTests: XCTestCase {
         let oldAppUserInfo = Data()
         self.deviceCache.cache(purchaserInfo: oldAppUserInfo, appUserID: appUserID)
         let overridePurchaserInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])

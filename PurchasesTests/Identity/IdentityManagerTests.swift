@@ -15,14 +15,14 @@ class IdentityManagerTests: XCTestCase {
     private let mockBackend = MockBackend()
     private let mockPurchaserInfoManager = MockPurchaserInfoManager()
 
-    // TODO how did this work before?
-    // TODO create better mock purchaserinfo
     let mockPurchaserInfo = PurchaserInfo(data: [
+        "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "",
             "subscriptions": [:],
-            "other_purchases": [:],
-            "original_application_version": NSNull()
-        ]])!
+            "other_purchases": [:]
+        ]])
 
     override func setUp() {
         super.setUp()
