@@ -19,15 +19,15 @@ import Foundation
     /// All product identifiers purchases by the user regardless of expiration.
     @objc public var allPurchasedProductIdentifiers: Set<String> {
         return self.nonConsumablePurchases.union(expirationDatesByProduct.keys)
-        
+
     }
-    
+
     /// Returns the latest expiration date of all products, nil if there are none
     @objc public var latestExpirationDate: Date? {
-        let mostRecentDate = expirationDatesByProduct.values.filter({ $0 != nil }).max(by: {
+        let mostRecentDate = self.expirationDatesByProduct.values.filter({ $0 != nil }).max(by: {
            $0!.timeIntervalSinceReferenceDate < $1!.timeIntervalSinceReferenceDate
         })
-        
+
         return mostRecentDate ?? nil
     }
 
@@ -52,7 +52,7 @@ import Foundation
 
     /// The original App User Id recorded for this user.
     @objc public let originalAppUserId: String
-    
+
     /** URL to manage the active subscription of the user.
      If this user has an active iOS subscription, this will point to the App Store,
      if the user has an active Play Store subscription it will point there.
@@ -78,12 +78,12 @@ import Foundation
      @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
      */
     @objc public let originalApplicationVersion: String?
-    
+
     // TODO after migration make this internal
     @objc public let schemaVersion: String?
-    
+
     private let expirationDatesByProduct: [String: Date?]
-    
+
     private let purchaseDatesByProduct: [String: Date?]
 
     private let originalData: [AnyHashable: Any]
@@ -94,7 +94,7 @@ import Foundation
             else {
             return nil
         }
-        
+
         self.originalData = data
         self.schemaVersion = data["schema_version"] as? String
 
@@ -103,10 +103,10 @@ import Foundation
             return nil
         }
         self.requestDate = formattedRequestDate
-        
+
         self.originalPurchaseDate = subscriberData.originalPurchaseDate
         self.firstSeen = subscriberData.firstSeen
-        self.originalAppUserId = subscriberData.originalAppUserId 
+        self.originalAppUserId = subscriberData.originalAppUserId
         self.managementURL = subscriberData.managementURL
         self.originalApplicationVersion = subscriberData.originalApplicationVersion
 
@@ -132,7 +132,6 @@ import Foundation
      @return The expiration date for `productIdentifier`, `nil` if product never purchased
      */
     @objc public func expirationDate(forProductIdentifier: String) -> Date? {
-        // todo why is this ?? necessary
         return expirationDatesByProduct[forProductIdentifier] ?? nil
     }
 
@@ -169,14 +168,13 @@ import Foundation
         return entitlements[forEntitlement]?.latestPurchaseDate
     }
 
-    // TODO why were we previously able to call with lowercase from swift?
-    // TODO after migration make this internal
+    // TODO after migration make this internal and remove objc rename
     @objc(JSONObject) public func jsonObject() -> [AnyHashable: Any] {
         var dictionary = self.originalData
         dictionary["schema_version"] = PurchaserInfo.currentSchemaVersion()
         return dictionary
     }
-    
+
     public override func isEqual(_ object: Any?) -> Bool {
         guard let other = object as? PurchaserInfo else {
             return false
@@ -186,17 +184,17 @@ import Foundation
         selfJson.removeValue(forKey: "request_date")
         var otherJson = other.jsonObject()
         otherJson.removeValue(forKey: "request_date")
-        
+
         return NSDictionary(dictionary: selfJson).isEqual(to: otherJson)
     }
-    
+
     public override var description: String {
         let activeSubsDescription = self.activeSubscriptions.reduce(into: [String: String]()) { dict, subId in
             dict[subId] = "expiresDate: \(String(describing: self.expirationDate(forProductIdentifier: subId)))"
         }
 
         let activeEntitlementsDescription = self.entitlements.active.mapValues { $0.description }
-        
+
         let allEntitlementsDescription = self.entitlements.all.mapValues { $0.description }
 
         var description = "<\(NSStringFromClass(type(of: self))): "
@@ -210,12 +208,12 @@ import Foundation
         description += "originalAppUserId=\(self.originalAppUserId),\n"
         description += "entitlements=\(allEntitlementsDescription),\n"
         description += ">"
-        
+
         return description
     }
 
     private struct SubscriberData {
-        
+
         let originalAppUserId: String
         let managementURL: URL?
         let originalApplicationVersion: String?
@@ -230,10 +228,10 @@ import Foundation
 
         init?(subscriberData: [String: Any]) {
             let subscriptions = subscriberData["subscriptions"] as? [String: [String: Any]] ?? [String: [String: Any]]()
-            
+
             // Metadata
             self.originalApplicationVersion = subscriberData["original_application_version"] as? String ?? nil
-        
+
             if let originalPurchaseDateString = subscriberData["original_purchase_date"] as? String {
                 self.originalPurchaseDate = PurchaserInfo.parseDate(date: originalPurchaseDateString, withDateFormatter: DateFormatter.dateFormatter)
             } else {
@@ -245,23 +243,23 @@ import Foundation
                 return nil
             }
             self.firstSeen = firstSeenDate
-            
+
             guard let originalAppUserIdString = subscriberData["original_app_user_id"] as? String else {
                 return nil
             }
             self.originalAppUserId = originalAppUserIdString
-            
+
             if let managementUrlString = subscriberData["management_url"] as? String {
                 self.managementURL = parseURL(url: managementUrlString)
             } else {
                 self.managementURL = nil
             }
-            
+
             // Purchases and entitlements
             self.nonSubscriptions = subscriberData["non_subscriptions"] as? [String: [[String: Any]]] ?? [String: [[String: Any]]]()
             self.entitlements = subscriberData["entitlements"] as? [String: Any] ?? [String: Any]()
             self.nonSubscriptionTransactions = TransactionsFactory().nonSubscriptionTransactions(withSubscriptionsData: nonSubscriptions, dateFormatter: DateFormatter.dateFormatter)
-            
+
             let latestNonSubscriptionTransactionsByProductId = [String: Any](uniqueKeysWithValues: nonSubscriptions.map { productId, transactionsArray in
                 (productId, transactionsArray.last)
             })
@@ -272,19 +270,24 @@ import Foundation
             self.purchaseDatesByProduct = PurchaserInfo.parsePurchaseDate(purchaseDates: allPurchases)
         }
     }
-    
+
 }
 
 private extension PurchaserInfo {
-    
+
     func activeKeys(dates: [String: Date?]) -> Set<String> {
-        return Set<String>(dates.keys.filter({ dates[$0] == nil || isAfterReferenceDate(date: dates[$0]!! )}))
+        return Set<String>(dates.keys.filter({
+            if let nonNullDate = dates[$0] as? Date {
+                return isAfterReferenceDate(date: nonNullDate)
+            }
+            return true
+        }))
     }
 
     func isAfterReferenceDate(date: Date) -> Bool {
         return date.timeIntervalSince(self.requestDate) > 0
     }
-    
+
     class func parseURL(url: Any) -> URL? {
         if let urlString = url as? String {
             return URL.init(string: urlString)
@@ -308,23 +311,19 @@ private extension PurchaserInfo {
     }
 
     class func parseDatesIn(dates: [String: Any], label: String) -> [String: Date?] {
-        var parsedDates = [String: Date?]()
-
-        for (identifier, _) in dates {
-            if let dateString = (dates[identifier] as? [String: String] ?? [String: String]())[label] {
-                let date = DateFormatter.dateFormatter.date(from: dateString)
-                parsedDates[identifier] = date
+        return dates.mapValues {
+            if let dateString = ($0 as? [String: String] ?? [String: String]())[label] {
+                return DateFormatter.dateFormatter.date(from: dateString)
             } else {
-                parsedDates[identifier] = nil
+                return nil
             }
         }
-        return parsedDates
     }
-    
+
 }
 
 private extension DateFormatter {
-    // TODO is this equivalent to dispatch_once_t
+
     static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
@@ -332,5 +331,5 @@ private extension DateFormatter {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter
     }()
-    
+
 }

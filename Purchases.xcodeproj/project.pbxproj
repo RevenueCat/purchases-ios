@@ -188,8 +188,7 @@
 		9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */; };
 		A56F9AB126990E9200AFC48F /* PurchaserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */; };
 		A5C7008D26AB647B00B2CA64 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBB9269D100400104A0C /* RCOfferingsAPI.m */; };
-		A5C7008F26AF279100B2CA64 /* MockPurchaserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C7008E26AF279100B2CA64 /* MockPurchaserInfo.swift */; };
-		A5E6842D2696233D00EC9CB0 /* AttributionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E6842C2696233D00EC9CB0 /* AttributionData.swift */; };
+		A5C7009026AF5A7900B2CA64 /* RCPurchaserInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */; };
 		A5E6842D2696233D00EC9CB0 /* AttributionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E6842C2696233D00EC9CB0 /* AttributionData.swift */; };
 		B3083A11269931CF007B5503 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3083A10269931CF007B5503 /* RCOfferingAPI.m */; };
 		B3083A132699334C007B5503 /* Offering.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3083A122699334C007B5503 /* Offering.swift */; };
@@ -515,7 +514,6 @@
 		A56F9AAD26990A3A00AFC48F /* RCPurchaserInfoAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPurchaserInfoAPI.h; sourceTree = SOURCE_ROOT; };
 		A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPurchaserInfoAPI.m; sourceTree = SOURCE_ROOT; };
 		A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaserInfo.swift; sourceTree = "<group>"; };
-		A5C7008E26AF279100B2CA64 /* MockPurchaserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPurchaserInfo.swift; sourceTree = "<group>"; };
 		A5E6842C2696233D00EC9CB0 /* AttributionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionData.swift; sourceTree = "<group>"; };
 		A976872C3EDAC0B4F4B45481 /* Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3083A0F269931CF007B5503 /* RCOfferingAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOfferingAPI.h; sourceTree = "<group>"; };
@@ -1072,7 +1070,6 @@
 				37E3550C031F1FD95B366998 /* MockTransaction.swift */,
 				35D8331B262FC23100E60AC5 /* MockUserDefaults.swift */,
 				2DEB976A247DB85400A92099 /* SKProductSubscriptionDurationExtensions.swift */,
-				A5C7008E26AF279100B2CA64 /* MockPurchaserInfo.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -1916,7 +1913,6 @@
 				B33C43EF267295E2006B8C8C /* RCObjC.m in Sources */,
 				37E35F150166B248756AAFEF /* NSData+RCExtensionsTests.swift in Sources */,
 				35D5DE0B268FBB82002B2DBA /* AttributionFetcherTests.swift in Sources */,
-				A5C7008F26AF279100B2CA64 /* MockPurchaserInfo.swift in Sources */,
 				37E3595F797614307CBA329A /* StoreKitWrapperTests.swift in Sources */,
 				2DDA3E4824DB101C00EDFE5B /* MockOperationDispatcher.swift in Sources */,
 				37E35DD66736A6669A746334 /* PurchaserInfoTests.swift in Sources */,
@@ -1949,7 +1945,7 @@
 				B387F47A2683FDEA0028701F /* main.m in Sources */,
 				B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */,
 				35F82BA926A849100051DF03 /* RCPurchasesErrorUtilsAPI.m in Sources */,
-				B3B5FBBA269D100400104A0C /* RCOfferingsAPI.m in Sources */,
+				A5C7009026AF5A7900B2CA64 /* RCPurchaserInfoAPI.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

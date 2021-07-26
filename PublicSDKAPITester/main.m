@@ -33,6 +33,8 @@ int main(int argc, const char * argv[]) {
         [RCOfferingAPI checkAPI];
 
         [RCOfferingsAPI checkAPI];
+        
+        [RCPurchaserInfoAPI checkAPI];
 
         [RCPurchasesAPI checkAPI];
         [RCPurchasesAPI checkEnums];

@@ -571,5 +571,73 @@ class BasicPurchaserInfoTests: XCTestCase {
             ]])
         expect(info1).to(equal(info2))
     }
+    
+    func testInitFailsIfNoRequestDate() {
+        let info = PurchaserInfo(data: [
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "management_url": "https://apple.com/manage_subscription",
+                "original_app_user_id": "",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(info).to(beNil())
+    }
+    
+    func testInitFailsIfNoSubscriberOriginalAppUserId() {
+        let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "management_url": "https://apple.com/manage_subscription",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(info).to(beNil())
+    }
+    
+    func testInitFailsIfNoSubscriber() {
+        let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+           ])
+        expect(info).to(beNil());
+    }
+
+    func testInitFailsIfNoSubscriberFirstSeen() {
+        let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "management_url": "https://apple.com/manage_subscription",
+                "original_app_user_id": "",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(info).to(beNil())
+    }
+    
+    func testInitFailsIfMalformedRequestDate() {
+        let info = PurchaserInfo(data: [
+            "request_date": "2019-08-110:30:42Z",
+            "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-07-17T00:05:54Z",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        
+        expect(info).to(beNil())
+    }
+    
+    func testInitFailsIfMalformedFirstSeenDate() {
+        let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-07-",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
+        expect(info).to(beNil())
+    }
 
 }
