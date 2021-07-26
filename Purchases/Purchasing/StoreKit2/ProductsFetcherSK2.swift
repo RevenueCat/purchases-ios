@@ -23,7 +23,7 @@ enum ProductsManagerSK2Error: Error {
 struct ProductsFetcherSK2 {
 
     func products(identifiers: Set<String>) async throws -> Set<ProductWrapper> {
-        if #available(iOS 15.0, tvOS 15.0, macOS 13.0, watchOS 7.0, *) {
+        if #available(iOS 15.0, tvOS 15.0, macOS 13.0, watchOS 8.0, *) {
 
             do {
                 let storeKitProducts = try await StoreKit.Product.products(for: identifiers)

@@ -19,7 +19,7 @@ public class ProductWrapper: Hashable {
     var price: Decimal { fatalError() }
     var localizedPriceString: String { fatalError() }
     var productIdentifier: String { fatalError() }
-    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
     var isFamilyShareable: Bool { fatalError() }
 
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, *)
@@ -49,7 +49,7 @@ public class ProductWrapper: Hashable {
     //    var discounts: [SKProductDiscount] { get }
 }
 
-@available(iOS 15.0, tvOS 15.0, watchOS 7.0, macOS 12.0, *)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public class SK2ProductWrapper: ProductWrapper {
 
     init(sk2Product: StoreKit.Product) {
@@ -92,7 +92,7 @@ public class SK1ProductWrapper: ProductWrapper {
 
     public override var productIdentifier: String { return underlyingSK1Product.productIdentifier }
 
-    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
     public override var isFamilyShareable: Bool { underlyingSK1Product.isFamilyShareable }
 
     public override var localizedTitle: String { underlyingSK1Product.localizedTitle }

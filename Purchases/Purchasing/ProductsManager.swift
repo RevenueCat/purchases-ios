@@ -28,7 +28,7 @@ class ProductsManager: NSObject {
     func productsFromOptimalStore(withIdentifiers identifiers: Set<String>,
                                   completion: @escaping (Set<ProductWrapper>) -> Void) {
 
-        if #available(iOS 15.0, tvOS 15.0, watchOS 7.0, macOS 15.0, *) {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 15.0, *) {
             Task.init {
                 do {
                     let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
