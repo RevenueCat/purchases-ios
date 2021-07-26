@@ -200,12 +200,14 @@ private extension HTTPClient {
                 httpResponse = eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
                                                                         jsonObject: jsonObject, error: maybeError, request: request, retried: retried)
                 if httpResponse == nil {
-                    let message = String(format: Strings.network.retrying_request, queableRequest.httpMethod,
-                                         queableRequest.path)
-                    Logger.debug(message)
-                    let retriedRequest = HTTPRequest(RCHTTPRequest: queableRequest, retried: true)
-                    queuedRequests.insert(retriedRequest, at: 0)
-                    shouldBeginNextRequestWhenFinished = true
+                    accessQueue.sync(flags: .barrier) { [self] in
+                        let message = String(format: Strings.network.retrying_request, queableRequest.httpMethod,
+                                             queableRequest.path)
+                        Logger.debug(message)
+                        let retriedRequest = HTTPRequest(RCHTTPRequest: queableRequest, retried: true)
+                        queuedRequests.insert(retriedRequest, at: 0)
+                        shouldBeginNextRequestWhenFinished = true
+                    }
                 }
             }
         }
@@ -216,6 +218,7 @@ private extension HTTPClient {
         }
 
         if shouldBeginNextRequestWhenFinished {
+            var nextRequest: HTTPRequest?
             accessQueue.sync(flags: .barrier) { [self] in
                 let message = String(
                     format: Strings.network.serial_request_done,
@@ -223,20 +226,17 @@ private extension HTTPClient {
                     self.currentSerialRequest?.path ?? "",
                     self.queuedRequests.count)
                 Logger.debug(message)
-                var nextRequest: HTTPRequest?
                 self.currentSerialRequest = nil
                 if !self.queuedRequests.isEmpty {
                     nextRequest = self.queuedRequests[0]
                     self.queuedRequests.remove(at: 0)
                 }
-                if let maybeNextRequest = nextRequest {
-                    Logger.debug(String(format: Strings.network.starting_next_request, maybeNextRequest))
-                    DispatchQueue.main.async {
-                        self.performRequest(maybeNextRequest.httpMethod, performSerially: true,
-                                            path: maybeNextRequest.path, requestBody: maybeNextRequest.requestBody,
-                                            headers: maybeNextRequest.headers, completionHandler: maybeNextRequest.completionHandler)
-                    }
-                }
+            }
+            if let maybeNextRequest = nextRequest {
+                Logger.debug(String(format: Strings.network.starting_next_request, maybeNextRequest))
+                self.performRequest(maybeNextRequest.httpMethod, performSerially: true,
+                                    path: maybeNextRequest.path, requestBody: maybeNextRequest.requestBody,
+                                    headers: maybeNextRequest.headers, completionHandler: maybeNextRequest.completionHandler)
             }
         }
     }
