@@ -22,6 +22,13 @@ public class ProductWrapper: Hashable {
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
     var isFamilyShareable: Bool { fatalError() }
 
+    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, *)
+    var subscriptionGroupIdentifier: String? { fatalError() }
+
+    public func hash(into hasher: inout Hasher) {
+        fatalError()
+    }
+
     //    YES if this product has content downloadable using SKDownload
     //    var isDownloadable: Bool { get }
     //
@@ -37,16 +44,9 @@ public class ProductWrapper: Hashable {
     //
     //    @available(iOS 11.2, *)
     //    var introductoryPrice: SKProductDiscount? { get }
-    //
-    //    @available(iOS 12.0, *)
-    //    var subscriptionGroupIdentifier: String? { get }
-    //
+    //    //
     //    @available(iOS 12.2, *)
     //    var discounts: [SKProductDiscount] { get }
-
-    public func hash(into hasher: inout Hasher) {
-        fatalError()
-    }
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 7.0, macOS 12.0, *)
@@ -69,6 +69,8 @@ public class SK2ProductWrapper: ProductWrapper {
     public override var isFamilyShareable: Bool { underlyingSK2Product.isFamilyShareable }
 
     public override var localizedTitle: String { underlyingSK2Product.displayName }
+
+    public override var subscriptionGroupIdentifier: String? { underlyingSK2Product.subscription?.subscriptionGroupID }
 
     public override func hash(into hasher: inout Hasher) {
         underlyingSK2Product.hash(into: &hasher)
@@ -102,6 +104,9 @@ public class SK1ProductWrapper: ProductWrapper {
         formatter.numberStyle = .currency
         formatter.locale = underlyingSK1Product.priceLocale
     }
+
+    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, *)
+    var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
     public override func hash(into hasher: inout Hasher) {
         underlyingSK1Product.hash(into: &hasher)
