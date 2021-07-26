@@ -106,7 +106,7 @@ public class SK1ProductWrapper: ProductWrapper {
     }
 
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, *)
-    var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
+    override var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
     public override func hash(into hasher: inout Hasher) {
         underlyingSK1Product.hash(into: &hasher)
