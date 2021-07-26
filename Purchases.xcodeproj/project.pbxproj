@@ -190,6 +190,7 @@
 		A5C7008D26AB647B00B2CA64 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBB9269D100400104A0C /* RCOfferingsAPI.m */; };
 		A5C7008F26AF279100B2CA64 /* MockPurchaserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C7008E26AF279100B2CA64 /* MockPurchaserInfo.swift */; };
 		A5E6842D2696233D00EC9CB0 /* AttributionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E6842C2696233D00EC9CB0 /* AttributionData.swift */; };
+		A5E6842D2696233D00EC9CB0 /* AttributionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E6842C2696233D00EC9CB0 /* AttributionData.swift */; };
 		B3083A11269931CF007B5503 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3083A10269931CF007B5503 /* RCOfferingAPI.m */; };
 		B3083A132699334C007B5503 /* Offering.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3083A122699334C007B5503 /* Offering.swift */; };
 		B32B74FF26868AEB005647BF /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C4712685784800CB3C21 /* Package.swift */; };
@@ -1948,6 +1949,7 @@
 				B387F47A2683FDEA0028701F /* main.m in Sources */,
 				B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */,
 				35F82BA926A849100051DF03 /* RCPurchasesErrorUtilsAPI.m in Sources */,
+				B3B5FBBA269D100400104A0C /* RCOfferingsAPI.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2471,7 +2473,6 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8SXR2327BM;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2497,7 +2498,6 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 8SXR2327BM;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
