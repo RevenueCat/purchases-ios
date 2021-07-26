@@ -268,7 +268,7 @@ private extension HTTPClient {
                 if isValidJSONObject {
                     do {
                         request.httpBody =
-                            try JSONSerialization.data(withJSONObject: maybeRequestBody, options: .prettyPrinted)
+                            try JSONSerialization.data(withJSONObject: maybeRequestBody)
                     } catch let error {
                         jsonParseError = error
                     }
