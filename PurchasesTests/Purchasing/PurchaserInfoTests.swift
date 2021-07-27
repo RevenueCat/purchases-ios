@@ -14,7 +14,7 @@ import Purchases
 import PurchasesCoreSwift
 
 class EmptyPurchaserInfoTests: XCTestCase {
-    let purchaserInfo = PurchaserInfo.init(data: [AnyHashable : Any]())
+    let purchaserInfo = PurchaserInfo.init(data: [String : Any]())
 
     func testEmptyDataYieldsANilInfo() {
         expect(self.purchaserInfo).to(beNil())
@@ -235,7 +235,7 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testTwoProductJson() {
         let json = try! JSONSerialization.jsonObject(with: validTwoProductsJSON.data(using: String.Encoding.utf8)!, options: [])
-        let info = PurchaserInfo(data: json as! [AnyHashable : Any])
+        let info = PurchaserInfo(data: json as! [String : Any])
         expect(info?.latestExpirationDate).toNot(beNil())
     }
 
