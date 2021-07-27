@@ -88,6 +88,14 @@ import Foundation
 
     private let originalData: [String: Any]
 
+    private static var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }
+
     @objc public init?(data: [String: Any]) {
         guard let subscriberObject = data["subscriber"] as? [String: Any],
               let subscriberData = SubscriberData.init(subscriberData: subscriberObject)
@@ -99,7 +107,7 @@ import Foundation
         self.schemaVersion = data["schema_version"] as? String
 
         guard let requestDateString = data["request_date"] as? String,
-              let formattedRequestDate = DateFormatter.dateFormatter.date(from: requestDateString) else {
+              let formattedRequestDate = Self.dateFormatter.date(from: requestDateString) else {
             return nil
         }
         self.requestDate = formattedRequestDate
@@ -115,7 +123,7 @@ import Foundation
 
         self.entitlements = EntitlementInfos(entitlementsData: subscriberData.entitlements,
                                              purchasesData: subscriberData.allPurchases,
-                                             dateFormatter: DateFormatter.dateFormatter,
+                                             dateFormatter: Self.dateFormatter,
                                              requestDate: requestDate)
 
         self.expirationDatesByProduct = subscriberData.expirationDatesByProduct
@@ -146,7 +154,6 @@ import Foundation
      */
     @objc public func purchaseDate(forProductIdentifier: String) -> Date? {
         return purchaseDatesByProduct[forProductIdentifier] ?? nil
-
     }
 
     /**
@@ -234,7 +241,7 @@ import Foundation
             if let originalPurchaseDateString = subscriberData["original_purchase_date"] as? String {
                 self.originalPurchaseDate = PurchaserInfo.parseDate(
                     dateString: originalPurchaseDateString,
-                    withDateFormatter: DateFormatter.dateFormatter)
+                    withDateFormatter: PurchaserInfo.dateFormatter)
             } else {
                 self.originalPurchaseDate = nil
             }
@@ -242,7 +249,7 @@ import Foundation
             guard let firstSeenDateString = subscriberData["first_seen"] as? String,
                   let firstSeenDate = PurchaserInfo.parseDate(
                     dateString: firstSeenDateString,
-                    withDateFormatter: DateFormatter.dateFormatter) else {
+                    withDateFormatter: dateFormatter) else {
                 return nil
             }
             self.firstSeen = firstSeenDate
@@ -259,18 +266,20 @@ import Foundation
             }
 
             // Purchases and entitlements
-            self.nonSubscriptions = subscriberData["non_subscriptions"] as? [String: [[String: Any]]] ?? [String: [[String: Any]]]()
+            self.nonSubscriptions =
+                subscriberData["non_subscriptions"] as? [String: [[String: Any]]] ?? [String: [[String: Any]]]()
             self.entitlements = subscriberData["entitlements"] as? [String: Any] ?? [String: Any]()
             self.nonSubscriptionTransactions = TransactionsFactory().nonSubscriptionTransactions(
                 withSubscriptionsData: nonSubscriptions,
-                dateFormatter: DateFormatter.dateFormatter)
+                dateFormatter: dateFormatter)
 
-            let latestNonSubscriptionTransactionsByProductId = [String: Any](uniqueKeysWithValues: nonSubscriptions.map { productId, transactionsArray in
+            let latestNonSubscriptionTransactionsByProductId =
+                [String: Any](uniqueKeysWithValues: nonSubscriptions.map { productId, transactionsArray in
                 (productId, transactionsArray.last)
             })
 
-            self.allPurchases = latestNonSubscriptionTransactionsByProductId.merging(subscriptions) {
-                (current, _) in current }
+            self.allPurchases =
+                latestNonSubscriptionTransactionsByProductId.merging(subscriptions) { (current, _) in current }
 
             self.expirationDatesByProduct = PurchaserInfo.parseExpirationDate(expirationDates: subscriptions)
             self.purchaseDatesByProduct = PurchaserInfo.parsePurchaseDate(purchaseDates: allPurchases)
@@ -308,22 +317,10 @@ private extension PurchaserInfo {
         return dates.mapValues { maybeDatesByKey in
             if let datesByKey = maybeDatesByKey as? [String: String],
                let dateString = datesByKey[label] {
-                return DateFormatter.dateFormatter.date(from: dateString)
+                return dateFormatter.date(from: dateString)
             }
             return nil
         }
     }
-
-}
-
-private extension DateFormatter {
-
-    static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter
-    }()
 
 }
