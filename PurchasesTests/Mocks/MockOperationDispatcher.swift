@@ -13,6 +13,7 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchOnMainThreadCount = 0
     var shouldInvokeDispatchOnMainThreadBlock = true
     var forwardToOriginalDispatchOnMainThread = false
+    let serialQueue = DispatchQueue(label: "MockOperationDispatcher Serial Queue")
 
     override func dispatchOnMainThread(_ block: @escaping () -> Void) {
         invokedDispatchOnMainThread = true
@@ -58,7 +59,7 @@ class MockOperationDispatcher: OperationDispatcher {
             return
         }
         if shouldInvokeDispatchOnHTTPSerialQueueBlock {
-            block()
+            serialQueue.async(execute: block)
         }
     }
 }
