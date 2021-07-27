@@ -392,12 +392,6 @@ class PurchaserInfoManagerTests: XCTestCase {
         expect(self.mockDeviceCache.cachePurchaserInfoCount) == 1
     }
 
-    func testCachePurchaserDoesntStoreIfEmpty() {
-        // TODO figure out a reasonable test here
-//        purchaserInfoManager.cachePurchaserInfo(PurchaserInfo(data: [AnyHashable: Any]())!, forAppUserID: "myUser")
-//        expect(self.mockDeviceCache.cachePurchaserInfoCount) == 0
-    }
-
     func testCachePurchaserDoesntStoreIfCantBeSerialized() {
         // infinity can't be cast into JSON, so we use it to force a parsing exception. See:
         // https://developer.apple.com/documentation/foundation/nsjsonserialization?language=objc

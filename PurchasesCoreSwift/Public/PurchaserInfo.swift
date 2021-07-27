@@ -24,8 +24,8 @@ import Foundation
 
     /// Returns the latest expiration date of all products, nil if there are none
     @objc public var latestExpirationDate: Date? {
-        let mostRecentDate = self.expirationDatesByProduct.values.filter({ $0 != nil }).max(by: {
-           $0!.timeIntervalSinceReferenceDate < $1!.timeIntervalSinceReferenceDate
+        let mostRecentDate = self.expirationDatesByProduct.values.compactMap({$0}).max(by: {
+           $0.timeIntervalSinceReferenceDate < $1.timeIntervalSinceReferenceDate
         })
 
         return mostRecentDate ?? nil
@@ -120,9 +120,7 @@ import Foundation
     }
 
     // TODO after migration make this internal
-    @objc public class func currentSchemaVersion() -> String {
-        return "2"
-    }
+    @objc public class func currentSchemaVersion() -> String { "2" }
 
     /**
      Get the expiration date for a given product identifier. You should use Entitlements though!
@@ -131,9 +129,7 @@ import Foundation
     
      @return The expiration date for `productIdentifier`, `nil` if product never purchased
      */
-    @objc public func expirationDate(forProductIdentifier: String) -> Date? {
-        return expirationDatesByProduct[forProductIdentifier] ?? nil
-    }
+    @objc public func expirationDate(forProductIdentifier: String) -> Date? { expirationDatesByProduct[forProductIdentifier] ?? nil }
 
      /**
      Get the latest purchase or renewal date for a given product identifier. You should use Entitlements though!
@@ -142,9 +138,7 @@ import Foundation
     
      @return The purchase date for `productIdentifier`, `nil` if product never purchased
      */
-    @objc public func purchaseDate(forProductIdentifier: String) -> Date? {
-        return purchaseDatesByProduct[forProductIdentifier] ?? nil
-    }
+    @objc public func purchaseDate(forProductIdentifier: String) -> Date? { purchaseDatesByProduct[forProductIdentifier] ?? nil }
 
     /**
      Get the expiration date for a given entitlement.
@@ -153,9 +147,7 @@ import Foundation
     
      @return The expiration date for the passed in `entitlement`, can be `nil`
      */
-    @objc public func expirationDate(forEntitlement: String) -> Date? {
-        return entitlements[forEntitlement]?.expirationDate
-    }
+    @objc public func expirationDate(forEntitlement: String) -> Date? { entitlements[forEntitlement]?.expirationDate }
 
     /**
      Get the latest purchase or renewal date for a given entitlement identifier.
@@ -164,9 +156,7 @@ import Foundation
     
      @return The purchase date for `entitlement`, `nil` if product never purchased
      */
-    @objc public func purchaseDate(forEntitlement: String) -> Date? {
-        return entitlements[forEntitlement]?.latestPurchaseDate
-    }
+    @objc public func purchaseDate(forEntitlement: String) -> Date? { entitlements[forEntitlement]?.latestPurchaseDate }
 
     // TODO after migration make this internal and remove objc rename
     @objc(JSONObject) public func jsonObject() -> [AnyHashable: Any] {
@@ -284,9 +274,7 @@ private extension PurchaserInfo {
         }))
     }
 
-    func isAfterReferenceDate(date: Date) -> Bool {
-        return date.timeIntervalSince(self.requestDate) > 0
-    }
+    func isAfterReferenceDate(date: Date) -> Bool { date.timeIntervalSince(self.requestDate) > 0 }
 
     class func parseURL(url: Any) -> URL? {
         if let urlString = url as? String {
@@ -302,13 +290,9 @@ private extension PurchaserInfo {
         return nil
     }
 
-    class func parseExpirationDate(expirationDates: [String: Any]) -> [String: Date?] {
-        return parseDatesIn(dates: expirationDates, label: "expires_date")
-    }
+    class func parseExpirationDate(expirationDates: [String: Any]) -> [String: Date?] { parseDatesIn(dates: expirationDates, label: "expires_date") }
 
-    class func parsePurchaseDate(purchaseDates: [String: Any]) -> [String: Date?] {
-        return parseDatesIn(dates: purchaseDates, label: "purchase_date")
-    }
+    class func parsePurchaseDate(purchaseDates: [String: Any]) -> [String: Date?] { parseDatesIn(dates: purchaseDates, label: "purchase_date") }
 
     class func parseDatesIn(dates: [String: Any], label: String) -> [String: Date?] {
         return dates.mapValues {
