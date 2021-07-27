@@ -1793,6 +1793,22 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.getSubscriberCallCount).to(equal(2))
     }
 
+    // todo: was this test removed? 
+    func testGetsProductInfoFromOfferings() {
+        setupPurchases()
+        expect(self.backend.gotOfferings).toEventually(equal(1))
+
+        var offerings: Offerings?
+        self.purchases?.offerings { (newOfferings, _) in
+            offerings = newOfferings
+        }
+
+        expect(offerings).toEventuallyNot(beNil());
+        expect(offerings!["base"]).toNot(beNil())
+        expect(offerings!["base"]!.monthly).toNot(beNil())
+        expect(offerings!["base"]!.monthly?.productWrapper).toNot(beNil())
+    }
+
     func testFirstInitializationGetsOfferingsIfAppActive() {
         systemInfo.stubbedIsApplicationBackgrounded = false
         setupPurchases()
@@ -1809,7 +1825,8 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
         self.purchases?.offerings { (newOfferings, _) in
-            let product = newOfferings!["base"]!.monthly!.product;
+            let productWrapper = newOfferings!["base"]!.monthly!.productWrapper;
+            let product = (productWrapper as! SK1ProductWrapper).underlyingSK1Product
             self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
 
             }
@@ -2529,8 +2546,8 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postReceiptDataCalled).to(beTrue())
             expect(self.backend.postedReceiptData).toNot(beNil())
 
-            expect(self.backend.postedProductID).to(equal(package.product.productIdentifier))
-            expect(self.backend.postedPrice).to(equal(package.product.price))
+            expect(self.backend.postedProductID).to(equal(package.productWrapper.productIdentifier))
+            expect(self.backend.postedPrice) == package.productWrapper.price as NSDecimalNumber
             expect(self.backend.postedOfferingIdentifier).to(equal("base"))
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }

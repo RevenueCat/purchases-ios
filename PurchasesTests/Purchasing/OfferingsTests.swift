@@ -22,7 +22,7 @@ class OfferingsTests: XCTestCase {
             "identifier": "$rc_monthly",
             "platform_product_identifier": "com.myproduct.monthly"
         ], products: [
-            "com.myproduct.annual": SKProduct()
+            "com.myproduct.annual": SK1ProductWrapper(sk1Product: SKProduct())
         ], offeringIdentifier: "offering")
 
         expect(package).to(beNil())
@@ -36,18 +36,20 @@ class OfferingsTests: XCTestCase {
             "identifier": packageIdentifier,
             "platform_product_identifier": productIdentifier
         ], products: [
-            productIdentifier: product
+            productIdentifier: SK1ProductWrapper(sk1Product: product)
         ], offeringIdentifier: "offering")
 
         expect(package).toNot(beNil())
-        expect(package?.product).to(equal(product))
+        expect(package?.productWrapper).to(beAnInstanceOf(SK1ProductWrapper.self))
+        let sk1ProductWrapper = package!.productWrapper as! SK1ProductWrapper
+        expect(sk1ProductWrapper.underlyingSK1Product).to(equal(product))
         expect(package?.identifier).to(equal(packageIdentifier))
         expect(package?.packageType).to(equal(PackageType.monthly))
     }
 
     func testOfferingIsNotCreatedIfNoValidPackage() {
-        let products = ["com.myproduct.bad": SKProduct()]
-        let offering = offeringsFactory.createOffering(withProducts: products, offeringData: [
+        let products = ["com.myproduct.bad": SK1ProductWrapper(sk1Product: SKProduct())]
+        let offering = offeringsFactory.createOffering(withProductWrappers: products, offeringData: [
             "identifier": "offering_a",
             "description": "This is the base offering",
             "packages": [
@@ -63,12 +65,12 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingIsCreatedIfValidPackages() {
         let products = [
-            "com.myproduct.annual": MockSKProduct(mockProductIdentifier: "com.myproduct.annual"),
-            "com.myproduct.monthly": MockSKProduct(mockProductIdentifier: "com.myproduct.monthly")
+            "com.myproduct.annual": SK1ProductWrapper(sk1Product: MockSKProduct(mockProductIdentifier: "com.myproduct.annual")),
+                                                      "com.myproduct.monthly": SK1ProductWrapper(sk1Product: MockSKProduct(mockProductIdentifier: "com.myproduct.monthly"))
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
-        let offering = offeringsFactory.createOffering(withProducts: products, offeringData: [
+        let offering = offeringsFactory.createOffering(withProductWrappers: products, offeringData: [
             "identifier": offeringIdentifier,
             "description": serverDescription,
             "packages": [
@@ -90,7 +92,7 @@ class OfferingsTests: XCTestCase {
     }
 
     func testListOfOfferingsIsEmptyIfNoValidOffering() {
-        let offerings = offeringsFactory.createOfferings(withProducts: [:], data: [
+        let offerings = offeringsFactory.createOfferings(withProductWrappers: [:], data: [
             "offerings": [
                 [
                     "identifier": "offering_a",
@@ -120,10 +122,10 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingsIsCreated() {
         let products = [
-            "com.myproduct.annual": MockSKProduct(mockProductIdentifier: "com.myproduct.annual"),
-            "com.myproduct.monthly": MockSKProduct(mockProductIdentifier: "com.myproduct.monthly")
+            "com.myproduct.annual": SK1ProductWrapper(sk1Product: MockSKProduct(mockProductIdentifier: "com.myproduct.annual")),
+            "com.myproduct.monthly": SK1ProductWrapper(sk1Product: MockSKProduct(mockProductIdentifier: "com.myproduct.monthly"))
         ]
-        let offerings = offeringsFactory.createOfferings(withProducts: products, data: [
+        let offerings = offeringsFactory.createOfferings(withProductWrappers: products, data: [
             "offerings": [
                 [
                     "identifier": "offering_a",
@@ -192,7 +194,7 @@ class OfferingsTests: XCTestCase {
             "offerings": [],
             "current_offering_id": nil
         ]
-        let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [String : Any])
+        let offerings = offeringsFactory.createOfferings(withProductWrappers: [:], data: data as [String : Any])
 
         expect(offerings).toNot(beNil())
         expect(offerings!.current).to(beNil())
@@ -203,7 +205,7 @@ class OfferingsTests: XCTestCase {
             "offerings": [],
             "current_offering_id": "offering_with_broken_product"
         ] as [String : Any]
-        let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [String : Any])
+        let offerings = offeringsFactory.createOfferings(withProductWrappers: [:], data: data as [String : Any])
 
         expect(offerings).toNot(beNil())
         expect(offerings!.current).to(beNil())
@@ -211,7 +213,7 @@ class OfferingsTests: XCTestCase {
 
     func testBadOfferingsDataReturnsNil() {
         let data = [:] as [String : Any]
-        let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [String : Any])
+        let offerings = offeringsFactory.createOfferings(withProductWrappers: [:], data: data as [String : Any])
 
         expect(offerings).to(beNil())
     }
@@ -227,9 +229,9 @@ class OfferingsTests: XCTestCase {
         }
         let productIdentifier = "com.myproduct"
         let products = [
-            productIdentifier: MockSKProduct(mockProductIdentifier: productIdentifier)
+            productIdentifier: SK1ProductWrapper(sk1Product: MockSKProduct(mockProductIdentifier: productIdentifier))
         ]
-        let offerings = offeringsFactory.createOfferings(withProducts: products, data: [
+        let offerings = offeringsFactory.createOfferings(withProductWrappers: products, data: [
             "offerings": [
                 [
                     "identifier": "offering_a",

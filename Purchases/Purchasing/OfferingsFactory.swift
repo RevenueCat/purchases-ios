@@ -17,15 +17,15 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(withProducts products: [String: ProductWrapper],
-                         data: [String: Any]) -> Offerings? {
+    func createOfferings(withProductWrappers products: [String: ProductWrapper],
+                                      data: [String: Any]) -> Offerings? {
         guard let offeringsData = data["offerings"] as? [[String: Any]] else {
             return nil
         }
 
         let offerings = offeringsData.reduce([String: Offering]()) { (dict, offeringData) -> [String: Offering] in
             var dict = dict
-            if let offering = createOffering(withProducts: products, offeringData: offeringData) {
+            if let offering = createOffering(withProductWrappers: products, offeringData: offeringData) {
                 dict[offering.identifier] = offering
             }
             return dict
@@ -35,7 +35,21 @@ class OfferingsFactory {
         return Offerings(offerings: offerings, currentOfferingID: currentOfferingID)
     }
 
-    func createOffering(withProducts products: [String: ProductWrapper],
+    func createOfferings(withProducts products: [String: SKProduct],
+                         data: [String: Any]) -> Offerings? {
+        let productWrappersByKey = Dictionary(uniqueKeysWithValues:
+            products.map { productIdentifier, skProduct in (productIdentifier, SK1ProductWrapper(sk1Product: skProduct)) })
+        return self.createOfferings(withProductWrappers: productWrappersByKey, data: data)
+    }
+
+    func createOffering(withProducts products: [String: SKProduct],
+                        offeringData: [String: Any]) -> Offering? {
+        let productWrappersByKey = Dictionary(uniqueKeysWithValues:
+            products.map { productIdentifier, skProduct in (productIdentifier, SK1ProductWrapper(sk1Product: skProduct)) })
+        return self.createOffering(withProductWrappers: productWrappersByKey, offeringData: offeringData)
+    }
+
+    func createOffering(withProductWrappers products: [String: ProductWrapper],
                         offeringData: [String: Any]) -> Offering? {
         guard let offeringIdentifier = offeringData["identifier"] as? String,
               let packagesData = offeringData["packages"] as? [[String: Any]],

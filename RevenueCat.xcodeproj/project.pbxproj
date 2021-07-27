@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0313FD41268A506400168386 /* DateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0313FD40268A506400168386 /* DateProvider.swift */; };
+		0FDC97BC04D954537CA8BBFA /* MockSK1ProductWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC47A55E04C13FE33A2AD018 /* MockSK1ProductWrapper.swift */; };
 		2CD72942268A823900BFC976 /* Data+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD72941268A823900BFC976 /* Data+Extensions.swift */; };
 		2CD72944268A826F00BFC976 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD72943268A826F00BFC976 /* Date+Extensions.swift */; };
 		2CD72948268A828400BFC976 /* Locale+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD72947268A828400BFC976 /* Locale+Extensions.swift */; };
@@ -455,6 +456,7 @@
 		A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaserInfo.swift; sourceTree = "<group>"; };
 		A5A92C7726C716F50038D732 /* RCPackageAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPackageAPI.h; sourceTree = "<group>"; };
 		A5A92C7826C716F50038D732 /* RCPackageAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPackageAPI.m; sourceTree = "<group>"; };
+		AC47A55E04C13FE33A2AD018 /* MockSK1ProductWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSK1ProductWrapper.swift; sourceTree = "<group>"; };
 		B3083A0F269931CF007B5503 /* RCOfferingAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOfferingAPI.h; sourceTree = "<group>"; };
 		B3083A10269931CF007B5503 /* RCOfferingAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCOfferingAPI.m; sourceTree = "<group>"; };
 		B3083A122699334C007B5503 /* Offering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Offering.swift; sourceTree = "<group>"; };
@@ -797,6 +799,7 @@
 				351B517326D44F4B00BD2BD7 /* MockPaymentDiscount.swift */,
 				351B517526D44F7200BD2BD7 /* MockProductDiscount.swift */,
 				351B517926D44FF000BD2BD7 /* MockRequestFetcher.swift */,
+				AC47A55E04C13FE33A2AD018 /* MockSK1ProductWrapper.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -1635,6 +1638,7 @@
 				2DDF41E024F6F527005BC22D /* MockInAppPurchaseBuilder.swift in Sources */,
 				37E352973B0901E3CAA717E1 /* DateFormatter+ExtensionsTests.swift in Sources */,
 				351B51B726D450E800BD2BD7 /* RCIntroEligibilityTests.swift in Sources */,
+				0FDC97BC04D954537CA8BBFA /* MockSK1ProductWrapper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

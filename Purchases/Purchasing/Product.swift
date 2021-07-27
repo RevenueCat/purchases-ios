@@ -9,25 +9,21 @@
 import Foundation
 import StoreKit
 
-public class ProductWrapper: Hashable {
-    public static func == (lhs: ProductWrapper, rhs: ProductWrapper) -> Bool {
-        return lhs.productIdentifier == rhs.productIdentifier
+@objc(RCProductWrapper) public class ProductWrapper: NSObject {
+    public override func isEqual(_ object: Any?) -> Bool {
+        return self.productIdentifier == (object as? ProductWrapper)?.productIdentifier
     }
 
-    var localizedDescription: String { fatalError() }
-    var localizedTitle: String { fatalError() }
-    var price: Decimal { fatalError() }
-    var localizedPriceString: String { fatalError() }
-    var productIdentifier: String { fatalError() }
+    @objc var localizedDescription: String { fatalError() }
+    @objc var localizedTitle: String { fatalError() }
+    @objc var price: Decimal { fatalError() }
+    @objc var localizedPriceString: String { fatalError() }
+    @objc var productIdentifier: String { fatalError() }
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
-    var isFamilyShareable: Bool { fatalError() }
+    @objc var isFamilyShareable: Bool { fatalError() }
 
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, *)
-    var subscriptionGroupIdentifier: String? { fatalError() }
-
-    public func hash(into hasher: inout Hasher) {
-        fatalError()
-    }
+    @objc var subscriptionGroupIdentifier: String? { fatalError() }
 
     //    YES if this product has content downloadable using SKDownload
     //    var isDownloadable: Bool { get }
@@ -50,7 +46,7 @@ public class ProductWrapper: Hashable {
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-public class SK2ProductWrapper: ProductWrapper {
+@objc(RCSK2ProductWrapper) public class SK2ProductWrapper: ProductWrapper {
 
     init(sk2Product: StoreKit.Product) {
         self.underlyingSK2Product = sk2Product
@@ -58,60 +54,53 @@ public class SK2ProductWrapper: ProductWrapper {
 
     public let underlyingSK2Product: StoreKit.Product
 
-    public override var localizedDescription: String { underlyingSK2Product.description }
+    @objc public override var localizedDescription: String { underlyingSK2Product.description }
 
-    public override var price: Decimal { underlyingSK2Product.price }
+    @objc public override var price: Decimal { underlyingSK2Product.price }
 
-    public override var localizedPriceString: String { underlyingSK2Product.displayPrice }
+    @objc public override var localizedPriceString: String { underlyingSK2Product.displayPrice }
 
-    public override var productIdentifier: String { underlyingSK2Product.id }
+    @objc public override var productIdentifier: String { underlyingSK2Product.id }
 
-    public override var isFamilyShareable: Bool { underlyingSK2Product.isFamilyShareable }
+    @objc public override var isFamilyShareable: Bool { underlyingSK2Product.isFamilyShareable }
 
-    public override var localizedTitle: String { underlyingSK2Product.displayName }
+    @objc public override var localizedTitle: String { underlyingSK2Product.displayName }
 
-    public override var subscriptionGroupIdentifier: String? { underlyingSK2Product.subscription?.subscriptionGroupID }
-
-    public override func hash(into hasher: inout Hasher) {
-        underlyingSK2Product.hash(into: &hasher)
-    }
+    @objc public override var subscriptionGroupIdentifier: String? { underlyingSK2Product.subscription?.subscriptionGroupID }
 
 }
 
-public class SK1ProductWrapper: ProductWrapper {
+@objc(RCSK1ProductWrapper) public class SK1ProductWrapper: ProductWrapper {
 
-    public let underlyingSK1Product: SKProduct
+    @objc public let underlyingSK1Product: SKProduct
 
-    public override var localizedDescription: String { return underlyingSK1Product.localizedDescription }
+    @objc public override var localizedDescription: String { return underlyingSK1Product.localizedDescription }
 
-    public override var price: Decimal { return underlyingSK1Product.price as Decimal }
+    @objc public override var price: Decimal { return underlyingSK1Product.price as Decimal }
 
-    public override var localizedPriceString: String {
+    @objc public override var localizedPriceString: String {
         return formatter.string(from: underlyingSK1Product.price) ?? ""
     }
 
-    public override var productIdentifier: String { return underlyingSK1Product.productIdentifier }
+    @objc public override var productIdentifier: String { return underlyingSK1Product.productIdentifier }
 
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
-    public override var isFamilyShareable: Bool { underlyingSK1Product.isFamilyShareable }
+    @objc public override var isFamilyShareable: Bool { underlyingSK1Product.isFamilyShareable }
 
-    public override var localizedTitle: String { underlyingSK1Product.localizedTitle }
+    @objc public override var localizedTitle: String { underlyingSK1Product.localizedTitle }
 
     init(sk1Product: SKProduct) {
         self.underlyingSK1Product = sk1Product
-
-        self.formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.locale = underlyingSK1Product.priceLocale
     }
 
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, *)
     override var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
-    public override func hash(into hasher: inout Hasher) {
-        underlyingSK1Product.hash(into: &hasher)
-    }
-
-    private let formatter: NumberFormatter
+    private lazy var formatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = underlyingSK1Product.priceLocale
+        return formatter
+    }()
 
 }
