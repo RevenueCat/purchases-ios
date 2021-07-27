@@ -44,4 +44,21 @@ class MockOperationDispatcher: OperationDispatcher {
             block()
         }
     }
+    
+    var invokedDispatchOnHTTPSerialQueue = false
+    var invokedDispatchOnHTTPSerialQueueCount = 0
+    var shouldInvokeDispatchOnHTTPSerialQueueBlock = true
+    var forwardToOriginalDispatchOnHTTPSerialQueue = false
+
+    override func dispatchOnHTTPSerialQueue(_ block: @escaping () -> Void) {
+        invokedDispatchOnHTTPSerialQueue = true
+        invokedDispatchOnHTTPSerialQueueCount += 1
+        if forwardToOriginalDispatchOnHTTPSerialQueue {
+            super.dispatchOnHTTPSerialQueue(block)
+            return
+        }
+        if shouldInvokeDispatchOnHTTPSerialQueueBlock {
+            block()
+        }
+    }
 }

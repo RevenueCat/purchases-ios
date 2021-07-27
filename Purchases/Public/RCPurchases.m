@@ -232,10 +232,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     NSAssert(systemInfo, error.localizedDescription);
 
     RCETagManager *eTagManager = [[RCETagManager alloc] init];
+    RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
 
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey
                                                 systemInfo:systemInfo
-                                               eTagManager:eTagManager];
+                                               eTagManager:eTagManager
+                                       operationDispatcher:operationDispatcher];
     RCStoreKitWrapper *storeKitWrapper = [[RCStoreKitWrapper alloc] init];
     RCOfferingsFactory *offeringsFactory = [[RCOfferingsFactory alloc] init];
 
@@ -244,7 +246,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     }
 
     RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWithUserDefaults:userDefaults];
-    RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
     RCIntroEligibilityCalculator *introCalculator = [[RCIntroEligibilityCalculator alloc] init];
     RCReceiptParser *receiptParser = [[RCReceiptParser alloc] init];
     RCPurchaserInfoManager *purchaserInfoManager = [[RCPurchaserInfoManager alloc]

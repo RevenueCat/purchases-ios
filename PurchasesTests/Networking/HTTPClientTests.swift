@@ -20,12 +20,14 @@ class HTTPClientTests: XCTestCase {
     var client: HTTPClient!
     var userDefaults: UserDefaults!
     var eTagManager: MockETagManager!
+    var operationDispatcher: MockOperationDispatcher!
 
     override func setUp() {
         super.setUp()
         userDefaults = MockUserDefaults()
         eTagManager = MockETagManager(userDefaults: userDefaults)
-        client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
+        operationDispatcher = MockOperationDispatcher()
+        client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
     }
 
     override func tearDown() {
@@ -390,8 +392,7 @@ class HTTPClientTests: XCTestCase {
         let systemInfo = try! SystemInfo(platformFlavor: "react-native",
                                          platformFlavorVersion: "3.2.1",
                                          finishTransactions: true)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
         client.performRequest("POST", performSerially: true, path: path, requestBody: Dictionary.init(),
                               headers: ["test_header": "value"], completionHandler:nil)
 
@@ -409,8 +410,8 @@ class HTTPClientTests: XCTestCase {
         let systemInfo = try! SystemInfo(platformFlavor: "react-native",
                                          platformFlavorVersion: "1.2.3",
                                          finishTransactions: true)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        
         client.performRequest("POST", performSerially: true, path: path, requestBody: Dictionary.init(),
                               headers: ["test_header": "value"], completionHandler:nil)
 
@@ -426,8 +427,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
         client.performRequest("POST", performSerially: true, path: path, requestBody: Dictionary.init(),
                               headers: ["test_header": "value"], completionHandler:nil)
 
@@ -443,8 +443,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
         client.performRequest("POST", performSerially: true, path: path, requestBody: Dictionary.init(),
                               headers: ["test_header": "value"], completionHandler:nil)
 
@@ -477,7 +476,7 @@ class HTTPClientTests: XCTestCase {
                 completionCallCount += 1
             }
         }
-        expect(completionCallCount).toEventually(equal(totalRequests))
+        expect(completionCallCount) == totalRequests
     }
 
     func testPerformSerialRequestWaitsUntilFirstRequestIsDoneBeforeStartingSecond() {

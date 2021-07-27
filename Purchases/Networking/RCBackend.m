@@ -29,9 +29,11 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
 
 - (nullable instancetype)initWithAPIKey:(NSString *)APIKey
                              systemInfo:(RCSystemInfo *)systemInfo
-                            eTagManager:(RCETagManager *)eTagManager {
+                            eTagManager:(RCETagManager *)eTagManager
+                    operationDispatcher:(RCOperationDispatcher *)operationDispatcher {
     RCHTTPClient *client = [[RCHTTPClient alloc] initWithSystemInfo:systemInfo
-                                                        eTagManager:eTagManager];
+                                                        eTagManager:eTagManager
+                                                operationDispatcher:operationDispatcher];
     return [self initWithHTTPClient:client
                              APIKey:APIKey];
 }

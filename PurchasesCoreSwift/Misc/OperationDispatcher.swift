@@ -12,11 +12,13 @@ import Foundation
 
     private let mainQueue: DispatchQueue
     private let workerQueue: DispatchQueue
+    private let httpQueue: DispatchQueue
     private let maxJitterInSeconds: Double = 5
 
     @objc public override init() {
         mainQueue = DispatchQueue.main
         workerQueue = DispatchQueue(label: "OperationDispatcherWorkerQueue")
+        httpQueue = DispatchQueue(label: "HTTPClientQueue")
     }
 
     @objc public func dispatchOnMainThread(_ block: @escaping () -> Void) {
@@ -36,4 +38,9 @@ import Foundation
             workerQueue.async { block() }
         }
     }
+
+    public func dispatchOnHTTPSerialQueue(_ block: @escaping () -> Void) {
+        httpQueue.async { block() }
+    }
+
 }
