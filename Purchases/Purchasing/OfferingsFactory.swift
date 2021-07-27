@@ -17,7 +17,7 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(withProducts products: [String: SKProduct],
+    func createOfferings(withProducts products: [String: ProductWrapper],
                          data: [String: Any]) -> Offerings? {
         guard let offeringsData = data["offerings"] as? [[String: Any]] else {
             return nil
@@ -35,7 +35,7 @@ class OfferingsFactory {
         return Offerings(offerings: offerings, currentOfferingID: currentOfferingID)
     }
 
-    func createOffering(withProducts products: [String: SKProduct],
+    func createOffering(withProducts products: [String: ProductWrapper],
                         offeringData: [String: Any]) -> Offering? {
         guard let offeringIdentifier = offeringData["identifier"] as? String,
               let packagesData = offeringData["packages"] as? [[String: Any]],
@@ -55,7 +55,7 @@ class OfferingsFactory {
     }
 
     func createPackage(withData data: [String: Any],
-                       products: [String: SKProduct],
+                       products: [String: ProductWrapper],
                        offeringIdentifier: String) -> Package? {
         guard let platformProductIdentifier = data["platform_product_identifier"] as? String,
               let product = products[platformProductIdentifier],
@@ -66,7 +66,7 @@ class OfferingsFactory {
         let packageType = Package.packageType(from: identifier)
         return Package(identifier: identifier,
                        packageType: packageType,
-                       product: product,
+                       productWrapper: product,
                        offeringIdentifier: offeringIdentifier)
     }
 
