@@ -20,13 +20,13 @@ class HTTPClientTests: XCTestCase {
     var client: HTTPClient!
     var userDefaults: UserDefaults!
     var eTagManager: MockETagManager!
-    var operationDispatcher: MockOperationDispatcher!
+    var operationDispatcher: OperationDispatcher!
 
     override func setUp() {
         super.setUp()
         userDefaults = MockUserDefaults()
         eTagManager = MockETagManager(userDefaults: userDefaults)
-        operationDispatcher = MockOperationDispatcher()
+        operationDispatcher = OperationDispatcher()
         client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
     }
 
@@ -43,7 +43,7 @@ class HTTPClientTests: XCTestCase {
                                    headers: nil) { _, _, error in
             maybeError = error
         }
-        expect(maybeError).toNot(beNil())
+        expect(maybeError).toEventuallyNot(beNil())
     }
 
     func testUnrecognizedMethodFails() {
@@ -52,7 +52,7 @@ class HTTPClientTests: XCTestCase {
                                    headers: nil) { _, _, error in
             maybeError = error
         }
-        expect(maybeError).toNot(beNil())
+        expect(maybeError).toEventuallyNot(beNil())
     }
 
     func testUsesTheCorrectHost() {
@@ -476,7 +476,7 @@ class HTTPClientTests: XCTestCase {
                 completionCallCount += 1
             }
         }
-        expect(completionCallCount) == totalRequests
+        expect(completionCallCount).toEventually(equal(totalRequests))
     }
 
     func testPerformSerialRequestWaitsUntilFirstRequestIsDoneBeforeStartingSecond() {
@@ -647,7 +647,7 @@ class HTTPClientTests: XCTestCase {
                                    headers: nil) { _, _, error in
             maybeError = error
         }
-        expect(maybeError).toNot(beNil())
+        expect(maybeError).toEventuallyNot(beNil())
     }
 
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() {
