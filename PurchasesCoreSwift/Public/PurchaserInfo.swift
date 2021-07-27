@@ -160,9 +160,7 @@ import Foundation
 
     // TODO after migration make this internal and remove objc rename
     @objc(JSONObject) public func jsonObject() -> [AnyHashable: Any] {
-        var dictionary = self.originalData
-        dictionary["schema_version"] = PurchaserInfo.currentSchemaVersion()
-        return dictionary
+        return originalData.merging(["schema_version": PurchaserInfo.currentSchemaVersion()], uniquingKeysWith: { (current, _) in current })
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
