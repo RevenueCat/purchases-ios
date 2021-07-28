@@ -6,6 +6,8 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
+import Foundation
+
 class InMemoryCachedObject<T> {
 
     private let accessQueue = DispatchQueue(label: "InMemoryCachedObjectQueue", attributes: .concurrent)
