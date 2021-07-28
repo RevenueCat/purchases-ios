@@ -9,16 +9,17 @@
 import Foundation
 
 // swiftlint:disable file_length
+// TODO (post-migration) switch back to internal, along with most of the functions.
 @objc(RCDeviceCache) public class DeviceCache: NSObject {
 
     // Thread-safe, but don't call from anywhere inside this class.
-    @objc var cachedAppUserID: String? { readCache { self.threadUnsafeCachedAppUserID } }
-    @objc var cachedLegacyAppUserID: String? {
+    @objc public var cachedAppUserID: String? { readCache { self.threadUnsafeCachedAppUserID } }
+    @objc public var cachedLegacyAppUserID: String? {
         return readCache {
             return self.userDefaults.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
         }
     }
-    @objc var cachedOfferings: Offerings? { offeringsCachedObject.cachedInstance() }
+    @objc public var cachedOfferings: Offerings? { offeringsCachedObject.cachedInstance() }
 
     private let cacheDurationInSecondsInForeground = 60 * 5.0
     private let cacheDurationInSecondsInBackground = 60 * 60 * 25.0
@@ -76,14 +77,14 @@ import Foundation
     }
 
     // MARK: - appUserID
-    @objc(cacheAppUserID:) func cache(appUserID: String) {
+    @objc(cacheAppUserID:) public func cache(appUserID: String) {
         writeCache {
             self.userDefaults.setValue(appUserID, forKey: CacheKeys.appUserDefaults)
             self.appUserIDHasBeenSet = true
         }
     }
 
-    @objc func clearCaches(oldAppUserID: String, andSaveWithNewUserID newUserID: String) {
+    @objc public func clearCaches(oldAppUserID: String, andSaveWithNewUserID newUserID: String) {
         writeCache {
             self.userDefaults.removeObject(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
             self.userDefaults.removeObject(
@@ -109,12 +110,12 @@ import Foundation
     }
 
     // MARK: - purchaserInfo
-    @objc func cachedPurchaserInfoData(appUserID: String) -> Data? {
+    @objc public func cachedPurchaserInfoData(appUserID: String) -> Data? {
         return userDefaults.data(forKey: CacheKeyBases.purchaserInfoAppUserDefaults + appUserID)
     }
 
     @objc(cachePurchaserInfoDataForAppUserID:appUserID:)
-    func cache(purchaserInfo: Data, appUserID: String) {
+    public func cache(purchaserInfo: Data, appUserID: String) {
         writeCache {
             self.userDefaults.set(purchaserInfo, forKey: CacheKeyBases.purchaserInfoAppUserDefaults + appUserID)
             self.threadUnsafeSetPurchaserInfoCacheTimestampToNow(appUserID: appUserID)
@@ -122,7 +123,7 @@ import Foundation
 
     }
 
-    @objc func isPurchaserInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
+    @objc public func isPurchaserInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
         return readCache {
             guard let cachesLastUpdated = self.threadUnsafePurchaserInfoLastUpdated(appUserID: appUserID) else {
                 return true
@@ -135,7 +136,7 @@ import Foundation
         }
     }
 
-    @objc func clearPurchaserInfoCacheTimestamp(appUserID: String) {
+    @objc public func clearPurchaserInfoCacheTimestamp(appUserID: String) {
         writeCache {
             self.threadUnsafeClearPurchaserInfoCacheTimestamp(appUserID: appUserID)
         }
@@ -148,7 +149,7 @@ import Foundation
         }
     }
 
-    @objc func clearPurchaserInfoCache(appUserID: String) {
+    @objc public func clearPurchaserInfoCache(appUserID: String) {
         writeCache {
             self.threadUnsafeClearPurchaserInfoCacheTimestamp(appUserID: appUserID)
             self.userDefaults.removeObject(forKey: CacheKeyBases.purchaserInfoAppUserDefaults + appUserID)
@@ -156,39 +157,39 @@ import Foundation
     }
 
     @objc(setPurchaserInfoCacheTimestampToNowForAppUserID:)
-    func setPurchaserInfoCacheTimestampToNow(appUserID: String) {
+    public func setPurchaserInfoCacheTimestampToNow(appUserID: String) {
         writeCache {
             self.threadUnsafeSetPurchaserInfoCacheTimestampToNow(appUserID: appUserID)
         }
     }
 
     // MARK: - offerings
-    @objc(cacheOfferings:) func cache(offerings: Offerings) {
+    @objc(cacheOfferings:) public func cache(offerings: Offerings) {
         offeringsCachedObject.cache(instance: offerings)
     }
 
-    @objc func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
+    @objc public func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
         let cacheDurationInSeconds = cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
         return offeringsCachedObject.isCacheStale(durationInSeconds: cacheDurationInSeconds)
     }
 
-    @objc func clearOfferingsCacheTimestamp() {
+    @objc public func clearOfferingsCacheTimestamp() {
         offeringsCachedObject.clearCacheTimestamp()
     }
 
-    @objc func setOfferingsCacheTimestampToNow() {
+    @objc public func setOfferingsCacheTimestampToNow() {
         offeringsCachedObject.updateCacheTimestamp(date: Date())
     }
 
     // MARK: - subscriber attributes
 
     @objc(storeSubscriberAttribute:appUserID:)
-    func store(subscriberAttribute: SubscriberAttribute, appUserID: String) {
+    public func store(subscriberAttribute: SubscriberAttribute, appUserID: String) {
         store(subscriberAttributesByKey: [subscriberAttribute.key: subscriberAttribute], appUserID: appUserID)
     }
 
     @objc(storeSubscriberAttributes:appUserID:)
-    func store(subscriberAttributesByKey: [String: SubscriberAttribute], appUserID: String) {
+    public func store(subscriberAttributesByKey: [String: SubscriberAttribute], appUserID: String) {
         guard !subscriberAttributesByKey.isEmpty else {
             return
         }
@@ -205,14 +206,14 @@ import Foundation
     }
 
     @objc(subscriberAttributeWithKey:appUserID:)
-    func subscriberAttribute(attributeKey: String, appUserID: String) -> SubscriberAttribute? {
+    public func subscriberAttribute(attributeKey: String, appUserID: String) -> SubscriberAttribute? {
         return readCache { self.threadUnsafeStoredSubscriberAttributes(appUserID: appUserID)[attributeKey] }
     }
 
     // Threadsafe using accessQueue, however accessQueue is not reentrant. If you're calling this from somewhere
     // that ends up in the accessQueue, it will deadlock. Instead, you'll want to call the version that isn't wrapped
     // in a readCache{} block: threadUnsafeUnsyncedAttributesByKey
-    @objc func unsyncedAttributesByKey(appUserID: String) -> [String: SubscriberAttribute] {
+    @objc public func unsyncedAttributesByKey(appUserID: String) -> [String: SubscriberAttribute] {
         return readCache { self.threadUnsafeUnsyncedAttributesByKey(appUserID: appUserID) }
     }
 
@@ -222,14 +223,14 @@ import Foundation
         }
     }
 
-    @objc func cleanupSubscriberAttributes() {
+    @objc public func cleanupSubscriberAttributes() {
         writeCache {
             self.threadUnsafeMigrateSubscriberAttributes()
             self.threadUnsafeDeleteSyncedSubscriberAttributesForOtherUsers()
         }
     }
 
-    @objc func unsyncedAttributesForAllUsers() -> [String: [String: SubscriberAttribute]] {
+    @objc public func unsyncedAttributesForAllUsers() -> [String: [String: SubscriberAttribute]] {
         return readCache {
             let attributesDict = self.userDefaults.dictionary(forKey: CacheKeys.subscriberAttributes) ?? [:]
             var attributes: [String: [String: SubscriberAttribute]] = [:]
@@ -250,7 +251,7 @@ import Foundation
         }
     }
 
-    @objc func deleteAttributesIfSynced(appUserID: String) {
+    @objc public func deleteAttributesIfSynced(appUserID: String) {
         writeCache {
             guard self.threadUnsafeUnsyncedAttributesByKey(appUserID: appUserID).isEmpty else {
                 return
@@ -283,7 +284,7 @@ import Foundation
         }
     }
 
-    @objc func clearLatestNetworkAndAdvertisingIdsSent(appUserID: String) {
+    @objc public func clearLatestNetworkAndAdvertisingIdsSent(appUserID: String) {
         writeCache {
             self.userDefaults.removeObject(forKey: CacheKeyBases.attributionDataDefaults + appUserID)
         }
