@@ -181,25 +181,20 @@ private extension HTTPClient {
                                          request.httpMethod ?? "", request.url?.path ?? "", statusCode)
                     Logger.debug(message)
 
-                    var maybeJSONError: Error?
                     if statusCode == HTTPStatusCodes.notModifiedResponseCode.rawValue || maybeData == nil {
                         jsonObject = [:]
                     } else if let data = maybeData {
                         do {
                             jsonObject = try JSONSerialization.jsonObject(with: data,
                                                                           options: .mutableContainers) as? [String: Any]
-                        } catch let error {
-                            maybeJSONError = error
+                        } catch let jsonError {
+                            Logger.error(String(format: Strings.network.parsing_json_error, jsonError.localizedDescription))
+                            let dataAsString = String(data: maybeData ?? Data(), encoding: .utf8) ?? ""
+                            let message = String(format: Strings.network.json_data_received, dataAsString)
+                            Logger.error(message)
+
+                            error = jsonError
                         }
-                    }
-
-                    if let jsonError = maybeJSONError {
-                        Logger.error(String(format: Strings.network.parsing_json_error, jsonError.localizedDescription))
-                        let dataAsString = String(data: maybeData ?? Data(), encoding: .utf8) ?? ""
-                        let message = String(format: Strings.network.json_data_received, dataAsString)
-                        Logger.error(message)
-
-                        error = maybeJSONError
                     }
 
                     maybeHTTPResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
