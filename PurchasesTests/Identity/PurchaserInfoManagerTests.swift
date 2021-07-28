@@ -364,7 +364,7 @@ class PurchaserInfoManagerTests: XCTestCase {
     }
 
     func testCachedPurchaserInfoReturnsNilIfDifferentSchema() {
-        let oldSchemaVersion = Int(PurchaserInfo.currentSchemaVersion())! - 1
+        let oldSchemaVersion = Int(PurchaserInfo.currentSchemaVersion)! - 1
         let data: [String: Any] = [
             "request_date": "2019-08-16T10:30:42Z",
             "schema_version": "\(oldSchemaVersion)",
