@@ -54,21 +54,20 @@ import Foundation
     }
 
     @objc private func handleUserDefaultsChanged(notification: Notification) {
-        guard let notificationObject = notification.object as? UserDefaults else {
+        guard let notificationObject = notification.object as? UserDefaults,
+              notificationObject == self.userDefaults else {
             return
         }
 
-        if appUserIDHasBeenSet && notificationObject == self.userDefaults {
-            if threadUnsafeCachedAppUserID == nil {
-                assertionFunction(
-                    """
-                    [Purchases] - Cached appUserID has been deleted from user defaults.
-                    This leaves the SDK in an undetermined state. Please make sure that RevenueCat
-                    entries in user defaults don't get deleted by anything other than the SDK.
-                    More info: https://rev.cat/userdefaults-crash
-                    """
-                )
-            }
+        if appUserIDHasBeenSet && threadUnsafeCachedAppUserID == nil {
+            assertionFunction(
+                """
+                [Purchases] - Cached appUserID has been deleted from user defaults.
+                This leaves the SDK in an undetermined state. Please make sure that RevenueCat
+                entries in user defaults don't get deleted by anything other than the SDK.
+                More info: https://rev.cat/userdefaults-crash
+                """
+            )
         }
     }
 
