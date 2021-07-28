@@ -9,11 +9,12 @@ import Foundation
 
 class MockOperationDispatcher: OperationDispatcher {
 
+    let serialQueue = DispatchQueue(label: "MockOperationDispatcher Serial Queue")
+
     var invokedDispatchOnMainThread = false
     var invokedDispatchOnMainThreadCount = 0
     var shouldInvokeDispatchOnMainThreadBlock = true
     var forwardToOriginalDispatchOnMainThread = false
-    let serialQueue = DispatchQueue(label: "MockOperationDispatcher Serial Queue")
 
     override func dispatchOnMainThread(_ block: @escaping () -> Void) {
         invokedDispatchOnMainThread = true
