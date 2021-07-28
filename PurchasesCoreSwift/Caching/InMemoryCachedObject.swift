@@ -6,9 +6,7 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-import Foundation
-
-open class InMemoryCachedObject<T> {
+class InMemoryCachedObject<T> {
 
     private let accessQueue = DispatchQueue(label: "InMemoryCachedObjectQueue", attributes: .concurrent)
     private var lastUpdated: Date?
@@ -21,7 +19,7 @@ open class InMemoryCachedObject<T> {
 
     public init() { }
 
-    open func isCacheStale(durationInSeconds: Double) -> Bool {
+    func isCacheStale(durationInSeconds: Double) -> Bool {
         accessQueue.sync {
             guard let lastUpdated = lastUpdated else {
                 return true
@@ -32,33 +30,33 @@ open class InMemoryCachedObject<T> {
         }
     }
 
-    open func clearCacheTimestamp() {
+    func clearCacheTimestamp() {
         accessQueue.sync(flags: .barrier) {
             self.lastUpdated = nil
         }
     }
 
-    open func clearCache() {
+    func clearCache() {
         accessQueue.sync(flags: .barrier) {
             self.lastUpdated = nil
             self.cachedObject = nil
         }
     }
 
-    open func updateCacheTimestamp(date: Date) {
+    func updateCacheTimestamp(date: Date) {
         accessQueue.sync(flags: .barrier) {
             self.lastUpdated = date
         }
     }
 
-    open func cache(instance: T) {
+    func cache(instance: T) {
         accessQueue.sync(flags: .barrier) {
             self.lastUpdated = Date()
             self.cachedObject = instance
         }
     }
 
-    open func cachedInstance() -> T? {
+    func cachedInstance() -> T? {
         accessQueue.sync {
             return cachedObject
         }
