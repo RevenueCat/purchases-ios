@@ -6,9 +6,7 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-import Foundation
-
-class InMemoryCachedObject<T> {
+public class InMemoryCachedObject<T> {
 
     private let accessQueue = DispatchQueue(label: "InMemoryCachedObjectQueue", attributes: .concurrent)
     private var lastUpdated: Date?

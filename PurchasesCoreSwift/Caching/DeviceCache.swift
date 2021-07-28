@@ -9,7 +9,7 @@
 import Foundation
 
 // swiftlint:disable file_length
-@objc(RCDeviceCache) class DeviceCache: NSObject {
+@objc(RCDeviceCache) public class DeviceCache: NSObject {
 
     // Thread-safe, but don't call from anywhere inside this class.
     @objc var cachedAppUserID: String? { readCache { self.threadUnsafeCachedAppUserID } }
