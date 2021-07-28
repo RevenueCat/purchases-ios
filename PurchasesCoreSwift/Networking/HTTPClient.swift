@@ -106,7 +106,7 @@ private extension HTTPClient {
             }
 
             let urlRequest = self.createRequest(httpMethod: httpMethod, path: path, requestBody: maybeRequestBody,
-                                           headers: requestHeaders, refreshETag: retried)
+                                                headers: requestHeaders, refreshETag: retried)
 
             guard let maybeURLRequest = urlRequest else {
                 if let requestBody = maybeRequestBody {
@@ -127,22 +127,21 @@ private extension HTTPClient {
 
             if performSerially && !retried {
                 if self.currentSerialRequest != nil {
-                    let message =
+                    let logMessage =
                         String(format: Strings.network.serial_request_queued, self.queuedRequests.count, httpMethod, path)
-                    Logger.debug(message)
+                    Logger.debug(logMessage)
                     self.queuedRequests.append(rcRequest)
                     return
                 } else {
-                    let message = String(format: Strings.network.starting_request, httpMethod, path)
-                    Logger.debug(message)
+                    Logger.debug(String(format: Strings.network.starting_request, httpMethod, path))
                     self.currentSerialRequest = rcRequest
                 }
             }
 
-            let message = String(format: Strings.network.api_request_started,
-                                 maybeURLRequest.httpMethod ?? "",
-                                 maybeURLRequest.url?.path ?? "")
-            Logger.debug(message)
+            let logMessage = String(format: Strings.network.api_request_started,
+                                    maybeURLRequest.httpMethod ?? "",
+                                    maybeURLRequest.url?.path ?? "")
+            Logger.debug(logMessage)
 
             let task = self.session.dataTask(with: maybeURLRequest) { (data, response, error) -> Void in
                 self.handleResponse(response: response,
@@ -161,7 +160,7 @@ private extension HTTPClient {
     // swiftlint:disable function_parameter_count
     func handleResponse(response: URLResponse?,
                         data maybeData: Data?,
-                        error maybeError: Error?,
+                        error maybeNetworkError: Error?,
                         request: URLRequest,
                         completionHandler: HTTPClientResponseHandler?,
                         beginNextRequestWhenFinished: Bool,
@@ -172,14 +171,14 @@ private extension HTTPClient {
             var statusCode = HTTPStatusCodes.networkConnectTimeoutError.rawValue
             var jsonObject: [String: Any]?
             var maybeHTTPResponse: HTTPResponse? = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
+            var maybeJSONError: Error?
 
-            var error = maybeError
-            if error == nil {
+            if maybeNetworkError == nil {
                 if let httpURLResponse = response as? HTTPURLResponse {
                     statusCode = httpURLResponse.statusCode
-                    let message = String(format: Strings.network.api_request_completed,
-                                         request.httpMethod ?? "", request.url?.path ?? "", statusCode)
-                    Logger.debug(message)
+                    let logMessage = String(format: Strings.network.api_request_completed,
+                                            request.httpMethod ?? "", request.url?.path ?? "", statusCode)
+                    Logger.debug(logMessage)
 
                     if statusCode == HTTPStatusCodes.notModifiedResponseCode.rawValue || maybeData == nil {
                         jsonObject = [:]
@@ -189,17 +188,17 @@ private extension HTTPClient {
                                                                           options: .mutableContainers) as? [String: Any]
                         } catch let jsonError {
                             Logger.error(String(format: Strings.network.parsing_json_error, jsonError.localizedDescription))
-                            let dataAsString = String(data: maybeData ?? Data(), encoding: .utf8) ?? ""
-                            let message = String(format: Strings.network.json_data_received, dataAsString)
-                            Logger.error(message)
 
-                            error = jsonError
+                            let dataAsString = String(data: maybeData ?? Data(), encoding: .utf8) ?? ""
+                            Logger.error(String(format: Strings.network.json_data_received, dataAsString))
+
+                            maybeJSONError = jsonError
                         }
                     }
 
                     maybeHTTPResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
                                                                                       jsonObject: jsonObject,
-                                                                                      error: error,
+                                                                                      error: maybeJSONError,
                                                                                       request: request,
                                                                                       retried: retried)
                     if maybeHTTPResponse == nil {
@@ -216,17 +215,18 @@ private extension HTTPClient {
             if let httpResponse = maybeHTTPResponse,
                let maybeCompletionHandler = completionHandler {
                 self.operationDispatcher.dispatchOnMainThread {
+                    let error = maybeJSONError ?? maybeNetworkError
                     maybeCompletionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
                 }
             }
 
             if shouldBeginNextRequestWhenFinished {
                 var maybeNextRequest: HTTPRequest?
-                let message = String(format: Strings.network.serial_request_done,
-                                     self.currentSerialRequest?.httpMethod ?? "",
-                                     self.currentSerialRequest?.path ?? "",
-                                     self.queuedRequests.count)
-                Logger.debug(message)
+                let logMessage = String(format: Strings.network.serial_request_done,
+                                        self.currentSerialRequest?.httpMethod ?? "",
+                                        self.currentSerialRequest?.path ?? "",
+                                        self.queuedRequests.count)
+                Logger.debug(logMessage)
                 self.currentSerialRequest = nil
                 if !self.queuedRequests.isEmpty {
                     maybeNextRequest = self.queuedRequests[0]
