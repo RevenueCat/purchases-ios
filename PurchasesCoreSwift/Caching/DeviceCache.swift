@@ -321,9 +321,7 @@ import Foundation
         return accessQueue.sync(execute: block)
     }
 
-    // MARK: - Testing
-
-    public static func newAttribute(dictionary: [String: Any]) -> SubscriberAttribute {
+    static func newAttribute(dictionary: [String: Any]) -> SubscriberAttribute {
         // swiftlint:disable force_cast
         let key = dictionary[SubscriberAttribute.keyKey] as! String
         let value = dictionary[SubscriberAttribute.valueKey] as? String
