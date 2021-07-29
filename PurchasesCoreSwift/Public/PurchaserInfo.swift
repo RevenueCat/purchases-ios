@@ -114,7 +114,7 @@ import Foundation
         self.schemaVersion = data["schema_version"] as? String
 
         guard let requestDateString = data["request_date"] as? String,
-              let formattedRequestDate = dateFormatter.iso8601Date(fromString: requestDateString) else {
+              let formattedRequestDate = dateFormatter.date(fromString: requestDateString) else {
             return nil
         }
         self.requestDate = formattedRequestDate
@@ -247,10 +247,10 @@ import Foundation
             self.originalApplicationVersion = subscriberData["original_application_version"] as? String ?? nil
 
             self.originalPurchaseDate =
-                dateFormatter.iso8601Date(fromString: subscriberData["original_purchase_date"] as? String ?? "")
+                dateFormatter.date(fromString: subscriberData["original_purchase_date"] as? String ?? "")
 
             guard let firstSeenDateString = subscriberData["first_seen"] as? String,
-                  let firstSeenDate = dateFormatter.iso8601Date(fromString: firstSeenDateString) else {
+                  let firstSeenDate = dateFormatter.date(fromString: firstSeenDateString) else {
                 return nil
             }
             self.firstSeen = firstSeenDate
@@ -306,7 +306,7 @@ private extension PurchaserInfo {
         return transactionsByProductId.mapValues { maybeTransaction in
             if let transactionFieldsByKey = maybeTransaction as? [String: String],
                let dateString = transactionFieldsByKey[dateLabel] {
-                return dateFormatter.iso8601Date(fromString: dateString)
+                return dateFormatter.date(fromString: dateString)
             }
             return nil
         }

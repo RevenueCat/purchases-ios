@@ -151,10 +151,10 @@ import Foundation
         let ownershipType = productData["ownership_type"] as? String
 
         let store = Self.parseStore(store: storeString)
-        let expirationDate = dateFormatter.iso8601Date(fromString: productExpiresDateString)
-        let unsubscribeDetectedAt = dateFormatter.iso8601Date(fromString: unsubscribeDetectedAtString)
-        let billingIssueDetectedAt = dateFormatter.iso8601Date(fromString: billingIssuesDetectedAtString)
-        let entitlementExpiresDate = dateFormatter.iso8601Date(fromString: entitlementExpiresDateString)
+        let expirationDate = dateFormatter.date(fromString: productExpiresDateString)
+        let unsubscribeDetectedAt = dateFormatter.date(fromString: unsubscribeDetectedAtString)
+        let billingIssueDetectedAt = dateFormatter.date(fromString: billingIssuesDetectedAtString)
+        let entitlementExpiresDate = dateFormatter.date(fromString: entitlementExpiresDateString)
 
         self.store = store
         self.expirationDate = expirationDate
@@ -166,8 +166,8 @@ import Foundation
 
         self.isActive = Self.isDateActive(expirationDate: entitlementExpiresDate, forRequestDate: requestDate)
         self.periodType = Self.parsePeriodType(periodType: periodTypeString)
-        self.latestPurchaseDate = dateFormatter.iso8601Date(fromString: entitlementPurchaseDateString)
-        self.originalPurchaseDate = dateFormatter.iso8601Date(fromString: originalPurchaseDateString)
+        self.latestPurchaseDate = dateFormatter.date(fromString: entitlementPurchaseDateString)
+        self.originalPurchaseDate = dateFormatter.date(fromString: originalPurchaseDateString)
         self.ownershipType = Self.parseOwnershipType(ownershipType: ownershipType)
         self.willRenew = Self.willRenewWithExpirationDate(expirationDate: expirationDate,
                                                           store: store,
