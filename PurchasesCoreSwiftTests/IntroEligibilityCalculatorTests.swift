@@ -98,7 +98,8 @@ class IntroEligibilityCalculatorTests: XCTestCase {
                                         "com.revenuecat.unknownProduct"])
 
         calculator.checkTrialOrIntroductoryPriceEligibility(with: Data(),
-                                                            productIdentifiers: Set(candidateIdentifiers)) { eligibility, error in
+                                                            productIdentifiers: Set(candidateIdentifiers)) { eligibility,
+                                                                                                             error in
             completionCalled = true
             receivedError = error
             receivedEligibility = eligibility
@@ -111,6 +112,38 @@ class IntroEligibilityCalculatorTests: XCTestCase {
             "com.revenuecat.product2": IntroEligibilityStatus.ineligible.toNSNumber(),
             "com.revenuecat.unknownProduct": IntroEligibilityStatus.unknown.toNSNumber(),
         ]
+    }
+
+    func testCheckTrialOrIntroductoryPriceEligibilityForProductWithoutIntroTrialReturnsIneligible() {
+        if #available(iOS 12.2, *) {
+            var receivedError: Error? = nil
+            var receivedEligibility: [String: NSNumber]? = nil
+            var completionCalled = false
+
+            let receipt = mockReceipt()
+            mockReceiptParser.stubbedParseResult = receipt
+            let mockProduct = MockSKProduct(mockProductIdentifier: "com.revenuecat.product1",
+                                            mockSubscriptionGroupIdentifier: "group1")
+            mockProduct.mockDiscount = nil
+            mockProductsManager.stubbedProductsCompletionResult = Set([mockProduct])
+
+            let candidateIdentifiers = Set(["com.revenuecat.product1"])
+
+            calculator.checkTrialOrIntroductoryPriceEligibility(
+                with: Data(),
+                productIdentifiers: Set(candidateIdentifiers)
+            ) { eligibility, error in
+                completionCalled = true
+                receivedError = error
+                receivedEligibility = eligibility
+            }
+
+            expect(completionCalled).toEventually(beTrue())
+            expect(receivedError).to(beNil())
+            expect(receivedEligibility) == [
+                "com.revenuecat.product1": IntroEligibilityStatus.ineligible.toNSNumber()
+            ]
+        }
     }
 }
 
