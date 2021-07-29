@@ -7,8 +7,6 @@ import Foundation
 
 class InAppPurchaseBuilder {
     private let containerBuilder: ASN1ContainerBuilder
-    private let dateFormatter: DateFormatter = .iso8601SecondsDateFormatter
-
     private let typeContainerIndex = 0
     private let versionContainerIndex = 1 // unused
     private let attributeTypeContainerIndex = 2

@@ -8,7 +8,6 @@ import Foundation
 class AppleReceiptBuilder {
     private let containerBuilder: ASN1ContainerBuilder
     private let inAppPurchaseBuilder: InAppPurchaseBuilder
-    private let dateFormatter: DateFormatter
 
     private let typeContainerIndex = 0
     private let versionContainerIndex = 1 // unused
@@ -16,11 +15,9 @@ class AppleReceiptBuilder {
     private let expectedInternalContainersCount = 3 // type + version + attribute
 
     init(containerBuilder: ASN1ContainerBuilder = ASN1ContainerBuilder(),
-         inAppPurchaseBuilder: InAppPurchaseBuilder = InAppPurchaseBuilder(),
-         dateFormatter: DateFormatter = .iso8601SecondsDateFormatter) {
+         inAppPurchaseBuilder: InAppPurchaseBuilder = InAppPurchaseBuilder()) {
         self.containerBuilder = containerBuilder
         self.inAppPurchaseBuilder = inAppPurchaseBuilder
-        self.dateFormatter = dateFormatter
     }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
