@@ -16,12 +16,12 @@ import Foundation
 // TODO (post-migration): set this back to internal
 @objc(RCHTTPClient) public class HTTPClient: NSObject {
 
-    let session: URLSession
-    let systemInfo: SystemInfo
-    var queuedRequests: [HTTPRequest] = []
-    var currentSerialRequest: HTTPRequest?
-    var eTagManager: ETagManager
-    let operationDispatcher: OperationDispatcher
+    private let session: URLSession
+    private let systemInfo: SystemInfo
+    private var queuedRequests: [HTTPRequest] = []
+    private var currentSerialRequest: HTTPRequest?
+    private var eTagManager: ETagManager
+    private let operationDispatcher: OperationDispatcher
 
     @objc public init(systemInfo: SystemInfo, eTagManager: ETagManager, operationDispatcher: OperationDispatcher) {
         let config = URLSessionConfiguration.ephemeral
