@@ -12,11 +12,12 @@ import Foundation
 
     @objc public func nonSubscriptionTransactions(
         withSubscriptionsData subscriptionsData: [String: [[String: Any]]]) -> [Transaction] {
-        nonSubscriptionTransactions(withSubscriptionsData: subscriptionsData)
+        nonSubscriptionTransactions(withSubscriptionsData: subscriptionsData,
+                                    dateFormatter: .iso8601SecondsDateFormatter)
     }
 
     func nonSubscriptionTransactions(withSubscriptionsData subscriptionsData: [String: [[String: Any]]],
-                                     dateFormatter: DateFormatter = .iso8601SecondsDateFormatter) -> [Transaction] {
+                                     dateFormatter: DateFormatter) -> [Transaction] {
         subscriptionsData.flatMap { (productId: String, transactionData: [[String: Any]]) -> [Transaction] in
             transactionData.map {
                 Transaction(with: $0, productId: productId, dateFormatter: dateFormatter)
