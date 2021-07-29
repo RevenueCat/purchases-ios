@@ -20,13 +20,13 @@ class HTTPClientTests: XCTestCase {
     var client: HTTPClient!
     var userDefaults: UserDefaults!
     var eTagManager: MockETagManager!
-    var operationDispatcher: MockOperationDispatcher!
+    var operationDispatcher: OperationDispatcher!
 
     override func setUp() {
         super.setUp()
         userDefaults = MockUserDefaults()
         eTagManager = MockETagManager(userDefaults: userDefaults)
-        operationDispatcher = MockOperationDispatcher()
+        operationDispatcher = OperationDispatcher()
         client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
     }
 
