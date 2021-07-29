@@ -8,14 +8,15 @@
 
 public class InMemoryCachedObject<T> {
 
-    private let accessQueue = DispatchQueue(label: "InMemoryCachedObjectQueue", attributes: .concurrent)
-    private var lastUpdated: Date?
-    private var cachedObject: T?
     public var lastUpdatedAt: Date? {
         accessQueue.sync {
             return lastUpdated
         }
     }
+
+    private let accessQueue = DispatchQueue(label: "InMemoryCachedObjectQueue", attributes: .concurrent)
+    private var lastUpdated: Date?
+    private var cachedObject: T?
 
     public init() { }
 
