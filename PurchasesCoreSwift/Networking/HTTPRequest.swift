@@ -14,32 +14,36 @@ public class HTTPRequest: NSObject, NSCopying {
     @objc public let httpMethod: String
     @objc public let path: String
     @objc public let requestBody: [String: Any]?
-    @objc public let headers: [String: String]
+    @objc public let authHeaders: [String: String]
     @objc public let completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?
     @objc public let retried: Bool
+    let urlRequest: URLRequest
 
     @objc public convenience init(byCopyingRequest request: HTTPRequest, retried: Bool) {
         self.init(httpMethod: request.httpMethod,
                   path: request.path,
                   requestBody: request.requestBody,
-                  headers: request.headers,
+                  authHeaders: request.authHeaders,
                   retried: request.retried,
+                  urlRequest: request.urlRequest,
                   completionHandler: request.completionHandler)
     }
 
-    @objc(initWithHTTPMethod:path:body:headers:retried:completionHandler:)
+    @objc(initWithHTTPMethod:path:body:headers:retried:urlRequest:completionHandler:)
     public required init(httpMethod: String,
                          path: String,
                          requestBody: [String: Any]?,
-                         headers: [String: String],
+                         authHeaders: [String: String],
                          retried: Bool,
+                         urlRequest: URLRequest,
                          completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
         self.httpMethod = httpMethod
         self.path = path
         self.requestBody = requestBody
-        self.headers = headers
+        self.authHeaders = authHeaders
         self.completionHandler = completionHandler
         self.retried = retried
+        self.urlRequest = urlRequest
     }
 
     public func copy(with zone: NSZone? = nil) -> Any {
@@ -47,8 +51,9 @@ public class HTTPRequest: NSObject, NSCopying {
             httpMethod: httpMethod,
             path: path,
             requestBody: requestBody,
-            headers: headers,
+            authHeaders: authHeaders,
             retried: retried,
+            urlRequest: urlRequest,
             completionHandler: completionHandler
         )
 
@@ -60,8 +65,9 @@ public class HTTPRequest: NSObject, NSCopying {
         <\(type(of: self)): httpMethod=\(httpMethod)
         path=\(path)
         requestBody=\(requestBody?.description ?? "(null)")
-        headers=\(headers.description )
+        headers=\(authHeaders.description )
         retried=\(retried)
+        urlRequest=\(urlRequest.description)
         >
         """
     }

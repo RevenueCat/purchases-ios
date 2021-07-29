@@ -37,13 +37,13 @@ import Foundation
                                      performSerially: Bool = false,
                                      path: String,
                                      requestBody: [String: Any]?,
-                                     headers: [String: String],
+                                     headers authHeaders: [String: String],
                                      completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
         performRequest(httpMethod,
                        performSerially: performSerially,
                        path: path,
                        requestBody: requestBody,
-                       headers: headers,
+                       authHeaders: authHeaders,
                        retried: false,
                        completionHandler: completionHandler)
     }
@@ -85,7 +85,7 @@ private extension HTTPClient {
                         performSerially: Bool = false,
                         path: String,
                         requestBody maybeRequestBody: [String: Any]?,
-                        headers originalHeaders: [String: String],
+                        authHeaders: [String: String],
                         retried: Bool = false,
                         completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
         operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
@@ -100,7 +100,7 @@ private extension HTTPClient {
                 }
             }
 
-            let requestHeaders = self.defaultHeaders.merging(originalHeaders, uniquingKeysWith: { (_, last) in last })
+            let requestHeaders = self.defaultHeaders.merging(authHeaders, uniquingKeysWith: { (_, last) in last })
 
             let maybeURLRequest = self.createRequest(httpMethod: httpMethod, path: path, requestBody: maybeRequestBody,
                                                      headers: requestHeaders, refreshETag: retried)
@@ -119,19 +119,24 @@ private extension HTTPClient {
                 return
             }
 
-            let queableRequest = HTTPRequest(httpMethod: httpMethod, path: path, requestBody: maybeRequestBody,
-                                             headers: originalHeaders, retried: retried, completionHandler: maybeCompletionHandler)
+            let request = HTTPRequest(httpMethod: httpMethod,
+                                      path: path,
+                                      requestBody: maybeRequestBody,
+                                      authHeaders: authHeaders,
+                                      retried: retried,
+                                      urlRequest: urlRequest,
+                                      completionHandler: maybeCompletionHandler)
 
             if performSerially && !retried {
                 if self.currentSerialRequest != nil {
                     let logMessage =
                         String(format: Strings.network.serial_request_queued, self.queuedRequests.count, httpMethod, path)
                     Logger.debug(logMessage)
-                    self.queuedRequests.append(queableRequest)
+                    self.queuedRequests.append(request)
                     return
                 } else {
                     Logger.debug(String(format: Strings.network.starting_request, httpMethod, path))
-                    self.currentSerialRequest = queableRequest
+                    self.currentSerialRequest = request
                 }
             }
 
@@ -142,12 +147,11 @@ private extension HTTPClient {
 
             let task = self.session.dataTask(with: urlRequest) { (data, response, error) -> Void in
                 self.handleResponse(response: response,
+                                    request: request,
                                     data: data,
                                     error: error,
-                                    urlRequest: urlRequest,
                                     completionHandler: maybeCompletionHandler,
                                     beginNextRequestWhenFinished: performSerially,
-                                    queableRequest: queableRequest,
                                     retried: retried)
             }
             task.resume()
@@ -156,12 +160,11 @@ private extension HTTPClient {
 
     // swiftlint:disable function_parameter_count
     func handleResponse(response: URLResponse?,
+                        request: HTTPRequest,
                         data maybeData: Data?,
                         error maybeNetworkError: Error?,
-                        urlRequest: URLRequest,
                         completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
-                        queableRequest: HTTPRequest,
                         retried: Bool) {
         operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
             var shouldBeginNextRequestWhenFinished = beginNextRequestWhenFinished
@@ -174,7 +177,7 @@ private extension HTTPClient {
                 if let httpURLResponse = response as? HTTPURLResponse {
                     statusCode = httpURLResponse.statusCode
                     let logMessage = String(format: Strings.network.api_request_completed,
-                                            urlRequest.httpMethod ?? "", urlRequest.url?.path ?? "", statusCode)
+                                            request.httpMethod, request.urlRequest.url?.path ?? "", statusCode)
                     Logger.debug(logMessage)
 
                     if statusCode == HTTPStatusCodes.notModifiedResponseCode.rawValue || maybeData == nil {
@@ -196,13 +199,13 @@ private extension HTTPClient {
                     maybeHTTPResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
                                                                                       jsonObject: jsonObject,
                                                                                       error: maybeJSONError,
-                                                                                      request: urlRequest,
+                                                                                      request: request.urlRequest,
                                                                                       retried: retried)
                     if maybeHTTPResponse == nil {
-                        let message = String(format: Strings.network.retrying_request, queableRequest.httpMethod,
-                                             queableRequest.path)
+                        let message = String(format: Strings.network.retrying_request, request.httpMethod,
+                                             request.path)
                         Logger.debug(message)
-                        let retriedRequest = HTTPRequest(byCopyingRequest: queableRequest, retried: true)
+                        let retriedRequest = HTTPRequest(byCopyingRequest: request, retried: true)
                         self.queuedRequests.insert(retriedRequest, at: 0)
                         shouldBeginNextRequestWhenFinished = true
                     }
@@ -231,7 +234,7 @@ private extension HTTPClient {
                                         performSerially: true,
                                         path: nextRequest.path,
                                         requestBody: nextRequest.requestBody,
-                                        headers: nextRequest.headers,
+                                        headers: nextRequest.authHeaders,
                                         completionHandler: nextRequest.completionHandler)
                 }
             }
