@@ -10,16 +10,10 @@ import Foundation
 
 @objc(RCOperationDispatcher) public class OperationDispatcher: NSObject {
 
-    private let mainQueue: DispatchQueue
-    private let workerQueue: DispatchQueue
-    private let httpQueue: DispatchQueue
+    private let mainQueue = DispatchQueue.main
+    private let workerQueue = DispatchQueue(label: "OperationDispatcherWorkerQueue")
+    private let httpQueue = DispatchQueue(label: "HTTPClientQueue")
     private let maxJitterInSeconds: Double = 5
-
-    @objc public override init() {
-        mainQueue = DispatchQueue.main
-        workerQueue = DispatchQueue(label: "OperationDispatcherWorkerQueue")
-        httpQueue = DispatchQueue(label: "HTTPClientQueue")
-    }
 
     @objc public func dispatchOnMainThread(_ block: @escaping () -> Void) {
         if Thread.isMainThread {
