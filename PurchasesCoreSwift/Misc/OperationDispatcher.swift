@@ -39,7 +39,7 @@ import Foundation
         }
     }
 
-    public func dispatchOnHTTPSerialQueue(_ block: @escaping () -> Void) {
+    func dispatchOnHTTPSerialQueue(_ block: @escaping () -> Void) {
         httpQueue.async { block() }
     }
 
