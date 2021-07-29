@@ -261,22 +261,18 @@ private extension HTTPClient {
 
         request.allHTTPHeaderFields = headersWithETag
 
-        if httpMethod == "POST" {
-            if let requestBody = maybeRequestBody {
-                var jsonParseError: Error?
-                let isValidJSONObject = JSONSerialization.isValidJSONObject(requestBody)
-                if isValidJSONObject {
-                    do {
-                        request.httpBody =
-                            try JSONSerialization.data(withJSONObject: requestBody)
-                    } catch let error {
-                        jsonParseError = error
-                    }
-                }
-                if !isValidJSONObject || jsonParseError != nil {
-                    Logger.error(String(format: Strings.network.creating_json_error, requestBody))
+        if httpMethod == "POST",
+           let requestBody = maybeRequestBody {
+            if JSONSerialization.isValidJSONObject(requestBody) {
+                do {
+                    request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+                } catch let error {
+                    Logger.error(String(format: Strings.network.creating_json_error, requestBody, error.localizedDescription))
                     return nil
                 }
+            } else {
+                Logger.error(String(format: Strings.network.creating_json_error_invalid, requestBody))
+                return nil
             }
         }
         return request
