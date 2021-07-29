@@ -122,19 +122,19 @@ private extension HTTPClient {
                 return
             }
 
-            let rcRequest = HTTPRequest(httpMethod: httpMethod, path: path, requestBody: maybeRequestBody,
-                                        headers: maybeHeaders, retried: retried, completionHandler: maybeCompletionHandler)
+            let queableRequest = HTTPRequest(httpMethod: httpMethod, path: path, requestBody: maybeRequestBody,
+                                             headers: maybeHeaders, retried: retried, completionHandler: maybeCompletionHandler)
 
             if performSerially && !retried {
                 if self.currentSerialRequest != nil {
                     let logMessage =
                         String(format: Strings.network.serial_request_queued, self.queuedRequests.count, httpMethod, path)
                     Logger.debug(logMessage)
-                    self.queuedRequests.append(rcRequest)
+                    self.queuedRequests.append(queableRequest)
                     return
                 } else {
                     Logger.debug(String(format: Strings.network.starting_request, httpMethod, path))
-                    self.currentSerialRequest = rcRequest
+                    self.currentSerialRequest = queableRequest
                 }
             }
 
@@ -147,10 +147,10 @@ private extension HTTPClient {
                 self.handleResponse(response: response,
                                     data: data,
                                     error: error,
-                                    request: urlRequest,
+                                    urlRequest: urlRequest,
                                     completionHandler: maybeCompletionHandler,
                                     beginNextRequestWhenFinished: performSerially,
-                                    queableRequest: rcRequest,
+                                    queableRequest: queableRequest,
                                     retried: retried)
             }
             task.resume()
@@ -161,7 +161,7 @@ private extension HTTPClient {
     func handleResponse(response: URLResponse?,
                         data maybeData: Data?,
                         error maybeNetworkError: Error?,
-                        request: URLRequest,
+                        urlRequest: URLRequest,
                         completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
                         queableRequest: HTTPRequest,
@@ -177,7 +177,7 @@ private extension HTTPClient {
                 if let httpURLResponse = response as? HTTPURLResponse {
                     statusCode = httpURLResponse.statusCode
                     let logMessage = String(format: Strings.network.api_request_completed,
-                                            request.httpMethod ?? "", request.url?.path ?? "", statusCode)
+                                            urlRequest.httpMethod ?? "", urlRequest.url?.path ?? "", statusCode)
                     Logger.debug(logMessage)
 
                     if statusCode == HTTPStatusCodes.notModifiedResponseCode.rawValue || maybeData == nil {
@@ -199,7 +199,7 @@ private extension HTTPClient {
                     maybeHTTPResponse = self.eTagManager.httpResultFromCacheOrBackend(with: httpURLResponse,
                                                                                       jsonObject: jsonObject,
                                                                                       error: maybeJSONError,
-                                                                                      request: request,
+                                                                                      request: urlRequest,
                                                                                       retried: retried)
                     if maybeHTTPResponse == nil {
                         let message = String(format: Strings.network.retrying_request, queableRequest.httpMethod,
@@ -251,21 +251,21 @@ private extension HTTPClient {
             return nil
         }
 
-        var request = URLRequest(url: requestURL)
-        request.httpMethod = httpMethod
+        var urlRequest = URLRequest(url: requestURL)
+        urlRequest.httpMethod = httpMethod
 
-        let eTagHeader = eTagManager.eTagHeader(for: request, refreshETag: refreshETag)
+        let eTagHeader = eTagManager.eTagHeader(for: urlRequest, refreshETag: refreshETag)
         let headersWithETag = headers.merging(eTagHeader) { (_, last) -> String in
             last
         }
 
-        request.allHTTPHeaderFields = headersWithETag
+        urlRequest.allHTTPHeaderFields = headersWithETag
 
         if httpMethod == "POST",
            let requestBody = maybeRequestBody {
             if JSONSerialization.isValidJSONObject(requestBody) {
                 do {
-                    request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+                    urlRequest.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
                 } catch let error {
                     Logger.error(String(format: Strings.network.creating_json_error, requestBody, error.localizedDescription))
                     return nil
@@ -275,7 +275,7 @@ private extension HTTPClient {
                 return nil
             }
         }
-        return request
+        return urlRequest
     }
 
     func assertIsValidRequest(httpMethod: String, requestBody: [String: Any]?) throws {
