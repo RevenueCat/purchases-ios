@@ -221,7 +221,6 @@ private extension HTTPClient {
             }
 
             if shouldBeginNextRequestWhenFinished {
-                var maybeNextRequest: HTTPRequest?
                 let logMessage = String(format: Strings.network.serial_request_done,
                                         self.currentSerialRequest?.httpMethod ?? "",
                                         self.currentSerialRequest?.path ?? "",
@@ -229,10 +228,7 @@ private extension HTTPClient {
                 Logger.debug(logMessage)
                 self.currentSerialRequest = nil
                 if !self.queuedRequests.isEmpty {
-                    maybeNextRequest = self.queuedRequests[0]
-                    self.queuedRequests.remove(at: 0)
-                }
-                if let nextRequest = maybeNextRequest {
+                    let nextRequest = self.queuedRequests.removeFirst()
                     Logger.debug(String(format: Strings.network.starting_next_request, nextRequest))
                     self.performRequest(nextRequest.httpMethod,
                                         performSerially: true,
