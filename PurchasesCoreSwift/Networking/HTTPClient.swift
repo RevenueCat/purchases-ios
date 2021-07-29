@@ -162,7 +162,7 @@ private extension HTTPClient {
                         data maybeData: Data?,
                         error maybeNetworkError: Error?,
                         request: URLRequest,
-                        completionHandler: HTTPClientResponseHandler?,
+                        completionHandler maybeCompletionHandler: HTTPClientResponseHandler?,
                         beginNextRequestWhenFinished: Bool,
                         queableRequest: HTTPRequest,
                         retried: Bool) {
@@ -213,10 +213,10 @@ private extension HTTPClient {
             }
 
             if let httpResponse = maybeHTTPResponse,
-               let maybeCompletionHandler = completionHandler {
+               let completionHandler = maybeCompletionHandler {
                 self.operationDispatcher.dispatchOnMainThread {
                     let error = maybeJSONError ?? maybeNetworkError
-                    maybeCompletionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
+                    completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
                 }
             }
 
