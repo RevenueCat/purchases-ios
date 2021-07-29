@@ -12,8 +12,8 @@ struct ISO3601DateFormatter {
     private let milisecondsDateFormatter = DateFormatter()
 
     private init() {
-        secondsDateFormatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ssZ"
-        milisecondsDateFormatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'SSSZ"
+        secondsDateFormatter.dateFormat = "yyyy-MM-'dd'T'HH:mm:ssZ"
+        milisecondsDateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
     }
 
     func date(fromBytes bytes: ArraySlice<UInt8>) -> Date? {
@@ -21,4 +21,11 @@ struct ISO3601DateFormatter {
         return (secondsDateFormatter.date(from: dateString)
             ?? milisecondsDateFormatter.date(from: dateString))
     }
+
+    func date(fromString maybeDateString: String?) -> Date? {
+        guard let dateString = maybeDateString else { return nil }
+        return (secondsDateFormatter.date(from: dateString)
+            ?? milisecondsDateFormatter.date(from: dateString))
+    }
+
 }

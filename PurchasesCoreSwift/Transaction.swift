@@ -21,10 +21,10 @@ import Foundation
         super.init()
     }
 
-    init?(with serverResponse: [String: Any], productId: String, dateFormatter: DateFormatter) {
+    init?(with serverResponse: [String: Any], productId: String, dateFormatter: ISO3601DateFormatter) {
         guard let revenueCatId = serverResponse["id"] as? String,
               let dateString = serverResponse["purchase_date"] as? String,
-              let purchaseDate = dateFormatter.date(from: dateString) else {
+              let purchaseDate = dateFormatter.date(fromString: dateString) else {
             Logger.error("Couldn't initialize Transaction from dictionary. " +
                          "Reason: unexpected format. Dictionary: \(serverResponse).")
             return nil
