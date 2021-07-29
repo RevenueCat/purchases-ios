@@ -8,7 +8,7 @@ import Foundation
 class AppleReceiptBuilder {
     private let containerBuilder: ASN1ContainerBuilder
     private let inAppPurchaseBuilder: InAppPurchaseBuilder
-    private let dateFormatter: ISO3601DateFormatter
+    private let dateFormatter: DateFormatter
 
     private let typeContainerIndex = 0
     private let versionContainerIndex = 1 // unused
@@ -17,7 +17,7 @@ class AppleReceiptBuilder {
 
     init(containerBuilder: ASN1ContainerBuilder = ASN1ContainerBuilder(),
          inAppPurchaseBuilder: InAppPurchaseBuilder = InAppPurchaseBuilder(),
-         dateFormatter: ISO3601DateFormatter = ISO3601DateFormatter.shared) {
+         dateFormatter: DateFormatter = .iso8601SecondsDateFormatter) {
         self.containerBuilder = containerBuilder
         self.inAppPurchaseBuilder = inAppPurchaseBuilder
         self.dateFormatter = dateFormatter

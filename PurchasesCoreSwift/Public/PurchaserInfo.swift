@@ -96,13 +96,13 @@ import Foundation
 
     private let originalData: [String: Any]
 
-    private let dateFormatter: ISO3601DateFormatter
+    private let dateFormatter: DateFormatter
 
     @objc public convenience init?(data: [String: Any]) {
-        self.init(data: data, dateFormatter: ISO3601DateFormatter.shared)
+        self.init(data: data, dateFormatter: .iso8601SecondsDateFormatter)
     }
 
-    init?(data: [String: Any], dateFormatter: ISO3601DateFormatter = ISO3601DateFormatter.shared) {
+    init?(data: [String: Any], dateFormatter: DateFormatter) {
         guard let subscriberObject = data["subscriber"] as? [String: Any],
               let subscriberData = SubscriberData(subscriberData: subscriberObject, dateFormatter: dateFormatter)
             else {
@@ -114,7 +114,7 @@ import Foundation
         self.schemaVersion = data["schema_version"] as? String
 
         guard let requestDateString = data["request_date"] as? String,
-              let formattedRequestDate = dateFormatter.date(fromString: requestDateString) else {
+              let formattedRequestDate = dateFormatter.iso8601Date(fromString: requestDateString) else {
             return nil
         }
         self.requestDate = formattedRequestDate
@@ -239,7 +239,7 @@ import Foundation
         let nonSubscriptionTransactions: [Transaction]
         let allPurchases: [String: [String: Any]]
 
-        init?(subscriberData: [String: Any], dateFormatter: ISO3601DateFormatter) {
+        init?(subscriberData: [String: Any], dateFormatter: DateFormatter) {
             self.subscriptionTransactionsByProductId =
                 subscriberData["subscriptions"] as? [String: [String: Any]] ?? [String: [String: Any]]()
 
@@ -247,10 +247,10 @@ import Foundation
             self.originalApplicationVersion = subscriberData["original_application_version"] as? String ?? nil
 
             self.originalPurchaseDate =
-                dateFormatter.date(fromString: subscriberData["original_purchase_date"] as? String ?? "")
+                dateFormatter.iso8601Date(fromString: subscriberData["original_purchase_date"] as? String ?? "")
 
             guard let firstSeenDateString = subscriberData["first_seen"] as? String,
-                  let firstSeenDate = dateFormatter.date(fromString: firstSeenDateString) else {
+                  let firstSeenDate = dateFormatter.iso8601Date(fromString: firstSeenDateString) else {
                 return nil
             }
             self.firstSeen = firstSeenDate
@@ -302,11 +302,11 @@ private extension PurchaserInfo {
     }
 
     func parseDatesIn(transactionsByProductId: [String: [String: Any]],
-                            dateLabel: String) -> [String: Date?] {
+                      dateLabel: String) -> [String: Date?] {
         return transactionsByProductId.mapValues { maybeTransaction in
             if let transactionFieldsByKey = maybeTransaction as? [String: String],
                let dateString = transactionFieldsByKey[dateLabel] {
-                return dateFormatter.date(fromString: dateString)
+                return dateFormatter.iso8601Date(fromString: dateString)
             }
             return nil
         }

@@ -16,7 +16,7 @@ import Foundation
     }
 
     func nonSubscriptionTransactions(withSubscriptionsData subscriptionsData: [String: [[String: Any]]],
-                                     dateFormatter: ISO3601DateFormatter = ISO3601DateFormatter.shared) -> [Transaction] {
+                                     dateFormatter: DateFormatter = .iso8601SecondsDateFormatter) -> [Transaction] {
         subscriptionsData.flatMap { (productId: String, transactionData: [[String: Any]]) -> [Transaction] in
             transactionData.map {
                 Transaction(with: $0, productId: productId, dateFormatter: dateFormatter)
