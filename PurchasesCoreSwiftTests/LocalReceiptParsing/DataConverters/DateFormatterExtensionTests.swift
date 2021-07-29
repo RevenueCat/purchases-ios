@@ -3,7 +3,7 @@ import Nimble
 
 @testable import PurchasesCoreSwift
 
-class ISO3601DateFormatterTests: XCTestCase {
+class DateFormatterExtensionTests: XCTestCase {
     
     func testDateFromBytesReturnsCorrectValueIfPossible() {
         let timeZone = TimeZone(identifier: "UTC")
