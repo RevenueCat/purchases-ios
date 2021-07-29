@@ -93,7 +93,8 @@ class BackendTests: XCTestCase {
     override func setUp() {
         let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
         let operationDispatcher = MockOperationDispatcher()
-        httpClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager,
+        httpClient = MockHTTPClient(systemInfo: systemInfo,
+                                    eTagManager: eTagManager,
                                     operationDispatcher: operationDispatcher)
         backend = RCBackend.init(httpClient: httpClient,
                                  apiKey: apiKey)
