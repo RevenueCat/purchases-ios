@@ -117,13 +117,23 @@ import Foundation
      */
     @objc public let ownershipType: PurchaseOwnershipType
 
-    // TODO(post-migration): Make this internal
-    // TODO(cleanup): Codable
-    @objc public init(entitlementId: String,
+    @objc public convenience init(entitlementId: String,
                       entitlementData: [String: Any],
                       productData: [String: Any],
-                      dateFormatter: DateFormatter,
                       requestDate: Date?) {
+        self.init(entitlementId: entitlementId,
+                  entitlementData: entitlementData,
+                  productData: productData,
+                  requestDate: requestDate)
+    }
+
+    // TODO(post-migration): Make this internal
+    // TODO(cleanup): Codable
+    init(entitlementId: String,
+         entitlementData: [String: Any],
+         productData: [String: Any],
+         requestDate: Date?,
+         dateFormatter: ISO3601DateFormatter = ISO3601DateFormatter.shared) {
         // Entitlement data
         let entitlementExpiresDateString = entitlementData["expires_date"] as? String
         let entitlementPurchaseDateString = entitlementData["purchase_date"] as? String
@@ -140,13 +150,10 @@ import Foundation
         let ownershipType = productData["ownership_type"] as? String
 
         let store = Self.parseStore(store: storeString)
-        let expirationDate = Self.parseDate(dateString: productExpiresDateString, withDateFormatter: dateFormatter)
-        let unsubscribeDetectedAt = Self.parseDate(dateString: unsubscribeDetectedAtString,
-                                                   withDateFormatter: dateFormatter)
-        let billingIssueDetectedAt = Self.parseDate(dateString: billingIssuesDetectedAtString,
-                                                    withDateFormatter: dateFormatter)
-        let entitlementExpiresDate = Self.parseDate(dateString: entitlementExpiresDateString,
-                                                    withDateFormatter: dateFormatter)
+        let expirationDate = dateFormatter.date(fromString: productExpiresDateString)
+        let unsubscribeDetectedAt = dateFormatter.date(fromString: unsubscribeDetectedAtString)
+        let billingIssueDetectedAt = dateFormatter.date(fromString: billingIssuesDetectedAtString)
+        let entitlementExpiresDate = dateFormatter.date(fromString: entitlementExpiresDateString)
 
         self.store = store
         self.expirationDate = expirationDate
@@ -158,23 +165,13 @@ import Foundation
 
         self.isActive = Self.isDateActive(expirationDate: entitlementExpiresDate, forRequestDate: requestDate)
         self.periodType = Self.parsePeriodType(periodType: periodTypeString)
-        self.latestPurchaseDate = Self.parseDate(dateString: entitlementPurchaseDateString,
-                                                 withDateFormatter: dateFormatter)
-        self.originalPurchaseDate = Self.parseDate(dateString: originalPurchaseDateString,
-                                                   withDateFormatter: dateFormatter)
+        self.latestPurchaseDate = dateFormatter.date(fromString: entitlementPurchaseDateString)
+        self.originalPurchaseDate = dateFormatter.date(fromString: originalPurchaseDateString)
         self.ownershipType = Self.parseOwnershipType(ownershipType: ownershipType)
         self.willRenew = Self.willRenewWithExpirationDate(expirationDate: expirationDate,
                                                           store: store,
                                                           unsubscribeDetectedAt: unsubscribeDetectedAt,
                                                           billingIssueDetectedAt: billingIssueDetectedAt)
-    }
-
-    private class func parseDate(dateString: String?, withDateFormatter dateFormatter: DateFormatter) -> Date? {
-        guard let dateString = dateString else {
-            return nil
-        }
-
-        return dateFormatter.date(from: dateString)
     }
 
     private class func isDateActive(expirationDate: Date?, forRequestDate requestDate: Date?) -> Bool {

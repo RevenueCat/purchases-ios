@@ -26,10 +26,16 @@ import Foundation
         return self.all.filter { $0.value.isActive }
     }
 
-    @objc public init(entitlementsData: [String: Any]?,
+    @objc public convenience init(entitlementsData: [String: Any]?,
                       purchasesData: [String: Any],
-                      dateFormatter: DateFormatter,
                       requestDate: Date?) {
+        self.init(entitlementsData: entitlementsData, purchasesData: purchasesData, requestDate: requestDate)
+    }
+
+    init(entitlementsData: [String: Any]?,
+                      purchasesData: [String: Any],
+                      requestDate: Date?,
+                        dateFormatter: ISO3601DateFormatter = ISO3601DateFormatter.shared) {
         guard let entitlementsData = entitlementsData else {
             self.all = [:]
             return
@@ -52,7 +58,6 @@ import Foundation
             entitlementInfos[identifier] = EntitlementInfo(entitlementId: identifier,
                                                            entitlementData: entitlement,
                                                            productData: productData,
-                                                           dateFormatter: dateFormatter,
                                                            requestDate: requestDate)
         }
         self.all = entitlementInfos
