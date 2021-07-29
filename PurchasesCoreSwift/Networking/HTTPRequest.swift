@@ -18,7 +18,7 @@ public class HTTPRequest: NSObject, NSCopying {
     @objc public let completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?
     @objc public let retried: Bool
 
-    @objc public convenience init(RCHTTPRequest request: HTTPRequest, retried: Bool) {
+    @objc public convenience init(byCopyingRequest request: HTTPRequest, retried: Bool) {
         self.init(httpMethod: request.httpMethod,
                   path: request.path,
                   requestBody: request.requestBody,

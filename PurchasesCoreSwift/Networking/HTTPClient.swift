@@ -205,7 +205,7 @@ private extension HTTPClient {
                         let message = String(format: Strings.network.retrying_request, queableRequest.httpMethod,
                                              queableRequest.path)
                         Logger.debug(message)
-                        let retriedRequest = HTTPRequest(RCHTTPRequest: queableRequest, retried: true)
+                        let retriedRequest = HTTPRequest(byCopyingRequest: queableRequest, retried: true)
                         self.queuedRequests.insert(retriedRequest, at: 0)
                         shouldBeginNextRequestWhenFinished = true
                     }
