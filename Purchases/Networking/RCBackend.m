@@ -49,7 +49,7 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
     return self;
 }
 
-- (NSDictionary<NSString *, NSString *> *)headers {
+- (NSDictionary<NSString *, NSString *> *)authHeaders {
     return @{
             @"Authorization":
                 [NSString stringWithFormat:@"Bearer %@", self.APIKey]
@@ -198,7 +198,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                     performSerially:YES
                                path:@"/receipts"
                         requestBody:body
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
                       NSArray *callbacks = [self getCallbacksAndClearForKey:cacheKey];
                       for (RCBackendPurchaserInfoResponseHandler callback in callbacks) {
@@ -223,7 +223,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                     performSerially:YES
                                path:path
                         requestBody:nil
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
                       for (RCBackendPurchaserInfoResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
                           [self handlePurchaserInfoWithResponse:response
@@ -266,7 +266,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                                       @"product_identifiers": productIdentifiers,
                                       @"fetch_token": fetchToken
                                       }
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
                       if (statusCode >= RCHTTPStatusCodesRedirect || error != nil) {
                           response = @{};
@@ -310,7 +310,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                     performSerially:NO
                                path:path
                         requestBody:nil
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
                       if (error == nil && statusCode < RCHTTPStatusCodesRedirect) {
                           for (RCOfferingsResponseHandler callback in [self getCallbacksAndClearForKey:path]) {
@@ -345,7 +345,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                                       @"network": @(network),
                                       @"data": data
                                       }
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
                       [self handleResponse:response statusCode:status error:error completion:completion];
                   }];
@@ -366,7 +366,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                                    @"app_user_id": currentAppUserID,
                                    @"new_app_user_id": newAppUserID
                                }
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
                       [self handleLoginWithResponse:response
                                          statusCode:status
@@ -419,7 +419,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                         requestBody:@{
                                        @"new_app_user_id": newAppUserID
                                }
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
                       [self handleResponse:response statusCode:status error:error completion:completion];
                   }];
@@ -444,7 +444,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                                                @"subscription_group": subscriptionGroup
                                        }],
                                }
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger statusCode, NSDictionary *_Nullable response, NSError *_Nullable error) {
                       if (error != nil) {
                           completion(nil, nil, nil, nil, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
@@ -497,7 +497,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                         requestBody:@{
                                    @"attributes": attributesInBackendFormat
                                }
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
                       [self handleSubscriberAttributesResultWithStatusCode:status
                                                                   response:response

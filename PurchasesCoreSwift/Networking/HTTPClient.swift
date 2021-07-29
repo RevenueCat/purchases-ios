@@ -37,7 +37,7 @@ import Foundation
                                      performSerially: Bool = false,
                                      path: String,
                                      requestBody: [String: Any]?,
-                                     headers: [String: String]?,
+                                     headers: [String: String],
                                      completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
         performRequest(httpMethod,
                        performSerially: performSerially,
@@ -85,7 +85,7 @@ private extension HTTPClient {
                         performSerially: Bool = false,
                         path: String,
                         requestBody maybeRequestBody: [String: Any]?,
-                        headers maybeHeaders: [String: String]?,
+                        headers originalHeaders: [String: String],
                         retried: Bool = false,
                         completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
         operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
@@ -100,10 +100,7 @@ private extension HTTPClient {
                 }
             }
 
-            var requestHeaders = self.defaultHeaders
-            if let headers = maybeHeaders {
-                requestHeaders = requestHeaders.merging(headers, uniquingKeysWith: { (_, last) in last })
-            }
+            let requestHeaders = self.defaultHeaders.merging(originalHeaders, uniquingKeysWith: { (_, last) in last })
 
             let maybeURLRequest = self.createRequest(httpMethod: httpMethod, path: path, requestBody: maybeRequestBody,
                                                      headers: requestHeaders, refreshETag: retried)
@@ -123,7 +120,7 @@ private extension HTTPClient {
             }
 
             let queableRequest = HTTPRequest(httpMethod: httpMethod, path: path, requestBody: maybeRequestBody,
-                                             headers: maybeHeaders, retried: retried, completionHandler: maybeCompletionHandler)
+                                             headers: originalHeaders, retried: retried, completionHandler: maybeCompletionHandler)
 
             if performSerially && !retried {
                 if self.currentSerialRequest != nil {
