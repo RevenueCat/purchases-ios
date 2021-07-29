@@ -8,8 +8,6 @@
 
 import Foundation
 
-public typealias HTTPClientResponseHandler = (_ statusCode: Int, _ response: [AnyHashable: Any]?, _ error: Error?) -> Void
-
 // TODO(post migration): Change back to internal
 @objc(RCHTTPRequest)
 public class HTTPRequest: NSObject, NSCopying {
@@ -17,7 +15,7 @@ public class HTTPRequest: NSObject, NSCopying {
     @objc public let path: String
     @objc public let requestBody: [String: Any]?
     @objc public let headers: [String: String]?
-    @objc public let completionHandler: HTTPClientResponseHandler?
+    @objc public let completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?
     @objc public let retried: Bool
 
     @objc public convenience init(RCHTTPRequest request: HTTPRequest, retried: Bool) {
@@ -35,7 +33,7 @@ public class HTTPRequest: NSObject, NSCopying {
                          requestBody: [String: Any]?,
                          headers: [String: String]?,
                          retried: Bool,
-                         completionHandler: HTTPClientResponseHandler?) {
+                         completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
         self.httpMethod = httpMethod
         self.path = path
         self.requestBody = requestBody

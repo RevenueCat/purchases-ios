@@ -41,7 +41,7 @@ class BackendTests: XCTestCase {
                                      path: String,
                                      requestBody: [String : Any]?,
                                      headers: [String : String]?,
-                                     completionHandler: HTTPClientResponseHandler?) {
+                                     completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
 

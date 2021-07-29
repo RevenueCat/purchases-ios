@@ -16,21 +16,21 @@ class MockHTTPClient: HTTPClient {
                                           path: String,
                                           requestBody: [AnyHashable: Any]?,
                                           headers: [String: String]?,
-                                          completionHandler: HTTPClientResponseHandler?)?
+                                          completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?)?
     var invokedPerformRequestParametersList = [
         (HTTPMethod: String,
-            performSerially: Bool,
-            path: String,
-            requestBody: [AnyHashable: Any]?,
-            headers: [String: String]?,
-            completionHandler: HTTPClientResponseHandler?)]()
+         performSerially: Bool,
+         path: String,
+         requestBody: [AnyHashable: Any]?,
+         headers: [String: String]?,
+         completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?)]()
 
     override func performRequest(_ httpMethod: String,
                                  performSerially: Bool = false,
                                  path: String,
                                  requestBody: [String : Any]?,
                                  headers: [String : String]?,
-                                 completionHandler: HTTPClientResponseHandler?) {
+                                 completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
         invokedPerformRequest = true
         invokedPerformRequestCount += 1
         invokedPerformRequestParameters = (httpMethod, performSerially, path, requestBody, headers, completionHandler)

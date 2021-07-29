@@ -38,7 +38,7 @@ import Foundation
                                      path: String,
                                      requestBody: [String: Any]?,
                                      headers: [String: String]?,
-                                     completionHandler: HTTPClientResponseHandler?) {
+                                     completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
         performRequest(httpMethod,
                        performSerially: performSerially,
                        path: path,
@@ -87,7 +87,7 @@ private extension HTTPClient {
                         requestBody maybeRequestBody: [String: Any]?,
                         headers maybeHeaders: [String: String]?,
                         retried: Bool = false,
-                        completionHandler maybeCompletionHandler: HTTPClientResponseHandler?) {
+                        completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
         operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
             do {
                 try self.assertIsValidRequest(httpMethod: httpMethod, requestBody: maybeRequestBody)
@@ -162,7 +162,7 @@ private extension HTTPClient {
                         data maybeData: Data?,
                         error maybeNetworkError: Error?,
                         request: URLRequest,
-                        completionHandler maybeCompletionHandler: HTTPClientResponseHandler?,
+                        completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
                         queableRequest: HTTPRequest,
                         retried: Bool) {
