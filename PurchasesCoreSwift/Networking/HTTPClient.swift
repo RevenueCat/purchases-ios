@@ -105,10 +105,10 @@ private extension HTTPClient {
                 requestHeaders = requestHeaders.merging(headers, uniquingKeysWith: { (_, last) in last })
             }
 
-            let urlRequest = self.createRequest(httpMethod: httpMethod, path: path, requestBody: maybeRequestBody,
-                                                headers: requestHeaders, refreshETag: retried)
+            let maybeURLRequest = self.createRequest(httpMethod: httpMethod, path: path, requestBody: maybeRequestBody,
+                                                     headers: requestHeaders, refreshETag: retried)
 
-            guard let maybeURLRequest = urlRequest else {
+            guard let urlRequest = maybeURLRequest else {
                 if let requestBody = maybeRequestBody {
                     Logger.error("Could not create request to \(path) with body \(requestBody)")
                 } else {
@@ -139,15 +139,15 @@ private extension HTTPClient {
             }
 
             let logMessage = String(format: Strings.network.api_request_started,
-                                    maybeURLRequest.httpMethod ?? "",
-                                    maybeURLRequest.url?.path ?? "")
+                                    urlRequest.httpMethod ?? "",
+                                    urlRequest.url?.path ?? "")
             Logger.debug(logMessage)
 
-            let task = self.session.dataTask(with: maybeURLRequest) { (data, response, error) -> Void in
+            let task = self.session.dataTask(with: urlRequest) { (data, response, error) -> Void in
                 self.handleResponse(response: response,
                                     data: data,
                                     error: error,
-                                    request: maybeURLRequest,
+                                    request: urlRequest,
                                     completionHandler: maybeCompletionHandler,
                                     beginNextRequestWhenFinished: performSerially,
                                     queableRequest: rcRequest,
