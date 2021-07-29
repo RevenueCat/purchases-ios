@@ -67,13 +67,13 @@ class InAppPurchaseBuilder {
             case .promotionalOfferIdentifier:
                 promotionalOfferIdentifier = internalContainer.internalPayload.toString()
             case .cancellationDate:
-                cancellationDate = internalContainer.internalPayload.toDate(dateFormatter: dateFormatter)
+                cancellationDate = internalContainer.internalPayload.toDate()
             case .expiresDate:
-                expiresDate = internalContainer.internalPayload.toDate(dateFormatter: dateFormatter)
+                expiresDate = internalContainer.internalPayload.toDate()
             case .originalPurchaseDate:
-                originalPurchaseDate = internalContainer.internalPayload.toDate(dateFormatter: dateFormatter)
+                originalPurchaseDate = internalContainer.internalPayload.toDate()
             case .purchaseDate:
-                purchaseDate = internalContainer.internalPayload.toDate(dateFormatter: dateFormatter)
+                purchaseDate = internalContainer.internalPayload.toDate()
             }
         }
 

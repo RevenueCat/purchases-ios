@@ -66,10 +66,10 @@ class AppleReceiptBuilder {
                 bundleId = internalContainer.internalPayload.toString()
             case .creationDate:
                 let internalContainer = try containerBuilder.build(fromPayload: payload)
-                creationDate = internalContainer.internalPayload.toDate(dateFormatter: dateFormatter)
+                creationDate = internalContainer.internalPayload.toDate()
             case .expirationDate:
                 let internalContainer = try containerBuilder.build(fromPayload: payload)
-                expirationDate = internalContainer.internalPayload.toDate(dateFormatter: dateFormatter)
+                expirationDate = internalContainer.internalPayload.toDate()
             case .inAppPurchase:
                 let internalContainer = try containerBuilder.build(fromPayload: payload)
                 inAppPurchases.append(try inAppPurchaseBuilder.build(fromContainer: internalContainer))
