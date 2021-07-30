@@ -43,12 +43,12 @@ open class AdClientProxy: NSObject {
     @objc(requestAttributionDetailsWithBlock:)
     open func requestAttributionDetails(_ completionHandler: @escaping AttributionDetailsBlock) {
         let client: AnyObject
-        if let klass = Self.adClientClass, let managerClass = klass as AnyObject as? NSObjectProtocol {
+        if let klass = Self.adClientClass, let clientClass = klass as AnyObject as? NSObjectProtocol {
             // This looks strange, but #selector() does fun things to create a selector. If the selector for the given
             // function matches the selector on another class, it can be used in place. Results:
-            // If ADClient class is instantiated above, then +sharedClient selector is performed eventhough you can see
+            // If ADClient class is instantiated above, then +sharedClient selector is performed event hough you can see
             // that we're using #selector(FakeAdClient.sharedClient) to instantiate a Selector object.
-            client = managerClass.perform(#selector(FakeAdClient.sharedClient)).takeUnretainedValue()
+            client = clientClass.perform(#selector(FakeAdClient.sharedClient)).takeUnretainedValue()
         } else {
             client = FakeAdClient.sharedClient()
         }
