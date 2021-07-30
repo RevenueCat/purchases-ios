@@ -12,6 +12,7 @@
     RCStoreKitWrapper,
     RCReceiptFetcher,
     RCAttributionFetcher,
+    RCAttributionPoster,
     RCOfferingsFactory,
     RCDeviceCache,
     RCIdentityManager,
@@ -35,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
                    requestFetcher:(RCStoreKitRequestFetcher *)requestFetcher
                    receiptFetcher:(RCReceiptFetcher *)receiptFetcher
                attributionFetcher:(RCAttributionFetcher *)attributionFetcher
+                attributionPoster:(RCAttributionPoster *)attributionPoster
                           backend:(RCBackend *)backend
                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
                notificationCenter:(NSNotificationCenter *)notificationCenter

@@ -33,10 +33,11 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var subscriberAttributeWeight: SubscriberAttribute!
     var mockAttributes: [String: SubscriberAttribute]!
     let systemInfo: SystemInfo = try! MockSystemInfo(platformFlavor: nil,
-                                                       platformFlavorVersion: nil,
-                                                       finishTransactions: true)
+                                                     platformFlavorVersion: nil,
+                                                     finishTransactions: true)
     var mockReceiptParser: MockReceiptParser!
     var mockAttributionFetcher: MockAttributionFetcher!
+    var mockAttributionPoster: RCAttributionPoster!
 
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
@@ -61,13 +62,20 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         self.mockReceiptParser = MockReceiptParser()
+        let systemInfoAttribution = try! MockSystemInfo(platformFlavor: "iOS",
+                                                        platformFlavorVersion: "3.2.1",
+                                                        finishTransactions: true)
         self.mockAttributionFetcher = MockAttributionFetcher(deviceCache: mockDeviceCache,
                                                              identityManager: mockIdentityManager,
                                                              backend: mockBackend,
                                                              attributionFactory: AttributionTypeFactory(),
-                                                             systemInfo: try! MockSystemInfo(platformFlavor: "iOS",
-                                                                                             platformFlavorVersion: "3.2.1",
-                                                                                             finishTransactions: true))
+                                                             systemInfo: systemInfoAttribution)
+        self.mockAttributionPoster = RCAttributionPoster(deviceCache: mockDeviceCache,
+                                                         identityManager: mockIdentityManager,
+                                                         backend: mockBackend,
+                                                         systemInfo: systemInfoAttribution,
+                                                         attributionFetcher: mockAttributionFetcher,
+                                                         subscriberAttributesManager: mockSubscriberAttributesManager)
         self.purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
                                                          deviceCache: mockDeviceCache,
                                                          backend: mockBackend,
@@ -89,6 +97,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               requestFetcher: mockRequestFetcher,
                               receiptFetcher: mockReceiptFetcher,
                               attributionFetcher: mockAttributionFetcher,
+                              attributionPoster: mockAttributionPoster,
                               backend: mockBackend,
                               storeKitWrapper: mockStoreKitWrapper,
                               notificationCenter: mockNotificationCenter,
@@ -404,8 +413,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
         let errorCode = BackendErrorCode.invalidAPIKey.rawValue as NSNumber
-        let extraUserInfo = [RCSuccessfullySyncedKey: true]
-        self.mockBackend.stubbedPostReceiptPurchaserError = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
+        let extraUserInfo = [RCSuccessfullySyncedKey as NSError.UserInfoKey: true]
+        self.mockBackend.stubbedPostReceiptPurchaserError = ErrorUtils.backendError(withBackendCode: errorCode,
                                                                                               backendMessage: "Invalid credentials",
                                                                                               extraUserInfo: extraUserInfo)
 
@@ -432,8 +441,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
         let errorCode = BackendErrorCode.invalidAPIKey.rawValue as NSNumber
-        let extraUserInfo = [RCSuccessfullySyncedKey: false]
-        self.mockBackend.stubbedPostReceiptPurchaserError = Purchases.ErrorUtils.backendError(withBackendCode: errorCode,
+        let extraUserInfo = [RCSuccessfullySyncedKey as NSError.UserInfoKey: false]
+        self.mockBackend.stubbedPostReceiptPurchaserError = ErrorUtils.backendError(withBackendCode: errorCode,
                                                                                               backendMessage: "Invalid credentials",
                                                                                               extraUserInfo: extraUserInfo)
 

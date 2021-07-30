@@ -39,7 +39,8 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
 
 - (nullable instancetype)initWithAPIKey:(NSString *)APIKey
                              systemInfo:(RCSystemInfo *)systemInfo
-                            eTagManager:(RCETagManager *)eTagManager;
+                            eTagManager:(RCETagManager *)eTagManager
+                    operationDispatcher:(RCOperationDispatcher *)operationDispatcher;
 
 - (nullable instancetype)initWithHTTPClient:(RCHTTPClient *)client
                                      APIKey:(NSString *)APIKey;

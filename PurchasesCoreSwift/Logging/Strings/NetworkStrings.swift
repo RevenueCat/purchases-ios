@@ -12,7 +12,8 @@ import Foundation
 @objc(RCNetworkStrings) public class NetworkStrings: NSObject {
     @objc public var api_request_completed: String { "API request completed with status: %@ %@ %d" }
     @objc public var api_request_started: String { "API request started: %@ %@" }
-    @objc public var creating_json_error: String { "Error creating request with JSON body: %@" }
+    @objc public var creating_json_error: String { "Error creating request with JSON body: %@ ; error: %@" }
+    @objc public var creating_json_error_invalid: String { "JSON body is invalid: %@" }
     @objc public var json_data_received: String { "Data received: %@" }
     @objc public var parsing_json_error: String { "Error parsing JSON %@" }
     @objc public var serial_request_done: String { "Serial request done: %@ %@, %ld requests left in the queue" }

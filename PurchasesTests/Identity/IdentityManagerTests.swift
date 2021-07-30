@@ -124,9 +124,9 @@ class IdentityManagerTests: XCTestCase {
     }
 
     func testCreateAliasForwardsErrors() {
-        self.mockBackend.stubbedCreateAliasCompletionResult = (Purchases.ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber,
-                                                                        backendMessage: "Invalid credentials",
-                                                                        finishable: false), ())
+        self.mockBackend.stubbedCreateAliasCompletionResult = (ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber,
+                                                                                       backendMessage: "Invalid credentials",
+                                                                                       finishable: false), ())
         var error: Error? = nil
         self.mockDeviceCache.stubbedAppUserID = "appUserID"
 

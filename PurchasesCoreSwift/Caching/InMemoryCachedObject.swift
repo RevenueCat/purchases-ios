@@ -6,22 +6,21 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-import Foundation
+public class InMemoryCachedObject<T> {
 
-open class InMemoryCachedObject<T> {
-
-    private let accessQueue = DispatchQueue(label: "InMemoryCachedObjectQueue", attributes: .concurrent)
-    private var lastUpdated: Date?
-    private var cachedObject: T?
     public var lastUpdatedAt: Date? {
         accessQueue.sync {
             return lastUpdated
         }
     }
 
+    private let accessQueue = DispatchQueue(label: "InMemoryCachedObjectQueue", attributes: .concurrent)
+    private var lastUpdated: Date?
+    private var cachedObject: T?
+
     public init() { }
 
-    open func isCacheStale(durationInSeconds: Double) -> Bool {
+    func isCacheStale(durationInSeconds: Double) -> Bool {
         accessQueue.sync {
             guard let lastUpdated = lastUpdated else {
                 return true
@@ -32,36 +31,46 @@ open class InMemoryCachedObject<T> {
         }
     }
 
-    open func clearCacheTimestamp() {
-        accessQueue.sync(flags: .barrier) {
+    func clearCacheTimestamp() {
+        accessQueue.executeByLockingDatasource {
             self.lastUpdated = nil
         }
     }
 
-    open func clearCache() {
-        accessQueue.sync(flags: .barrier) {
+    func clearCache() {
+        accessQueue.executeByLockingDatasource {
             self.lastUpdated = nil
             self.cachedObject = nil
         }
     }
 
-    open func updateCacheTimestamp(date: Date) {
-        accessQueue.sync(flags: .barrier) {
+    func updateCacheTimestamp(date: Date) {
+        accessQueue.executeByLockingDatasource {
             self.lastUpdated = date
         }
     }
 
-    open func cache(instance: T) {
-        accessQueue.sync(flags: .barrier) {
+    func cache(instance: T) {
+        accessQueue.executeByLockingDatasource {
             self.lastUpdated = Date()
             self.cachedObject = instance
         }
     }
 
-    open func cachedInstance() -> T? {
+    func cachedInstance() -> T? {
         accessQueue.sync {
             return cachedObject
         }
+    }
+
+}
+
+private extension DispatchQueue {
+
+    func executeByLockingDatasource<T>(execute work: () throws -> T) rethrows -> T {
+        // .barrier is not needed here because we're using `.sync` instead of the normal .async multi-reader
+        // single-writer dispatch queue synchronization pattern.
+        return try sync(execute: work)
     }
 
 }

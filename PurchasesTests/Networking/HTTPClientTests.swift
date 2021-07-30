@@ -17,15 +17,17 @@ import PurchasesCoreSwift
 class HTTPClientTests: XCTestCase {
 
     let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
-    var client: RCHTTPClient!
+    var client: HTTPClient!
     var userDefaults: UserDefaults!
     var eTagManager: MockETagManager!
+    var operationDispatcher: OperationDispatcher!
 
     override func setUp() {
         super.setUp()
         userDefaults = MockUserDefaults()
         eTagManager = MockETagManager(userDefaults: userDefaults)
-        client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
+        operationDispatcher = OperationDispatcher()
+        client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
     }
 
     override func tearDown() {
@@ -33,18 +35,27 @@ class HTTPClientTests: XCTestCase {
     }
 
     func testCantPostABodyWithGet() {
-        expectToThrowException(.parameterAssert) {
-            self.client.performRequest("GET", serially: true, path: "/", body: Dictionary.init(),
-                                       headers: nil, completionHandler: nil)
+        var maybeError: Error? = nil
+        self.client.performRequest("GET",
+                                   performSerially: true,
+                                   path: "/",
+                                   requestBody: Dictionary.init(),
+                                   headers: [:]) { _, _, error in
+            maybeError = error
         }
-        
+        expect(maybeError).toEventuallyNot(beNil())
     }
 
     func testUnrecognizedMethodFails() {
-        expectToThrowException(.parameterAssert) {
-            self.client.performRequest("GE", serially: true, path: "/", body: Dictionary.init(),
-                                       headers: nil, completionHandler: nil)
+        var maybeError: Error? = nil
+        self.client.performRequest("GE",
+                                   performSerially: true,
+                                   path: "/",
+                                   requestBody: Dictionary.init(),
+                                   headers: [:]) { _, _, error in
+            maybeError = error
         }
+        expect(maybeError).toEventuallyNot(beNil())
     }
 
     func testUsesTheCorrectHost() {
@@ -54,11 +65,15 @@ class HTTPClientTests: XCTestCase {
         guard let host = SystemInfo.serverHostURL.host else { fatalError() }
         stub(condition: isHost(host)) { _ in
             hostCorrect = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: nil, completionHandler:nil)
+        self.client.performRequest("POST",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: Dictionary.init(),
+                                   headers: [:],
+                                   completionHandler: nil)
 
         expect(hostCorrect).toEventually(equal(true), timeout: .seconds(1))
     }
@@ -69,11 +84,15 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("test_header")) { _ in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+        self.client.performRequest("POST",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: Dictionary.init(),
+                                   headers: ["test_header": "value"],
+                                   completionHandler: nil)
 
         expect(headerPresent).toEventually(equal(true), timeout: .seconds(1))
     }
@@ -84,11 +103,15 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("content-type", value: "application/json")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+        self.client.performRequest("POST",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: Dictionary.init(),
+                                   headers: ["test_header": "value"],
+                                   completionHandler: nil)
 
         expect(headerPresent).toEventually(equal(true), timeout: .seconds(1))
     }
@@ -99,11 +122,15 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform", value: "iOS")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+        self.client.performRequest("POST",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: Dictionary.init(),
+                                   headers: ["test_header": "value"],
+                                   completionHandler: nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -114,11 +141,15 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Version", value: Purchases.frameworkVersion())) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+        self.client.performRequest("POST",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: Dictionary.init(),
+                                   headers: ["test_header": "value"],
+                                   completionHandler: nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -129,11 +160,15 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Version", value: ProcessInfo().operatingSystemVersionString)) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+        self.client.performRequest("POST",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: Dictionary.init(),
+                                   headers: ["test_header": "value"],
+                                   completionHandler: nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -144,11 +179,15 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { _ in
             pathHit = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         
-        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: nil, completionHandler:nil)
+        self.client.performRequest("POST",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: Dictionary.init(),
+                                   headers: [:],
+                                   completionHandler: nil)
 
         expect(pathHit).toEventually(equal(true), timeout: .seconds(1))
     }
@@ -160,10 +199,15 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             pathHit = request.httpMethod == method
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performRequest(method, serially: true, path: path, body: body, headers: nil, completionHandler:nil)
+        self.client.performRequest(method,
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: body,
+                                   headers: [:],
+                                   completionHandler: nil)
 
         expect(pathHit).toEventually(equal(true), timeout: .seconds(1))
     }
@@ -177,10 +221,15 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasBody(bodyData)) { _ in
             pathHit = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performRequest(method, serially: true, path: path, body: body, headers: nil, completionHandler:nil)
+        self.client.performRequest(method,
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: body,
+                                   headers: [:],
+                                   completionHandler: nil)
 
         expect(pathHit).toEventually(equal(true))
     }
@@ -190,10 +239,14 @@ class HTTPClientTests: XCTestCase {
         var completionCalled = false
 
         stub(condition: isPath("/v1" + path)) { _ in
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, error) in
+        self.client.performRequest("GET",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: nil,
+                                   headers: [:]) { (status, data, error) in
             completionCalled = true
         }
 
@@ -206,11 +259,15 @@ class HTTPClientTests: XCTestCase {
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
 
         stub(condition: isPath("/v1" + path)) { request in
-            let response = HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            let response = HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
             response.error = error
             return response
         }
-        self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, responseError) in
+        self.client.performRequest("GET",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: nil,
+                                   headers: [:]) { (status, data, responseError) in
             if let responseNSError = responseError as NSError? {
                 successFailed = (status >= 500
                                     && data == nil
@@ -232,10 +289,14 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             let json = "{\"message\": \"something is broken up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers: nil)
         }
-
-        self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, error) in
+        
+        self.client.performRequest("GET",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: nil,
+                                   headers: [:]) { (status, data, error) in
             correctResponse = (status == errorCode) && (data != nil) && (error == nil);
             if data != nil {
                 message = data!["message"] as! String?
@@ -254,10 +315,14 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             let json = "{\"message\": \"something is broken up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers: nil)
         }
 
-        self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, error) in
+        self.client.performRequest("GET",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: nil,
+                                   headers: [:]) { (status, data, error) in
             correctResponse = (status == errorCode) && (data != nil) && (error == nil);
             if data != nil {
                 message = data!["message"] as! String?
@@ -275,10 +340,14 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             let json = "{this is not JSON.csdsd"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers: nil)
         }
 
-        self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, error) in
+        self.client.performRequest("GET",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: nil,
+                                   headers: [:]) { (status, data, error) in
             correctResponse = (status == errorCode) && (data == nil) && (error != nil);
         }
 
@@ -293,10 +362,14 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
         }
 
-        self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, error) in
+        self.client.performRequest("GET",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: nil,
+                                   headers: [:]) { (status, data, error) in
             successIsTrue = (status == 200) && (error == nil);
             if data != nil {
                 message = data!["message"] as! String?
@@ -315,11 +388,15 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Client-Version", value: version )) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         
-        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+        self.client.performRequest("POST",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: Dictionary.init(),
+                                   headers: ["test_header": "value"],
+                                   completionHandler: nil)
         
         expect(headerPresent).toEventually(equal(true))
     }
@@ -332,11 +409,15 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Client-Build-Version", value: version )) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+        self.client.performRequest("POST",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: Dictionary.init(),
+                                   headers: ["test_header": "value"],
+                                   completionHandler: nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -349,11 +430,15 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+        self.client.performRequest("POST",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: Dictionary.init(),
+                                   headers: ["test_header": "value"],
+                                   completionHandler: nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -364,11 +449,15 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "native")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                                   headers: ["test_header": "value"], completionHandler:nil)
+        self.client.performRequest("POST",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: Dictionary.init(),
+                                   headers: ["test_header": "value"],
+                                   completionHandler: nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -379,15 +468,18 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "react-native")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: "react-native",
                                          platformFlavorVersion: "3.2.1",
                                          finishTransactions: true)
-        let client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-
-        client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                              headers: ["test_header": "value"], completionHandler:nil)
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        client.performRequest("POST",
+                              performSerially: true,
+                              path: path,
+                              requestBody: Dictionary.init(),
+                              headers: ["test_header": "value"],
+                              completionHandler: nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -398,15 +490,19 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor-Version", value: "1.2.3")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: "react-native",
                                          platformFlavorVersion: "1.2.3",
                                          finishTransactions: true)
-        let client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-
-        client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                              headers: ["test_header": "value"], completionHandler:nil)
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        
+        client.performRequest("POST",
+                              performSerially: true,
+                              path: path,
+                              requestBody: Dictionary.init(),
+                              headers: ["test_header": "value"],
+                              completionHandler: nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -417,13 +513,16 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "false")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
-        let client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-
-        client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                              headers: ["test_header": "value"], completionHandler:nil)
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        client.performRequest("POST",
+                              performSerially: true,
+                              path: path,
+                              requestBody: Dictionary.init(),
+                              headers: ["test_header": "value"],
+                              completionHandler: nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -434,13 +533,16 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "true")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
-        let client = RCHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
-
-        client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
-                              headers: ["test_header": "value"], completionHandler:nil)
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        client.performRequest("POST",
+                              performSerially: true,
+                              path: path,
+                              requestBody: Dictionary.init(),
+                              headers: ["test_header": "value"],
+                              completionHandler: nil)
 
         expect(headerPresent).toEventually(equal(true))
     }
@@ -457,21 +559,21 @@ class HTTPClientTests: XCTestCase {
             expect(requestNumber) == completionCallCount
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
                 .responseTime(0.003)
         }
 
         let totalRequests = Int.random(in: 50..<100)
         for requestNumber in 0..<totalRequests {
             self.client.performRequest("POST",
-                                       serially: true,
+                                       performSerially: true,
                                        path: path,
-                                       body: ["requestNumber": requestNumber],
-                                       headers: nil) { (status, data, error) in
+                                       requestBody: ["requestNumber": requestNumber],
+                                       headers: [:]) { (status, data, error) in
                 completionCallCount += 1
             }
         }
-        expect(completionCallCount).toEventually(equal(totalRequests))
+        expect(completionCallCount).toEventually(equal(totalRequests), timeout: .seconds(3))
     }
 
     func testPerformSerialRequestWaitsUntilFirstRequestIsDoneBeforeStartingSecond() {
@@ -490,23 +592,23 @@ class HTTPClientTests: XCTestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
                 .responseTime(0.1)
         }
 
         self.client.performRequest("POST",
-                                   serially: true,
+                                   performSerially: true,
                                    path: path,
-                                   body: ["requestNumber": 1],
-                                   headers: nil) { (status, data, error) in
+                                   requestBody: ["requestNumber": 1],
+                                   headers: [:]) { (status, data, error) in
             firstRequestFinished = true
         }
 
         self.client.performRequest("POST",
-                                   serially: true,
+                                   performSerially: true,
                                    path: path,
-                                   body: ["requestNumber": 2],
-                                   headers: nil) { (status, data, error) in
+                                   requestBody: ["requestNumber": 2],
+                                   headers: [:]) { (status, data, error) in
             secondRequestFinished = true
         }
 
@@ -529,23 +631,23 @@ class HTTPClientTests: XCTestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
                 .responseTime(0.1)
         }
 
         self.client.performRequest("POST",
-                                   serially: false,
+                                   performSerially: false,
                                    path: path,
-                                   body: ["requestNumber": 1],
-                                   headers: nil) { (status, data, error) in
+                                   requestBody: ["requestNumber": 1],
+                                   headers: [:]) { (status, data, error) in
             firstRequestFinished = true
         }
 
         self.client.performRequest("POST",
-                                   serially: false,
+                                   performSerially: false,
                                    path: path,
-                                   body: ["requestNumber": 2],
-                                   headers: nil) { (status, data, error) in
+                                   requestBody: ["requestNumber": 2],
+                                   headers: [:]) { (status, data, error) in
             secondRequestFinished = true
         }
 
@@ -568,23 +670,23 @@ class HTTPClientTests: XCTestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
                 .responseTime(0.1)
         }
 
         self.client.performRequest("POST",
-                                   serially: true,
+                                   performSerially: true,
                                    path: path,
-                                   body: ["requestNumber": 1],
-                                   headers: nil) { (status, data, error) in
+                                   requestBody: ["requestNumber": 1],
+                                   headers: [:]) { (status, data, error) in
             firstRequestFinished = true
         }
 
         self.client.performRequest("POST",
-                                   serially: false,
+                                   performSerially: false,
                                    path: path,
-                                   body: ["requestNumber": 2],
-                                   headers: nil) { (status, data, error) in
+                                   requestBody: ["requestNumber": 2],
+                                   headers: [:]) { (status, data, error) in
             secondRequestFinished = true
         }
 
@@ -607,23 +709,23 @@ class HTTPClientTests: XCTestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
                 .responseTime(0.1)
         }
 
         self.client.performRequest("POST",
-                                   serially: false,
+                                   performSerially: false,
                                    path: path,
-                                   body: ["requestNumber": 1],
-                                   headers: nil) { (status, data, error) in
+                                   requestBody: ["requestNumber": 1],
+                                   headers: [:]) { (status, data, error) in
             firstRequestFinished = true
         }
 
         self.client.performRequest("POST",
-                                   serially: true,
+                                   performSerially: true,
                                    path: path,
-                                   body: ["requestNumber": 2],
-                                   headers: nil) { (status, data, error) in
+                                   requestBody: ["requestNumber": 2],
+                                   headers: [:]) { (status, data, error) in
             secondRequestFinished = true
         }
 
@@ -633,14 +735,16 @@ class HTTPClientTests: XCTestCase {
 
     func testPerformRequestFailsAssertionIfPostWithNilBody() {
         let path = "/a_random_path"
-
-        expectToThrowException(.parameterAssert) {
-            self.client.performRequest("POST",
-                                       serially: true,
-                                       path: path,
-                                       body: nil,
-                                       headers: nil, completionHandler: nil)
+        
+        var maybeError: Error? = nil
+        self.client.performRequest("POST",
+                                   performSerially: true,
+                                   path: path,
+                                   requestBody: nil,
+                                   headers: [:]) { _, _, error in
+            maybeError = error
         }
+        expect(maybeError).toEventuallyNot(beNil())
     }
 
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() {
@@ -654,10 +758,10 @@ class HTTPClientTests: XCTestCase {
         var receivedStatus: Int? = nil
         var receivedData: [AnyHashable: Any]? = nil
         self.client.performRequest("POST",
-                                   serially: true,
+                                   performSerially: true,
                                    path: path,
-                                   body: nonJSONBody,
-                                   headers: nil) { (status, data, error) in
+                                   requestBody: nonJSONBody,
+                                   headers: [:]) { (status, data, error) in
             completionCalled = true
             receivedError = error
             receivedStatus = status
@@ -683,14 +787,14 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             httpCallMade = true
-            return HTTPStubsResponse(data: Data(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data(), statusCode:200, headers: nil)
         }
 
         self.client.performRequest("POST",
-                                   serially: true,
+                                   performSerially: true,
                                    path: path,
-                                   body: nonJSONBody,
-                                   headers: nil) { (status, data, error) in
+                                   requestBody: nonJSONBody,
+                                   headers: [:]) { (status, data, error) in
             completionCalled = true
         }
 
@@ -708,12 +812,12 @@ class HTTPClientTests: XCTestCase {
                 self.eTagManager.shouldReturnResultFromBackend = true
             }
             firstTimeCalled = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
-        self.client.performRequest("GET", serially: true, path: path, body: nil, headers: nil) { (status, data, error) in
+        self.client.performRequest("GET", performSerially: true, path: path, requestBody: nil, headers: [:]) { (status, data, error) in
             completionCalled = true
         }
 

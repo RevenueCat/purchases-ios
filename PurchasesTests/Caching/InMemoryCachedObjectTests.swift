@@ -7,7 +7,7 @@ import Foundation
 import Nimble
 import XCTest
 
-import Purchases
+@testable import PurchasesCoreSwift
 
 class InMemoryCachedObjectTests: XCTestCase {
 

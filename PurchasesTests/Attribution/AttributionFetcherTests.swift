@@ -22,9 +22,11 @@ import Purchases
 class AttributionFetcherTests: XCTestCase {
 
     var attributionFetcher: RCAttributionFetcher!
+    var attributionPoster: RCAttributionPoster!
     var deviceCache: MockDeviceCache!
     var identityManager: MockIdentityManager!
     var backend: MockBackend!
+    let subscriberAttributesManager = MockSubscriberAttributesManager()
     var attributionFactory: AttributionTypeFactory! = MockAttributionTypeFactory()
     var systemInfo: MockSystemInfo! = try! MockSystemInfo(platformFlavor: "iOS",
                                                           platformFlavorVersion: "3.2.1",
@@ -44,6 +46,12 @@ class AttributionFetcherTests: XCTestCase {
                                                   backend: backend,
                                                   attributionFactory: attributionFactory,
                                                   systemInfo: systemInfo)
+        attributionPoster = RCAttributionPoster(deviceCache: deviceCache,
+                                                identityManager: identityManager,
+                                                backend: backend,
+                                                systemInfo: systemInfo,
+                                                attributionFetcher: attributionFetcher,
+                                                subscriberAttributesManager: subscriberAttributesManager)
         resetAttributionStaticProperties()
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
     }
@@ -68,48 +76,88 @@ class AttributionFetcherTests: XCTestCase {
         let userID = "userID"
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
         
-        attributionFetcher.postAttributionData(["something": "here"],
+        attributionPoster.postAttributionData(["something": "here"],
                                                from: .adjust,
                                                forNetworkUserId: userID)
-        expect(self.backend.invokedPostAttributionDataCount) == 1
+        expect(self.backend.invokedPostAttributionDataCount) == 0
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
-        attributionFetcher.postAttributionData(["something": "else"],
+        attributionPoster.postAttributionData(["something": "else"],
                                                from: .adjust,
                                                forNetworkUserId: userID)
-
-        expect(self.backend.invokedPostAttributionDataCount) == 1
+        expect(self.backend.invokedPostAttributionDataCount) == 0
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
     }
+    
+    func testPostAppleSearchAdsAttributionDataSkipsIfAlreadySent() {
+        let userID = "userID"
+        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
+        
+        attributionPoster.postAttributionData(["something": "here"],
+                                               from: .appleSearchAds,
+                                               forNetworkUserId: userID)
+        expect(self.backend.invokedPostAttributionDataCount) == 1
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
 
-    func testPostAttributionDataDoesntSkipIfNetworkUserIdChanged() {
+        attributionPoster.postAttributionData(["something": "else"],
+                                               from: .appleSearchAds,
+                                               forNetworkUserId: userID)
+        expect(self.backend.invokedPostAttributionDataCount) == 1
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
+
+    }
+    
+    func testPostAttributionDataDoesntSkipIfNetworkChanged() {
         let userID = "userID"
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
 
-        attributionFetcher.postAttributionData(["something": "here"],
+        attributionPoster.postAttributionData(["something": "here"],
                                                from: .adjust,
                                                forNetworkUserId: userID)
-        expect(self.backend.invokedPostAttributionDataCount) == 1
+        expect(self.backend.invokedPostAttributionDataCount) == 0
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
-        attributionFetcher.postAttributionData(["something": "else"],
+        attributionPoster.postAttributionData(["something": "else"],
                                                from: .facebook,
                                                forNetworkUserId: userID)
 
-        expect(self.backend.invokedPostAttributionDataCount) == 2
+        expect(self.backend.invokedPostAttributionDataCount) == 0
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
 
-    func testPostAttributionDataDoesntSkipIfSameUserIdButDifferentNetwork() {
+    func testPostAttributionDataDoesntSkipIfDifferentUserIdButSameNetwork() {
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
 
-        attributionFetcher.postAttributionData(["something": "here"],
+        attributionPoster.postAttributionData(["something": "here"],
                                                from: .adjust,
                                                forNetworkUserId: "attributionUser1")
-        expect(self.backend.invokedPostAttributionDataCount) == 1
+        expect(self.backend.invokedPostAttributionDataCount) == 0
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
-        attributionFetcher.postAttributionData(["something": "else"],
-                                               from: .facebook,
+        attributionPoster.postAttributionData(["something": "else"],
+                                               from: .adjust,
+                                               forNetworkUserId: "attributionUser2")
+
+        expect(self.backend.invokedPostAttributionDataCount) == 0
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
+    }
+    
+    func testPostAppleSearchAdsAttributionDataDoesntSkipIfDifferentUserIdButSameNetwork() {
+        backend.stubbedPostAttributionDataCompletionResult = (nil, ())
+
+        attributionPoster.postAttributionData(["something": "here"],
+                                               from: .appleSearchAds,
+                                               forNetworkUserId: "attributionUser1")
+        expect(self.backend.invokedPostAttributionDataCount) == 1
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
+
+        attributionPoster.postAttributionData(["something": "else"],
+                                               from: .appleSearchAds,
                                                forNetworkUserId: "attributionUser2")
 
         expect(self.backend.invokedPostAttributionDataCount) == 2
+        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
     }
 
     func testPostAppleSearchAdsAttributionIfNeededSkipsIfATTFrameworkNotIncludedOnNewOS() {
@@ -118,9 +166,10 @@ class AttributionFetcherTests: XCTestCase {
             MockAttributionTypeFactory.shouldReturnAdClientProxy = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = false
 
-            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+            self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
 
             expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 0
+            expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
         }
     }
 
@@ -130,7 +179,7 @@ class AttributionFetcherTests: XCTestCase {
             MockAttributionTypeFactory.shouldReturnAdClientProxy = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = false
 
-            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+            self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
 
             expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 1
         }
@@ -140,7 +189,7 @@ class AttributionFetcherTests: XCTestCase {
         MockAttributionTypeFactory.shouldReturnAdClientProxy = false
         MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
 
-        self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+        self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
 
         expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 0
     }
@@ -152,7 +201,7 @@ class AttributionFetcherTests: XCTestCase {
             MockAttributionTypeFactory.shouldReturnAdClientProxy = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
 
-            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+            self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
 
             expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 1
         }
@@ -165,7 +214,7 @@ class AttributionFetcherTests: XCTestCase {
             MockAttributionTypeFactory.shouldReturnAdClientProxy = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
 
-            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+            self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
 
             expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 1
         }
@@ -178,7 +227,7 @@ class AttributionFetcherTests: XCTestCase {
             MockAttributionTypeFactory.shouldReturnAdClientProxy = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
 
-            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+            self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
 
             expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 1
         }
@@ -192,7 +241,7 @@ class AttributionFetcherTests: XCTestCase {
             MockAttributionTypeFactory.shouldReturnAdClientProxy = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
 
-            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+            self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
 
             expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 0
         }
@@ -206,7 +255,7 @@ class AttributionFetcherTests: XCTestCase {
             MockAttributionTypeFactory.shouldReturnAdClientProxy = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
 
-            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+            self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
 
             expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 0
         }
@@ -219,7 +268,7 @@ class AttributionFetcherTests: XCTestCase {
             MockAttributionTypeFactory.shouldReturnAdClientProxy = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
 
-            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+            self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
 
             expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 0
         }
@@ -231,13 +280,14 @@ class AttributionFetcherTests: XCTestCase {
             MockAttributionTypeFactory.shouldReturnAdClientProxy = true
             MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true
 
-            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+            self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
 
             expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 1
 
-            self.attributionFetcher.postAppleSearchAdsAttributionIfNeeded()
+            self.attributionPoster.postAppleSearchAdsAttributionIfNeeded()
 
             expect(MockAdClientProxy.requestAttributionDetailsCallCount) == 1
         }
     }
+
 }

@@ -34,8 +34,9 @@ class BackendSubscriberAttributesTests: XCTestCase {
     let systemInfo = try! SystemInfo(platformFlavor: "Unity", platformFlavorVersion: "2.3.3", finishTransactions: true)
 
     override func setUp() {
+        let mockOperationDispatcher = MockOperationDispatcher()
         mockETagManager = MockETagManager(userDefaults: MockUserDefaults())
-        mockHTTPClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: mockETagManager)
+        mockHTTPClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: mockETagManager, operationDispatcher: mockOperationDispatcher)
         guard let backend = RCBackend(httpClient: mockHTTPClient, apiKey: "key") else { fatalError() }
         self.backend = backend
         dateProvider = MockDateProvider(stubbedNow: now)
@@ -107,7 +108,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         mockHTTPClient.shouldInvokeCompletion = true
         let underlyingError = NSError(domain: "domain", code: 0, userInfo: nil)
 
-        mockHTTPClient.stubbedCompletionError = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
+        mockHTTPClient.stubbedCompletionError = ErrorUtils.networkError(withUnderlyingError: underlyingError)
 
         var receivedError: Error? = nil
         backend.postSubscriberAttributes([

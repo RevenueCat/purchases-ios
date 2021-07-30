@@ -10,20 +10,16 @@ import Foundation
 
 @objc(RCOperationDispatcher) public class OperationDispatcher: NSObject {
 
-    private let mainQueue: DispatchQueue
-    private let workerQueue: DispatchQueue
+    private let mainQueue = DispatchQueue.main
+    private let workerQueue = DispatchQueue(label: "OperationDispatcherWorkerQueue")
+    private let httpQueue = DispatchQueue(label: "HTTPClientQueue")
     private let maxJitterInSeconds: Double = 5
-
-    @objc public override init() {
-        mainQueue = DispatchQueue.main
-        workerQueue = DispatchQueue(label: "OperationDispatcherWorkerQueue")
-    }
 
     @objc public func dispatchOnMainThread(_ block: @escaping () -> Void) {
         if Thread.isMainThread {
             block()
         } else {
-            mainQueue.async { block() }
+            mainQueue.async(execute: block)
         }
     }
 
@@ -31,9 +27,14 @@ import Foundation
                                              block: @escaping () -> Void) {
         if withRandomDelay {
             let delay = Double.random(in: 0..<maxJitterInSeconds)
-            workerQueue.asyncAfter(deadline: .now() + delay) { block() }
+            workerQueue.asyncAfter(deadline: .now() + delay, execute: block)
         } else {
-            workerQueue.async { block() }
+            workerQueue.async(execute: block)
         }
     }
+
+    func dispatchOnHTTPSerialQueue(_ block: @escaping () -> Void) {
+        httpQueue.async(execute: block)
+    }
+
 }

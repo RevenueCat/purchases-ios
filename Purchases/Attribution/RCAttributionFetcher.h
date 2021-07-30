@@ -34,17 +34,7 @@ typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *
 
 - (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler;
 
-- (void)postAttributionData:(NSDictionary *)data
-                fromNetwork:(RCAttributionNetwork)network
-           forNetworkUserId:(nullable NSString *)networkUserId;
-
-- (void)postAppleSearchAdsAttributionIfNeeded;
-
-- (void)postPostponedAttributionDataIfNeeded;
-
-+ (void)storePostponedAttributionData:(NSDictionary *)data
-                          fromNetwork:(RCAttributionNetwork)network
-                     forNetworkUserId:(nullable NSString *)networkUserId;
+- (BOOL)isAuthorizedToPostSearchAds;
 
 @end
 
