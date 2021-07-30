@@ -16,18 +16,19 @@
 
 import Foundation
 
+// TODO (post-migration): change back to internal.
 @objc(RCAttributionTypeFactory)
-class AttributionTypeFactory: NSObject {
+public class AttributionTypeFactory: NSObject {
 
-    @objc func adClientProxy() -> AdClientProxy? {
+    @objc public func adClientProxy() -> AdClientProxy? {
         return AdClientProxy.adClientClass == nil ? nil : AdClientProxy()
     }
 
-    @objc func atTrackingProxy() -> TrackingManagerProxy? {
+    @objc public func atTrackingProxy() -> TrackingManagerProxy? {
         return TrackingManagerProxy.trackingClass == nil ? nil : TrackingManagerProxy()
     }
 
-    @objc func asIdentifierProxy() -> ASIdentifierManagerProxy? {
+    @objc public func asIdentifierProxy() -> ASIdentifierManagerProxy? {
         return ASIdentifierManagerProxy.identifierClass == nil ? nil : ASIdentifierManagerProxy()
     }
 

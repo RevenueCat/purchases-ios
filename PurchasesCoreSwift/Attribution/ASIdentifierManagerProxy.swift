@@ -29,8 +29,9 @@ class FakeASIdentifierManager: NSObject {
 
 }
 
+// TODO (post-migration): Make all the things internal again.
 @objc(RCASIdentifierManagerProxy)
-class ASIdentifierManagerProxy: NSObject {
+public class ASIdentifierManagerProxy: NSObject {
 
     static let mangledIdentifierClassName = "NFVqragvsvreZnantre"
     static let mangledIdentifierPropertyName = "nqiregvfvatVqragvsvre"
@@ -43,7 +44,7 @@ class ASIdentifierManagerProxy: NSObject {
         NSClassFromString(Self.mangledIdentifierClassName.rot13())
     }
 
-    @objc var adsIdentifier: UUID? {
+    @objc public var adsIdentifier: UUID? {
         guard let classType: AnyClass = Self.identifierClass else {
             return nil
         }

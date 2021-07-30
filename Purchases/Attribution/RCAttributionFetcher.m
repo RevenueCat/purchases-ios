@@ -6,13 +6,13 @@
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
+@import PurchasesCoreSwift;
+
 #import "RCAttributionFetcher.h"
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
-@import PurchasesCoreSwift;
 
 static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
-
 
 @interface RCAttributionFetcher ()
 
