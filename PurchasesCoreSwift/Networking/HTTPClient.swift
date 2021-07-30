@@ -145,8 +145,8 @@ private extension HTTPClient {
                                     urlRequest.url?.path ?? "")
             Logger.debug(logMessage)
 
-            let task = self.session.dataTask(with: urlRequest) { (data, response, error) -> Void in
-                self.handleResponse(response: response,
+            let task = self.session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
+                self.handleResponse(urlResponse: urlResponse,
                                     request: request,
                                     data: data,
                                     error: error,
@@ -159,7 +159,7 @@ private extension HTTPClient {
     }
 
     // swiftlint:disable function_parameter_count
-    func handleResponse(response: URLResponse?,
+    func handleResponse(urlResponse maybeURLResponse: URLResponse?,
                         request: HTTPRequest,
                         data maybeData: Data?,
                         error maybeNetworkError: Error?,
@@ -174,7 +174,7 @@ private extension HTTPClient {
             var maybeJSONError: Error?
 
             if maybeNetworkError == nil {
-                if let httpURLResponse = response as? HTTPURLResponse {
+                if let httpURLResponse = maybeURLResponse as? HTTPURLResponse {
                     statusCode = httpURLResponse.statusCode
                     let logMessage = String(format: Strings.network.api_request_completed,
                                             request.httpMethod, request.urlRequest.url?.path ?? "", statusCode)
