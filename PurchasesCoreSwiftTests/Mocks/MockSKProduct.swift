@@ -35,10 +35,9 @@ class MockSKProduct: SKProduct {
     @available(iOS 11.2, *)
     override var introductoryPrice: SKProductDiscount? {
         if #available(iOS 12.2, *) {
-            return mockDiscount ?? MockDiscount()
-        } else {
-            return MockDiscount()
+            return mockDiscount
         }
+        return nil
     }
 
     @available(iOS 12.2, *)
