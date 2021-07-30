@@ -17,19 +17,23 @@ public typealias AttributionDetailsBlock = ([String: NSObject]?, Error?) -> Void
 // exposes the same methods we're looking for in ADClient to call the same methods and mangling
 // the class names. So that Apple can't find them during the review, but we can still access them on runtime.
 class FakeAdClient: NSObject {
+
     // We need this method to be available as an optional implicitly unwrapped method for `AnyClass`.
     @objc static func sharedClient() -> FakeAdClient {
         FakeAdClient()
     }
 
     // We need this method to be available as an optional implicitly unwrapped method for `AnyClass`.
-    @objc func requestAttributionDetails(_ completionHandler: AttributionDetailsBlock) {
+    @objc(requestAttributionDetailsWithBlock:)
+    func requestAttributionDetails(_ completionHandler: @escaping AttributionDetailsBlock) {
         Logger.warn(Strings.attribution.iad_framework_present_but_couldnt_call_request_attribution_details)
     }
+
 }
 
 @objc(RCAdClientProxy)
 open class AdClientProxy: NSObject {
+
     private static let className = "ADClient"
 
     static var adClientClass: AnyClass? {
@@ -37,8 +41,19 @@ open class AdClientProxy: NSObject {
     }
 
     @objc(requestAttributionDetailsWithBlock:)
-    open func requestAttributionDetails(_ completionHandler: AttributionDetailsBlock) {
-        let classType: AnyClass = Self.adClientClass ?? FakeAdClient.self
-        classType.sharedClient().requestAttributionDetails(completionHandler)
+    open func requestAttributionDetails(_ completionHandler: @escaping AttributionDetailsBlock) {
+        let client: AnyObject
+        if let klass = Self.adClientClass, let managerClass = klass as AnyObject as? NSObjectProtocol {
+            // This looks strange, but #selector() does fun things to create a selector. If the selector for the given
+            // function matches the selector on another class, it can be used in place. Results:
+            // If ADClient class is instantiated above, then +sharedClient selector is performed eventhough you can see
+            // that we're using #selector(FakeAdClient.sharedClient) to instantiate a Selector object.
+            client = managerClass.perform(#selector(FakeAdClient.sharedClient)).takeUnretainedValue()
+        } else {
+            client = FakeAdClient.sharedClient()
+        }
+
+        client.requestAttributionDetails(completionHandler)
     }
+
 }
