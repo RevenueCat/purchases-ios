@@ -33,7 +33,7 @@ import Foundation
 
     /// Returns all product IDs of the non-subscription purchases a user has made.
     @available(*, deprecated, message: "use nonSubscriptionTransactions")
-    @objc public let nonConsumablePurchases: Set<String>
+    @objc public var nonConsumablePurchases: Set<String> { Set(self.nonSubscriptionTransactions.map { $0.productId }) }
 
     /**
     Returns all the non-subscription purchases a user has made.
@@ -118,7 +118,6 @@ import Foundation
         self.managementURL = subscriberData.managementURL
         self.originalApplicationVersion = subscriberData.originalApplicationVersion
 
-        self.nonConsumablePurchases = Set(subscriberData.nonSubscriptions.keys)
         self.nonSubscriptionTransactions = subscriberData.nonSubscriptionTransactions
 
         self.entitlements = EntitlementInfos(entitlementsData: subscriberData.entitlements,
