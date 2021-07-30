@@ -12,6 +12,7 @@ import OHHTTPStubs
 import Nimble
 
 import Purchases
+@testable import PurchasesCoreSwift
 
 class BackendTests: XCTestCase {
     struct HTTPRequest {
@@ -19,7 +20,7 @@ class BackendTests: XCTestCase {
         let serially: Bool
         let path: String
         let body: [AnyHashable : Any]?
-        let headers: [String: String]?
+        let headers: [String: String]
     }
 
     struct HTTPResponse {
@@ -28,24 +29,24 @@ class BackendTests: XCTestCase {
         let error: Error?
     }
 
-    class MockHTTPClient: RCHTTPClient {
+    class MockHTTPClient: HTTPClient {
 
         var mocks: [String: HTTPResponse] = [:]
         var calls: [HTTPRequest] = []
 
         var shouldFinish = true
 
-        override func performRequest(_ HTTPMethod: String,
-                                     serially: Bool,
+        override func performRequest(_ httpMethod: String,
+                                     performSerially: Bool = false,
                                      path: String,
-                                     body requestBody: [AnyHashable : Any]?,
-                                     headers: [String : String]?,
-                                     completionHandler: RCHTTPClientResponseHandler? = nil) {
+                                     requestBody: [String : Any]?,
+                                     headers: [String : String],
+                                     completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
 
-            calls.append(HTTPRequest(HTTPMethod: HTTPMethod,
-                                     serially: serially,
+            calls.append(HTTPRequest(HTTPMethod: httpMethod,
+                                     serially: performSerially,
                                      path: path,
                                      body: requestBody,
                                      headers: headers))
@@ -94,7 +95,10 @@ class BackendTests: XCTestCase {
 
     override func setUp() {
         let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
-        httpClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
+        let operationDispatcher = MockOperationDispatcher()
+        httpClient = MockHTTPClient(systemInfo: systemInfo,
+                                    eTagManager: eTagManager,
+                                    operationDispatcher: operationDispatcher)
         backend = RCBackend.init(httpClient: httpClient,
                                  apiKey: apiKey)
     }
@@ -133,8 +137,8 @@ class BackendTests: XCTestCase {
             expect(call.path).to(equal(expectedCall.path))
             expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
             XCTAssertEqual(call.body!.keys, expectedCall.body!.keys)
-            expect(call.headers?["Authorization"]).toNot(beNil())
-            expect(call.headers?["Authorization"]).to(equal(expectedCall.headers?["Authorization"]))
+            expect(call.headers["Authorization"]).toNot(beNil())
+            expect(call.headers["Authorization"]).to(equal(expectedCall.headers["Authorization"]))
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -400,8 +404,8 @@ class BackendTests: XCTestCase {
             expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
             XCTAssert(call.body!.keys == expectedCall.body!.keys)
 
-            expect(call.headers?["Authorization"]).toNot(beNil())
-            expect(call.headers?["Authorization"]).to(equal(expectedCall.headers?["Authorization"]))
+            expect(call.headers["Authorization"]).toNot(beNil())
+            expect(call.headers["Authorization"]).to(equal(expectedCall.headers["Authorization"]))
         }
 
         expect(completionCalled).toEventually(beTrue())
@@ -574,8 +578,8 @@ class BackendTests: XCTestCase {
             XCTAssertEqual(call.path, "/subscribers/" + userID)
             XCTAssertEqual(call.HTTPMethod, "GET")
             XCTAssertNil(call.body)
-            XCTAssertNotNil(call.headers?["Authorization"])
-            XCTAssertEqual(call.headers?["Authorization"], "Bearer " + apiKey)
+            XCTAssertNotNil(call.headers["Authorization"])
+            XCTAssertEqual(call.headers["Authorization"], "Bearer " + apiKey)
         }
     }
 
@@ -666,8 +670,8 @@ class BackendTests: XCTestCase {
 
             expect(path).to(equal("/subscribers/" + userID + "/intro_eligibility"))
             expect(call.HTTPMethod).to(equal("POST"))
-            expect(call.headers!["Authorization"]).toNot(beNil())
-            expect(call.headers!["Authorization"]).to(equal("Bearer " + apiKey))
+            expect(call.headers["Authorization"]).toNot(beNil())
+            expect(call.headers["Authorization"]).to(equal("Bearer " + apiKey))
 
             expect(call.body).toNot(beNil())
             expect(call.body!["product_identifiers"] as? [String]).to(equal(products))
@@ -860,8 +864,8 @@ class BackendTests: XCTestCase {
 
         XCTAssertEqual(call.path, "/subscribers/" + userID + "/alias")
         XCTAssertEqual(call.HTTPMethod, "POST")
-        XCTAssertNotNil(call.headers?["Authorization"])
-        XCTAssertEqual(call.headers?["Authorization"], "Bearer " + apiKey)
+        XCTAssertNotNil(call.headers["Authorization"])
+        XCTAssertEqual(call.headers["Authorization"], "Bearer " + apiKey)
         
         expect(call.body?.keys).to(contain("new_app_user_id"))
 
@@ -1117,8 +1121,8 @@ class BackendTests: XCTestCase {
             expect(call.path).to(equal(expectedCall.path))
             expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
 
-            expect(call.headers?["Authorization"]).toNot(beNil())
-            expect(call.headers?["Authorization"]).to(equal(expectedCall.headers?["Authorization"]))
+            expect(call.headers["Authorization"]).toNot(beNil())
+            expect(call.headers["Authorization"]).to(equal(expectedCall.headers["Authorization"]))
 
             expect(call.body!.keys) == expectedCall.body!.keys
         }
@@ -1183,8 +1187,8 @@ class BackendTests: XCTestCase {
             expect(call.HTTPMethod).to(equal(expectedCall.HTTPMethod))
             XCTAssert(call.body!.keys == expectedCall.body!.keys)
 
-            expect(call.headers?["Authorization"]).toNot(beNil())
-            expect(call.headers?["Authorization"]).to(equal(expectedCall.headers?["Authorization"]))
+            expect(call.headers["Authorization"]).toNot(beNil())
+            expect(call.headers["Authorization"]).to(equal(expectedCall.headers["Authorization"]))
         }
 
         expect(completionCalled).toEventually(beTrue())

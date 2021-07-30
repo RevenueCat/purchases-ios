@@ -4,6 +4,7 @@
 //
 
 import Purchases
+@testable import PurchasesCoreSwift
 
 class MockDeviceCache: DeviceCache {
 

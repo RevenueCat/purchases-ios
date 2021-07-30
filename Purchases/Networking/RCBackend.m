@@ -9,7 +9,6 @@
 @import PurchasesCoreSwift;
 
 #import "RCBackend.h"
-#import "RCHTTPClient.h"
 
 #define RC_HAS_KEY(dictionary, key) (dictionary[key] == nil || dictionary[key] != [NSNull null])
 NSErrorUserInfoKey const RCSuccessfullySyncedKey = @"rc_successfullySynced";
@@ -29,9 +28,11 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
 
 - (nullable instancetype)initWithAPIKey:(NSString *)APIKey
                              systemInfo:(RCSystemInfo *)systemInfo
-                            eTagManager:(RCETagManager *)eTagManager {
+                            eTagManager:(RCETagManager *)eTagManager
+                    operationDispatcher:(RCOperationDispatcher *)operationDispatcher {
     RCHTTPClient *client = [[RCHTTPClient alloc] initWithSystemInfo:systemInfo
-                                                        eTagManager:eTagManager];
+                                                        eTagManager:eTagManager
+                                                operationDispatcher:operationDispatcher];
     return [self initWithHTTPClient:client
                              APIKey:APIKey];
 }
@@ -47,7 +48,7 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
     return self;
 }
 
-- (NSDictionary<NSString *, NSString *> *)headers {
+- (NSDictionary<NSString *, NSString *> *)authHeaders {
     return @{
             @"Authorization":
                 [NSString stringWithFormat:@"Bearer %@", self.APIKey]
@@ -193,10 +194,10 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     }
 
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:@"/receipts"
-                               body:body
-                            headers:self.headers
+                        requestBody:body
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
                       NSArray *callbacks = [self getCallbacksAndClearForKey:cacheKey];
                       for (RCBackendPurchaserInfoResponseHandler callback in callbacks) {
@@ -218,10 +219,10 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     }
 
     [self.httpClient performRequest:@"GET"
-                           serially:YES
+                    performSerially:YES
                                path:path
-                               body:nil
-                            headers:self.headers
+                        requestBody:nil
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
                       for (RCBackendPurchaserInfoResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
                           [self handlePurchaserInfoWithResponse:response
@@ -258,13 +259,13 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/intro_eligibility", escapedAppUserID];
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:path
-                               body:@{
+                        requestBody:@{
                                       @"product_identifiers": productIdentifiers,
                                       @"fetch_token": fetchToken
                                       }
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
                       if (statusCode >= RCHTTPStatusCodesRedirect || error != nil) {
                           response = @{};
@@ -305,10 +306,10 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     }
 
     [self.httpClient performRequest:@"GET"
-                           serially:NO
+                    performSerially:NO
                                path:path
-                               body:nil
-                            headers:self.headers
+                        requestBody:nil
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
                       if (error == nil && statusCode < RCHTTPStatusCodesRedirect) {
                           for (RCOfferingsResponseHandler callback in [self getCallbacksAndClearForKey:path]) {
@@ -337,13 +338,13 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attribution", escapedAppUserID];
 
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:path
-                               body:@{
+                        requestBody:@{
                                       @"network": @(network),
                                       @"data": data
                                       }
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
                       [self handleResponse:response statusCode:status error:error completion:completion];
                   }];
@@ -358,13 +359,13 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSParameterAssert(newAppUserID);
     NSString *path = @"/subscribers/identify";
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:path
-                               body:@{
+                        requestBody:@{
                                    @"app_user_id": currentAppUserID,
                                    @"new_app_user_id": newAppUserID
                                }
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
                       [self handleLoginWithResponse:response
                                          statusCode:status
@@ -412,12 +413,12 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/alias", escapedAppUserID];
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:path
-                               body:@{
+                        requestBody:@{
                                        @"new_app_user_id": newAppUserID
                                }
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
                       [self handleResponse:response statusCode:status error:error completion:completion];
                   }];
@@ -431,9 +432,9 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                  completion:(RCOfferSigningResponseHandler)completion {
     NSString *fetchToken = [receiptData base64EncodedStringWithOptions:0];
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:@"/offers"
-                               body:@{
+                        requestBody:@{
                                        @"app_user_id": appUserID,
                                        @"fetch_token": fetchToken,
                                        @"generate_offers": @[@{
@@ -442,7 +443,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                                                @"subscription_group": subscriptionGroup
                                        }],
                                }
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger statusCode, NSDictionary *_Nullable response, NSError *_Nullable error) {
                       if (error != nil) {
                           completion(nil, nil, nil, nil, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
@@ -490,12 +491,12 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attributes", escapedAppUserID];
     NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributes];
     [self.httpClient performRequest:@"POST"
-                           serially:YES
+                    performSerially:YES
                                path:path
-                               body:@{
+                        requestBody:@{
                                    @"attributes": attributesInBackendFormat
                                }
-                            headers:self.headers
+                            headers:self.authHeaders
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
                       [self handleSubscriberAttributesResultWithStatusCode:status
                                                                   response:response
