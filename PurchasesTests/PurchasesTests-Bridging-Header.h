@@ -9,7 +9,6 @@
 #include <Purchases/RCAttributionTypeFactory+Protected.h>
 #include <Purchases/RCAttributionTypeFactory.h>
 #include <Purchases/RCBackend.h>
-#include <Purchases/RCHTTPClient.h>
 #include <Purchases/RCIdentityManager+Protected.h>
 #include <Purchases/RCIdentityManager.h>
 #include <Purchases/RCPurchaserInfo+Protected.h>
