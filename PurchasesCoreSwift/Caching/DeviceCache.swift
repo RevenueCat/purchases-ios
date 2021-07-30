@@ -301,10 +301,7 @@ import Foundation
     // Only make calls to functions starting with "threadUnsafe" as those are guaranteed to not have any locking
     // mechanisms.
     private func writeCache(block: @escaping () -> Void) {
-        // .barrier is not needed here because we're using `.sync` instead of the normal .async multi-reader
-        // single-writer dispatch queue synchronization pattern. However, because we're using this as a way
-        // to control access to the datasource, passing `.barrier` flag is meant to help signal that intent.
-        accessQueue.sync(flags: .barrier) {
+        accessQueue.executeByLockingDatasource {
             block()
 
             // While Apple states `this method is unnecessary and shouldn't be used`
@@ -482,6 +479,16 @@ extension UserDefaults {
 
     fileprivate func dictionary(forKey defaultName: DeviceCache.CacheKeys) -> [String: Any]? {
         return dictionary(forKey: defaultName.rawValue)
+    }
+
+}
+
+private extension DispatchQueue {
+
+    func executeByLockingDatasource<T>(execute work: () throws -> T) rethrows -> T {
+        // .barrier is not needed here because we're using `.sync` instead of the normal .async multi-reader
+        // single-writer dispatch queue synchronization pattern.
+        return try sync(execute: work)
     }
 
 }

@@ -32,26 +32,26 @@ public class InMemoryCachedObject<T> {
     }
 
     func clearCacheTimestamp() {
-        accessQueue.sync(flags: .barrier) {
+        accessQueue.executeByLockingDatasource {
             self.lastUpdated = nil
         }
     }
 
     func clearCache() {
-        accessQueue.sync(flags: .barrier) {
+        accessQueue.executeByLockingDatasource {
             self.lastUpdated = nil
             self.cachedObject = nil
         }
     }
 
     func updateCacheTimestamp(date: Date) {
-        accessQueue.sync(flags: .barrier) {
+        accessQueue.executeByLockingDatasource {
             self.lastUpdated = date
         }
     }
 
     func cache(instance: T) {
-        accessQueue.sync(flags: .barrier) {
+        accessQueue.executeByLockingDatasource {
             self.lastUpdated = Date()
             self.cachedObject = instance
         }
@@ -61,6 +61,16 @@ public class InMemoryCachedObject<T> {
         accessQueue.sync {
             return cachedObject
         }
+    }
+
+}
+
+private extension DispatchQueue {
+
+    func executeByLockingDatasource<T>(execute work: () throws -> T) rethrows -> T {
+        // .barrier is not needed here because we're using `.sync` instead of the normal .async multi-reader
+        // single-writer dispatch queue synchronization pattern.
+        return try sync(execute: work)
     }
 
 }
