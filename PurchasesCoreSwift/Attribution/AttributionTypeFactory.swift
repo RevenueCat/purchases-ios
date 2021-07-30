@@ -1,4 +1,12 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  AttributionTypeFactory.swift
 //  PurchasesCoreSwift
 //
@@ -8,22 +16,19 @@
 
 import Foundation
 
-// TODO(Post-migration): switch this back to internal the class and all these protocols and properties.
-
 @objc(RCAttributionTypeFactory)
-open class AttributionTypeFactory: NSObject {
-    @objc open func adClientProxy() -> AdClientProxy? {
-        guard AdClientProxy.adClientClass != nil else { return nil }
-        return AdClientProxy()
+class AttributionTypeFactory: NSObject {
+
+    @objc func adClientProxy() -> AdClientProxy? {
+        return AdClientProxy.adClientClass == nil ? nil : AdClientProxy()
     }
 
-    @objc open func atTrackingProxy() -> TrackingManagerProxy? {
-        guard TrackingManagerProxy.trackingClass != nil else { return nil }
-        return TrackingManagerProxy()
+    @objc func atTrackingProxy() -> TrackingManagerProxy? {
+        return TrackingManagerProxy.trackingClass == nil ? nil : TrackingManagerProxy()
     }
 
-    @objc open func asIdentifierProxy() -> ASIdentifierManagerProxy? {
-        guard ASIdentifierManagerProxy.identifierClass != nil else { return nil }
-        return ASIdentifierManagerProxy()
+    @objc func asIdentifierProxy() -> ASIdentifierManagerProxy? {
+        return ASIdentifierManagerProxy.identifierClass == nil ? nil : ASIdentifierManagerProxy()
     }
+
 }

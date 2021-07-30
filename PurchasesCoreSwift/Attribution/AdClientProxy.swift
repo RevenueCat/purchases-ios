@@ -1,4 +1,12 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  AdClientProxy.swift
 //  PurchasesCoreSwift
 //
@@ -8,9 +16,7 @@
 
 import Foundation
 
-// TODO(Post-migration): switch this back to internal the class and all these protocols and properties.
-
-public typealias AttributionDetailsBlock = ([String: NSObject]?, Error?) -> Void
+typealias AttributionDetailsBlock = ([String: NSObject]?, Error?) -> Void
 
 // We need this class to avoid Kid apps being rejected for getting idfa. It seems like App
 // Review uses some grep to find the class names, so we ended up creating a fake class that
@@ -32,7 +38,7 @@ class FakeAdClient: NSObject {
 }
 
 @objc(RCAdClientProxy)
-open class AdClientProxy: NSObject {
+class AdClientProxy: NSObject {
 
     private static let className = "ADClient"
 
@@ -41,12 +47,12 @@ open class AdClientProxy: NSObject {
     }
 
     @objc(requestAttributionDetailsWithBlock:)
-    open func requestAttributionDetails(_ completionHandler: @escaping AttributionDetailsBlock) {
+    func requestAttributionDetails(_ completionHandler: @escaping AttributionDetailsBlock) {
         let client: AnyObject
         if let klass = Self.adClientClass, let clientClass = klass as AnyObject as? NSObjectProtocol {
             // This looks strange, but #selector() does fun things to create a selector. If the selector for the given
             // function matches the selector on another class, it can be used in place. Results:
-            // If ADClient class is instantiated above, then +sharedClient selector is performed event hough you can see
+            // If ADClient class is instantiated above, then +sharedClient selector is performed even though you can see
             // that we're using #selector(FakeAdClient.sharedClient) to instantiate a Selector object.
             client = clientClass.perform(#selector(FakeAdClient.sharedClient)).takeUnretainedValue()
         } else {

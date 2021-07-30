@@ -1,6 +1,13 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 // Created by RevenueCat on 2/28/20.
-// Copyright (c) 2020 Purchases. All rights reserved.
 //
 
 import XCTest
@@ -8,8 +15,10 @@ import OHHTTPStubs
 import Nimble
 
 import Purchases
+@testable import PurchasesCoreSwift
 
 class SubscriberAttributesManagerTests: XCTestCase {
+
     var mockBackend: MockBackend!
     var mockDeviceCache: MockDeviceCache!
     var mockAttributionFetcher: MockAttributionFetcher!
@@ -1357,4 +1366,5 @@ private extension SubscriberAttributesManagerTests {
         expect(ipReceived.value) == "true"
         expect(ipReceived.isSynced) == false
     }
+
 }
