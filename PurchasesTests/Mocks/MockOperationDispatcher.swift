@@ -8,6 +8,7 @@ import Foundation
 @testable import PurchasesCoreSwift
 
 class MockOperationDispatcher: OperationDispatcher {
+    let serialQueue = DispatchQueue(label: "MockOperationDispatcher Serial Queue")
 
     var invokedDispatchOnMainThread = false
     var invokedDispatchOnMainThreadCount = 0
@@ -42,6 +43,23 @@ class MockOperationDispatcher: OperationDispatcher {
         }
         if shouldInvokeDispatchOnWorkerThreadBlock {
             block()
+        }
+    }
+
+    var invokedDispatchOnHTTPSerialQueue = false
+    var invokedDispatchOnHTTPSerialQueueCount = 0
+    var shouldInvokeDispatchOnHTTPSerialQueueBlock = true
+    var forwardToOriginalDispatchOnHTTPSerialQueue = false
+
+    override func dispatchOnHTTPSerialQueue(_ block: @escaping () -> Void) {
+        invokedDispatchOnHTTPSerialQueue = true
+        invokedDispatchOnHTTPSerialQueueCount += 1
+        if forwardToOriginalDispatchOnHTTPSerialQueue {
+            super.dispatchOnHTTPSerialQueue(block)
+            return
+        }
+        if shouldInvokeDispatchOnHTTPSerialQueueBlock {
+            serialQueue.async(execute: block)
         }
     }
 }
