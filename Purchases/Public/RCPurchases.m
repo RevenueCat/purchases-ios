@@ -19,6 +19,7 @@
 #import "RCPurchases.h"
 #import "RCSubscriberAttributesManager.h"
 
+// TODO: simply replace with OperationDispatcher when migrating
 #define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self.operationDispatcher dispatchOnMainThread:^{ completion(__VA_ARGS__); }];
 #define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
 
@@ -38,9 +39,13 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 
+// TODO: should be deleted & replaced with ProductsManager
 @property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
+// TODO: move to new class PurchasesManager, possibly rename to a name that describes intent?
 @property (nonatomic) NSMutableDictionary<NSString *, NSString *> *presentedOfferingsByProductIdentifier;
+// TODO: move to new class PurchasesManager
 @property (nonatomic) NSMutableDictionary<NSString *, RCPurchaseCompletedBlock> *purchaseCompleteCallbacks;
+
 @property (nonatomic) RCAttributionFetcher *attributionFetcher;
 @property (nonatomic) RCAttributionPoster *attributionPoster;
 @property (nonatomic) RCOfferingsFactory *offeringsFactory;
@@ -211,6 +216,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
           platformFlavorVersion:nil];
 }
 
+// TODO: if possible, move to new DI manager class
 - (instancetype)initWithAPIKey:(NSString *)APIKey
                      appUserID:(nullable NSString *)appUserID
                   userDefaults:(nullable NSUserDefaults *)userDefaults
@@ -329,6 +335,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
         self.notificationCenter = notificationCenter;
 
+        // TODO: should be deleted & replaced with ProductsManager
         self.productsByIdentifier = [NSMutableDictionary new];
         self.presentedOfferingsByProductIdentifier = [NSMutableDictionary new];
         self.purchaseCompleteCallbacks = [NSMutableDictionary new];
@@ -363,6 +370,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     return self;
 }
 
+// todo: move somewhere else, maybe PlatformInfo? maybe extension? maybe SystemInfo?
+// see example of how to do it in SystemInfo.platformHeaderConstant
 #if TARGET_OS_IOS || TARGET_OS_TV
 #define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME UIApplicationDidBecomeActiveNotification
 #define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME UIApplicationWillResignActiveNotification
@@ -420,10 +429,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 + (void)addAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
           forNetworkUserId:(nullable NSString *)networkUserId {
+    // todo: replace this check with `isConfigured`
     if (_sharedPurchases) {
+        // todo: move log to relevant class
         [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.instance_configured_posting_attribution]];
         [_sharedPurchases postAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
     } else {
+        // todo: move log to relevant class
         [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.no_instance_configured_caching_attribution]];
         [RCAttributionPoster storePostponedAttributionData:data
                                                fromNetwork:network
@@ -515,6 +527,7 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
 
 - (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
                 completionBlock:(RCReceiveProductsBlock)completion {
+    // TODO: remove this block, and just trust that the ProductsManager's cache should work.
     NSMutableArray<SKProduct *> *products = [NSMutableArray array];
     NSMutableSet<NSString *> *missingProductIdentifiers = [NSMutableSet set];
     
@@ -577,6 +590,7 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
                     withPayment:(SKMutablePayment *)payment
 withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                      completion:(RCPurchaseCompletedBlock)completion {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:@"makePurchase"]];
 
     if (!product || !payment) {
@@ -624,6 +638,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         [RCLog purchase:[NSString stringWithFormat:RCStrings.purchase.purchasing_product, productIdentifier]];
     }
 
+    // TODO: add to ProductsManager and remove from here
     @synchronized (self) {
         self.productsByIdentifier[productIdentifier] = product;
     }
@@ -729,6 +744,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }];
 }
 
+// TODO: simplify logic, move to separate class
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
                                  completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
@@ -742,7 +758,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                                                                 NSError * _Nullable error) {
                     if (!error) {
                         NSMutableDictionary<NSString *, RCIntroEligibility *> *convertedEligibility = [[NSMutableDictionary alloc] init];
-                        
+
+                        // TODO: remove enum conversion once this is moved to swift
                         for (NSString *key in receivedEligibility.allKeys) {
                             NSError *error = nil;
                             RCIntroEligibility *eligibility = [[RCIntroEligibility alloc] initWithEligibilityStatusCode:receivedEligibility[key] error:&error];
@@ -756,6 +773,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                         
                         CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
                     } else {
+                        // todo: unify all of these `else`s
                         [RCLog error:[NSString stringWithFormat:RCStrings.receipt.parse_receipt_locally_error,
                                       error.localizedDescription]];
                         [self.backend getIntroEligibilityForAppUserID:self.appUserID
@@ -785,6 +803,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }];
 }
 
+// TODO: add API availability check here, match headers
 - (void)paymentDiscountForProductDiscount:(SKProductDiscount *)discount
                                   product:(SKProduct *)product
                                completion:(RCPaymentDiscountBlock)completion {
@@ -814,11 +833,13 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)invalidatePurchaserInfoCache {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchaserInfo.invalidating_purchaserinfo_cache]];
     [self.purchaserInfoManager clearPurchaserInfoCacheForAppUserID:self.appUserID];
 }
 
 - (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos) {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchase.presenting_code_redemption_sheet]];
     [self.storeKitWrapper presentCodeRedemptionSheet];
 }
@@ -826,91 +847,109 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 #pragma mark Subcriber Attributes
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAttributes"]];
     [self.subscriberAttributesManager setAttributes:attributes appUserID:self.appUserID];
 }
 
 - (void)setEmail:(nullable NSString *)email {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setEmail"]];
     [self.subscriberAttributesManager setEmail:email appUserID:self.appUserID];
 }
 
 - (void)setPhoneNumber:(nullable NSString *)phoneNumber {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPhoneNumber"]];
     [self.subscriberAttributesManager setPhoneNumber:phoneNumber appUserID:self.appUserID];
 }
 
 - (void)setDisplayName:(nullable NSString *)displayName {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setDisplayName"]];
     [self.subscriberAttributesManager setDisplayName:displayName appUserID:self.appUserID];
 }
 
 - (void)setPushToken:(nullable NSData *)pushToken {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPushToken"]];
     [self.subscriberAttributesManager setPushToken:pushToken appUserID:self.appUserID];
 }
 
 - (void)_setPushTokenString:(nullable NSString *)pushToken {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPushTokenString"]];
     [self.subscriberAttributesManager setPushTokenString:pushToken appUserID:self.appUserID];
 }
 
 - (void)setAdjustID:(nullable NSString *)adjustID {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAdjustID"]];
     [self.subscriberAttributesManager setAdjustID:adjustID appUserID:self.appUserID];
 }
 
 - (void)setAppsflyerID:(nullable NSString *)appsflyerID {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAppsflyerID"]];
     [self.subscriberAttributesManager setAppsflyerID:appsflyerID appUserID:self.appUserID];
 }
 
 - (void)setFBAnonymousID:(nullable NSString *)fbAnonymousID {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setFBAnonymousID"]];
     [self.subscriberAttributesManager setFBAnonymousID:fbAnonymousID appUserID:self.appUserID];
 }
 
 - (void)setMparticleID:(nullable NSString *)mparticleID {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setMparticleID"]];
     [self.subscriberAttributesManager setMparticleID:mparticleID appUserID:self.appUserID];
 }
 
 - (void)setOnesignalID:(nullable NSString *)onesignalID {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setOnesignalID"]];
     [self.subscriberAttributesManager setOnesignalID:onesignalID appUserID:self.appUserID];
 }
 
 - (void)setMediaSource:(nullable NSString *)mediaSource {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setMediaSource"]];
     [self.subscriberAttributesManager setMediaSource:mediaSource appUserID:self.appUserID];
 }
 
 - (void)setCampaign:(nullable NSString *)campaign {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setCampaign"]];
     [self.subscriberAttributesManager setCampaign:campaign appUserID:self.appUserID];
 }
 
 - (void)setAdGroup:(nullable NSString *)adGroup {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAdGroup"]];
     [self.subscriberAttributesManager setAdGroup:adGroup appUserID:self.appUserID];
 }
 
 - (void)setAd:(nullable NSString *)ad {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAd"]];
     [self.subscriberAttributesManager setAd:ad appUserID:self.appUserID];
 }
 
 - (void)setKeyword:(nullable NSString *)keyword {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setKeyword"]];
     [self.subscriberAttributesManager setKeyword:keyword appUserID:self.appUserID];
 }
 
 - (void)setCreative:(nullable NSString *)creative {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setCreative"]];
     [self.subscriberAttributesManager setCreative:creative appUserID:self.appUserID];
 }
 
 - (void)collectDeviceIdentifiers {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:@"collectDeviceIdentifiers called"]];
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAttributes"]];
     [self.subscriberAttributesManager collectDeviceIdentifiersForAppUserID:self.appUserID];
@@ -929,6 +968,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)updateAllCachesIfNeeded {
+    // todo: move log to relevant class
     [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.configure.application_active]];
     [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
         [self.purchaserInfoManager fetchAndCachePurchaserInfoIfStaleWithAppUserID:self.appUserID
@@ -952,6 +992,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)performOnEachProductIdentifierInOfferings:(NSDictionary *)offeringsData
                                             block:(void (^)(NSString *productIdentifier))block {
+    // todo: replace with functional programming when moving to swift
     for (NSDictionary *offering in offeringsData[@"offerings"]) {
         for (NSDictionary *package in offering[@"packages"]) {
             block(package[@"platform_product_identifier"]);
@@ -960,6 +1001,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)offeringsWithCompletionBlock:(RCReceiveOfferingsBlock)completion {
+    // todo: extract to new class: OfferingsManager
     if (self.deviceCache.cachedOfferings) {
         [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.offering.vending_offerings_cache]];
         CALL_IF_SET_ON_MAIN_THREAD(completion, self.deviceCache.cachedOfferings, nil);
@@ -983,6 +1025,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)updateOfferingsCacheWithIsAppBackgrounded:(BOOL)isAppBackgrounded
                                        completion:(nullable RCReceiveOfferingsBlock)completion {
+    // todo: extract to new class: OfferingsManager
     [self.deviceCache setOfferingsCacheTimestampToNow];
     [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:isAppBackgrounded block:^{
         [self.backend getOfferingsForAppUserID:self.appUserID
@@ -998,6 +1041,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)handleOfferingsBackendResultWithData:(NSDictionary *)data completion:(RCReceiveOfferingsBlock)completion {
+    // todo: extract to new class: OfferingsManager
     NSMutableSet *productIdentifiers = [NSMutableSet new];
     [self performOnEachProductIdentifierInOfferings:data block:^(NSString *productIdentifier) {
         [productIdentifiers addObject:productIdentifier];
@@ -1034,16 +1078,19 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)handleOfferingsUpdateError:(NSError *)error completion:(RCReceiveOfferingsBlock)completion {
+    // todo: extract to new class: OfferingsManager
     [RCLog appleError:[NSString stringWithFormat:RCStrings.offering.fetching_offerings_error, error]];
     [self.deviceCache clearOfferingsCacheTimestamp];
     CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
 }
 
+// todo: move to ReceiptFetcher
 - (void)receiptData:(RCReceiveReceiptDataBlock)completion {
     [self receiptDataWithReceiptRefreshPolicy:RCReceiptRefreshPolicyOnlyIfEmpty
                                    completion:completion];
 }
 
+// todo: move to ReceiptFetcher
 - (void)receiptDataWithReceiptRefreshPolicy:(RCReceiptRefreshPolicy)refreshPolicy
                                  completion:(RCReceiveReceiptDataBlock)completion {
     if (refreshPolicy == RCReceiptRefreshPolicyAlways) {
@@ -1061,6 +1108,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }
 }
 
+// todo: move to ReceiptFetcher
 - (void)refreshReceipt:(RCReceiveReceiptDataBlock)completion {
     [self.requestFetcher fetchReceiptData:^{
         NSData *newReceiptData = [self.receiptFetcher receiptData];
@@ -1071,6 +1119,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }];
 }
 
+// todo: move to PurchasesManager
 - (void)handleReceiptPostWithTransaction:(SKPaymentTransaction *)transaction
                            purchaserInfo:(nullable RCPurchaserInfo *)info
                     subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributes
@@ -1101,6 +1150,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }];
 }
 
+// todo: move to PurchasesManager if viable, new class otherwise
 #pragma MARK: RCStoreKitWrapperDelegate
 - (void)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
      updatedTransaction:(SKPaymentTransaction *)transaction {
@@ -1141,6 +1191,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }
 }
 
+// TODO: move to new class PurchasesManager
 - (nullable RCPurchaseCompletedBlock)getAndRemovePurchaseCompletedBlockFor:(SKPaymentTransaction *)transaction {
     RCPurchaseCompletedBlock completion = nil;
     NSString * _Nullable productIdentifier = [self productIdentifierFrom:transaction];
@@ -1155,11 +1206,13 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 
 - (void)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
      removedTransaction:(SKPaymentTransaction *)transaction {
+    // todo: remove it from the protocol if it's entirely unused
 }
 
 - (BOOL)storeKitWrapper:(nonnull RCStoreKitWrapper *)storeKitWrapper
   shouldAddStorePayment:(nonnull SKPayment *)payment
              forProduct:(nonnull SKProduct *)product {
+    // TODO: add to ProductsManager and remove from here
     @synchronized(self) {
         self.productsByIdentifier[product.productIdentifier] = product;
     }
@@ -1176,6 +1229,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     return NO;
 }
 
+// todo: move to PurchasesManager (or find better name, since this is the exact opposite of a purchase)
 - (void)                   storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
 didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
 API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
@@ -1186,6 +1240,7 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
     }];
 }
 
+// todo: move to PurchasesManager (or find better name, since this is the exact opposite of a purchase)
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction {
     [self receiptData:^(NSData * _Nonnull data) {
         if (data.length == 0) {
@@ -1199,6 +1254,7 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
     }];
 }
 
+// todo: move to PurchasesManager (or find better name, since this is the exact opposite of a purchase)
 - (void)fetchProductsAndPostReceiptWithTransaction:(SKPaymentTransaction *)transaction data:(NSData *)data {
     if ([self productIdentifierFrom:transaction]) {
         [self productsWithIdentifiers:@[[self productIdentifierFrom:transaction]]
@@ -1213,6 +1269,7 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
     }
 }
 
+// todo: move to PurchasesManager
 - (void)postReceiptWithTransaction:(SKPaymentTransaction *)transaction
                               data:(NSData *)data
                           products:(NSArray<SKProduct *> *)products {
@@ -1248,6 +1305,7 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
                        }];
 }
 
+// todo: move to SKPaymentTransaction Extension
 - (nullable NSString *)productIdentifierFrom:(SKPaymentTransaction *)transaction {
     if (transaction.payment == nil) {
         [RCLog appleWarning:[NSString stringWithFormat:@"%@",
