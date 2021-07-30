@@ -118,13 +118,14 @@ import Foundation
     @objc public let ownershipType: PurchaseOwnershipType
 
     @objc public convenience init(entitlementId: String,
-                      entitlementData: [String: Any],
-                      productData: [String: Any],
-                      requestDate: Date?) {
+                                  entitlementData: [String: Any],
+                                  productData: [String: Any],
+                                  requestDate: Date?) {
         self.init(entitlementId: entitlementId,
                   entitlementData: entitlementData,
                   productData: productData,
-                  requestDate: requestDate)
+                  requestDate: requestDate,
+                  dateFormatter: .iso8601SecondsDateFormatter)
     }
 
     // TODO(post-migration): Make this internal
@@ -133,7 +134,7 @@ import Foundation
          entitlementData: [String: Any],
          productData: [String: Any],
          requestDate: Date?,
-         dateFormatter: ISO3601DateFormatter = ISO3601DateFormatter.shared) {
+         dateFormatter: DateFormatter) {
         // Entitlement data
         let entitlementExpiresDateString = entitlementData["expires_date"] as? String
         let entitlementPurchaseDateString = entitlementData["purchase_date"] as? String

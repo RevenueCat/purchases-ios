@@ -27,15 +27,18 @@ import Foundation
     }
 
     @objc public convenience init(entitlementsData: [String: Any]?,
-                      purchasesData: [String: Any],
-                      requestDate: Date?) {
-        self.init(entitlementsData: entitlementsData, purchasesData: purchasesData, requestDate: requestDate)
+                                  purchasesData: [String: Any],
+                                  requestDate: Date?) {
+        self.init(entitlementsData: entitlementsData,
+                  purchasesData: purchasesData,
+                  requestDate: requestDate,
+                  dateFormatter: .iso8601SecondsDateFormatter)
     }
 
     init(entitlementsData: [String: Any]?,
-                      purchasesData: [String: Any],
-                      requestDate: Date?,
-                        dateFormatter: ISO3601DateFormatter = ISO3601DateFormatter.shared) {
+         purchasesData: [String: Any],
+         requestDate: Date?,
+         dateFormatter: DateFormatter) {
         guard let entitlementsData = entitlementsData else {
             self.all = [:]
             return

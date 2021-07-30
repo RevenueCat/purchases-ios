@@ -3,7 +3,7 @@ import Nimble
 
 @testable import PurchasesCoreSwift
 
-class ISO3601DateFormatterTests: XCTestCase {
+class DateFormatterExtensionTests: XCTestCase {
     
     func testDateFromBytesReturnsCorrectValueIfPossible() {
         let timeZone = TimeZone(identifier: "UTC")
@@ -16,7 +16,7 @@ class ISO3601DateFormatterTests: XCTestCase {
                                             second: 40)
         let date = Calendar.current.date(from: dateComponents)
         guard let dateBytes = "2020-07-14T19:36:40Z".data(using: .ascii) else { fatalError() }
-        expect(ISO3601DateFormatter.shared.date(fromBytes: ArraySlice(dateBytes))) == date
+        expect(DateFormatter.iso8601SecondsOrMillisecondsDate(fromBytes: ArraySlice(dateBytes))) == date
     }
 
     func testDateWithMillisecondsFromBytesReturnsCorrectValueIfPossible() {
@@ -31,21 +31,21 @@ class ISO3601DateFormatterTests: XCTestCase {
                                             nanosecond: 202_000_000)
         let date = Calendar.current.date(from: dateComponents)
         guard let dateBytes = "2020-07-14T19:36:40.202Z".data(using: .ascii) else { fatalError() }
-        let receivedDate = ISO3601DateFormatter.shared.date(fromBytes: ArraySlice(dateBytes))
+        let receivedDate = DateFormatter.iso8601SecondsOrMillisecondsDate(fromBytes: ArraySlice(dateBytes))
         expect(receivedDate!.timeIntervalSince1970).to(beCloseTo(date!.timeIntervalSince1970))
     }
 
     func testDateFromBytesReturnsNilIfItCantBeParsedAsString() {
-        expect(ISO3601DateFormatter.shared.date(fromBytes: ArraySlice([0b11]))).to(beNil())
+        expect(DateFormatter.iso8601SecondsOrMillisecondsDate(fromBytes: ArraySlice([0b11]))).to(beNil())
     }
 
     func testDateFromBytesReturnsNilIfItCantBeParsedIntoDate() {
         guard let stringAsBytes = "some string that isn't a date".data(using: .ascii) else { fatalError() }
-        expect(ISO3601DateFormatter.shared.date(fromBytes: ArraySlice(stringAsBytes))).to(beNil())
+        expect(DateFormatter.iso8601SecondsOrMillisecondsDate(fromBytes: ArraySlice(stringAsBytes))).to(beNil())
     }
     
     func testDateFromBytesReturnsNilIfEmptyData() {
-        expect(ISO3601DateFormatter.shared.date(fromBytes: ArraySlice(Data()))).to(beNil())
+        expect(DateFormatter.iso8601SecondsOrMillisecondsDate(fromBytes: ArraySlice(Data()))).to(beNil())
     }
 
 }

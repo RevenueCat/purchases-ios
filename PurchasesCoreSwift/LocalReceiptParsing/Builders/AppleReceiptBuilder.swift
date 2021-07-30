@@ -8,7 +8,6 @@ import Foundation
 class AppleReceiptBuilder {
     private let containerBuilder: ASN1ContainerBuilder
     private let inAppPurchaseBuilder: InAppPurchaseBuilder
-    private let dateFormatter: ISO3601DateFormatter
 
     private let typeContainerIndex = 0
     private let versionContainerIndex = 1 // unused
@@ -16,11 +15,9 @@ class AppleReceiptBuilder {
     private let expectedInternalContainersCount = 3 // type + version + attribute
 
     init(containerBuilder: ASN1ContainerBuilder = ASN1ContainerBuilder(),
-         inAppPurchaseBuilder: InAppPurchaseBuilder = InAppPurchaseBuilder(),
-         dateFormatter: ISO3601DateFormatter = ISO3601DateFormatter.shared) {
+         inAppPurchaseBuilder: InAppPurchaseBuilder = InAppPurchaseBuilder()) {
         self.containerBuilder = containerBuilder
         self.inAppPurchaseBuilder = inAppPurchaseBuilder
-        self.dateFormatter = dateFormatter
     }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
@@ -66,10 +63,10 @@ class AppleReceiptBuilder {
                 bundleId = internalContainer.internalPayload.toString()
             case .creationDate:
                 let internalContainer = try containerBuilder.build(fromPayload: payload)
-                creationDate = internalContainer.internalPayload.toDate(dateFormatter: dateFormatter)
+                creationDate = internalContainer.internalPayload.toDate()
             case .expirationDate:
                 let internalContainer = try containerBuilder.build(fromPayload: payload)
-                expirationDate = internalContainer.internalPayload.toDate(dateFormatter: dateFormatter)
+                expirationDate = internalContainer.internalPayload.toDate()
             case .inAppPurchase:
                 let internalContainer = try containerBuilder.build(fromPayload: payload)
                 inAppPurchases.append(try inAppPurchaseBuilder.build(fromContainer: internalContainer))

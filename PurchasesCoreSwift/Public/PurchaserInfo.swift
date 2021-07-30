@@ -97,10 +97,10 @@ import Foundation
 
     private let originalData: [String: Any]
 
-    private let dateFormatter: ISO3601DateFormatter
+    private let dateFormatter: DateFormatter
 
     @objc public convenience init?(data: [String: Any]) {
-        self.init(data: data, dateFormatter: ISO3601DateFormatter.shared)
+        self.init(data: data, dateFormatter: .iso8601SecondsDateFormatter)
     }
 
     /// Get the expiration date for a given product identifier. You should use Entitlements though!
@@ -171,6 +171,7 @@ import Foundation
     // TODO make internal after swift migration
     @objc public init?(data: [String: Any]) {
     init?(data: [String: Any], dateFormatter: ISO3601DateFormatter = ISO3601DateFormatter.shared) {
+    init?(data: [String: Any], dateFormatter: DateFormatter) {
         guard let subscriberObject = data["subscriber"] as? [String: Any],
               let subscriberData = SubscriberData(subscriberData: subscriberObject, dateFormatter: dateFormatter)
             else {
@@ -226,7 +227,7 @@ import Foundation
         let nonSubscriptionTransactions: [Transaction]
         let allPurchases: [String: [String: Any]]
 
-        init?(subscriberData: [String: Any], dateFormatter: ISO3601DateFormatter) {
+        init?(subscriberData: [String: Any], dateFormatter: DateFormatter) {
             self.subscriptionTransactionsByProductId =
                 subscriberData["subscriptions"] as? [String: [String: Any]] ?? [String: [String: Any]]()
 
