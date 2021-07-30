@@ -19,7 +19,7 @@ import Foundation
         if Thread.isMainThread {
             block()
         } else {
-            mainQueue.async { block() }
+            mainQueue.async(execute: block)
         }
     }
 
@@ -27,14 +27,14 @@ import Foundation
                                              block: @escaping () -> Void) {
         if withRandomDelay {
             let delay = Double.random(in: 0..<maxJitterInSeconds)
-            workerQueue.asyncAfter(deadline: .now() + delay) { block() }
+            workerQueue.asyncAfter(deadline: .now() + delay, execute: block)
         } else {
-            workerQueue.async { block() }
+            workerQueue.async(execute: block)
         }
     }
 
     func dispatchOnHTTPSerialQueue(_ block: @escaping () -> Void) {
-        httpQueue.async { block() }
+        httpQueue.async(execute: block)
     }
 
 }
