@@ -214,7 +214,9 @@ private extension HTTPClient {
             if let httpURLResponse = maybeURLResponse as? HTTPURLResponse {
                 statusCode = httpURLResponse.statusCode
                 let logMessage = String(format: Strings.network.api_request_completed,
-                                        request.httpMethod, request.urlRequest.url?.path ?? "", statusCode)
+                                        request.httpMethod,
+                                        request.urlRequest.url?.path ?? "",
+                                        statusCode)
                 Logger.debug(logMessage)
 
                 if statusCode == HTTPStatusCodes.notModifiedResponseCode.rawValue || maybeData == nil {
@@ -239,7 +241,8 @@ private extension HTTPClient {
                                                                                   request: request.urlRequest,
                                                                                   retried: retried)
                 if maybeHTTPResponse == nil {
-                    let message = String(format: Strings.network.retrying_request, request.httpMethod,
+                    let message = String(format: Strings.network.retrying_request,
+                                         request.httpMethod,
                                          request.path)
                     Logger.debug(message)
                     let retriedRequest = HTTPRequest(byCopyingRequest: request, retried: true)
