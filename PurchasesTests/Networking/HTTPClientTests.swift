@@ -573,7 +573,7 @@ class HTTPClientTests: XCTestCase {
                 completionCallCount += 1
             }
         }
-        expect(completionCallCount).toEventually(equal(totalRequests))
+        expect(completionCallCount).toEventually(equal(totalRequests), timeout: .seconds(3))
     }
 
     func testPerformSerialRequestWaitsUntilFirstRequestIsDoneBeforeStartingSecond() {
