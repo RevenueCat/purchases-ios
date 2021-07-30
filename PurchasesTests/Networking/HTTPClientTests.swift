@@ -26,7 +26,7 @@ class HTTPClientTests: XCTestCase {
         super.setUp()
         userDefaults = MockUserDefaults()
         eTagManager = MockETagManager(userDefaults: userDefaults)
-        operationDispatcher = MockOperationDispatcher()
+        operationDispatcher = OperationDispatcher()
         client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
     }
 
