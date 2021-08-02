@@ -35,22 +35,37 @@ class BackendTests: XCTestCase {
         var calls: [HTTPRequest] = []
 
         var shouldFinish = true
-
-        override func performRequest(_ httpMethod: String,
-                                     performSerially: Bool = false,
-                                     path: String,
-                                     requestBody: [String : Any]?,
-                                     headers: [String : String],
-                                     completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+        
+        override func performGETRequest(performSerially: Bool = false,
+                                        path: String,
+                                        headers: [String : String],
+                                        completionHandler: ((Int, [AnyHashable : Any]?, Error?) -> Void)?) {
+            performRequest("GET", performSerially: performSerially, path: path, requestBody: nil, headers: headers, completionHandler: completionHandler)
+        }
+        
+        override func performPOSTRequest(performSerially: Bool = false,
+                                         path: String,
+                                         requestBody: [String: Any],
+                                         headers: [String : String],
+                                         completionHandler: ((Int, [AnyHashable : Any]?, Error?) -> Void)?) {
+            performRequest("POST", performSerially: performSerially, path: path, requestBody: requestBody, headers: headers, completionHandler: completionHandler)
+        }
+        
+        private func performRequest(_ httpMethod: String,
+                                    performSerially: Bool,
+                                    path: String,
+                                    requestBody: [String : Any]?,
+                                    headers: [String : String],
+                                    completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
-
+            
             calls.append(HTTPRequest(HTTPMethod: httpMethod,
                                      serially: performSerially,
                                      path: path,
                                      body: requestBody,
                                      headers: headers))
-
+            
             if shouldFinish {
                 DispatchQueue.main.async {
                     if completionHandler != nil {
@@ -59,7 +74,7 @@ class BackendTests: XCTestCase {
                 }
             }
         }
-
+        
         func mock(requestPath: String, response:HTTPResponse) {
             mocks[requestPath] = response
         }

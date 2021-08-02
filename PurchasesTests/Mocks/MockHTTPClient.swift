@@ -24,13 +24,30 @@ class MockHTTPClient: HTTPClient {
          requestBody: [AnyHashable: Any]?,
          headers: [String: String]?,
          completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?)]()
+    
+    override func performGETRequest(performSerially: Bool = false,
+                                    path: String,
+                                    headers: [String : String],
+                                    completionHandler: ((Int, [AnyHashable : Any]?, Error?) -> Void)?) {
+        performRequest("GET", performSerially: performSerially, path: path, requestBody: nil, headers: headers, completionHandler: completionHandler)
+    }
+    
+    override func performPOSTRequest(performSerially: Bool = false,
+                                     path: String,
+                                     requestBody: [String: Any],
+                                     headers: [String : String],
+                                     completionHandler: ((Int, [AnyHashable : Any]?, Error?) -> Void)?) {
+        performRequest("POST", performSerially: performSerially, path: path, requestBody: requestBody, headers: headers, completionHandler: completionHandler)
+    }
+}
 
-    override func performRequest(_ httpMethod: String,
-                                 performSerially: Bool = false,
-                                 path: String,
-                                 requestBody: [String : Any]?,
-                                 headers: [String : String]?,
-                                 completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+private extension MockHTTPClient {
+    func performRequest(_ httpMethod: String,
+                        performSerially: Bool,
+                        path: String,
+                        requestBody: [String : Any]?,
+                        headers: [String : String]?,
+                        completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
         invokedPerformRequest = true
         invokedPerformRequestCount += 1
         invokedPerformRequestParameters = (httpMethod, performSerially, path, requestBody, headers, completionHandler)
