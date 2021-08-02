@@ -1195,7 +1195,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 // TODO: move to new class PurchasesManager
 - (nullable RCPurchaseCompletedBlock)getAndRemovePurchaseCompletedBlockFor:(SKPaymentTransaction *)transaction {
     RCPurchaseCompletedBlock completion = nil;
-    NSString * _Nullable productIdentifier = transaction.productIdentifier;
+    NSString * _Nullable productIdentifier = transaction.rc_productIdentifier;
     if (productIdentifier) {
         @synchronized (self) {
             completion = self.purchaseCompleteCallbacks[productIdentifier];
@@ -1257,8 +1257,8 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
 
 // todo: move to PurchasesManager (or find better name, since this is the exact opposite of a purchase)
 - (void)fetchProductsAndPostReceiptWithTransaction:(SKPaymentTransaction *)transaction data:(NSData *)data {
-    if (transaction.productIdentifier) {
-        [self productsWithIdentifiers:@[transaction.productIdentifier]
+    if (transaction.rc_productIdentifier) {
+        [self productsWithIdentifiers:@[transaction.rc_productIdentifier]
                       completionBlock:^(NSArray<SKProduct *> *products) {
                           [self postReceiptWithTransaction:transaction data:data products:products];
                       }];
