@@ -30,6 +30,7 @@ import Foundation
 // Review uses some grep to find the class names, so we ended up creating a fake class that
 // exposes the same methods we're looking for in ATTrackingManager to call the same methods and mangling
 // the class names. So that Apple can't find them during the review, but we can still access them on runtime.
+// To be clear, we will NOT try to improperly access idfa.
 class FakeTrackingManager: NSObject {
 
     // We need this method to be available as an optional implicitly unwrapped method for `AnyClass`.
@@ -51,6 +52,7 @@ public class TrackingManagerProxy: NSObject {
         // It looks like during the app review process Apple does some string matching looking for
         // functions in ATTrackingTransparency. We apply rot13 on these functions and classes names
         // so that Apple can't find them during the review, but we can still access them on runtime.
+        // To be clear, we will NOT try to improperly access idfa.
         NSClassFromString(mangledTrackingClassName.rot13())
     }
 
