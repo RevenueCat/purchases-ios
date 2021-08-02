@@ -13,6 +13,7 @@
 
 import StoreKit
 
+// todo: make internal after migration
 public extension SKPaymentTransaction {
 
     /// Although neither `payment` nor `productIdentier` is optional, we must continue
