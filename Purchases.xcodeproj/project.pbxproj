@@ -241,6 +241,7 @@
 		F5BE424326966B0000254A30 /* ProductInfoExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3548189DA008320B3FC98 /* ProductInfoExtractorTests.swift */; };
 		F5BE4245269676E200254A30 /* StoreKitRequestFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE4244269676E200254A30 /* StoreKitRequestFetcherTests.swift */; };
 		F5BE443D26977F9B00254A30 /* HTTPRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE443C26977F9B00254A30 /* HTTPRequest.swift */; };
+		F5E4383826B8530700841CC8 /* SKPaymentTransaction+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5E4383726B8530700841CC8 /* SKPaymentTransaction+Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -563,6 +564,7 @@
 		F5BE424126965F9F00254A30 /* ProductInfoExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductInfoExtractor.swift; sourceTree = "<group>"; };
 		F5BE4244269676E200254A30 /* StoreKitRequestFetcherTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoreKitRequestFetcherTests.swift; sourceTree = "<group>"; };
 		F5BE443C26977F9B00254A30 /* HTTPRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequest.swift; sourceTree = "<group>"; };
+		F5E4383726B8530700841CC8 /* SKPaymentTransaction+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SKPaymentTransaction+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -698,6 +700,7 @@
 				A5E6842B2696232500EC9CB0 /* Attribution */,
 				B3B5FBBD269E080A00104A0C /* Caching */,
 				2CD72940268A820E00BFC976 /* FoundationExtensions */,
+				F5E4383626B852D700841CC8 /* StoreKitExtensions */,
 				2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */,
 				35D832CB262A5B3400E60AC5 /* Networking */,
 				354895D0267AE32D001DC5B1 /* SubscriberAttributes */,
@@ -1360,6 +1363,14 @@
 			path = Public;
 			sourceTree = "<group>";
 		};
+		F5E4383626B852D700841CC8 /* StoreKitExtensions */ = {
+			isa = PBXGroup;
+			children = (
+				F5E4383726B8530700841CC8 /* SKPaymentTransaction+Extensions.swift */,
+			);
+			path = StoreKitExtensions;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1717,6 +1728,7 @@
 				B3B5FBB4269CED4B00104A0C /* BackendErrorCode.swift in Sources */,
 				2DDF41B624F6F387005BC22D /* ASN1ObjectIdentifierBuilder.swift in Sources */,
 				35D832D2262E56DB00E60AC5 /* HTTPStatusCodes.swift in Sources */,
+				F5E4383826B8530700841CC8 /* SKPaymentTransaction+Extensions.swift in Sources */,
 				2D4E926526990AB1000E10B0 /* StoreKitWrapper.swift in Sources */,
 				2DDF419624F6F331005BC22D /* ProductsRequestFactory.swift in Sources */,
 				2DDF419724F6F331005BC22D /* DateExtensions.swift in Sources */,
