@@ -36,19 +36,19 @@ class BackendTests: XCTestCase {
 
         var shouldFinish = true
         
-        override func performGETRequest(performSerially: Bool = false,
+        override func performGETRequest(serially: Bool = false,
                                         path: String,
                                         headers: [String : String],
                                         completionHandler: ((Int, [AnyHashable : Any]?, Error?) -> Void)?) {
-            performRequest("GET", performSerially: performSerially, path: path, requestBody: nil, headers: headers, completionHandler: completionHandler)
+            performRequest("GET", performSerially: serially, path: path, requestBody: nil, headers: headers, completionHandler: completionHandler)
         }
         
-        override func performPOSTRequest(performSerially: Bool = false,
+        override func performPOSTRequest(serially: Bool = false,
                                          path: String,
                                          requestBody: [String: Any],
                                          headers: [String : String],
                                          completionHandler: ((Int, [AnyHashable : Any]?, Error?) -> Void)?) {
-            performRequest("POST", performSerially: performSerially, path: path, requestBody: requestBody, headers: headers, completionHandler: completionHandler)
+            performRequest("POST", performSerially: serially, path: path, requestBody: requestBody, headers: headers, completionHandler: completionHandler)
         }
         
         private func performRequest(_ httpMethod: String,

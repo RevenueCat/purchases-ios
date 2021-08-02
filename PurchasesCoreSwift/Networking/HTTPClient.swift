@@ -33,7 +33,7 @@ import Foundation
     }
 
     @objc(performGETRequestSerially:path:headers:completionHandler:)
-    public func performGETRequest(performSerially: Bool = false,
+    public func performGETRequest(serially performSerially: Bool = false,
                                   path: String,
                                   headers authHeaders: [String: String],
                                   completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
@@ -47,7 +47,7 @@ import Foundation
     }
 
     @objc(performPOSTRequestSerially:path:requestBody:headers:completionHandler:)
-    public func performPOSTRequest(performSerially: Bool = false,
+    public func performPOSTRequest(serially performSerially: Bool = false,
                                    path: String,
                                    requestBody: [String: Any],
                                    headers authHeaders: [String: String],

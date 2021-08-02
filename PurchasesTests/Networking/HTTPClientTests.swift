@@ -44,7 +44,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: Dictionary.init(),
                                        headers: [:],
@@ -62,7 +62,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: Dictionary.init(),
                                        headers: ["test_header": "value"],
@@ -80,7 +80,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: Dictionary.init(),
                                        headers: ["test_header": "value"],
@@ -98,7 +98,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: Dictionary.init(),
                                        headers: ["test_header": "value"],
@@ -116,7 +116,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: Dictionary.init(),
                                        headers: ["test_header": "value"],
@@ -134,7 +134,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: Dictionary.init(),
                                        headers: ["test_header": "value"],
@@ -152,7 +152,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: Dictionary.init(),
                                        headers: [:],
@@ -173,7 +173,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: body,
                                        headers: [:],
@@ -190,7 +190,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performGETRequest(performSerially: true,
+        self.client.performGETRequest(serially: true,
                                       path: path,
                                       headers: [:]) { (status, data, error) in
             completionCalled = true
@@ -209,7 +209,7 @@ class HTTPClientTests: XCTestCase {
             response.error = error
             return response
         }
-        self.client.performGETRequest(performSerially: true,
+        self.client.performGETRequest(serially: true,
                                       path: path,
                                       headers: [:]) { (status, data, responseError) in
             if let responseNSError = responseError as NSError? {
@@ -236,7 +236,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers: nil)
         }
         
-        self.client.performGETRequest(performSerially: true,
+        self.client.performGETRequest(serially: true,
                                       path: path,
                                       headers: [:]) { (status, data, error) in
             correctResponse = (status == errorCode) && (data != nil) && (error == nil);
@@ -260,7 +260,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers: nil)
         }
 
-        self.client.performGETRequest(performSerially: true,
+        self.client.performGETRequest(serially: true,
                                       path: path,
                                       headers: [:]) { (status, data, error) in
             correctResponse = (status == errorCode) && (data != nil) && (error == nil);
@@ -283,7 +283,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:Int32(errorCode), headers: nil)
         }
         
-        self.client.performGETRequest(performSerially: true,
+        self.client.performGETRequest(serially: true,
                                       path: path,
                                       headers: [:]) { (status, data, error) in
             correctResponse = (status == errorCode) && (data == nil) && (error != nil);
@@ -303,7 +303,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
         }
         
-        self.client.performGETRequest(performSerially: true,
+        self.client.performGETRequest(serially: true,
                                       path: path,
                                       headers: [:]) { (status, data, error) in
             successIsTrue = (status == 200) && (error == nil);
@@ -327,7 +327,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: Dictionary.init(),
                                        headers: ["test_header": "value"],
@@ -347,7 +347,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: Dictionary.init(),
                                        headers: ["test_header": "value"],
@@ -367,7 +367,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: Dictionary.init(),
                                        headers: ["test_header": "value"],
@@ -385,7 +385,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
         }
 
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: Dictionary.init(),
                                        headers: ["test_header": "value"],
@@ -406,7 +406,7 @@ class HTTPClientTests: XCTestCase {
                                          platformFlavorVersion: "3.2.1",
                                          finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
-        client.performPOSTRequest(performSerially: true,
+        client.performPOSTRequest(serially: true,
                                   path: path,
                                   requestBody: Dictionary.init(),
                                   headers: ["test_header": "value"],
@@ -428,7 +428,7 @@ class HTTPClientTests: XCTestCase {
                                          finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
         
-        client.performPOSTRequest(performSerially: true,
+        client.performPOSTRequest(serially: true,
                                   path: path,
                                   requestBody: Dictionary.init(),
                                   headers: ["test_header": "value"],
@@ -447,7 +447,7 @@ class HTTPClientTests: XCTestCase {
         }
         let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
-        client.performPOSTRequest(performSerially: true,
+        client.performPOSTRequest(serially: true,
                                   path: path,
                                   requestBody: Dictionary.init(),
                                   headers: ["test_header": "value"],
@@ -466,7 +466,7 @@ class HTTPClientTests: XCTestCase {
         }
         let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
-        client.performPOSTRequest(performSerially: true,
+        client.performPOSTRequest(serially: true,
                                   path: path,
                                   requestBody: Dictionary.init(),
                                   headers: ["test_header": "value"],
@@ -493,7 +493,7 @@ class HTTPClientTests: XCTestCase {
 
         let totalRequests = Int.random(in: 50..<100)
         for requestNumber in 0..<totalRequests {
-            self.client.performPOSTRequest(performSerially: true,
+            self.client.performPOSTRequest(serially: true,
                                            path: path,
                                            requestBody: ["requestNumber": requestNumber],
                                            headers: [:]) { (status, data, error) in
@@ -523,14 +523,14 @@ class HTTPClientTests: XCTestCase {
                 .responseTime(0.1)
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: ["requestNumber": 1],
                                        headers: [:]) { (status, data, error) in
             firstRequestFinished = true
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: ["requestNumber": 2],
                                        headers: [:]) { (status, data, error) in
@@ -560,14 +560,14 @@ class HTTPClientTests: XCTestCase {
                 .responseTime(0.1)
         }
         
-        self.client.performPOSTRequest(performSerially: false,
+        self.client.performPOSTRequest(serially: false,
                                        path: path,
                                        requestBody: ["requestNumber": 1],
                                        headers: [:]) { (status, data, error) in
             firstRequestFinished = true
         }
         
-        self.client.performPOSTRequest(performSerially: false,
+        self.client.performPOSTRequest(serially: false,
                                        path: path,
                                        requestBody: ["requestNumber": 2],
                                        headers: [:]) { (status, data, error) in
@@ -597,14 +597,14 @@ class HTTPClientTests: XCTestCase {
                 .responseTime(0.1)
         }
 
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: ["requestNumber": 1],
                                        headers: [:]) { (status, data, error) in
             firstRequestFinished = true
         }
         
-        self.client.performPOSTRequest(performSerially: false,
+        self.client.performPOSTRequest(serially: false,
                                        path: path,
                                        requestBody: ["requestNumber": 2],
                                        headers: [:]) { (status, data, error) in
@@ -634,14 +634,14 @@ class HTTPClientTests: XCTestCase {
                 .responseTime(0.1)
         }
 
-        self.client.performPOSTRequest(performSerially: false,
+        self.client.performPOSTRequest(serially: false,
                                        path: path,
                                        requestBody: ["requestNumber": 1],
                                        headers: [:]) { (status, data, error) in
             firstRequestFinished = true
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: ["requestNumber": 2],
                                        headers: [:]) { (status, data, error) in
@@ -662,7 +662,7 @@ class HTTPClientTests: XCTestCase {
         var receivedError: Error? = nil
         var receivedStatus: Int? = nil
         var receivedData: [AnyHashable: Any]? = nil
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: nonJSONBody,
                                        headers: [:]) { (status, data, error) in
@@ -694,7 +694,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data(), statusCode:200, headers: nil)
         }
         
-        self.client.performPOSTRequest(performSerially: true,
+        self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: nonJSONBody,
                                        headers: [:]) { (status, data, error) in
@@ -720,7 +720,7 @@ class HTTPClientTests: XCTestCase {
 
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
-        self.client.performGETRequest(performSerially: true,
+        self.client.performGETRequest(serially: true,
                                       path: path,
                                       headers: [:]) { (status, data, error) in
             completionCalled = true
