@@ -87,7 +87,9 @@ private extension IntroEligibilityCalculator {
                         && candidate.subscriptionGroupIdentifier == purchased.subscriptionGroupIdentifier)
                     return foundByGroupId
                 }
-            result[candidate.productIdentifier] = usedIntroForProductIdentifier
+
+            let hasIntroductoryPrice = candidate.introductoryPrice != nil
+            result[candidate.productIdentifier] = !hasIntroductoryPrice || usedIntroForProductIdentifier
                 ? IntroEligibilityStatus.ineligible.toNSNumber()
                 : IntroEligibilityStatus.eligible.toNSNumber()
         }
