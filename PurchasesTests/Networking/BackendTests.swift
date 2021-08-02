@@ -59,13 +59,13 @@ class BackendTests: XCTestCase {
                                     completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
-            
+
             calls.append(HTTPRequest(HTTPMethod: httpMethod,
                                      serially: performSerially,
                                      path: path,
                                      body: requestBody,
                                      headers: headers))
-            
+
             if shouldFinish {
                 DispatchQueue.main.async {
                     if completionHandler != nil {
@@ -74,7 +74,7 @@ class BackendTests: XCTestCase {
                 }
             }
         }
-        
+
         func mock(requestPath: String, response:HTTPResponse) {
             mocks[requestPath] = response
         }
