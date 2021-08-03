@@ -123,6 +123,30 @@ import AppKit
 
 }
 
+extension SystemInfo {
+
+    @objc static var applicationDidBecomeActiveNotification: Notification.Name {
+        #if os(iOS) || os(tvOS)
+            UIApplication.didBecomeActiveNotification
+        #elseif os(macOS)
+            NSApplication.didBecomeActiveNotification
+        #elseif os(watchOS)
+            Notification.Name.NSExtensionHostDidBecomeActive
+        #endif
+    }
+
+    @objc static var applicationWillResignActiveNotification: Notification.Name {
+        #if os(iOS) || os(tvOS)
+            UIApplication.willResignActiveNotification
+        #elseif os(macOS)
+            NSApplication.willResignActiveNotification
+        #elseif os(watchOS)
+            Notification.Name.NSExtensionHostWillResignActive
+        #endif
+    }
+
+}
+
 private extension SystemInfo {
 
     var isApplicationBackgrounded: Bool {
