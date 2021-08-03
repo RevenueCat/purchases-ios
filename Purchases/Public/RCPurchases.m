@@ -512,16 +512,14 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
 
 - (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
                 completionBlock:(RCReceiveProductsBlock)completion {
-    // TODO: remove this block, and just trust that the ProductsManager's cache should work.
-    NSMutableArray<SKProduct *> *products = [NSMutableArray array];
     NSSet<NSString *> *productIdentifiersSet = [[NSSet alloc] initWithArray:productIdentifiers];
     if (productIdentifiersSet.count > 0) {
         [self.productsManager productsWithIdentifiers:productIdentifiersSet
-                                           completion:^(NSSet<SKProduct *> * _Nonnull newProducts) {
-            CALL_IF_SET_ON_MAIN_THREAD(completion, [products arrayByAddingObjectsFromArray:newProducts.allObjects]);
+                                           completion:^(NSSet<SKProduct *> * _Nonnull products) {
+            CALL_IF_SET_ON_MAIN_THREAD(completion, products.allObjects);
         }];
     } else {
-        CALL_IF_SET_ON_MAIN_THREAD(completion, products);
+        CALL_IF_SET_ON_MAIN_THREAD(completion, @[]);
     }
 }
 
