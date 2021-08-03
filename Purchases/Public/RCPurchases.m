@@ -641,7 +641,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }
     // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
     // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
-    [self receiptDataWithReceiptRefreshPolicy:refreshPolicy completion:^(NSData *_Nonnull data) {
+    [self.receiptFetcher receiptDataWithRefreshPolicy:refreshPolicy
+                                           completion:^(NSData *_Nonnull data) {
         if (data.length == 0) {
             if (RCSystemInfo.isSandbox) {
                 [RCLog appleWarning:[NSString stringWithFormat:@"%@", RCStrings.receipt.no_sandbox_receipt_restore]];
@@ -700,7 +701,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)checkTrialOrIntroductoryPriceEligibility:(NSArray<NSString *> *)productIdentifiers
                                  completionBlock:(RCReceiveIntroEligibilityBlock)receiveEligibility
 {
-    [self receiptData:^(NSData *data) {
+    [self.receiptFetcher receiptDataWithRefreshPolicy:RCReceiptRefreshPolicyOnlyIfEmpty
+                                           completion:^(NSData * _Nullable data) {
         if (data != nil && data.length > 0) {
             if (@available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)) {
                 NSSet *productIdentifiersSet = [[NSSet alloc] initWithArray:productIdentifiers];
@@ -765,7 +767,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)paymentDiscountForProductDiscount:(SKProductDiscount *)discount
                                   product:(SKProduct *)product
                                completion:(RCPaymentDiscountBlock)completion {
-    [self receiptData:^(NSData *data) {
+    [self.receiptFetcher receiptDataWithRefreshPolicy:RCReceiptRefreshPolicyOnlyIfEmpty
+                                           completion:^(NSData * _Nullable data) {
         if (data == nil || data.length == 0) {
             completion(nil, RCPurchasesErrorUtils.missingReceiptFileError);
         } else {
@@ -1000,41 +1003,6 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
 }
 
-// todo: move to ReceiptFetcher
-- (void)receiptData:(RCReceiveReceiptDataBlock)completion {
-    [self receiptDataWithReceiptRefreshPolicy:RCReceiptRefreshPolicyOnlyIfEmpty
-                                   completion:completion];
-}
-
-// todo: move to ReceiptFetcher
-- (void)receiptDataWithReceiptRefreshPolicy:(RCReceiptRefreshPolicy)refreshPolicy
-                                 completion:(RCReceiveReceiptDataBlock)completion {
-    if (refreshPolicy == RCReceiptRefreshPolicyAlways) {
-        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.receipt.force_refreshing_receipt]];
-        [self refreshReceipt:completion];
-        return;
-    }
-    NSData *receiptData = [self.receiptFetcher receiptData];
-    BOOL receiptIsEmpty = receiptData == nil || receiptData.length == 0;
-    if (receiptIsEmpty && refreshPolicy == RCReceiptRefreshPolicyOnlyIfEmpty) {
-        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.receipt.refreshing_empty_receipt]];
-        [self refreshReceipt:completion];
-    } else {
-        completion(receiptData);
-    }
-}
-
-// todo: move to ReceiptFetcher
-- (void)refreshReceipt:(RCReceiveReceiptDataBlock)completion {
-    [self.requestFetcher fetchReceiptData:^{
-        NSData *newReceiptData = [self.receiptFetcher receiptData];
-        if (newReceiptData == nil || newReceiptData.length == 0) {
-            [RCLog appleWarning:[NSString stringWithFormat:@"%@", RCStrings.receipt.unable_to_load_receipt]];
-        }
-        completion(newReceiptData ?: [NSData data]);
-    }];
-}
-
 // todo: move to PurchasesManager
 - (void)handleReceiptPostWithTransaction:(SKPaymentTransaction *)transaction
                            purchaserInfo:(nullable RCPurchaserInfo *)info
@@ -1155,7 +1123,8 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
 
 // todo: move to PurchasesManager (or find better name, since this is the exact opposite of a purchase)
 - (void)handlePurchasedTransaction:(SKPaymentTransaction *)transaction {
-    [self receiptData:^(NSData * _Nonnull data) {
+    [self.receiptFetcher receiptDataWithRefreshPolicy:RCReceiptRefreshPolicyOnlyIfEmpty
+                                           completion:^(NSData * _Nullable data) {
         if (data.length == 0) {
             [self handleReceiptPostWithTransaction:transaction
                                      purchaserInfo:nil
