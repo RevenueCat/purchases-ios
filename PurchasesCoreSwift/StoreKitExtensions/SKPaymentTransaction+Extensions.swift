@@ -21,13 +21,17 @@ public extension SKPaymentTransaction {
     @objc var rc_productIdentifier: String? {
         let maybePayment: SKPayment? = payment
 
-        if maybePayment == nil {
+        guard maybePayment != nil else {
             Logger.appleWarning(Strings.purchase.skpayment_missing_from_skpaymenttransaction)
-        } else if maybePayment?.productIdentifier == nil {
+            return nil
+        }
+        
+        guard let productIdentifier = maybePayment?.productIdentifier, !productIdentifier.isEmpty else {
             Logger.appleWarning(Strings.purchase.skpayment_missing_product_identifier)
+            return nil
         }
 
-        return maybePayment?.productIdentifier
+        return productIdentifier
     }
 
 }

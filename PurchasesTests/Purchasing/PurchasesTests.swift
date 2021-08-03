@@ -2314,6 +2314,41 @@ class PurchasesTests: XCTestCase {
         transaction.setValue(SKPaymentTransactionState.purchased.rawValue, forKey: "transactionState")
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
     }
+    
+    func testNoCrashIfPaymentDoesNotHaveProductIdenfier() {
+        setupPurchases()
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = SKPayment()
+
+        transaction.setValue(SKPaymentTransactionState.purchasing.rawValue, forKey: "transactionState")
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        transaction.setValue(SKPaymentTransactionState.purchased.rawValue, forKey: "transactionState")
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+    }
+    
+    func testNilProductIdentifierIfPaymentIsMissing() {
+        let transaction = SKPaymentTransaction()
+        expect(transaction.rc_productIdentifier).to(beNil())
+    }
+    
+    func testNilProductIdentifierIfPaymentDoesNotHaveProductIdenfier() {
+        let transaction = MockTransaction()
+        transaction.mockPayment = SKPayment()
+        
+        expect(transaction.rc_productIdentifier).to(beNil())
+    }
+    
+    func testProductIdentifierFromAnyTransaction() {
+        let expectedProductIdentifier = "com.product.id1"
+        let product = MockSKProduct(mockProductIdentifier: expectedProductIdentifier)
+        let payment = SKPayment(product: product)
+        let transaction = MockTransaction()
+        transaction.mockPayment = payment
+        
+        expect(transaction.rc_productIdentifier).to(equal(expectedProductIdentifier))
+    }
 
     func testPostsOfferingIfPurchasingPackage() {
         setupPurchases()
