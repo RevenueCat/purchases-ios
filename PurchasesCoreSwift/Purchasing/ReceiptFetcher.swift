@@ -10,6 +10,29 @@ import Foundation
 
 // TODO: Make internal after migration to Swift is complete
 @objc(RCReceiptFetcher) public class ReceiptFetcher: NSObject {
+    private let requestFetcher: StoreKitRequestFetcher
+
+    public init(requestFetcher: StoreKitRequestFetcher) {
+        self.requestFetcher = requestFetcher
+    }
+
+    @objc public func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping ((Data?) -> Void)) {
+        if refreshPolicy == .always {
+            Logger.debug(String(format: Strings.receipt.force_refreshing_receipt))
+            self.refreshReceipt(completion)
+            return
+        }
+
+        let receiptData = receiptData()
+        let isReceiptEmpty = receiptData?.isEmpty ?? true
+
+        if isReceiptEmpty && refreshPolicy == .onlyIfEmpty {
+            Logger.debug(Strings.receipt.refreshing_empty_receipt)
+            self.refreshReceipt(completion)
+        } else {
+            completion(receiptData)
+        }
+    }
 
     // TODO: Make internal after migration to Swift is complete
     @objc public func receiptData() -> Data? {
@@ -45,4 +68,22 @@ import Foundation
 
         return data
     }
+}
+
+private extension ReceiptFetcher {
+
+    func refreshReceipt(_ completion: @escaping ((Data) -> Void)) {
+        requestFetcher.fetchReceiptData {
+            let maybeData = self.receiptData()
+            guard let receiptData = maybeData,
+                  !receiptData.isEmpty else {
+                      Logger.appleWarning(Strings.receipt.unable_to_load_receipt)
+                      completion(Data())
+                      return
+                  }
+
+            completion(receiptData)
+        }
+    }
+
 }
