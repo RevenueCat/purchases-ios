@@ -20,7 +20,7 @@ class MockBundle: Bundle {
     
     var mockAppStoreReceiptURLResult: MockAppStoreReceiptURLResult = .receiptWithData
     
-    var mockAppStoreReceiptFileName = "base64encodedreceiptsample1"
+    private let mockAppStoreReceiptFileName = "base64encodedreceiptsample1"
     
     override var appStoreReceiptURL: URL? {
         switch mockAppStoreReceiptURLResult {
