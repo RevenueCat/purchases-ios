@@ -26,7 +26,8 @@ public extension SKPaymentTransaction {
             return nil
         }
 
-        guard let productIdentifier = maybePayment?.productIdentifier, !productIdentifier.isEmpty else {
+        guard let productIdentifier = maybePayment?.productIdentifier,
+              !productIdentifier.isEmpty else {
             Logger.appleWarning(Strings.purchase.skpayment_missing_product_identifier)
             return nil
         }
