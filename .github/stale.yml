@@ -17,8 +17,8 @@ exemptLabels:
   - next-release
   - investigating
   - do-not-lock
-  - swift-migration
-  - test-backfill
+  - swift migration
+  - test backfill
 
 # Set to true to ignore issues in a project (defaults to false)
 #exemptProjects: false

@@ -15,7 +15,7 @@ jobs:
           github-token: ${{ github.token }}
           issue-lock-inactive-days: "7"
           issue-exclude-created-before: "2021-03-01T00:00:00Z"
-          issue-exclude-labels: "enhancement, do-not-lock, swift-migration, test-backfill"
+          issue-exclude-labels: "enhancement, do-not-lock"
           issue-lock-comment: >
             This issue has been automatically locked due to no recent activity after it 
             was closed. Please open a new issue for related reports.
