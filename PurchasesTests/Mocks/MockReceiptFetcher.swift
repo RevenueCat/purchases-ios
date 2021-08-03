@@ -3,6 +3,8 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
+@testable import PurchasesCoreSwift
+
 class MockReceiptFetcher: ReceiptFetcher {
     var receiptDataCalled = false
     var shouldReturnReceipt = true

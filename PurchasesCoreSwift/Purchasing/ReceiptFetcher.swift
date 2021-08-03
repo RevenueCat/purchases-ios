@@ -1,5 +1,5 @@
 //
-//  RCReceiptFetcher.swift
+//  ReceiptFetcher.swift
 //  Purchases
 //
 //  Created by Javier de Martín Gil on 8/7/21.
@@ -9,10 +9,10 @@
 import Foundation
 
 // TODO: Make internal after migration to Swift is complete
-@objc(RCReceiptFetcher) open class ReceiptFetcher: NSObject {
+@objc(RCReceiptFetcher) public class ReceiptFetcher: NSObject {
 
     // TODO: Make internal after migration to Swift is complete
-    @objc open func receiptData() -> Data? {
+    @objc public func receiptData() -> Data? {
 
         guard var receiptURL: URL = Bundle.main.appStoreReceiptURL else {
             Logger.debug(Strings.receipt.no_sandbox_receipt_restore)
