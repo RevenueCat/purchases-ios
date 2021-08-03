@@ -11,12 +11,19 @@ import Foundation
 // TODO: Make internal after migration to Swift is complete
 @objc(RCReceiptFetcher) public class ReceiptFetcher: NSObject {
     private let requestFetcher: StoreKitRequestFetcher
+    private let receiptBundle: Bundle
 
-    @objc public init(requestFetcher: StoreKitRequestFetcher) {
-        self.requestFetcher = requestFetcher
+    @objc public convenience init(requestFetcher: StoreKitRequestFetcher) {
+        self.init(requestFetcher: requestFetcher, bundle: .main)
     }
 
-    @objc public func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping ((Data?) -> Void)) {
+    init(requestFetcher: StoreKitRequestFetcher, bundle: Bundle) {
+        self.requestFetcher = requestFetcher
+        self.receiptBundle = bundle
+    }
+
+    @objc public func receiptData(refreshPolicy: ReceiptRefreshPolicy,
+                                  completion: @escaping ((Data?) -> Void)) {
         if refreshPolicy == .always {
             Logger.debug(String(format: Strings.receipt.force_refreshing_receipt))
             self.refreshReceipt(completion)
@@ -39,7 +46,7 @@ import Foundation
 private extension ReceiptFetcher {
 
     func receiptData() -> Data? {
-        guard var receiptURL: URL = Bundle.main.appStoreReceiptURL else {
+        guard var receiptURL: URL = self.receiptBundle.appStoreReceiptURL else {
             Logger.debug(Strings.receipt.no_sandbox_receipt_restore)
             return nil
         }
