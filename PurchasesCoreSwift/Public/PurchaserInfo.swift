@@ -302,6 +302,7 @@ private extension PurchaserInfo {
     }
 
     class func parseDatesIn(transactionsByProductId: [String: [String: Any]], dateLabel: String) -> [String: Date?] {
+        // mapValues will the key-value pair in the dictionary for nil values, as desired
         return transactionsByProductId.mapValues { maybeTransaction in
             if let transactionFieldsByKey = maybeTransaction as? [String: String],
                let dateString = transactionFieldsByKey[dateLabel] {
