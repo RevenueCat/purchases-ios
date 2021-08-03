@@ -6,3 +6,4 @@
     https://github.com/RevenueCat/purchases-ios/commit/209615b9b8b4dc29ad37f51bf211e3710a2fe443
 - Excluded swift migration tasks in stale issue detection
     https://github.com/RevenueCat/purchases-ios/pull/698
+    https://github.com/RevenueCat/purchases-ios/pull/702
