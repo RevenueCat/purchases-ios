@@ -643,7 +643,6 @@ class BasicPurchaserInfoTests: XCTestCase {
     func testActiveSubscriptionsIncludesSubsWithNullExpirationDate() {
         let response = [
             "request_date": "2018-10-19T02:40:36Z",
-            "request_date_ms": Int64(1563379533946),
             "subscriber": [
                 "original_app_user_id": "app_user_id",
                 "original_application_version": "2083",
@@ -684,6 +683,51 @@ class BasicPurchaserInfoTests: XCTestCase {
         let info = PurchaserInfo(data: response)
         XCTAssertEqual(Set(["onemonth_freetrial", "twomonth_freetrial"]), info!.activeSubscriptions)
 
+    }
+
+    func testAllPurchasedProductIdentifiersIncludesNullExpDate() {
+        let response = [
+            "request_date": "2018-10-19T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "original_application_version": "2083",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "non_subscriptions": [:],
+                "subscriptions": [
+                    "onemonth_freetrial": [
+                        "expires_date": "2100-08-30T02:40:36Z",
+                        "period_type": "normal"
+                    ],
+                    "twomonth_freetrial": [
+                        "period_type": "normal"
+                    ],
+                    "threemonth_freetrial": [
+                        "expires_date": "1990-08-30T02:40:36Z"
+                    ]
+                ],
+                "entitlements": [
+                    "pro" : [
+                        "expires_date" : "2100-08-30T02:40:36Z",
+                        "product_identifier": "onemonth_freetrial",
+                        "purchase_date": "2018-10-26T23:17:53Z"
+                    ],
+                    "old_pro" : [
+                        "expires_date" : "1990-08-30T02:40:36Z",
+                        "product_identifier": "threemonth_freetrial",
+                        "purchase_date": "1990-06-30T02:40:36Z"
+                    ],
+                    "forever_pro" : [
+                        "expires_date" : nil,
+                        "product_identifier": "onetime_purchase",
+                        "purchase_date": "1990-08-30T02:40:36Z"
+                    ],
+                ]
+            ]
+        ] as [String : Any]
+
+        let info = PurchaserInfo(data: response)
+        XCTAssertEqual(Set(["onemonth_freetrial", "twomonth_freetrial", "threemonth_freetrial"]),
+                       info!.allPurchasedProductIdentifiers)
     }
 
 }
