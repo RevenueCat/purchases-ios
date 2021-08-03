@@ -522,6 +522,17 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.payment?.productIdentifier).to(equal(product.productIdentifier))
     }
 
+    func testPurchaseProductCachesProduct() {
+        setupPurchases()
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+        self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
+
+        }
+
+        expect(self.mockProductsManager.invokedCacheProduct) == true
+        expect(self.mockProductsManager.invokedCacheProductParameter) == product
+    }
+
     func testTransitioningToPurchasing() {
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
@@ -1308,7 +1319,7 @@ class PurchasesTests: XCTestCase {
         expect(result).to(beFalse())
     }
 
-    func testShouldCacheProductsFromPromoPaymentDelegateMethod() {
+    func testPromoPaymentDelegateMethodMakesRightCalls() {
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "mock_product")
         let payment = SKPayment.init(product: product)
@@ -1329,6 +1340,28 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(beTrue())
         expect(self.backend.postedProductID).to(equal(product.productIdentifier))
         expect(self.backend.postedPrice).to(equal(product.price))
+    }
+
+    func testPromoPaymentDelegateMethodCachesProduct() {
+        setupPurchases()
+        let product = MockSKProduct(mockProductIdentifier: "mock_product")
+        let payment = SKPayment.init(product: product)
+
+        _ = storeKitWrapper.delegate?.storeKitWrapper(storeKitWrapper,
+                                                      shouldAddStorePayment: payment,
+                                                      for: product)
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = payment
+
+        transaction.mockState = SKPaymentTransactionState.purchasing
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(self.mockProductsManager.invokedCacheProduct) == true
+        expect(self.mockProductsManager.invokedCacheProductParameter) == product
     }
 
     func testDeferBlockMakesPayment() {

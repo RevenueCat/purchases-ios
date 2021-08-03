@@ -36,4 +36,15 @@ class MockProductsManager: ProductsManager {
             completion(Set(products))
         }
     }
+
+    var invokedCacheProduct = false
+    var invokedCacheProductCount = 0
+    var invokedCacheProductParameter: SKProduct?
+
+    override func cacheProduct(_ product: SKProduct) {
+        invokedCacheProduct = true
+        invokedCacheProductCount += 1
+        invokedCacheProductParameter = product
+    }
+
 }
