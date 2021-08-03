@@ -34,9 +34,11 @@ import Foundation
         }
     }
 
-    // TODO: Make internal after migration to Swift is complete
-    @objc public func receiptData() -> Data? {
+}
 
+private extension ReceiptFetcher {
+
+    func receiptData() -> Data? {
         guard var receiptURL: URL = Bundle.main.appStoreReceiptURL else {
             Logger.debug(Strings.receipt.no_sandbox_receipt_restore)
             return nil
@@ -68,9 +70,6 @@ import Foundation
 
         return data
     }
-}
-
-private extension ReceiptFetcher {
 
     func refreshReceipt(_ completion: @escaping ((Data) -> Void)) {
         requestFetcher.fetchReceiptData {

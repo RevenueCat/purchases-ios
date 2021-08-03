@@ -10,17 +10,21 @@ class MockReceiptFetcher: ReceiptFetcher {
     var shouldReturnReceipt = true
     var shouldReturnZeroBytesReceipt = false
     var receiptDataTimesCalled = 0
+    var receiptDataReceivedRefreshPolicy: ReceiptRefreshPolicy?
 
-    override func receiptData() -> Data? {
+    @objc override public func receiptData(refreshPolicy: ReceiptRefreshPolicy,
+                                           completion: @escaping ((Data?) -> Void)) {
+        receiptDataReceivedRefreshPolicy = refreshPolicy
         receiptDataCalled = true
         receiptDataTimesCalled += 1
         if (shouldReturnReceipt) {
             if (shouldReturnZeroBytesReceipt) {
-                return Data()
+                completion(Data())
+            } else {
+                completion(Data(1...3))
             }
-            return Data(1...3)
         } else {
-            return nil
+            completion(nil)
         }
     }
 }

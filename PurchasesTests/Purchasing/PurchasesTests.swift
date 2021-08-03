@@ -1162,7 +1162,6 @@ class PurchasesTests: XCTestCase {
         purchases!.restoreTransactions()
 
         expect(self.receiptFetcher.receiptDataTimesCalled).to(equal(1))
-        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
     }
 
     func testRestoringPurchasesSetsIsRestore() {
@@ -2057,8 +2056,9 @@ class PurchasesTests: XCTestCase {
         receiptFetcher.shouldReturnZeroBytesReceipt = true
 
         makeAPurchase()
-
-        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
+        
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
     }
 
     private func makeAPurchase() {
