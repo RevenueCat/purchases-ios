@@ -130,6 +130,12 @@ platform :ios do
     carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS,Mac", use_xcframeworks: true)
   end
 
+  desc "macOS build"
+  lane :build_mac do |options|
+    check_pods
+    carthage(command: "build", no_skip_current: true, platform: "Mac", use_xcframeworks: true)
+  end
+
   desc "Run the carthage archive steps to prepare for carthage distribution"
   lane :carthage_archive do |options|
     carthage_archive
