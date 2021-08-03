@@ -123,9 +123,9 @@ import AppKit
 
 }
 
-extension SystemInfo {
+@objc public extension SystemInfo {
 
-    @objc static var applicationDidBecomeActiveNotification: Notification.Name {
+    static var applicationDidBecomeActiveNotification: Notification.Name {
         #if os(iOS) || os(tvOS)
             UIApplication.didBecomeActiveNotification
         #elseif os(macOS)
@@ -135,7 +135,7 @@ extension SystemInfo {
         #endif
     }
 
-    @objc static var applicationWillResignActiveNotification: Notification.Name {
+    static var applicationWillResignActiveNotification: Notification.Name {
         #if os(iOS) || os(tvOS)
             UIApplication.willResignActiveNotification
         #elseif os(macOS)
