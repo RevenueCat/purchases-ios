@@ -121,13 +121,13 @@ import Foundation
 
         self.nonSubscriptionTransactions = subscriberData.nonSubscriptionTransactions
 
-        self.entitlements = EntitlementInfos(entitlementsData: subscriberData.entitlements,
-                                             purchasesData: subscriberData.allPurchases,
+        self.entitlements = EntitlementInfos(entitlementsData: subscriberData.entitlementsData,
+                                             purchasesData: subscriberData.allTransactionsByProductId,
                                              dateFormatter: Self.dateFormatter,
                                              requestDate: requestDate)
 
-        self.expirationDatesByProductId = subscriberData.expirationDatesByProduct
-        self.purchaseDatesByProductId = subscriberData.purchaseDatesByProduct
+        self.expirationDatesByProductId = subscriberData.expirationDatesByProductId
+        self.purchaseDatesByProductId = subscriberData.purchaseDatesByProductId
     }
 
     // TODO after migration make this internal
@@ -228,12 +228,12 @@ import Foundation
         let originalApplicationVersion: String?
         let originalPurchaseDate: Date?
         let firstSeen: Date
-        let nonSubscriptions: [String: [[String: Any]]]
-        let entitlements: [String: Any]
+        let nonSubscriptionsByProductId: [String: [[String: Any]]]
+        let entitlementsData: [String: Any]
         let nonSubscriptionTransactions: [Transaction]
-        let allPurchases: [String: [String: Any]]
-        let expirationDatesByProduct: [String: Date?]
-        let purchaseDatesByProduct: [String: Date?]
+        let allTransactionsByProductId: [String: [String: Any]]
+        let expirationDatesByProductId: [String: Date?]
+        let purchaseDatesByProductId: [String: Date?]
 
         init?(subscriberData: [String: Any]) {
             let subscriptionTransactionsByProductId =
@@ -259,24 +259,24 @@ import Foundation
             self.managementURL = URL(string: subscriberData["management_url"] as? String ?? "")
 
             // Purchases and entitlements
-            self.nonSubscriptions =
+            self.nonSubscriptionsByProductId =
                 subscriberData["non_subscriptions"] as? [String: [[String: Any]]] ?? [:]
-            self.entitlements = subscriberData["entitlements"] as? [String: Any] ?? [:]
+            self.entitlementsData = subscriberData["entitlements"] as? [String: Any] ?? [:]
             self.nonSubscriptionTransactions = TransactionsFactory().nonSubscriptionTransactions(
-                withSubscriptionsData: nonSubscriptions,
+                withSubscriptionsData: nonSubscriptionsByProductId,
                 dateFormatter: dateFormatter)
 
             let latestNonSubscriptionTransactionsByProductId =
-                [String: [String: Any]](uniqueKeysWithValues: nonSubscriptions.map { productId, transactionsArray in
+                [String: [String: Any]](uniqueKeysWithValues: nonSubscriptionsByProductId.map { productId, transactionsArray in
                     (productId, transactionsArray.last ?? [:])
             })
 
-            self.allPurchases = latestNonSubscriptionTransactionsByProductId
+            self.allTransactionsByProductId = latestNonSubscriptionTransactionsByProductId
                 .merging(subscriptionTransactionsByProductId) { (current, _) in current }
 
-            self.expirationDatesByProduct =
+            self.expirationDatesByProductId =
                 parseExpirationDates(transactionsByProductId: subscriptionTransactionsByProductId)
-            self.purchaseDatesByProduct = parsePurchaseDates(transactionsByProductId: allPurchases)
+            self.purchaseDatesByProductId = parsePurchaseDates(transactionsByProductId: allTransactionsByProductId)
         }
     }
 
