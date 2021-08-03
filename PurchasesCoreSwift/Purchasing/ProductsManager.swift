@@ -49,6 +49,12 @@ import StoreKit
             request.start()
         }
     }
+
+    @objc public func cacheProduct(_ product: SKProduct) {
+        queue.async {
+            self.cachedProductsByIdentifier[product.productIdentifier] = product
+        }
+    }
 }
 
 extension ProductsManager: SKProductsRequestDelegate {

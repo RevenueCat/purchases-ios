@@ -604,11 +604,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         [RCLog purchase:[NSString stringWithFormat:RCStrings.purchase.purchasing_product, productIdentifier]];
     }
 
-    // TODO: add to ProductsManager and remove from here
-    @synchronized (self) {
-        self.productsByIdentifier[productIdentifier] = product;
-    }
-
+    [self.productsManager cacheProduct:product];
+    
     @synchronized (self) {
         self.presentedOfferingsByProductIdentifier[productIdentifier] = presentedOfferingIdentifier;
     }
@@ -1178,10 +1175,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (BOOL)storeKitWrapper:(nonnull RCStoreKitWrapper *)storeKitWrapper
   shouldAddStorePayment:(nonnull SKPayment *)payment
              forProduct:(nonnull SKProduct *)product {
-    // TODO: add to ProductsManager and remove from here
-    @synchronized(self) {
-        self.productsByIdentifier[product.productIdentifier] = product;
-    }
+    [self.productsManager cacheProduct:product];
 
     if ([self.delegate respondsToSelector:@selector(purchases:shouldPurchasePromoProduct:defermentBlock:)]) {
         [self.delegate purchases:self
