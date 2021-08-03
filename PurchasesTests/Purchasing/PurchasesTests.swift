@@ -30,6 +30,7 @@ class PurchasesTests: XCTestCase {
         mockOperationDispatcher = MockOperationDispatcher()
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockReceiptParser = MockReceiptParser()
+        receiptFetcher = MockReceiptFetcher(requestFetcher: requestFetcher)
         let systemInfoAttribution = try! MockSystemInfo(platformFlavor: "iOS",
                                                    platformFlavorVersion: "3.2.1",
                                                    finishTransactions: true)
@@ -226,7 +227,7 @@ class PurchasesTests: XCTestCase {
     }
 
 
-    let receiptFetcher = MockReceiptFetcher()
+    var receiptFetcher: MockReceiptFetcher!
     var requestFetcher: MockRequestFetcher!
     var mockProductsManager: MockProductsManager!
     let backend = MockBackend(httpClient: MockHTTPClient(systemInfo: try! MockSystemInfo(platformFlavor: nil,

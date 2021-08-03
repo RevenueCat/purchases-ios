@@ -18,7 +18,7 @@ import Nimble
 
 class PurchasesSubscriberAttributesTests: XCTestCase {
 
-    let mockReceiptFetcher = MockReceiptFetcher()
+    var mockReceiptFetcher: MockReceiptFetcher!
     let mockRequestFetcher = MockRequestFetcher()
     let mockProductsManager = MockProductsManager()
     let mockBackend = MockBackend()
@@ -86,6 +86,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                          deviceCache: mockDeviceCache,
                                                          backend: mockBackend,
                                                          systemInfo: systemInfo)
+        self.mockReceiptFetcher = MockReceiptFetcher(requestFetcher: mockRequestFetcher)
 
     }
 

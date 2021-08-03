@@ -218,7 +218,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   observerMode:(BOOL)observerMode
                 platformFlavor:(nullable NSString *)platformFlavor
          platformFlavorVersion:(nullable NSString *)platformFlavorVersion {
-    RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
+    RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
+    RCReceiptRefreshRequestFactory *receiptRefreshRequestFactory = [[RCReceiptRefreshRequestFactory alloc] init];
+    RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc]
+                                         initWithRequestFactory:receiptRefreshRequestFactory
+                                         operationDispatcher:operationDispatcher];
+    RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] initWithRequestFetcher:fetcher];
     NSError *error = nil;
     RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
                                                       platformFlavorVersion:platformFlavorVersion
@@ -227,7 +232,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     NSAssert(systemInfo, error.localizedDescription);
 
     RCETagManager *eTagManager = [[RCETagManager alloc] init];
-    RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
 
     RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey
                                                 systemInfo:systemInfo
@@ -271,9 +275,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
     RCProductsRequestFactory *productsRequestFactory = [[RCProductsRequestFactory alloc] init];
     RCProductsManager *productsManager = [[RCProductsManager alloc] initWithProductsRequestFactory:productsRequestFactory];
-    RCReceiptRefreshRequestFactory *receiptRefreshRequestFactory = [[RCReceiptRefreshRequestFactory alloc] init];
-    RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] initWithRequestFactory:receiptRefreshRequestFactory
-                                                                             operationDispatcher:operationDispatcher];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher

@@ -12,7 +12,7 @@ import Foundation
 @objc(RCReceiptFetcher) public class ReceiptFetcher: NSObject {
     private let requestFetcher: StoreKitRequestFetcher
 
-    public init(requestFetcher: StoreKitRequestFetcher) {
+    @objc public init(requestFetcher: StoreKitRequestFetcher) {
         self.requestFetcher = requestFetcher
     }
 
