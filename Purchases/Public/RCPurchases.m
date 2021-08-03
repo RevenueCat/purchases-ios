@@ -39,8 +39,6 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
 
-// TODO: should be deleted & replaced with ProductsManager
-@property (nonatomic) NSMutableDictionary<NSString *, SKProduct *> *productsByIdentifier;
 // TODO: move to new class PurchasesManager, possibly rename to a name that describes intent?
 @property (nonatomic) NSMutableDictionary<NSString *, NSString *> *presentedOfferingsByProductIdentifier;
 // TODO: move to new class PurchasesManager
@@ -336,8 +334,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
         self.notificationCenter = notificationCenter;
 
-        // TODO: should be deleted & replaced with ProductsManager
-        self.productsByIdentifier = [NSMutableDictionary new];
         self.presentedOfferingsByProductIdentifier = [NSMutableDictionary new];
         self.purchaseCompleteCallbacks = [NSMutableDictionary new];
 
@@ -518,29 +514,10 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
                 completionBlock:(RCReceiveProductsBlock)completion {
     // TODO: remove this block, and just trust that the ProductsManager's cache should work.
     NSMutableArray<SKProduct *> *products = [NSMutableArray array];
-    NSMutableSet<NSString *> *missingProductIdentifiers = [NSMutableSet set];
-    
-    @synchronized(self) {
-        for (NSString *identifier in productIdentifiers) {
-            SKProduct *product = self.productsByIdentifier[identifier];
-            if (product) {
-                [products addObject:product];
-            } else {
-                [missingProductIdentifiers addObject:identifier];
-            }
-        }
-    }
-
-    if (missingProductIdentifiers.count > 0) {
-        [self.productsManager productsWithIdentifiers:missingProductIdentifiers
+    NSSet<NSString *> *productIdentifiersSet = [[NSSet alloc] initWithArray:productIdentifiers];
+    if (productIdentifiersSet.count > 0) {
+        [self.productsManager productsWithIdentifiers:productIdentifiersSet
                                            completion:^(NSSet<SKProduct *> * _Nonnull newProducts) {
-            @synchronized (self) {
-                for (SKProduct *p in newProducts) {
-                    if (p.productIdentifier) {
-                        self.productsByIdentifier[p.productIdentifier] = p;
-                    }
-                }
-            }
             CALL_IF_SET_ON_MAIN_THREAD(completion, [products arrayByAddingObjectsFromArray:newProducts.allObjects]);
         }];
     } else {
