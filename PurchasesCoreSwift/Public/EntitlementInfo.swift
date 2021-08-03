@@ -245,22 +245,23 @@ import Foundation
     }
 
     public override var description: String {
-        var description = "<\(NSStringFromClass(type(of: self))): "
-        description += "identifier=\(self.identifier),\n"
-        description += "isActive=\(self.isActive),\n"
-        description += "willRenew=\(self.willRenew),\n"
-        description += "periodType=\(self.periodType),\n"
-        description += "latestPurchaseDate=\(String(describing: self.latestPurchaseDate)),\n"
-        description += "originalPurchaseDate=\(String(describing: self.originalPurchaseDate)),\n"
-        description += "expirationDate=\(String(describing: self.expirationDate)),\n"
-        description += "store=\(self.store),\n"
-        description += "productIdentifier=\(self.productIdentifier),\n"
-        description += "isSandbox=\(self.isSandbox),\n"
-        description += "unsubscribeDetectedAt=\(String(describing: self.unsubscribeDetectedAt)),\n"
-        description += "billingIssueDetectedAt=\(String(describing: self.billingIssueDetectedAt)),\n"
-        description += "ownershipType=\(self.ownershipType),\n"
-        description += ">"
-        return description
+        return """
+            <\(String(describing: EntitlementInfo.self)): "
+            identifier=\(self.identifier),
+            isActive=\(self.isActive),
+            willRenew=\(self.willRenew),
+            periodType=\(self.periodType),
+            latestPurchaseDate=\(String(describing: self.latestPurchaseDate)),
+            originalPurchaseDate=\(String(describing: self.originalPurchaseDate)),
+            expirationDate=\(String(describing: self.expirationDate)),
+            store=\(self.store),
+            productIdentifier=\(self.productIdentifier),
+            isSandbox=\(self.isSandbox),
+            unsubscribeDetectedAt=\(String(describing: self.unsubscribeDetectedAt)),
+            billingIssueDetectedAt=\(String(describing: self.billingIssueDetectedAt)),
+            ownershipType=\(self.ownershipType)
+            >
+            """
     }
 
     public override func isEqual(_ object: Any?) -> Bool {

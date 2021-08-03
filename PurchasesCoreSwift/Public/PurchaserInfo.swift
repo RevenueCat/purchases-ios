@@ -43,7 +43,7 @@ import Foundation
 
     /**
      Returns the fetch date of this Purchaser info.
-     @note Can be nil if was cached before we added this
+     Note: Can be `nil` if was cached before we added this
      */
     @objc public let requestDate: Date
 
@@ -53,7 +53,8 @@ import Foundation
     /// The original App User Id recorded for this user.
     @objc public let originalAppUserId: String
 
-    /** URL to manage the active subscription of the user.
+    /**
+     URL to manage the active subscription of the user.
      If this user has an active iOS subscription, this will point to the App Store,
      if the user has an active Play Store subscription it will point there.
      If there are no active subscriptions it will be null.
@@ -65,7 +66,7 @@ import Foundation
     Returns the purchase date for the version of the application when the user bought the app.
     Use this for grandfathering users when migrating to subscriptions.
 
-    @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
+    Note: This can be `nil`, see `RCPurchases restoreTransactionsForAppStore`
      */
     @objc public let originalPurchaseDate: Date?
 
@@ -75,7 +76,7 @@ import Foundation
     Use this for grandfathering users when migrating to subscriptions.
 
      
-     @note This can be nil, see -[RCPurchases restoreTransactionsForAppStore:]
+     Note: This can be nil, see -`RCPurchases restoreTransactionsForAppStore`
      */
     @objc public let originalApplicationVersion: String?
 
@@ -90,7 +91,7 @@ import Foundation
 
     private static var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.timeZone = TimeZone.init(secondsFromGMT: 0)
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
         formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter
@@ -98,7 +99,7 @@ import Foundation
 
     @objc public init?(data: [String: Any]) {
         guard let subscriberObject = data["subscriber"] as? [String: Any],
-              let subscriberData = SubscriberData.init(subscriberData: subscriberObject)
+              let subscriberData = SubscriberData(subscriberData: subscriberObject)
             else {
             return nil
         }
@@ -146,7 +147,7 @@ import Foundation
      /**
      Get the latest purchase or renewal date for a given product identifier. You should use Entitlements though!
     
-     @param productIdentifier Product identifier for subscription product
+     @param `productIdentifier` Product identifier for subscription product
     
      @return The purchase date for `productIdentifier`, `nil` if product never purchased
      */
@@ -157,7 +158,7 @@ import Foundation
     /**
      Get the expiration date for a given entitlement.
     
-     @param entitlementIdentifier The id of the entitlement.
+     @param` entitlementIdentifier` The id of the entitlement.
     
      @return The expiration date for the passed in `entitlement`, can be `nil`
      */
@@ -168,7 +169,7 @@ import Foundation
     /**
      Get the latest purchase or renewal date for a given entitlement identifier.
     
-     @param entitlementIdentifier Entitlement identifier for entitlement
+     @param `entitlementIdentifier` Entitlement identifier for entitlement
     
      @return The purchase date for `entitlement`, `nil` if product never purchased
      */
@@ -193,7 +194,7 @@ import Foundation
         var otherJson = other.jsonObject()
         otherJson.removeValue(forKey: "request_date")
 
-        return NSDictionary(dictionary: selfJson).isEqual(to: otherJson)
+        return NSDictionary(dictionary: selfJson).isEqual(NSDictionary(dictionary: otherJson))
     }
 
     public override var description: String {
@@ -205,19 +206,19 @@ import Foundation
 
         let allEntitlementsDescription = self.entitlements.all.mapValues { $0.description }
 
-        var description = "<\(NSStringFromClass(type(of: self))): "
-        description += "originalApplicationVersion=\(String(describing: self.originalApplicationVersion)),\n"
-        description += "latestExpirationDate=\(String(describing: self.latestExpirationDate)),\n"
-        description += "activeEntitlements=\(activeEntitlementsDescription),\n"
-        description += "activeSubscriptions=\(activeSubsDescription),\n"
-        description += "nonSubscriptionTransactions=\(self.nonSubscriptionTransactions),\n"
-        description += "requestDate=\(String(describing: self.requestDate)),\n"
-        description += "firstSeen=\(String(describing: self.firstSeen)),\n"
-        description += "originalAppUserId=\(self.originalAppUserId),\n"
-        description += "entitlements=\(allEntitlementsDescription),\n"
-        description += ">"
-
-        return description
+        return """
+            <\(String(describing: PurchaserInfo.self)):
+            originalApplicationVersion=\(self.originalApplicationVersion ?? ""),
+            latestExpirationDate=\(String(describing: self.latestExpirationDate)),
+            activeEntitlements=\(activeEntitlementsDescription),
+            activeSubscriptions=\(activeSubsDescription),
+            nonSubscriptionTransactions=\(self.nonSubscriptionTransactions),
+            requestDate=\(String(describing: self.requestDate)),
+            firstSeen=\(String(describing: self.firstSeen)),
+            originalAppUserId=\(self.originalAppUserId),
+            entitlements=\(allEntitlementsDescription)
+            >
+            """
     }
 
     private struct SubscriberData {
@@ -236,10 +237,10 @@ import Foundation
 
         init?(subscriberData: [String: Any]) {
             let subscriptionTransactionsByProductId =
-                subscriberData["subscriptions"] as? [String: [String: Any]] ?? [String: [String: Any]]()
+                subscriberData["subscriptions"] as? [String: [String: Any]] ?? [:]
 
             // Metadata
-            self.originalApplicationVersion = subscriberData["original_application_version"] as? String ?? nil
+            self.originalApplicationVersion = subscriberData["original_application_version"] as? String
 
             self.originalPurchaseDate =
                 dateFormatter.date(from: subscriberData["original_purchase_date"] as? String ?? "")
@@ -259,15 +260,15 @@ import Foundation
 
             // Purchases and entitlements
             self.nonSubscriptions =
-                subscriberData["non_subscriptions"] as? [String: [[String: Any]]] ?? [String: [[String: Any]]]()
-            self.entitlements = subscriberData["entitlements"] as? [String: Any] ?? [String: Any]()
+                subscriberData["non_subscriptions"] as? [String: [[String: Any]]] ?? [:]
+            self.entitlements = subscriberData["entitlements"] as? [String: Any] ?? [:]
             self.nonSubscriptionTransactions = TransactionsFactory().nonSubscriptionTransactions(
                 withSubscriptionsData: nonSubscriptions,
                 dateFormatter: dateFormatter)
 
             let latestNonSubscriptionTransactionsByProductId =
                 [String: [String: Any]](uniqueKeysWithValues: nonSubscriptions.map { productId, transactionsArray in
-                    (productId, transactionsArray.last ?? [String: Any]())
+                    (productId, transactionsArray.last ?? [:])
             })
 
             self.allPurchases = latestNonSubscriptionTransactionsByProductId
