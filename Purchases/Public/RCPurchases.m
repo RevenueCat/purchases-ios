@@ -370,26 +370,14 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     return self;
 }
 
-// todo: move somewhere else, maybe PlatformInfo? maybe extension? maybe SystemInfo?
-// see example of how to do it in SystemInfo.platformHeaderConstant
-#if TARGET_OS_IOS || TARGET_OS_TV
-#define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME UIApplicationDidBecomeActiveNotification
-#define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME UIApplicationWillResignActiveNotification
-#elif TARGET_OS_OSX
-#define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME NSApplicationDidBecomeActiveNotification
-#define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME NSApplicationWillResignActiveNotification
-#elif TARGET_OS_WATCH
-#define APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME NSExtensionHostDidBecomeActiveNotification
-#define APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME NSExtensionHostWillResignActiveNotification
-#endif
-
 - (void)subscribeToAppStateNotifications {
     [self.notificationCenter addObserver:self
                                 selector:@selector(applicationDidBecomeActive:)
-                                    name:APP_DID_BECOME_ACTIVE_NOTIFICATION_NAME object:nil];
+                                    name:RCSystemInfo.applicationDidBecomeActiveNotification
+                                  object:nil];
     [self.notificationCenter addObserver:self
                                 selector:@selector(applicationWillResignActive:)
-                                    name:APP_WILL_RESIGN_ACTIVE_NOTIFICATION_NAME
+                                    name:RCSystemInfo.applicationWillResignActiveNotification
                                   object:nil];
 }
 

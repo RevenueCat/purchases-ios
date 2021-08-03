@@ -35,13 +35,28 @@ class BackendTests: XCTestCase {
         var calls: [HTTPRequest] = []
 
         var shouldFinish = true
-
-        override func performRequest(_ httpMethod: String,
-                                     performSerially: Bool = false,
-                                     path: String,
-                                     requestBody: [String : Any]?,
-                                     headers: [String : String],
-                                     completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+        
+        override func performGETRequest(serially: Bool = false,
+                                        path: String,
+                                        headers: [String : String],
+                                        completionHandler: ((Int, [AnyHashable : Any]?, Error?) -> Void)?) {
+            performRequest("GET", performSerially: serially, path: path, requestBody: nil, headers: headers, completionHandler: completionHandler)
+        }
+        
+        override func performPOSTRequest(serially: Bool = false,
+                                         path: String,
+                                         requestBody: [String: Any],
+                                         headers: [String : String],
+                                         completionHandler: ((Int, [AnyHashable : Any]?, Error?) -> Void)?) {
+            performRequest("POST", performSerially: serially, path: path, requestBody: requestBody, headers: headers, completionHandler: completionHandler)
+        }
+        
+        private func performRequest(_ httpMethod: String,
+                                    performSerially: Bool,
+                                    path: String,
+                                    requestBody: [String : Any]?,
+                                    headers: [String : String],
+                                    completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
 

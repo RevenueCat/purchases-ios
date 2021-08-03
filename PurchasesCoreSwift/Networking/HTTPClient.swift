@@ -32,14 +32,27 @@ import Foundation
         self.operationDispatcher = operationDispatcher
     }
 
-    // TODO:(post-migration) remove and use only the private performRequest
-    @objc public func performRequest(_ httpMethod: String,
-                                     performSerially: Bool = false,
-                                     path: String,
-                                     requestBody: [String: Any]?,
-                                     headers authHeaders: [String: String],
-                                     completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
-        performRequest(httpMethod,
+    @objc(performGETRequestSerially:path:headers:completionHandler:)
+    public func performGETRequest(serially performSerially: Bool = false,
+                                  path: String,
+                                  headers authHeaders: [String: String],
+                                  completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+        performRequest("GET",
+                       performSerially: performSerially,
+                       path: path,
+                       requestBody: nil,
+                       authHeaders: authHeaders,
+                       retried: false,
+                       completionHandler: completionHandler)
+    }
+
+    @objc(performPOSTRequestSerially:path:requestBody:headers:completionHandler:)
+    public func performPOSTRequest(serially performSerially: Bool = false,
+                                   path: String,
+                                   requestBody: [String: Any],
+                                   headers authHeaders: [String: String],
+                                   completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+        performRequest("POST",
                        performSerially: performSerially,
                        path: path,
                        requestBody: requestBody,
@@ -125,17 +138,6 @@ private extension HTTPClient {
                                     authHeaders: [String: String],
                                     retried: Bool,
                                     completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
-        do {
-            try self.assertIsValidRequest(httpMethod: httpMethod, requestBody: maybeRequestBody)
-        } catch let error {
-            if let completionHandler = maybeCompletionHandler {
-                self.operationDispatcher.dispatchOnMainThread {
-                    completionHandler(-1, nil, error)
-                }
-                return
-            }
-        }
-
         let requestHeaders = self.defaultHeaders.merging(authHeaders, uniquingKeysWith: { (_, last) in last })
 
         let maybeURLRequest = self.createRequest(httpMethod: httpMethod,
@@ -274,7 +276,8 @@ private extension HTTPClient {
                                     performSerially: true,
                                     path: nextRequest.path,
                                     requestBody: nextRequest.requestBody,
-                                    headers: nextRequest.authHeaders,
+                                    authHeaders: nextRequest.authHeaders,
+                                    retried: false,
                                     completionHandler: nextRequest.completionHandler)
             }
         }
@@ -315,31 +318,5 @@ private extension HTTPClient {
             }
         }
         return urlRequest
-    }
-
-    func assertIsValidRequest(httpMethod: String, requestBody: [String: Any]?) throws {
-        if (httpMethod != "GET" && httpMethod != "POST") ||
-            (httpMethod == "GET" && requestBody != nil) ||
-            (httpMethod == "POST" && requestBody == nil) {
-            throw HTTPClientError.invalidNetworkCall(httpMethod, requestBody: requestBody)
-        }
-    }
-
-}
-
-enum HTTPClientError: Error {
-    case invalidNetworkCall(_ httpMethod: String, requestBody: [String: Any]?)
-}
-
-extension HTTPClientError: CustomStringConvertible {
-    public var description: String {
-        switch self {
-        case .invalidNetworkCall(let httpMethod, let requestBody):
-            if requestBody == nil {
-                return "invalid network call with method \(httpMethod) and empty body"
-            } else {
-                return "invalid network call with method \(httpMethod) and not an empty body"
-            }
-        }
     }
 }

@@ -56,6 +56,11 @@ Deployment checks
 fastlane ios build_tv_watch_mac
 ```
 tvOS, watchOS, and macOS build
+### ios build_mac
+```
+fastlane ios build_mac
+```
+macOS build
 ### ios carthage_archive
 ```
 fastlane ios carthage_archive

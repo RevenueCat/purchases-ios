@@ -193,20 +193,19 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
         body[@"presented_offering_identifier"] = offeringIdentifier;
     }
 
-    [self.httpClient performRequest:@"POST"
-                    performSerially:YES
-                               path:@"/receipts"
-                        requestBody:body
-                            headers:self.authHeaders
-                  completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      NSArray *callbacks = [self getCallbacksAndClearForKey:cacheKey];
-                      for (RCBackendPurchaserInfoResponseHandler callback in callbacks) {
-                          [self handlePurchaserInfoWithResponse:response
-                                                     statusCode:status
-                                                          error:error
-                                                     completion:callback];
-                      }
-                  }];
+    [self.httpClient performPOSTRequestSerially:YES
+                                           path:@"/receipts"
+                                    requestBody:body
+                                        headers:self.authHeaders
+                              completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
+                                  NSArray *callbacks = [self getCallbacksAndClearForKey:cacheKey];
+                                  for (RCBackendPurchaserInfoResponseHandler callback in callbacks) {
+                                      [self handlePurchaserInfoWithResponse:response
+                                                                 statusCode:status
+                                                                      error:error
+                                                                 completion:callback];
+                                  }
+                              }];
 }
 
 - (void)getSubscriberDataWithAppUserID:(NSString *)appUserID
@@ -218,19 +217,17 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
         return;
     }
 
-    [self.httpClient performRequest:@"GET"
-                    performSerially:YES
-                               path:path
-                        requestBody:nil
-                            headers:self.authHeaders
-                  completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
-                      for (RCBackendPurchaserInfoResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
-                          [self handlePurchaserInfoWithResponse:response
-                                                     statusCode:status
-                                                          error:error
-                                                     completion:completion];
-                      }
-                  }];
+    [self.httpClient performGETRequestSerially:YES
+                                          path:path
+                                       headers:self.authHeaders
+                             completionHandler:^(NSInteger status, NSDictionary *response, NSError *error) {
+                                  for (RCBackendPurchaserInfoResponseHandler completion in [self getCallbacksAndClearForKey:path]) {
+                                      [self handlePurchaserInfoWithResponse:response
+                                                                 statusCode:status
+                                                                      error:error
+                                                                 completion:completion];
+                                  }
+                             }];
 }
 
 - (void)getIntroEligibilityForAppUserID:(NSString *)appUserID
@@ -258,36 +255,35 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/intro_eligibility", escapedAppUserID];
-    [self.httpClient performRequest:@"POST"
-                    performSerially:YES
-                               path:path
-                        requestBody:@{
-                                      @"product_identifiers": productIdentifiers,
-                                      @"fetch_token": fetchToken
+    [self.httpClient performPOSTRequestSerially:YES
+                                           path:path
+                                    requestBody:@{
+                                            @"product_identifiers": productIdentifiers,
+                                            @"fetch_token": fetchToken
+                                        }
+                                        headers:self.authHeaders
+                              completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
+                                  if (statusCode >= RCHTTPStatusCodesRedirect || error != nil) {
+                                      response = @{};
+                                  }
+
+                                  NSMutableDictionary *eligibilities = [NSMutableDictionary new];
+                                  for (NSString *productID in productIdentifiers) {
+                                      NSNumber *e = response[productID];
+                                      RCIntroEligibilityStatus status;
+                                      if (e == nil || [e isKindOfClass:[NSNull class]]) {
+                                          status = RCIntroEligibilityStatusUnknown;
+                                      } else if ([e boolValue]) {
+                                          status = RCIntroEligibilityStatusEligible;
+                                      } else {
+                                          status = RCIntroEligibilityStatusIneligible;
                                       }
-                            headers:self.authHeaders
-                  completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
-                      if (statusCode >= RCHTTPStatusCodesRedirect || error != nil) {
-                          response = @{};
-                      }
 
-                      NSMutableDictionary *eligibilities = [NSMutableDictionary new];
-                      for (NSString *productID in productIdentifiers) {
-                          NSNumber *e = response[productID];
-                          RCIntroEligibilityStatus status;
-                          if (e == nil || [e isKindOfClass:[NSNull class]]) {
-                              status = RCIntroEligibilityStatusUnknown;
-                          } else if ([e boolValue]) {
-                              status = RCIntroEligibilityStatusEligible;
-                          } else {
-                              status = RCIntroEligibilityStatusIneligible;
-                          }
+                                      eligibilities[productID] = [[RCIntroEligibility alloc] initWithEligibilityStatus:status];
+                                  }
 
-                          eligibilities[productID] = [[RCIntroEligibility alloc] initWithEligibilityStatus:status];
-                      }
-
-                      completion([NSDictionary dictionaryWithDictionary:eligibilities]);
-    }];
+                                  completion([NSDictionary dictionaryWithDictionary:eligibilities]);
+                               }];
 }
 
 - (void)getOfferingsForAppUserID:(NSString *)appUserID
@@ -305,29 +301,27 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
         return;
     }
 
-    [self.httpClient performRequest:@"GET"
-                    performSerially:NO
-                               path:path
-                        requestBody:nil
-                            headers:self.authHeaders
-                  completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
-                      if (error == nil && statusCode < RCHTTPStatusCodesRedirect) {
-                          for (RCOfferingsResponseHandler callback in [self getCallbacksAndClearForKey:path]) {
-                              callback(response, nil);
-                          }
-                          return;
-                      }
+    [self.httpClient performGETRequestSerially:NO
+                                          path:path
+                                       headers:self.authHeaders
+                             completionHandler:^(NSInteger statusCode, NSDictionary * _Nullable response, NSError * _Nullable error) {
+                                  if (error == nil && statusCode < RCHTTPStatusCodesRedirect) {
+                                      for (RCOfferingsResponseHandler callback in [self getCallbacksAndClearForKey:path]) {
+                                          callback(response, nil);
+                                      }
+                                      return;
+                                  }
 
-                      if (error != nil) {
-                          error = [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error];
-                      } else if (statusCode > RCHTTPStatusCodesRedirect) {
-                          error = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
-                                                                      backendMessage:response[@"message"]];
-                      }
-                      for (RCOfferingsResponseHandler callback in [self getCallbacksAndClearForKey:path]) {
-                          callback(nil, error);
-                      }
-                  }];
+                                  if (error != nil) {
+                                      error = [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error];
+                                  } else if (statusCode > RCHTTPStatusCodesRedirect) {
+                                      error = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"]
+                                                                                  backendMessage:response[@"message"]];
+                                  }
+                                  for (RCOfferingsResponseHandler callback in [self getCallbacksAndClearForKey:path]) {
+                                      callback(nil, error);
+                                  }
+                              }];
 }
 
 - (void)postAttributionData:(NSDictionary *)data
@@ -337,17 +331,16 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attribution", escapedAppUserID];
 
-    [self.httpClient performRequest:@"POST"
-                    performSerially:YES
-                               path:path
-                        requestBody:@{
-                                      @"network": @(network),
-                                      @"data": data
-                                      }
-                            headers:self.authHeaders
-                  completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
-                      [self handleResponse:response statusCode:status error:error completion:completion];
-                  }];
+    [self.httpClient performPOSTRequestSerially:YES
+                                           path:path
+                                    requestBody:@{
+                                            @"network": @(network),
+                                            @"data": data
+                                        }
+                                        headers:self.authHeaders
+                              completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
+                                [self handleResponse:response statusCode:status error:error completion:completion];
+                              }];
 }
 
 - (void)logInWithCurrentAppUserID:(NSString *)currentAppUserID
@@ -358,20 +351,19 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSParameterAssert(currentAppUserID);
     NSParameterAssert(newAppUserID);
     NSString *path = @"/subscribers/identify";
-    [self.httpClient performRequest:@"POST"
-                    performSerially:YES
-                               path:path
-                        requestBody:@{
-                                   @"app_user_id": currentAppUserID,
-                                   @"new_app_user_id": newAppUserID
-                               }
-                            headers:self.authHeaders
-                  completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
-                      [self handleLoginWithResponse:response
-                                         statusCode:status
-                                              error:error
-                                         completion:completion];
-                  }];
+    [self.httpClient performPOSTRequestSerially:YES
+                                           path:path
+                                    requestBody:@{
+                                            @"app_user_id": currentAppUserID,
+                                            @"new_app_user_id": newAppUserID
+                                    }
+                                        headers:self.authHeaders
+                              completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
+                                  [self handleLoginWithResponse:response
+                                                     statusCode:status
+                                                          error:error
+                                                     completion:completion];
+                              }];
 }
 
 - (void)handleLoginWithResponse:(nullable NSDictionary *)response
@@ -412,16 +404,15 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                      completion:(nullable void (^)(NSError * _Nullable error))completion {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/alias", escapedAppUserID];
-    [self.httpClient performRequest:@"POST"
-                    performSerially:YES
-                               path:path
-                        requestBody:@{
-                                       @"new_app_user_id": newAppUserID
-                               }
-                            headers:self.authHeaders
-                  completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
-                      [self handleResponse:response statusCode:status error:error completion:completion];
-                  }];
+    [self.httpClient performPOSTRequestSerially:YES
+                                           path:path
+                                    requestBody:@{
+                                        @"new_app_user_id": newAppUserID
+                                    }
+                                        headers:self.authHeaders
+                              completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
+                                  [self handleResponse:response statusCode:status error:error completion:completion];
+                              }];
 }
 
 - (void)postOfferForSigning:(NSString *)offerIdentifier
@@ -431,53 +422,52 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                   appUserID:(NSString *)appUserID
                  completion:(RCOfferSigningResponseHandler)completion {
     NSString *fetchToken = [receiptData base64EncodedStringWithOptions:0];
-    [self.httpClient performRequest:@"POST"
-                    performSerially:YES
-                               path:@"/offers"
-                        requestBody:@{
-                                       @"app_user_id": appUserID,
-                                       @"fetch_token": fetchToken,
-                                       @"generate_offers": @[@{
-                                               @"offer_id": offerIdentifier,
-                                               @"product_id": productIdentifier,
-                                               @"subscription_group": subscriptionGroup
-                                       }],
-                               }
-                            headers:self.authHeaders
-                  completionHandler:^(NSInteger statusCode, NSDictionary *_Nullable response, NSError *_Nullable error) {
-                      if (error != nil) {
-                          completion(nil, nil, nil, nil, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
-                          return;
-                      }
+    [self.httpClient performPOSTRequestSerially:YES
+                                           path:@"/offers"
+                                    requestBody:@{
+                                           @"app_user_id": appUserID,
+                                           @"fetch_token": fetchToken,
+                                           @"generate_offers": @[@{
+                                                   @"offer_id": offerIdentifier,
+                                                   @"product_id": productIdentifier,
+                                                   @"subscription_group": subscriptionGroup
+                                           }],
+                                        }
+                                        headers:self.authHeaders
+                              completionHandler:^(NSInteger statusCode, NSDictionary *_Nullable response, NSError *_Nullable error) {
+                                  if (error != nil) {
+                                      completion(nil, nil, nil, nil, [RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
+                                      return;
+                                  }
 
-                      NSArray *offers = nil;
+                                  NSArray *offers = nil;
 
-                      if (statusCode < RCHTTPStatusCodesRedirect) {
-                          offers = response[@"offers"];
-                          if (offers == nil || offers.count == 0) {
-                              error = [RCPurchasesErrorUtils unexpectedBackendResponseError];
-                          } else {
-                            NSDictionary *offer = offers[0];
-                            if (RC_HAS_KEY(offer, @"signature_error")) {
-                                error = [RCPurchasesErrorUtils backendErrorWithBackendCode:offer[@"signature_error"][@"code"] backendMessage:offer[@"signature_error"][@"message"]];
-                            } else if (RC_HAS_KEY(offer, @"signature_data")) {
-                                NSDictionary *signatureData = offer[@"signature_data"];
-                                NSString *signature = signatureData[@"signature"];
-                                NSString *keyIdentifier = offer[@"key_id"];
-                                NSUUID *nonce = [[NSUUID alloc] initWithUUIDString:signatureData[@"nonce"]];
-                                NSNumber *timestamp = signatureData[@"timestamp"];
-                                completion(signature, keyIdentifier, nonce, timestamp, nil);
-                                return;
-                            } else {
-                                error = [RCPurchasesErrorUtils unexpectedBackendResponseError];
-                            }
-                          }
-                      } else {
-                          error = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"] backendMessage:response[@"message"]];
-                      }
+                                  if (statusCode < RCHTTPStatusCodesRedirect) {
+                                      offers = response[@"offers"];
+                                      if (offers == nil || offers.count == 0) {
+                                          error = [RCPurchasesErrorUtils unexpectedBackendResponseError];
+                                      } else {
+                                        NSDictionary *offer = offers[0];
+                                        if (RC_HAS_KEY(offer, @"signature_error")) {
+                                            error = [RCPurchasesErrorUtils backendErrorWithBackendCode:offer[@"signature_error"][@"code"] backendMessage:offer[@"signature_error"][@"message"]];
+                                        } else if (RC_HAS_KEY(offer, @"signature_data")) {
+                                            NSDictionary *signatureData = offer[@"signature_data"];
+                                            NSString *signature = signatureData[@"signature"];
+                                            NSString *keyIdentifier = offer[@"key_id"];
+                                            NSUUID *nonce = [[NSUUID alloc] initWithUUIDString:signatureData[@"nonce"]];
+                                            NSNumber *timestamp = signatureData[@"timestamp"];
+                                            completion(signature, keyIdentifier, nonce, timestamp, nil);
+                                            return;
+                                        } else {
+                                            error = [RCPurchasesErrorUtils unexpectedBackendResponseError];
+                                        }
+                                      }
+                                  } else {
+                                      error = [RCPurchasesErrorUtils backendErrorWithBackendCode:response[@"code"] backendMessage:response[@"message"]];
+                                  }
 
-                      completion(nil, nil, nil, nil, error);
-                  }];
+                                  completion(nil, nil, nil, nil, error);
+                              }];
 }
 
 - (void)postSubscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
@@ -490,20 +480,18 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attributes", escapedAppUserID];
     NSDictionary *attributesInBackendFormat = [self subscriberAttributesByKey:subscriberAttributes];
-    [self.httpClient performRequest:@"POST"
-                    performSerially:YES
-                               path:path
-                        requestBody:@{
-                                   @"attributes": attributesInBackendFormat
-                               }
-                            headers:self.authHeaders
-                  completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
-                      [self handleSubscriberAttributesResultWithStatusCode:status
-                                                                  response:response
-                                                                     error:error
-                                                                completion:completion];
-                  }];
-
+    [self.httpClient performPOSTRequestSerially:YES
+                                           path:path
+                                    requestBody:@{
+                                            @"attributes": attributesInBackendFormat
+                                        }
+                                        headers:self.authHeaders
+                              completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
+                                    [self handleSubscriberAttributesResultWithStatusCode:status
+                                                                                response:response
+                                                                                   error:error
+                                                                              completion:completion];
+                              }];
 }
 
 - (NSDictionary<NSString *, NSDictionary *> *)subscriberAttributesByKey:(RCSubscriberAttributeDict)subscriberAttributes {
