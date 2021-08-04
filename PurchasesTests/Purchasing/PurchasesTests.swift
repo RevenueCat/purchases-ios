@@ -533,6 +533,17 @@ class PurchasesTests: XCTestCase {
         expect(self.mockProductsManager.invokedCacheProductParameter) == product
     }
 
+    func testDoesntFetchProductInfoIfEmptyList() {
+        setupPurchases()
+        var completionCalled = false
+        mockProductsManager.resetMock()
+        self.purchases.products([]) { _ in
+            completionCalled = true
+        }
+        expect(completionCalled).toEventually(beTrue())
+        expect(self.mockProductsManager.invokedProducts) == false
+    }
+
     func testTransitioningToPurchasing() {
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")

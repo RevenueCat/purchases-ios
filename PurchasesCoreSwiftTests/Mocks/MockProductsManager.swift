@@ -47,4 +47,14 @@ class MockProductsManager: ProductsManager {
         invokedCacheProductParameter = product
     }
 
+    func resetMock() {
+        invokedProducts = false
+        invokedProductsCount = 0
+        invokedProductsParameters = nil
+        invokedProductsParametersList = []
+        stubbedProductsCompletionResult = nil
+        invokedCacheProduct = false
+        invokedCacheProductCount = 0
+        invokedCacheProductParameter = nil
+    }
 }
