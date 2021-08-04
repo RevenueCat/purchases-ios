@@ -6,8 +6,6 @@
 #include <Purchases/NSError+RCExtensions.h>
 #include <Purchases/RCAttributionFetcher.h>
 #include <Purchases/RCAttributionPoster.h>
-#include <Purchases/RCAttributionTypeFactory+Protected.h>
-#include <Purchases/RCAttributionTypeFactory.h>
 #include <Purchases/RCBackend.h>
 #include <Purchases/RCIdentityManager+Protected.h>
 #include <Purchases/RCIdentityManager.h>

@@ -8,13 +8,13 @@
 
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
-#import "RCAttributionTypeFactory.h"
-
-@import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class RCDeviceCache, RCIdentityManager, RCBackend, RCSystemInfo;
+// TODO: remove it when the attribution fetcher will be migrated
+typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *_Nullable, NSError *_Nullable);
+
+@class RCDeviceCache, RCIdentityManager, RCBackend, RCAttributionTypeFactory, RCSystemInfo;
 
 
 @interface RCAttributionFetcher : NSObject
