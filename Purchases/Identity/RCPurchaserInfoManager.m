@@ -4,7 +4,6 @@
 //
 
 #import "RCPurchaserInfoManager.h"
-#import "RCPurchaserInfo+Protected.h"
 #import "RCBackend.h"
 @import PurchasesCoreSwift;
 

@@ -9,8 +9,6 @@
 #include <Purchases/RCBackend.h>
 #include <Purchases/RCIdentityManager+Protected.h>
 #include <Purchases/RCIdentityManager.h>
-#include <Purchases/RCPurchaserInfo+Protected.h>
-#include <Purchases/RCPurchaserInfo.h>
 #include <Purchases/RCPurchaserInfoManager+Protected.h>
 #include <Purchases/RCPurchaserInfoManager.h>
 #include <Purchases/RCPurchases+Protected.h>

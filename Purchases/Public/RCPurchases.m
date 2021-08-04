@@ -12,7 +12,6 @@
 #import "RCAttributionPoster.h"
 #import "RCBackend.h"
 #import "RCIdentityManager.h"
-#import "RCPurchaserInfo+Protected.h"
 #import "RCPurchaserInfoManager.h"
 #import "RCPurchases+Protected.h"
 #import "RCPurchases+SubscriberAttributes.h"

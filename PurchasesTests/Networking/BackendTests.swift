@@ -88,8 +88,11 @@ class BackendTests: XCTestCase {
     let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
     let receiptData2 = "an awesomeer receipt".data(using: String.Encoding.utf8)!
 
-    let validSubscriberResponse = [
+    let validSubscriberResponse: [String: Any] = [
+        "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "",
             "subscriptions": [
                 "onemonth_freetrial": [
                     "expires_date": "2017-08-30T02:40:36Z"
@@ -555,7 +558,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
-        var purchaserInfo: Purchases.PurchaserInfo?
+        var purchaserInfo: PurchaserInfo?
 
         backend?.postReceiptData(receiptData,
                                  appUserID: userID,
@@ -599,7 +602,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
 
-        var subscriberInfo: Purchases.PurchaserInfo?
+        var subscriberInfo: PurchaserInfo?
 
         backend?.getSubscriberData(withAppUserID: userID, completion: { (newSubscriberInfo, newError) in
             subscriberInfo = newSubscriberInfo
@@ -615,7 +618,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/subscribers/" + encodedUserID, response: response)
         httpClient.mock(requestPath: "/subscribers/" + encodeableUserID, response: HTTPResponse(statusCode: 404, response: nil, error: nil))
 
-        var subscriberInfo: Purchases.PurchaserInfo?
+        var subscriberInfo: PurchaserInfo?
 
         backend?.getSubscriberData(withAppUserID: encodeableUserID, completion: { (newSubscriberInfo, newError) in
             subscriberInfo = newSubscriberInfo
@@ -1427,7 +1430,7 @@ class BackendTests: XCTestCase {
         var completionCalled = false
 
         backend?.logIn(withCurrentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
@@ -1458,11 +1461,11 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
         var receivedError: Error?
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedCreated: Bool?
 
         backend?.logIn(withCurrentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
@@ -1493,11 +1496,11 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
         var receivedError: Error?
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedCreated: Bool?
 
         backend?.logIn(withCurrentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
@@ -1528,11 +1531,11 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
         var receivedError: Error?
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedCreated: Bool?
 
         backend?.logIn(withCurrentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
@@ -1565,11 +1568,11 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
         var receivedError: Error?
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedCreated: Bool?
 
         backend?.logIn(withCurrentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
@@ -1597,11 +1600,11 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
         var receivedError: Error?
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedCreated: Bool?
 
         backend?.logIn(withCurrentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
@@ -1613,7 +1616,7 @@ class BackendTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
 
         expect(receivedCreated) == true
-        expect(receivedPurchaserInfo) == Purchases.PurchaserInfo(data: mockPurchaserInfoDict)
+        expect(receivedPurchaserInfo) == PurchaserInfo(data: mockPurchaserInfoDict)
         expect(receivedError).to(beNil())
     }
 
@@ -1627,11 +1630,11 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
         var receivedError: Error?
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedCreated: Bool?
 
         backend?.logIn(withCurrentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: Purchases.PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
@@ -1643,7 +1646,7 @@ class BackendTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
 
         expect(receivedCreated) == false
-        expect(receivedPurchaserInfo) == Purchases.PurchaserInfo(data: mockPurchaserInfoDict)
+        expect(receivedPurchaserInfo) == PurchaserInfo(data: mockPurchaserInfoDict)
         expect(receivedError).to(beNil())
     }
 }
@@ -1659,13 +1662,14 @@ private extension BackendTests {
         httpClient.mock(requestPath: requestPath, response: response)
         return requestPath
     }
-
+    
     var mockPurchaserInfoDict: [String: Any] { [
-            "subscriber": [
-                "subscriptions": [:],
-                "other_purchases": [:],
-                "original_application_version": NSNull()
-            ]
+        "request_date": "2019-08-16T10:30:42Z",
+        "subscriber": [
+            "subscriptions": [],
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "",
+            "other_purchases": [:],
         ]
-    }
+    ]}
 }

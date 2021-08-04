@@ -59,7 +59,7 @@ class MockPurchaserInfoManager: PurchaserInfoManager {
     var invokedPurchaserInfoParameters: (appUserID: String, completion: Purchases.ReceivePurchaserInfoBlock?)?
     var invokedPurchaserInfoParametersList = [(appUserID: String, completion: Purchases.ReceivePurchaserInfoBlock?)]()
 
-    var stubbedPurchaserInfo: Purchases.PurchaserInfo?
+    var stubbedPurchaserInfo: PurchaserInfo?
     var stubbedError: Error?
 
     override func purchaserInfo(withAppUserID appUserID: String,
@@ -75,9 +75,9 @@ class MockPurchaserInfoManager: PurchaserInfoManager {
     var invokedCachedPurchaserInfoCount = 0
     var invokedCachedPurchaserInfoParameters: (appUserID: String, Void)?
     var invokedCachedPurchaserInfoParametersList = [(appUserID: String, Void)]()
-    var stubbedCachedPurchaserInfoResult: Purchases.PurchaserInfo!
+    var stubbedCachedPurchaserInfoResult: PurchaserInfo!
 
-    override func cachedPurchaserInfo(forAppUserID appUserID: String) -> Purchases.PurchaserInfo {
+    override func cachedPurchaserInfo(forAppUserID appUserID: String) -> PurchaserInfo {
         invokedCachedPurchaserInfo = true
         invokedCachedPurchaserInfoCount += 1
         invokedCachedPurchaserInfoParameters = (appUserID, ())
@@ -87,10 +87,10 @@ class MockPurchaserInfoManager: PurchaserInfoManager {
 
     var invokedCachePurchaserInfo = false
     var invokedCachePurchaserInfoCount = 0
-    var invokedCachePurchaserInfoParameters: (info: Purchases.PurchaserInfo, appUserID: String)?
-    var invokedCachePurchaserInfoParametersList = [(info: Purchases.PurchaserInfo, appUserID: String)]()
+    var invokedCachePurchaserInfoParameters: (info: PurchaserInfo, appUserID: String)?
+    var invokedCachePurchaserInfoParametersList = [(info: PurchaserInfo, appUserID: String)]()
 
-    override func cachePurchaserInfo(_ info: Purchases.PurchaserInfo,
+    override func cachePurchaserInfo(_ info: PurchaserInfo,
                                      forAppUserID appUserID: String) {
         invokedCachePurchaserInfo = true
         invokedCachePurchaserInfoCount += 1

@@ -101,7 +101,8 @@ NS_SWIFT_NAME(Purchases)
 /**
  Configures an instance of the Purchases SDK with a specified API key. The instance will be set as a singleton. You should access the singleton instance using [RCPurchases sharedPurchases]
 
- @note Use this initializer if your app does not have an account system. `RCPurchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`. This also affects the behavior of `restoreTransactionsForAppStoreAccount`.
+ @note Use this initializer if your app does not have an account system. `RCPurchases` will generate a unique identifier for the current device
+ and persist it to `NSUserDefaults`. This also affects the behavior of `restoreTransactionsWithCompletionBlock`.
 
  @param APIKey The API Key generated for your app from https://app.revenuecat.com/
 

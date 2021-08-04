@@ -15,12 +15,14 @@ class IdentityManagerTests: XCTestCase {
     private let mockBackend = MockBackend()
     private let mockPurchaserInfoManager = MockPurchaserInfoManager()
 
-    let mockPurchaserInfo = Purchases.PurchaserInfo(data: [
+    let mockPurchaserInfo = PurchaserInfo(data: [
+        "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "",
             "subscriptions": [:],
-            "other_purchases": [:],
-            "original_application_version": NSNull()
-        ]])!
+            "other_purchases": [:]
+        ]])
 
     override func setUp() {
         super.setUp()
@@ -175,7 +177,7 @@ class IdentityManagerTests: XCTestCase {
     func testLogInFailsIfEmptyAppUserID() {
         var completionCalled: Bool = false
         var receivedCreated: Bool = false
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedError: Error?
         identityManager.logIn(withAppUserID: ""){ purchaserInfo, created, error in
             completionCalled = true
@@ -199,7 +201,7 @@ class IdentityManagerTests: XCTestCase {
         let newAppUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = nil
         var receivedCreated: Bool = false
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedError: NSError?
 
         self.mockBackend.stubbedLogInCompletionResult = (mockPurchaserInfo, true, nil)
@@ -242,7 +244,7 @@ class IdentityManagerTests: XCTestCase {
         let appUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = appUserID
         var receivedCreated: Bool = true
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedError: NSError?
 
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
@@ -273,7 +275,7 @@ class IdentityManagerTests: XCTestCase {
         let newAppUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = oldAppUserID
         var receivedCreated: Bool = false
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedError: NSError?
 
         self.mockBackend.stubbedLogInCompletionResult = (mockPurchaserInfo, true, nil)
@@ -301,7 +303,7 @@ class IdentityManagerTests: XCTestCase {
         let newAppUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = oldAppUserID
         var receivedCreated: Bool = false
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedError: NSError?
 
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,

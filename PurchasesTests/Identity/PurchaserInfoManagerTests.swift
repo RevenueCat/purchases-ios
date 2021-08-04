@@ -8,8 +8,11 @@ class PurchaserInfoManagerTests: XCTestCase {
     var mockOperationDispatcher = MockOperationDispatcher()
     var mockDeviceCache: MockDeviceCache!
     var mockSystemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
-    let mockPurchaserInfo = Purchases.PurchaserInfo(data: [
+    let mockPurchaserInfo = PurchaserInfo(data: [
+        "request_date": "2018-12-21T02:40:36Z",
         "subscriber": [
+            "original_app_user_id": "app_user_id",
+            "first_seen": "2019-06-17T16:05:33Z",
             "subscriptions": [:],
             "other_purchases": [:],
             "original_application_version": NSNull()
@@ -18,7 +21,7 @@ class PurchaserInfoManagerTests: XCTestCase {
     var purchaserInfoManager: PurchaserInfoManager!
 
     var purchaserInfoManagerDelegateCallCount = 0
-    var purchaserInfoManagerDelegateCallPurchaserInfo: Purchases.PurchaserInfo?
+    var purchaserInfoManagerDelegateCallPurchaserInfo: PurchaserInfo?
 
     override func setUp() {
         super.setUp()
@@ -62,7 +65,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         mockBackend.stubbedGetSubscriberDataError = mockError
 
         var completionCalled = false
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedError: Error?
         purchaserInfoManager.fetchAndCachePurchaserInfo(withAppUserID: "myUser",
                                                         isAppBackgrounded: false) { purchaserInfo, error in
@@ -96,7 +99,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         mockBackend.stubbedGetSubscriberDataPurchaserInfo = mockPurchaserInfo
 
         var completionCalled = false
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedError: Error?
         purchaserInfoManager.fetchAndCachePurchaserInfo(withAppUserID: "myUser",
                                                         isAppBackgrounded: false) { purchaserInfo, error in
@@ -181,8 +184,11 @@ class PurchaserInfoManagerTests: XCTestCase {
     }
 
     func testSendCachedPurchaserInfoIfAvailableForAppUserIDSendsIfNeverSent() {
-        let info = Purchases.PurchaserInfo(data: [
+        let info = PurchaserInfo(data: [
+        "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -199,8 +205,11 @@ class PurchaserInfoManagerTests: XCTestCase {
     }
 
     func testSendCachedPurchaserInfoIfAvailableForAppUserIDSendsIfDifferent() {
-        let oldInfo = Purchases.PurchaserInfo(data: [
+        let oldInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -213,8 +222,11 @@ class PurchaserInfoManagerTests: XCTestCase {
 
         purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(forAppUserID: appUserID)
 
-        let newInfo = Purchases.PurchaserInfo(data: [
+        let newInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
             ]]);
@@ -229,8 +241,11 @@ class PurchaserInfoManagerTests: XCTestCase {
     }
 
     func testSendCachedPurchaserInfoIfAvailableForAppUserIDSendsOnMainThread() {
-        let oldInfo = Purchases.PurchaserInfo(data: [
+        let oldInfo = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
@@ -250,7 +265,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: appUserID)
 
         var completionCalled = false
-        var receivedPurchaserInfo: Purchases.PurchaserInfo?
+        var receivedPurchaserInfo: PurchaserInfo?
         var receivedError: Error?
         purchaserInfoManager.purchaserInfo(withAppUserID: appUserID) { purchaserInfo, error in
             completionCalled = true
@@ -295,8 +310,11 @@ class PurchaserInfoManagerTests: XCTestCase {
 
     func testCachedPurchaserInfoParsesCorrectly() {
         let appUserID = "myUser"
-        let info = Purchases.PurchaserInfo(data: [
+        let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
             ]]);
@@ -318,8 +336,11 @@ class PurchaserInfoManagerTests: XCTestCase {
     }
 
     func testCachedPurchaserInfoReturnsNilIfNotAvailableForTheAppUserID() {
-        let info = Purchases.PurchaserInfo(data: [
+        let info = PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
             ]]);
@@ -343,10 +364,13 @@ class PurchaserInfoManagerTests: XCTestCase {
     }
 
     func testCachedPurchaserInfoReturnsNilIfDifferentSchema() {
-        let oldSchemaVersion = Int(Purchases.PurchaserInfo.currentSchemaVersion())! - 1
+        let oldSchemaVersion = Int(PurchaserInfo.currentSchemaVersion)! - 1
         let data: [String: Any] = [
+            "request_date": "2019-08-16T10:30:42Z",
             "schema_version": "\(oldSchemaVersion)",
             "subscriber": [
+                "original_app_user_id": "app_user_id",
+                "first_seen": "2019-06-17T16:05:33Z",
                 "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
                 "other_purchases": [:]
             ]
@@ -368,17 +392,15 @@ class PurchaserInfoManagerTests: XCTestCase {
         expect(self.mockDeviceCache.cachePurchaserInfoCount) == 1
     }
 
-    func testCachePurchaserDoesntStoreIfEmpty() {
-        purchaserInfoManager.cachePurchaserInfo(Purchases.PurchaserInfo(), forAppUserID: "myUser")
-        expect(self.mockDeviceCache.cachePurchaserInfoCount) == 0
-    }
-
     func testCachePurchaserDoesntStoreIfCantBeSerialized() {
         // infinity can't be cast into JSON, so we use it to force a parsing exception. See:
         // https://developer.apple.com/documentation/foundation/nsjsonserialization?language=objc
-        let invalidPurchaserInfo = Purchases.PurchaserInfo(data: [
+        let invalidPurchaserInfo = PurchaserInfo(data: [
             "something": Double.infinity,
+            "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
                 "subscriptions": [:],
                 "other_purchases": [:],
                 "original_application_version": NSNull()
@@ -414,7 +436,7 @@ class PurchaserInfoManagerTests: XCTestCase {
 
 extension PurchaserInfoManagerTests: PurchaserInfoManagerDelegate {
 
-    func purchaserInfoManagerDidReceiveUpdatedPurchaserInfo(_ purchaserInfo: Purchases.PurchaserInfo) {
+    func purchaserInfoManagerDidReceiveUpdatedPurchaserInfo(_ purchaserInfo: PurchaserInfo) {
         purchaserInfoManagerDelegateCallCount += 1
         purchaserInfoManagerDelegateCallPurchaserInfo = purchaserInfo
     }
