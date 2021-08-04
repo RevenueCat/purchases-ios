@@ -223,15 +223,15 @@ jobs:
       - run:
           name: Build docs
           command: bundle exec fastlane generate_docs
-      # - run:
-      #     name: Install awscli
-      #     command: sudo python3 -m pip install awscli
-      # - run:
-      #     name: Deploy to S3
-      #     command: aws s3 sync docs s3://purchases-docs/ios --delete --acl public-read
-      # - run:
-      #     name: Invalidate CloudFront caches
-      #     command: aws cloudfront create-invalidation --distribution-id EPTW7F3CB566V --paths "/*"
+      - run:
+          name: Install awscli
+          command: sudo python3 -m pip install awscli
+      - run:
+          name: Deploy to S3
+          command: aws s3 sync generated_docs s3://purchases-docs/ios --delete --acl public-read
+      - run:
+          name: Invalidate CloudFront caches
+          command: aws cloudfront create-invalidation --distribution-id EPTW7F3CB566V --paths "/*"
   
   make-release:
     macos:
@@ -349,20 +349,18 @@ workflows:
   version: 2
   build-test:
     jobs:
-      - docs-deploy
-  #     - lint
-  #     - runtest
-  #     - apitest
-  #     - buildTvWatchAndMacOS
-  #     - storekit_tests: *release-tags-and-branches
-  #     - deployment-checks: *release-branches
-  #     - integration-tests-cocoapods: *release-tags-and-branches
-  #     - integration-tests-swift-package-manager: *release-tags-and-branches
-  #     - integration-tests-carthage: *release-tags-and-branches
-  #     - integration-tests-xcode-direct-integration: *release-tags-and-branches
-  # deploy:
-  #   jobs:
-      # - make-release: *release-tags
-      # - prepare-next-version: *release-tags
-      # - docs-deploy: *release-tags
-
+      - lint
+      - runtest
+      - apitest
+      - buildTvWatchAndMacOS
+      - storekit_tests: *release-tags-and-branches
+      - deployment-checks: *release-branches
+      - integration-tests-cocoapods: *release-tags-and-branches
+      - integration-tests-swift-package-manager: *release-tags-and-branches
+      - integration-tests-carthage: *release-tags-and-branches
+      - integration-tests-xcode-direct-integration: *release-tags-and-branches
+  deploy:
+    jobs:
+      - make-release: *release-tags
+      - prepare-next-version: *release-tags
+      - docs-deploy: *release-tags
