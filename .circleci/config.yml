@@ -218,6 +218,9 @@ jobs:
       - checkout
       - install-dependencies
       - run:
+          name: Install SourceKitten
+          command: brew install sourcekitten
+      - run:
           name: Build docs
           command: bundle exec fastlane generate_docs
       - run:
