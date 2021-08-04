@@ -87,6 +87,10 @@ import Foundation
 
     private let subscriptionTransactionsByProductId: [String: [String: Any]]
 
+    private let originalData: [String: Any]
+
+    private let dateFormatter: DateFormatter
+
     private lazy var expirationDatesByProductId: [String: Date?] = {
         return parseExpirationDates(transactionsByProductId: subscriptionTransactionsByProductId)
     }()
@@ -94,10 +98,6 @@ import Foundation
     private lazy var purchaseDatesByProductId: [String: Date?] = {
         return parseExpirationDates(transactionsByProductId: allPurchases)
     }()
-
-    private let originalData: [String: Any]
-
-    private let dateFormatter: DateFormatter
 
     @objc public convenience init?(data: [String: Any]) {
         self.init(data: data, dateFormatter: .iso8601SecondsDateFormatter)
@@ -183,7 +183,7 @@ import Foundation
         self.schemaVersion = data["schema_version"] as? String
 
         guard let requestDateString = data["request_date"] as? String,
-              let formattedRequestDate = dateFormatter.date(fromString: requestDateString) else {
+              let formattedRequestDate = dateFormatter.date(from: requestDateString) else {
             return nil
         }
         self.requestDate = formattedRequestDate
@@ -216,6 +216,7 @@ import Foundation
     }
 
     private struct SubscriberData {
+
         let subscriptionTransactionsByProductId: [String: [String: Any]]
         let originalAppUserId: String
         let managementURL: URL?
@@ -225,11 +226,12 @@ import Foundation
         let nonSubscriptionsByProductId: [String: [[String: Any]]]
         let entitlementsData: [String: Any]
         let nonSubscriptionTransactions: [Transaction]
+        let allTransactionsByProductId: [String: [String: Any]]
         let allPurchases: [String: [String: Any]]
 
         init?(subscriberData: [String: Any], dateFormatter: DateFormatter) {
             self.subscriptionTransactionsByProductId =
-                subscriberData["subscriptions"] as? [String: [String: Any]] ?? [String: [String: Any]]()
+                subscriberData["subscriptions"] as? [String: [String: Any]] ?? [:]
 
             // Metadata
             self.originalApplicationVersion = subscriberData["original_application_version"] as? String
@@ -265,6 +267,9 @@ import Foundation
 
             self.allTransactionsByProductId = latestNonSubscriptionTransactionsByProductId
                 .merging(subscriptionTransactionsByProductId) { (current, _) in current }
+
+            self.allPurchases = latestNonSubscriptionTransactionsByProductId
+                            .merging(subscriptionTransactionsByProductId) { (current, _) in current }
         }
     }
 
@@ -289,7 +294,7 @@ private extension PurchaserInfo {
         return parseDatesIn(transactionsByProductId: transactionsByProductId, dateLabel: "purchase_date")
     }
 
-    class func parseDatesIn(transactionsByProductId: [String: [String: Any]], dateLabel: String) -> [String: Date?] {
+    func parseDatesIn(transactionsByProductId: [String: [String: Any]], dateLabel: String) -> [String: Date?] {
         // mapValues will the key-value pair in the dictionary for nil values, as desired
         return transactionsByProductId.mapValues { maybeTransaction in
             if let transactionFieldsByKey = maybeTransaction as? [String: String],

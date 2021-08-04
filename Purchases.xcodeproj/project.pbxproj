@@ -641,6 +641,7 @@
 				2CD72947268A828400BFC976 /* Locale+Extensions.swift */,
 				B35F9E0826B4BEED00095C3F /* String+Extensions.swift */,
 				37E353FD94A8FD5CD8796530 /* DateFormatter+Extensions.swift */,
+				B35F9E0826B4BEED00095C3F /* String+Extensions.swift */,
 			);
 			path = FoundationExtensions;
 			sourceTree = "<group>";
