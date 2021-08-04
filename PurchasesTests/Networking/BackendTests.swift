@@ -19,13 +19,13 @@ class BackendTests: XCTestCase {
         let HTTPMethod: String
         let serially: Bool
         let path: String
-        let body: [AnyHashable : Any]?
+        let body: [String : Any]?
         let headers: [String: String]
     }
 
     struct HTTPResponse {
         let statusCode: NSInteger
-        let response: [AnyHashable : Any]?
+        let response: [String : Any]?
         let error: Error?
     }
 
@@ -35,20 +35,30 @@ class BackendTests: XCTestCase {
         var calls: [HTTPRequest] = []
 
         var shouldFinish = true
-        
-        override func performGETRequest(serially: Bool = false,
+
+        override func performGETRequest(serially performSerially: Bool = false,
                                         path: String,
-                                        headers: [String : String],
-                                        completionHandler: ((Int, [AnyHashable : Any]?, Error?) -> Void)?) {
-            performRequest("GET", performSerially: serially, path: path, requestBody: nil, headers: headers, completionHandler: completionHandler)
+                                        headers authHeaders: [String : String],
+                                        completionHandler: ((Int, [String : Any]?, Error?) -> Void)?) {
+            performRequest("GET",
+                           performSerially: performSerially,
+                           path: path,
+                           requestBody: nil,
+                           headers: authHeaders,
+                           completionHandler: completionHandler)
         }
-        
-        override func performPOSTRequest(serially: Bool = false,
+
+        override func performPOSTRequest(serially performSerially: Bool = false,
                                          path: String,
-                                         requestBody: [String: Any],
-                                         headers: [String : String],
-                                         completionHandler: ((Int, [AnyHashable : Any]?, Error?) -> Void)?) {
-            performRequest("POST", performSerially: serially, path: path, requestBody: requestBody, headers: headers, completionHandler: completionHandler)
+                                         requestBody: [String : Any],
+                                         headers authHeaders: [String : String],
+                                         completionHandler: ((Int, [String : Any]?, Error?) -> Void)?) {
+            performRequest("POST",
+                           performSerially: performSerially,
+                           path: path,
+                           requestBody: requestBody,
+                           headers: authHeaders,
+                           completionHandler: completionHandler)
         }
         
         private func performRequest(_ httpMethod: String,
@@ -56,7 +66,7 @@ class BackendTests: XCTestCase {
                                     path: String,
                                     requestBody: [String : Any]?,
                                     headers: [String : String],
-                                    completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+                                    completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
             assert(mocks[path] != nil, "Path " + path + " not mocked")
             let response = mocks[path]!
 
@@ -106,7 +116,7 @@ class BackendTests: XCTestCase {
         "message": "something is bad up in the cloud"
     ]
 
-    var backend: RCBackend?
+    var backend: Backend?
 
     override func setUp() {
         let eTagManager = MockETagManager(userDefaults: MockUserDefaults())
@@ -114,7 +124,7 @@ class BackendTests: XCTestCase {
         httpClient = MockHTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     operationDispatcher: operationDispatcher)
-        backend = RCBackend.init(httpClient: httpClient,
+        backend = Backend.init(httpClient: httpClient,
                                  apiKey: apiKey)
     }
 
@@ -127,7 +137,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -169,7 +179,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -180,7 +190,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -204,7 +214,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -215,7 +225,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: !isRestore,
                                  productInfo: nil,
@@ -239,7 +249,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -250,7 +260,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData2,
+        backend?.postReceiptData(data: receiptData2,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -274,7 +284,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -286,7 +296,7 @@ class BackendTests: XCTestCase {
         })
         let productInfo: ProductInfo = .createMockProductInfo(currencyCode: "USD")
 
-        backend?.postReceiptData(receiptData2,
+        backend?.postReceiptData(data: receiptData2,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: productInfo,
@@ -310,7 +320,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -321,7 +331,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        backend?.postReceiptData(receiptData2,
+        backend?.postReceiptData(data: receiptData2,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -340,10 +350,10 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
         
-        backend?.getSubscriberData(withAppUserID: userID, completion: { (newPurchaserInfo, newError) in
+        backend?.getSubscriberData(appUserID: userID, completion: { (newPurchaserInfo, newError) in
         })
         
-        backend?.getSubscriberData(withAppUserID: userID, completion: { (newPurchaserInfo, newError) in
+        backend?.getSubscriberData(appUserID: userID, completion: { (newPurchaserInfo, newError) in
         })
         
         expect(self.httpClient.calls.count).to(equal(1))
@@ -355,10 +365,10 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
         httpClient.mock(requestPath: "/subscribers/" + userID2, response: response)
         
-        backend?.getSubscriberData(withAppUserID: userID, completion: { (newPurchaserInfo, newError) in
+        backend?.getSubscriberData(appUserID: userID, completion: { (newPurchaserInfo, newError) in
         })
         
-        backend?.getSubscriberData(withAppUserID: userID2, completion: { (newPurchaserInfo, newError) in
+        backend?.getSubscriberData(appUserID: userID2, completion: { (newPurchaserInfo, newError) in
         })
         
         expect(self.httpClient.calls.count).to(equal(2))
@@ -384,7 +394,7 @@ class BackendTests: XCTestCase {
                                                                 price: price,
                                                                 subscriptionGroup: group)
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: productInfo,
@@ -433,7 +443,7 @@ class BackendTests: XCTestCase {
         var completionCalled = false
 
         let productInfo: ProductInfo = .createMockProductInfo()
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: productInfo,
@@ -456,7 +466,7 @@ class BackendTests: XCTestCase {
 
         let productInfo: ProductInfo = .createMockProductInfo(paymentMode: paymentMode)
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: productInfo,
@@ -507,7 +517,7 @@ class BackendTests: XCTestCase {
 
         var error: NSError?
         var underlyingError: NSError?
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: nil,
@@ -534,7 +544,7 @@ class BackendTests: XCTestCase {
         var error: Error?
         var underlyingError: Error?
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: nil,
@@ -560,7 +570,7 @@ class BackendTests: XCTestCase {
 
         var purchaserInfo: PurchaserInfo?
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: nil,
@@ -582,7 +592,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
 
-        backend?.getSubscriberData(withAppUserID: userID, completion: { (newPurchaserInfo, newError) in
+        backend?.getSubscriberData(appUserID: userID, completion: { (newPurchaserInfo, newError) in
         })
 
         expect(self.httpClient.calls.count).to(equal(1))
@@ -604,7 +614,7 @@ class BackendTests: XCTestCase {
 
         var subscriberInfo: PurchaserInfo?
 
-        backend?.getSubscriberData(withAppUserID: userID, completion: { (newSubscriberInfo, newError) in
+        backend?.getSubscriberData(appUserID: userID, completion: { (newSubscriberInfo, newError) in
             subscriberInfo = newSubscriberInfo
         })
 
@@ -620,7 +630,7 @@ class BackendTests: XCTestCase {
 
         var subscriberInfo: PurchaserInfo?
 
-        backend?.getSubscriberData(withAppUserID: encodeableUserID, completion: { (newSubscriberInfo, newError) in
+        backend?.getSubscriberData(appUserID: encodeableUserID, completion: { (newSubscriberInfo, newError) in
             subscriberInfo = newSubscriberInfo
         })
 
@@ -633,7 +643,7 @@ class BackendTests: XCTestCase {
 
         var error: NSError?
 
-        backend?.getSubscriberData(withAppUserID: userID, completion: { (newSubscriberInfo, newError) in
+        backend?.getSubscriberData(appUserID: userID, completion: { (newSubscriberInfo, newError) in
             error = newError as NSError?
         })
 
@@ -651,7 +661,7 @@ class BackendTests: XCTestCase {
 
         var error: NSError?
 
-        backend?.getSubscriberData(withAppUserID: userID, completion: { (newSubscriberInfo, newError) in
+        backend?.getSubscriberData(appUserID: userID, completion: { (newSubscriberInfo, newError) in
             error = newError as NSError?
         })
 
@@ -661,7 +671,7 @@ class BackendTests: XCTestCase {
     }
 
     func testEmptyEligibilityCheckDoesNothing() {
-        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: [], completion: { (eligibilities) in
+        backend?.getIntroEligibility(appUserID: userID, receiptData: Data(), productIdentifiers: [], completion: { (eligibilities) in
 
         })
         expect(self.httpClient.calls.count).to(equal(0))
@@ -675,7 +685,7 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc", "productd"]
-        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(1...3), productIdentifiers: products, completion: {(productEligibility) in
+        backend?.getIntroEligibility(appUserID: userID, receiptData: Data(1...3), productIdentifiers: products, completion: {(productEligibility) in
             eligibility = productEligibility
         })
 
@@ -709,7 +719,7 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligibility) in
+        backend?.getIntroEligibility(appUserID: userID, receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligibility) in
             eligibility = productEligibility
         })
 
@@ -727,7 +737,7 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligbility) in
+        backend?.getIntroEligibility(appUserID: userID, receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligbility) in
             eligibility = productEligbility
         })
 
@@ -742,14 +752,14 @@ class BackendTests: XCTestCase {
     ]
     
     func testGetOfferingsCallsHTTPMethod() {
-        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [AnyHashable : Any], error: nil)
+        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [String : Any], error: nil)
         let path = "/subscribers/" + userID + "/offerings"
         httpClient.mock(requestPath: path, response: response)
 
         var offeringsData: [String : Any]?
 
-        backend?.getOfferingsForAppUserID(userID, completion: { (responseFromBackend, error) in
-            offeringsData = (responseFromBackend as! [String : Any])
+        backend?.getOfferings(appUserID: userID, completion: { (responseFromBackend, error) in
+            offeringsData = responseFromBackend
         })
 
         expect(self.httpClient.calls.count).toNot(equal(0))
@@ -757,24 +767,23 @@ class BackendTests: XCTestCase {
     }
     
     func testGetOfferingsCachesForSameUserID() {
-        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [AnyHashable : Any], error: nil)
+        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [String : Any], error: nil)
         let path = "/subscribers/" + userID + "/offerings"
         httpClient.mock(requestPath: path, response: response)
-
-        backend?.getOfferingsForAppUserID(userID, completion: { (newOfferings, error) in })
-        backend?.getOfferingsForAppUserID(userID, completion: { (newOfferings, error) in })
+        backend?.getOfferings(appUserID: userID, completion: { (newOfferings, error) in })
+        backend?.getOfferings(appUserID: userID, completion: { (newOfferings, error) in })
 
         expect(self.httpClient.calls.count).to(equal(1))
     }
 
     func testGetEntitlementsDoesntCacheForMultipleUserID() {
-        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [AnyHashable : Any], error: nil)
+        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [String : Any], error: nil)
         let userID2 = "user_id_2"
         httpClient.mock(requestPath: "/subscribers/" + userID + "/offerings", response: response)
         httpClient.mock(requestPath: "/subscribers/" + userID2 + "/offerings", response: response)
 
-        backend?.getOfferingsForAppUserID(userID, completion: { (newOfferings, error) in })
-        backend?.getOfferingsForAppUserID(userID2, completion: { (newOfferings, error) in })
+        backend?.getOfferings(appUserID: userID, completion: { (newOfferings, error) in })
+        backend?.getOfferings(appUserID: userID2, completion: { (newOfferings, error) in })
 
         expect(self.httpClient.calls.count).to(equal(2))
     }
@@ -808,8 +817,7 @@ class BackendTests: XCTestCase {
         var offeringA: [String: Any]?
         var packageA: [String: String]?
         var packageB: [String: String]?
-        backend?.getOfferingsForAppUserID(userID, completion: { (response, error) in
-            responseReceived = response as? [String : Any]
+        backend?.getOfferings(appUserID: userID, completion: { (responseReceived, error) in
             offerings = responseReceived?["offerings"] as? [[String : Any]]
             offeringA = offerings?[0]
             let packages = offeringA?["packages"] as? [[String: String]]
@@ -834,7 +842,7 @@ class BackendTests: XCTestCase {
 
         var offerings: [String: Any]?
 
-        backend?.getOfferingsForAppUserID(userID, completion: { (newOfferings, error) in
+        backend?.getOfferings(appUserID: userID, completion: { (newOfferings, error) in
             offerings = newOfferings as? [String : Any]
         })
 
@@ -846,9 +854,9 @@ class BackendTests: XCTestCase {
         let path = "/subscribers/" + userID + "/attribution"
         httpClient.mock(requestPath: path, response: response)
 
-        let data = ["a" : "b", "c" : "d"];
+        let data: [String: AnyObject] = ["a" : "b" as NSString, "c" : "d" as NSString];
 
-        backend?.postAttributionData(data, from: AttributionNetwork.appleSearchAds, forAppUserID: userID)
+        backend?.post(attributionData:data, network: AttributionNetwork.appleSearchAds, appUserID: userID, completion: nil)
 
         expect(self.httpClient.calls.count).to(equal(1))
         if (self.httpClient.calls.count == 0) {
@@ -859,7 +867,7 @@ class BackendTests: XCTestCase {
         expect(call.body?.keys).to(contain("data"))
         expect(call.body?.keys).to(contain("network"))
 
-        let postedData = call.body?["data"] as! [ String : String ];
+        let postedData = call.body?["data"] as! [String: AnyObject];
         expect(postedData.keys).to(equal(data.keys))
     }
 
@@ -869,7 +877,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
 
-        backend?.createAlias(forAppUserID: userID, withNewAppUserID: "new_alias", completion: { (error) in
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: { (error) in
             completionCalled = true
         })
 
@@ -894,7 +902,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: true,
                                  productInfo: nil,
@@ -919,7 +927,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/subscribers/"+userID+"/alias", response: response)
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
-        backend?.createAlias(forAppUserID: userID, withNewAppUserID: "new", completion: { error in
+        backend?.createAlias(appUserID: userID, newAppUserID: "new", completion: { error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         })
@@ -939,7 +947,7 @@ class BackendTests: XCTestCase {
         var receivedError: NSError?
         var receivedUnderlyingError: NSError?
 
-        backend?.createAlias(forAppUserID: userID, withNewAppUserID: "new", completion: { error in
+        backend?.createAlias(appUserID: userID, newAppUserID: "new", completion: { error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         })
@@ -955,7 +963,7 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroEligibility(forAppUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligibility) in
+        backend?.getIntroEligibility(appUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligibility) in
             eligibility = productEligibility
         })
 
@@ -972,7 +980,7 @@ class BackendTests: XCTestCase {
 
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
-        backend?.getOfferingsForAppUserID(userID, completion: { (offeringsData, error) in
+        backend?.getOfferings(appUserID: userID, completion: { (offeringsData, error) in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         })
@@ -992,7 +1000,7 @@ class BackendTests: XCTestCase {
 
         var receivedError: NSError?
         var receivedUnderlyingError: NSError?
-        backend?.getOfferingsForAppUserID(userID, completion: { (offeringsData, error) in
+        backend?.getOfferings(appUserID: userID, completion: { (offeringsData, error) in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         })
@@ -1007,7 +1015,7 @@ class BackendTests: XCTestCase {
     func testGetOfferingsSkipsBackendCallIfAppUserIDIsEmpty() {
         var completionCalled = false
 
-        backend?.getOfferingsForAppUserID("", completion: { (offerings, error) in
+        backend?.getOfferings(appUserID: "", completion: { (offerings, error) in
             completionCalled = true
         })
 
@@ -1019,7 +1027,7 @@ class BackendTests: XCTestCase {
         var completionCalled = false
         var receivedError: Error? = nil
 
-        backend?.getOfferingsForAppUserID("", completion: { (offerings, error) in
+        backend?.getOfferings(appUserID: "", completion: { (offerings, error) in
             completionCalled = true
             receivedError = error
         })
@@ -1038,7 +1046,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -1051,7 +1059,7 @@ class BackendTests: XCTestCase {
 
         let discount = PromotionalOffer(offerIdentifier: "offerid", price: 12, paymentMode: .payAsYouGo)
         let productInfo: ProductInfo = .createMockProductInfo(discounts: [discount])
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: productInfo,
@@ -1090,7 +1098,7 @@ class BackendTests: XCTestCase {
                                                                 subscriptionGroup: group,
                                                                 discounts: [discount])
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: productInfo,
@@ -1171,9 +1179,8 @@ class BackendTests: XCTestCase {
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
-        backend?.postOffer(
-                forSigning: offerIdentifier,
-                withProductIdentifier: productIdentifier,
+        backend?.postOfferForSigning(offerIdentifier,
+                productIdentifier: productIdentifier,
                 subscriptionGroup: group,
                 receiptData: discountData,
                 appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
@@ -1220,12 +1227,11 @@ class BackendTests: XCTestCase {
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
         
-        backend?.postOffer(
-                forSigning: offerIdentifier,
-                withProductIdentifier: productIdentifier,
-                subscriptionGroup: group,
-                receiptData: discountData,
-                appUserID: userID) { _, _, _, _, error in
+        backend?.postOfferForSigning(offerIdentifier,
+                                     productIdentifier: productIdentifier,
+                                     subscriptionGroup: group,
+                                     receiptData: discountData,
+                                     appUserID: userID) { _, _, _, _, error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         }
@@ -1254,12 +1260,11 @@ class BackendTests: XCTestCase {
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
 
-        backend?.postOffer(
-                forSigning: offerIdentifier,
-                withProductIdentifier: productIdentifier,
-                subscriptionGroup: group,
-                receiptData: discountData,
-                appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
+        backend?.postOfferForSigning(offerIdentifier,
+                                     productIdentifier: productIdentifier,
+                                     subscriptionGroup: group,
+                                     receiptData: discountData,
+                                     appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         }
@@ -1297,14 +1302,13 @@ class BackendTests: XCTestCase {
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
         
-        backend?.postOffer(
-            forSigning: offerIdentifier,
-            withProductIdentifier: productIdentifier,
-            subscriptionGroup: group,
-            receiptData: discountData,
-            appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
-                receivedError = error as NSError?
-                receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
+        backend?.postOfferForSigning(offerIdentifier,
+                                     productIdentifier: productIdentifier,
+                                     subscriptionGroup: group,
+                                     receiptData: discountData,
+                                     appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
+            receivedError = error as NSError?
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         }
         
         expect(receivedError).toEventuallyNot(beNil())
@@ -1340,12 +1344,11 @@ class BackendTests: XCTestCase {
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
 
-        backend?.postOffer(
-                forSigning: offerIdentifier,
-                withProductIdentifier: productIdentifier,
-                subscriptionGroup: group,
-                receiptData: discountData,
-                appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
+        backend?.postOfferForSigning(offerIdentifier,
+                                     productIdentifier: productIdentifier,
+                                     subscriptionGroup: group,
+                                     receiptData: discountData,
+                                     appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         }
@@ -1367,14 +1370,13 @@ class BackendTests: XCTestCase {
 
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
-        backend?.postOffer(
-                forSigning: offerIdentifier,
-                withProductIdentifier: productIdentifier,
-                subscriptionGroup: group,
-                receiptData: discountData,
-                appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
-                    receivedError = error as NSError?
-                    receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
+        backend?.postOfferForSigning(offerIdentifier,
+                                     productIdentifier: productIdentifier,
+                                     subscriptionGroup: group,
+                                     receiptData: discountData,
+                                     appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
+            receivedError = error as NSError?
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         }
 
         expect(receivedError).toEventuallyNot(beNil())
@@ -1393,7 +1395,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -1406,7 +1408,7 @@ class BackendTests: XCTestCase {
 
         _ = PromotionalOffer(offerIdentifier: "offerid", price: 12, paymentMode: .payAsYouGo)
         
-        backend?.postReceiptData(receiptData,
+        backend?.postReceiptData(data: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -1655,7 +1657,7 @@ private extension BackendTests {
 
     func mockLoginRequest(appUserID: String,
                           statusCode: Int = 200,
-                          response: [AnyHashable: Any]? = [:],
+                          response: [String: Any]? = [:],
                           error: Error? = nil) -> String {
         let response = HTTPResponse(statusCode: statusCode, response: response, error: error)
         let requestPath = ("/subscribers/identify")

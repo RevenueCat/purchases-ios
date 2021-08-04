@@ -4,7 +4,6 @@
 //
 
 #import "RCPurchaserInfoManager.h"
-#import "RCBackend.h"
 @import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -93,7 +92,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.deviceCache setPurchaserInfoCacheTimestampToNowForAppUserID:appUserID];
     [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:isAppBackgrounded block:^{
         [self.backend getSubscriberDataWithAppUserID:appUserID
-                                          completion:^(RCPurchaserInfo *_Nullable info,
+                                          completion:^(PurchaserInfo *_Nullable info,
                                                        NSError *_Nullable error) {
                                               if (error == nil) {
                                                   [self cachePurchaserInfo:info forAppUserID:appUserID];

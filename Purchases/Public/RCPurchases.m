@@ -9,7 +9,6 @@
 @import PurchasesCoreSwift;
 
 #import "RCAttributionPoster.h"
-#import "RCBackend.h"
 #import "RCIdentityManager.h"
 #import "RCPurchaserInfoManager.h"
 #import "RCPurchases+Protected.h"
@@ -230,7 +229,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCETagManager *eTagManager = [[RCETagManager alloc] init];
     RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
 
-    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey
+    RCBackend *backend = [[RCBackend alloc] initWithApiKey:APIKey
                                                 systemInfo:systemInfo
                                                eTagManager:eTagManager
                                        operationDispatcher:operationDispatcher];
@@ -672,7 +671,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
           presentedOfferingIdentifier:nil
                          observerMode:!self.finishTransactions
                  subscriberAttributes:subscriberAttributes
-                           completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
+                           completion:^(PurchaserInfo *_Nullable info, NSError *_Nullable error) {
                                [self handleRestoreReceiptPostWithInfo:info
                                                                 error:error
                                                  subscriberAttributes:subscriberAttributes
@@ -1251,7 +1250,7 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
       presentedOfferingIdentifier:presentedOffering
                      observerMode:!self.finishTransactions
              subscriberAttributes:subscriberAttributes
-                       completion:^(RCPurchaserInfo *_Nullable info,
+                       completion:^(PurchaserInfo *_Nullable info,
                                NSError *_Nullable error) {
                            [self handleReceiptPostWithTransaction:transaction
                                                     purchaserInfo:info

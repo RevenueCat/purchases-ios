@@ -15,7 +15,7 @@ public class HTTPRequest: NSObject, NSCopying {
     @objc public let path: String
     @objc public let requestBody: [String: Any]?
     @objc public let authHeaders: [String: String]
-    @objc public let completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?
+    @objc public let completionHandler: ((Int, [String: Any]?, Error?) -> Void)?
     @objc public let retried: Bool
     let urlRequest: URLRequest
 
@@ -36,7 +36,7 @@ public class HTTPRequest: NSObject, NSCopying {
                          authHeaders: [String: String],
                          retried: Bool,
                          urlRequest: URLRequest,
-                         completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+                         completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         self.httpMethod = httpMethod
         self.path = path
         self.requestBody = requestBody

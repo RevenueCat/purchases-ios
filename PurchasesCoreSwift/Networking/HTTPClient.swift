@@ -36,7 +36,7 @@ import Foundation
     public func performGETRequest(serially performSerially: Bool = false,
                                   path: String,
                                   headers authHeaders: [String: String],
-                                  completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+                                  completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         performRequest("GET",
                        performSerially: performSerially,
                        path: path,
@@ -51,7 +51,7 @@ import Foundation
                                    path: String,
                                    requestBody: [String: Any],
                                    headers authHeaders: [String: String],
-                                   completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+                                   completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         performRequest("POST",
                        performSerially: performSerially,
                        path: path,
@@ -100,7 +100,7 @@ private extension HTTPClient {
                         requestBody maybeRequestBody: [String: Any]?,
                         authHeaders: [String: String],
                         retried: Bool = false,
-                        completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+                        completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
             self.threadUnsafePerformRequest(httpMethod,
                                             performSerially: performSerially,
@@ -117,7 +117,7 @@ private extension HTTPClient {
                         request: HTTPRequest,
                         data maybeData: Data?,
                         error maybeNetworkError: Error?,
-                        completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?,
+                        completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
                         retried: Bool) {
         operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
@@ -137,7 +137,7 @@ private extension HTTPClient {
                                     requestBody maybeRequestBody: [String: Any]?,
                                     authHeaders: [String: String],
                                     retried: Bool,
-                                    completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+                                    completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         let requestHeaders = self.defaultHeaders.merging(authHeaders)
 
         let maybeURLRequest = self.createRequest(httpMethod: httpMethod,
@@ -203,7 +203,7 @@ private extension HTTPClient {
                                     request: HTTPRequest,
                                     data maybeData: Data?,
                                     error maybeNetworkError: Error?,
-                                    completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?,
+                                    completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                                     beginNextRequestWhenFinished: Bool,
                                     retried: Bool) {
         var shouldBeginNextRequestWhenFinished = beginNextRequestWhenFinished
@@ -285,7 +285,7 @@ private extension HTTPClient {
 
     func createRequest(httpMethod: String,
                        path: String,
-                       requestBody maybeRequestBody: [AnyHashable: Any]?,
+                       requestBody maybeRequestBody: [String: Any]?,
                        headers: [String: String],
                        refreshETag: Bool) -> URLRequest? {
         let relativeURLString = "/v1\(path)"

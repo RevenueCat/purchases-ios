@@ -8,7 +8,6 @@
 
 #import "RCAttributionPoster.h"
 #import "RCIdentityManager.h"
-#import "RCBackend.h"
 #import "RCSubscriberAttributesManager.h"
 @import PurchasesCoreSwift;
 
@@ -83,15 +82,14 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
         if (newData.count > 0) {
             if (network == RCAttributionNetworkAppleSearchAds) {
-                [self.backend postAttributionData:newData
-                                      fromNetwork:network
-                                     forAppUserID:appUserID
-                                       completion:^(NSError *_Nullable error) {
-                                           if (error == nil) {
-                                               [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newDictToCache
-                                                                                          forAppUserID:appUserID];
-                                           }
-                                       }];
+                [self.backend postWithAttributionData:newData
+                                              network:network
+                                            appUserID:appUserID
+                                           completion:^(NSError *_Nullable error) {
+                    if (error == nil) {
+                        [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newDictToCache forAppUserID:appUserID];
+                    }
+                }];
             } else {
                 [self.subscriberAttributesManager convertAttributionDataAndSetAsSubscriberAttributes:newData
                                                                                              network:network

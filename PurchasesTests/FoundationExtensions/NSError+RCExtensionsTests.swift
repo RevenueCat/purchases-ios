@@ -8,6 +8,7 @@ import OHHTTPStubs
 import Nimble
 
 import Purchases
+@testable import PurchasesCoreSwift
 
 class NSErrorRCExtensionsTests: XCTestCase {
 
@@ -19,7 +20,7 @@ class NSErrorRCExtensionsTests: XCTestCase {
 
     func testSuccessfullySyncedFalseIfNotShouldMarkSynced() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [RCSuccessfullySyncedKey: false])
+        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [Backend.RCSuccessfullySyncedKey as String: false])
         expect(error.rc_successfullySynced()) == false
     }
 
@@ -31,13 +32,13 @@ class NSErrorRCExtensionsTests: XCTestCase {
 
     func testSuccessfullySyncedTrueIfShouldMarkSynced() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [RCSuccessfullySyncedKey: true])
+        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [Backend.RCSuccessfullySyncedKey as String: true])
         expect(error.rc_successfullySynced()) == true
     }
 
     func testSubscriberAttributesErrorsNilIfNoAttributesErrors() {
         let errorCode = ErrorCode.purchaseNotAllowedError.rawValue
-        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [RCSuccessfullySyncedKey: true])
+        let error = NSError(domain: RCPurchasesErrorCodeDomain, code: errorCode, userInfo: [Backend.RCSuccessfullySyncedKey as String: true])
         expect(error.rc_subscriberAttributesErrors()).to(beNil())
     }
 
@@ -47,7 +48,7 @@ class NSErrorRCExtensionsTests: XCTestCase {
                                "$email": "email is too long"]
         let error = NSError(domain: RCPurchasesErrorCodeDomain,
                             code: errorCode,
-                            userInfo: [RCAttributeErrorsKey: attributeErrors])
+                            userInfo: [Backend.RCAttributeErrorsKey as String: attributeErrors])
         expect(error.rc_subscriberAttributesErrors()).toNot(beNil())
         expect(error.rc_subscriberAttributesErrors() as? [String: String]) == attributeErrors
     }
