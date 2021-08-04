@@ -66,7 +66,7 @@ import Foundation
     Returns the purchase date for the version of the application when the user bought the app.
     Use this for grandfathering users when migrating to subscriptions.
 
-    Note: This can be `nil`, see `RCPurchases restoreTransactionsWithCompletionBlock`
+    Note: This can be `nil`, see `Purchases.restoreTransactions(completionBlock:)`
      */
     @objc public let originalPurchaseDate: Date?
 
@@ -76,7 +76,7 @@ import Foundation
     Use this for grandfathering users when migrating to subscriptions.
 
      
-     Note: This can be nil, see -`RCPurchases restoreTransactionsWithCompletionBlock`
+     Note: This can be nil, see -`Purchases.restoreTransactions(completionBlock:)`
      */
     @objc public let originalApplicationVersion: String?
 
@@ -97,91 +97,33 @@ import Foundation
         return formatter
     }
 
-    @objc public init?(data: [String: Any]) {
-        guard let subscriberObject = data["subscriber"] as? [String: Any],
-              let subscriberData = SubscriberData(subscriberData: subscriberObject)
-            else {
-            return nil
-        }
-
-        self.originalData = data
-        self.schemaVersion = data["schema_version"] as? String
-
-        guard let requestDateString = data["request_date"] as? String,
-              let formattedRequestDate = Self.dateFormatter.date(from: requestDateString) else {
-            return nil
-        }
-        self.requestDate = formattedRequestDate
-
-        self.originalPurchaseDate = subscriberData.originalPurchaseDate
-        self.firstSeen = subscriberData.firstSeen
-        self.originalAppUserId = subscriberData.originalAppUserId
-        self.managementURL = subscriberData.managementURL
-        self.originalApplicationVersion = subscriberData.originalApplicationVersion
-
-        self.nonSubscriptionTransactions = subscriberData.nonSubscriptionTransactions
-
-        self.entitlements = EntitlementInfos(entitlementsData: subscriberData.entitlementsData,
-                                             purchasesData: subscriberData.allTransactionsByProductId,
-                                             dateFormatter: Self.dateFormatter,
-                                             requestDate: requestDate)
-
-        self.expirationDatesByProductId = subscriberData.expirationDatesByProductId
-        self.purchaseDatesByProductId = subscriberData.purchaseDatesByProductId
-    }
-
-    // TODO after migration make this internal
-    @objc public static let currentSchemaVersion = "2"
-
-    /**
-     Get the expiration date for a given product identifier. You should use Entitlements though!
-    
-     @param productIdentifier Product identifier for product
-    
-     @return The expiration date for `productIdentifier`, `nil` if product never purchased
-     */
+    /// Get the expiration date for a given product identifier. You should use Entitlements though!
+    /// - Parameter productIdentifier: Product identifier for product
+    /// - Returns:  The expiration date for `productIdentifier`, `nil` if product never purchased
     @objc public func expirationDate(forProductIdentifier productIdentifier: String) -> Date? {
         return expirationDatesByProductId[productIdentifier] ?? nil
     }
 
-     /**
-     Get the latest purchase or renewal date for a given product identifier. You should use Entitlements though!
-    
-     @param `productIdentifier` Product identifier for subscription product
-    
-     @return The purchase date for `productIdentifier`, `nil` if product never purchased
-     */
+    /// Get the latest purchase or renewal date for a given product identifier. You should use Entitlements though!
+    /// - Parameter productIdentifier: Product identifier for subscription product
+    /// - Returns: The purchase date for `productIdentifier`, `nil` if product never purchased
     @objc public func purchaseDate(forProductIdentifier productIdentifier: String) -> Date? {
         return purchaseDatesByProductId[productIdentifier] ?? nil
     }
 
-    /**
-     Get the expiration date for a given entitlement.
-    
-     @param` entitlementIdentifier` The id of the entitlement.
-    
-     @return The expiration date for the passed in `entitlement`, can be `nil`
-     */
+
+    /// Get the expiration date for a given entitlement.
+    /// - Parameter entitlementIdentifier: The ID of the entitlement
+    /// - Returns: The expiration date for the passed in `entitltmentIdentifier`, or `nil`
     @objc public func expirationDate(forEntitlement entitlementIdentifier: String) -> Date? {
         return entitlements[entitlementIdentifier]?.expirationDate
     }
 
-    /**
-     Get the latest purchase or renewal date for a given entitlement identifier.
-    
-     @param `entitlementIdentifier` Entitlement identifier for entitlement
-    
-     @return The purchase date for `entitlement`, `nil` if product never purchased
-     */
+    /// Get the latest purchase or renewal date for a given entitlement identifier.
+    /// - Parameter entitlementIdentifier: Entitlement identifier for entitlement
+    /// - Returns: The purchase date for `entitlementIdentifier`, `nil` if product never purchased
     @objc public func purchaseDate(forEntitlement entitlementIdentifier: String) -> Date? {
         return entitlements[entitlementIdentifier]?.latestPurchaseDate
-    }
-
-    // TODO after migration make this internal and remove objc rename
-    @objc(JSONObject) public func jsonObject() -> [String: Any] {
-        return originalData.merging(
-            ["schema_version": PurchaserInfo.currentSchemaVersion],
-            uniquingKeysWith: { (current, _) in current })
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
@@ -219,6 +161,50 @@ import Foundation
             entitlements=\(allEntitlementsDescription)
             >
             """
+    }
+
+    // TODO make internal after swift migration
+    @objc public init?(data: [String: Any]) {
+        guard let subscriberObject = data["subscriber"] as? [String: Any],
+              let subscriberData = SubscriberData(subscriberData: subscriberObject)
+            else {
+            return nil
+        }
+
+        self.originalData = data
+        self.schemaVersion = data["schema_version"] as? String
+
+        guard let requestDateString = data["request_date"] as? String,
+              let formattedRequestDate = Self.dateFormatter.date(from: requestDateString) else {
+            return nil
+        }
+        self.requestDate = formattedRequestDate
+
+        self.originalPurchaseDate = subscriberData.originalPurchaseDate
+        self.firstSeen = subscriberData.firstSeen
+        self.originalAppUserId = subscriberData.originalAppUserId
+        self.managementURL = subscriberData.managementURL
+        self.originalApplicationVersion = subscriberData.originalApplicationVersion
+
+        self.nonSubscriptionTransactions = subscriberData.nonSubscriptionTransactions
+
+        self.entitlements = EntitlementInfos(entitlementsData: subscriberData.entitlementsData,
+                                             purchasesData: subscriberData.allTransactionsByProductId,
+                                             dateFormatter: Self.dateFormatter,
+                                             requestDate: requestDate)
+
+        self.expirationDatesByProductId = subscriberData.expirationDatesByProductId
+        self.purchaseDatesByProductId = subscriberData.purchaseDatesByProductId
+    }
+
+    // TODO after migration make this internal
+    @objc public static let currentSchemaVersion = "2"
+
+    // TODO after migration make this internal and remove objc rename
+    @objc(JSONObject) public func jsonObject() -> [String: Any] {
+        return originalData.merging(
+            ["schema_version": PurchaserInfo.currentSchemaVersion],
+            uniquingKeysWith: { (current, _) in current })
     }
 
     private struct SubscriberData {
