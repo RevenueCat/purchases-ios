@@ -13,11 +13,6 @@
 
 import Foundation
 
-public class PurchaserInfo: NSObject {
-    init(data: NSDictionary) { }
-    init?(data: [String: Any]?) { }
-}
-
 public typealias SubscriberAttributeDict = [String: SubscriberAttribute]
 public typealias BackendPurchaserInfoResponseHandler = (PurchaserInfo?, Error?) -> Void
 public typealias IntroEligibilityResponseHandler = ([String: IntroEligibility]) -> Void
@@ -29,7 +24,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 @objc(RCBackend) public class Backend: NSObject {
 
     @objc public static let RCSuccessfullySyncedKey: NSError.UserInfoKey = "rc_successfullySynced"
-    @objc static let RCAttributeErrorsKey = "attribute_errors"
+    @objc public static let RCAttributeErrorsKey = "attribute_errors"
     static let RCAttributeErrorsResponseKey = "attributes_error_response"
 
     private let httpClient: HTTPClient
@@ -140,6 +135,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
         httpClient.performGETRequest(serially: true, path: path, headers: authHeaders) { statusCode, response, error in
             for completion in self.getPurchaserInfoCallbacksAndClearCache(forKey: path) {
+                print("Hi")
                 self.handle(purchaserInfoResponse: response,
                             statusCode: statusCode,
                             error: error,
@@ -177,7 +173,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             }
 
             guard statusCode < HTTPStatusCodes.redirect.rawValue else {
-                let code = response?["code"] as? NSNumber
+                let code = self.maybeNumberFromError(code: response?["code"])
                 let backendMessage = response?["message"] as? String
                 let error = ErrorUtils.backendError(withBackendCode: code, backendMessage: backendMessage)
                 completion(nil, nil, nil, nil, error)
@@ -191,7 +187,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
             let offer = offers[0]
             if let signatureError = offer["signature_error"] as? [String: AnyObject] {
-                let code = signatureError["code"] as? NSNumber
+                let code = self.maybeNumberFromError(code: signatureError["code"])
                 let backendMessage = signatureError["message"] as? String
                 let error = ErrorUtils.backendError(withBackendCode: code, backendMessage: backendMessage)
                 completion(nil, nil, nil, nil, error)
@@ -249,7 +245,10 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                                       path: path,
                                       requestBody: ["attributes": attributesInBackendFormat],
                                       headers: authHeaders) { statusCode, response, error in
-            self.handle(response: response, statusCode: statusCode, error: error, completion: completion)
+            self.handleSubscribedAttributesResult(statusCode: statusCode,
+                                                  response: response,
+                                                  error: error,
+                                                  completion: completion)
         }
     }
 
@@ -294,7 +293,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             if let error = error {
                 errorForCallbacks = ErrorUtils.networkError(withUnderlyingError: error)
             } else if statusCode > HTTPStatusCodes.redirect.rawValue {
-                let backendCode = response?["code"] as? NSNumber
+                let backendCode = self.maybeNumberFromError(code: response?["code"])
                 let backendMessage = response?["message"] as? String
                 errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode,
                                                             backendMessage: backendMessage)
@@ -384,14 +383,14 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
 
         if statusCode > HTTPStatusCodes.redirect.rawValue {
-            let backendCode = response?["code"] as? NSNumber
+            let backendCode = maybeNumberFromError(code: response?["code"])
             let backendMessage = response?["message"] as? String
             let responsError = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
             completion(nil, false, ErrorUtils.networkError(withUnderlyingError: responsError))
             return
         }
 
-        guard let purchaserInfo = PurchaserInfo(data: (response as [String: AnyObject]?)) else {
+        guard let response = response, let purchaserInfo = PurchaserInfo(data: response) else {
             let responseError = ErrorUtils.unexpectedBackendResponseError()
             completion(nil, false, responseError)
             return
@@ -423,6 +422,34 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         return resultDict
     }
 
+    private func handleSubscribedAttributesResult(statusCode: Int,
+                                                  response: [String: Any]?,
+                                                  error: Error?,
+                                                  completion: ((Error?) -> Void)?) {
+        guard let completion = completion else {
+            return
+        }
+
+        if let error = error {
+            completion(ErrorUtils.networkError(withUnderlyingError: error))
+            return
+        }
+
+        let responseError: Error?
+
+        if let response = response, statusCode > HTTPStatusCodes.redirect.rawValue {
+            let extraUserInfo = attributesUserInfoFromResponse(response: response, statusCode: statusCode)
+            responseError = ErrorUtils.backendError(withBackendCode: maybeNumberFromError(code: response["code"]),
+                                                    backendMessage: response["message"] as? String,
+                                                    extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
+        } else {
+            responseError = nil
+        }
+
+        completion(responseError)
+
+    }
+
     private func handle(response: [String: Any]?, statusCode: Int, error: Error?, completion: ((Error?) -> Void)?) {
         if let error = error {
             completion?(ErrorUtils.networkError(withUnderlyingError: error))
@@ -430,7 +457,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
 
         if statusCode > HTTPStatusCodes.redirect.rawValue {
-            let code = response?["code"] as? NSNumber
+            let code = maybeNumberFromError(code: response?["code"])
             let message = response?["message"] as? String
             let responseError = ErrorUtils.backendError(withBackendCode: code, backendMessage: message)
             completion?(responseError)
@@ -451,7 +478,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
         let isErrorStatusCode = statusCode >= HTTPStatusCodes.redirect.rawValue
 
-        let maybePurchaserInfo: PurchaserInfo? = PurchaserInfo(data: response)
+        let maybePurchaserInfo: PurchaserInfo? = response == nil ? nil : PurchaserInfo(data: response!)
         if !isErrorStatusCode && maybePurchaserInfo == nil {
             completion(nil, ErrorUtils.unexpectedBackendResponseError())
             return
@@ -466,7 +493,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             let finishable = statusCode < HTTPStatusCodes.internalServerError.rawValue
             var extraUserInfo = [ErrorDetails.finishableKey: NSNumber(value: finishable)] as [String: AnyObject]
             extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
-            let code = response?["code"] as? NSNumber
+            let code = maybeNumberFromError(code: response?["code"])
             let message = response?["message"] as? String
             let responseError = ErrorUtils.backendError(withBackendCode: code,
                                                         backendMessage: message,
@@ -521,12 +548,12 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             if maybeCallbacks == nil {
                 requestAlreadyInFlight = false
                 callbacks = []
-                purchaserInfoCallbacksCache[key] = callbacks
             } else {
                 requestAlreadyInFlight = true
                 callbacks = maybeCallbacks!
             }
             callbacks.append(callback)
+            purchaserInfoCallbacksCache[key] = callbacks
             return requestAlreadyInFlight
         }
     }
@@ -539,12 +566,12 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             if maybeCallbacks == nil {
                 requestAlreadyInFlight = false
                 callbacks = []
-                offeringsCallbacksCache[key] = callbacks
             } else {
                 requestAlreadyInFlight = true
                 callbacks = maybeCallbacks!
             }
             callbacks.append(callback)
+            offeringsCallbacksCache[key] = callbacks
             return requestAlreadyInFlight
         }
     }
@@ -565,6 +592,19 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             assert(callbacks != nil)
             return callbacks ?? []
         }
+    }
+
+    private func maybeNumberFromError(code: Any?) -> NSNumber? {
+        // The code can be a String or NSNumber
+        if let codeString = code as? String {
+            if let codeInt = Int(codeString) {
+                return codeInt as NSNumber
+            } else {
+                return nil
+            }
+        }
+
+        return code as? NSNumber
     }
 
 }

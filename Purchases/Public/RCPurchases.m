@@ -671,7 +671,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
           presentedOfferingIdentifier:nil
                          observerMode:!self.finishTransactions
                  subscriberAttributes:subscriberAttributes
-                           completion:^(PurchaserInfo *_Nullable info, NSError *_Nullable error) {
+                           completion:^(RCPurchaserInfo *_Nullable info, NSError *_Nullable error) {
                                [self handleRestoreReceiptPostWithInfo:info
                                                                 error:error
                                                  subscriberAttributes:subscriberAttributes
@@ -1250,7 +1250,7 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
       presentedOfferingIdentifier:presentedOffering
                      observerMode:!self.finishTransactions
              subscriberAttributes:subscriberAttributes
-                       completion:^(PurchaserInfo *_Nullable info,
+                       completion:^(RCPurchaserInfo *_Nullable info,
                                NSError *_Nullable error) {
                            [self handleReceiptPostWithTransaction:transaction
                                                     purchaserInfo:info

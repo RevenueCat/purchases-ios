@@ -649,9 +649,9 @@ class BackendTests: XCTestCase {
 
         expect(error).toEventuallyNot(beNil())
         expect(error?.domain).to(equal(RCPurchasesErrorCodeDomain))
-        let underlyingError = (error?.userInfo[NSUnderlyingErrorKey]) as! NSError
+        let underlyingError = (error?.userInfo[NSUnderlyingErrorKey]) as? NSError
         expect(underlyingError).toEventuallyNot(beNil())
-        expect(underlyingError.domain).to(equal(RCBackendErrorCodeDomain))
+        expect(underlyingError?.domain).to(equal(RCBackendErrorCodeDomain))
         expect(error?.userInfo["finishable"]).to(be(true))
     }
 
@@ -667,7 +667,7 @@ class BackendTests: XCTestCase {
 
         expect(error).toEventuallyNot(beNil())
         expect(error?.domain).to(equal(RCPurchasesErrorCodeDomain))
-        expect(error?.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
+        expect(error?.code).to(equal(ErrorCode.unexpectedBackendResponseError.rawValue))
     }
 
     func testEmptyEligibilityCheckDoesNothing() {
@@ -817,12 +817,13 @@ class BackendTests: XCTestCase {
         var offeringA: [String: Any]?
         var packageA: [String: String]?
         var packageB: [String: String]?
-        backend?.getOfferings(appUserID: userID, completion: { (responseReceived, error) in
-            offerings = responseReceived?["offerings"] as? [[String : Any]]
+        backend?.getOfferings(appUserID: userID, completion: { (response, error) in
+            offerings = response?["offerings"] as? [[String : Any]]
             offeringA = offerings?[0]
             let packages = offeringA?["packages"] as? [[String: String]]
             packageA = packages?[0]
             packageB = packages?[1]
+            responseReceived = response
         })
 
         expect(offerings?.count).toEventually(equal(1))
@@ -843,7 +844,7 @@ class BackendTests: XCTestCase {
         var offerings: [String: Any]?
 
         backend?.getOfferings(appUserID: userID, completion: { (newOfferings, error) in
-            offerings = newOfferings as? [String : Any]
+            offerings = newOfferings
         })
 
         expect(offerings).toEventually(beNil());
@@ -1380,7 +1381,7 @@ class BackendTests: XCTestCase {
         }
 
         expect(receivedError).toEventuallyNot(beNil())
-        expect(receivedError?.code).toEventually(be(PurchasesCoreSwift.ErrorCode.invalidCredentialsError.rawValue))
+        expect(receivedError?.code).toEventually(equal(PurchasesCoreSwift.ErrorCode.invalidCredentialsError.rawValue))
 
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.localizedDescription).to(equal(serverErrorResponse["message"]))

@@ -125,19 +125,19 @@
         return;
     }
 
-//    [self.backend logInCurrentAppUserID:currentAppUserID
-//                           newAppUserID:newAppUserID
-//                             completion:^(RCPurchaserInfo *purchaserInfo, BOOL created, NSError * _Nullable error) {
-//        if (error == nil) {
-//            [RCLog user:[NSString stringWithFormat:@"%@", RCStrings.identity.login_success]];
-//
-//            [self.deviceCache clearCachesWithOldAppUserID:currentAppUserID
-//                                  andSaveWithNewUserID:newAppUserID];
-//            [self.purchaserInfoManager cachePurchaserInfo:purchaserInfo
-//                                          forAppUserID:newAppUserID];
-//        }
-//        completion(purchaserInfo, created, error);
-//    }];
+    [self.backend logInCurrentAppUserID:currentAppUserID
+                           newAppUserID:newAppUserID
+                             completion:^(RCPurchaserInfo *purchaserInfo, BOOL created, NSError * _Nullable error) {
+        if (error == nil) {
+            [RCLog user:[NSString stringWithFormat:@"%@", RCStrings.identity.login_success]];
+
+            [self.deviceCache clearCachesWithOldAppUserID:currentAppUserID
+                                  andSaveWithNewUserID:newAppUserID];
+            [self.purchaserInfoManager cachePurchaserInfo:purchaserInfo
+                                          forAppUserID:newAppUserID];
+        }
+        completion(purchaserInfo, created, error);
+    }];
 }
 
 - (void)logOutWithCompletion:(void (^)(NSError * _Nullable error))completion {

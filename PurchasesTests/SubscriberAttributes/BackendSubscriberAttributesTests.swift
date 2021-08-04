@@ -191,8 +191,10 @@ class BackendSubscriberAttributesTests: XCTestCase {
         expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
         expect(receivedNSError.userInfo[Backend.RCAttributeErrorsKey]).toNot(beNil())
 
-        guard let receivedAttributeErrors = receivedNSError.userInfo[Backend.RCAttributeErrorsKey] as? [String: String] else {
-            fatalError("received attribute errors are not of type [String: String]")
+        let maybeReceivedAttributeErrors = receivedNSError.userInfo[Backend.RCAttributeErrorsKey]
+        guard let receivedAttributeErrors = maybeReceivedAttributeErrors as? [String: String] else {
+            fail("received attribute errors are not of type [String: String]")
+            return
         }
         expect(receivedAttributeErrors) == ["some_attribute": "wasn't valid"]
     }
@@ -250,7 +252,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                             subscriberAttribute2.key: subscriberAttribute2
                                           ],
                      appUserID: appUserID,
-                     completion: { (error: Error!) in
+                     completion: { error in
                         completionCallCount += 1
                         receivedError = error
                      })
@@ -264,7 +266,9 @@ class BackendSubscriberAttributesTests: XCTestCase {
         expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
         expect(receivedNSError.rc_successfullySynced()) == false
         expect(receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String]).toNot(beNil())
-        expect((receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String] as! NSNumber).boolValue) == false
+        let code = maybeNumberFromError(code: receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String])
+
+        expect(code?.boolValue).to(equal(false))
     }
 
     // MARK: PostReceipt with subscriberAttributes
@@ -408,5 +412,18 @@ class BackendSubscriberAttributesTests: XCTestCase {
         expect(nonNilReceivedError.rc_successfullySynced()) == true
         expect(nonNilReceivedError.rc_subscriberAttributesErrors() as? [String: String])
             == attributeErrors[Backend.RCAttributeErrorsKey]
+    }
+
+    private func maybeNumberFromError(code: Any?) -> NSNumber? {
+        // The code can be a String or NSNumber
+        if let codeString = code as? String {
+            if let codeInt = Int(codeString) {
+                return codeInt as NSNumber
+            } else {
+                return nil
+            }
+        }
+
+        return code as? NSNumber
     }
 }
