@@ -16,9 +16,6 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
 @interface RCAttributionFetcher ()
 
-@property (strong, nonatomic) RCDeviceCache *deviceCache;
-@property (strong, nonatomic) RCIdentityManager *identityManager;
-@property (strong, nonatomic) RCBackend *backend;
 @property (strong, nonatomic) RCAttributionTypeFactory *attributionFactory;
 @property (strong, nonatomic) RCSystemInfo *systemInfo;
 
@@ -32,9 +29,6 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
                  attributionFactory:(RCAttributionTypeFactory *)attributionFactory
                          systemInfo:(RCSystemInfo *)systemInfo {
     if (self = [super init]) {
-        self.deviceCache = deviceCache;
-        self.identityManager = identityManager;
-        self.backend = backend;
         self.attributionFactory = attributionFactory;
         self.systemInfo = systemInfo;
     }
