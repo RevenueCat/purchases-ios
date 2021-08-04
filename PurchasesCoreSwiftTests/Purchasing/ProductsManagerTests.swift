@@ -74,6 +74,11 @@ class ProductsManagerTests: XCTestCase {
         expect(self.productsRequestFactory.invokedRequestParametersList) == [firstCallProducts, secondCallProducts]
     }
 
+    func testProductsWithIdentifiersReturnsDoesntMakeNewRequestIfProductIdentifiersEmpty() {
+        productsManager.products(withIdentifiers: []) { _ in }
+        expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(0))
+    }
+
     func testProductsWithIdentifiersReturnsErrorAndEmptySetIfRequestFails() {
         let productIdentifiers = Set(["1", "2", "3"])
 
