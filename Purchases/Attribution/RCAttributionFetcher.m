@@ -23,11 +23,8 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
 @implementation RCAttributionFetcher : NSObject
 
-- (instancetype)initWithDeviceCache:(RCDeviceCache *)deviceCache
-                    identityManager:(RCIdentityManager *)identityManager
-                            backend:(RCBackend *)backend
-                 attributionFactory:(RCAttributionTypeFactory *)attributionFactory
-                         systemInfo:(RCSystemInfo *)systemInfo {
+- (instancetype)initWithAttributionFactory:(RCAttributionTypeFactory *)attributionFactory
+                                systemInfo:(RCSystemInfo *)systemInfo {
     if (self = [super init]) {
         self.attributionFactory = attributionFactory;
         self.systemInfo = systemInfo;
@@ -92,7 +89,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
             }
             return !needsTrackingAuthorization;
         }
-        
+
         SEL authStatusSelector = NSSelectorFromString(trackingProxy.authorizationStatusPropertyName);
         BOOL canPerformSelector = [trackingProxy respondsToSelector:authStatusSelector];
         if (!canPerformSelector) {
@@ -101,7 +98,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
             return NO;
         }
         // we use NSInvocation to prevent direct references to tracking frameworks, which cause issues for
-        // kids apps when going through app review, even if they don't actually use them at all. 
+        // kids apps when going through app review, even if they don't actually use them at all.
         NSMethodSignature *methodSignature = [trackingProxy methodSignatureForSelector:authStatusSelector];
         NSInvocation *myInvocation = [NSInvocation invocationWithMethodSignature:methodSignature];
         [myInvocation setTarget:trackingProxy];

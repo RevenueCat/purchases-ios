@@ -19,11 +19,8 @@ typedef void (^RCAttributionDetailsBlock)(NSDictionary<NSString *, NSObject *> *
 
 @interface RCAttributionFetcher : NSObject
 
-- (instancetype)initWithDeviceCache:(RCDeviceCache *)deviceCache
-                    identityManager:(RCIdentityManager *)identityManager
-                            backend:(RCBackend *)backend
-                 attributionFactory:(RCAttributionTypeFactory *)attributionFactory
-                         systemInfo:(RCSystemInfo *)systemInfo;
+- (instancetype)initWithAttributionFactory:(RCAttributionTypeFactory *)attributionFactory
+                                systemInfo:(RCSystemInfo *)systemInfo;
 
 - (instancetype)init NS_UNAVAILABLE;
 
