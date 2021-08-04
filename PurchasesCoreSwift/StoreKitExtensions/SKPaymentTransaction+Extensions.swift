@@ -19,9 +19,15 @@ public extension SKPaymentTransaction {
     /// Although neither `payment` nor `productIdentier` is optional, we must continue
     /// checking the nullability to likely fix issue https://github.com/RevenueCat/purchases-ios/issues/279
     @objc var rc_productIdentifier: String? {
-        let maybePayment: SKPayment? = payment
-
-        guard maybePayment != nil else {
+        guard let maybePayment = payment as SKPayment? else {
+            Logger.appleWarning(Strings.purchase.skpayment_missing_from_skpaymenttransaction)
+            return nil
+        }
+        guard let productIdentifier = maybePayment.productIdentifier as String?,
+              !productIdentifier.isEmpty else {
+            Logger.appleWarning(Strings.purchase.skpayment_missing_product_identifier)
+            return nil
+        }
             Logger.appleWarning(Strings.purchase.skpayment_missing_from_skpaymenttransaction)
             return nil
         }
