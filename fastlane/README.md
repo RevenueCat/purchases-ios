@@ -101,6 +101,11 @@ Run StoreKitTests
 fastlane ios update_swift_package_commit
 ```
 Update swift package commit
+### ios generate_docs
+```
+fastlane ios generate_docs
+```
+Generate Jazzy Docs
 
 ----
 

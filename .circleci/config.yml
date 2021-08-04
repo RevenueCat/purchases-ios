@@ -219,7 +219,7 @@ jobs:
       - install-dependencies
       - run:
           name: Build docs
-          command: bundle exec fastlane run jazzy
+          command: bundle exec fastlane generate_docs
       - run:
           name: Install awscli
           command: sudo python3 -m pip install awscli
