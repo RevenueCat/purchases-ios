@@ -111,7 +111,6 @@ import Foundation
         return purchaseDatesByProductId[productIdentifier] ?? nil
     }
 
-
     /// Get the expiration date for a given entitlement.
     /// - Parameter entitlementIdentifier: The ID of the entitlement
     /// - Returns: The expiration date for the passed in `entitltmentIdentifier`, or `nil`
