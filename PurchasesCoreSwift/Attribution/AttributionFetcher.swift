@@ -30,4 +30,23 @@ import UIKit
             nil
         #endif
     }
+
+    @objc public var identifierForAdvertisers: String? {
+        #if os(iOS) || os(tvOS) || os(macOS)
+        if #available(macOS 10.14, *) {
+            let maybeIdentifierManagerProxy: ASIdentifierManagerProxy? = self.attributionFactory.asIdentifierProxy()
+            guard let identifierManagerProxy = maybeIdentifierManagerProxy else {
+                Logger.warn(String(format: Strings.configure.adsupport_not_imported))
+                return nil
+            }
+
+            guard let identifierValue = identifierManagerProxy.adsIdentifier else {
+                return nil
+            }
+
+            return identifierValue.uuidString
+        }
+        #endif
+        return nil
+    }
 }
