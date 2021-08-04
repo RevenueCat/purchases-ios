@@ -12,6 +12,14 @@ import WatchKit
 
 import UIKit
 
+enum AttributionFetcherError: Error {
+
+    case identifierForAdvertiserUnavailableForPlatform
+    case identifierForAdvertiserFrameworksUnavailable
+
+}
+
+
 @objc(RCAttributionFetcher) public class AttributionFetcher: NSObject {
     private let attributionFactory: AttributionTypeFactory
     private let systemInfo: SystemInfo
@@ -22,6 +30,9 @@ import UIKit
     }
 
     @objc public var identifierForVendor: String? {
+        // Should match available platforms in
+        // https://developer.apple.com/documentation/uikit/uidevice?language=swift
+        // https://developer.apple.com/documentation/watchkit/wkinterfacedevice?language=swift
         #if os(iOS) || os(tvOS)
             UIDevice.current.identifierForVendor?.uuidString
         #elseif os(watchOS)
@@ -32,11 +43,13 @@ import UIKit
     }
 
     @objc public var identifierForAdvertisers: String? {
+        // should match available platforms here:
+        // https://developer.apple.com/documentation/adsupport/asidentifiermanager/1614151-advertisingidentifier
         #if os(iOS) || os(tvOS) || os(macOS)
         if #available(macOS 10.14, *) {
-            let maybeIdentifierManagerProxy: ASIdentifierManagerProxy? = self.attributionFactory.asIdentifierProxy()
+            let maybeIdentifierManagerProxy = attributionFactory.asIdentifierProxy()
             guard let identifierManagerProxy = maybeIdentifierManagerProxy else {
-                Logger.warn(String(format: Strings.configure.adsupport_not_imported))
+                Logger.warn(Strings.configure.adsupport_not_imported)
                 return nil
             }
 
@@ -48,5 +61,24 @@ import UIKit
         }
         #endif
         return nil
+    }
+
+    @objc public func adClientAttributionDetails(completion: @escaping ([String: NSObject]?, Error?) -> Void) {
+        // Should match available platforms in
+        // https://developer.apple.com/documentation/iad/adclient?language=swift
+        #if os(iOS)
+        guard let adClientProxy = attributionFactory.adClientProxy() else {
+            Logger.warn(Strings.attribution.search_ads_attribution_cancelled_missing_iad_framework)
+            completion(nil, AttributionFetcherError.identifierForAdvertiserFrameworksUnavailable)
+            return
+        }
+        adClientProxy.requestAttributionDetails(completion)
+        #else
+        completion(nil, AttributionFetcherError.idfaUnavailableForPlatform)
+        #endif
+    }
+
+    @objc public var isAuthorizedToPostSearchAds: Bool {
+        return false
     }
 }
