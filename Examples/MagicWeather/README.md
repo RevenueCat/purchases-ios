@@ -19,7 +19,7 @@ See minimum platform version requirements for RevenueCat's *Purchases* SDK [here
 | Feature                          | Sample Project Location                   |
 | -------------------------------- | ----------------------------------------- |
 | 🕹 Configuring the *Purchases* SDK  | [Lifecycle/AppDelegate.swift](MagicWeather/Sources/Lifecycle/AppDelegate.swift) |
-| 💰 Building a basic paywall         | [Controllers/PaywallViewController.swift](MagicWeather/Sources/Controllers/PaywallViewController.swift#L54) |
+| 💰 Building a basic paywall         | [Controllers/PaywallViewController.swift](MagicWeather/Sources/Controllers/PaywallViewController.swift) |
 | 🔐 Checking subscription status     | [Controllers/WeatherViewController.swift](MagicWeather/Sources/Controllers/WeatherViewController.swift#L36) |
 | 🤑 Restoring transactions           | [Controllers/UserViewController.swift](MagicWeather/Sources/Controllers/UserViewController.swift#L112) |
 | 👥 Identifying the user             | [Controllers/UserViewController.swift](MagicWeather/Sources/Controllers/UserViewController.swift#L56) |
