@@ -100,7 +100,7 @@ enum AttributionFetcherError: Error {
 }
 
 private extension AttributionFetcher {
-    
+
     @available(iOS 14.0.0, tvOS 14.0.0, *)
     private var isAuthorizedToPostSearchAdsInATTRequiredOS: Bool {
         let minimumOSVersionRequiringAuthorization = OperatingSystemVersion(majorVersion: 14,
@@ -124,7 +124,8 @@ private extension AttributionFetcher {
         // we use unsafeBitCast to prevent direct references to tracking frameworks, which cause issues for
         // kids apps when going through app review, even if they don't actually use them at all.
         typealias ClosureType = @convention(c) (AnyObject, Selector) -> FakeTrackingManagerAuthorizationStatus
-        let authStatusMethod: ClosureType = unsafeBitCast(method, to: ClosureType.self)
+        let authStatusMethodImplementation = trackingManagerProxy.method(for: authStatusSelector)
+        let authStatusMethod: ClosureType = unsafeBitCast(authStatusMethodImplementation, to: ClosureType.self)
         let authStatus = authStatusMethod(trackingManagerProxy, authStatusSelector)
 
         switch authStatus {

@@ -7,7 +7,6 @@
 //
 
 #import "RCAttributionPoster.h"
-#import "RCAttributionFetcher.h"
 #import "RCIdentityManager.h"
 #import "RCBackend.h"
 #import "RCSubscriberAttributesManager.h"
@@ -115,7 +114,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         return;
     }
 
-    [self.attributionFetcher adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails,
+    [self.attributionFetcher adClientAttributionDetailsWithCompletion:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails,
                                                           NSError *_Nullable error) {
         NSArray *values = [attributionDetails allValues];
 

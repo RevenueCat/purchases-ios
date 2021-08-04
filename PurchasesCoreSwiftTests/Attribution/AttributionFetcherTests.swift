@@ -21,7 +21,7 @@ import Purchases
 
 class AttributionFetcherTests: XCTestCase {
 
-    var attributionFetcher: RCAttributionFetcher!
+    var attributionFetcher: AttributionFetcher!
     var attributionPoster: RCAttributionPoster!
     var deviceCache: MockDeviceCache!
     var identityManager: MockIdentityManager!
@@ -41,7 +41,7 @@ class AttributionFetcherTests: XCTestCase {
         deviceCache.cache(appUserID: userID)
         backend = MockBackend()
         identityManager = MockIdentityManager(mockAppUserID: userID)
-        attributionFetcher = RCAttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
+        attributionFetcher = AttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
         attributionPoster = RCAttributionPoster(deviceCache: deviceCache,
                                                 identityManager: identityManager,
                                                 backend: backend,
