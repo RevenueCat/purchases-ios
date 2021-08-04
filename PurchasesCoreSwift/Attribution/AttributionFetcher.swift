@@ -78,7 +78,63 @@ enum AttributionFetcherError: Error {
         #endif
     }
 
+    #if os(watchOS) || os(macOS) || targetEnvironment(macCatalyst)
+    private let appTrackingTransparencyRequired = false
+    #else
+    private let appTrackingTransparencyRequired = true
+    #endif
+
     @objc public var isAuthorizedToPostSearchAds: Bool {
-        return false
+        // Should match platforms that require permissions detailed in
+        // https://developer.apple.com/app-store/user-privacy-and-data-use/
+        if !appTrackingTransparencyRequired {
+            return true
+        }
+
+        if #available(iOS 14.0.0, tvOS 14.0.0, *) {
+            return isAuthorizedToPostSearchAdsInATTRequiredOS
+        }
+
+        return true
     }
+}
+
+private extension AttributionFetcher {
+    
+    @available(iOS 14.0.0, tvOS 14.0.0, *)
+    private var isAuthorizedToPostSearchAdsInATTRequiredOS: Bool {
+        let minimumOSVersionRequiringAuthorization = OperatingSystemVersion(majorVersion: 14,
+                                                                            minorVersion: 5,
+                                                                            patchVersion: 0)
+        let needsTrackingAuthorization = systemInfo.isOperatingSystemAtLeastVersion(minimumOSVersionRequiringAuthorization)
+
+        guard let trackingManagerProxy = attributionFactory.atTrackingProxy() else {
+            if needsTrackingAuthorization {
+                Logger.warn(Strings.attribution.search_ads_attribution_cancelled_missing_att_framework)
+            }
+            return !needsTrackingAuthorization
+        }
+
+        let authStatusSelector = NSSelectorFromString(trackingManagerProxy.authorizationStatusPropertyName)
+        guard trackingManagerProxy.responds(to: authStatusSelector) else {
+            Logger.warn(Strings.attribution.att_framework_present_but_couldnt_call_tracking_authorization_status)
+            return false
+        }
+
+        // we use unsafeBitCast to prevent direct references to tracking frameworks, which cause issues for
+        // kids apps when going through app review, even if they don't actually use them at all.
+        typealias ClosureType = @convention(c) (AnyObject, Selector) -> FakeTrackingManagerAuthorizationStatus
+        let authStatusMethod: ClosureType = unsafeBitCast(method, to: ClosureType.self)
+        let authStatus = authStatusMethod(trackingManagerProxy, authStatusSelector)
+
+        switch authStatus {
+        case .restricted, .denied:
+            return false
+        case .notDetermined:
+            return !needsTrackingAuthorization
+        case .authorized:
+            return true
+        }
+    }
+
 }
