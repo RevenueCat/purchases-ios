@@ -24,6 +24,10 @@ import StoreKit
 
     @objc public func products(withIdentifiers identifiers: Set<String>,
                                completion: @escaping (Set<SKProduct>) -> Void) {
+        guard identifiers.count > 0 else {
+            completion([])
+            return
+        }
         queue.async { [self] in
             let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
             if productsAlreadyCached.count == identifiers.count {
@@ -47,6 +51,12 @@ import StoreKit
             self.completionHandlers[identifiers] = [completion]
             self.productsByRequests[request] = identifiers
             request.start()
+        }
+    }
+
+    @objc public func cacheProduct(_ product: SKProduct) {
+        queue.async {
+            self.cachedProductsByIdentifier[product.productIdentifier] = product
         }
     }
 }

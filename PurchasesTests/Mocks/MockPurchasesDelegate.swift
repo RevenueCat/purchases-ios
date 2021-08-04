@@ -4,10 +4,10 @@
 //
 
 class MockPurchasesDelegate: NSObject, PurchasesDelegate {
-    var purchaserInfo: Purchases.PurchaserInfo?
+    var purchaserInfo: PurchaserInfo?
     var purchaserInfoReceivedCount = 0
 
-    func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: Purchases.PurchaserInfo) {
+    func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) {
         purchaserInfoReceivedCount += 1
         self.purchaserInfo = purchaserInfo
     }

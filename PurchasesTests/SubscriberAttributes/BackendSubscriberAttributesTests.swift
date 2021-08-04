@@ -21,8 +21,11 @@ class BackendSubscriberAttributesTests: XCTestCase {
     var mockETagManager: MockETagManager!
     var backend: RCBackend!
 
-    let validSubscriberResponse = [
+    let validSubscriberResponse: [String: Any] = [
+        "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "app_user_id",
             "subscriptions": [
                 "onemonth_freetrial": [
                     "expires_date": "2017-08-30T02:40:36Z"
@@ -317,7 +320,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                 observerMode: false,
                                 subscriberAttributes: nil,
                                 completion: { (purchaserInfo, error) in
-                                    completionCallCount += 1
+                                     completionCallCount += 1
                                 })
 
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 1

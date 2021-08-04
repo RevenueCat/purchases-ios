@@ -12,6 +12,7 @@
 #import "RCIntroEligibilityAPI.h"
 #import "RCOfferingAPI.h"
 #import "RCOfferingsAPI.h"
+#import "RCPurchaserInfoAPI.h"
 #import "RCPurchasesAPI.h"
 #import "RCTransactionAPI.h"
 
@@ -32,6 +33,8 @@ int main(int argc, const char * argv[]) {
         [RCOfferingAPI checkAPI];
 
         [RCOfferingsAPI checkAPI];
+        
+        [RCPurchaserInfoAPI checkAPI];
 
         [RCPurchasesAPI checkAPI];
         [RCPurchasesAPI checkEnums];

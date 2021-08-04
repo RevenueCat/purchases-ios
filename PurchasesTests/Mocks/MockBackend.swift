@@ -7,7 +7,7 @@ class MockBackend: RCBackend {
 
     var invokedPostReceiptData = false
     var invokedPostReceiptDataCount = 0
-    var stubbedPostReceiptPurchaserInfo: Purchases.PurchaserInfo? = nil
+    var stubbedPostReceiptPurchaserInfo: PurchaserInfo? = nil
     var stubbedPostReceiptPurchaserError: Error? = nil
     var invokedPostReceiptDataParameters: (data: Data?,
                                            appUserID: String?,
@@ -61,7 +61,7 @@ class MockBackend: RCBackend {
     var invokedGetSubscriberDataParametersList = [(appUserID: String?,
         completion: RCBackendPurchaserInfoResponseHandler?)]()
 
-    var stubbedGetSubscriberDataPurchaserInfo: Purchases.PurchaserInfo? = nil
+    var stubbedGetSubscriberDataPurchaserInfo: PurchaserInfo? = nil
     var stubbedGetSubscriberDataError: Error? = nil
 
 
@@ -209,11 +209,11 @@ class MockBackend: RCBackend {
     var invokedLogInCount = 0
     var invokedLogInParameters: (currentAppUserID: String, newAppUserID: String)?
     var invokedLogInParametersList = [(currentAppUserID: String, newAppUserID: String)]()
-    var stubbedLogInCompletionResult: (Purchases.PurchaserInfo?, Bool, Error?)?
+    var stubbedLogInCompletionResult: (PurchaserInfo?, Bool, Error?)?
 
     override func logIn(withCurrentAppUserID currentAppUserID: String,
                         newAppUserID: String,
-                        completion: @escaping (Purchases.PurchaserInfo?, Bool, Error?) -> ()) {
+                        completion: @escaping (PurchaserInfo?, Bool, Error?) -> ()) {
         invokedLogIn = true
         invokedLogInCount += 1
         invokedLogInParameters = (currentAppUserID, newAppUserID)
