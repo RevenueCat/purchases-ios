@@ -24,3 +24,7 @@
 
 ## Getting Started
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
+
+Or browse our iOS sample apps:
+- [MagicWeather](Examples/MagicWeather)
+- [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
