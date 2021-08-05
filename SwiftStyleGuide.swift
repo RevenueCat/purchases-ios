@@ -106,7 +106,7 @@ private extension MyStruct {
 
     func methodThatNeedsToCaptureSelf() {
         // great guide on when and when not to capture self strongly
-        // https://medium.com/flawless-app-stories/you-dont-always-need-weak-self-a778bec505ef
+        // https://www.avanderlee.com/swift/weak-self/
 
         // no need to explicitly capture self if you need a strong reference
         foo.methodThatNeedsStrongCapture {
