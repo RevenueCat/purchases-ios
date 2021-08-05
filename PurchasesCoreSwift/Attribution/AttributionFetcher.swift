@@ -19,7 +19,6 @@ enum AttributionFetcherError: Error {
 
 }
 
-
 @objc(RCAttributionFetcher) public class AttributionFetcher: NSObject {
     private let attributionFactory: AttributionTypeFactory
     private let systemInfo: SystemInfo
