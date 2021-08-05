@@ -10,8 +10,6 @@ import UIKit
 import WatchKit
 #endif
 
-import UIKit
-
 enum AttributionFetcherError: Error {
 
     case identifierForAdvertiserUnavailableForPlatform
