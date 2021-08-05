@@ -165,7 +165,8 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                                             ]
                                           ]]
 
-        self.httpClient.performPOSTRequest(serially: true, path: "/offers",
+        self.httpClient.performPOSTRequest(serially: true,
+                                           path: "/offers",
                                            requestBody: requestBody,
                                            headers: authHeaders) { statusCode, response, error in
             if let error = error {
@@ -376,10 +377,14 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    private func handleLogin(response: [String: Any]?,
-                             statusCode: Int,
-                             error: Error?,
-                             completion: (PurchaserInfo?, Bool, Error?) -> Void ) {
+}
+
+private extension Backend {
+
+    func handleLogin(response: [String: Any]?,
+                     statusCode: Int,
+                     error: Error?,
+                     completion: (PurchaserInfo?, Bool, Error?) -> Void ) {
         if let error = error {
             completion(nil, false, ErrorUtils.networkError(withUnderlyingError: error))
             return
@@ -403,7 +408,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         completion(purchaserInfo, created, nil)
     }
 
-    private func attributesUserInfoFromResponse(response: [String: Any], statusCode: Int) -> [String: AnyObject] {
+    func attributesUserInfoFromResponse(response: [String: Any], statusCode: Int) -> [String: AnyObject] {
         var resultDict: [String: AnyObject] = [:]
         let isInternalServerError = statusCode >= HTTPStatusCodes.internalServerError.rawValue
         let isNotFoundError = statusCode == HTTPStatusCodes.notFoundError.rawValue
@@ -425,10 +430,10 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         return resultDict
     }
 
-    private func handleSubscribedAttributesResult(statusCode: Int,
-                                                  response: [String: Any]?,
-                                                  error: Error?,
-                                                  completion: ((Error?) -> Void)?) {
+    func handleSubscribedAttributesResult(statusCode: Int,
+                                          response: [String: Any]?,
+                                          error: Error?,
+                                          completion: ((Error?) -> Void)?) {
         guard let completion = completion else {
             return
         }
@@ -453,27 +458,27 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
     }
 
-    private func handle(response: [String: Any]?, statusCode: Int, error: Error?, completion: ((Error?) -> Void)?) {
+    func handle(response: [String: Any]?, statusCode: Int, error: Error?, completion: ((Error?) -> Void)?) {
         if let error = error {
             completion?(ErrorUtils.networkError(withUnderlyingError: error))
             return
         }
 
-        if statusCode > HTTPStatusCodes.redirect.rawValue {
+        guard statusCode <= HTTPStatusCodes.redirect.rawValue else {
             let code = maybeNumberFromError(code: response?["code"])
             let message = response?["message"] as? String
             let responseError = ErrorUtils.backendError(withBackendCode: code, backendMessage: message)
             completion?(responseError)
             return
-        } else {
-            completion?(nil)
         }
+
+        completion?(nil)
     }
 
-    private func handle(purchaserInfoResponse response: [String: Any]?,
-                        statusCode: Int,
-                        error: Error?,
-                        completion: BackendPurchaserInfoResponseHandler) {
+    func handle(purchaserInfoResponse response: [String: Any]?,
+                statusCode: Int,
+                error: Error?,
+                completion: BackendPurchaserInfoResponseHandler) {
         if let error = error {
             completion(nil, ErrorUtils.networkError(withUnderlyingError: error))
             return
@@ -492,7 +497,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
         let hasError = (isErrorStatusCode || subscriberAttributesErrorInfo[Backend.RCAttributeErrorsKey] != nil)
 
-        if hasError {
+        guard !hasError else {
             let finishable = statusCode < HTTPStatusCodes.internalServerError.rawValue
             var extraUserInfo = [ErrorDetails.finishableKey: NSNumber(value: finishable)] as [String: AnyObject]
             extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
@@ -503,17 +508,16 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                                                         extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
             completion(maybePurchaserInfo, responseError)
             return
-        } else {
-            completion(maybePurchaserInfo, nil)
-            return
         }
+
+        completion(maybePurchaserInfo, nil)
     }
 
-    private func escapedAppUserID(appUserID: String) -> String {
+    func escapedAppUserID(appUserID: String) -> String {
         return appUserID.addingPercentEncoding(withAllowedCharacters: NSMutableCharacterSet.urlHostAllowed)!
     }
 
-    private func subscriberAttributesToDict(subscriberAttributes: SubscriberAttributeDict) -> [String: AnyObject] {
+    func subscriberAttributesToDict(subscriberAttributes: SubscriberAttributeDict) -> [String: AnyObject] {
         var attributesByKey: [String: AnyObject] = [:]
         for (key, value) in subscriberAttributes {
             attributesByKey[key] = value.asBackendDictionary() as AnyObject
@@ -521,7 +525,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         return attributesByKey
     }
 
-    private func userInfoAttributes(response: [String: AnyObject], statusCode: Int) -> [String: AnyObject] {
+    func userInfoAttributes(response: [String: AnyObject], statusCode: Int) -> [String: AnyObject] {
         var resultDict: [String: AnyObject] = [:]
 
         let isInternalServerError = statusCode >= HTTPStatusCodes.internalServerError.rawValue
@@ -541,16 +545,29 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         return resultDict
     }
 
+    func maybeNumberFromError(code: Any?) -> NSNumber? {
+        // The code can be a String or NSNumber
+        if let codeString = code as? String {
+            if let codeInt = Int(codeString) {
+                return codeInt as NSNumber
+            } else {
+                return nil
+            }
+        }
+
+        return code as? NSNumber
+    }
+
     // MARK: Callback cache management
 
-    private func add(callback: @escaping BackendPurchaserInfoResponseHandler, key: String) -> Bool {
+    func add(callback: @escaping BackendPurchaserInfoResponseHandler, key: String) -> Bool {
         return callbackQueue.sync { [self] in
             let maybeCallbacks = purchaserInfoCallbacksCache[key]
             var callbacks: [BackendPurchaserInfoResponseHandler]
             let requestAlreadyInFlight: Bool
             if let someCallbacks = maybeCallbacks {
                 requestAlreadyInFlight = true
-                callbacks = callbacks
+                callbacks = someCallbacks
             } else {
                 requestAlreadyInFlight = false
                 callbacks = []
@@ -561,7 +578,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    private func add(callback: @escaping OfferingsResponseHandler, key: String) -> Bool {
+    func add(callback: @escaping OfferingsResponseHandler, key: String) -> Bool {
         return callbackQueue.sync { [self] in
             let maybeCallbacks = offeringsCallbacksCache[key]
             var callbacks: [OfferingsResponseHandler]
@@ -579,7 +596,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    private func getOfferingsCallbacksAndClearCache(forKey key: String) -> [OfferingsResponseHandler] {
+    func getOfferingsCallbacksAndClearCache(forKey key: String) -> [OfferingsResponseHandler] {
         return callbackQueue.sync { [self] in
             let callbacks = offeringsCallbacksCache.removeValue(forKey: key)
             // TODO: Should we throw instead of NSParameterAssert?
@@ -588,7 +605,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    private func getPurchaserInfoCallbacksAndClearCache(forKey key: String) -> [BackendPurchaserInfoResponseHandler] {
+    func getPurchaserInfoCallbacksAndClearCache(forKey key: String) -> [BackendPurchaserInfoResponseHandler] {
         return callbackQueue.sync { [self] in
             let callbacks = purchaserInfoCallbacksCache.removeValue(forKey: key)
             // TODO: Should we throw instead of NSParameterAssert?
@@ -597,18 +614,6 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    private func maybeNumberFromError(code: Any?) -> NSNumber? {
-        // The code can be a String or NSNumber
-        if let codeString = code as? String {
-            if let codeInt = Int(codeString) {
-                return codeInt as NSNumber
-            } else {
-                return nil
-            }
-        }
-
-        return code as? NSNumber
-    }
-
 }
+
 // swiftlint:enable type_body_length file_length
