@@ -71,7 +71,7 @@ enum AttributionFetcherError: Error {
         }
         adClientProxy.requestAttributionDetails(completion)
         #else
-        completion(nil, AttributionFetcherError.idfaUnavailableForPlatform)
+        completion(nil, AttributionFetcherError.identifierForAdvertiserUnavailableForPlatform)
         #endif
     }
 
