@@ -80,29 +80,6 @@ import Foundation
      */
     @objc public let originalApplicationVersion: String?
 
-    // TODO after migration make this internal
-    @objc public let schemaVersion: String?
-
-    private let allPurchases: [String: [String: Any]]
-
-    private let subscriptionTransactionsByProductId: [String: [String: Any]]
-
-    private let originalData: [String: Any]
-
-    private let dateFormatter: DateFormatter
-
-    private lazy var expirationDatesByProductId: [String: Date?] = {
-        return parseExpirationDates(transactionsByProductId: subscriptionTransactionsByProductId)
-    }()
-
-    private lazy var purchaseDatesByProductId: [String: Date?] = {
-        return parseExpirationDates(transactionsByProductId: allPurchases)
-    }()
-
-    @objc public convenience init?(data: [String: Any]) {
-        self.init(data: data, dateFormatter: .iso8601SecondsDateFormatter)
-    }
-
     /// Get the expiration date for a given product identifier. You should use Entitlements though!
     /// - Parameter productIdentifier: Product identifier for product
     /// - Returns:  The expiration date for `productIdentifier`, `nil` if product never purchased
@@ -168,12 +145,20 @@ import Foundation
             """
     }
 
+    // TODO after migration make this internal
+    @objc public let schemaVersion: String?
+
+    // TODO after migration make this internal
+    @objc public convenience init?(data: [String: Any]) {
+        self.init(data: data, dateFormatter: .iso8601SecondsDateFormatter, transactionsFactory: TransactionsFactory())
+    }
+
     // TODO make internal after swift migration
-    @objc public init?(data: [String: Any]) {
-    init?(data: [String: Any], dateFormatter: ISO3601DateFormatter = ISO3601DateFormatter.shared) {
-    init?(data: [String: Any], dateFormatter: DateFormatter) {
+    init?(data: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) {
         guard let subscriberObject = data["subscriber"] as? [String: Any],
-              let subscriberData = SubscriberData(subscriberData: subscriberObject, dateFormatter: dateFormatter)
+              let subscriberData = SubscriberData(subscriberData: subscriberObject,
+                                                  dateFormatter: dateFormatter,
+                                                  transactionsFactory: transactionsFactory)
             else {
             return nil
         }
@@ -198,8 +183,8 @@ import Foundation
 
         self.entitlements = EntitlementInfos(entitlementsData: subscriberData.entitlementsData,
                                              purchasesData: subscriberData.allTransactionsByProductId,
-                                             dateFormatter: Self.dateFormatter,
-                                             requestDate: requestDate)
+                                             requestDate: requestDate,
+                                             dateFormatter: dateFormatter)
 
         self.subscriptionTransactionsByProductId = subscriberData.subscriptionTransactionsByProductId
         self.allPurchases = subscriberData.allPurchases
@@ -215,6 +200,22 @@ import Foundation
             uniquingKeysWith: { (current, _) in current })
     }
 
+    private let allPurchases: [String: [String: Any]]
+
+    private let subscriptionTransactionsByProductId: [String: [String: Any]]
+
+    private let originalData: [String: Any]
+
+    private let dateFormatter: DateFormatter
+
+    private lazy var expirationDatesByProductId: [String: Date?] = {
+        return parseExpirationDates(transactionsByProductId: subscriptionTransactionsByProductId)
+    }()
+
+    private lazy var purchaseDatesByProductId: [String: Date?] = {
+        return parseExpirationDates(transactionsByProductId: allPurchases)
+    }()
+
     private struct SubscriberData {
 
         let subscriptionTransactionsByProductId: [String: [String: Any]]
@@ -229,7 +230,7 @@ import Foundation
         let allTransactionsByProductId: [String: [String: Any]]
         let allPurchases: [String: [String: Any]]
 
-        init?(subscriberData: [String: Any], dateFormatter: DateFormatter) {
+        init?(subscriberData: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) {
             self.subscriptionTransactionsByProductId =
                 subscriberData["subscriptions"] as? [String: [String: Any]] ?? [:]
 
@@ -256,13 +257,12 @@ import Foundation
             self.nonSubscriptionsByProductId =
                 subscriberData["non_subscriptions"] as? [String: [[String: Any]]] ?? [:]
             self.entitlementsData = subscriberData["entitlements"] as? [String: Any] ?? [:]
-            self.nonSubscriptionTransactions = TransactionsFactory().nonSubscriptionTransactions(
+            self.nonSubscriptionTransactions = transactionsFactory.nonSubscriptionTransactions(
                 withSubscriptionsData: nonSubscriptionsByProductId,
                 dateFormatter: dateFormatter)
 
-            let latestNonSubscriptionTransactionsByProductId =
-                [String: [String: Any]](uniqueKeysWithValues: nonSubscriptionsByProductId.map { productId, transactionsArray in
-                    (productId, transactionsArray.last ?? [:])
+            let latestNonSubscriptionTransactionsByProductId = [String: [String: Any]](
+                uniqueKeysWithValues: nonSubscriptionsByProductId.map { productId, transactionsArray in (productId, transactionsArray.last ?? [:])
             })
 
             self.allTransactionsByProductId = latestNonSubscriptionTransactionsByProductId
