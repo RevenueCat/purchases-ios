@@ -137,14 +137,14 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(data: receiptData,
-                                 appUserID: userID,
-                                 isRestore: isRestore,
-                                 productInfo: nil,
-                                 presentedOfferingIdentifier: nil,
-                                 observerMode: observerMode,
-                                 subscriberAttributes: nil,
-                                 completion: { (purchaserInfo, error) in
+        backend?.post(receiptData: receiptData,
+                      appUserID: userID,
+                      isRestore: isRestore,
+                      productInfo: nil,
+                      presentedOfferingIdentifier: nil,
+                      observerMode: observerMode,
+                      subscriberAttributes: nil,
+                      completion: { (purchaserInfo, error) in
             completionCalled = true
         })
 
@@ -179,7 +179,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -190,7 +190,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -214,7 +214,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -225,7 +225,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: !isRestore,
                                  productInfo: nil,
@@ -249,7 +249,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -260,7 +260,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        backend?.postReceiptData(data: receiptData2,
+        backend?.post(receiptData: receiptData2,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -284,7 +284,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -296,7 +296,7 @@ class BackendTests: XCTestCase {
         })
         let productInfo: ProductInfo = .createMockProductInfo(currencyCode: "USD")
 
-        backend?.postReceiptData(data: receiptData2,
+        backend?.post(receiptData: receiptData2,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: productInfo,
@@ -320,7 +320,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -331,7 +331,7 @@ class BackendTests: XCTestCase {
             completionCalled += 1
         })
 
-        backend?.postReceiptData(data: receiptData2,
+        backend?.post(receiptData: receiptData2,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -394,7 +394,7 @@ class BackendTests: XCTestCase {
                                                                 price: price,
                                                                 subscriptionGroup: group)
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: productInfo,
@@ -443,7 +443,7 @@ class BackendTests: XCTestCase {
         var completionCalled = false
 
         let productInfo: ProductInfo = .createMockProductInfo()
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: productInfo,
@@ -466,7 +466,7 @@ class BackendTests: XCTestCase {
 
         let productInfo: ProductInfo = .createMockProductInfo(paymentMode: paymentMode)
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: productInfo,
@@ -517,7 +517,7 @@ class BackendTests: XCTestCase {
 
         var error: NSError?
         var underlyingError: NSError?
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: nil,
@@ -544,7 +544,7 @@ class BackendTests: XCTestCase {
         var error: Error?
         var underlyingError: Error?
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: nil,
@@ -570,7 +570,7 @@ class BackendTests: XCTestCase {
 
         var purchaserInfo: PurchaserInfo?
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: nil,
@@ -903,7 +903,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/receipts", response: response)
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: true,
                                  productInfo: nil,
@@ -1047,7 +1047,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -1060,7 +1060,7 @@ class BackendTests: XCTestCase {
 
         let discount = PromotionalOffer(offerIdentifier: "offerid", price: 12, paymentMode: .payAsYouGo)
         let productInfo: ProductInfo = .createMockProductInfo(discounts: [discount])
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: productInfo,
@@ -1099,7 +1099,7 @@ class BackendTests: XCTestCase {
                                                                 subscriptionGroup: group,
                                                                 discounts: [discount])
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: false,
                                  productInfo: productInfo,
@@ -1180,13 +1180,13 @@ class BackendTests: XCTestCase {
         let offerIdentifier = "offerid"
         let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
 
-        backend?.postOfferForSigning(offerIdentifier,
-                productIdentifier: productIdentifier,
-                subscriptionGroup: group,
-                receiptData: discountData,
-                appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
-                    completionCalled = true
-                }
+        backend?.post(offerIdForSigning: offerIdentifier,
+                      productIdentifier: productIdentifier,
+                      subscriptionGroup: group,
+                      receiptData: discountData,
+                      appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
+            completionCalled = true
+        }
 
         let body: [String: Any] = [
             "app_user_id": userID,
@@ -1228,11 +1228,11 @@ class BackendTests: XCTestCase {
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
         
-        backend?.postOfferForSigning(offerIdentifier,
-                                     productIdentifier: productIdentifier,
-                                     subscriptionGroup: group,
-                                     receiptData: discountData,
-                                     appUserID: userID) { _, _, _, _, error in
+        backend?.post(offerIdForSigning: offerIdentifier,
+                      productIdentifier: productIdentifier,
+                      subscriptionGroup: group,
+                      receiptData: discountData,
+                      appUserID: userID) { _, _, _, _, error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         }
@@ -1261,11 +1261,11 @@ class BackendTests: XCTestCase {
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
 
-        backend?.postOfferForSigning(offerIdentifier,
-                                     productIdentifier: productIdentifier,
-                                     subscriptionGroup: group,
-                                     receiptData: discountData,
-                                     appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
+        backend?.post(offerIdForSigning: offerIdentifier,
+                      productIdentifier: productIdentifier,
+                      subscriptionGroup: group,
+                      receiptData: discountData,
+                      appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         }
@@ -1303,11 +1303,11 @@ class BackendTests: XCTestCase {
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
         
-        backend?.postOfferForSigning(offerIdentifier,
-                                     productIdentifier: productIdentifier,
-                                     subscriptionGroup: group,
-                                     receiptData: discountData,
-                                     appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
+        backend?.post(offerIdForSigning: offerIdentifier,
+                      productIdentifier: productIdentifier,
+                      subscriptionGroup: group,
+                      receiptData: discountData,
+                      appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         }
@@ -1345,11 +1345,11 @@ class BackendTests: XCTestCase {
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
 
-        backend?.postOfferForSigning(offerIdentifier,
-                                     productIdentifier: productIdentifier,
-                                     subscriptionGroup: group,
-                                     receiptData: discountData,
-                                     appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
+        backend?.post(offerIdForSigning: offerIdentifier,
+                      productIdentifier: productIdentifier,
+                      subscriptionGroup: group,
+                      receiptData: discountData,
+                      appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         }
@@ -1371,11 +1371,11 @@ class BackendTests: XCTestCase {
 
         var receivedError : NSError?
         var receivedUnderlyingError : NSError?
-        backend?.postOfferForSigning(offerIdentifier,
-                                     productIdentifier: productIdentifier,
-                                     subscriptionGroup: group,
-                                     receiptData: discountData,
-                                     appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
+        backend?.post(offerIdForSigning: offerIdentifier,
+                      productIdentifier: productIdentifier,
+                      subscriptionGroup: group,
+                      receiptData: discountData,
+                      appUserID: userID) { signature, keyIdentifier, nonce, timestamp, error in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         }
@@ -1396,7 +1396,7 @@ class BackendTests: XCTestCase {
         let isRestore = arc4random_uniform(2) == 0
         let observerMode = arc4random_uniform(2) == 0
 
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,
@@ -1409,7 +1409,7 @@ class BackendTests: XCTestCase {
 
         _ = PromotionalOffer(offerIdentifier: "offerid", price: 12, paymentMode: .payAsYouGo)
         
-        backend?.postReceiptData(data: receiptData,
+        backend?.post(receiptData: receiptData,
                                  appUserID: userID,
                                  isRestore: isRestore,
                                  productInfo: nil,

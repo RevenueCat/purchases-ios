@@ -37,32 +37,32 @@ class MockBackend: Backend {
                   apiKey: "mockAPIKey")
     }
 
-    override func postReceiptData(data: Data,
-                                  appUserID: String,
-                                  isRestore: Bool,
-                                  productInfo: ProductInfo?,
-                                  presentedOfferingIdentifier offeringIdentifier: String?,
-                                  observerMode: Bool,
-                                  subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
-                                  completion: @escaping BackendPurchaserInfoResponseHandler) {
+    override func post(receiptData: Data,
+                       appUserID: String,
+                       isRestore: Bool,
+                       productInfo: ProductInfo?,
+                       presentedOfferingIdentifier offeringIdentifier: String?,
+                       observerMode: Bool,
+                       subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
+                       completion: @escaping BackendPurchaserInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
-        invokedPostReceiptDataParameters = (data,
-            appUserID,
-            isRestore,
-            productInfo,
-            offeringIdentifier,
-            observerMode,
-            subscriberAttributesByKey,
-            completion)
-        invokedPostReceiptDataParametersList.append((data,
-                                                        appUserID,
-                                                        isRestore,
-                                                        productInfo,
-                                                        offeringIdentifier,
-                                                        observerMode,
-                                                        subscriberAttributesByKey,
-                                                        completion))
+        invokedPostReceiptDataParameters = (receiptData,
+                                            appUserID,
+                                            isRestore,
+                                            productInfo,
+                                            offeringIdentifier,
+                                            observerMode,
+                                            subscriberAttributesByKey,
+                                            completion)
+        invokedPostReceiptDataParametersList.append((receiptData,
+                                                     appUserID,
+                                                     isRestore,
+                                                     productInfo,
+                                                     offeringIdentifier,
+                                                     observerMode,
+                                                     subscriberAttributesByKey,
+                                                     completion))
         completion(stubbedPostReceiptPurchaserInfo, stubbedPostReceiptPurchaserError)
     }
 
@@ -160,12 +160,12 @@ class MockBackend: Backend {
         applicationUsername: String?,
         completion: OfferSigningResponseHandler?)]()
 
-    override func postOfferForSigning(_ offerIdentifier: String,
-                                      productIdentifier: String,
-                                      subscriptionGroup: String,
-                                      receiptData: Data,
-                                      appUserID: String,
-                                      completion: @escaping OfferSigningResponseHandler) {
+    override func post(offerIdForSigning offerIdentifier: String,
+                       productIdentifier: String,
+                       subscriptionGroup: String,
+                       receiptData: Data,
+                       appUserID: String,
+                       completion: @escaping OfferSigningResponseHandler) {
         invokedPostOffer = true
         invokedPostOfferCount += 1
         invokedPostOfferParameters = (offerIdentifier,

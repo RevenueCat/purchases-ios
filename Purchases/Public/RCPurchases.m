@@ -229,7 +229,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCETagManager *eTagManager = [[RCETagManager alloc] init];
     RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
 
-    RCBackend *backend = [[RCBackend alloc] initWithApiKey:APIKey
+    RCBackend *backend = [[RCBackend alloc] initWithAPIKey:APIKey
                                                 systemInfo:systemInfo
                                                eTagManager:eTagManager
                                        operationDispatcher:operationDispatcher];

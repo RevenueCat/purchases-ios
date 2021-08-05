@@ -7,10 +7,10 @@ import XCTest
 import OHHTTPStubs
 import Nimble
 
-import Purchases
 @testable import PurchasesCoreSwift
 
 class BackendSubscriberAttributesTests: XCTestCase {
+
     let appUserID = "abc123"
     let now = Date()
     let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
@@ -266,9 +266,9 @@ class BackendSubscriberAttributesTests: XCTestCase {
         expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
         expect(receivedNSError.rc_successfullySynced()) == false
         expect(receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String]).toNot(beNil())
-        let code = maybeNumberFromError(code: receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String])
+        let code = receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String] as! NSNumber
 
-        expect(code?.boolValue).to(equal(false))
+        expect(code.boolValue).to(equal(false))
     }
 
     // MARK: PostReceipt with subscriberAttributes
@@ -281,7 +281,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
 
-        backend.postReceiptData(data: receiptData,
+        backend.post(receiptData: receiptData,
                                 appUserID: appUserID,
                                 isRestore: false,
                                 productInfo: nil,
@@ -318,7 +318,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
     func testPostReceiptWithoutSubscriberAttributesSkipsThem() {
         var completionCallCount = 0
 
-        backend.postReceiptData(data: receiptData,
+        backend.post(receiptData: receiptData,
                                 appUserID: appUserID,
                                 isRestore: false,
                                 productInfo: nil,
@@ -356,7 +356,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
         var receivedError: NSError? = nil
-        backend.postReceiptData(data: receiptData,
+        backend.post(receiptData: receiptData,
                                 appUserID: appUserID,
                                 isRestore: false,
                                 productInfo: nil,
@@ -393,7 +393,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
         var receivedError: NSError? = nil
-        backend.postReceiptData(data: receiptData,
+        backend.post(receiptData: receiptData,
                                 appUserID: appUserID,
                                 isRestore: false,
                                 productInfo: nil,
@@ -414,16 +414,4 @@ class BackendSubscriberAttributesTests: XCTestCase {
             == attributeErrors[Backend.RCAttributeErrorsKey]
     }
 
-    private func maybeNumberFromError(code: Any?) -> NSNumber? {
-        // The code can be a String or NSNumber
-        if let codeString = code as? String {
-            if let codeInt = Int(codeString) {
-                return codeInt as NSNumber
-            } else {
-                return nil
-            }
-        }
-
-        return code as? NSNumber
-    }
 }

@@ -37,10 +37,11 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
     private var authHeaders: [String: String] { return ["Authorization": "Bearer \(self.apiKey)"] }
 
-    @objc public convenience init(apiKey: String,
-                                  systemInfo: SystemInfo,
-                                  eTagManager: ETagManager,
-                                  operationDispatcher: OperationDispatcher) {
+    @objc(initWithAPIKey:systemInfo:eTagManager:operationDispatcher:)
+    public convenience init(apiKey: String,
+                            systemInfo: SystemInfo,
+                            eTagManager: ETagManager,
+                            operationDispatcher: OperationDispatcher) {
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     operationDispatcher: operationDispatcher)
@@ -72,16 +73,16 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
     // swiftlint:disable function_parameter_count
     @objc (postReceiptData:appUserID:isRestore:productInfo:presentedOfferingIdentifier:observerMode:subscriberAttributes:completion:)
-    public func postReceiptData(data: Data,
-                                appUserID: String,
-                                isRestore: Bool,
-                                productInfo: ProductInfo?,
-                                presentedOfferingIdentifier offeringIdentifier: String?,
-                                observerMode: Bool,
-                                subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
-                                completion: @escaping BackendPurchaserInfoResponseHandler) {
+    public func post(receiptData: Data,
+                     appUserID: String,
+                     isRestore: Bool,
+                     productInfo: ProductInfo?,
+                     presentedOfferingIdentifier offeringIdentifier: String?,
+                     observerMode: Bool,
+                     subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
+                     completion: @escaping BackendPurchaserInfoResponseHandler) {
     // swiftlint:enable function_parameter_count
-        let fetchToken = data.base64EncodedString(options: .lineLength64Characters)
+        let fetchToken = receiptData.base64EncodedString(options: .lineLength64Characters)
         var body: [String: AnyObject] = [
             "fetch_token": fetchToken as NSString,
             "app_user_id": appUserID as NSString,
@@ -146,12 +147,12 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
     // swiftlint:disable function_parameter_count
     @objc(postOfferForSigning:withProductIdentifier:subscriptionGroup:receiptData:appUserID:completion:)
-    public func postOfferForSigning(_ offerIdentifier: String,
-                                    productIdentifier: String,
-                                    subscriptionGroup: String,
-                                    receiptData: Data,
-                                    appUserID: String,
-                                    completion: @escaping OfferSigningResponseHandler) {
+    public func post(offerIdForSigning offerIdentifier: String,
+                     productIdentifier: String,
+                     subscriptionGroup: String,
+                     receiptData: Data,
+                     appUserID: String,
+                     completion: @escaping OfferSigningResponseHandler) {
     // swiftlint:enable function_parameter_count
         let fetchToken = receiptData.base64EncodedString(options: .lineLength64Characters)
 
@@ -214,10 +215,11 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    @objc public func post(attributionData: [String: AnyObject],
-                           network: AttributionNetwork,
-                           appUserID: String,
-                           completion: ((Error?) -> Void)?) {
+    @objc(postAttributionData:network:appUserID:completion:)
+    public func post(attributionData: [String: AnyObject],
+                     network: AttributionNetwork,
+                     appUserID: String,
+                     completion: ((Error?) -> Void)?) {
         let escapedAppUserID =  escapedAppUserID(appUserID: appUserID)
         let path = "/subscribers/\(escapedAppUserID)/attribution"
         let body: [String: Any] = ["network": NSNumber(value: network.rawValue), "data": attributionData]
@@ -229,9 +231,10 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    @objc public func post(subscriberAttributes: SubscriberAttributeDict,
-                           appUserID: String,
-                           completion: ((Error?) -> Void)?) {
+    @objc(postSubscriberAttributes:appUserID:completion:)
+    public func post(subscriberAttributes: SubscriberAttributeDict,
+                     appUserID: String,
+                     completion: ((Error?) -> Void)?) {
         guard subscriberAttributes.count > 0 else {
             Logger.warn(Strings.attribution.empty_subscriber_attributes)
             return

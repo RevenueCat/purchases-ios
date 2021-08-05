@@ -167,7 +167,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)syncAttributes:(RCSubscriberAttributeDict)attributes
           forAppUserID:(NSString *)appUserID
             completion:(void (^)(NSError *))completion {
-    [self.backend postWithSubscriberAttributes:attributes appUserID:appUserID completion:^(NSError *error) {
+    [self.backend postSubscriberAttributes:attributes appUserID:appUserID completion:^(NSError *error) {
         BOOL didBackendReceiveValues = (error == nil || error.rc_successfullySynced);
 
         if (didBackendReceiveValues) {

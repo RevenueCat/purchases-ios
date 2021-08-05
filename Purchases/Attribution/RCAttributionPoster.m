@@ -82,10 +82,10 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
         if (newData.count > 0) {
             if (network == RCAttributionNetworkAppleSearchAds) {
-                [self.backend postWithAttributionData:newData
-                                              network:network
-                                            appUserID:appUserID
-                                           completion:^(NSError *_Nullable error) {
+                [self.backend postAttributionData:newData
+                                          network:network
+                                        appUserID:appUserID
+                                       completion:^(NSError *_Nullable error) {
                     if (error == nil) {
                         [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newDictToCache forAppUserID:appUserID];
                     }

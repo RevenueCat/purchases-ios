@@ -25,25 +25,25 @@ class MockHTTPClient: HTTPClient {
          headers: [String: String]?,
          completionHandler: ((Int, [String: Any]?, Error?) -> Void)?)]()
 
-    override func performGETRequest(serially performSerially: Bool = false,
+    override func performGETRequest(serially: Bool = false,
                                     path: String,
                                     headers authHeaders: [String : String],
                                     completionHandler: ((Int, [String : Any]?, Error?) -> Void)?) {
         performRequest("GET",
-                       performSerially: performSerially,
+                       serially: serially,
                        path: path,
                        requestBody: nil,
                        headers: authHeaders,
                        completionHandler: completionHandler)
     }
 
-    override func performPOSTRequest(serially performSerially: Bool = false,
+    override func performPOSTRequest(serially: Bool = false,
                                      path: String,
                                      requestBody: [String : Any],
                                      headers authHeaders: [String : String],
                                      completionHandler: ((Int, [String : Any]?, Error?) -> Void)?) {
         performRequest("POST",
-                       performSerially: performSerially,
+                       serially: serially,
                        path: path,
                        requestBody: requestBody,
                        headers: authHeaders,
@@ -53,15 +53,15 @@ class MockHTTPClient: HTTPClient {
 
 private extension MockHTTPClient {
     func performRequest(_ httpMethod: String,
-                        performSerially: Bool,
+                        serially: Bool,
                         path: String,
                         requestBody: [String : Any]?,
                         headers: [String : String]?,
                         completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         invokedPerformRequest = true
         invokedPerformRequestCount += 1
-        invokedPerformRequestParameters = (httpMethod, performSerially, path, requestBody, headers, completionHandler)
-        invokedPerformRequestParametersList.append((httpMethod, performSerially, path, requestBody, headers, completionHandler))
+        invokedPerformRequestParameters = (httpMethod, serially, path, requestBody, headers, completionHandler)
+        invokedPerformRequestParametersList.append((httpMethod, serially, path, requestBody, headers, completionHandler))
         if (shouldInvokeCompletion) {
             completionHandler?(stubbedCompletionStatusCode,
                                stubbedCompletionResponse,

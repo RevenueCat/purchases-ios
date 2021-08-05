@@ -101,16 +101,16 @@ class PurchasesTests: XCTestCase {
         var aliasError: Error?
         var aliasCalled = false
 
-        override func postReceiptData(data: Data,
-                                      appUserID: String,
-                                      isRestore: Bool,
-                                      productInfo: ProductInfo?,
-                                      presentedOfferingIdentifier: String?,
-                                      observerMode: Bool,
-                                      subscriberAttributes: [String: SubscriberAttribute]?,
-                                      completion: @escaping BackendPurchaserInfoResponseHandler) {
+        override func post(receiptData: Data,
+                           appUserID: String,
+                           isRestore: Bool,
+                           productInfo: ProductInfo?,
+                           presentedOfferingIdentifier: String?,
+                           observerMode: Bool,
+                           subscriberAttributes: [String: SubscriberAttribute]?,
+                           completion: @escaping BackendPurchaserInfoResponseHandler) {
             postReceiptDataCalled = true
-            postedReceiptData = data
+            postedReceiptData = receiptData
             postedIsRestore = isRestore
 
             if let productInfo = productInfo {
@@ -214,12 +214,12 @@ class PurchasesTests: XCTestCase {
         var postOfferForSigningPaymentDiscountResponse: [String: Any] = [:]
         var postOfferForSigningError: Error?
 
-        override func postOfferForSigning(_ offerIdentifier: String,
-                                          productIdentifier: String,
-                                          subscriptionGroup: String,
-                                          receiptData: Data,
-                                          appUserID: String,
-                                          completion: @escaping OfferSigningResponseHandler) {
+        override func post(offerIdForSigning offerIdentifier: String,
+                           productIdentifier: String,
+                           subscriptionGroup: String,
+                           receiptData: Data,
+                           appUserID: String,
+                           completion: @escaping OfferSigningResponseHandler) {
             postOfferForSigningCalled = true
             completion(postOfferForSigningPaymentDiscountResponse["signature"] as? String, postOfferForSigningPaymentDiscountResponse["keyIdentifier"] as? String, postOfferForSigningPaymentDiscountResponse["nonce"] as? UUID, postOfferForSigningPaymentDiscountResponse["timestamp"] as? NSNumber, postOfferForSigningError)
         }
