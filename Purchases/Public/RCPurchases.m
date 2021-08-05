@@ -735,7 +735,9 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                         [self.backend getIntroEligibilityForAppUserID:self.appUserID
                                                           receiptData:data
                                                    productIdentifiers:productIdentifiers
-                                                           completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
+                                                           completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result, NSError * _Nullable error) {
+                            [RCLog error:[NSString stringWithFormat:@"Unable to getIntroEligibilityForAppUserID: %@",
+                                          error.localizedDescription]];
                             CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
                         }];
                     }
@@ -744,15 +746,19 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                 [self.backend getIntroEligibilityForAppUserID:self.appUserID
                                                   receiptData:data
                                            productIdentifiers:productIdentifiers
-                                                   completion:^(NSDictionary<NSString *, RCIntroEligibility *> *_Nonnull result) {
-                                                       CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
-                                                   }];
+                                                   completion:^(NSDictionary<NSString *, RCIntroEligibility *> *_Nonnull result, NSError * _Nullable error) {
+                    [RCLog error:[NSString stringWithFormat:@"Unable to getIntroEligibilityForAppUserID: %@",
+                                  error.localizedDescription]];
+                    CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+                }];
             }
         } else {
             [self.backend getIntroEligibilityForAppUserID:self.appUserID
                                               receiptData:data
                                        productIdentifiers:productIdentifiers
-                                               completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result) {
+                                               completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result, NSError * _Nullable error) {
+                [RCLog error:[NSString stringWithFormat:@"Unable to getIntroEligibilityForAppUserID: %@",
+                              error.localizedDescription]];
                 CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
             }];
         }

@@ -671,10 +671,11 @@ class BackendTests: XCTestCase {
     }
 
     func testEmptyEligibilityCheckDoesNothing() {
-        backend?.getIntroEligibility(appUserID: userID, receiptData: Data(), productIdentifiers: [], completion: { (eligibilities) in
-
+        backend?.getIntroEligibility(appUserID: userID, receiptData: Data(), productIdentifiers: [], completion: { (eligibilities, error) in
+            expect(error).to(beNil())
         })
         expect(self.httpClient.calls.count).to(equal(0))
+        
     }
 
     func testPostsProductIdentifiers() {
@@ -685,7 +686,8 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc", "productd"]
-        backend?.getIntroEligibility(appUserID: userID, receiptData: Data(1...3), productIdentifiers: products, completion: {(productEligibility) in
+        backend?.getIntroEligibility(appUserID: userID, receiptData: Data(1...3), productIdentifiers: products, completion: {(productEligibility, error) in
+            expect(error).to(beNil())
             eligibility = productEligibility
         })
 
@@ -719,13 +721,54 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroEligibility(appUserID: userID, receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligibility) in
+        backend?.getIntroEligibility(appUserID: userID, receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligibility, error) in
+            expect(error).to(beNil())
             eligibility = productEligibility
         })
 
         expect(eligibility!["producta"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
         expect(eligibility!["productb"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
         expect(eligibility!["productc"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
+    }
+
+    func testEligibilityUnknownIfMissingAppUserID() {
+        // Set us up for a 404 because if the input sanitizing code fails, it will execute and we'd get a 404.
+        let response = HTTPResponse(statusCode: 404, response: nil, error: nil)
+        let path = "/subscribers//intro_eligibility"
+        httpClient.mock(requestPath: path, response: response)
+
+        var eligibility: [String: IntroEligibility]?
+        let products = ["producta"]
+        var eventualError: NSError?
+        backend?.getIntroEligibility(appUserID: "", receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligibility, error) in
+            eventualError = error as NSError?
+            eligibility = productEligibility
+        })
+
+        expect(eligibility!["producta"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
+        expect(eventualError).toEventuallyNot(beNil())
+        expect(eventualError?.domain).to(equal(RCPurchasesErrorCodeDomain))
+        expect(eventualError?.localizedDescription).to(equal(ErrorUtils.missingAppUserIDError().localizedDescription))
+
+        // We only have an underlyingError if we got a response from the server. This shouldn't happen because
+        // we shouldn't even send a request.
+        var underlyingError = (eventualError?.userInfo[NSUnderlyingErrorKey]) as? NSError
+        expect(underlyingError).to(beNil())
+
+        backend?.getIntroEligibility(appUserID: "   ", receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligibility, error) in
+            eventualError = error as NSError?
+            eligibility = productEligibility
+        })
+
+        expect(eligibility!["producta"]!.status).toEventually(equal(IntroEligibilityStatus.unknown))
+        expect(eventualError).toEventuallyNot(beNil())
+        expect(eventualError?.domain).to(equal(RCPurchasesErrorCodeDomain))
+        expect(eventualError?.localizedDescription).to(equal(ErrorUtils.missingAppUserIDError().localizedDescription))
+
+        // We only have an underlyingError if we got a response from the server. This shouldn't happen because
+        // we shouldn't even send a request.
+        underlyingError = (eventualError?.userInfo[NSUnderlyingErrorKey]) as? NSError
+        expect(underlyingError).to(beNil())
     }
 
     func testEligibilityUnknownIfUnknownError() {
@@ -737,7 +780,8 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroEligibility(appUserID: userID, receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligbility) in
+        backend?.getIntroEligibility(appUserID: userID, receiptData: Data.init(1...2), productIdentifiers: products, completion: {(productEligbility, error) in
+            expect(error).to(beNil())
             eligibility = productEligbility
         })
 
@@ -964,7 +1008,8 @@ class BackendTests: XCTestCase {
         var eligibility: [String: IntroEligibility]?
 
         let products = ["producta", "productb", "productc"]
-        backend?.getIntroEligibility(appUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligibility) in
+        backend?.getIntroEligibility(appUserID: userID, receiptData: Data(), productIdentifiers: products, completion: {(productEligibility, error) in
+            expect(error).to(beNil())
             eligibility = productEligibility
         })
 

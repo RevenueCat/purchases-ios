@@ -15,7 +15,7 @@ import Foundation
 
 public typealias SubscriberAttributeDict = [String: SubscriberAttribute]
 public typealias BackendPurchaserInfoResponseHandler = (PurchaserInfo?, Error?) -> Void
-public typealias IntroEligibilityResponseHandler = ([String: IntroEligibility]) -> Void
+public typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], Error?) -> Void
 public typealias OfferingsResponseHandler = ([String: Any]?, Error?) -> Void
 public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumber?, Error?) -> Void
 
@@ -57,8 +57,12 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
     @objc(createAliasForAppUserID:newAppUserID:completion:)
     public func createAlias(appUserID: String, newAppUserID: String, completion: ((Error?) -> Void)?) {
-        let escapedAppUserID = escapedAppUserID(appUserID: appUserID)
-        let path = "/subscribers/\(escapedAppUserID)/alias"
+        guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
+            completion?(ErrorUtils.missingAppUserIDError())
+            return
+        }
+
+        let path = "/subscribers/\(appUserID)/alias"
         httpClient.performPOSTRequest(serially: true,
                                       path: path,
                                       requestBody: ["new_app_user_id": newAppUserID],
@@ -127,8 +131,12 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
     @objc
     public func getSubscriberData(appUserID: String, completion: @escaping BackendPurchaserInfoResponseHandler) {
-        let escapedAppUserID = escapedAppUserID(appUserID: appUserID)
-        let path = "/subscribers/\(escapedAppUserID)"
+        guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
+            completion(nil, ErrorUtils.missingAppUserIDError())
+            return
+        }
+
+        let path = "/subscribers/\(appUserID)"
 
         if add(callback: completion, key: path) {
             return
@@ -221,8 +229,12 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                      network: AttributionNetwork,
                      appUserID: String,
                      completion: ((Error?) -> Void)?) {
-        let escapedAppUserID =  escapedAppUserID(appUserID: appUserID)
-        let path = "/subscribers/\(escapedAppUserID)/attribution"
+        guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
+            completion?(ErrorUtils.missingAppUserIDError())
+            return
+        }
+
+        let path = "/subscribers/\(appUserID)/attribution"
         let body: [String: Any] = ["network": NSNumber(value: network.rawValue), "data": attributionData]
         httpClient.performPOSTRequest(serially: true,
                                       path: path,
@@ -241,8 +253,12 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             return
         }
 
-        let escapedAppUserID = escapedAppUserID(appUserID: appUserID)
-        let path = "/subscribers/\(escapedAppUserID)/attributes"
+        guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
+            completion?(ErrorUtils.missingAppUserIDError())
+            return
+        }
+
+        let path = "/subscribers/\(appUserID)/attributes"
 
         let attributesInBackendFormat = subscriberAttributesToDict(subscriberAttributes: subscriberAttributes)
         httpClient.performPOSTRequest(serially: true,
@@ -272,15 +288,12 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
     @objc(getOfferingsForAppUserID:completion:)
     public func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
-        let trimmedAppUserID = appUserID.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedAppUserID.count > 0 else {
-            Logger.warn("called getOfferings with an empty appUserID!")
+        guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
             completion(nil, ErrorUtils.missingAppUserIDError())
             return
         }
 
-        let escapedAppUserID = escapedAppUserID(appUserID: trimmedAppUserID)
-        let path = "/subscribers/\(escapedAppUserID)/offerings"
+        let path = "/subscribers/\(appUserID)/offerings"
         if add(callback: completion, key: path) {
             return
         }
@@ -317,7 +330,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                                     productIdentifiers: [String],
                                     completion: @escaping IntroEligibilityResponseHandler) {
         guard productIdentifiers.count > 0 else {
-            completion([:])
+            completion([:], nil)
             return
         }
 
@@ -332,13 +345,26 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                 eligibilities[productID] = IntroEligibility(eligibilityStatus: .unknown)
             }
 
-            completion(eligibilities)
+            completion(eligibilities, nil)
+            return
+        }
+
+        // Closure we can use for both missing appUserID as well as server error where we have an unknown
+        // eligibility status.
+        let unknownEligibilityClosure: () -> [String: IntroEligibility] = {
+            let unknownEligibilities = [IntroEligibility](repeating: IntroEligibility(eligibilityStatus: .unknown),
+                                                          count: productIdentifiers.count)
+            let productIdentifiersToEligibility = zip(productIdentifiers, unknownEligibilities)
+            return Dictionary(uniqueKeysWithValues: productIdentifiersToEligibility)
+        }
+
+        guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
+            completion(unknownEligibilityClosure(), ErrorUtils.missingAppUserIDError())
             return
         }
 
         let fetchToken = receiptData.base64EncodedString(options: .lineLength64Characters)
-        let escapedAppUserID = escapedAppUserID(appUserID: appUserID)
-        let path = "/subscribers/\(escapedAppUserID)/intro_eligibility"
+        let path = "/subscribers/\(appUserID)/intro_eligibility"
         let body: [String: Any] = ["product_identifiers": productIdentifiers,
                                    "fetch_token": fetchToken]
 
@@ -352,11 +378,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             }
 
             guard let response = response else {
-                // missing response, we don't know eligibility for any of the identifiers.
-                let unknownEligibilities = [IntroEligibility](repeating: IntroEligibility(eligibilityStatus: .unknown),
-                                                              count: productIdentifiers.count)
-                let productIdentifiersToEligibility = zip(productIdentifiers, unknownEligibilities)
-                completion(Dictionary(uniqueKeysWithValues: productIdentifiersToEligibility))
+                completion(unknownEligibilityClosure(), nil)
                 return
             }
 
@@ -373,7 +395,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                 eligibilities[productID] = IntroEligibility(eligibilityStatus: status)
 
             }
-            completion(eligibilities)
+            completion(eligibilities, nil)
         }
     }
 
@@ -513,8 +535,17 @@ private extension Backend {
         completion(maybePurchaserInfo, nil)
     }
 
-    func escapedAppUserID(appUserID: String) -> String {
-        return appUserID.addingPercentEncoding(withAllowedCharacters: NSMutableCharacterSet.urlHostAllowed)!
+    func escapedAppUserID(appUserID: String) throws -> String {
+        let trimmedAndEscapedAppUserID = appUserID
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+
+        guard trimmedAndEscapedAppUserID.count > 0 else {
+            Logger.warn("appUserID is empty")
+            throw ErrorUtils.missingAppUserIDError()
+        }
+
+        return trimmedAndEscapedAppUserID
     }
 
     func subscriberAttributesToDict(subscriberAttributes: SubscriberAttributeDict) -> [String: AnyObject] {

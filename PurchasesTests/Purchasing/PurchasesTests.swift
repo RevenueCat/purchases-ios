@@ -143,7 +143,7 @@ class PurchasesTests: XCTestCase {
                 eligibilities[productID] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)
             }
 
-            completion(eligibilities)
+            completion(eligibilities, nil)
         }
 
         var failOfferings = false
