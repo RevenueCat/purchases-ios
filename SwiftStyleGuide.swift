@@ -109,12 +109,12 @@ private extension MyStruct {
         // https://medium.com/flawless-app-stories/you-dont-always-need-weak-self-a778bec505ef
 
         // no need to explicitly capture self if you need a strong reference
-        foo.methodThatNeedsStrongCapture() {
+        foo.methodThatNeedsStrongCapture {
             // ...
         }
 
         // but of course we do add it for weak references
-        foo.methodThatNeedsWeakCapture() { [weak self] in
+        foo.methodThatNeedsWeakCapture { [weak self] in
             guard let `self` = self else { return }
             // from this point on, you can use self as usual
             self.doThings()
