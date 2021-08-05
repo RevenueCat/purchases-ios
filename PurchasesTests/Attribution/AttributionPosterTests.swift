@@ -19,7 +19,7 @@ import Nimble
 import Purchases
 @testable import PurchasesCoreSwift
 
-class AttributionFetcherTests: XCTestCase {
+class AttributionPosterTests: XCTestCase {
 
     var attributionFetcher: AttributionFetcher!
     var attributionPoster: RCAttributionPoster!
