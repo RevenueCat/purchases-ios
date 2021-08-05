@@ -104,6 +104,21 @@ private extension MyStruct {
                             : MyCustomError.networkError
     }
 
+    func methodThatNeedsToCaptureSelf() {
+        // great guide on when and when not to capture self strongly
+        // https://medium.com/flawless-app-stories/you-dont-always-need-weak-self-a778bec505ef
+
+        // no need to explicitly capture self if you need a strong reference
+        foo.methodThatNeedsStrongCapture() {
+            // ...
+        }
+
+        // but of course we do add it for weak references
+        foo.methodThatNeedsWeakCapture() { [weak self] in
+            // ...
+        }
+    }
+
 }
 
 // use private extensions of basic types to define constants
