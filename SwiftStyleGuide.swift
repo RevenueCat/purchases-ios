@@ -115,7 +115,10 @@ private extension MyStruct {
 
         // but of course we do add it for weak references
         foo.methodThatNeedsWeakCapture { [weak self] in
-            guard let `self` = self else { return }
+            // we need to make self strong again, because the object could be dealloc'ed while
+            // this completion block is running.
+            // so we capture it strongly only within the scope of this completion block.
+            guard let self = self else { return }
             // from this point on, you can use self as usual
             self.doThings()
             // ...
