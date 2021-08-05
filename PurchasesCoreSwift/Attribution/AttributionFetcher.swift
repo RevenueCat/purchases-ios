@@ -21,6 +21,13 @@ enum AttributionFetcherError: Error {
     private let attributionFactory: AttributionTypeFactory
     private let systemInfo: SystemInfo
 
+    #if os(watchOS) || os(macOS) || targetEnvironment(macCatalyst)
+    private let appTrackingTransparencyRequired = false
+    #else
+    private let appTrackingTransparencyRequired = true
+    #endif
+
+
     @objc public init(attributionFactory: AttributionTypeFactory, systemInfo: SystemInfo) {
         self.attributionFactory = attributionFactory
         self.systemInfo = systemInfo
@@ -74,12 +81,6 @@ enum AttributionFetcherError: Error {
         completion(nil, AttributionFetcherError.identifierForAdvertiserUnavailableForPlatform)
         #endif
     }
-
-    #if os(watchOS) || os(macOS) || targetEnvironment(macCatalyst)
-    private let appTrackingTransparencyRequired = false
-    #else
-    private let appTrackingTransparencyRequired = true
-    #endif
 
     @objc public var isAuthorizedToPostSearchAds: Bool {
         // Should match platforms that require permissions detailed in
