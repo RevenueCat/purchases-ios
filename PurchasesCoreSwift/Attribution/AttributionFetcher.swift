@@ -95,7 +95,7 @@ enum AttributionFetcherError: Error {
 
         return true
     }
-    
+
 }
 
 private extension AttributionFetcher {
