@@ -27,7 +27,6 @@ enum AttributionFetcherError: Error {
     private let appTrackingTransparencyRequired = true
     #endif
 
-
     @objc public init(attributionFactory: AttributionTypeFactory, systemInfo: SystemInfo) {
         self.attributionFactory = attributionFactory
         self.systemInfo = systemInfo
