@@ -548,12 +548,12 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             let maybeCallbacks = purchaserInfoCallbacksCache[key]
             var callbacks: [BackendPurchaserInfoResponseHandler]
             let requestAlreadyInFlight: Bool
-            if maybeCallbacks == nil {
+            if let someCallbacks = maybeCallbacks {
+                requestAlreadyInFlight = true
+                callbacks = callbacks
+            } else {
                 requestAlreadyInFlight = false
                 callbacks = []
-            } else {
-                requestAlreadyInFlight = true
-                callbacks = maybeCallbacks!
             }
             callbacks.append(callback)
             purchaserInfoCallbacksCache[key] = callbacks
