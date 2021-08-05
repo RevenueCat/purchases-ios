@@ -111,6 +111,7 @@ private extension MyStruct {
         // no need to explicitly capture self if you need a strong reference
         foo.methodThatNeedsStrongCapture {
             // ...
+            self.bar()
         }
 
         // but of course we do add it for weak references
