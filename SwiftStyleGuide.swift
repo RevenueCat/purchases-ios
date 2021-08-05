@@ -115,6 +115,9 @@ private extension MyStruct {
 
         // but of course we do add it for weak references
         foo.methodThatNeedsWeakCapture() { [weak self] in
+            guard let `self` = self else { return }
+            // from this point on, you can use self as usual
+            self.doThings()
             // ...
         }
     }
