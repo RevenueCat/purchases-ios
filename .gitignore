@@ -33,3 +33,4 @@ builds/
 Pods/
 IntegrationTests/CarthageIntegration/Cartfile.resolved
 scan_derived_data/
+generated_docs/
