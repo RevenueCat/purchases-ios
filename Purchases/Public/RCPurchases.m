@@ -1154,7 +1154,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 // TODO: move to new class PurchasesManager
 - (nullable RCPurchaseCompletedBlock)getAndRemovePurchaseCompletedBlockFor:(SKPaymentTransaction *)transaction {
     RCPurchaseCompletedBlock completion = nil;
-    NSString * _Nullable productIdentifier = [self productIdentifierFrom:transaction];
+    NSString * _Nullable productIdentifier = transaction.rc_productIdentifier;
     if (productIdentifier) {
         @synchronized (self) {
             completion = self.purchaseCompleteCallbacks[productIdentifier];
@@ -1213,8 +1213,9 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
 
 // todo: move to PurchasesManager (or find better name, since this is the exact opposite of a purchase)
 - (void)fetchProductsAndPostReceiptWithTransaction:(SKPaymentTransaction *)transaction data:(NSData *)data {
-    if ([self productIdentifierFrom:transaction]) {
-        [self productsWithIdentifiers:@[[self productIdentifierFrom:transaction]]
+    NSString * _Nullable productIdentifier = transaction.rc_productIdentifier;
+    if (productIdentifier) {
+        [self productsWithIdentifiers:@[productIdentifier]
                       completionBlock:^(NSArray<SKProduct *> *products) {
                           [self postReceiptWithTransaction:transaction data:data products:products];
                       }];
@@ -1260,18 +1261,6 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
                                              subscriberAttributes:subscriberAttributes
                                                             error:error];
                        }];
-}
-
-// todo: move to SKPaymentTransaction Extension
-- (nullable NSString *)productIdentifierFrom:(SKPaymentTransaction *)transaction {
-    if (transaction.payment == nil) {
-        [RCLog appleWarning:[NSString stringWithFormat:@"%@",
-                             RCStrings.purchase.skpayment_missing_from_skpaymenttransaction]];
-    } else if (transaction.payment.productIdentifier == nil) {
-        [RCLog appleWarning:[NSString stringWithFormat:@"%@",
-                             RCStrings.purchase.skpayment_missing_product_identifier]];
-    }
-    return transaction.payment.productIdentifier;
 }
 
 #pragma MARK: RCPurchaserInfoManagerDelegate

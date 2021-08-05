@@ -2439,6 +2439,19 @@ class PurchasesTests: XCTestCase {
         transaction.setValue(SKPaymentTransactionState.purchased.rawValue, forKey: "transactionState")
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
     }
+    
+    func testNoCrashIfPaymentDoesNotHaveProductIdenfier() {
+        setupPurchases()
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = SKPayment()
+
+        transaction.setValue(SKPaymentTransactionState.purchasing.rawValue, forKey: "transactionState")
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+        
+        transaction.setValue(SKPaymentTransactionState.purchased.rawValue, forKey: "transactionState")
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+    }
 
     func testPostsOfferingIfPurchasingPackage() {
         setupPurchases()
