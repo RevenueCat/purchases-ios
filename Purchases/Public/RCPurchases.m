@@ -15,10 +15,6 @@
 #import "RCPurchases.h"
 #import "RCSubscriberAttributesManager.h"
 
-// TODO: simply replace with OperationDispatcher when migrating
-#define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self.operationDispatcher dispatchOnMainThread:^{ completion(__VA_ARGS__); }];
-#define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
-
 @interface RCPurchases () <RCStoreKitWrapperDelegate, RCPurchaserInfoManagerDelegate> {
     NSNumber * _Nullable _allowSharingAppStoreAccount;
 }
@@ -452,7 +448,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             if (error == nil) {
                 [self updateAllCachesWithCompletionBlock:completion];
             } else {
-                CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
+                if (completion) {
+                    [self.operationDispatcher dispatchOnMainThread:^{ completion(nil, error); }];
+                }
             }
         }];
     }
@@ -466,7 +464,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             if (error == nil) {
                 [self updateAllCachesWithCompletionBlock:completion];
             } else {
-                CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
+                if (completion) {
+                    [self.operationDispatcher dispatchOnMainThread:^{ completion(nil, error); }];
+                }
             }
         }];
 
@@ -478,8 +478,8 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
     [self.identityManager logInWithAppUserID:appUserID completion:^(RCPurchaserInfo *purchaserInfo,
                                                                     BOOL created,
                                                                     NSError * _Nullable error) {
-        CALL_IF_SET_ON_MAIN_THREAD(completion, purchaserInfo, created, error);
-
+        [self.operationDispatcher dispatchOnMainThread:^{ completion(purchaserInfo, created, error); }];
+    
         if (error == nil) {
             [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
                 [self.offeringsManager updateOfferingsCacheWithAppUserID:self.appUserID
@@ -493,7 +493,9 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
 - (void)logOutWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     [self.identityManager logOutWithCompletion:^(NSError *error) {
         if (error) {
-            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{ completion(nil, error); }];
+            }
         } else {
             [self updateAllCachesWithCompletionBlock:completion];
         }
@@ -518,10 +520,10 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
     if (productIdentifiersSet.count > 0) {
         [self.productsManager productsWithIdentifiers:productIdentifiersSet
                                            completion:^(NSSet<SKProduct *> * _Nonnull products) {
-            CALL_IF_SET_ON_MAIN_THREAD(completion, products.allObjects);
+            [self.operationDispatcher dispatchOnMainThread:^{ completion(products.allObjects); }];
         }];
     } else {
-        CALL_IF_SET_ON_MAIN_THREAD(completion, @[]);
+        [self.operationDispatcher dispatchOnMainThread:^{ completion(@[]); }];
     }
 }
 
