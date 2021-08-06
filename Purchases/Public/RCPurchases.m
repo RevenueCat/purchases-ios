@@ -410,14 +410,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 + (void)addAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
           forNetworkUserId:(nullable NSString *)networkUserId {
-    // todo: replace this check with `isConfigured`
-    if (_sharedPurchases) {
-        // todo: move log to relevant class
-        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.instance_configured_posting_attribution]];
+    if (self.isConfigured) {
         [_sharedPurchases postAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
     } else {
-        // todo: move log to relevant class
-        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.no_instance_configured_caching_attribution]];
         [RCAttributionPoster storePostponedAttributionData:data
                                                fromNetwork:network
                                           forNetworkUserId:networkUserId];
@@ -790,40 +785,28 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)invalidatePurchaserInfoCache {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchaserInfo.invalidating_purchaserinfo_cache]];
     [self.purchaserInfoManager clearPurchaserInfoCacheForAppUserID:self.appUserID];
 }
 
 - (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos) {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchase.presenting_code_redemption_sheet]];
     [self.storeKitWrapper presentCodeRedemptionSheet];
 }
 
 #pragma mark Subcriber Attributes
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAttributes"]];
     [self.subscriberAttributesManager setAttributes:attributes appUserID:self.appUserID];
 }
 
 - (void)setEmail:(nullable NSString *)email {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setEmail"]];
     [self.subscriberAttributesManager setEmail:email appUserID:self.appUserID];
 }
 
 - (void)setPhoneNumber:(nullable NSString *)phoneNumber {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPhoneNumber"]];
     [self.subscriberAttributesManager setPhoneNumber:phoneNumber appUserID:self.appUserID];
 }
 
 - (void)setDisplayName:(nullable NSString *)displayName {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setDisplayName"]];
     [self.subscriberAttributesManager setDisplayName:displayName appUserID:self.appUserID];
 }
 

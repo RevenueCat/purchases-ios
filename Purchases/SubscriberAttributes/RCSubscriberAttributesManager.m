@@ -43,20 +43,24 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAttributes"]];
     [attributes enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
         [self setAttributeWithKey:key value:value appUserID:appUserID];
     }];
 }
 
 - (void)setEmail:(nullable NSString *)email appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setEmail"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.email value:email appUserID:appUserID];
 }
 
 - (void)setPhoneNumber:(nullable NSString *)phoneNumber appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPhoneNumber"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.phoneNumber value:phoneNumber appUserID:appUserID];
 }
 
 - (void)setDisplayName:(nullable NSString *)displayName appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setDisplayName"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.displayName value:displayName appUserID:appUserID];
 }
 
