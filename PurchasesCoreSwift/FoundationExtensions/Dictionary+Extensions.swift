@@ -20,6 +20,7 @@ extension Dictionary {
 
     /// Merge strategy to use for any duplicate keys.
     enum MergeStrategy<Value> {
+
         /// Keep the original value.
         case keepOriginalValue
         /// Overwrite the original value.
@@ -33,6 +34,7 @@ extension Dictionary {
                 return { _, overwrite in overwrite }
             }
         }
+
     }
 
     /// Creates a dictionary by merging the given dictionary into this
