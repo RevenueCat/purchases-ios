@@ -30,9 +30,7 @@ import Foundation
         let networkSpecificSubscriberAttributes = convertNetworkSpecificSubscriberAttributes(for: network,
                 attributionData: attributionData)
 
-        return convertedAttribution.merging(networkSpecificSubscriberAttributes) { (_, new) -> Any? in
-            new
-        }
+        return convertedAttribution.merging(networkSpecificSubscriberAttributes)
     }
 
 }

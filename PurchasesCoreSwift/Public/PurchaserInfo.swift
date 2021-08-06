@@ -198,12 +198,13 @@ import Foundation
 
     // TODO after migration make this internal
     @objc public static let currentSchemaVersion = "2"
-
+    
     // TODO after migration make this internal and remove objc rename
     @objc(JSONObject) public func jsonObject() -> [String: Any] {
         return originalData.merging(
             ["schema_version": PurchaserInfo.currentSchemaVersion],
-            uniquingKeysWith: { (current, _) in current })
+            strategy: .keepOriginalValue
+        )
     }
 
     private struct SubscriberData {
@@ -257,7 +258,7 @@ import Foundation
             })
 
             self.allTransactionsByProductId = latestNonSubscriptionTransactionsByProductId
-                .merging(subscriptionTransactionsByProductId) { (current, _) in current }
+                .merging(subscriptionTransactionsByProductId, strategy: .keepOriginalValue)
 
             self.expirationDatesByProductId =
                 parseExpirationDates(transactionsByProductId: subscriptionTransactionsByProductId)

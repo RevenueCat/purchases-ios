@@ -421,7 +421,7 @@ extension DeviceCache {
             let legacyAttributes = userDefaults.dictionary(
                 forKey: CacheKeyBases.legacySubscriberAttributes + appUserID) ?? [:]
             let existingAttributes = threadUnsafeSubscriberAttributes(appUserID: appUserID)
-            let allAttributesForUser = legacyAttributes.merging(existingAttributes) { _, new in new }
+            let allAttributesForUser = legacyAttributes.merging(existingAttributes)
             attributesInNewFormat[appUserID] = allAttributesForUser
 
             let legacyAttributesKey = CacheKeyBases.legacySubscriberAttributes + appUserID
