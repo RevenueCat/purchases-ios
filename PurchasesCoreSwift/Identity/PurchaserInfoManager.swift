@@ -24,7 +24,7 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
 
 @objc(RCPurchaserInfoManager) public class PurchaserInfoManager: NSObject {
 
-    @objc public var delegate: PurchaserInfoManagerDelegate?
+    @objc public weak var delegate: PurchaserInfoManagerDelegate?
 
     private(set) var lastSentPurchaserInfo: PurchaserInfo?
     private let operationDispatcher: OperationDispatcher
@@ -138,7 +138,7 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
                 return nil
             }
 
-            if info.schemaVersion != nil && info.schemaVersion == PurchaserInfo.currentSchemaVersion {
+            if let schema = info.schemaVersion, schema == PurchaserInfo.currentSchemaVersion {
                 return info
             }
         } catch {
@@ -173,6 +173,10 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
     }
 
     private func sendUpdateIfChanged(purchaserInfo: PurchaserInfo) {
+        guard let delegate = self.delegate else {
+            return
+        }
+
         purchaserInfoCacheLock.lock()
         guard lastSentPurchaserInfo != purchaserInfo else {
             purchaserInfoCacheLock.unlock()
@@ -188,7 +192,7 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
         self.lastSentPurchaserInfo = purchaserInfo
         operationDispatcher.dispatchOnMainThread {
             self.purchaserInfoCacheLock.unlock()
-            self.delegate?.purchaserInfoManagerDidReceiveUpdated(purchaserInfo: purchaserInfo)
+            delegate.purchaserInfoManagerDidReceiveUpdated(purchaserInfo: purchaserInfo)
         }
     }
 
