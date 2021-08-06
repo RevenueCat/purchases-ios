@@ -479,7 +479,7 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
                                                                     BOOL created,
                                                                     NSError * _Nullable error) {
         [self.operationDispatcher dispatchOnMainThread:^{ completion(purchaserInfo, created, error); }];
-    
+
         if (error == nil) {
             [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
                 [self.offeringsManager updateOfferingsCacheWithAppUserID:self.appUserID
