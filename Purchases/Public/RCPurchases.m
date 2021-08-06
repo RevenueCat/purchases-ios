@@ -662,7 +662,11 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             if (RCSystemInfo.isSandbox) {
                 [RCLog appleWarning:[NSString stringWithFormat:@"%@", RCStrings.receipt.no_sandbox_receipt_restore]];
             }
-            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{
+                    completion(nil, RCPurchasesErrorUtils.missingReceiptFileError);
+                }];
+            }
             return;
         }
 
@@ -671,7 +675,9 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         BOOL hasOriginalPurchaseDate = cachedPurchaserInfo != nil && cachedPurchaserInfo.originalPurchaseDate != nil;
         BOOL receiptHasTransactions = [self.receiptParser receiptHasTransactionsWithReceiptData:data];
         if (!receiptHasTransactions && hasOriginalPurchaseDate) {
-            CALL_IF_SET_ON_MAIN_THREAD(completion, cachedPurchaserInfo, nil);
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{ completion(cachedPurchaserInfo, nil); }];
+            }
             return;
         }
 
@@ -765,7 +771,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                    completion:^(NSDictionary<NSString *, RCIntroEligibility *> *_Nonnull result, NSError * _Nullable error) {
                     [RCLog error:[NSString stringWithFormat:@"Unable to getIntroEligibilityForAppUserID: %@",
                                   error.localizedDescription]];
-                    CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+                    [self.operationDispatcher dispatchOnMainThread:^{ receiveEligibility(result); }];
                 }];
             }
         } else {
@@ -775,7 +781,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result, NSError * _Nullable error) {
                 [RCLog error:[NSString stringWithFormat:@"Unable to getIntroEligibilityForAppUserID: %@",
                               error.localizedDescription]];
-                CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+                [self.operationDispatcher dispatchOnMainThread:^{ receiveEligibility(result); }];
             }];
         }
     }];
