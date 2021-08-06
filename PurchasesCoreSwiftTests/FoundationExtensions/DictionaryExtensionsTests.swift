@@ -23,19 +23,22 @@ class DictionaryExtensionsTests: XCTestCase {
             "instrument": "guitar",
             "type": 1
         ]
-        let removed = testValues.removingNSNullValues()
-        expect(removed.count) == expectedValues.count
-        for (key, value) in removed {
+
+        let obtainedValues = testValues.removingNSNullValues()
+
+        expect(obtainedValues.count) == expectedValues.count
+        for (key, value) in obtainedValues {
             expect(value as? NSObject) == expectedValues[key] as? NSObject
         }
     }
     
     func testRemovingNSNullValuesReturnsEmptyIfOriginalIsEmpty() {
         let testValues: [String: Any] = [:]
-        
-        let removed = testValues.removingNSNullValues()
-        expect(removed.count) == testValues.count
-        for (key, value) in removed {
+
+        let obtainedValues = testValues.removingNSNullValues()
+
+        expect(obtainedValues.count) == testValues.count
+        for (key, value) in obtainedValues {
             expect(value as? NSObject) == testValues[key] as? NSObject
         }
     }
