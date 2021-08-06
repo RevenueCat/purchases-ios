@@ -22,11 +22,11 @@ enum AttributionFetcherError: Error {
     private let attributionFactory: AttributionTypeFactory
     private let systemInfo: SystemInfo
 
-    #if os(watchOS) || os(macOS) || targetEnvironment(macCatalyst)
+#if os(watchOS) || os(macOS) || targetEnvironment(macCatalyst)
     private let appTrackingTransparencyRequired = false
-    #else
+#else
     private let appTrackingTransparencyRequired = true
-    #endif
+#endif
 
     @objc public init(attributionFactory: AttributionTypeFactory, systemInfo: SystemInfo) {
         self.attributionFactory = attributionFactory
@@ -37,19 +37,19 @@ enum AttributionFetcherError: Error {
         // Should match available platforms in
         // https://developer.apple.com/documentation/uikit/uidevice?language=swift
         // https://developer.apple.com/documentation/watchkit/wkinterfacedevice?language=swift
-        #if os(iOS) || os(tvOS)
-            UIDevice.current.identifierForVendor?.uuidString
-        #elseif os(watchOS)
-            WKInterfaceDevice.current().identifierForVendor?.uuidString
-        #else
-            nil
-        #endif
+#if os(iOS) || os(tvOS)
+        UIDevice.current.identifierForVendor?.uuidString
+#elseif os(watchOS)
+        WKInterfaceDevice.current().identifierForVendor?.uuidString
+#else
+        nil
+#endif
     }
 
     @objc public var identifierForAdvertisers: String? {
         // should match available platforms here:
         // https://developer.apple.com/documentation/adsupport/asidentifiermanager/1614151-advertisingidentifier
-        #if os(iOS) || os(tvOS) || os(macOS)
+#if os(iOS) || os(tvOS) || os(macOS)
         if #available(macOS 10.14, *) {
             let maybeIdentifierManagerProxy = attributionFactory.asIdentifierProxy()
             guard let identifierManagerProxy = maybeIdentifierManagerProxy else {
@@ -63,23 +63,23 @@ enum AttributionFetcherError: Error {
 
             return identifierValue.uuidString
         }
-        #endif
+#endif
         return nil
     }
 
     @objc public func adClientAttributionDetails(completion: @escaping ([String: NSObject]?, Error?) -> Void) {
         // Should match available platforms in
         // https://developer.apple.com/documentation/iad/adclient?language=swift
-        #if os(iOS)
+#if os(iOS)
         guard let adClientProxy = attributionFactory.adClientProxy() else {
             Logger.warn(Strings.attribution.search_ads_attribution_cancelled_missing_iad_framework)
             completion(nil, AttributionFetcherError.identifierForAdvertiserFrameworksUnavailable)
             return
         }
         adClientProxy.requestAttributionDetails(completion)
-        #else
+#else
         completion(nil, AttributionFetcherError.identifierForAdvertiserUnavailableForPlatform)
-        #endif
+#endif
     }
 
     @objc public var isAuthorizedToPostSearchAds: Bool {
