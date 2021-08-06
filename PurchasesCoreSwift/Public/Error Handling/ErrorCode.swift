@@ -44,6 +44,7 @@ import Foundation
     @objc(RCInvalidSubscriberAttributesError) case invalidSubscriberAttributesError = 21
     @objc(RCLogOutAnonymousUserError) case logOutAnonymousUserError = 22
     @objc(RCConfigurationError) case configurationError = 23
+    @objc(RCEmptySubscriberAttributesError) case emptySubscriberAttributes = 24
 
 }
 
@@ -104,6 +105,8 @@ extension ErrorCode {
             return "LogOut was called but the current user is anonymous."
         case .configurationError:
             return "There is an issue with your configuration. Check the underlying error for more details."
+        case .emptySubscriberAttributes:
+            return "A request for subscriber attributes returned none."
         @unknown default:
             return "Something went wrong."
         }
@@ -164,6 +167,8 @@ extension ErrorCode {
             return "LOGOUT_CALLED_WITH_ANONYMOUS_USER"
         case .configurationError:
             return "CONFIGURATION_ERROR"
+        case .emptySubscriberAttributes:
+            return "EMPTY_SUBSCRIBER_ATTRIBUTES"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }

@@ -10,6 +10,7 @@ import Foundation
 
 @objc(RCHTTPStatusCodes) public enum HTTPStatusCodes: Int {
     case success = 200,
+         createdSuccess = 201,
          redirect = 300,
          notModifiedResponseCode = 304,
          internalServerError = 500,

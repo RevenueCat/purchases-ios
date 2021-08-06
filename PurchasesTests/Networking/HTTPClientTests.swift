@@ -661,7 +661,7 @@ class HTTPClientTests: XCTestCase {
         var completionCalled = false
         var receivedError: Error? = nil
         var receivedStatus: Int? = nil
-        var receivedData: [AnyHashable: Any]? = nil
+        var receivedData: [String: Any]? = nil
         self.client.performPOSTRequest(serially: true,
                                        path: path,
                                        requestBody: nonJSONBody,

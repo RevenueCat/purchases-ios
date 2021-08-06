@@ -8,50 +8,60 @@ class MockHTTPClient: HTTPClient {
     var shouldInvokeCompletion = true
 
     var stubbedCompletionStatusCode = 200
-    var stubbedCompletionResponse: [AnyHashable: Any]? = [:]
+    var stubbedCompletionResponse: [String: Any]? = [:]
     var stubbedCompletionError: Error? = nil
 
     var invokedPerformRequestParameters: (HTTPMethod: String,
                                           performSerially: Bool,
                                           path: String,
-                                          requestBody: [AnyHashable: Any]?,
+                                          requestBody: [String: Any]?,
                                           headers: [String: String]?,
-                                          completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?)?
+                                          completionHandler: ((Int, [String: Any]?, Error?) -> Void)?)?
     var invokedPerformRequestParametersList = [
         (HTTPMethod: String,
          performSerially: Bool,
          path: String,
-         requestBody: [AnyHashable: Any]?,
+         requestBody: [String: Any]?,
          headers: [String: String]?,
-         completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?)]()
-    
+         completionHandler: ((Int, [String: Any]?, Error?) -> Void)?)]()
+
     override func performGETRequest(serially: Bool = false,
                                     path: String,
-                                    headers: [String : String],
-                                    completionHandler: ((Int, [AnyHashable : Any]?, Error?) -> Void)?) {
-        performRequest("GET", performSerially: serially, path: path, requestBody: nil, headers: headers, completionHandler: completionHandler)
+                                    headers authHeaders: [String : String],
+                                    completionHandler: ((Int, [String : Any]?, Error?) -> Void)?) {
+        performRequest("GET",
+                       serially: serially,
+                       path: path,
+                       requestBody: nil,
+                       headers: authHeaders,
+                       completionHandler: completionHandler)
     }
-    
+
     override func performPOSTRequest(serially: Bool = false,
                                      path: String,
-                                     requestBody: [String: Any],
-                                     headers: [String : String],
-                                     completionHandler: ((Int, [AnyHashable : Any]?, Error?) -> Void)?) {
-        performRequest("POST", performSerially: serially, path: path, requestBody: requestBody, headers: headers, completionHandler: completionHandler)
+                                     requestBody: [String : Any],
+                                     headers authHeaders: [String : String],
+                                     completionHandler: ((Int, [String : Any]?, Error?) -> Void)?) {
+        performRequest("POST",
+                       serially: serially,
+                       path: path,
+                       requestBody: requestBody,
+                       headers: authHeaders,
+                       completionHandler: completionHandler)
     }
 }
 
 private extension MockHTTPClient {
     func performRequest(_ httpMethod: String,
-                        performSerially: Bool,
+                        serially: Bool,
                         path: String,
                         requestBody: [String : Any]?,
                         headers: [String : String]?,
-                        completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+                        completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         invokedPerformRequest = true
         invokedPerformRequestCount += 1
-        invokedPerformRequestParameters = (httpMethod, performSerially, path, requestBody, headers, completionHandler)
-        invokedPerformRequestParametersList.append((httpMethod, performSerially, path, requestBody, headers, completionHandler))
+        invokedPerformRequestParameters = (httpMethod, serially, path, requestBody, headers, completionHandler)
+        invokedPerformRequestParametersList.append((httpMethod, serially, path, requestBody, headers, completionHandler))
         if (shouldInvokeCompletion) {
             completionHandler?(stubbedCompletionStatusCode,
                                stubbedCompletionResponse,

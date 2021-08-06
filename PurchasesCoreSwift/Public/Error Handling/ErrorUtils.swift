@@ -203,7 +203,6 @@ public extension ErrorUtils {
                                    extraUserInfo: [NSError.UserInfoKey: Any]? = nil) -> Error {
 
         let errorCode: ErrorCode
-
         if let maybeBackendCode = backendCode,
            let backendErrorCode = BackendErrorCode.init(rawValue: maybeBackendCode.intValue) {
             errorCode = backendErrorCode.toPurchasesErrorCode()
