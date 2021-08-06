@@ -10,7 +10,6 @@
 
 #import "RCAttributionPoster.h"
 #import "RCIdentityManager.h"
-#import "RCPurchaserInfoManager.h"
 #import "RCPurchases+Protected.h"
 #import "RCPurchases+SubscriberAttributes.h"
 #import "RCPurchases.h"
