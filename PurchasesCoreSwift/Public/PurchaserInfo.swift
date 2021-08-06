@@ -198,7 +198,7 @@ import Foundation
 
     // TODO after migration make this internal
     @objc public static let currentSchemaVersion = "2"
-    
+
     // TODO after migration make this internal and remove objc rename
     @objc(JSONObject) public func jsonObject() -> [String: Any] {
         return originalData.merging(
