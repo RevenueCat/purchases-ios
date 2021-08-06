@@ -19,9 +19,9 @@ import Nimble
 import Purchases
 @testable import PurchasesCoreSwift
 
-class AttributionFetcherTests: XCTestCase {
+class AttributionPosterTests: XCTestCase {
 
-    var attributionFetcher: RCAttributionFetcher!
+    var attributionFetcher: AttributionFetcher!
     var attributionPoster: RCAttributionPoster!
     var deviceCache: MockDeviceCache!
     var identityManager: MockIdentityManager!
@@ -33,7 +33,7 @@ class AttributionFetcherTests: XCTestCase {
                                                           finishTransactions: true)
 
     let userDefaultsSuiteName = "testUserDefaults"
-    
+
     override func setUp() {
         super.setUp()
         let userID = "userID"
@@ -41,11 +41,7 @@ class AttributionFetcherTests: XCTestCase {
         deviceCache.cache(appUserID: userID)
         backend = MockBackend()
         identityManager = MockIdentityManager(mockAppUserID: userID)
-        attributionFetcher = RCAttributionFetcher(deviceCache: deviceCache,
-                                                  identityManager: identityManager,
-                                                  backend: backend,
-                                                  attributionFactory: attributionFactory,
-                                                  systemInfo: systemInfo)
+        attributionFetcher = AttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
         attributionPoster = RCAttributionPoster(deviceCache: deviceCache,
                                                 identityManager: identityManager,
                                                 backend: backend,
@@ -75,7 +71,7 @@ class AttributionFetcherTests: XCTestCase {
     func testPostAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
-        
+
         attributionPoster.postAttributionData(["something": "here"],
                                                from: .adjust,
                                                forNetworkUserId: userID)
@@ -89,11 +85,11 @@ class AttributionFetcherTests: XCTestCase {
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
     }
-    
+
     func testPostAppleSearchAdsAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
-        
+
         attributionPoster.postAttributionData(["something": "here"],
                                                from: .appleSearchAds,
                                                forNetworkUserId: userID)
@@ -107,7 +103,7 @@ class AttributionFetcherTests: XCTestCase {
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
 
     }
-    
+
     func testPostAttributionDataDoesntSkipIfNetworkChanged() {
         let userID = "userID"
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
@@ -142,7 +138,7 @@ class AttributionFetcherTests: XCTestCase {
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
     }
-    
+
     func testPostAppleSearchAdsAttributionDataDoesntSkipIfDifferentUserIdButSameNetwork() {
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
 

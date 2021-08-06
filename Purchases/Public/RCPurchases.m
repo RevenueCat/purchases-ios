@@ -8,7 +8,6 @@
 
 @import PurchasesCoreSwift;
 
-#import "RCAttributionFetcher.h"
 #import "RCAttributionPoster.h"
 #import "RCBackend.h"
 #import "RCIdentityManager.h"
@@ -254,11 +253,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                                      backend:backend
                                                         purchaserInfoManager:purchaserInfoManager];
     RCAttributionTypeFactory *attributionTypeFactory = [[RCAttributionTypeFactory alloc] init];
-    RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc] initWithDeviceCache:deviceCache
-                                                                                 identityManager:identityManager
-                                                                                         backend:backend
-                                                                              attributionFactory:attributionTypeFactory
-                                                                                      systemInfo:systemInfo];
+    RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc]
+                                                initWithAttributionFactory:attributionTypeFactory
+                                                systemInfo:systemInfo];
     RCAttributionDataMigrator *attributionDataMigrator = [[RCAttributionDataMigrator alloc] init];
     RCSubscriberAttributesManager *subscriberAttributesManager =
             [[RCSubscriberAttributesManager alloc] initWithBackend:backend
@@ -602,7 +599,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }
 
     [self.productsManager cacheProduct:product];
-    
+
     @synchronized (self) {
         self.presentedOfferingsByProductIdentifier[productIdentifier] = presentedOfferingIdentifier;
     }
@@ -730,7 +727,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                 convertedEligibility[key] = eligibility;
                             }
                         }
-                        
+
                         CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
                     } else {
                         // todo: unify all of these `else`s
