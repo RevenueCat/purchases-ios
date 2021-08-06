@@ -617,37 +617,27 @@ private extension Backend {
 
     func add(callback: @escaping BackendPurchaserInfoResponseHandler, key: String) -> CallbackCacheStatus {
         return callbackQueue.sync { [self] in
-            let maybeCallbacks = purchaserInfoCallbacksCache[key]
-            var callbacks: [BackendPurchaserInfoResponseHandler]
-            let callbackStatus: CallbackCacheStatus
-            if let someCallbacks = maybeCallbacks {
-                callbackStatus = .addedToExistingInFlightList
-                callbacks = someCallbacks
-            } else {
-                callbackStatus = .firstCallbackAddedToList
-                callbacks = []
-            }
-            callbacks.append(callback)
-            purchaserInfoCallbacksCache[key] = callbacks
-            return callbackStatus
+            var callbacksForKey = purchaserInfoCallbacksCache[key] ?? []
+            let requestAlreadyInFlight: CallbackCacheStatus = !callbacksForKey.isEmpty
+                ? .addedToExistingInFlightList
+                : .firstCallbackAddedToList
+
+            callbacksForKey.append(callback)
+            purchaserInfoCallbacksCache[key] = callbacksForKey
+            return requestAlreadyInFlight
         }
     }
 
     func add(callback: @escaping OfferingsResponseHandler, key: String) -> CallbackCacheStatus {
         return callbackQueue.sync { [self] in
-            let maybeCallbacks = offeringsCallbacksCache[key]
-            var callbacks: [OfferingsResponseHandler]
-            let callbackStatus: CallbackCacheStatus
-            if let someCallbacks = maybeCallbacks {
-                callbackStatus = .addedToExistingInFlightList
-                callbacks = someCallbacks
-            } else {
-                callbackStatus = .firstCallbackAddedToList
-                callbacks = []
-            }
-            callbacks.append(callback)
-            offeringsCallbacksCache[key] = callbacks
-            return callbackStatus
+            var callbacksForKey = offeringsCallbacksCache[key] ?? []
+            let requestAlreadyInFlight: CallbackCacheStatus = !callbacksForKey.isEmpty
+                ? .addedToExistingInFlightList
+                : .firstCallbackAddedToList
+
+            callbacksForKey.append(callback)
+            offeringsCallbacksCache[key] = callbacksForKey
+            return requestAlreadyInFlight
         }
     }
 
