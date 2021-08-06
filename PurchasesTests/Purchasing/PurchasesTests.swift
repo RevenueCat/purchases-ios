@@ -2041,15 +2041,6 @@ class PurchasesTests: XCTestCase {
         expect(info).toEventuallyNot(beNil())
     }
 
-    func testWhenNoReceiptReceiptIsRefreshed() {
-        setupPurchases()
-        receiptFetcher.shouldReturnReceipt = false
-
-        makeAPurchase()
-
-        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
-    }
-
     func testWhenNoReceiptDataReceiptIsRefreshed() {
         setupPurchases()
         receiptFetcher.shouldReturnReceipt = true
