@@ -15,6 +15,8 @@
 #import "RCPurchases.h"
 #import "RCSubscriberAttributesManager.h"
 
+#define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self.operationDispatcher dispatchOnMainThread:^{ completion(__VA_ARGS__); }];
+
 @interface RCPurchases () <RCStoreKitWrapperDelegate, RCPurchaserInfoManagerDelegate> {
     NSNumber * _Nullable _allowSharingAppStoreAccount;
 }
@@ -693,19 +695,23 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)handleRestoreReceiptPostWithInfo:(RCPurchaserInfo *)info
                                    error:(NSError *)error
                     subscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
-                              completion:(RCReceivePurchaserInfoBlock)completion {
+                              completion:(nullable RCReceivePurchaserInfoBlock)completion {
     [self.operationDispatcher dispatchOnMainThread:^{
         if (error) {
             [self markAttributesAsSyncedIfNeeded:subscriberAttributes
                                        appUserID:self.appUserID
                                            error:error];
-            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{ completion(nil, error); }];
+            }
         } else if (info) {
             [self.purchaserInfoManager cachePurchaserInfo:info forAppUserID:self.appUserID];
             [self markAttributesAsSyncedIfNeeded:subscriberAttributes
                                        appUserID:self.appUserID
                                            error:nil];
-            CALL_IF_SET_ON_MAIN_THREAD(completion, info, nil);
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{ completion(info, nil); }];
+            }
         }
     }];
 }
@@ -737,8 +743,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                 convertedEligibility[key] = eligibility;
                             }
                         }
-
-                        CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
+                        [self.operationDispatcher dispatchOnMainThread:^{ receiveEligibility(convertedEligibility); }];
                     } else {
                         // todo: unify all of these `else`s
                         [RCLog error:[NSString stringWithFormat:RCStrings.receipt.parse_receipt_locally_error,
@@ -749,7 +754,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                            completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result, NSError * _Nullable error) {
                             [RCLog error:[NSString stringWithFormat:@"Unable to getIntroEligibilityForAppUserID: %@",
                                           error.localizedDescription]];
-                            CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+                            [self.operationDispatcher dispatchOnMainThread:^{ receiveEligibility(result); }];
                         }];
                     }
                 }];
