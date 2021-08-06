@@ -197,7 +197,7 @@ class PurchasesTests: XCTestCase {
             appUserID: String?)]()
         var stubbedPostAttributionDataCompletionResult: (Error?, Void)?
 
-        override func post(attributionData: [String : AnyObject],
+        override func post(attributionData: [String : Any],
                            network: AttributionNetwork,
                            appUserID: String,
                            completion: ((Error?) -> Void)? = nil) {

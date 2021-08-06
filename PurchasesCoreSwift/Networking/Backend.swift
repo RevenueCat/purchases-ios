@@ -87,11 +87,11 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                      completion: @escaping BackendPurchaserInfoResponseHandler) {
     // swiftlint:enable function_parameter_count
         let fetchToken = receiptData.rc_asFetchToken
-        var body: [String: AnyObject] = [
-            "fetch_token": fetchToken as NSString,
-            "app_user_id": appUserID as NSString,
-            "is_restore": NSNumber(value: isRestore),
-            "observer_mode": NSNumber(value: observerMode),
+        var body: [String: Any] = [
+            "fetch_token": fetchToken,
+            "app_user_id": appUserID,
+            "is_restore": isRestore,
+            "observer_mode": observerMode,
         ]
 
         let cacheKey =
@@ -100,7 +100,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         -\(offeringIdentifier ?? "")-\(observerMode)-\(subscriberAttributesByKey?.debugDescription ?? "")"
         """
 
-        if add(callback: completion, key: cacheKey) {
+        if add(callback: completion, key: cacheKey) == .addedToExistingInFlightList {
             return
         }
 
@@ -110,11 +110,11 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
         if let subscriberAttributesByKey = subscriberAttributesByKey {
             let attributesInBackendFormat = subscriberAttributesToDict(subscriberAttributes: subscriberAttributesByKey)
-            body["attributes"] = attributesInBackendFormat as AnyObject
+            body["attributes"] = attributesInBackendFormat
         }
 
         if let offeringIdentifier = offeringIdentifier {
-            body["presented_offering_identifier"] = offeringIdentifier as NSString
+            body["presented_offering_identifier"] = offeringIdentifier
         }
 
         httpClient.performPOSTRequest(serially: true,
@@ -137,7 +137,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
         let path = "/subscribers/\(appUserID)"
 
-        if add(callback: completion, key: path) {
+        if add(callback: completion, key: path) == .addedToExistingInFlightList {
             return
         }
 
@@ -189,24 +189,24 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             guard statusCode < HTTPStatusCodes.redirect.rawValue else {
                 let code = self.maybeNumberFromError(code: response?["code"])
                 let backendMessage = response?["message"] as? String
-                let error = ErrorUtils.backendError(withBackendCode: code, backendMessage: backendMessage)
+                let error = ErrorUtils.backendError(withBackendCode: code as NSNumber?, backendMessage: backendMessage)
                 completion(nil, nil, nil, nil, error)
                 return
             }
 
-            guard let offers = response?["offers"] as? [[String: AnyObject]], offers.count > 0 else {
+            guard let offers = response?["offers"] as? [[String: Any]], offers.count > 0 else {
                 completion(nil, nil, nil, nil, ErrorUtils.unexpectedBackendResponseError())
                 return
             }
 
             let offer = offers[0]
-            if let signatureError = offer["signature_error"] as? [String: AnyObject] {
+            if let signatureError = offer["signature_error"] as? [String: Any] {
                 let code = self.maybeNumberFromError(code: signatureError["code"])
                 let backendMessage = signatureError["message"] as? String
-                let error = ErrorUtils.backendError(withBackendCode: code, backendMessage: backendMessage)
+                let error = ErrorUtils.backendError(withBackendCode: code as NSNumber?, backendMessage: backendMessage)
                 completion(nil, nil, nil, nil, error)
 
-            } else if let signatureData = offer["signature_data"] as? [String: AnyObject] {
+            } else if let signatureData = offer["signature_data"] as? [String: Any] {
                 let signature = signatureData["signature"] as? String
                 let keyIdentifier = offer["key_id"] as? String
                 let nonceString = signatureData["nonce"] as? String
@@ -217,9 +217,9 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                     maybeNonce = nil
                 }
 
-                let timestamp = signatureData["timestamp"] as? NSNumber
+                let timestamp = signatureData["timestamp"] as? Int
 
-                completion(signature, keyIdentifier, maybeNonce, timestamp, nil)
+                completion(signature, keyIdentifier, maybeNonce, timestamp as NSNumber?, nil)
                 return
             } else {
                 completion(nil, nil, nil, nil, ErrorUtils.unexpectedBackendResponseError())
@@ -229,7 +229,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
     }
 
     @objc(postAttributionData:network:appUserID:completion:)
-    public func post(attributionData: [String: AnyObject],
+    public func post(attributionData: [String: Any],
                      network: AttributionNetwork,
                      appUserID: String,
                      completion: ((Error?) -> Void)?) {
@@ -239,7 +239,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
 
         let path = "/subscribers/\(appUserID)/attribution"
-        let body: [String: Any] = ["network": NSNumber(value: network.rawValue), "data": attributionData]
+        let body: [String: Any] = ["network": network.rawValue, "data": attributionData]
         httpClient.performPOSTRequest(serially: true,
                                       path: path,
                                       requestBody: body,
@@ -254,6 +254,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                      completion: ((Error?) -> Void)?) {
         guard subscriberAttributes.count > 0 else {
             Logger.warn(Strings.attribution.empty_subscriber_attributes)
+            completion?(ErrorCode.emptySubscriberAttributes)
             return
         }
 
@@ -298,7 +299,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
 
         let path = "/subscribers/\(appUserID)/offerings"
-        if add(callback: completion, key: path) {
+        if add(callback: completion, key: path) == .addedToExistingInFlightList {
             return
         }
 
@@ -322,7 +323,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             } else if statusCode > HTTPStatusCodes.redirect.rawValue {
                 let backendCode = self.maybeNumberFromError(code: response?["code"])
                 let backendMessage = response?["message"] as? String
-                errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode,
+                errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode as NSNumber?,
                                                             backendMessage: backendMessage)
             } else {
                 errorForCallbacks = ErrorUtils.unexpectedBackendResponseError()
@@ -396,6 +397,17 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
 private extension Backend {
 
+    enum CallbackCacheStatus {
+
+        // When an array exists in the cache for a particular path, we add to it and return this value.
+        case addedToExistingInFlightList
+
+        // When an array doesn't yet exist in the cache for a particular path, we create one, add to it
+        // and return this value.
+        case firstCallbackAddedToList
+
+    }
+
     func handleIntroEligibility(response: IntroEligibilityResponse) {
         var responseData = response.maybeResponse
         if response.statusCode >= HTTPStatusCodes.redirect.rawValue || response.error != nil {
@@ -411,8 +423,8 @@ private extension Backend {
         for productID in response.productIdentifiers {
             let status: IntroEligibilityStatus
 
-            if let e = responseData[productID] as? NSNumber {
-                status = e.boolValue ? .eligible : .ineligible
+            if let e = responseData[productID] as? Bool {
+                status = e ? .eligible : .ineligible
             } else {
                 status = .unknown
             }
@@ -434,7 +446,7 @@ private extension Backend {
         if statusCode > HTTPStatusCodes.redirect.rawValue {
             let backendCode = maybeNumberFromError(code: response?["code"])
             let backendMessage = response?["message"] as? String
-            let responsError = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
+            let responsError = ErrorUtils.backendError(withBackendCode: backendCode as NSNumber?, backendMessage: backendMessage)
             completion(nil, false, ErrorUtils.networkError(withUnderlyingError: responsError))
             return
         }
@@ -445,29 +457,28 @@ private extension Backend {
             return
         }
 
-        let created = statusCode == 201
+        let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
         completion(purchaserInfo, created, nil)
     }
 
-    func attributesUserInfoFromResponse(response: [String: Any], statusCode: Int) -> [String: AnyObject] {
-        var resultDict: [String: AnyObject] = [:]
+    func attributesUserInfoFromResponse(response: [String: Any], statusCode: Int) -> [String: Any] {
+        var resultDict: [String: Any] = [:]
         let isInternalServerError = statusCode >= HTTPStatusCodes.internalServerError.rawValue
         let isNotFoundError = statusCode == HTTPStatusCodes.notFoundError.rawValue
 
         let successfullySynced = !(isInternalServerError || isNotFoundError)
-        resultDict[Backend.RCSuccessfullySyncedKey as String] = NSNumber(value: successfullySynced)
+        resultDict[Backend.RCSuccessfullySyncedKey as String] = successfullySynced
 
         let hasAttributesResponseContainerKey = (response[Backend.RCAttributeErrorsResponseKey] != nil)
         let attributesResponseDict = hasAttributesResponseContainerKey
             ? response[Backend.RCAttributeErrorsResponseKey]
             : response
 
-        if let attributesResponseDict = attributesResponseDict as? [String: Any] {
-            let hasAttributeErrors = (attributesResponseDict[Backend.RCAttributeErrorsKey] != nil)
-            if hasAttributeErrors {
-                resultDict[Backend.RCAttributeErrorsKey] = attributesResponseDict[Backend.RCAttributeErrorsKey] as AnyObject
-            }
+        if let attributesResponseDict = attributesResponseDict as? [String: Any],
+           let attributesErrors = attributesResponseDict[Backend.RCAttributeErrorsKey] {
+            resultDict[Backend.RCAttributeErrorsKey] = attributesErrors
         }
+
         return resultDict
     }
 
@@ -540,7 +551,7 @@ private extension Backend {
 
         guard !hasError else {
             let finishable = statusCode < HTTPStatusCodes.internalServerError.rawValue
-            var extraUserInfo = [ErrorDetails.finishableKey: NSNumber(value: finishable)] as [String: AnyObject]
+            var extraUserInfo = [ErrorDetails.finishableKey: finishable] as [String: Any]
             extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
             let code = maybeNumberFromError(code: response?["code"])
             let message = response?["message"] as? String
@@ -567,30 +578,24 @@ private extension Backend {
         return trimmedAndEscapedAppUserID
     }
 
-    func subscriberAttributesToDict(subscriberAttributes: SubscriberAttributeDict) -> [String: AnyObject] {
-        var attributesByKey: [String: AnyObject] = [:]
+    func subscriberAttributesToDict(subscriberAttributes: SubscriberAttributeDict) -> [String: Any] {
+        var attributesByKey: [String: Any] = [:]
         for (key, value) in subscriberAttributes {
-            attributesByKey[key] = value.asBackendDictionary() as AnyObject
+            attributesByKey[key] = value.asBackendDictionary()
         }
         return attributesByKey
     }
 
-    func userInfoAttributes(response: [String: AnyObject], statusCode: Int) -> [String: AnyObject] {
-        var resultDict: [String: AnyObject] = [:]
+    func userInfoAttributes(response: [String: Any], statusCode: Int) -> [String: Any] {
+        var resultDict: [String: Any] = [:]
 
         let isInternalServerError = statusCode >= HTTPStatusCodes.internalServerError.rawValue
         let isNotFoundError = statusCode == HTTPStatusCodes.notFoundError.rawValue
         let successfullySynced = !(isInternalServerError || isNotFoundError)
-        resultDict[Backend.RCSuccessfullySyncedKey as String] = NSNumber(value: successfullySynced)
+        resultDict[Backend.RCSuccessfullySyncedKey as String] = successfullySynced
 
-        let hasAttributesResponseContainerKey = (response[Backend.RCAttributeErrorsResponseKey] != nil)
-        let maybeAttributesResponseDict = hasAttributesResponseContainerKey
-            ? response[Backend.RCAttributeErrorsResponseKey] as? [String: AnyObject]
-            : response
-
-        if let attributesResponseDict = maybeAttributesResponseDict {
-            resultDict[Backend.RCAttributeErrorsKey] = attributesResponseDict[Backend.RCAttributeErrorsKey]
-        }
+        let attributesResponse = (response[Backend.RCAttributeErrorsResponseKey] as? [String: Any]) ?? response
+        resultDict[Backend.RCAttributeErrorsKey] = attributesResponse[Backend.RCAttributeErrorsKey]
 
         return resultDict
     }
@@ -610,39 +615,39 @@ private extension Backend {
 
     // MARK: Callback cache management
 
-    func add(callback: @escaping BackendPurchaserInfoResponseHandler, key: String) -> Bool {
+    func add(callback: @escaping BackendPurchaserInfoResponseHandler, key: String) -> CallbackCacheStatus {
         return callbackQueue.sync { [self] in
             let maybeCallbacks = purchaserInfoCallbacksCache[key]
             var callbacks: [BackendPurchaserInfoResponseHandler]
-            let requestAlreadyInFlight: Bool
+            let callbackStatus: CallbackCacheStatus
             if let someCallbacks = maybeCallbacks {
-                requestAlreadyInFlight = true
+                callbackStatus = .addedToExistingInFlightList
                 callbacks = someCallbacks
             } else {
-                requestAlreadyInFlight = false
+                callbackStatus = .firstCallbackAddedToList
                 callbacks = []
             }
             callbacks.append(callback)
             purchaserInfoCallbacksCache[key] = callbacks
-            return requestAlreadyInFlight
+            return callbackStatus
         }
     }
 
-    func add(callback: @escaping OfferingsResponseHandler, key: String) -> Bool {
+    func add(callback: @escaping OfferingsResponseHandler, key: String) -> CallbackCacheStatus {
         return callbackQueue.sync { [self] in
             let maybeCallbacks = offeringsCallbacksCache[key]
             var callbacks: [OfferingsResponseHandler]
-            let requestAlreadyInFlight: Bool
-            if maybeCallbacks == nil {
-                requestAlreadyInFlight = false
-                callbacks = []
+            let callbackStatus: CallbackCacheStatus
+            if let someCallbacks = maybeCallbacks {
+                callbackStatus = .addedToExistingInFlightList
+                callbacks = someCallbacks
             } else {
-                requestAlreadyInFlight = true
-                callbacks = maybeCallbacks!
+                callbackStatus = .firstCallbackAddedToList
+                callbacks = []
             }
             callbacks.append(callback)
             offeringsCallbacksCache[key] = callbacks
-            return requestAlreadyInFlight
+            return callbackStatus
         }
     }
 
