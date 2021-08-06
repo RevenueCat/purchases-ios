@@ -409,12 +409,12 @@ private extension Backend {
     }
 
     func handleIntroEligibility(response: IntroEligibilityResponse) {
-        var responseData = response.maybeResponse
+        var eligibilitiesByProductIdentifier = response.maybeResponse
         if response.statusCode >= HTTPStatusCodes.redirect.rawValue || response.error != nil {
-            responseData = [:]
+            eligibilitiesByProductIdentifier = [:]
         }
 
-        guard let responseData = responseData else {
+        guard let eligibilitiesByProductIdentifier = eligibilitiesByProductIdentifier else {
             response.completion(response.unknownEligibilityClosure(), nil)
             return
         }
@@ -423,8 +423,8 @@ private extension Backend {
         for productID in response.productIdentifiers {
             let status: IntroEligibilityStatus
 
-            if let e = responseData[productID] as? Bool {
-                status = e ? .eligible : .ineligible
+            if let eligibility = eligibilitiesByProductIdentifier[productID] as? Bool {
+                status = eligibility ? .eligible : .ineligible
             } else {
                 status = .unknown
             }
@@ -618,26 +618,26 @@ private extension Backend {
     func add(callback: @escaping BackendPurchaserInfoResponseHandler, key: String) -> CallbackCacheStatus {
         return callbackQueue.sync { [self] in
             var callbacksForKey = purchaserInfoCallbacksCache[key] ?? []
-            let requestAlreadyInFlight: CallbackCacheStatus = !callbacksForKey.isEmpty
+            let cacheStatus: CallbackCacheStatus = !callbacksForKey.isEmpty
                 ? .addedToExistingInFlightList
                 : .firstCallbackAddedToList
 
             callbacksForKey.append(callback)
             purchaserInfoCallbacksCache[key] = callbacksForKey
-            return requestAlreadyInFlight
+            return cacheStatus
         }
     }
 
     func add(callback: @escaping OfferingsResponseHandler, key: String) -> CallbackCacheStatus {
         return callbackQueue.sync { [self] in
             var callbacksForKey = offeringsCallbacksCache[key] ?? []
-            let requestAlreadyInFlight: CallbackCacheStatus = !callbacksForKey.isEmpty
+            let cacheStatus: CallbackCacheStatus = !callbacksForKey.isEmpty
                 ? .addedToExistingInFlightList
                 : .firstCallbackAddedToList
 
             callbacksForKey.append(callback)
             offeringsCallbacksCache[key] = callbacksForKey
-            return requestAlreadyInFlight
+            return cacheStatus
         }
     }
 
