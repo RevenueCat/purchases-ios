@@ -15,8 +15,6 @@
 #import "RCPurchases.h"
 #import "RCSubscriberAttributesManager.h"
 
-#define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self.operationDispatcher dispatchOnMainThread:^{ completion(__VA_ARGS__); }];
-
 @interface RCPurchases () <RCStoreKitWrapperDelegate, RCPurchaserInfoManagerDelegate> {
     NSNumber * _Nullable _allowSharingAppStoreAccount;
 }
@@ -992,13 +990,14 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         }
         case SKPaymentTransactionStateFailed: {
             _Nullable RCPurchaseCompletedBlock completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
-
-            CALL_IF_SET_ON_MAIN_THREAD(
-                    completion,
-                    transaction,
-                    nil,
-                    [RCPurchasesErrorUtils purchasesErrorWithSKError:transaction.error],
-                    transaction.error.code == SKErrorPaymentCancelled);
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{
+                    completion(transaction,
+                               nil,
+                               [RCPurchasesErrorUtils purchasesErrorWithSKError:transaction.error],
+                               transaction.error.code == SKErrorPaymentCancelled);
+                }];
+            }
 
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
@@ -1007,13 +1006,15 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         }
         case SKPaymentTransactionStateDeferred: {
             _Nullable RCPurchaseCompletedBlock completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
-
-            NSError *pendingError = [RCPurchasesErrorUtils paymentDeferredError];
-            CALL_IF_SET_ON_MAIN_THREAD(completion,
-                                       transaction,
-                                       nil,
-                                       pendingError,
-                                       transaction.error.code == SKErrorPaymentCancelled);
+            BOOL cancelled = transaction.error.code == SKErrorPaymentCancelled;
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{
+                    completion(transaction,
+                               nil,
+                               RCPurchasesErrorUtils.paymentDeferredError,
+                               cancelled);
+                }];
+            }
             break;
         }
         case SKPaymentTransactionStatePurchasing:
