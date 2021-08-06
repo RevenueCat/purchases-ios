@@ -104,6 +104,28 @@ private extension MyStruct {
                             : MyCustomError.networkError
     }
 
+    func methodThatNeedsToCaptureSelf() {
+        // great guide on when and when not to capture self strongly
+        // https://docs.swift.org/swift-book/LanguageGuide/AutomaticReferenceCounting.html#ID56
+
+        // no need to explicitly capture self if you need a strong reference
+        foo.methodThatNeedsStrongCapture {
+            // ...
+            self.bar()
+        }
+
+        // but of course we do add it for weak references
+        foo.methodThatNeedsWeakCapture { [weak self] in
+            // we need to make self strong again, because the object could be dealloc'ed while
+            // this completion block is running.
+            // so we capture it strongly only within the scope of this completion block.
+            guard let self = self else { return }
+            // from this point on, you can use self as usual
+            self.doThings()
+            // ...
+        }
+    }
+
 }
 
 // use private extensions of basic types to define constants
