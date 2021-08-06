@@ -940,22 +940,29 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         RCPurchaseCompletedBlock _Nullable completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
         if (info) {
             [self.purchaserInfoManager cachePurchaserInfo:info forAppUserID:self.appUserID];
-
-            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, info, nil, false);
+            if (completion) {
+                completion(transaction, info, nil, false);
+            }
 
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if ([error.userInfo[RCErrorDetails.RCFinishableKey] boolValue]) {
-            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
+            if (completion) {
+                completion(transaction, nil, error, false);
+            }
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if (![error.userInfo[RCErrorDetails.RCFinishableKey] boolValue]) {
-            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
+            if (completion) {
+                completion(transaction, nil, error, false);
+            }
         } else {
             [RCLog error:[NSString stringWithFormat:@"%@", RCStrings.receipt.unknown_backend_error]];
-            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
+            if (completion) {
+                completion(transaction, nil, error, false);
+            }
         }
     }];
 }
