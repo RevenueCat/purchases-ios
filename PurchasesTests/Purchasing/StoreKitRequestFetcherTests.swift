@@ -7,7 +7,6 @@
 //
 
 import XCTest
-import OHHTTPStubs
 import Nimble
 import StoreKit
 

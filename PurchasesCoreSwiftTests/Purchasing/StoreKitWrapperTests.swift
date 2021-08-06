@@ -8,7 +8,6 @@
 
 import Foundation
 import XCTest
-import OHHTTPStubs
 import Nimble
 
 @testable import PurchasesCoreSwift
@@ -99,7 +98,8 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         expect(self.updatedTransactions).to(contain(transaction))
     }
     
-    @available(iOS 11.0, *)
+    #if !os(watchOS)
+    @available(iOS 11.0, tvOS 11.0, macOS 11.0, macCatalyst 14.0, *)
     func testCallsDelegateWhenPromoPurchaseIsAvailable() {
         let product = SKProduct.init();
         let payment = SKPayment.init(product: product)
@@ -108,8 +108,10 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         expect(self.promoPayment).to(be(payment));
         expect(self.promoProduct).to(be(product))
     }
+    #endif
     
-    @available(iOS 11.0, *)
+    #if !os(watchOS)
+    @available(iOS 11.0, tvOS 11.0, macOS 11.0, macCatalyst 14.0, *)
     func testPromoDelegateMethodPassesBackReturnValueFromOwnDelegate() {
         let product = SKProduct.init();
         let payment = SKPayment.init(product: product)
@@ -120,6 +122,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         
         expect(result).to(equal(self.shouldAddPromo))
     }
+    #endif
 
     func testCallsDelegateOncePerTransaction() {
         let payment1 = SKPayment.init(product: SKProduct.init())
@@ -199,6 +202,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         expect(payment.productIdentifier) == productId
     }
 
+    @available(macOS 10.14, *)
     func testPaymentWithProductSetsSimulatesAskToBuyInSandbox() {
         guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
 

@@ -139,7 +139,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         var isObservingDidBecomeActive = false
 
         for (_, _, name, _) in self.mockNotificationCenter.observers {
-            if name == UIApplication.didBecomeActiveNotification {
+            if name == SystemInfo.applicationDidBecomeActiveNotification {
                 isObservingDidBecomeActive = true
                 break
             }
@@ -158,7 +158,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         var isObservingDidBecomeActive = false
 
         for (_, _, name, _) in self.mockNotificationCenter.observers {
-            if name == UIApplication.willResignActiveNotification {
+            if name == SystemInfo.applicationWillResignActiveNotification {
                 isObservingDidBecomeActive = true
                 break
             }

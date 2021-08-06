@@ -32,7 +32,7 @@ class MockSKProduct: SKProduct {
         return mockPrice ?? 2.99 as NSDecimalNumber
     }
 
-    @available(iOS 11.2, *)
+    @available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *)
     override var introductoryPrice: SKProductDiscount? {
         if #available(iOS 12.2, *) {
             return mockDiscount ?? MockDiscount()
@@ -41,18 +41,18 @@ class MockSKProduct: SKProduct {
         }
     }
 
-    @available(iOS 12.2, *)
+    @available(iOS 12.2, tvOS 11.2, macOS 10.13.2, *)
     lazy var mockDiscount: SKProductDiscount? = nil
 
-    @available(iOS 12.2, *)
+    @available(iOS 12.2, tvOS 11.2, macOS 10.13.2, *)
     override var discounts: [SKProductDiscount] {
         return (mockDiscount != nil) ? [mockDiscount!] : []
     }
 
-    @available(iOS 11.2, *)
+    @available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *)
     lazy var mockSubscriptionPeriod: SKProductSubscriptionPeriod? = nil
 
-    @available(iOS 11.2, *)
+    @available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *)
     override var subscriptionPeriod: SKProductSubscriptionPeriod {
         return mockSubscriptionPeriod ?? SKProductSubscriptionPeriod(numberOfUnits: 1, unit:.month)
     }

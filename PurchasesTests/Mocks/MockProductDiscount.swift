@@ -5,7 +5,7 @@
 
 import StoreKit
 
-@available(iOS 11.2, *)
+@available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *)
 class MockProductDiscount: SKProductDiscount {
 
     init(identifier: String? = "offerid",

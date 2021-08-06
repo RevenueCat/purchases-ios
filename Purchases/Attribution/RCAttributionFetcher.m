@@ -70,7 +70,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 - (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler {
     // Should match available platforms in
     // https://developer.apple.com/documentation/iad/adclient?language=objc
-    #if TARGET_OS_IOS
+    #if TARGET_OS_IOS || TARGET_OS_MACCATALYST
     RCAdClientProxy * _Nullable adClientProxy = [self.attributionFactory adClientProxy];
     if (!adClientProxy) {
         [RCLog warn:[NSString stringWithFormat:@"%@",
@@ -78,6 +78,8 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         return;
     }
     [adClientProxy requestAttributionDetailsWithBlock:completionHandler];
+    #else
+    completionHandler([NSDictionary new], nil);
     #endif
 }
 

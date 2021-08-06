@@ -26,7 +26,7 @@ class MockProductsManager: ProductsManager {
             let products: [SKProduct] = identifiers.map { (identifier) -> MockSKProduct in
                 let p = MockSKProduct(mockProductIdentifier: identifier)
                 p.mockSubscriptionGroupIdentifier = "1234567"
-                if #available(iOS 12.2, *) {
+                if #available(iOS 12.2, tvOS 11.2, macOS 10.13.2, *) {
                     let mockDiscount = MockDiscount()
                     mockDiscount.mockIdentifier = "discount_id"
                     p.mockDiscount = mockDiscount

@@ -155,7 +155,7 @@ private extension SystemInfo {
     #elseif os(macOS)
         return false
     #elseif os(watchOS)
-        return  WKExtension.shared().applicationState == WKApplicationState.background
+        return WKExtension.shared().applicationState == WKApplicationState.background
     #endif
     }
 

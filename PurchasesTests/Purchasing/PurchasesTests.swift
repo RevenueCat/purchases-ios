@@ -744,7 +744,7 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
             expect(self.backend.postedPrice).to(equal(product.price))
 
-            if #available(iOS 11.2, *) {
+            if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
                 expect(self.backend.postedPaymentMode).to(equal(ProductInfo.PaymentMode.payAsYouGo))
                 expect(self.backend.postedIntroPrice).to(equal(product.introductoryPrice?.price))
             } else {
@@ -752,7 +752,7 @@ class PurchasesTests: XCTestCase {
                 expect(self.backend.postedIntroPrice).to(beNil())
             }
 
-            if #available(iOS 12.0, *) {
+            if #available(iOS 12.0, tvOS 12.0, macOS 10.14, *) {
                 expect(self.backend.postedSubscriptionGroup).to(equal(product.subscriptionGroupIdentifier))
             }
 
@@ -1030,7 +1030,7 @@ class PurchasesTests: XCTestCase {
         expect(self.notificationCenter.observers.count).to(equal(2));
         if self.notificationCenter.observers.count > 0 {
             let (_, _, name, _) = self.notificationCenter.observers[0];
-            expect(name).to(equal(UIApplication.didBecomeActiveNotification))
+            expect(name).to(equal(SystemInfo.applicationDidBecomeActiveNotification))
         }
     }
 
@@ -2171,7 +2171,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testAddsDiscountToWrapper() {
-        if #available(iOS 12.2, *) {
+        if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
             setupPurchases()
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
             let discount = SKPaymentDiscount.init(identifier: "discount", keyIdentifier: "TIKAMASALA1", nonce: UUID(), signature: "Base64 encoded signature", timestamp: NSNumber(value: Int64(123413232131)))
@@ -2187,7 +2187,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testPaymentDiscountForProductDiscountCreatesDiscount() {
-        if #available(iOS 12.2, *) {
+        if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
             setupPurchases()
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
@@ -2222,7 +2222,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testPaymentDiscountForProductDiscountCallsCompletionWithErrorIfReceiptNil() {
-        if #available(iOS 12.2, *) {
+        if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
             setupPurchases()
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
@@ -2248,7 +2248,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testPaymentDiscountForProductDiscountCallsCompletionWithErrorIfReceiptEmpty() {
-        if #available(iOS 12.2, *) {
+        if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
             setupPurchases()
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
