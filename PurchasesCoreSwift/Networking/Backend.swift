@@ -86,7 +86,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                      subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
                      completion: @escaping BackendPurchaserInfoResponseHandler) {
     // swiftlint:enable function_parameter_count
-        let fetchToken = receiptData.base64EncodedString(options: .lineLength64Characters)
+        let fetchToken = receiptData.rc_asFetchToken
         var body: [String: AnyObject] = [
             "fetch_token": fetchToken as NSString,
             "app_user_id": appUserID as NSString,
@@ -109,7 +109,6 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
 
         if let subscriberAttributesByKey = subscriberAttributesByKey {
-
             let attributesInBackendFormat = subscriberAttributesToDict(subscriberAttributes: subscriberAttributesByKey)
             body["attributes"] = attributesInBackendFormat as AnyObject
         }
@@ -142,9 +141,14 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             return
         }
 
-        httpClient.performGETRequest(serially: true, path: path, headers: authHeaders) { statusCode, response, error in
+        httpClient.performGETRequest(serially: true,
+                                     path: path,
+                                     headers: authHeaders) {  [weak self] (statusCode, response, error) in
+            guard let self = self else {
+                return
+            }
+
             for completion in self.getPurchaserInfoCallbacksAndClearCache(forKey: path) {
-                print("Hi")
                 self.handle(purchaserInfoResponse: response,
                             statusCode: statusCode,
                             error: error,
@@ -162,7 +166,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                      appUserID: String,
                      completion: @escaping OfferSigningResponseHandler) {
     // swiftlint:enable function_parameter_count
-        let fetchToken = receiptData.base64EncodedString(options: .lineLength64Characters)
+        let fetchToken = receiptData.rc_asFetchToken
 
         let requestBody: [String: Any] = ["app_user_id": appUserID,
                                           "fetch_token": fetchToken,
@@ -206,16 +210,16 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
                 let signature = signatureData["signature"] as? String
                 let keyIdentifier = offer["key_id"] as? String
                 let nonceString = signatureData["nonce"] as? String
-                let nonce: UUID?
+                let maybeNonce: UUID?
                 if let nonceString = nonceString {
-                    nonce = UUID(uuidString: nonceString)
+                    maybeNonce = UUID(uuidString: nonceString)
                 } else {
-                    nonce = nil
+                    maybeNonce = nil
                 }
 
                 let timestamp = signatureData["timestamp"] as? NSNumber
 
-                completion(signature, keyIdentifier, nonce, timestamp, nil)
+                completion(signature, keyIdentifier, maybeNonce, timestamp, nil)
                 return
             } else {
                 completion(nil, nil, nil, nil, ErrorUtils.unexpectedBackendResponseError())
@@ -298,7 +302,13 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             return
         }
 
-        httpClient.performGETRequest(serially: false, path: path, headers: authHeaders) { statusCode, response, error in
+        httpClient.performGETRequest(serially: false,
+                                     path: path,
+                                     headers: authHeaders) { [weak self] (statusCode, response, error) in
+            guard let self = self else {
+                return
+            }
+
             if error == nil && statusCode < HTTPStatusCodes.redirect.rawValue {
                 for callback in self.getOfferingsCallbacksAndClearCache(forKey: path) {
                     callback(response, nil)
@@ -363,7 +373,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
             return
         }
 
-        let fetchToken = receiptData.base64EncodedString(options: .lineLength64Characters)
+        let fetchToken = receiptData.rc_asFetchToken
         let path = "/subscribers/\(appUserID)/intro_eligibility"
         let body: [String: Any] = ["product_identifiers": productIdentifiers,
                                    "fetch_token": fetchToken]
@@ -371,37 +381,46 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         httpClient.performPOSTRequest(serially: true,
                                       path: path,
                                       requestBody: body,
-                                      headers: authHeaders) { statusCode, theResponse, error in
-            var response = theResponse
-            if statusCode >= HTTPStatusCodes.redirect.rawValue || error != nil {
-                response = [:]
-            }
-
-            guard let response = response else {
-                completion(unknownEligibilityClosure(), nil)
-                return
-            }
-
-            var eligibilities: [String: IntroEligibility] = [:]
-            for productID in productIdentifiers {
-                let status: IntroEligibilityStatus
-
-                if let e = response[productID] as? NSNumber {
-                    status = e.boolValue ? .eligible : .ineligible
-                } else {
-                    status = .unknown
-                }
-
-                eligibilities[productID] = IntroEligibility(eligibilityStatus: status)
-
-            }
-            completion(eligibilities, nil)
+                                      headers: authHeaders) { statusCode, maybeResponse, error in
+            let eligibilityResponse = IntroEligibilityResponse(maybeResponse: maybeResponse,
+                                                               statusCode: statusCode,
+                                                               error: error,
+                                                               productIdentifiers: productIdentifiers,
+                                                               unknownEligibilityClosure: unknownEligibilityClosure,
+                                                               completion: completion)
+            self.handleIntroEligibility(response: eligibilityResponse)
         }
     }
 
 }
 
 private extension Backend {
+
+    func handleIntroEligibility(response: IntroEligibilityResponse) {
+        var responseData = response.maybeResponse
+        if response.statusCode >= HTTPStatusCodes.redirect.rawValue || response.error != nil {
+            responseData = [:]
+        }
+
+        guard let responseData = responseData else {
+            response.completion(response.unknownEligibilityClosure(), nil)
+            return
+        }
+
+        var eligibilities: [String: IntroEligibility] = [:]
+        for productID in response.productIdentifiers {
+            let status: IntroEligibilityStatus
+
+            if let e = responseData[productID] as? NSNumber {
+                status = e.boolValue ? .eligible : .ineligible
+            } else {
+                status = .unknown
+            }
+
+            eligibilities[productID] = IntroEligibility(eligibilityStatus: status)
+        }
+        response.completion(eligibilities, nil)
+    }
 
     func handleLogin(response: [String: Any]?,
                      statusCode: Int,

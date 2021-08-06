@@ -201,6 +201,7 @@
 		B36824C3268FBE1500957E4C /* BackendSubscriberAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357F69438004E1F443C03 /* BackendSubscriberAttributesTests.swift */; };
 		B372EC54268FEDC60099171E /* PromotionalOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B372EC53268FEDC60099171E /* PromotionalOffer.swift */; };
 		B372EC56268FEF020099171E /* ProductInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B372EC55268FEF020099171E /* ProductInfo.swift */; };
+		B3766F1E26BDA95100141450 /* IntroEligibilityResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3766F1D26BDA95100141450 /* IntroEligibilityResponse.swift */; };
 		B387F47A2683FDEA0028701F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B387F46D2683FDAC0028701F /* main.m */; };
 		B39E8118268E832000D31189 /* RCAttributionNetworkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B39E8117268E832000D31189 /* RCAttributionNetworkAPI.m */; };
 		B39E811A268E849900D31189 /* AttributionNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39E8119268E849900D31189 /* AttributionNetwork.swift */; };
@@ -524,6 +525,7 @@
 		B36824BD268FBC5B00957E4C /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		B372EC53268FEDC60099171E /* PromotionalOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOffer.swift; sourceTree = "<group>"; };
 		B372EC55268FEF020099171E /* ProductInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductInfo.swift; sourceTree = "<group>"; };
+		B3766F1D26BDA95100141450 /* IntroEligibilityResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroEligibilityResponse.swift; sourceTree = "<group>"; };
 		B387F46D2683FDAC0028701F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		B387F4732683FDDB0028701F /* APITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = APITester; sourceTree = BUILT_PRODUCTS_DIR; };
 		B39E8116268E832000D31189 /* RCAttributionNetworkAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCAttributionNetworkAPI.h; sourceTree = "<group>"; };
@@ -1021,6 +1023,7 @@
 				35D832D1262E56DB00E60AC5 /* HTTPStatusCodes.swift */,
 				35F6FD61267426D600ABCB53 /* ETagAndResponseWrapper.swift */,
 				35F82BB326A9A74D0051DF03 /* HTTPClient.swift */,
+				B3766F1D26BDA95100141450 /* IntroEligibilityResponse.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -1794,6 +1797,7 @@
 				37E35C8515C5E2D01B0AF5C1 /* Strings.swift in Sources */,
 				37E350C67712B9E054FEF297 /* AttributionData.swift in Sources */,
 				37E3578711F5FDD5DC6458A8 /* AttributionFetcher.swift in Sources */,
+				B3766F1E26BDA95100141450 /* IntroEligibilityResponse.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
