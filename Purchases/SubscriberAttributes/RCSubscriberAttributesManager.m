@@ -6,7 +6,6 @@
 @import PurchasesCoreSwift;
 
 #import "NSError+RCExtensions.h"
-#import "RCAttributionFetcher.h"
 #import "RCBackend.h"
 #import "RCSubscriberAttributesManager.h"
 

@@ -74,10 +74,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         let systemInfoAttribution = try! MockSystemInfo(platformFlavor: "iOS",
                                                         platformFlavorVersion: "3.2.1",
                                                         finishTransactions: true)
-        self.mockAttributionFetcher = MockAttributionFetcher(deviceCache: mockDeviceCache,
-                                                             identityManager: mockIdentityManager,
-                                                             backend: mockBackend,
-                                                             attributionFactory: AttributionTypeFactory(),
+        self.mockAttributionFetcher = MockAttributionFetcher(attributionFactory: AttributionTypeFactory(),
                                                              systemInfo: systemInfoAttribution)
         self.mockAttributionPoster = RCAttributionPoster(deviceCache: mockDeviceCache,
                                                          identityManager: mockIdentityManager,

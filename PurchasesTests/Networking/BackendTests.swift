@@ -1116,7 +1116,7 @@ class BackendTests: XCTestCase {
                 "price": 12,
                 "payment_mode": 0
             ]
-        ]) { _, new in new }
+        ])
 
         var expectedCall: HTTPRequest
         if #available(iOS 12.2, macOS 10.14.4, *) {
