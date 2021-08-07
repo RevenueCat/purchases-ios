@@ -22,6 +22,7 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
 
 }
 
+// TODO (post-migration) make all the things internal, including the protocol.
 @objc(RCPurchaserInfoManager) public class PurchaserInfoManager: NSObject {
 
     @objc public weak var delegate: PurchaserInfoManagerDelegate?
@@ -89,7 +90,6 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
         }
     }
 
-    // TODO(post-migration): Switch to internal
     @objc(sendCachedPurchaserInfoIfAvailableForAppUserID:)
     public func sendCachedPurchaserInfoIfAvailable(appUserID: String) {
         guard let info = cachedPurchaserInfo(appUserID: appUserID) else {
@@ -124,7 +124,6 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
         }
     }
 
-    // TODO: Ensure this is tested
     @objc(cachedPurchaserInfoForAppUserID:)
     public func cachedPurchaserInfo(appUserID: String) -> PurchaserInfo? {
         guard let purchaserInfoData = deviceCache.cachedPurchaserInfoData(appUserID: appUserID) else {
@@ -163,12 +162,6 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
         deviceCache.clearPurchaserInfoCache(appUserID: appUserID)
         lastSentPurchaserInfo = nil
         purchaserInfoCacheLock.unlock()
-    }
-
-    // TODO: Why do we have this? It's not referenced anywhere.
-    func invalidatePurchaserInfoCache(appUserID: String) {
-        Logger.debug(Strings.purchaserInfo.invalidating_purchaserinfo_cache)
-        self.deviceCache.clearPurchaserInfoCache(appUserID: appUserID)
     }
 
     private func sendUpdateIfChanged(purchaserInfo: PurchaserInfo) {
