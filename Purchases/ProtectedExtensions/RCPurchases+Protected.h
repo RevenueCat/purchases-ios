@@ -22,7 +22,8 @@
     RCIntroEligibilityCalculator,
     RCReceiptParser,
     RCPurchaserInfoManager,
-    RCProductsManager;
+    RCProductsManager,
+    RCOfferingsManager;
 
 @protocol RCStoreKitWrapperDelegate;
 #import "Purchases.h"
@@ -49,7 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
        introEligibilityCalculator:(RCIntroEligibilityCalculator *)introEligibilityCalculator
                     receiptParser:(RCReceiptParser *)receiptParser
              purchaserInfoManager:(RCPurchaserInfoManager *)purchaserInfoManager
-                  productsManager:(RCProductsManager *)productsManager;
+                  productsManager:(RCProductsManager *)productsManager
+                 offeringsManager:(RCOfferingsManager *) offeringsManager;
 
 + (void)setDefaultInstance:(nullable RCPurchases *)instance;
 

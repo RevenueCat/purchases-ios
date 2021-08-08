@@ -50,6 +50,7 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 @property (nonatomic) RCIntroEligibilityCalculator *introEligibilityCalculator;
 @property (nonatomic) RCReceiptParser *receiptParser;
 @property (nonatomic) RCPurchaserInfoManager *purchaserInfoManager;
+@property (nonatomic) RCOfferingsManager *offeringsManager;
 
 @end
 
@@ -274,6 +275,13 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCReceiptRefreshRequestFactory *receiptRefreshRequestFactory = [[RCReceiptRefreshRequestFactory alloc] init];
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] initWithRequestFactory:receiptRefreshRequestFactory
                                                                              operationDispatcher:operationDispatcher];
+    
+    RCOfferingsManager *offeringsManager = [[RCOfferingsManager alloc] initWithDeviceCache:deviceCache
+                                                                       operationDispatcher:operationDispatcher
+                                                                                systemInfo:systemInfo
+                                                                                   backend:backend
+                                                                          offeringsFactory:offeringsFactory
+                                                                           productsManager:productsManager];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher
@@ -291,7 +299,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         introEligibilityCalculator:introCalculator
                      receiptParser:receiptParser
               purchaserInfoManager:purchaserInfoManager
-                   productsManager:productsManager];
+                   productsManager:productsManager
+                  offeringsManager:offeringsManager];
 }
 
 - (instancetype)initWithAppUserID:(nullable NSString *)appUserID
@@ -311,7 +320,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
        introEligibilityCalculator:(RCIntroEligibilityCalculator *)introEligibilityCalculator
                     receiptParser:(RCReceiptParser *)receiptParser
              purchaserInfoManager:(RCPurchaserInfoManager *)purchaserInfoManager
-                  productsManager:(RCProductsManager *)productsManager {
+                  productsManager:(RCProductsManager *)productsManager
+                 offeringsManager:(RCOfferingsManager *)offeringsManager {
     if (self = [super init]) {
         [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.configure.debug_enabled]];
         [RCLog debug:[NSString stringWithFormat:RCStrings.configure.sdk_version, self.class.frameworkVersion]];
@@ -339,6 +349,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.receiptParser = receiptParser;
         self.purchaserInfoManager = purchaserInfoManager;
         self.productsManager = productsManager;
+        self.offeringsManager = offeringsManager;
 
         [self.identityManager configureWithAppUserID:appUserID];
 
@@ -477,7 +488,9 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
 
         if (error == nil) {
             [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
-                [self updateOfferingsCacheWithIsAppBackgrounded:isAppBackgrounded completion:nil];
+                [self.offeringsManager updateOfferingsCacheWithAppUserID:self.appUserID
+                                                       isAppBackgrounded:isAppBackgrounded
+                                                              completion:nil];
             }];
         }
     }];
@@ -938,7 +951,9 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                                        completion:nil];
         if ([self.deviceCache isOfferingsCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
             [RCLog debug:[NSString stringWithFormat:@"Offerings cache is stale, updating caches"]];
-            [self updateOfferingsCacheWithIsAppBackgrounded:isAppBackgrounded completion:nil];
+            [self.offeringsManager updateOfferingsCacheWithAppUserID:self.appUserID
+                                                   isAppBackgrounded:isAppBackgrounded
+                                                          completion:nil];
         }
     }];
 }
@@ -948,102 +963,15 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         [self.purchaserInfoManager fetchAndCachePurchaserInfoWithAppUserID:self.appUserID
                                                          isAppBackgrounded:isAppBackgrounded
                                                                 completion:completion];
-        [self updateOfferingsCacheWithIsAppBackgrounded:isAppBackgrounded completion:nil];
+        [self.offeringsManager updateOfferingsCacheWithAppUserID:self.appUserID
+                                               isAppBackgrounded:isAppBackgrounded
+                                                      completion:nil];
     }];
-}
-
-- (void)performOnEachProductIdentifierInOfferings:(NSDictionary *)offeringsData
-                                            block:(void (^)(NSString *productIdentifier))block {
-    // todo: replace with functional programming when moving to swift
-    for (NSDictionary *offering in offeringsData[@"offerings"]) {
-        for (NSDictionary *package in offering[@"packages"]) {
-            block(package[@"platform_product_identifier"]);
-        }
-    }
 }
 
 - (void)offeringsWithCompletionBlock:(RCReceiveOfferingsBlock)completion {
-    // todo: extract to new class: OfferingsManager
-    if (self.deviceCache.cachedOfferings) {
-        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.offering.vending_offerings_cache]];
-        CALL_IF_SET_ON_MAIN_THREAD(completion, self.deviceCache.cachedOfferings, nil);
-        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
-            if ([self.deviceCache isOfferingsCacheStaleWithIsAppBackgrounded:isAppBackgrounded]) {
-                [RCLog debug:[NSString stringWithFormat:@"%@",
-                              isAppBackgrounded ? RCStrings.offering.offerings_stale_updating_in_background
-                                                : RCStrings.offering.offerings_stale_updating_in_foreground]];
-                [self updateOfferingsCacheWithIsAppBackgrounded:isAppBackgrounded completion:nil];
-                [RCLog rcSuccess:[NSString stringWithFormat:@"%@",
-                                  RCStrings.offering.offerings_stale_updated_from_network]];
-            }
-        }];
-    } else {
-        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.offering.no_cached_offerings_fetching_from_network]];
-        [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
-            [self updateOfferingsCacheWithIsAppBackgrounded:isAppBackgrounded completion:completion];
-        }];
-    }
-}
-
-- (void)updateOfferingsCacheWithIsAppBackgrounded:(BOOL)isAppBackgrounded
-                                       completion:(nullable RCReceiveOfferingsBlock)completion {
-    // todo: extract to new class: OfferingsManager
-    [self.deviceCache setOfferingsCacheTimestampToNow];
-    [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:isAppBackgrounded block:^{
-        [self.backend getOfferingsForAppUserID:self.appUserID
-                                    completion:^(NSDictionary *data, NSError *error) {
-                                        if (error != nil) {
-                                            [self handleOfferingsUpdateError:error completion:completion];
-                                            return;
-                                        }
-                                        [self handleOfferingsBackendResultWithData:data completion:completion];
-                                    }];
-    }];
-
-}
-
-- (void)handleOfferingsBackendResultWithData:(NSDictionary *)data completion:(RCReceiveOfferingsBlock)completion {
-    // todo: extract to new class: OfferingsManager
-    NSMutableSet *productIdentifiers = [NSMutableSet new];
-    [self performOnEachProductIdentifierInOfferings:data block:^(NSString *productIdentifier) {
-        [productIdentifiers addObject:productIdentifier];
-    }];
-
-    [self productsWithIdentifiers:productIdentifiers.allObjects completionBlock:^(NSArray<SKProduct *> *_Nonnull products) {
-
-        NSMutableDictionary *productsById = [NSMutableDictionary new];
-        for (SKProduct *p in products) {
-            productsById[p.productIdentifier] = p;
-        }
-        RCOfferings *offerings = [self.offeringsFactory createOfferingsWithProducts:productsById data:data];
-        if (offerings) {
-            NSMutableArray *missingProducts = [NSMutableArray new];
-            [self performOnEachProductIdentifierInOfferings:data block:^(NSString *productIdentifier) {
-                SKProduct *product = productsById[productIdentifier];
-
-                if (product == nil) {
-                    [missingProducts addObject:productIdentifier];
-                }
-            }];
-
-            if (missingProducts.count > 0) {
-                [RCLog appleWarning:[NSString stringWithFormat:RCStrings.offering.cannot_find_product_configuration_error,
-                                     missingProducts]];
-            }
-            [self.deviceCache cacheOfferings:offerings];
-
-            CALL_IF_SET_ON_MAIN_THREAD(completion, offerings, nil);
-        } else {
-            [self handleOfferingsUpdateError:RCPurchasesErrorUtils.unexpectedBackendResponseError completion:completion];
-        }
-    }];
-}
-
-- (void)handleOfferingsUpdateError:(NSError *)error completion:(RCReceiveOfferingsBlock)completion {
-    // todo: extract to new class: OfferingsManager
-    [RCLog appleError:[NSString stringWithFormat:RCStrings.offering.fetching_offerings_error, error]];
-    [self.deviceCache clearOfferingsCacheTimestamp];
-    CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
+    [self.offeringsManager offeringsWithAppUserID:self.appUserID
+                                  completionBlock:completion];
 }
 
 // todo: move to ReceiptFetcher
