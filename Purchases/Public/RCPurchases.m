@@ -275,7 +275,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCReceiptRefreshRequestFactory *receiptRefreshRequestFactory = [[RCReceiptRefreshRequestFactory alloc] init];
     RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] initWithRequestFactory:receiptRefreshRequestFactory
                                                                              operationDispatcher:operationDispatcher];
-    
     RCOfferingsManager *offeringsManager = [[RCOfferingsManager alloc] initWithDeviceCache:deviceCache
                                                                        operationDispatcher:operationDispatcher
                                                                                 systemInfo:systemInfo

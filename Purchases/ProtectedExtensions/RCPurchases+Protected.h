@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
                     receiptParser:(RCReceiptParser *)receiptParser
              purchaserInfoManager:(RCPurchaserInfoManager *)purchaserInfoManager
                   productsManager:(RCProductsManager *)productsManager
-                 offeringsManager:(RCOfferingsManager *) offeringsManager;
+                 offeringsManager:(RCOfferingsManager *)offeringsManager;
 
 + (void)setDefaultInstance:(nullable RCPurchases *)instance;
 

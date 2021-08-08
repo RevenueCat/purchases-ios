@@ -63,7 +63,9 @@ public extension OfferingsManager {
 
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
-                Logger.debug(isAppBackgrounded ? Strings.offering.offerings_stale_updating_in_background : Strings.offering.offerings_stale_updating_in_foreground)
+                Logger.debug(isAppBackgrounded
+                                ? Strings.offering.offerings_stale_updating_in_background
+                                : Strings.offering.offerings_stale_updating_in_foreground)
                 self.updateOfferingsCache(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded, completion: nil)
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
             }
@@ -75,10 +77,10 @@ public extension OfferingsManager {
         deviceCache.setOfferingsCacheTimestampToNow()
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
             self.backend.getOfferings(appUserID: appUserID) { data, error in
-                if let error = error {
-                    self.handleOfferingsUpdateError(error, completion: completion)
-                } else if let data = data {
+                if let data = data {
                     self.handleOfferingsBackendResult(with: data, completion: completion)
+                } else if let error = error {
+                    self.handleOfferingsUpdateError(error, completion: completion)
                 }
             }
         }
@@ -95,7 +97,9 @@ private extension OfferingsManager {
         }
 
         productsManager.products(withIdentifiers: productIdentifiers) { products in
-            let productsByID = products.reduce(into: [:]) { $0[$1.productIdentifier] = $1 }
+            let productsByID = products.reduce(into: [:]) { result, product in
+                result[product.productIdentifier] = product
+            }
 
             if let createdOfferings = self.offeringsFactory.createOfferings(withProducts: productsByID, data: data) {
 
@@ -132,7 +136,6 @@ private extension OfferingsManager {
         }
     }
 
-    /// Worst case O(n+m)
     func performOnEachProductIdentifierInOfferings(_ offeringsData: [String: Any], block: (String) -> Void) {
         guard let offerings = offeringsData["offerings"] as? [[String: Any]] else {
             return
