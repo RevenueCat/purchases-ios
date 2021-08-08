@@ -49,7 +49,9 @@ public extension OfferingsManager {
         guard let cachedOfferings = deviceCache.cachedOfferings else {
             Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
             systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-                self.updateOfferingsCache(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded, completion: completion)
+                self.updateOfferingsCache(appUserID: appUserID,
+                                          isAppBackgrounded: isAppBackgrounded,
+                                          completion: completion)
             }
             return
         }
@@ -66,7 +68,11 @@ public extension OfferingsManager {
                 Logger.debug(isAppBackgrounded
                                 ? Strings.offering.offerings_stale_updating_in_background
                                 : Strings.offering.offerings_stale_updating_in_foreground)
-                self.updateOfferingsCache(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded, completion: nil)
+                
+                self.updateOfferingsCache(appUserID: appUserID,
+                                          isAppBackgrounded: isAppBackgrounded,
+                                          completion: nil)
+                
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
             }
         }
