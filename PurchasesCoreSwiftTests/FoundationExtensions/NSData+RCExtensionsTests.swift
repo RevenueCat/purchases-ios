@@ -60,4 +60,5 @@ extension NSDataExtensionsTests {
             fatalError("couldn't read file named \(filename). Error: \(error.localizedDescription)")
         }
     }
+
 }
