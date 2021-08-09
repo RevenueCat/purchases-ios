@@ -3,7 +3,6 @@
 //
 @import PurchasesCoreSwift;
 
-#include <Purchases/NSError+RCExtensions.h>
 #include <Purchases/RCAttributionPoster.h>
 #include <Purchases/RCIdentityManager+Protected.h>
 #include <Purchases/RCIdentityManager.h>
