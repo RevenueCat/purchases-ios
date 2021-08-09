@@ -171,6 +171,7 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase8.webOrderLineItemId) == Int64(1000000054042694)
         expect(inAppPurchase8.promotionalOfferIdentifier).to(beNil())
     }
+
 }
 
 private extension ReceiptParsingRealReceiptTests {
@@ -182,4 +183,5 @@ private extension ReceiptParsingRealReceiptTests {
     func readFile(named filename: String) -> String {
         NSDataExtensionsTests.readFile(named: filename)
     }
+
 }
