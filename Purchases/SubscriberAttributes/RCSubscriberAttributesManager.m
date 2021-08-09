@@ -41,77 +41,96 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAttributes"]];
     [attributes enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
         [self setAttributeWithKey:key value:value appUserID:appUserID];
     }];
 }
 
 - (void)setEmail:(nullable NSString *)email appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setEmail"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.email value:email appUserID:appUserID];
 }
 
 - (void)setPhoneNumber:(nullable NSString *)phoneNumber appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPhoneNumber"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.phoneNumber value:phoneNumber appUserID:appUserID];
 }
 
 - (void)setDisplayName:(nullable NSString *)displayName appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setDisplayName"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.displayName value:displayName appUserID:appUserID];
 }
 
 - (void)setPushToken:(nullable NSData *)pushToken appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPushToken"]];
     NSString *pushTokenString = pushToken ? pushToken.rc_asString : nil;
     [self setPushTokenString:pushTokenString appUserID:appUserID];
 }
 
 - (void)setPushTokenString:(nullable NSString *)pushTokenString appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPushTokenString"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.pushToken value:pushTokenString appUserID:appUserID];
 }
 
 - (void)setAdjustID:(nullable NSString *)adjustID appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAdjustID"]];
     [self setAttributionID:adjustID networkKey:RCSpecialSubscriberAttributes.adjustID appUserID:appUserID];
 }
 
 - (void)setAppsflyerID:(nullable NSString *)appsflyerID appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAppsflyerID"]];
     [self setAttributionID:appsflyerID networkKey:RCSpecialSubscriberAttributes.appsFlyerID appUserID:appUserID];
 }
 
 - (void)setFBAnonymousID:(nullable NSString *)fbAnonymousID appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setFBAnonymousID"]];
     [self setAttributionID:fbAnonymousID networkKey:RCSpecialSubscriberAttributes.fBAnonID appUserID:appUserID];
 }
 
 - (void)setMparticleID:(nullable NSString *)mparticleID appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setMparticleID"]];
     [self setAttributionID:mparticleID networkKey:RCSpecialSubscriberAttributes.mpParticleID appUserID:appUserID];
 }
 
 - (void)setOnesignalID:(nullable NSString *)onesignalID appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setOnesignalID"]];
     [self setAttributionID:onesignalID networkKey:RCSpecialSubscriberAttributes.oneSignalID appUserID:appUserID];
 }
 
 - (void)setMediaSource:(nullable NSString *)mediaSource appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setMediaSource"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.mediaSource value:mediaSource appUserID:appUserID];
 }
 
 - (void)setCampaign:(nullable NSString *)campaign appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setCampaign"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.campaign value:campaign appUserID:appUserID];
 }
 
 - (void)setAdGroup:(nullable NSString *)adGroup appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAdGroup"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.adGroup value:adGroup appUserID:appUserID];
 }
 
 - (void)setAd:(nullable NSString *)ad appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAd"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.ad value:ad appUserID:appUserID];
 }
 
 - (void)setKeyword:(nullable NSString *)keyword appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setKeyword"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.keyword value:keyword appUserID:appUserID];
 }
 
 - (void)setCreative:(nullable NSString *)creative appUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setCreative"]];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.creative value:creative appUserID:appUserID];
 }
 
 - (void)collectDeviceIdentifiersForAppUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:@"collectDeviceIdentifiers called"]];
+    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAttributes"]];
     NSString *identifierForAdvertisers = [self.attributionFetcher identifierForAdvertisers];
     NSString *identifierForVendor = [self.attributionFetcher identifierForVendor];
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.idfa value:identifierForAdvertisers appUserID:appUserID];
