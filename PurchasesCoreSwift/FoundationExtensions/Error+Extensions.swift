@@ -20,10 +20,6 @@ import Foundation
             return false
         }
 
-        if userInfo[Backend.RCSuccessfullySyncedKey as String] == nil {
-            return false
-        }
-
         if let successfullySyncedNumber = userInfo[Backend.RCSuccessfullySyncedKey as String] as? NSNumber {
             return successfullySyncedNumber.boolValue
         }
