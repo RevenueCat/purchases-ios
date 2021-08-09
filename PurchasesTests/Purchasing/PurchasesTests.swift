@@ -30,6 +30,7 @@ class PurchasesTests: XCTestCase {
         mockOperationDispatcher = MockOperationDispatcher()
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockReceiptParser = MockReceiptParser()
+        receiptFetcher = MockReceiptFetcher(requestFetcher: requestFetcher)
         let systemInfoAttribution = try! MockSystemInfo(platformFlavor: "iOS",
                                                    platformFlavorVersion: "3.2.1",
                                                    finishTransactions: true)
@@ -226,7 +227,7 @@ class PurchasesTests: XCTestCase {
     }
 
 
-    let receiptFetcher = MockReceiptFetcher()
+    var receiptFetcher: MockReceiptFetcher!
     var requestFetcher: MockRequestFetcher!
     var mockProductsManager: MockProductsManager!
     let backend = MockBackend(httpClient: MockHTTPClient(systemInfo: try! MockSystemInfo(platformFlavor: nil,
@@ -1161,7 +1162,6 @@ class PurchasesTests: XCTestCase {
         purchases!.restoreTransactions()
 
         expect(self.receiptFetcher.receiptDataTimesCalled).to(equal(1))
-        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
     }
 
     func testRestoringPurchasesSetsIsRestore() {
@@ -2041,23 +2041,15 @@ class PurchasesTests: XCTestCase {
         expect(info).toEventuallyNot(beNil())
     }
 
-    func testWhenNoReceiptReceiptIsRefreshed() {
-        setupPurchases()
-        receiptFetcher.shouldReturnReceipt = false
-
-        makeAPurchase()
-
-        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
-    }
-
     func testWhenNoReceiptDataReceiptIsRefreshed() {
         setupPurchases()
         receiptFetcher.shouldReturnReceipt = true
         receiptFetcher.shouldReturnZeroBytesReceipt = true
 
         makeAPurchase()
-
-        expect(self.requestFetcher.refreshReceiptCalled).to(beTrue())
+        
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
     }
 
     private func makeAPurchase() {
