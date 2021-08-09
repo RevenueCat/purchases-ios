@@ -23,10 +23,10 @@ import Foundation
     }
 
     @objc public func receiptData(refreshPolicy: ReceiptRefreshPolicy,
-                                  completion: @escaping ((Data?) -> Void)) {
+                                  completion: @escaping (Data?) -> Void) {
         if refreshPolicy == .always {
             Logger.debug(String(format: Strings.receipt.force_refreshing_receipt))
-            self.refreshReceipt(completion)
+            refreshReceipt(completion)
             return
         }
 
@@ -35,7 +35,7 @@ import Foundation
 
         if isReceiptEmpty && refreshPolicy == .onlyIfEmpty {
             Logger.debug(Strings.receipt.refreshing_empty_receipt)
-            self.refreshReceipt(completion)
+            refreshReceipt(completion)
         } else {
             completion(receiptData)
         }
@@ -46,7 +46,7 @@ import Foundation
 private extension ReceiptFetcher {
 
     func receiptData() -> Data? {
-        guard var receiptURL: URL = self.receiptBundle.appStoreReceiptURL else {
+        guard var receiptURL: URL = receiptBundle.appStoreReceiptURL else {
             Logger.debug(Strings.receipt.no_sandbox_receipt_restore)
             return nil
         }
@@ -78,7 +78,7 @@ private extension ReceiptFetcher {
         return data
     }
 
-    func refreshReceipt(_ completion: @escaping ((Data) -> Void)) {
+    func refreshReceipt(_ completion: @escaping (Data) -> Void) {
         requestFetcher.fetchReceiptData {
             let maybeData = self.receiptData()
             guard let receiptData = maybeData,
