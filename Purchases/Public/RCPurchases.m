@@ -409,14 +409,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 + (void)addAttributionData:(NSDictionary *)data
                fromNetwork:(RCAttributionNetwork)network
           forNetworkUserId:(nullable NSString *)networkUserId {
-    // todo: replace this check with `isConfigured`
-    if (_sharedPurchases) {
-        // todo: move log to relevant class
-        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.instance_configured_posting_attribution]];
+    if (self.isConfigured) {
         [_sharedPurchases postAttributionData:data fromNetwork:network forNetworkUserId:networkUserId];
     } else {
-        // todo: move log to relevant class
-        [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.no_instance_configured_caching_attribution]];
         [RCAttributionPoster storePostponedAttributionData:data
                                                fromNetwork:network
                                           forNetworkUserId:networkUserId];
@@ -795,131 +790,91 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)invalidatePurchaserInfoCache {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchaserInfo.invalidating_purchaserinfo_cache]];
     [self.purchaserInfoManager clearPurchaserInfoCacheForAppUserID:self.appUserID];
 }
 
 - (void)presentCodeRedemptionSheet API_AVAILABLE(ios(14.0)) API_UNAVAILABLE(tvos, macos, watchos) {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchase.presenting_code_redemption_sheet]];
     [self.storeKitWrapper presentCodeRedemptionSheet];
 }
 
 #pragma mark Subcriber Attributes
 
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAttributes"]];
     [self.subscriberAttributesManager setAttributes:attributes appUserID:self.appUserID];
 }
 
 - (void)setEmail:(nullable NSString *)email {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setEmail"]];
     [self.subscriberAttributesManager setEmail:email appUserID:self.appUserID];
 }
 
 - (void)setPhoneNumber:(nullable NSString *)phoneNumber {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPhoneNumber"]];
     [self.subscriberAttributesManager setPhoneNumber:phoneNumber appUserID:self.appUserID];
 }
 
 - (void)setDisplayName:(nullable NSString *)displayName {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setDisplayName"]];
     [self.subscriberAttributesManager setDisplayName:displayName appUserID:self.appUserID];
 }
 
 - (void)setPushToken:(nullable NSData *)pushToken {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPushToken"]];
     [self.subscriberAttributesManager setPushToken:pushToken appUserID:self.appUserID];
 }
 
 - (void)_setPushTokenString:(nullable NSString *)pushToken {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setPushTokenString"]];
     [self.subscriberAttributesManager setPushTokenString:pushToken appUserID:self.appUserID];
 }
 
 - (void)setAdjustID:(nullable NSString *)adjustID {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAdjustID"]];
     [self.subscriberAttributesManager setAdjustID:adjustID appUserID:self.appUserID];
 }
 
 - (void)setAppsflyerID:(nullable NSString *)appsflyerID {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAppsflyerID"]];
     [self.subscriberAttributesManager setAppsflyerID:appsflyerID appUserID:self.appUserID];
 }
 
 - (void)setFBAnonymousID:(nullable NSString *)fbAnonymousID {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setFBAnonymousID"]];
     [self.subscriberAttributesManager setFBAnonymousID:fbAnonymousID appUserID:self.appUserID];
 }
 
 - (void)setMparticleID:(nullable NSString *)mparticleID {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setMparticleID"]];
     [self.subscriberAttributesManager setMparticleID:mparticleID appUserID:self.appUserID];
 }
 
 - (void)setOnesignalID:(nullable NSString *)onesignalID {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setOnesignalID"]];
     [self.subscriberAttributesManager setOnesignalID:onesignalID appUserID:self.appUserID];
 }
 
 - (void)setMediaSource:(nullable NSString *)mediaSource {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setMediaSource"]];
     [self.subscriberAttributesManager setMediaSource:mediaSource appUserID:self.appUserID];
 }
 
 - (void)setCampaign:(nullable NSString *)campaign {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setCampaign"]];
     [self.subscriberAttributesManager setCampaign:campaign appUserID:self.appUserID];
 }
 
 - (void)setAdGroup:(nullable NSString *)adGroup {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAdGroup"]];
     [self.subscriberAttributesManager setAdGroup:adGroup appUserID:self.appUserID];
 }
 
 - (void)setAd:(nullable NSString *)ad {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAd"]];
     [self.subscriberAttributesManager setAd:ad appUserID:self.appUserID];
 }
 
 - (void)setKeyword:(nullable NSString *)keyword {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setKeyword"]];
     [self.subscriberAttributesManager setKeyword:keyword appUserID:self.appUserID];
 }
 
 - (void)setCreative:(nullable NSString *)creative {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setCreative"]];
     [self.subscriberAttributesManager setCreative:creative appUserID:self.appUserID];
 }
 
 - (void)collectDeviceIdentifiers {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:@"collectDeviceIdentifiers called"]];
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.method_called, "setAttributes"]];
     [self.subscriberAttributesManager collectDeviceIdentifiersForAppUserID:self.appUserID];
 }
 
 #pragma mark - Private Methods
 
 - (void)applicationDidBecomeActive:(__unused NSNotification *)notif {
+    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.configure.application_active]];
     [self updateAllCachesIfNeeded];
     [self syncSubscriberAttributesIfNeeded];
     [self postAppleSearchAddsAttributionCollectionIfNeeded];
@@ -930,8 +885,6 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)updateAllCachesIfNeeded {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.configure.application_active]];
     [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
         [self.purchaserInfoManager fetchAndCachePurchaserInfoIfStaleWithAppUserID:self.appUserID
                                                                 isAppBackgrounded:isAppBackgrounded
