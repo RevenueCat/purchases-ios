@@ -54,6 +54,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
            forNetworkUserId:(nullable NSString *)networkUserId {
+    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.instance_configured_posting_attribution]];
     if (data[@"rc_appsflyer_id"]) {
         [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.attribution.appsflyer_id_deprecated]];
     }
@@ -142,6 +143,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 + (void)storePostponedAttributionData:(NSDictionary *)data
                           fromNetwork:(RCAttributionNetwork)network
                      forNetworkUserId:(nullable NSString *)networkUserId {
+    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.no_instance_configured_caching_attribution]];
     if (postponedAttributionData == nil) {
         postponedAttributionData = [NSMutableArray array];
     }
