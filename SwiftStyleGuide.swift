@@ -137,8 +137,8 @@ private extension String {
 }
 
 // Use one line per let in a guard with multiple lets.
-let maybe🌮: String? = "🥗"
-let maybe🥤: String? = "☕️"
+let maybe🌮 = restaurant.order("🥗")
+let maybe🥤 = restaurant.order("☕️")
 guard let veggieTaco = maybe🌮,
       let coffee = maybe🥤 else {
     return

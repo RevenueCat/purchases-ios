@@ -53,7 +53,7 @@ class DeviceCacheTests: XCTestCase {
 
     func testClearCachesForAppUserIDAndSaveNewUserIDClearsCachesTimestamp() {
         let appUserID = "cesar"
-        self.deviceCache.setPurchaserInfoCacheTimestampToNow(appUserID: appUserID)
+        self.deviceCache.setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: appUserID)
         self.deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: "newUser")
         expect(self.deviceCache.isPurchaserInfoCacheStale(appUserID: appUserID, isAppBackgrounded: false)).to(beTrue())
     }
@@ -110,7 +110,7 @@ class DeviceCacheTests: XCTestCase {
         expect(self.deviceCache.isPurchaserInfoCacheStale(appUserID: appUserID,
                                                           isAppBackgrounded: isBackgrounded)) == true
 
-        self.deviceCache.setPurchaserInfoCacheTimestampToNow(appUserID: appUserID)
+        self.deviceCache.setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: appUserID)
 
         expect(self.deviceCache.isPurchaserInfoCacheStale(appUserID: appUserID,
                                                           isAppBackgrounded: isBackgrounded)) == false

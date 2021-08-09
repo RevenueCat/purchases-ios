@@ -47,7 +47,7 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
     @objc public func fetchAndCachePurchaserInfo(appUserID: String,
                                                  isAppBackgrounded: Bool,
                                                  completion maybeCompletion: ReceivePurchaserInfoBlock?) {
-        deviceCache.setPurchaserInfoCacheTimestampToNow(appUserID: appUserID)
+        deviceCache.setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: appUserID)
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
             self.backend.getSubscriberData(appUserID: appUserID) { maybePurchaserInfo, maybeError in
                 if let error = maybeError {
@@ -72,10 +72,10 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
     @objc public func fetchAndCachePurchaserInfoIfStale(appUserID: String,
                                                         isAppBackgrounded: Bool,
                                                         completion: ReceivePurchaserInfoBlock?) {
-        let cachedPurchaserInfo = cachedPurchaserInfo(appUserID: appUserID)
+        let maybeCachedPurchaserInfo = cachedPurchaserInfo(appUserID: appUserID)
         let isCacheStale = deviceCache.isPurchaserInfoCacheStale(appUserID: appUserID,
                                                                  isAppBackgrounded: isAppBackgrounded)
-        let needsToRefresh = isCacheStale || cachedPurchaserInfo == nil
+        let needsToRefresh = isCacheStale || maybeCachedPurchaserInfo == nil
         if needsToRefresh {
             Logger.debug(isAppBackgrounded
                             ? Strings.purchaserInfo.purchaserinfo_stale_updating_in_background
@@ -86,7 +86,7 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
         } else {
             if let completion = completion {
                 operationDispatcher.dispatchOnMainThread {
-                    completion(cachedPurchaserInfo, nil)
+                    completion(maybeCachedPurchaserInfo, nil)
                 }
             }
         }
@@ -102,13 +102,13 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
     }
 
     @objc(purchaserInfoWithAppUserID:completionBlock:)
-    public func purchaserInfo(appUserID: String, completionBlock: ReceivePurchaserInfoBlock?) {
-        let infoFromCache = cachedPurchaserInfo(appUserID: appUserID)
+    public func purchaserInfo(appUserID: String, completion maybeCompletion: ReceivePurchaserInfoBlock?) {
+        let maybeInfoFromCache = cachedPurchaserInfo(appUserID: appUserID)
         var completionCalled = false
 
-        if let infoFromCache = infoFromCache {
+        if let infoFromCache = maybeInfoFromCache {
             Logger.debug(Strings.purchaserInfo.vending_cache)
-            if let completion = completionBlock {
+            if let completion = maybeCompletion {
                 completionCalled = true
                 operationDispatcher.dispatchOnMainThread {
                     completion(infoFromCache, nil)
@@ -117,12 +117,12 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
         }
 
         // Prevent calling completion twice.
-        let fetchPurchaserInfoCompletion = completionCalled ? nil : completionBlock
+        let completionIfNotCalledAlready = completionCalled ? nil : maybeCompletion
 
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             self.fetchAndCachePurchaserInfoIfStale(appUserID: appUserID,
                                                    isAppBackgrounded: isAppBackgrounded,
-                                                   completion: fetchPurchaserInfoCompletion)
+                                                   completion: completionIfNotCalledAlready)
         }
     }
 

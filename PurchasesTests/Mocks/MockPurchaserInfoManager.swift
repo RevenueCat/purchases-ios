@@ -63,7 +63,7 @@ class MockPurchaserInfoManager: PurchaserInfoManager {
     var stubbedError: Error?
 
     override func purchaserInfo(appUserID: String,
-                                completionBlock completion: ReceivePurchaserInfoBlock?) {
+                                completion: ReceivePurchaserInfoBlock?) {
         invokedPurchaserInfo = true
         invokedPurchaserInfoCount += 1
         invokedPurchaserInfoParameters = (appUserID, completion)
