@@ -171,25 +171,17 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
         expect(inAppPurchase8.webOrderLineItemId) == Int64(1000000054042694)
         expect(inAppPurchase8.promotionalOfferIdentifier).to(beNil())
     }
+
 }
 
 private extension ReceiptParsingRealReceiptTests {
     
     func sampleReceiptData(receiptName: String) -> Data {
-        let receiptText = readFile(named: receiptName)
-        guard let receiptData = Data(base64Encoded: receiptText) else { fatalError("couldn't decode file") }
-        return receiptData
+        NSDataExtensionsTests.sampleReceiptData(receiptName: receiptName)
     }
     
     func readFile(named filename: String) -> String {
-        guard let pathString = Bundle(for: type(of: self)).path(forResource: filename, ofType: "txt") else {
-            fatalError("\(filename) not found")
-        }
-        do {
-            return try String(contentsOfFile: pathString, encoding: String.Encoding.utf8)
-        }
-        catch let error {
-            fatalError("couldn't read file named \(filename). Error: \(error.localizedDescription)")
-        }
+        NSDataExtensionsTests.readFile(named: filename)
     }
+
 }
