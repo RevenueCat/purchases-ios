@@ -57,9 +57,9 @@ public extension OfferingsManager {
         }
 
         Logger.debug(Strings.offering.vending_offerings_cache)
-        executeCallbackIfPossible(completion,
-                                  offerings: cachedOfferings,
-                                  error: nil)
+        dispatchCompletionOnMainThreadIfPossible(completion,
+                                                 offerings: cachedOfferings,
+                                                 error: nil)
 
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
@@ -106,9 +106,9 @@ private extension OfferingsManager {
                 self.logProductsMissingIfAppropriate(products: productsByID, offeringsData: data)
 
                 self.deviceCache.cache(offerings: createdOfferings)
-                self.executeCallbackIfPossible(completion,
-                                               offerings: createdOfferings,
-                                               error: nil)
+                self.dispatchCompletionOnMainThreadIfPossible(completion,
+                                                              offerings: createdOfferings,
+                                                              error: nil)
             } else {
                 self.handleOfferingsUpdateError(ErrorUtils.unexpectedBackendResponseError(), completion: completion)
             }
@@ -118,9 +118,9 @@ private extension OfferingsManager {
     func handleOfferingsUpdateError(_ error: Error, completion: ReceiveOfferingsBlock?) {
         Logger.appleError(String(format: Strings.offering.fetching_offerings_error, error as CVarArg))
         deviceCache.clearOfferingsCacheTimestamp()
-        executeCallbackIfPossible(completion,
-                                  offerings: nil,
-                                  error: error)
+        dispatchCompletionOnMainThreadIfPossible(completion,
+                                                 offerings: nil,
+                                                 error: error)
     }
 
     func extractProductIdentifiers(fromOfferingsData offeringsData: [String: Any]) -> Set<String> {
@@ -150,10 +150,10 @@ private extension OfferingsManager {
         }
     }
 
-    func executeCallbackIfPossible(_ callback: ReceiveOfferingsBlock?, offerings: Offerings?, error: Error?) {
-        if let callback = callback {
+    func dispatchCompletionOnMainThreadIfPossible(_ completion: ReceiveOfferingsBlock?, offerings: Offerings?, error: Error?) {
+        if let completion = completion {
             operationDispatcher.dispatchOnMainThread {
-                callback(offerings, error)
+                completion(offerings, error)
             }
         }
     }
