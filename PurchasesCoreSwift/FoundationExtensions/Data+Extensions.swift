@@ -38,7 +38,7 @@ extension Data {
 
     // Returns a string representing a fetch token.
     var rc_asFetchToken: String {
-        return self.base64EncodedString(options: .lineLength64Characters)
+        return self.base64EncodedString()
     }
 
 }
