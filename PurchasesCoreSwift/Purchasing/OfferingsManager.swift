@@ -57,22 +57,20 @@ public extension OfferingsManager {
         }
 
         Logger.debug(Strings.offering.vending_offerings_cache)
-        if let completion = completion {
-            operationDispatcher.dispatchOnMainThread {
-                completion(cachedOfferings, nil)
-            }
-        }
+        executeCallbackIfPossible(completion,
+                                  offerings: cachedOfferings,
+                                  error: nil)
 
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
                 Logger.debug(isAppBackgrounded
                                 ? Strings.offering.offerings_stale_updating_in_background
                                 : Strings.offering.offerings_stale_updating_in_foreground)
-                
+
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
                                           completion: nil)
-                
+
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
             }
         }
@@ -97,10 +95,7 @@ public extension OfferingsManager {
 private extension OfferingsManager {
 
     func handleOfferingsBackendResult(with data: [String: Any], completion: ReceiveOfferingsBlock?) {
-        var productIdentifiers = Set<String>()
-        performOnEachProductIdentifierInOfferings(data) { productIdentifier in
-            productIdentifiers.insert(productIdentifier)
-        }
+        let productIdentifiers = extractProductIdentifiers(fromOfferingsData: data)
 
         productsManager.products(withIdentifiers: productIdentifiers) { products in
             let productsByID = products.reduce(into: [:]) { result, product in
@@ -108,24 +103,12 @@ private extension OfferingsManager {
             }
 
             if let createdOfferings = self.offeringsFactory.createOfferings(withProducts: productsByID, data: data) {
-
-                var missingProducts = [String]()
-                self.performOnEachProductIdentifierInOfferings(data) { productIdentifier in
-                    if productsByID.keys.contains(productIdentifier) {
-                        missingProducts.append(productIdentifier)
-                    }
-                }
-
-                if !missingProducts.isEmpty {
-                    Logger.appleWarning(Strings.offering.cannot_find_product_configuration_error)
-                }
+                self.logProductsMissingIfAppropriate(products: productsByID, offeringsData: data)
 
                 self.deviceCache.cache(offerings: createdOfferings)
-                if let completion = completion {
-                    self.operationDispatcher.dispatchOnMainThread {
-                        completion(createdOfferings, nil)
-                    }
-                }
+                self.executeCallbackIfPossible(completion,
+                                               offerings: createdOfferings,
+                                               error: nil)
             } else {
                 self.handleOfferingsUpdateError(ErrorUtils.unexpectedBackendResponseError(), completion: completion)
             }
@@ -135,25 +118,44 @@ private extension OfferingsManager {
     func handleOfferingsUpdateError(_ error: Error, completion: ReceiveOfferingsBlock?) {
         Logger.appleError(String(format: Strings.offering.fetching_offerings_error, error as CVarArg))
         deviceCache.clearOfferingsCacheTimestamp()
-        if let completion = completion {
-            operationDispatcher.dispatchOnMainThread {
-                completion(nil, error)
-            }
-        }
+        executeCallbackIfPossible(completion,
+                                  offerings: nil,
+                                  error: error)
     }
 
-    func performOnEachProductIdentifierInOfferings(_ offeringsData: [String: Any], block: (String) -> Void) {
+    func extractProductIdentifiers(fromOfferingsData offeringsData: [String: Any]) -> Set<String> {
         guard let offerings = offeringsData["offerings"] as? [[String: Any]] else {
-            return
+            return []
         }
 
-        offerings
+        let productIdenfitiersArray = offerings
             .compactMap { $0["packages"] as? [[String: Any]] }
             .flatMap { $0 }
             .compactMap { $0["platform_product_identifier"] as? String }
-            .forEach {
-                block($0)
+
+        return Set(productIdenfitiersArray)
+    }
+
+    func logProductsMissingIfAppropriate(products: [String: SKProduct], offeringsData: [String: Any]) {
+        guard !products.isEmpty,
+              !offeringsData.isEmpty else {
+            return
+        }
+
+        let productIdentifiers = extractProductIdentifiers(fromOfferingsData: offeringsData)
+        let missingProducts = Set(products.keys).intersection(productIdentifiers)
+
+        if !missingProducts.isEmpty {
+            Logger.appleWarning(Strings.offering.cannot_find_product_configuration_error)
+        }
+    }
+
+    func executeCallbackIfPossible(_ callback: ReceiveOfferingsBlock?, offerings: Offerings?, error: Error?) {
+        if let callback = callback {
+            operationDispatcher.dispatchOnMainThread {
+                callback(offerings, error)
             }
+        }
     }
 
 }
