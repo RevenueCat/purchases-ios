@@ -46,19 +46,22 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
 
     @objc public func fetchAndCachePurchaserInfo(appUserID: String,
                                                  isAppBackgrounded: Bool,
-                                                 completion: ReceivePurchaserInfoBlock?) {
+                                                 completion maybeCompletion: ReceivePurchaserInfoBlock?) {
         deviceCache.setPurchaserInfoCacheTimestampToNow(appUserID: appUserID)
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
-            self.backend.getSubscriberData(appUserID: appUserID) { purchaserInfo, error in
-                if error != nil {
+            self.backend.getSubscriberData(appUserID: appUserID) { maybePurchaserInfo, maybeError in
+                if let error = maybeError {
                     self.deviceCache.clearPurchaserInfoCacheTimestamp(appUserID: appUserID)
-                } else if let info = purchaserInfo {
+                    Logger.warn(Strings.purchaserInfo.purchaserinfo_updated_from_network_error +
+                                    "\n" + error.localizedDescription)
+                } else if let info = maybePurchaserInfo {
                     self.cache(purchaserInfo: info, appUserID: appUserID)
+                    Logger.rcSuccess(Strings.purchaserInfo.purchaserinfo_updated_from_network)
                 }
 
-                if let completion = completion {
+                if let completion = maybeCompletion {
                     self.operationDispatcher.dispatchOnMainThread {
-                        completion(purchaserInfo, error)
+                        completion(maybePurchaserInfo, maybeError)
                     }
                 }
 
@@ -80,7 +83,6 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
             fetchAndCachePurchaserInfo(appUserID: appUserID,
                                        isAppBackgrounded: isAppBackgrounded,
                                        completion: completion)
-            Logger.rcSuccess(Strings.purchaserInfo.purchaserinfo_updated_from_network)
         } else {
             if let completion = completion {
                 operationDispatcher.dispatchOnMainThread {
@@ -140,7 +142,7 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
                 return info
             }
         } catch {
-            Logger.warn("Unable to unmarshall PurchaserInfo from cache:\n \(error.localizedDescription)")
+            Logger.error("Unable to unmarshall PurchaserInfo from cache:\n \(error.localizedDescription)")
         }
 
         return nil
@@ -165,13 +167,8 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
     }
 
     private func sendUpdateIfChanged(purchaserInfo: PurchaserInfo) {
-        guard let delegate = self.delegate else {
-            return
-        }
-
-        purchaserInfoCacheLock.lock()
-        guard lastSentPurchaserInfo != purchaserInfo else {
-            purchaserInfoCacheLock.unlock()
+        guard let delegate = self.delegate,
+              lastSentPurchaserInfo != purchaserInfo else {
             return
         }
 

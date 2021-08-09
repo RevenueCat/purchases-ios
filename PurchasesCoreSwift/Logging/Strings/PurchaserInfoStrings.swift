@@ -26,6 +26,9 @@ import Foundation
         "PurchaserInfo cache is stale, updating from network in foreground."
     }
     @objc public var purchaserinfo_updated_from_network: String { "PurchaserInfo updated from network." }
+    @objc public var purchaserinfo_updated_from_network_error: String {
+        "Attempt to update PurchaserInfo from network failed."
+    }
     @objc public var sending_latest_purchaserinfo_to_delegate: String { "Sending latest PurchaserInfo to delegate." }
     @objc public var sending_updated_purchaserinfo_to_delegate: String { "Sending updated PurchaserInfo to delegate." }
     @objc public var vending_cache: String { "Vending PurchaserInfo from cache." }
