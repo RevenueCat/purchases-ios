@@ -37,7 +37,6 @@ class NSDataExtensionsTests: XCTestCase {
 
         expect(fetchToken).to(equal(storedReceiptText))
         expect(storedReceiptData.rc_asFetchToken).to(equal(storedReceiptText))
-        
     }
 }
 
