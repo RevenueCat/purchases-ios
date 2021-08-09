@@ -71,6 +71,7 @@ import StoreKit
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @objc public func presentCodeRedemptionSheet() {
+        Logger.debug(Strings.purchase.presenting_code_redemption_sheet)
         paymentQueue.presentCodeRedemptionSheet()
     }
 

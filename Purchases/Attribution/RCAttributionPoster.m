@@ -8,7 +8,6 @@
 
 #import "RCAttributionPoster.h"
 #import "RCIdentityManager.h"
-#import "RCBackend.h"
 #import "RCSubscriberAttributesManager.h"
 @import PurchasesCoreSwift;
 
@@ -55,6 +54,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
            forNetworkUserId:(nullable NSString *)networkUserId {
+    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.instance_configured_posting_attribution]];
     if (data[@"rc_appsflyer_id"]) {
         [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.attribution.appsflyer_id_deprecated]];
     }
@@ -84,14 +84,13 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         if (newData.count > 0) {
             if (network == RCAttributionNetworkAppleSearchAds) {
                 [self.backend postAttributionData:newData
-                                      fromNetwork:network
-                                     forAppUserID:appUserID
+                                          network:network
+                                        appUserID:appUserID
                                        completion:^(NSError *_Nullable error) {
-                                           if (error == nil) {
-                                               [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newDictToCache
-                                                                                          forAppUserID:appUserID];
-                                           }
-                                       }];
+                    if (error == nil) {
+                        [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newDictToCache forAppUserID:appUserID];
+                    }
+                }];
             } else {
                 [self.subscriberAttributesManager convertAttributionDataAndSetAsSubscriberAttributes:newData
                                                                                              network:network
@@ -144,6 +143,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 + (void)storePostponedAttributionData:(NSDictionary *)data
                           fromNetwork:(RCAttributionNetwork)network
                      forNetworkUserId:(nullable NSString *)networkUserId {
+    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.attribution.no_instance_configured_caching_attribution]];
     if (postponedAttributionData == nil) {
         postponedAttributionData = [NSMutableArray array];
     }

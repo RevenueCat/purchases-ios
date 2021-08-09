@@ -4,7 +4,6 @@
 //
 
 #import "RCPurchaserInfoManager.h"
-#import "RCBackend.h"
 @import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -181,6 +180,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)clearPurchaserInfoCacheForAppUserID:(NSString *)appUserID {
+    [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.purchaserInfo.invalidating_purchaserinfo_cache]];
     @synchronized (self) {
         [self.deviceCache clearPurchaserInfoCacheWithAppUserID:appUserID];
         self.lastSentPurchaserInfo = nil;

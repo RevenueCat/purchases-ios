@@ -6,7 +6,6 @@
 @import PurchasesCoreSwift;
 
 #import "NSError+RCExtensions.h"
-#import "RCBackend.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -18,17 +17,17 @@ NS_ASSUME_NONNULL_BEGIN
         return NO;
     }
 
-    if (self.userInfo[RCSuccessfullySyncedKey] == nil) {
+    if (self.userInfo[RCBackend.RCSuccessfullySyncedKey] == nil) {
         return NO;
     }
 
-    NSNumber *successfullySyncedNumber = self.userInfo[RCSuccessfullySyncedKey];
+    NSNumber *successfullySyncedNumber = self.userInfo[RCBackend.RCSuccessfullySyncedKey];
 
     return successfullySyncedNumber.boolValue;
 }
 
 - (nullable NSDictionary *)rc_subscriberAttributesErrors {
-    return self.userInfo[RCAttributeErrorsKey];
+    return self.userInfo[RCBackend.RCAttributeErrorsKey];
 }
 
 @end
