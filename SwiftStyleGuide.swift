@@ -139,7 +139,6 @@ private extension String {
 // Use one line per let in a guard with multiple lets.
 let maybe🌮: String? = "🥗"
 let maybe🥤: String? = "☕️"
-
 guard let veggieTaco = maybe🌮,
       let coffee = maybe🥤 else {
     return
@@ -148,7 +147,7 @@ guard let veggieTaco = maybe🌮,
 // Also use one line per condition.
 guard 1 == 1,
       2 == 2,
-      3 == 3, else {
+      3 == 3 else {
     print("Universe is broken")
     return
 }
