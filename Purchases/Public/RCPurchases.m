@@ -15,10 +15,6 @@
 #import "RCPurchases.h"
 #import "RCSubscriberAttributesManager.h"
 
-// TODO: simply replace with OperationDispatcher when migrating
-#define CALL_IF_SET_ON_MAIN_THREAD(completion, ...) if (completion) [self.operationDispatcher dispatchOnMainThread:^{ completion(__VA_ARGS__); }];
-#define CALL_IF_SET_ON_SAME_THREAD(completion, ...) if (completion) completion(__VA_ARGS__);
-
 @interface RCPurchases () <RCStoreKitWrapperDelegate, RCPurchaserInfoManagerDelegate> {
     NSNumber * _Nullable _allowSharingAppStoreAccount;
 }
@@ -452,7 +448,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             if (error == nil) {
                 [self updateAllCachesWithCompletionBlock:completion];
             } else {
-                CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
+                if (completion) {
+                    [self.operationDispatcher dispatchOnMainThread:^{ completion(nil, error); }];
+                }
             }
         }];
     }
@@ -466,7 +464,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
             if (error == nil) {
                 [self updateAllCachesWithCompletionBlock:completion];
             } else {
-                CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
+                if (completion) {
+                    [self.operationDispatcher dispatchOnMainThread:^{ completion(nil, error); }];
+                }
             }
         }];
 
@@ -478,7 +478,7 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
     [self.identityManager logInWithAppUserID:appUserID completion:^(RCPurchaserInfo *purchaserInfo,
                                                                     BOOL created,
                                                                     NSError * _Nullable error) {
-        CALL_IF_SET_ON_MAIN_THREAD(completion, purchaserInfo, created, error);
+        [self.operationDispatcher dispatchOnMainThread:^{ completion(purchaserInfo, created, error); }];
 
         if (error == nil) {
             [self.systemInfo isApplicationBackgroundedWithCompletion:^(BOOL isAppBackgrounded) {
@@ -493,7 +493,9 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
 - (void)logOutWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
     [self.identityManager logOutWithCompletion:^(NSError *error) {
         if (error) {
-            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{ completion(nil, error); }];
+            }
         } else {
             [self updateAllCachesWithCompletionBlock:completion];
         }
@@ -518,10 +520,10 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
     if (productIdentifiersSet.count > 0) {
         [self.productsManager productsWithIdentifiers:productIdentifiersSet
                                            completion:^(NSSet<SKProduct *> * _Nonnull products) {
-            CALL_IF_SET_ON_MAIN_THREAD(completion, products.allObjects);
+            [self.operationDispatcher dispatchOnMainThread:^{ completion(products.allObjects); }];
         }];
     } else {
-        CALL_IF_SET_ON_MAIN_THREAD(completion, @[]);
+        [self.operationDispatcher dispatchOnMainThread:^{ completion(@[]); }];
     }
 }
 
@@ -658,7 +660,11 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             if (RCSystemInfo.isSandbox) {
                 [RCLog appleWarning:[NSString stringWithFormat:@"%@", RCStrings.receipt.no_sandbox_receipt_restore]];
             }
-            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, [RCPurchasesErrorUtils missingReceiptFileError]);
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{
+                    completion(nil, RCPurchasesErrorUtils.missingReceiptFileError);
+                }];
+            }
             return;
         }
 
@@ -667,7 +673,9 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         BOOL hasOriginalPurchaseDate = cachedPurchaserInfo != nil && cachedPurchaserInfo.originalPurchaseDate != nil;
         BOOL receiptHasTransactions = [self.receiptParser receiptHasTransactionsWithReceiptData:data];
         if (!receiptHasTransactions && hasOriginalPurchaseDate) {
-            CALL_IF_SET_ON_MAIN_THREAD(completion, cachedPurchaserInfo, nil);
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{ completion(cachedPurchaserInfo, nil); }];
+            }
             return;
         }
 
@@ -691,19 +699,23 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 - (void)handleRestoreReceiptPostWithInfo:(RCPurchaserInfo *)info
                                    error:(NSError *)error
                     subscriberAttributes:(RCSubscriberAttributeDict)subscriberAttributes
-                              completion:(RCReceivePurchaserInfoBlock)completion {
+                              completion:(nullable RCReceivePurchaserInfoBlock)completion {
     [self.operationDispatcher dispatchOnMainThread:^{
         if (error) {
             [self markAttributesAsSyncedIfNeeded:subscriberAttributes
                                        appUserID:self.appUserID
                                            error:error];
-            CALL_IF_SET_ON_MAIN_THREAD(completion, nil, error);
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{ completion(nil, error); }];
+            }
         } else if (info) {
             [self.purchaserInfoManager cachePurchaserInfo:info forAppUserID:self.appUserID];
             [self markAttributesAsSyncedIfNeeded:subscriberAttributes
                                        appUserID:self.appUserID
                                            error:nil];
-            CALL_IF_SET_ON_MAIN_THREAD(completion, info, nil);
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{ completion(info, nil); }];
+            }
         }
     }];
 }
@@ -735,8 +747,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                 convertedEligibility[key] = eligibility;
                             }
                         }
-
-                        CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, convertedEligibility);
+                        [self.operationDispatcher dispatchOnMainThread:^{ receiveEligibility(convertedEligibility); }];
                     } else {
                         // todo: unify all of these `else`s
                         [RCLog error:[NSString stringWithFormat:RCStrings.receipt.parse_receipt_locally_error,
@@ -747,7 +758,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                            completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result, NSError * _Nullable error) {
                             [RCLog error:[NSString stringWithFormat:@"Unable to getIntroEligibilityForAppUserID: %@",
                                           error.localizedDescription]];
-                            CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+                            [self.operationDispatcher dispatchOnMainThread:^{ receiveEligibility(result); }];
                         }];
                     }
                 }];
@@ -758,7 +769,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                    completion:^(NSDictionary<NSString *, RCIntroEligibility *> *_Nonnull result, NSError * _Nullable error) {
                     [RCLog error:[NSString stringWithFormat:@"Unable to getIntroEligibilityForAppUserID: %@",
                                   error.localizedDescription]];
-                    CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+                    [self.operationDispatcher dispatchOnMainThread:^{ receiveEligibility(result); }];
                 }];
             }
         } else {
@@ -768,7 +779,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                                completion:^(NSDictionary<NSString *,RCIntroEligibility *> * _Nonnull result, NSError * _Nullable error) {
                 [RCLog error:[NSString stringWithFormat:@"Unable to getIntroEligibilityForAppUserID: %@",
                               error.localizedDescription]];
-                CALL_IF_SET_ON_MAIN_THREAD(receiveEligibility, result);
+                [self.operationDispatcher dispatchOnMainThread:^{ receiveEligibility(result); }];
             }];
         }
     }];
@@ -940,22 +951,29 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         RCPurchaseCompletedBlock _Nullable completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
         if (info) {
             [self.purchaserInfoManager cachePurchaserInfo:info forAppUserID:self.appUserID];
-
-            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, info, nil, false);
+            if (completion) {
+                completion(transaction, info, nil, false);
+            }
 
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if ([error.userInfo[RCErrorDetails.RCFinishableKey] boolValue]) {
-            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
+            if (completion) {
+                completion(transaction, nil, error, false);
+            }
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
             }
         } else if (![error.userInfo[RCErrorDetails.RCFinishableKey] boolValue]) {
-            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
+            if (completion) {
+                completion(transaction, nil, error, false);
+            }
         } else {
             [RCLog error:[NSString stringWithFormat:@"%@", RCStrings.receipt.unknown_backend_error]];
-            CALL_IF_SET_ON_SAME_THREAD(completion, transaction, nil, error, false);
+            if (completion) {
+                completion(transaction, nil, error, false);
+            }
         }
     }];
 }
@@ -972,13 +990,14 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         }
         case SKPaymentTransactionStateFailed: {
             _Nullable RCPurchaseCompletedBlock completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
-
-            CALL_IF_SET_ON_MAIN_THREAD(
-                    completion,
-                    transaction,
-                    nil,
-                    [RCPurchasesErrorUtils purchasesErrorWithSKError:transaction.error],
-                    transaction.error.code == SKErrorPaymentCancelled);
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{
+                    completion(transaction,
+                               nil,
+                               [RCPurchasesErrorUtils purchasesErrorWithSKError:transaction.error],
+                               transaction.error.code == SKErrorPaymentCancelled);
+                }];
+            }
 
             if (self.finishTransactions) {
                 [self.storeKitWrapper finishTransaction:transaction];
@@ -987,13 +1006,15 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         }
         case SKPaymentTransactionStateDeferred: {
             _Nullable RCPurchaseCompletedBlock completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
-
-            NSError *pendingError = [RCPurchasesErrorUtils paymentDeferredError];
-            CALL_IF_SET_ON_MAIN_THREAD(completion,
-                                       transaction,
-                                       nil,
-                                       pendingError,
-                                       transaction.error.code == SKErrorPaymentCancelled);
+            BOOL cancelled = transaction.error.code == SKErrorPaymentCancelled;
+            if (completion) {
+                [self.operationDispatcher dispatchOnMainThread:^{
+                    completion(transaction,
+                               nil,
+                               RCPurchasesErrorUtils.paymentDeferredError,
+                               cancelled);
+                }];
+            }
             break;
         }
         case SKPaymentTransactionStatePurchasing:
