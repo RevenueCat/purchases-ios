@@ -135,3 +135,19 @@ private extension String {
     static let neptune = "neptune"
 
 }
+
+// Use one line per let in a guard with multiple lets.
+let maybe🌮 = restaurant.order("🥗")
+let maybe🥤 = restaurant.order("☕️")
+guard let veggieTaco = maybe🌮,
+      let coffee = maybe🥤 else {
+    return
+}
+
+// Also use one line per condition.
+guard 1 == 1,
+      2 == 2,
+      3 == 3 else {
+    print("Universe is broken")
+    return
+}

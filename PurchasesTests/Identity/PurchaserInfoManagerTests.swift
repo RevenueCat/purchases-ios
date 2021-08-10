@@ -2,6 +2,7 @@ import XCTest
 import Nimble
 
 @testable import Purchases
+@testable import PurchasesCoreSwift
 
 class PurchaserInfoManagerTests: XCTestCase {
     var mockBackend = MockBackend()
@@ -38,7 +39,8 @@ class PurchaserInfoManagerTests: XCTestCase {
     func testFetchAndCachePurchaserInfoCallsBackendWithRandomDelayIfAppBackgrounded() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
 
-        purchaserInfoManager.fetchAndCachePurchaserInfo(withAppUserID: "myUser",
+
+        purchaserInfoManager.fetchAndCachePurchaserInfo(appUserID: "myUser",
                                                         isAppBackgrounded: true,
                                                         completion: nil)
 
@@ -50,7 +52,7 @@ class PurchaserInfoManagerTests: XCTestCase {
     func testFetchAndCachePurchaserInfoCallsBackendWithoutRandomDelayIfAppForegrounded() {
         mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = true
 
-        purchaserInfoManager.fetchAndCachePurchaserInfo(withAppUserID: "myUser",
+        purchaserInfoManager.fetchAndCachePurchaserInfo(appUserID: "myUser",
                                                         isAppBackgrounded: false,
                                                         completion: nil)
 
@@ -67,7 +69,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         var completionCalled = false
         var receivedPurchaserInfo: PurchaserInfo?
         var receivedError: Error?
-        purchaserInfoManager.fetchAndCachePurchaserInfo(withAppUserID: "myUser",
+        purchaserInfoManager.fetchAndCachePurchaserInfo(appUserID: "myUser",
                                                         isAppBackgrounded: false) { purchaserInfo, error in
             completionCalled = true
             receivedPurchaserInfo = purchaserInfo
@@ -85,7 +87,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         mockBackend.stubbedGetSubscriberDataError = NSError(domain: "revenuecat", code: 123)
 
         var completionCalled = false
-        purchaserInfoManager.fetchAndCachePurchaserInfo(withAppUserID: "myUser",
+        purchaserInfoManager.fetchAndCachePurchaserInfo(appUserID: "myUser",
                                                         isAppBackgrounded: false) { purchaserInfo, error in
             completionCalled = true
         }
@@ -101,7 +103,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         var completionCalled = false
         var receivedPurchaserInfo: PurchaserInfo?
         var receivedError: Error?
-        purchaserInfoManager.fetchAndCachePurchaserInfo(withAppUserID: "myUser",
+        purchaserInfoManager.fetchAndCachePurchaserInfo(appUserID: "myUser",
                                                         isAppBackgrounded: false) { purchaserInfo, error in
             completionCalled = true
             receivedPurchaserInfo = purchaserInfo
@@ -122,7 +124,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         mockBackend.stubbedGetSubscriberDataPurchaserInfo = mockPurchaserInfo
 
         var completionCalled = false
-        purchaserInfoManager.fetchAndCachePurchaserInfo(withAppUserID: "myUser",
+        purchaserInfoManager.fetchAndCachePurchaserInfo(appUserID: "myUser",
                                                         isAppBackgrounded: false) { purchaserInfo, error in
             completionCalled = true
         }
@@ -139,13 +141,13 @@ class PurchaserInfoManagerTests: XCTestCase {
         var secondCompletionCalled = false
 
         let appUserID = "myUser"
-        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(withAppUserID: appUserID,
+        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(appUserID: appUserID,
                                                                isAppBackgrounded: false) { purchaserInfo, error in
             firstCompletionCalled = true
         }
         mockDeviceCache.stubbedIsPurchaserInfoCacheStale = false
-        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: appUserID)
-        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(withAppUserID: appUserID,
+        purchaserInfoManager.cache(purchaserInfo: mockPurchaserInfo, appUserID: appUserID)
+        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(appUserID: appUserID,
                                                                isAppBackgrounded: false) { purchaserInfo, error in
             secondCompletionCalled = true
         }
@@ -157,11 +159,11 @@ class PurchaserInfoManagerTests: XCTestCase {
 
     func testFetchAndCachePurchaserInfoIfStaleFetchesIfStale() {
         let appUserID = "myUser"
-        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: appUserID)
+        purchaserInfoManager.cache(purchaserInfo: mockPurchaserInfo, appUserID: appUserID)
         mockDeviceCache.stubbedIsPurchaserInfoCacheStale = true
         var completionCalled = false
 
-        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(withAppUserID: appUserID,
+        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(appUserID: appUserID,
                                                                isAppBackgrounded: false) { purchaserInfo, error in
             completionCalled = true
         }
@@ -174,7 +176,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         mockDeviceCache.stubbedIsPurchaserInfoCacheStale = false
         var completionCalled = false
 
-        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(withAppUserID: "myUser",
+        purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(appUserID: "myUser",
                                                                isAppBackgrounded: false) { purchaserInfo, error in
             completionCalled = true
         }
@@ -199,7 +201,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         let appUserID = "myUser"
         self.mockDeviceCache.cachedPurchaserInfo[appUserID] = object
 
-        purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(forAppUserID: appUserID)
+        purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(appUserID: appUserID)
 
         expect(self.purchaserInfoManagerDelegateCallCount) == 1
     }
@@ -220,7 +222,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         let appUserID = "myUser"
         mockDeviceCache.cachedPurchaserInfo[appUserID] = object
 
-        purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(forAppUserID: appUserID)
+        purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(appUserID: appUserID)
 
         let newInfo = PurchaserInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
@@ -236,7 +238,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         object = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
         mockDeviceCache.cachedPurchaserInfo[appUserID] = object
 
-        purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(forAppUserID: appUserID)
+        purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(appUserID: appUserID)
         expect(self.purchaserInfoManagerDelegateCallCount) == 2
     }
 
@@ -256,18 +258,18 @@ class PurchaserInfoManagerTests: XCTestCase {
         let appUserID = "myUser"
         mockDeviceCache.cachedPurchaserInfo[appUserID] = object
 
-        purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(forAppUserID: appUserID)
+        purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(appUserID: appUserID)
         expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == 1
     }
 
     func testPurchaserInfoReturnsFromCacheIfAvailable() {
         let appUserID = "myUser"
-        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: appUserID)
+        purchaserInfoManager.cache(purchaserInfo: mockPurchaserInfo, appUserID: appUserID)
 
         var completionCalled = false
         var receivedPurchaserInfo: PurchaserInfo?
         var receivedError: Error?
-        purchaserInfoManager.purchaserInfo(withAppUserID: appUserID) { purchaserInfo, error in
+        purchaserInfoManager.purchaserInfo(appUserID: appUserID) { purchaserInfo, error in
             completionCalled = true
             receivedPurchaserInfo = purchaserInfo
             receivedError = error
@@ -283,10 +285,10 @@ class PurchaserInfoManagerTests: XCTestCase {
     func testPurchaserInfoReturnsFromCacheAndRefreshesIfStale() {
         let appUserID = "myUser"
         mockDeviceCache.stubbedIsPurchaserInfoCacheStale = true
-        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: appUserID)
+        purchaserInfoManager.cache(purchaserInfo: mockPurchaserInfo, appUserID: appUserID)
 
         var completionCalled = false
-        purchaserInfoManager.purchaserInfo(withAppUserID: appUserID) { purchaserInfo, error in
+        purchaserInfoManager.purchaserInfo(appUserID: appUserID) { purchaserInfo, error in
             completionCalled = true
         }
 
@@ -298,7 +300,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         let appUserID = "myUser"
 
         var completionCalled = false
-        purchaserInfoManager.purchaserInfo(withAppUserID: appUserID) { purchaserInfo, error in
+        purchaserInfoManager.purchaserInfo(appUserID: appUserID) { purchaserInfo, error in
             completionCalled = true
 
             // checking here to ensure that completion gets called from the backend call
@@ -324,14 +326,14 @@ class PurchaserInfoManagerTests: XCTestCase {
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
         mockDeviceCache.cachedPurchaserInfo[appUserID] = object
 
-        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(forAppUserID: appUserID)
+        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(appUserID: appUserID)
 
         expect(receivedPurchaserInfo).toNot(beNil())
         expect(receivedPurchaserInfo!) == info
     }
 
     func testCachedPurchaserInfoReturnsNilIfNotAvailable() {
-        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(forAppUserID: "myUser")
+        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(appUserID: "myUser")
         expect(receivedPurchaserInfo).to(beNil())
     }
 
@@ -350,7 +352,7 @@ class PurchaserInfoManagerTests: XCTestCase {
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
         mockDeviceCache.cachedPurchaserInfo["firstUser"] = object
 
-        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(forAppUserID: "secondUser")
+        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(appUserID: "secondUser")
         expect(receivedPurchaserInfo).to(beNil())
     }
 
@@ -359,7 +361,7 @@ class PurchaserInfoManagerTests: XCTestCase {
 
         mockDeviceCache.cachedPurchaserInfo[appUserID] = Data()
 
-        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(forAppUserID: appUserID)
+        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(appUserID: appUserID)
         expect(receivedPurchaserInfo).to(beNil())
     }
 
@@ -380,15 +382,15 @@ class PurchaserInfoManagerTests: XCTestCase {
         let appUserID = "myUser"
         mockDeviceCache.cachedPurchaserInfo[appUserID] = object
 
-        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(forAppUserID: appUserID)
+        let receivedPurchaserInfo = purchaserInfoManager.cachedPurchaserInfo(appUserID: appUserID)
         expect(receivedPurchaserInfo).to(beNil())
     }
 
     func testCachePurchaserInfoStoresCorrectly() {
         let appUserID = "myUser"
-        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: appUserID)
+        purchaserInfoManager.cache(purchaserInfo: mockPurchaserInfo, appUserID: appUserID)
 
-        expect(self.purchaserInfoManager.cachedPurchaserInfo(forAppUserID: appUserID)) == mockPurchaserInfo
+        expect(self.purchaserInfoManager.cachedPurchaserInfo(appUserID: appUserID)) == mockPurchaserInfo
         expect(self.mockDeviceCache.cachePurchaserInfoCount) == 1
     }
 
@@ -406,12 +408,14 @@ class PurchaserInfoManagerTests: XCTestCase {
                 "original_application_version": NSNull()
             ]])!
 
-        purchaserInfoManager.cachePurchaserInfo(invalidPurchaserInfo, forAppUserID: "myUser")
-        expect(self.mockDeviceCache.cachePurchaserInfoCount) == 0
+        expectToThrowException {
+            self.purchaserInfoManager.cache(purchaserInfo: invalidPurchaserInfo, appUserID: "myUser")
+        }
+        expect(self.mockDeviceCache.cachePurchaserInfoCount).toEventually(be(0))
     }
 
     func testCachePurchaserSendsToDelegateIfChanged() {
-        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: "myUser")
+        purchaserInfoManager.cache(purchaserInfo: mockPurchaserInfo, appUserID: "myUser")
         expect(self.purchaserInfoManagerDelegateCallCount) == 1
         expect(self.purchaserInfoManagerDelegateCallPurchaserInfo) == mockPurchaserInfo
     }
@@ -425,7 +429,7 @@ class PurchaserInfoManagerTests: XCTestCase {
 
     func testClearPurchaserInfoCacheResetsLastSent() {
         let appUserID = "myUser"
-        purchaserInfoManager.cachePurchaserInfo(mockPurchaserInfo, forAppUserID: appUserID)
+        purchaserInfoManager.cache(purchaserInfo: mockPurchaserInfo, appUserID: appUserID)
         expect(self.purchaserInfoManager.lastSentPurchaserInfo) == mockPurchaserInfo
 
         purchaserInfoManager.clearPurchaserInfoCache(forAppUserID: appUserID)
@@ -436,8 +440,9 @@ class PurchaserInfoManagerTests: XCTestCase {
 
 extension PurchaserInfoManagerTests: PurchaserInfoManagerDelegate {
 
-    func purchaserInfoManagerDidReceiveUpdatedPurchaserInfo(_ purchaserInfo: PurchaserInfo) {
+    func purchaserInfoManagerDidReceiveUpdated(purchaserInfo: PurchaserInfo) {
         purchaserInfoManagerDelegateCallCount += 1
         purchaserInfoManagerDelegateCallPurchaserInfo = purchaserInfo
     }
+
 }

@@ -4,7 +4,7 @@
 //
 
 #import "RCIdentityManager.h"
-#import "RCPurchaserInfoManager.h"
+
 @import PurchasesCoreSwift;
 
 

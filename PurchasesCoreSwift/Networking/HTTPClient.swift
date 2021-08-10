@@ -101,7 +101,7 @@ private extension HTTPClient {
                         authHeaders: [String: String],
                         retried: Bool = false,
                         completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
-        operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
+        let performRequestFunc = {
             self.threadUnsafePerformRequest(httpMethod,
                                             serially: serially,
                                             path: path,
@@ -109,6 +109,12 @@ private extension HTTPClient {
                                             authHeaders: authHeaders,
                                             retried: retried,
                                             completionHandler: maybeCompletionHandler)
+        }
+
+        if serially {
+            operationDispatcher.dispatchOnHTTPSerialQueue(performRequestFunc)
+        } else {
+            performRequestFunc()
         }
     }
 

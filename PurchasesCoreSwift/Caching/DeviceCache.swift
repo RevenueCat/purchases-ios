@@ -157,7 +157,7 @@ import Foundation
     }
 
     @objc(setPurchaserInfoCacheTimestampToNowForAppUserID:)
-    public func setPurchaserInfoCacheTimestampToNow(appUserID: String) {
+    public func setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: String) {
         writeCache {
             self.threadUnsafeSetPurchaserInfoCacheTimestampToNow(appUserID: appUserID)
         }

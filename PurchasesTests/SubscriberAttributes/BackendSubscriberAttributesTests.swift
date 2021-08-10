@@ -4,7 +4,6 @@
 //
 
 import XCTest
-import OHHTTPStubs
 import Nimble
 
 @testable import PurchasesCoreSwift

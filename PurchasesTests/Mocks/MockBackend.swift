@@ -105,12 +105,15 @@ class MockBackend: Backend {
     var invokedGetOfferingsForAppUserIDCount = 0
     var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, completion: OfferingsResponseHandler?)?
     var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, completion: OfferingsResponseHandler?)]()
+    var stubbedGetOfferingsCompletionResult: (data: [String: Any]?, error: Error?)?
 
     override func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
         invokedGetOfferingsForAppUserID = true
         invokedGetOfferingsForAppUserIDCount += 1
         invokedGetOfferingsForAppUserIDParameters = (appUserID, completion)
         invokedGetOfferingsForAppUserIDParametersList.append((appUserID, completion))
+        
+        completion(stubbedGetOfferingsCompletionResult?.data, stubbedGetOfferingsCompletionResult?.error)
     }
 
     var invokedPostAttributionData = false

@@ -46,6 +46,12 @@ class PurchasesTests: XCTestCase {
                                                     deviceCache: deviceCache,
                                                     backend: backend,
                                                     systemInfo: systemInfo)
+        mockOfferingsManager = MockOfferingsManager(deviceCache: deviceCache,
+                                                    operationDispatcher: mockOperationDispatcher,
+                                                    systemInfo: systemInfo,
+                                                    backend: backend,
+                                                    offeringsFactory: offeringsFactory,
+                                                    productsManager: mockProductsManager)
     }
 
     override func tearDown() {
@@ -250,6 +256,7 @@ class PurchasesTests: XCTestCase {
     var attributionFetcher: MockAttributionFetcher!
     var attributionPoster: RCAttributionPoster!
     var purchaserInfoManager: PurchaserInfoManager!
+    var mockOfferingsManager: MockOfferingsManager!
 
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -291,7 +298,8 @@ class PurchasesTests: XCTestCase {
                               introEligibilityCalculator: mockIntroEligibilityCalculator,
                               receiptParser: mockReceiptParser,
                               purchaserInfoManager: purchaserInfoManager,
-                              productsManager: mockProductsManager)
+                              productsManager: mockProductsManager,
+                              offeringsManager: mockOfferingsManager)
 
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -753,7 +761,7 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
             expect(self.backend.postedPrice).to(equal(product.price))
 
-            if #available(iOS 11.2, *) {
+            if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
                 expect(self.backend.postedPaymentMode).to(equal(ProductInfo.PaymentMode.payAsYouGo))
                 expect(self.backend.postedIntroPrice).to(equal(product.introductoryPrice?.price))
             } else {
@@ -761,11 +769,11 @@ class PurchasesTests: XCTestCase {
                 expect(self.backend.postedIntroPrice).to(beNil())
             }
 
-            if #available(iOS 12.0, *) {
+            if #available(iOS 12.0, tvOS 12.0, macOS 10.14, *) {
                 expect(self.backend.postedSubscriptionGroup).to(equal(product.subscriptionGroupIdentifier))
             }
 
-            if #available(iOS 12.2, *) {
+            if #available(iOS 11.2, *) {
                 expect(self.backend.postedDiscounts?.count).to(equal(1))
                 let postedDiscount: PromotionalOffer = self.backend.postedDiscounts![0]
                 expect(postedDiscount.offerIdentifier).to(equal("discount_id"))
@@ -801,7 +809,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedProductID).toNot(beNil())
         expect(self.backend.postedPrice).toNot(beNil())
         expect(self.backend.postedCurrencyCode).toNot(beNil())
-        if #available(iOS 12.2, macOS 10.14.4, *) {
+        if #available(iOS 11.2, macOS 10.14.4, *) {
             expect(self.backend.postedIntroPrice).toNot(beNil())
         }
     }
@@ -1039,7 +1047,7 @@ class PurchasesTests: XCTestCase {
         expect(self.notificationCenter.observers.count).to(equal(2));
         if self.notificationCenter.observers.count > 0 {
             let (_, _, name, _) = self.notificationCenter.observers[0];
-            expect(name).to(equal(UIApplication.didBecomeActiveNotification))
+            expect(name).to(equal(SystemInfo.applicationDidBecomeActiveNotification))
         }
     }
 
@@ -1725,36 +1733,21 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.getSubscriberCallCount).to(equal(2))
     }
 
-    func testGetsProductInfoFromOfferings() {
-        setupPurchases()
-        expect(self.backend.gotOfferings).toEventually(equal(1))
-
-        var offerings: Offerings?
-        self.purchases?.offerings { (newOfferings, _) in
-            offerings = newOfferings
-        }
-
-        expect(offerings).toEventuallyNot(beNil());
-        expect(offerings!["base"]).toNot(beNil())
-        expect(offerings!["base"]!.monthly).toNot(beNil())
-        expect(offerings!["base"]!.monthly?.product).toNot(beNil())
-    }
-
     func testFirstInitializationGetsOfferingsIfAppActive() {
         systemInfo.stubbedIsApplicationBackgrounded = false
         setupPurchases()
-        expect(self.backend.gotOfferings).toEventually(equal(1))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
     }
 
     func testFirstInitializationDoesntFetchOfferingsIfAppBackgrounded() {
         systemInfo.stubbedIsApplicationBackgrounded = true
         setupPurchases()
-        expect(self.backend.gotOfferings).toEventually(equal(0))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(0))
     }
 
     func testProductInfoIsCachedForOfferings() {
         setupPurchases()
-        expect(self.backend.gotOfferings).toEventually(equal(1))
+        mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
         self.purchases?.offerings { (newOfferings, _) in
             let product = newOfferings!["base"]!.monthly!.product;
             self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
@@ -1781,48 +1774,6 @@ class PurchasesTests: XCTestCase {
 
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }
-    }
-
-    func testFailBackendOfferingsReturnsNil() {
-        self.backend.failOfferings = true
-        setupPurchases()
-
-        var offerings: Offerings?
-        self.purchases?.offerings({ (newOfferings, _) in
-            offerings = newOfferings
-        })
-
-        expect(offerings).toEventually(beNil());
-    }
-
-    func testBadBackendResponseForOfferings() {
-        self.backend.badOfferingsResponse = true
-        self.offeringsFactory.badOfferings = true
-        setupPurchases()
-
-        var receivedError: NSError?
-        self.purchases?.offerings({ (_, error) in
-            receivedError = error as NSError?
-        })
-
-        expect(receivedError).toEventuallyNot(beNil());
-        expect(receivedError?.domain).to(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
-    }
-
-    func testMissingProductDetailsReturnsNil() {
-        self.mockProductsManager.stubbedProductsCompletionResult = Set<SKProduct>()
-
-        offeringsFactory.emptyOfferings = true
-        setupPurchases()
-
-        var offerings: Offerings?
-        self.purchases?.offerings({ (newOfferings, _) in
-            offerings = newOfferings
-        })
-
-        expect(offerings).toEventuallyNot(beNil());
-        expect(offerings!["base"]).toEventually(beNil())
     }
 
     func testAddAttributionAlwaysAddsAdIdsEmptyDict() {
@@ -2171,7 +2122,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testAddsDiscountToWrapper() {
-        if #available(iOS 12.2, *) {
+        if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
             setupPurchases()
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
             let discount = SKPaymentDiscount.init(identifier: "discount", keyIdentifier: "TIKAMASALA1", nonce: UUID(), signature: "Base64 encoded signature", timestamp: NSNumber(value: Int64(123413232131)))
@@ -2187,7 +2138,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testPaymentDiscountForProductDiscountCreatesDiscount() {
-        if #available(iOS 12.2, *) {
+        if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
             setupPurchases()
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
@@ -2222,7 +2173,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testPaymentDiscountForProductDiscountCallsCompletionWithErrorIfReceiptNil() {
-        if #available(iOS 12.2, *) {
+        if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
             setupPurchases()
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
@@ -2248,7 +2199,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testPaymentDiscountForProductDiscountCallsCompletionWithErrorIfReceiptEmpty() {
-        if #available(iOS 12.2, *) {
+        if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
             setupPurchases()
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
 
@@ -2455,7 +2406,7 @@ class PurchasesTests: XCTestCase {
 
     func testPostsOfferingIfPurchasingPackage() {
         setupPurchases()
-
+        mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
         self.purchases!.offerings { (newOfferings, _) in
             let package = newOfferings!["base"]!.monthly!
             self.purchases!.purchasePackage(package) { (tx, info, error, userCancelled) in
@@ -2487,6 +2438,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         var receivedError: NSError? = nil
         var secondCompletionCalled = false
+        mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
         self.purchases!.offerings { (newOfferings, _) in
             let package = newOfferings!["base"]!.monthly!
             self.purchases!.purchasePackage(package) { _,_,_,_  in
@@ -2771,9 +2723,7 @@ class PurchasesTests: XCTestCase {
         expect(self.deviceCache.cachedPurchaserInfo[newAppUserID]).toEventuallyNot(beNil())
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(expectedCallCount))
         expect(self.deviceCache.setPurchaserInfoCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
-        expect(self.deviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
-        expect(self.backend.gotOfferings).toEventually(equal(expectedCallCount))
-        expect(self.deviceCache.cachedOfferingsCount).toEventually(equal(expectedCallCount))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(expectedCallCount))
     }
 
 }

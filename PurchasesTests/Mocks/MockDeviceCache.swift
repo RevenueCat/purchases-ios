@@ -67,14 +67,13 @@ class MockDeviceCache: DeviceCache {
         clearPurchaserInfoCacheTimestampCount += 1
     }
 
-    override func setPurchaserInfoCacheTimestampToNow(appUserID: String) {
+    override func setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: String) {
         setPurchaserInfoCacheTimestampToNowCount += 1
     }
 
     // MARK: offerings
 
     var cacheOfferingsCount = 0
-    var cachedOfferingsCount = 0
     var clearOfferingsCacheTimestampCount = 0
     var setOfferingsCacheTimestampToNowCount = 0
     var stubbedIsOfferingsCacheStale = false
@@ -85,7 +84,7 @@ class MockDeviceCache: DeviceCache {
     }
 
     override func cache(offerings: Offerings) {
-        cachedOfferingsCount += 1
+        cacheOfferingsCount += 1
     }
 
     override func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {

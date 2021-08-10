@@ -3,7 +3,7 @@ import Nimble
 
 import PurchasesCoreSwift
 
-@available(iOS 12.2, *)
+@available(iOS 11.2, *)
 class ProductInfoTests: XCTestCase {
     func testAsDictionaryConvertsProductIdentifierCorrectly() {
         let productIdentifier = "cool_product"
@@ -88,63 +88,62 @@ class ProductInfoTests: XCTestCase {
         let productInfo: ProductInfo = .createMockProductInfo(subscriptionGroup: subscriptionGroup)
         expect(productInfo.asDictionary()["subscription_group_id"] as? String) == subscriptionGroup
     }
-
+    
     func testAsDictionaryConvertsDiscountsCorrectly() {
-        if #available(macOS 10.14.4, *) {
-
-
-            let discount1 = PromotionalOffer(withProductDiscount: MockProductDiscount(identifier: "offerid1",
-                                                                                      paymentMode: .payAsYouGo,
-                                                                                      price: 11))
-            let discount2 = PromotionalOffer(withProductDiscount: MockProductDiscount(identifier: "offerid2",
-                                                                                      paymentMode: .payUpFront,
-                                                                                      price: 12))
-            let discount3 = PromotionalOffer(withProductDiscount: MockProductDiscount(identifier: "offerid3",
-                                                                                      paymentMode: .freeTrial,
-                                                                                      price: 13))
-
-            let productInfo: ProductInfo = .createMockProductInfo(discounts: [discount1, discount2, discount3])
-
-            expect(productInfo.asDictionary()["offers"] as? [[String: NSObject]]).toNot(beNil())
-            guard let receivedOffers = productInfo.asDictionary()["offers"] as? [[String: NSObject]] else { fatalError() }
-
-            expect(receivedOffers[0]["offer_identifier"] as? String) == discount1.offerIdentifier
-            expect(receivedOffers[0]["price"] as? NSDecimalNumber) == discount1.price
-            expect((receivedOffers[0]["payment_mode"] as? NSNumber)?.intValue) == discount1.paymentMode.rawValue
-
-            expect(receivedOffers[1]["offer_identifier"] as? String) == discount2.offerIdentifier
-            expect(receivedOffers[1]["price"] as? NSDecimalNumber) == discount2.price
-            expect((receivedOffers[1]["payment_mode"] as? NSNumber)?.intValue) == discount2.paymentMode.rawValue
-
-            expect(receivedOffers[2]["offer_identifier"] as? String) == discount3.offerIdentifier
-            expect(receivedOffers[2]["price"] as? NSDecimalNumber) == discount3.price
-            expect((receivedOffers[2]["payment_mode"] as? NSNumber)?.intValue) == discount3.paymentMode.rawValue
-        }
+        let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
+                                         price: NSDecimalNumber(decimal: 11),
+                                         paymentMode: .payAsYouGo)
+        
+        let discount2 = PromotionalOffer(offerIdentifier: "offerid2",
+                                         price: NSDecimalNumber(decimal: 12),
+                                         paymentMode: .payUpFront)
+        
+        let discount3 = PromotionalOffer(offerIdentifier: "offerid3",
+                                         price: NSDecimalNumber(decimal: 13),
+                                         paymentMode: .freeTrial)
+        
+        let productInfo: ProductInfo = .createMockProductInfo(discounts: [discount1, discount2, discount3])
+        
+        expect(productInfo.asDictionary()["offers"] as? [[String: NSObject]]).toNot(beNil())
+        guard let receivedOffers = productInfo.asDictionary()["offers"] as? [[String: NSObject]] else { fatalError() }
+        
+        expect(receivedOffers[0]["offer_identifier"] as? String) == discount1.offerIdentifier
+        expect(receivedOffers[0]["price"] as? NSDecimalNumber) == discount1.price
+        expect((receivedOffers[0]["payment_mode"] as? NSNumber)?.intValue) == discount1.paymentMode.rawValue
+        
+        expect(receivedOffers[1]["offer_identifier"] as? String) == discount2.offerIdentifier
+        expect(receivedOffers[1]["price"] as? NSDecimalNumber) == discount2.price
+        expect((receivedOffers[1]["payment_mode"] as? NSNumber)?.intValue) == discount2.paymentMode.rawValue
+        
+        expect(receivedOffers[2]["offer_identifier"] as? String) == discount3.offerIdentifier
+        expect(receivedOffers[2]["price"] as? NSDecimalNumber) == discount3.price
+        expect((receivedOffers[2]["payment_mode"] as? NSNumber)?.intValue) == discount3.paymentMode.rawValue
+        
     }
-
+    
     func testCacheKey() {
-        if #available(macOS 10.14.4, *) {
-            let discount1 = PromotionalOffer(withProductDiscount: MockProductDiscount(identifier: "offerid1",
-                                                                                      paymentMode: .payAsYouGo,
-                                                                                      price: 11))
-            let discount2 = PromotionalOffer(withProductDiscount: MockProductDiscount(identifier: "offerid2",
-                                                                                      paymentMode: .payUpFront,
-                                                                                      price: 12))
-            let discount3 = PromotionalOffer(withProductDiscount: MockProductDiscount(identifier: "offerid3",
-                                                                                      paymentMode: .freeTrial,
-                                                                                      price: 13))
-
-            let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: "cool_product",
-                                                                    paymentMode: .payUpFront,
-                                                                    currencyCode: "UYU",
-                                                                    price: 49.99,
-                                                                    normalDuration: "P3Y",
-                                                                    introDuration: "P3W",
-                                                                    introDurationType: .freeTrial,
-                                                                    introPrice: 0,
-                                                                    subscriptionGroup: "cool_group",
-                                                                    discounts: [discount1, discount2, discount3])
-            expect(productInfo.cacheKey) == "cool_product-49.99-UYU-1-0-cool_group-P3Y-P3W-0-offerid1-offerid2-offerid3"
-        }
+        let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
+                                         price: NSDecimalNumber(decimal: 11),
+                                         paymentMode: .payAsYouGo)
+        
+        let discount2 = PromotionalOffer(offerIdentifier: "offerid2",
+                                         price: NSDecimalNumber(decimal: 12),
+                                         paymentMode: .payUpFront)
+        
+        let discount3 = PromotionalOffer(offerIdentifier: "offerid3",
+                                         price: NSDecimalNumber(decimal: 13),
+                                         paymentMode: .freeTrial)
+        
+        let productInfo: ProductInfo = .createMockProductInfo(productIdentifier: "cool_product",
+                                                              paymentMode: .payUpFront,
+                                                              currencyCode: "UYU",
+                                                              price: 49.99,
+                                                              normalDuration: "P3Y",
+                                                              introDuration: "P3W",
+                                                              introDurationType: .freeTrial,
+                                                              introPrice: 0,
+                                                              subscriptionGroup: "cool_group",
+                                                              discounts: [discount1, discount2, discount3])
+        expect(productInfo.cacheKey) == "cool_product-49.99-UYU-1-0-cool_group-P3Y-P3W-0-offerid1-offerid2-offerid3"
     }
 }

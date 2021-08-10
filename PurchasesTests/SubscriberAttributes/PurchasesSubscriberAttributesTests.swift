@@ -53,6 +53,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         "other_purchases": [:],
         "original_application_version": NSNull()
     ]]
+    
+    var mockOfferingsManager: MockOfferingsManager!
 
     var purchases: Purchases!
 
@@ -86,8 +88,13 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                          deviceCache: mockDeviceCache,
                                                          backend: mockBackend,
                                                          systemInfo: systemInfo)
+        mockOfferingsManager = MockOfferingsManager(deviceCache: mockDeviceCache,
+                                                    operationDispatcher: mockOperationDispatcher,
+                                                    systemInfo: systemInfo,
+                                                    backend: mockBackend,
+                                                    offeringsFactory: MockOfferingsFactory(),
+                                                    productsManager: MockProductsManager())
         self.mockReceiptFetcher = MockReceiptFetcher(requestFetcher: mockRequestFetcher)
-
     }
 
     override func tearDown() {
@@ -117,7 +124,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               introEligibilityCalculator: mockIntroEligibilityCalculator,
                               receiptParser: mockReceiptParser,
                               purchaserInfoManager: purchaserInfoManager,
-                              productsManager: mockProductsManager)
+                              productsManager: mockProductsManager,
+                              offeringsManager: mockOfferingsManager)
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
@@ -137,7 +145,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         var isObservingDidBecomeActive = false
 
         for (_, _, name, _) in self.mockNotificationCenter.observers {
-            if name == UIApplication.didBecomeActiveNotification {
+            if name == SystemInfo.applicationDidBecomeActiveNotification {
                 isObservingDidBecomeActive = true
                 break
             }
@@ -156,7 +164,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         var isObservingDidBecomeActive = false
 
         for (_, _, name, _) in self.mockNotificationCenter.observers {
-            if name == UIApplication.willResignActiveNotification {
+            if name == SystemInfo.applicationWillResignActiveNotification {
                 isObservingDidBecomeActive = true
                 break
             }
