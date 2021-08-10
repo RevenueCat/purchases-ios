@@ -81,9 +81,9 @@ public extension OfferingsManager {
         deviceCache.setOfferingsCacheTimestampToNow()
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
             self.backend.getOfferings(appUserID: appUserID) { maybeData, maybeError in
-                if let data = data {
+                if let data = maybeData {
                     self.handleOfferingsBackendResult(with: data, completion: completion)
-                } else if let error = error {
+                } else if let error = maybeError {
                     self.handleOfferingsUpdateError(error, completion: completion)
                 }
             }
