@@ -44,67 +44,79 @@ class OfferingsManagerTests: XCTestCase {
 
 extension OfferingsManagerTests {
 
-    func testMissingProductDetailsReturnsNil() {
+    func testOfferingsForAppUserIDReturnsNilIfMissingProductDetails() {
         // given
         mockOfferingsFactory.emptyOfferings = true
         mockBackend.stubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
 
         // when
         var obtainedOfferings: Offerings?
+        var completionCalled = false
         offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, _ in
             obtainedOfferings = offerings
+            completionCalled = true
         }
 
         // then
-        expect(obtainedOfferings).toEventuallyNot(beNil());
-        expect(obtainedOfferings!["base"]).toEventually(beNil())
+        expect(completionCalled).toEventually(beTrue())
+        expect(obtainedOfferings).toNot(beNil());
+        expect(obtainedOfferings!["base"]).to(beNil())
     }
 
-    func testGetsProductInfoFromOfferings() {
+    func testOfferingsForAppUserIDReturnsOfferingsIfSuccessBackendRequest() {
         // given
         mockBackend.stubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
 
         // when
         var obtainedOfferings: Offerings?
+        var completionCalled = false
         offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, _ in
             obtainedOfferings = offerings
+            completionCalled = true
         }
 
         // then
-        expect(obtainedOfferings).toEventuallyNot(beNil());
+        expect(completionCalled).toEventually(beTrue())
+        expect(obtainedOfferings).toNot(beNil());
         expect(obtainedOfferings!["base"]).toNot(beNil())
         expect(obtainedOfferings!["base"]!.monthly).toNot(beNil())
         expect(obtainedOfferings!["base"]!.monthly?.product).toNot(beNil())
     }
 
-    func testFailBackendOfferingsReturnsNil() {
+    func testOfferingsForAppUserIDReturnsNilIfFailBackendRequest() {
         // given
         mockBackend.stubbedGetOfferingsCompletionResult = (nil, MockData.unexpectedBackendResponseError)
         mockOfferingsFactory.emptyOfferings = true
 
         // when
         var obtainedOfferings: Offerings?
+        var completionCalled = false
         offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, _ in
             obtainedOfferings = offerings
+            completionCalled = true
         }
 
         // then
-        expect(obtainedOfferings).toEventually(beNil());
+        expect(completionCalled).toEventually(beTrue())
+        expect(obtainedOfferings).to(beNil());
     }
 
-    func testBadBackendResponseForOfferings() {
+    func testOfferingsForAppUserIDReturnsUnexpectedBackendErrorIfBadBackendRequest() {
         // given
         mockBackend.stubbedGetOfferingsCompletionResult = (nil, MockData.unexpectedBackendResponseError)
         mockOfferingsFactory.badOfferings = true
 
         // when
         var receivedError: NSError?
+        var completionCalled = false
         offeringsManager.offerings(appUserID: MockData.anyAppUserID) { _, error in
             receivedError = error as NSError?
+            completionCalled = true
         }
 
         // then
-        expect(receivedError).toEventuallyNot(beNil());
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedError).toNot(beNil());
         expect(receivedError?.domain).to(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
     }

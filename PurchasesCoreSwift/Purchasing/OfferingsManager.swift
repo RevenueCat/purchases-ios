@@ -103,7 +103,7 @@ private extension OfferingsManager {
             }
 
             if let createdOfferings = self.offeringsFactory.createOfferings(withProducts: productsByID, data: data) {
-                self.logProductsMissingIfAppropriate(products: productsByID, offeringsData: data)
+                self.logMissingProductsIfAppropriate(products: productsByID, offeringsData: data)
 
                 self.deviceCache.cache(offerings: createdOfferings)
                 self.dispatchCompletionOnMainThreadIfPossible(completion,
@@ -116,7 +116,7 @@ private extension OfferingsManager {
     }
 
     func handleOfferingsUpdateError(_ error: Error, completion: ReceiveOfferingsBlock?) {
-        Logger.appleError(String(format: Strings.offering.fetching_offerings_error, error as CVarArg))
+        Logger.appleError(String(format: Strings.offering.fetching_offerings_error, error.localizedDescription as CVarArg))
         deviceCache.clearOfferingsCacheTimestamp()
         dispatchCompletionOnMainThreadIfPossible(completion,
                                                  offerings: nil,
@@ -136,7 +136,7 @@ private extension OfferingsManager {
         return Set(productIdenfitiersArray)
     }
 
-    func logProductsMissingIfAppropriate(products: [String: SKProduct], offeringsData: [String: Any]) {
+    func logMissingProductsIfAppropriate(products: [String: SKProduct], offeringsData: [String: Any]) {
         guard !products.isEmpty,
               !offeringsData.isEmpty else {
             return
