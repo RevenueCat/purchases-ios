@@ -25,12 +25,14 @@ public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, PurchaserInfo?
     private var presentedOfferingIDsByProductID: [String: String] = [:]
     private var purchaseCompleteCallbacksByProductID: [String: PurchaseCompletedBlock] = [:]
     public var finishTransactions = false
+    public var allowSharingAppStoreAccount = false
 
     private let productsManager: ProductsManager
     private let storeKitWrapper: StoreKitWrapper
     private let operationDispatcher: OperationDispatcher
     private let receiptFecher: ReceiptFetcher
     private let purchaserInfoManager: PurchaserInfoManager
+    private let backend: Backend
 
     private weak var maybeDelegate: PurchasesOrchestratorDelegate?
 
@@ -39,13 +41,15 @@ public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, PurchaserInfo?
                       storeKitWrapper: StoreKitWrapper,
                       operationDispatcher: OperationDispatcher,
                       receiptFetcher: ReceiptFetcher,
-                      purchaserInfoManager: PurchaserInfoManager) {
+                      purchaserInfoManager: PurchaserInfoManager,
+                      backend: Backend) {
         self.productsManager = productsManager
         self.maybeDelegate = delegate
         self.storeKitWrapper = storeKitWrapper
         self.operationDispatcher = operationDispatcher
         self.receiptFecher = receiptFetcher
         self.purchaserInfoManager = purchaserInfoManager
+        self.backend = backend
     }
 
 }
@@ -80,7 +84,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
     public func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, shouldAddStorePayment payment: SKPayment, for product: SKProduct) -> Bool {
         productsManager.cacheProduct(product);
-
+        // todo
         guard let delegate = maybeDelegate else { return false }
         //        delegate.shouldPurchasePromoProduct(product, ) { completion in
         //            self.purchaseCompleteCallbacks[product.productIdentifier] = completion
@@ -183,26 +187,52 @@ private extension PurchasesOrchestrator {
     }
 
     func postReceipt(withTransaction transaction: SKPaymentTransaction, receiptData: Data, products: Set<SKProduct>) {
-        // todo
+        var maybeProductInfo: ProductInfo?
+        var maybePresentedOfferingID: String?
+        if let product = products.first {
+            let productInfo = ProductInfoExtractor().extractInfo(from: product)
+            let productID = productInfo.productIdentifier
+            let presentedOfferingID = presentedOfferingIDsByProductID[productID]
+            presentedOfferingIDsByProductID.removeValue(forKey: productID)
+            maybeProductInfo = productInfo
+            maybePresentedOfferingID = presentedOfferingID
+        }
+        let unsyncedAttributes = unsyncedAttributesByKey
+
+        backend.post(receiptData: receiptData,
+                     appUserID: appUserID,
+                     isRestore: allowSharingAppStoreAccount,
+                     productInfo: maybeProductInfo,
+                     presentedOfferingIdentifier: maybePresentedOfferingID,
+                     observerMode: !finishTransactions,
+                     subscriberAttributes: unsyncedAttributes) { maybePurchaserInfo, maybeError in
+            self.handleReceiptPost(withTransaction: transaction,
+                                   maybePurchaserInfo: maybePurchaserInfo,
+                                   maybeSubscriberAttributes: unsyncedAttributes,
+                                   maybeError: maybeError)
+        }
     }
 
+    var unsyncedAttributesByKey: SubscriberAttributeDict {
+        // todo
+
+        return [:]
+    }
 
     func products(withIdentifiers identifiers: [String],
                   completion: @escaping (Set<SKProduct>) -> Void) {
-        // todo
+        let productIdentifiersSet = Set(identifiers)
+        guard !productIdentifiersSet.isEmpty else {
+            operationDispatcher.dispatchOnMainThread { completion([]) }
+            return
+        }
+
+        productsManager.products(withIdentifiers: productIdentifiersSet) { products in
+            self.operationDispatcher.dispatchOnMainThread {
+                completion(products)
+            }
+        }
     }
-//    - (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
-//                    completionBlock:(RCReceiveProductsBlock)completion {
-//        NSSet<NSString *> *productIdentifiersSet = [[NSSet alloc] initWithArray:productIdentifiers];
-//        if (productIdentifiersSet.count > 0) {
-//            [self.productsManager productsWithIdentifiers:productIdentifiersSet
-//                                               completion:^(NSSet<SKProduct *> * _Nonnull products) {
-//                [self.operationDispatcher dispatchOnMainThread:^{ completion(products.allObjects); }];
-//            }];
-//        } else {
-//            [self.operationDispatcher dispatchOnMainThread:^{ completion(@[]); }];
-//        }
-//    }
 
     func handleReceiptPost(withTransaction transaction: SKPaymentTransaction,
                            maybePurchaserInfo: PurchaserInfo?,
