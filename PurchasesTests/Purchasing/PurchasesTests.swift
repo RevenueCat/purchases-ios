@@ -46,6 +46,12 @@ class PurchasesTests: XCTestCase {
                                                     deviceCache: deviceCache,
                                                     backend: backend,
                                                     systemInfo: systemInfo)
+        mockOfferingsManager = MockOfferingsManager(deviceCache: deviceCache,
+                                                    operationDispatcher: mockOperationDispatcher,
+                                                    systemInfo: systemInfo,
+                                                    backend: backend,
+                                                    offeringsFactory: offeringsFactory,
+                                                    productsManager: mockProductsManager)
     }
 
     override func tearDown() {
@@ -250,6 +256,7 @@ class PurchasesTests: XCTestCase {
     var attributionFetcher: MockAttributionFetcher!
     var attributionPoster: RCAttributionPoster!
     var purchaserInfoManager: PurchaserInfoManager!
+    var mockOfferingsManager: MockOfferingsManager!
 
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -291,7 +298,8 @@ class PurchasesTests: XCTestCase {
                               introEligibilityCalculator: mockIntroEligibilityCalculator,
                               receiptParser: mockReceiptParser,
                               purchaserInfoManager: purchaserInfoManager,
-                              productsManager: mockProductsManager)
+                              productsManager: mockProductsManager,
+                              offeringsManager: mockOfferingsManager)
 
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -1725,36 +1733,21 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.getSubscriberCallCount).to(equal(2))
     }
 
-    func testGetsProductInfoFromOfferings() {
-        setupPurchases()
-        expect(self.backend.gotOfferings).toEventually(equal(1))
-
-        var offerings: Offerings?
-        self.purchases?.offerings { (newOfferings, _) in
-            offerings = newOfferings
-        }
-
-        expect(offerings).toEventuallyNot(beNil());
-        expect(offerings!["base"]).toNot(beNil())
-        expect(offerings!["base"]!.monthly).toNot(beNil())
-        expect(offerings!["base"]!.monthly?.product).toNot(beNil())
-    }
-
     func testFirstInitializationGetsOfferingsIfAppActive() {
         systemInfo.stubbedIsApplicationBackgrounded = false
         setupPurchases()
-        expect(self.backend.gotOfferings).toEventually(equal(1))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
     }
 
     func testFirstInitializationDoesntFetchOfferingsIfAppBackgrounded() {
         systemInfo.stubbedIsApplicationBackgrounded = true
         setupPurchases()
-        expect(self.backend.gotOfferings).toEventually(equal(0))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(0))
     }
 
     func testProductInfoIsCachedForOfferings() {
         setupPurchases()
-        expect(self.backend.gotOfferings).toEventually(equal(1))
+        mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
         self.purchases?.offerings { (newOfferings, _) in
             let product = newOfferings!["base"]!.monthly!.product;
             self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in
@@ -1781,48 +1774,6 @@ class PurchasesTests: XCTestCase {
 
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }
-    }
-
-    func testFailBackendOfferingsReturnsNil() {
-        self.backend.failOfferings = true
-        setupPurchases()
-
-        var offerings: Offerings?
-        self.purchases?.offerings({ (newOfferings, _) in
-            offerings = newOfferings
-        })
-
-        expect(offerings).toEventually(beNil());
-    }
-
-    func testBadBackendResponseForOfferings() {
-        self.backend.badOfferingsResponse = true
-        self.offeringsFactory.badOfferings = true
-        setupPurchases()
-
-        var receivedError: NSError?
-        self.purchases?.offerings({ (_, error) in
-            receivedError = error as NSError?
-        })
-
-        expect(receivedError).toEventuallyNot(beNil());
-        expect(receivedError?.domain).to(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
-    }
-
-    func testMissingProductDetailsReturnsNil() {
-        self.mockProductsManager.stubbedProductsCompletionResult = Set<SKProduct>()
-
-        offeringsFactory.emptyOfferings = true
-        setupPurchases()
-
-        var offerings: Offerings?
-        self.purchases?.offerings({ (newOfferings, _) in
-            offerings = newOfferings
-        })
-
-        expect(offerings).toEventuallyNot(beNil());
-        expect(offerings!["base"]).toEventually(beNil())
     }
 
     func testAddAttributionAlwaysAddsAdIdsEmptyDict() {
@@ -2455,7 +2406,7 @@ class PurchasesTests: XCTestCase {
 
     func testPostsOfferingIfPurchasingPackage() {
         setupPurchases()
-
+        mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
         self.purchases!.offerings { (newOfferings, _) in
             let package = newOfferings!["base"]!.monthly!
             self.purchases!.purchasePackage(package) { (tx, info, error, userCancelled) in
@@ -2487,6 +2438,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         var receivedError: NSError? = nil
         var secondCompletionCalled = false
+        mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
         self.purchases!.offerings { (newOfferings, _) in
             let package = newOfferings!["base"]!.monthly!
             self.purchases!.purchasePackage(package) { _,_,_,_  in
@@ -2771,9 +2723,7 @@ class PurchasesTests: XCTestCase {
         expect(self.deviceCache.cachedPurchaserInfo[newAppUserID]).toEventuallyNot(beNil())
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(expectedCallCount))
         expect(self.deviceCache.setPurchaserInfoCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
-        expect(self.deviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
-        expect(self.backend.gotOfferings).toEventually(equal(expectedCallCount))
-        expect(self.deviceCache.cachedOfferingsCount).toEventually(equal(expectedCallCount))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(expectedCallCount))
     }
 
 }
