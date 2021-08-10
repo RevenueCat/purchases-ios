@@ -3,10 +3,7 @@
 //
 @import PurchasesCoreSwift;
 
-#include <Purchases/NSError+RCExtensions.h>
-#include <Purchases/RCAttributionFetcher.h>
 #include <Purchases/RCAttributionPoster.h>
-#include <Purchases/RCBackend.h>
 #include <Purchases/RCIdentityManager+Protected.h>
 #include <Purchases/RCIdentityManager.h>
 #include <Purchases/RCPurchaserInfoManager+Protected.h>

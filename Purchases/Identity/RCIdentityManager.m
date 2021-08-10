@@ -4,7 +4,6 @@
 //
 
 #import "RCIdentityManager.h"
-#import "RCBackend.h"
 #import "RCPurchaserInfoManager.h"
 @import PurchasesCoreSwift;
 
@@ -76,7 +75,7 @@
         return;
     }
     [RCLog user:[NSString stringWithFormat:RCStrings.identity.creating_alias, currentAppUserID, alias]];
-    [self.backend createAliasForAppUserID:currentAppUserID withNewAppUserID:alias completion:^(NSError *_Nullable error) {
+    [self.backend createAliasForAppUserID:currentAppUserID newAppUserID:alias completion:^(NSError *_Nullable error) {
         if (error == nil) {
             [RCLog user:[NSString stringWithFormat:@"%@", RCStrings.identity.creating_alias_success]];
             [self.deviceCache clearCachesWithOldAppUserID:currentAppUserID andSaveWithNewUserID:alias];
@@ -126,18 +125,18 @@
         return;
     }
 
-    [self.backend logInWithCurrentAppUserID:currentAppUserID
-                               newAppUserID:newAppUserID
-                                 completion:^(RCPurchaserInfo *purchaserInfo, BOOL created, NSError * _Nullable error) {
-                                     if (error == nil) {
-                                         [RCLog user:[NSString stringWithFormat:@"%@", RCStrings.identity.login_success]];
+    [self.backend logInCurrentAppUserID:currentAppUserID
+                           newAppUserID:newAppUserID
+                             completion:^(RCPurchaserInfo *purchaserInfo, BOOL created, NSError * _Nullable error) {
+        if (error == nil) {
+            [RCLog user:[NSString stringWithFormat:@"%@", RCStrings.identity.login_success]];
 
-                                         [self.deviceCache clearCachesWithOldAppUserID:currentAppUserID
-                                                                  andSaveWithNewUserID:newAppUserID];
-                                         [self.purchaserInfoManager cachePurchaserInfo:purchaserInfo
-                                                                          forAppUserID:newAppUserID];
-                                     }
-                                     completion(purchaserInfo, created, error);
+            [self.deviceCache clearCachesWithOldAppUserID:currentAppUserID
+                                  andSaveWithNewUserID:newAppUserID];
+            [self.purchaserInfoManager cachePurchaserInfo:purchaserInfo
+                                          forAppUserID:newAppUserID];
+        }
+        completion(purchaserInfo, created, error);
     }];
 }
 

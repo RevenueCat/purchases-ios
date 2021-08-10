@@ -7,6 +7,8 @@
 //
 
 import Foundation
+@testable import PurchasesCoreSwift
+
 
 class MockSystemInfo: SystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?

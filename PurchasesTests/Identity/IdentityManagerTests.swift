@@ -289,8 +289,8 @@ class IdentityManagerTests: XCTestCase {
 
         expect(completionCalled).toEventually(beTrue())
 
-        expect(receivedCreated) == true
-        expect(receivedPurchaserInfo) == mockPurchaserInfo
+        expect(receivedCreated).to(equal(true))
+        expect(receivedPurchaserInfo).to(equal(mockPurchaserInfo))
         expect(receivedError).to(beNil())
 
         expect(self.mockBackend.invokedLogInCount) == 1

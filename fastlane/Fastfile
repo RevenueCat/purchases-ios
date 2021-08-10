@@ -245,6 +245,13 @@ platform :ios do
     }
   end
 
+  desc "Generate Jazzy Docs"
+  lane :generate_docs do
+    Dir.chdir("..") do
+      sh("./scripts/generate_docs.sh")
+    end
+  end
+
 end
 
 def push_pods

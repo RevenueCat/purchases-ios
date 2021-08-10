@@ -197,7 +197,8 @@ import Foundation
     @objc(JSONObject) public func jsonObject() -> [String: Any] {
         return originalData.merging(
             ["schema_version": PurchaserInfo.currentSchemaVersion],
-            uniquingKeysWith: { (current, _) in current })
+            strategy: .keepOriginalValue
+        )
     }
 
     private let allPurchases: [String: [String: Any]]
@@ -266,7 +267,7 @@ import Foundation
             })
 
             self.allTransactionsByProductId = latestNonSubscriptionTransactionsByProductId
-                .merging(subscriptionTransactionsByProductId) { (current, _) in current }
+                .merging(subscriptionTransactionsByProductId, strategy: .keepOriginalValue)
 
             self.allPurchases = latestNonSubscriptionTransactionsByProductId
                             .merging(subscriptionTransactionsByProductId) { (current, _) in current }

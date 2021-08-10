@@ -1520,10 +1520,15 @@ class BackendTests: XCTestCase {
         let requestPath = mockLoginRequest(appUserID: currentAppUserID)
         var completionCalled = false
 
-        backend?.logIn(currentAppUserID: currentAppUserID,
+<<<<<<< HEAD
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
+=======
+        backend?.logIn(currentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?, created: Bool, error: Error?) in
+>>>>>>> bb85ad0 (Updated for more comments 🎉)
             completionCalled = true
         }
 
@@ -1553,10 +1558,15 @@ class BackendTests: XCTestCase {
         var receivedPurchaserInfo: PurchaserInfo?
         var receivedCreated: Bool?
 
-        backend?.logIn(currentAppUserID: currentAppUserID,
+<<<<<<< HEAD
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
+=======
+        backend?.logIn(currentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?, created: Bool, error: Error?) in
+>>>>>>> bb85ad0 (Updated for more comments 🎉)
             completionCalled = true
             receivedError = error
             receivedPurchaserInfo = purchaserInfo
@@ -1588,10 +1598,15 @@ class BackendTests: XCTestCase {
         var receivedPurchaserInfo: PurchaserInfo?
         var receivedCreated: Bool?
 
-        backend?.logIn(currentAppUserID: currentAppUserID,
+<<<<<<< HEAD
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
+=======
+        backend?.logIn(currentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?, created: Bool, error: Error?) in
+>>>>>>> bb85ad0 (Updated for more comments 🎉)
             completionCalled = true
             receivedError = error
             receivedPurchaserInfo = purchaserInfo
@@ -1622,10 +1637,15 @@ class BackendTests: XCTestCase {
         var receivedPurchaserInfo: PurchaserInfo?
         var receivedCreated: Bool?
 
-        backend?.logIn(currentAppUserID: currentAppUserID,
+<<<<<<< HEAD
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
+=======
+        backend?.logIn(currentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?, created: Bool, error: Error?) in
+>>>>>>> bb85ad0 (Updated for more comments 🎉)
             completionCalled = true
             receivedError = error
             receivedPurchaserInfo = purchaserInfo
@@ -1659,10 +1679,15 @@ class BackendTests: XCTestCase {
         var receivedPurchaserInfo: PurchaserInfo?
         var receivedCreated: Bool?
 
-        backend?.logIn(currentAppUserID: currentAppUserID,
+<<<<<<< HEAD
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
+=======
+        backend?.logIn(currentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?, created: Bool, error: Error?) in
+>>>>>>> bb85ad0 (Updated for more comments 🎉)
             completionCalled = true
             receivedError = error
             receivedPurchaserInfo = purchaserInfo
@@ -1689,10 +1714,15 @@ class BackendTests: XCTestCase {
         var receivedPurchaserInfo: PurchaserInfo?
         var receivedCreated: Bool?
 
-        backend?.logIn(currentAppUserID: currentAppUserID,
+<<<<<<< HEAD
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
+=======
+        backend?.logIn(currentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?, created: Bool, error: Error?) in
+>>>>>>> bb85ad0 (Updated for more comments 🎉)
             completionCalled = true
             receivedError = error
             receivedPurchaserInfo = purchaserInfo
@@ -1719,10 +1749,15 @@ class BackendTests: XCTestCase {
         var receivedPurchaserInfo: PurchaserInfo?
         var receivedCreated: Bool?
 
-        backend?.logIn(currentAppUserID: currentAppUserID,
+<<<<<<< HEAD
+        backend?.logIn(withCurrentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
                                                       created: Bool,
                                                       error: Error?) in
+=======
+        backend?.logIn(currentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?, created: Bool, error: Error?) in
+>>>>>>> bb85ad0 (Updated for more comments 🎉)
             completionCalled = true
             receivedError = error
             receivedPurchaserInfo = purchaserInfo

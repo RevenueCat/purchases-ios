@@ -262,10 +262,11 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
 
     var invokedConvertAttributionDataAndSet = false
     var invokedConvertAttributionDataAndSetCount = 0
-    var invokedConvertAttributionDataAndSetParameters: (attributionData: [AnyHashable: Any], network: AttributionNetwork, appUserID: String)?
-    var invokedConvertAttributionDataAndSetParametersList = [(attributionData: [AnyHashable: Any], network: AttributionNetwork, appUserID: String)]()
+    var invokedConvertAttributionDataAndSetParameters: (attributionData: [String: Any], network: AttributionNetwork, appUserID: String)?
+    var invokedConvertAttributionDataAndSetParametersList = [(attributionData: [String: Any], network: AttributionNetwork, appUserID: String)]()
 
     override func convertAttributionDataAndSet(asSubscriberAttributes attributionData: [AnyHashable: Any], network: AttributionNetwork, appUserID: String) {
+        let attributionData = attributionData as! [String: Any]
         invokedConvertAttributionDataAndSet = true
         invokedConvertAttributionDataAndSetCount += 1
         invokedConvertAttributionDataAndSetParameters = (attributionData, network, appUserID)

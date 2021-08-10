@@ -33,12 +33,12 @@ import Foundation
     }
 
     @objc(performGETRequestSerially:path:headers:completionHandler:)
-    public func performGETRequest(serially performSerially: Bool = false,
+    public func performGETRequest(serially: Bool = false,
                                   path: String,
                                   headers authHeaders: [String: String],
-                                  completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+                                  completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         performRequest("GET",
-                       performSerially: performSerially,
+                       serially: serially,
                        path: path,
                        requestBody: nil,
                        authHeaders: authHeaders,
@@ -47,13 +47,13 @@ import Foundation
     }
 
     @objc(performPOSTRequestSerially:path:requestBody:headers:completionHandler:)
-    public func performPOSTRequest(serially performSerially: Bool = false,
+    public func performPOSTRequest(serially: Bool = false,
                                    path: String,
                                    requestBody: [String: Any],
                                    headers authHeaders: [String: String],
-                                   completionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+                                   completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         performRequest("POST",
-                       performSerially: performSerially,
+                       serially: serially,
                        path: path,
                        requestBody: requestBody,
                        authHeaders: authHeaders,
@@ -95,15 +95,15 @@ private extension HTTPClient {
     }
 
     func performRequest(_ httpMethod: String,
-                        performSerially: Bool = false,
+                        serially: Bool = false,
                         path: String,
                         requestBody maybeRequestBody: [String: Any]?,
                         authHeaders: [String: String],
                         retried: Bool = false,
-                        completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
+                        completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
             self.threadUnsafePerformRequest(httpMethod,
-                                            performSerially: performSerially,
+                                            serially: serially,
                                             path: path,
                                             requestBody: maybeRequestBody,
                                             authHeaders: authHeaders,
@@ -117,7 +117,7 @@ private extension HTTPClient {
                         request: HTTPRequest,
                         data maybeData: Data?,
                         error maybeNetworkError: Error?,
-                        completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?,
+                        completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
                         retried: Bool) {
         operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
@@ -132,13 +132,13 @@ private extension HTTPClient {
     }
 
     func threadUnsafePerformRequest(_ httpMethod: String,
-                                    performSerially: Bool,
+                                    serially: Bool,
                                     path: String,
                                     requestBody maybeRequestBody: [String: Any]?,
                                     authHeaders: [String: String],
                                     retried: Bool,
-                                    completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?) {
-        let requestHeaders = self.defaultHeaders.merging(authHeaders, uniquingKeysWith: { (_, last) in last })
+                                    completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+        let requestHeaders = self.defaultHeaders.merging(authHeaders)
 
         let maybeURLRequest = self.createRequest(httpMethod: httpMethod,
                                                  path: path,
@@ -168,7 +168,7 @@ private extension HTTPClient {
                                   urlRequest: urlRequest,
                                   completionHandler: maybeCompletionHandler)
 
-        if performSerially && !retried {
+        if serially && !retried {
             if self.currentSerialRequest != nil {
                 let logMessage =
                     String(format: Strings.network.serial_request_queued, self.queuedRequests.count, httpMethod, path)
@@ -192,7 +192,7 @@ private extension HTTPClient {
                                 data: data,
                                 error: error,
                                 completionHandler: maybeCompletionHandler,
-                                beginNextRequestWhenFinished: performSerially,
+                                beginNextRequestWhenFinished: serially,
                                 retried: retried)
         }
         task.resume()
@@ -203,7 +203,7 @@ private extension HTTPClient {
                                     request: HTTPRequest,
                                     data maybeData: Data?,
                                     error maybeNetworkError: Error?,
-                                    completionHandler maybeCompletionHandler: ((Int, [AnyHashable: Any]?, Error?) -> Void)?,
+                                    completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                                     beginNextRequestWhenFinished: Bool,
                                     retried: Bool) {
         var shouldBeginNextRequestWhenFinished = beginNextRequestWhenFinished
@@ -273,7 +273,7 @@ private extension HTTPClient {
                 let nextRequest = self.queuedRequests.removeFirst()
                 Logger.debug(String(format: Strings.network.starting_next_request, nextRequest))
                 self.performRequest(nextRequest.httpMethod,
-                                    performSerially: true,
+                                    serially: true,
                                     path: nextRequest.path,
                                     requestBody: nextRequest.requestBody,
                                     authHeaders: nextRequest.authHeaders,
@@ -285,7 +285,7 @@ private extension HTTPClient {
 
     func createRequest(httpMethod: String,
                        path: String,
-                       requestBody maybeRequestBody: [AnyHashable: Any]?,
+                       requestBody maybeRequestBody: [String: Any]?,
                        headers: [String: String],
                        refreshETag: Bool) -> URLRequest? {
         let relativeURLString = "/v1\(path)"
@@ -297,9 +297,7 @@ private extension HTTPClient {
         urlRequest.httpMethod = httpMethod
 
         let eTagHeader = eTagManager.eTagHeader(for: urlRequest, refreshETag: refreshETag)
-        let headersWithETag = headers.merging(eTagHeader) { (_, last) -> String in
-            last
-        }
+        let headersWithETag = headers.merging(eTagHeader)
 
         urlRequest.allHTTPHeaderFields = headersWithETag
 
