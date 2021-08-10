@@ -9,7 +9,6 @@
 @import PurchasesCoreSwift;
 
 #import "RCAttributionPoster.h"
-#import "RCIdentityManager.h"
 #import "RCPurchases+Protected.h"
 #import "RCPurchases+SubscriberAttributes.h"
 #import "RCPurchases.h"
@@ -252,9 +251,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                                                             deviceCache:deviceCache
                                                                                                 backend:backend
                                                                                              systemInfo:systemInfo];
-    RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWith:deviceCache
-                                                                     backend:backend
-                                                        purchaserInfoManager:purchaserInfoManager];
+    RCIdentityManager *identityManager = [[RCIdentityManager alloc] initWithDeviceCache:deviceCache
+                                                                                backend:backend
+                                                                   purchaserInfoManager:purchaserInfoManager];
     RCAttributionTypeFactory *attributionTypeFactory = [[RCAttributionTypeFactory alloc] init];
     RCAttributionFetcher *attributionFetcher = [[RCAttributionFetcher alloc]
                                                 initWithAttributionFactory:attributionTypeFactory
@@ -475,7 +474,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
 - (void)  logIn:(NSString *)appUserID
 completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL created, NSError * _Nullable error))completion {
-    [self.identityManager logInWithAppUserID:appUserID completion:^(RCPurchaserInfo *purchaserInfo,
+    [self.identityManager logInAppUserID:appUserID completion:^(RCPurchaserInfo *purchaserInfo,
                                                                     BOOL created,
                                                                     NSError * _Nullable error) {
         CALL_IF_SET_ON_MAIN_THREAD(completion, purchaserInfo, created, error);

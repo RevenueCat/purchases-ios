@@ -10,6 +10,7 @@ import Foundation
 
 // swiftlint:disable identifier_name
 @objc(RCIdentityStrings) public class IdentityStrings: NSObject {
+
     @objc public var changing_app_user_id: String { "Changing App User ID: %@ -> %@" }
     @objc public var creating_alias_failed_null_currentappuserid: String { "Couldn't create an alias because the " +
         "currentAppUserID is nil. This might happen if the cache in UserDefaults is unintentionally cleared." }
@@ -26,4 +27,6 @@ import Foundation
     @objc public var creating_alias: String { "Creating an alias between current appUserID %@ and %@" }
     @objc public var identifying_anon_id: String { "Identifying from an anonymous ID: %@. An alias will be created." }
     @objc public var identifying_app_user_id: String { "Identifying App User ID: %@" }
+    @objc public var reset_missing_app_user_id: String { "Reset App User ID called on nil current user." }
+
 }

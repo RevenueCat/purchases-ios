@@ -7,7 +7,6 @@
 //
 
 #import "RCAttributionPoster.h"
-#import "RCIdentityManager.h"
 #import "RCSubscriberAttributesManager.h"
 @import PurchasesCoreSwift;
 

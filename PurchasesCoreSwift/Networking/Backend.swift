@@ -458,6 +458,7 @@ private extension Backend {
         }
 
         let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
+        Logger.user(Strings.identity.login_success)
         completion(purchaserInfo, created, nil)
     }
 
