@@ -16,7 +16,7 @@ class DateFormatterExtensionTests: XCTestCase {
                                             second: 40)
         let date = Calendar.current.date(from: dateComponents)
         guard let dateBytes = "2020-07-14T19:36:40Z".data(using: .ascii) else { fatalError() }
-        expect(ArraySlice(dateBytes).iso8601SecondsOrMillisecondsDate()) == date
+        expect(ArraySlice(dateBytes).toDate()) == date
     }
 
     func testDateWithMillisecondsFromBytesReturnsCorrectValueIfPossible() {
@@ -31,21 +31,21 @@ class DateFormatterExtensionTests: XCTestCase {
                                             nanosecond: 202_000_000)
         let date = Calendar.current.date(from: dateComponents)
         guard let dateBytes = "2020-07-14T19:36:40.202Z".data(using: .ascii) else { fatalError() }
-        let receivedDate = ArraySlice(dateBytes).iso8601SecondsOrMillisecondsDate()
+        let receivedDate = ArraySlice(dateBytes).toDate()
         expect(receivedDate!.timeIntervalSince1970).to(beCloseTo(date!.timeIntervalSince1970))
     }
 
     func testDateFromBytesReturnsNilIfItCantBeParsedAsString() {
-        expect(ArraySlice([0b11]).iso8601SecondsOrMillisecondsDate()).to(beNil())
+        expect(ArraySlice([0b11]).toDate()).to(beNil())
     }
 
     func testDateFromBytesReturnsNilIfItCantBeParsedIntoDate() {
         guard let stringAsBytes = "some string that isn't a date".data(using: .ascii) else { fatalError() }
-        expect(ArraySlice(stringAsBytes).iso8601SecondsOrMillisecondsDate()).to(beNil())
+        expect(ArraySlice(stringAsBytes).toDate()).to(beNil())
     }
     
     func testDateFromBytesReturnsNilIfEmptyData() {
-        expect(ArraySlice(Data()).iso8601SecondsOrMillisecondsDate()).to(beNil())
+        expect(ArraySlice(Data()).toDate()).to(beNil())
     }
 
     func testDateFromStringReturnsNilIfStringCantBeParsed() {
