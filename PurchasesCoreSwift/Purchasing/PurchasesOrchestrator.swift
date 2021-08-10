@@ -30,6 +30,7 @@ public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, PurchaserInfo?
     private let storeKitWrapper: StoreKitWrapper
     private let operationDispatcher: OperationDispatcher
     private let receiptFecher: ReceiptFetcher
+    private let purchaserInfoManager: PurchaserInfoManager
 
     private weak var maybeDelegate: PurchasesOrchestratorDelegate?
 
@@ -37,12 +38,14 @@ public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, PurchaserInfo?
                       delegate: PurchasesOrchestratorDelegate,
                       storeKitWrapper: StoreKitWrapper,
                       operationDispatcher: OperationDispatcher,
-                      receiptFetcher: ReceiptFetcher) {
+                      receiptFetcher: ReceiptFetcher,
+                      purchaserInfoManager: PurchaserInfoManager) {
         self.productsManager = productsManager
         self.maybeDelegate = delegate
         self.storeKitWrapper = storeKitWrapper
         self.operationDispatcher = operationDispatcher
         self.receiptFecher = receiptFetcher
+        self.purchaserInfoManager = purchaserInfoManager
     }
 
 }
@@ -169,48 +172,53 @@ private extension PurchasesOrchestrator {
         // todo
     }
 
-    func handleReceiptPost(withTransaction: SKPaymentTransaction,
+    func handleReceiptPost(withTransaction transaction: SKPaymentTransaction,
                            maybePurchaserInfo: PurchaserInfo?,
                            maybeSubscriberAttributes: SubscriberAttributeDict?,
                            maybeError: Error?) {
+        operationDispatcher.dispatchOnMainThread {
+            let appUserID = self.appUserID
+            self.markSyncedIfNeeded(subscriberAttributes: maybeSubscriberAttributes,
+                                    appUserID: appUserID,
+                                    maybeError: maybeError)
+
+            let maybeCompletion = self.getAndRemovePurchaseCompletedCallback(forTransaction: transaction)
+            if let purchaserInfo = maybePurchaserInfo {
+                self.purchaserInfoManager.cache(purchaserInfo: purchaserInfo, appUserID: appUserID)
+
+                if let completion = maybeCompletion {
+                    completion(transaction, purchaserInfo, nil, false)
+                }
+
+                if self.finishTransactions {
+                    self.storeKitWrapper.finishTransaction(transaction)
+                }
+            } else if let nsError = maybeError as NSError?,
+                  let finishableValue = nsError.userInfo[ErrorDetails.finishableKey as String],
+                  let finishableBool = (finishableValue as AnyObject).boolValue {
+                if let completion = maybeCompletion {
+                    completion(transaction, nil, nsError, false)
+                }
+                if finishableBool {
+                    self.storeKitWrapper.finishTransaction(transaction)
+                }
+            } else {
+                Logger.error(Strings.receipt.unknown_backend_error)
+                if let completion = maybeCompletion,
+                   let error = maybeError {
+                    completion(transaction, nil, error, false)
+                }
+            }
+
+        }
+    }
+
+    func markSyncedIfNeeded(subscriberAttributes: SubscriberAttributeDict?, appUserID: String, maybeError: Error?) {
         // todo
     }
 
-//
-//    // todo: move to PurchasesManager
-//    - (void)handleReceiptPostWithTransaction:(SKPaymentTransaction *)transaction
-//                               purchaserInfo:(nullable RCPurchaserInfo *)info
-//                        subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributes
-//                                       error:(nullable NSError *)error {
-//        [self.operationDispatcher dispatchOnMainThread:^{
-//            [self markAttributesAsSyncedIfNeeded:subscriberAttributes appUserID:self.appUserID error:error];
-//
-//            RCPurchaseCompletedBlock _Nullable completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
-//            if (info) {
-//                [self.purchaserInfoManager cachePurchaserInfo:info forAppUserID:self.appUserID];
-//                if (completion) {
-//                    completion(transaction, info, nil, false);
-//                }
-//
-//                if (self.finishTransactions) {
-//                    [self.storeKitWrapper finishTransaction:transaction];
-//                }
-//            } else if ([error.userInfo[RCErrorDetails.RCFinishableKey] boolValue]) {
-//                if (completion) {
-//                    completion(transaction, nil, error, false);
-//                }
-//                if (self.finishTransactions) {
-//                    [self.storeKitWrapper finishTransaction:transaction];
-//                }
-//            } else if (![error.userInfo[RCErrorDetails.RCFinishableKey] boolValue]) {
-//                if (completion) {
-//                    completion(transaction, nil, error, false);
-//                }
-//            } else {
-//                [RCLog error:[NSString stringWithFormat:@"%@", RCStrings.receipt.unknown_backend_error]];
-//                if (completion) {
-//                    completion(transaction, nil, error, false);
-//                }
-//            }
-//        }];
+    var appUserID: String {
+        // todo
+        return ""
+    }
 }
