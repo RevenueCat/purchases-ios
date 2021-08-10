@@ -48,4 +48,14 @@ class DateFormatterExtensionTests: XCTestCase {
         expect(DateFormatter.iso8601SecondsOrMillisecondsDate(fromBytes: ArraySlice(Data()))).to(beNil())
     }
 
+    func testDateFromStringReturnsNilIfStringCantBeParsed() {
+        expect(DateFormatter().date(fromString: "asdb")).to(beNil())
+        expect(DateFormatter.iso8601SecondsDateFormatter.date(fromString:"asdf")).to(beNil())
+    }
+
+    func testDateFromStringReturnsNilIfStringIsNil() {
+        expect(DateFormatter().date(fromString: nil)).to(beNil())
+        expect(DateFormatter.iso8601SecondsDateFormatter.date(fromString: nil)).to(beNil())
+    }
+    
 }
