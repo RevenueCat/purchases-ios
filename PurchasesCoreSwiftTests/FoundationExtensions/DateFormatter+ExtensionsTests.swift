@@ -16,7 +16,7 @@ class DateFormatterExtensionTests: XCTestCase {
                                             second: 40)
         let date = Calendar.current.date(from: dateComponents)
         guard let dateBytes = "2020-07-14T19:36:40Z".data(using: .ascii) else { fatalError() }
-        expect(DateFormatter.iso8601SecondsOrMillisecondsDate(fromBytes: ArraySlice(dateBytes))) == date
+        expect(ArraySlice(dateBytes).iso8601SecondsOrMillisecondsDate()) == date
     }
 
     func testDateWithMillisecondsFromBytesReturnsCorrectValueIfPossible() {
@@ -31,21 +31,21 @@ class DateFormatterExtensionTests: XCTestCase {
                                             nanosecond: 202_000_000)
         let date = Calendar.current.date(from: dateComponents)
         guard let dateBytes = "2020-07-14T19:36:40.202Z".data(using: .ascii) else { fatalError() }
-        let receivedDate = DateFormatter.iso8601SecondsOrMillisecondsDate(fromBytes: ArraySlice(dateBytes))
+        let receivedDate = ArraySlice(dateBytes).iso8601SecondsOrMillisecondsDate()
         expect(receivedDate!.timeIntervalSince1970).to(beCloseTo(date!.timeIntervalSince1970))
     }
 
     func testDateFromBytesReturnsNilIfItCantBeParsedAsString() {
-        expect(DateFormatter.iso8601SecondsOrMillisecondsDate(fromBytes: ArraySlice([0b11]))).to(beNil())
+        expect(ArraySlice([0b11]).iso8601SecondsOrMillisecondsDate()).to(beNil())
     }
 
     func testDateFromBytesReturnsNilIfItCantBeParsedIntoDate() {
         guard let stringAsBytes = "some string that isn't a date".data(using: .ascii) else { fatalError() }
-        expect(DateFormatter.iso8601SecondsOrMillisecondsDate(fromBytes: ArraySlice(stringAsBytes))).to(beNil())
+        expect(ArraySlice(stringAsBytes).iso8601SecondsOrMillisecondsDate()).to(beNil())
     }
     
     func testDateFromBytesReturnsNilIfEmptyData() {
-        expect(DateFormatter.iso8601SecondsOrMillisecondsDate(fromBytes: ArraySlice(Data()))).to(beNil())
+        expect(ArraySlice(Data()).iso8601SecondsOrMillisecondsDate()).to(beNil())
     }
 
     func testDateFromStringReturnsNilIfStringCantBeParsed() {
