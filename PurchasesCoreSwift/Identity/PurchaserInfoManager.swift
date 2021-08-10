@@ -134,7 +134,8 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
 
         do {
             let maybeInfoDict = try JSONSerialization.jsonObject(with: purchaserInfoData) as? [String: Any]
-            guard let purchaserInfoDict = maybeInfoDict, let info = PurchaserInfo(data: purchaserInfoDict) else {
+            guard let purchaserInfoDict = maybeInfoDict,
+                  let info = PurchaserInfo(data: purchaserInfoDict) else {
                 return nil
             }
 
