@@ -493,10 +493,10 @@ class HTTPClientTests: XCTestCase {
 
         let totalRequests = Int.random(in: 50..<100)
         for requestNumber in 0..<totalRequests {
-            self.client.performPOSTRequest(serially: true,
-                                           path: path,
-                                           requestBody: ["requestNumber": requestNumber],
-                                           headers: [:]) { (status, data, error) in
+            client.performPOSTRequest(serially: true,
+                                      path: path,
+                                      requestBody: ["requestNumber": requestNumber],
+                                      headers: [:]) { (status, data, error) in
                 completionCallCount += 1
             }
         }

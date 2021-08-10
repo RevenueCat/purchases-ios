@@ -67,7 +67,7 @@ class MockDeviceCache: DeviceCache {
         clearPurchaserInfoCacheTimestampCount += 1
     }
 
-    override func setPurchaserInfoCacheTimestampToNow(appUserID: String) {
+    override func setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: String) {
         setPurchaserInfoCacheTimestampToNowCount += 1
     }
 

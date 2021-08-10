@@ -13,7 +13,12 @@ class IdentityManagerTests: XCTestCase {
     private var identityManager: RCIdentityManager!
     private var mockDeviceCache: MockDeviceCache!
     private let mockBackend = MockBackend()
-    private let mockPurchaserInfoManager = MockPurchaserInfoManager()
+    private let mockPurchaserInfoManager = MockPurchaserInfoManager(operationDispatcher: MockOperationDispatcher(),
+                                                                    deviceCache: MockDeviceCache(),
+                                                                    backend: MockBackend(),
+                                                                    systemInfo: try! MockSystemInfo(platformFlavor: nil,
+                                                                                               platformFlavorVersion: nil,
+                                                                                               finishTransactions: false))
 
     let mockPurchaserInfo = PurchaserInfo(data: [
         "request_date": "2019-08-16T10:30:42Z",
