@@ -59,7 +59,7 @@ extension OfferingsManagerTests {
 
         // then
         expect(completionCalled).toEventually(beTrue())
-        expect(obtainedOfferings).toNot(beNil());
+        expect(obtainedOfferings).toNot(beNil())
         expect(obtainedOfferings!["base"]).to(beNil())
     }
 
@@ -77,7 +77,7 @@ extension OfferingsManagerTests {
 
         // then
         expect(completionCalled).toEventually(beTrue())
-        expect(obtainedOfferings).toNot(beNil());
+        expect(obtainedOfferings).toNot(beNil())
         expect(obtainedOfferings!["base"]).toNot(beNil())
         expect(obtainedOfferings!["base"]!.monthly).toNot(beNil())
         expect(obtainedOfferings!["base"]!.monthly?.product).toNot(beNil())
@@ -98,7 +98,7 @@ extension OfferingsManagerTests {
 
         // then
         expect(completionCalled).toEventually(beTrue())
-        expect(obtainedOfferings).to(beNil());
+        expect(obtainedOfferings).to(beNil())
     }
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendErrorIfBadBackendRequest() {
@@ -116,7 +116,7 @@ extension OfferingsManagerTests {
 
         // then
         expect(completionCalled).toEventually(beTrue())
-        expect(receivedError).toNot(beNil());
+        expect(receivedError).toNot(beNil())
         expect(receivedError?.domain).to(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).to(be(ErrorCode.unexpectedBackendResponseError.rawValue))
     }
