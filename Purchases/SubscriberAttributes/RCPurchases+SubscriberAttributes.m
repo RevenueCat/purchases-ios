@@ -6,7 +6,7 @@
 #import "RCPurchases+Protected.h"
 #import "RCPurchases+SubscriberAttributes.h"
 #import "RCSubscriberAttributesManager.h"
-#import "NSError+RCExtensions.h"
+
 @import PurchasesCoreSwift;
 
 NS_ASSUME_NONNULL_BEGIN
