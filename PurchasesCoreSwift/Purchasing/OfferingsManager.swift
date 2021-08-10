@@ -80,7 +80,7 @@ public extension OfferingsManager {
     func updateOfferingsCache(appUserID: String, isAppBackgrounded: Bool, completion: ReceiveOfferingsBlock?) {
         deviceCache.setOfferingsCacheTimestampToNow()
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
-            self.backend.getOfferings(appUserID: appUserID) { data, error in
+            self.backend.getOfferings(appUserID: appUserID) { maybeData, maybeError in
                 if let data = data {
                     self.handleOfferingsBackendResult(with: data, completion: completion)
                 } else if let error = error {
