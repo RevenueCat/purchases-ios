@@ -98,7 +98,6 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         expect(self.updatedTransactions).to(contain(transaction))
     }
     
-    #if !os(watchOS)
     @available(iOS 11.0, tvOS 11.0, macOS 11.0, macCatalyst 14.0, *)
     func testCallsDelegateWhenPromoPurchaseIsAvailable() {
         let product = SKProduct.init();
@@ -108,9 +107,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         expect(self.promoPayment).to(be(payment));
         expect(self.promoProduct).to(be(product))
     }
-    #endif
     
-    #if !os(watchOS)
     @available(iOS 11.0, tvOS 11.0, macOS 11.0, macCatalyst 14.0, *)
     func testPromoDelegateMethodPassesBackReturnValueFromOwnDelegate() {
         let product = SKProduct.init();
@@ -122,7 +119,6 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         
         expect(result).to(equal(self.shouldAddPromo))
     }
-    #endif
 
     func testCallsDelegateOncePerTransaction() {
         let payment1 = SKPayment.init(product: SKProduct.init())

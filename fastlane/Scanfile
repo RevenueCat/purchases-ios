@@ -5,5 +5,5 @@
 # fastlane scan --help
 
 scheme("Unit Tests")
-devices(["iPhone 6", "iPhone 12", "Apple TV", "Apple Watch Series 6 - 44mm"])
+devices(["iPhone 6", "iPhone 12", "Apple TV"])
 

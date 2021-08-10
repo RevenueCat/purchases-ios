@@ -53,11 +53,9 @@ class AttributionPosterTests: XCTestCase {
     }
 
     private func resetAttributionStaticProperties() {
-        #if !os(watchOS)
         if #available(iOS 14, macOS 11, tvOS 14, *) {
             MockTrackingManagerProxy.mockAuthorizationStatus = .authorized
         }
-        #endif
         
         MockAttributionTypeFactory.shouldReturnAdClientProxy = true
         MockAttributionTypeFactory.shouldReturnTrackingManagerProxy = true

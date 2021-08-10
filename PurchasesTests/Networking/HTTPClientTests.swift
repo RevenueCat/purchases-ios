@@ -6,8 +6,6 @@
 //  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
-#if !os(watchOS)
-
 import XCTest
 import OHHTTPStubs
 import OHHTTPStubsSwift
@@ -733,5 +731,3 @@ class HTTPClientTests: XCTestCase {
         expect(completionCalled).toEventually(equal(true), timeout: .seconds(1))
     }
 }
-
-#endif
