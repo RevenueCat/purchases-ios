@@ -41,7 +41,7 @@ class HTTPClientTests: XCTestCase {
         guard let host = SystemInfo.serverHostURL.host else { fatalError() }
         stub(condition: isHost(host)) { _ in
             hostCorrect = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         
         self.client.performPOSTRequest(serially: true,
@@ -59,7 +59,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("test_header")) { _ in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         
         self.client.performPOSTRequest(serially: true,
@@ -77,7 +77,7 @@ class HTTPClientTests: XCTestCase {
         
         stub(condition: hasHeaderNamed("content-type", value: "application/json")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         
         self.client.performPOSTRequest(serially: true,
@@ -93,9 +93,9 @@ class HTTPClientTests: XCTestCase {
         let path = "/a_random_path"
         var headerPresent = false
 
-        stub(condition: hasHeaderNamed("X-Platform", value: "iOS")) { request in
+        stub(condition: hasHeaderNamed("X-Platform", value: SystemInfo.platformHeader)) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         
         self.client.performPOSTRequest(serially: true,
@@ -113,7 +113,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Version", value: Purchases.frameworkVersion())) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         
         self.client.performPOSTRequest(serially: true,
@@ -131,7 +131,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Version", value: ProcessInfo().operatingSystemVersionString)) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         
         self.client.performPOSTRequest(serially: true,
@@ -149,7 +149,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { _ in
             pathHit = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         
         self.client.performPOSTRequest(serially: true,
@@ -170,7 +170,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasBody(bodyData)) { _ in
             pathHit = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
 
         self.client.performPOSTRequest(serially: true,
@@ -187,7 +187,7 @@ class HTTPClientTests: XCTestCase {
         var completionCalled = false
 
         stub(condition: isPath("/v1" + path)) { _ in
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
 
         self.client.performGETRequest(serially: true,
@@ -205,7 +205,7 @@ class HTTPClientTests: XCTestCase {
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
 
         stub(condition: isPath("/v1" + path)) { request in
-            let response = HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            let response = HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
             response.error = error
             return response
         }
@@ -300,7 +300,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode: 200, headers: nil)
         }
         
         self.client.performGETRequest(serially: true,
@@ -324,7 +324,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Client-Version", value: version )) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         
         self.client.performPOSTRequest(serially: true,
@@ -344,7 +344,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Client-Build-Version", value: version )) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         
         self.client.performPOSTRequest(serially: true,
@@ -356,15 +356,16 @@ class HTTPClientTests: XCTestCase {
         expect(headerPresent).toEventually(equal(true))
     }
 
+    #if !os(macOS)
     func testAlwaysPassesAppleDeviceIdentifier() {
         let path = "/a_random_path"
         var headerPresent = false
 
-        let idfv = UIDevice.current.identifierForVendor!.uuidString
+        let idfv = SystemInfo.identifierForVendor!
 
         stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
 
         self.client.performPOSTRequest(serially: true,
@@ -375,6 +376,7 @@ class HTTPClientTests: XCTestCase {
         
         expect(headerPresent).toEventually(equal(true))
     }
+    #endif
 
     func testDefaultsPlatformFlavorToNative() {
         let path = "/a_random_path"
@@ -382,7 +384,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "native")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
 
         self.client.performPOSTRequest(serially: true,
@@ -400,7 +402,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor", value: "react-native")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: "react-native",
                                          platformFlavorVersion: "3.2.1",
@@ -421,7 +423,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Platform-Flavor-Version", value: "1.2.3")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: "react-native",
                                          platformFlavorVersion: "1.2.3",
@@ -443,7 +445,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "false")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
@@ -462,7 +464,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: hasHeaderNamed("X-Observer-Mode-Enabled", value: "true")) { request in
             headerPresent = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
@@ -487,7 +489,7 @@ class HTTPClientTests: XCTestCase {
             expect(requestNumber) == completionCallCount
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode: 200, headers: nil)
                 .responseTime(0.003)
         }
 
@@ -519,7 +521,7 @@ class HTTPClientTests: XCTestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode: 200, headers: nil)
                 .responseTime(0.1)
         }
         
@@ -556,7 +558,7 @@ class HTTPClientTests: XCTestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode: 200, headers: nil)
                 .responseTime(0.1)
         }
         
@@ -593,7 +595,7 @@ class HTTPClientTests: XCTestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode: 200, headers: nil)
                 .responseTime(0.1)
         }
 
@@ -630,7 +632,7 @@ class HTTPClientTests: XCTestCase {
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"
-            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode: 200, headers: nil)
                 .responseTime(0.1)
         }
 
@@ -691,7 +693,7 @@ class HTTPClientTests: XCTestCase {
 
         stub(condition: isPath("/v1" + path)) { request in
             httpCallMade = true
-            return HTTPStubsResponse(data: Data(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
         }
         
         self.client.performPOSTRequest(serially: true,
@@ -715,7 +717,7 @@ class HTTPClientTests: XCTestCase {
                 self.eTagManager.shouldReturnResultFromBackend = true
             }
             firstTimeCalled = true
-            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers: nil)
+            return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
 
         self.eTagManager.shouldReturnResultFromBackend = false
@@ -729,4 +731,3 @@ class HTTPClientTests: XCTestCase {
         expect(completionCalled).toEventually(equal(true), timeout: .seconds(1))
     }
 }
-

@@ -8,7 +8,6 @@
 
 import Foundation
 import XCTest
-import OHHTTPStubs
 import Nimble
 
 import Purchases

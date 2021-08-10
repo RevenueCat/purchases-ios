@@ -6,7 +6,7 @@
 import Foundation
 import StoreKit
 
-@available(iOS 11.2, *)
+@available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *)
 class MockDiscount: SKProductDiscount {
     var mockPaymentMode: SKProductDiscount.PaymentMode?
     override var paymentMode: SKProductDiscount.PaymentMode {
@@ -23,10 +23,8 @@ class MockDiscount: SKProductDiscount {
         return mockIdentifier ?? "identifier"
     }
 
-    @available(iOS 11.2, *)
     lazy var mockSubscriptionPeriod: SKProductSubscriptionPeriod? = nil
 
-    @available(iOS 11.2, *)
     override var subscriptionPeriod: SKProductSubscriptionPeriod {
         return mockSubscriptionPeriod ?? SKProductSubscriptionPeriod(numberOfUnits: 1, unit:.month)
     }
