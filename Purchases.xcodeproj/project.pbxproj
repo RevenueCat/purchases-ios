@@ -33,6 +33,7 @@
 		2D991ACA268BA56900085481 /* StoreKitRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */; };
 		2D991ACC268BBCD600085481 /* MockRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35609E46E869675A466C1 /* MockRequestFetcher.swift */; };
 		2D991ACD268BBE8600085481 /* MockRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35609E46E869675A466C1 /* MockRequestFetcher.swift */; };
+		2D9F4A5526C30CA800B07B43 /* PurchasesOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */; };
 		2DC19195255F36D10039389A /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19194255F36D10039389A /* Logger.swift */; };
 		2DC5622624EC63430031F69B /* PurchasesCoreSwift.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DC5621824EC63430031F69B /* PurchasesCoreSwift.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2DC5622E24EC636C0031F69B /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E355CBB3F3A31A32687B14 /* Transaction.swift */; };
@@ -228,11 +229,11 @@
 		B3DF6A452694DCBA0030D57C /* PurchasesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35DE5707E845DA3FF51BC /* PurchasesTests.swift */; };
 		B3DF6A46269512690030D57C /* ProductInfoExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3583675928C01D92E3166 /* ProductInfoExtensions.swift */; };
 		B3DF6A472695145E0030D57C /* ProductInfoExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3583675928C01D92E3166 /* ProductInfoExtensions.swift */; };
+		B3E26A4A26BE0A8E003ACCF3 /* Error+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */; };
 		F575858D26C088FE00C12B97 /* OfferingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F575858C26C088FE00C12B97 /* OfferingsManager.swift */; };
 		F575858F26C0893600C12B97 /* MockOfferingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F575858E26C0893600C12B97 /* MockOfferingsManager.swift */; };
 		F575859026C0893E00C12B97 /* MockOfferingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F575858E26C0893600C12B97 /* MockOfferingsManager.swift */; };
 		F575859226C08E3F00C12B97 /* OfferingsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F575859126C08E3F00C12B97 /* OfferingsManagerTests.swift */; };
-		B3E26A4A26BE0A8E003ACCF3 /* Error+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */; };
 		F591492626B994B400D32E58 /* SKPaymentTransactionExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591492526B994B400D32E58 /* SKPaymentTransactionExtensionsTests.swift */; };
 		F591492826B9956C00D32E58 /* MockTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591492726B9956C00D32E58 /* MockTransaction.swift */; };
 		F5BE424026962ACF00254A30 /* ReceiptRefreshPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE423F26962ACF00254A30 /* ReceiptRefreshPolicy.swift */; };
@@ -329,6 +330,7 @@
 		2D8F622224D30F9D00F993AA /* ReceiptParsingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptParsingError.swift; sourceTree = "<group>"; };
 		2D97458E24BDFCEF006245E9 /* IntroEligibilityCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroEligibilityCalculator.swift; sourceTree = "<group>"; };
 		2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitRequestFetcher.swift; sourceTree = "<group>"; };
+		2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestrator.swift; sourceTree = "<group>"; };
 		2DA0068E24E2E515002C59D3 /* MockIntroEligibilityCalculator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockIntroEligibilityCalculator.swift; sourceTree = "<group>"; };
 		2DBB3E10269C9B8700BBF431 /* SwiftStyleGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftStyleGuide.swift; sourceTree = "<group>"; };
 		2DC19194255F36D10039389A /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
@@ -555,10 +557,10 @@
 		B3DF6A4C269522040030D57C /* RCIntroEligibilityAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibilityAPI.h; sourceTree = "<group>"; };
 		B3DF6A4D269522040030D57C /* RCIntroEligibilityAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCIntroEligibilityAPI.m; sourceTree = "<group>"; };
 		B3DF6A4F269524080030D57C /* IntroEligibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroEligibility.swift; sourceTree = "<group>"; };
+		B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Error+Extensions.swift"; sourceTree = "<group>"; };
 		F575858C26C088FE00C12B97 /* OfferingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsManager.swift; sourceTree = "<group>"; };
 		F575858E26C0893600C12B97 /* MockOfferingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOfferingsManager.swift; sourceTree = "<group>"; };
 		F575859126C08E3F00C12B97 /* OfferingsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsManagerTests.swift; sourceTree = "<group>"; };
-		B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Error+Extensions.swift"; sourceTree = "<group>"; };
 		F591492526B994B400D32E58 /* SKPaymentTransactionExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKPaymentTransactionExtensionsTests.swift; sourceTree = "<group>"; };
 		F591492726B9956C00D32E58 /* MockTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockTransaction.swift; sourceTree = "<group>"; };
 		F5BE423F26962ACF00254A30 /* ReceiptRefreshPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptRefreshPolicy.swift; sourceTree = "<group>"; };
@@ -993,6 +995,7 @@
 				2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */,
 				35549322269E298B005F9AE9 /* OfferingsFactory.swift */,
 				F575858C26C088FE00C12B97 /* OfferingsManager.swift */,
+				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
 			);
 			path = Purchasing;
 			sourceTree = "<group>";
@@ -1783,6 +1786,7 @@
 				0313FD41268A506400168386 /* DateProvider.swift in Sources */,
 				B39E811A268E849900D31189 /* AttributionNetwork.swift in Sources */,
 				37E35C8515C5E2D01B0AF5C1 /* Strings.swift in Sources */,
+				2D9F4A5526C30CA800B07B43 /* PurchasesOrchestrator.swift in Sources */,
 				37E3529267833EA8ED9F06BE /* DateFormatter+Extensions.swift in Sources */,
 				37E350C67712B9E054FEF297 /* AttributionData.swift in Sources */,
 				37E3578711F5FDD5DC6458A8 /* AttributionFetcher.swift in Sources */,

@@ -45,6 +45,7 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 @property (nonatomic) RCReceiptParser *receiptParser;
 @property (nonatomic) RCPurchaserInfoManager *purchaserInfoManager;
 @property (nonatomic) RCOfferingsManager *offeringsManager;
+@property (nonatomic) RCPurchasesOrchestrator *purchasesOrchestrator;
 
 @end
 
@@ -276,6 +277,12 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                                                    backend:backend
                                                                           offeringsFactory:offeringsFactory
                                                                            productsManager:productsManager];
+    RCPurchasesOrchestrator *purchasesOrchestrator = [[RCPurchasesOrchestrator alloc]
+                                                      initWithProductsManager:productsManager
+                                                      delegate:<#(id<PurchasesOrchestratorDelegate> _Nonnull)#>
+                                                      storeKitWrapper:storeKitWrapper
+                                                      operationDispatcher:operationDispatcher
+                                                      receiptFetcher:receiptFetcher];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher
@@ -315,7 +322,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                     receiptParser:(RCReceiptParser *)receiptParser
              purchaserInfoManager:(RCPurchaserInfoManager *)purchaserInfoManager
                   productsManager:(RCProductsManager *)productsManager
-                 offeringsManager:(RCOfferingsManager *)offeringsManager {
+                 offeringsManager:(RCOfferingsManager *)offeringsManager
+            purchasesOrchestrator:(RCPurchasesOrchestrator *)purchasesOrchestrator {
     if (self = [super init]) {
         [RCLog debug:[NSString stringWithFormat:@"%@", RCStrings.configure.debug_enabled]];
         [RCLog debug:[NSString stringWithFormat:RCStrings.configure.sdk_version, self.class.frameworkVersion]];
@@ -344,6 +352,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.purchaserInfoManager = purchaserInfoManager;
         self.productsManager = productsManager;
         self.offeringsManager = offeringsManager;
+        self.purchasesOrchestrator = purchasesOrchestrator;
 
         [self.identityManager configureWithAppUserID:appUserID];
 
