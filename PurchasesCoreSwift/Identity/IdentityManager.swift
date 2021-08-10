@@ -102,7 +102,7 @@ import Foundation
         completion(nil)
     }
 
-    @available(*, deprecated, message: "This function is deprecated")
+    // TODO: This was deprecated in ObjC but we still rely on it.
     @objc(identifyAppUserID:completion:)
     public func identify(appUserID: String, completion: @escaping (Error?) -> Void) {
         // TODO: Old code assumed we weren't nil, but it doesn't actually look like we need a value since
@@ -118,7 +118,7 @@ import Foundation
         }
     }
 
-    @available(*, deprecated, message: "This function is deprecated")
+    // TODO: This was deprecated in ObjC but we still rely on it.
     @objc(createAliasForAppUserID:completion:)
     public func createAlias(appUserID alias: String, completion: @escaping (Error?) -> Void) {
         guard let currentAppUserID = currentAppUserID else {
@@ -137,7 +137,7 @@ import Foundation
         }
     }
 
-    @available(*, deprecated, message: "This function is deprecated")
+    // TODO: This was deprecated in ObjC but we still rely on it.
     @objc public func resetAppUserID() {
         guard let oldAppUserID = currentAppUserID else {
             Logger.info(Strings.identity.reset_missing_app_user_id)
