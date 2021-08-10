@@ -102,7 +102,17 @@ import Foundation
         completion(nil)
     }
 
-    // TODO: This was deprecated in ObjC but we still rely on it.
+    // TODO (post-migration): Change back to private.
+    func generateRandomID() -> String {
+        "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
+    }
+
+}
+
+// MARK: Deprecated
+// TODO: Migrate off these so we can mark them deprecated.
+extension IdentityManager {
+
     @objc(identifyAppUserID:completion:)
     public func identify(appUserID: String, completion: @escaping (Error?) -> Void) {
         // TODO: Old code assumed we weren't nil, but it doesn't actually look like we need a value since
@@ -118,7 +128,6 @@ import Foundation
         }
     }
 
-    // TODO: This was deprecated in ObjC but we still rely on it.
     @objc(createAliasForAppUserID:completion:)
     public func createAlias(appUserID alias: String, completion: @escaping (Error?) -> Void) {
         guard let currentAppUserID = currentAppUserID else {
@@ -137,7 +146,6 @@ import Foundation
         }
     }
 
-    // TODO: This was deprecated in ObjC but we still rely on it.
     @objc public func resetAppUserID() {
         guard let oldAppUserID = currentAppUserID else {
             Logger.info(Strings.identity.reset_missing_app_user_id)
@@ -147,11 +155,6 @@ import Foundation
         deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: generateRandomID())
         deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: oldAppUserID)
         backend.clearCaches()
-    }
-
-    // TODO (post-migration): Change back to private.
-    func generateRandomID() -> String {
-        "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
     }
 
 }
