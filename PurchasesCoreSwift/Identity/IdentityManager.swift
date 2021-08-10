@@ -93,7 +93,7 @@ import Foundation
     }
 
     @objc public func logOut(completion: (Error?) -> Void) {
-        Logger.info(String(format: Strings.identity.logging_out_user, maybeCurrentAppUserID ?? "<nil currentAppUserID>"))
+        Logger.info(String(format: Strings.identity.log_out_called_for_user, maybeCurrentAppUserID ?? "<nil currentAppUserID>"))
 
         if currentUserIsAnonymous {
             completion(ErrorUtils.logOutAnonymousUserError())

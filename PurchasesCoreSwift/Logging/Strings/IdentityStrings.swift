@@ -22,7 +22,7 @@ import Foundation
     "already cached. No action will be taken."}
     @objc public var creating_alias_success: String { "Alias created" }
     @objc public var login_success: String { "Log in successful" }
-    @objc public var logging_out_user: String { "Logging out user %@" }
+    @objc public var log_out_called_for_user: String { "Log out called for user %@" }
     @objc public var log_out_success: String { "Log out successful" }
     @objc public var creating_alias: String { "Creating an alias between current appUserID %@ and %@" }
     @objc public var identifying_anon_id: String { "Identifying from an anonymous ID: %@. An alias will be created." }
