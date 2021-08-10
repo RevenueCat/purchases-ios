@@ -31,7 +31,7 @@ class MockIdentityManager: IdentityManager {
                                                                   systemInfo: mockSystemInfo))
     }
 
-    override var currentAppUserID: String {
+    override var maybeCurrentAppUserID: String {
         if (mockIsAnonymous) {
             return "$RCAnonymousID:ff68f26e432648369a713849a9f93b58"
         } else {

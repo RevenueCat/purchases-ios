@@ -46,7 +46,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 - (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network {
     NSString *networkID = [NSString stringWithFormat:@"%ld", (long) network];
     NSDictionary *cachedDict =
-            [self.deviceCache latestNetworkAndAdvertisingIdsSentWithAppUserID:self.identityManager.currentAppUserID];
+            [self.deviceCache latestNetworkAndAdvertisingIdsSentWithAppUserID:self.identityManager.maybeCurrentAppUserID];
     return cachedDict[networkID];
 }
 
@@ -60,7 +60,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     if (network == RCAttributionNetworkAppsFlyer && networkUserId == nil) {
         [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.attribution.networkuserid_required_for_appsflyer]];
     }
-    NSString *appUserID = self.identityManager.currentAppUserID;
+    NSString *appUserID = self.identityManager.maybeCurrentAppUserID;
     NSString *networkKey = [NSString stringWithFormat:@"%ld", (long) network];
     NSString *identifierForAdvertisers = [self.attributionFetcher identifierForAdvertisers];
     NSDictionary *dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks =

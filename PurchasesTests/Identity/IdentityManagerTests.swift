@@ -64,7 +64,7 @@ class IdentityManagerTests: XCTestCase {
 
     func testIdentifyingClearsCaches() {
         self.identityManager.configure(appUserID: "cesar")
-        let initialAppUserID: String = self.identityManager.currentAppUserID!
+        let initialAppUserID: String = self.identityManager.maybeCurrentAppUserID!
         let newAppUserID = "cesar"
         self.identityManager.identify(appUserID: newAppUserID){ (error: Error?) in }
         expect(self.mockDeviceCache.clearCachesCalledOldUserID).toEventually(equal(initialAppUserID))
@@ -123,7 +123,7 @@ class IdentityManagerTests: XCTestCase {
 
     func testCreateAliasClearsCachesForPreviousUser() {
         self.identityManager.configure(appUserID: nil)
-        let initialAppUserID: String = self.identityManager.currentAppUserID!
+        let initialAppUserID: String = self.identityManager.maybeCurrentAppUserID!
         mockBackend.stubbedCreateAliasCompletionResult = (nil, ())
         self.identityManager.createAlias(appUserID: "cesar"){ (error: Error?) in
         }
@@ -145,7 +145,7 @@ class IdentityManagerTests: XCTestCase {
 
     func testResetClearsOldCaches() {
         self.identityManager.configure(appUserID: nil)
-        let initialAppUserID: String = self.identityManager.currentAppUserID!
+        let initialAppUserID: String = self.identityManager.maybeCurrentAppUserID!
         self.identityManager.resetAppUserID()
         expect(self.mockDeviceCache.clearCachesCalledOldUserID).to(equal(initialAppUserID))
     }
@@ -170,7 +170,7 @@ class IdentityManagerTests: XCTestCase {
 
         self.identityManager.configure(appUserID: nil)
         assertCorrectlyIdentifiedWithAnonymous(usingOldID: true)
-        expect(self.identityManager.currentAppUserID).to(equal("an_old_random"))
+        expect(self.identityManager.maybeCurrentAppUserID).to(equal("an_old_random"))
     }
 
     func testMigrationFromRandomIDConfiguringWithUser() {
@@ -416,14 +416,14 @@ class IdentityManagerTests: XCTestCase {
 private extension IdentityManagerTests {
 
     func assertCorrectlyIdentified(expectedAppUserID: String) {
-        expect(self.identityManager.currentAppUserID!).to(equal(expectedAppUserID))
+        expect(self.identityManager.maybeCurrentAppUserID!).to(equal(expectedAppUserID))
         expect(self.mockDeviceCache.userIDStoredInCache!).to(equal(expectedAppUserID));
         expect(self.identityManager.currentUserIsAnonymous).to(beFalse())
     }
 
     func assertCorrectlyIdentifiedWithAnonymous(usingOldID: Bool = false) {
         if (!usingOldID) {
-            expect(self.identityManager.currentAppUserID!.range(of: #"\$RCAnonymousID:([a-z0-9]{32})$"#, options: .regularExpression)).toNot(beNil())
+            expect(self.identityManager.maybeCurrentAppUserID!.range(of: #"\$RCAnonymousID:([a-z0-9]{32})$"#, options: .regularExpression)).toNot(beNil())
             expect(self.mockDeviceCache.userIDStoredInCache!.range(of: #"\$RCAnonymousID:([a-z0-9]{32})$"#, options: .regularExpression)).toNot(beNil())
         }
         expect(self.identityManager.currentUserIsAnonymous).to(beTrue())
