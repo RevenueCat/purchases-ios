@@ -6,6 +6,7 @@
 import Foundation
 
 extension DateFormatter {
+
     static let iso8601SecondsDateFormatter: DateFormatter = {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
@@ -22,6 +23,7 @@ extension DateFormatter {
         guard let dateString = maybeDateString else { return nil }
         return date(from: dateString)
     }
+
 }
 
 private extension DateFormatter {
