@@ -282,7 +282,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                       delegate:<#(id<PurchasesOrchestratorDelegate> _Nonnull)#>
                                                       storeKitWrapper:storeKitWrapper
                                                       operationDispatcher:operationDispatcher
-                                                      receiptFetcher:receiptFetcher];
+                                                      receiptFetcher:receiptFetcher
+                                                      purchaserInfoManager:purchaserInfoManager];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher

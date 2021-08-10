@@ -169,8 +169,40 @@ private extension PurchasesOrchestrator {
     }
 
     func fetchProductsAndPostReceipt(withTransaction transaction: SKPaymentTransaction, receiptData: Data) {
+        guard let productIdentifier = transaction.rc_productIdentifier else {
+            self.handleReceiptPost(withTransaction: transaction,
+                                   maybePurchaserInfo: nil,
+                                   maybeSubscriberAttributes: nil,
+                                   maybeError: ErrorUtils.unknownError())
+            return
+        }
+
+        self.products(withIdentifiers: [productIdentifier]) { products in
+            self.postReceipt(withTransaction: transaction, receiptData: receiptData, products: products)
+        }
+    }
+
+    func postReceipt(withTransaction transaction: SKPaymentTransaction, receiptData: Data, products: Set<SKProduct>) {
         // todo
     }
+
+
+    func products(withIdentifiers identifiers: [String],
+                  completion: @escaping (Set<SKProduct>) -> Void) {
+        // todo
+    }
+//    - (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
+//                    completionBlock:(RCReceiveProductsBlock)completion {
+//        NSSet<NSString *> *productIdentifiersSet = [[NSSet alloc] initWithArray:productIdentifiers];
+//        if (productIdentifiersSet.count > 0) {
+//            [self.productsManager productsWithIdentifiers:productIdentifiersSet
+//                                               completion:^(NSSet<SKProduct *> * _Nonnull products) {
+//                [self.operationDispatcher dispatchOnMainThread:^{ completion(products.allObjects); }];
+//            }];
+//        } else {
+//            [self.operationDispatcher dispatchOnMainThread:^{ completion(@[]); }];
+//        }
+//    }
 
     func handleReceiptPost(withTransaction transaction: SKPaymentTransaction,
                            maybePurchaserInfo: PurchaserInfo?,
