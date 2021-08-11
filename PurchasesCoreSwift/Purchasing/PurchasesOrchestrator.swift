@@ -34,6 +34,10 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
     private let receiptFecher: ReceiptFetcher
     private let purchaserInfoManager: PurchaserInfoManager
     private let backend: Backend
+    private let identityManager: IdentityManager
+
+    // todo: remove explicit unwrap once nullability in identityManager is updated
+    private var appUserID: String { identityManager.maybeCurrentAppUserID! }
 
     private weak var maybeDelegate: PurchasesOrchestratorDelegate?
 
@@ -43,7 +47,8 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
                       operationDispatcher: OperationDispatcher,
                       receiptFetcher: ReceiptFetcher,
                       purchaserInfoManager: PurchaserInfoManager,
-                      backend: Backend) {
+                      backend: Backend,
+                      identityManager: IdentityManager) {
         self.productsManager = productsManager
         self.maybeDelegate = delegate
         self.storeKitWrapper = storeKitWrapper
@@ -51,6 +56,12 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         self.receiptFecher = receiptFetcher
         self.purchaserInfoManager = purchaserInfoManager
         self.backend = backend
+        self.identityManager = identityManager
+    }
+
+
+    @objc public func syncPurchases(completion: @escaping (PurchaserInfo?, Error?) -> Void) {
+        // todo
     }
 
 }
@@ -61,7 +72,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
                                 updatedTransaction transaction: SKPaymentTransaction) {
         switch transaction.transactionState {
         case .restored, // for observer mode
-                .purchased:
+             .purchased:
             handlePurchasedTransaction(transaction)
             break
         case .purchasing:
@@ -78,14 +89,17 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
     }
 
-    public func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, removedTransaction transaction: SKPaymentTransaction) {
+    public func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
+                                removedTransaction transaction: SKPaymentTransaction) {
         // todo: remove
         // unused for now
     }
 
-    public func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, shouldAddStorePayment payment: SKPayment, for product: SKProduct) -> Bool {
+    public func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
+                                shouldAddStorePayment payment: SKPayment,
+                                for product: SKProduct) -> Bool {
         productsManager.cacheProduct(product);
-        // todo
+
         guard let delegate = maybeDelegate else { return false }
         delegate.shouldPurchasePromoProduct(product) { completion in
             self.purchaseCompleteCallbacksByProductID[product.productIdentifier] = completion
@@ -102,9 +116,6 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
         }
     }
 
-    @objc public func syncPurchases(completion: @escaping (PurchaserInfo?, Error?) -> Void) {
-
-    }
 }
 
 
@@ -209,7 +220,7 @@ private extension PurchasesOrchestrator {
 
     var unsyncedAttributesByKey: SubscriberAttributeDict {
         // todo
-
+        // blocked on SubscriberAttributesManager migration
         return [:]
     }
 
@@ -271,10 +282,7 @@ private extension PurchasesOrchestrator {
 
     func markSyncedIfNeeded(subscriberAttributes: SubscriberAttributeDict?, appUserID: String, maybeError: Error?) {
         // todo
+        // blocked on SubscriberAttributesManager migration
     }
 
-    var appUserID: String {
-        // todo
-        return ""
-    }
 }
