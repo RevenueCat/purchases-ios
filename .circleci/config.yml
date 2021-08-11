@@ -28,14 +28,16 @@ commands:
         type: string
         default: .
     steps:
-       # Bundler
+      # Bundler
       - restore_cache:
           keys: 
             - v1-gem-cache-{{ checksum "Gemfile.lock" }}
       - run: 
           name: Bundle install
           working_directory: << parameters.directory >>
-          command: bundle install --clean --path vendor/bundle
+          command: |
+              bundle config set --local path 'vendor/bundle'
+              bundle install --clean
       - save_cache:
           key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
