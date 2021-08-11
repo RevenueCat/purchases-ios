@@ -18,7 +18,6 @@
     RCEntitlementInfo *ri = [[RCEntitlementInfo alloc] initWithEntitlementId:@""
                                                              entitlementData:@{}
                                                                  productData:@{}
-                                                               dateFormatter:[[NSDateFormatter alloc] init]
                                                                  requestDate:NSDate.now];
     BOOL wr = [ri willRenew];
     RCPeriodType pt = [ri periodType];

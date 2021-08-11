@@ -7,8 +7,6 @@ import Foundation
 
 class InAppPurchaseBuilder {
     private let containerBuilder: ASN1ContainerBuilder
-    private let dateFormatter: ISO3601DateFormatter
-
     private let typeContainerIndex = 0
     private let versionContainerIndex = 1 // unused
     private let attributeTypeContainerIndex = 2
@@ -16,7 +14,6 @@ class InAppPurchaseBuilder {
 
     init() {
         self.containerBuilder = ASN1ContainerBuilder()
-        self.dateFormatter = ISO3601DateFormatter.shared
     }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
@@ -68,13 +65,13 @@ class InAppPurchaseBuilder {
             case .promotionalOfferIdentifier:
                 promotionalOfferIdentifier = internalContainer.internalPayload.toString()
             case .cancellationDate:
-                cancellationDate = internalContainer.internalPayload.toDate(dateFormatter: dateFormatter)
+                cancellationDate = internalContainer.internalPayload.toDate()
             case .expiresDate:
-                expiresDate = internalContainer.internalPayload.toDate(dateFormatter: dateFormatter)
+                expiresDate = internalContainer.internalPayload.toDate()
             case .originalPurchaseDate:
-                originalPurchaseDate = internalContainer.internalPayload.toDate(dateFormatter: dateFormatter)
+                originalPurchaseDate = internalContainer.internalPayload.toDate()
             case .purchaseDate:
-                purchaseDate = internalContainer.internalPayload.toDate(dateFormatter: dateFormatter)
+                purchaseDate = internalContainer.internalPayload.toDate()
             }
         }
 

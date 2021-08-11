@@ -12,7 +12,7 @@ import Nimble
 @testable import PurchasesCoreSwift
 
 class DictionaryExtensionsTests: XCTestCase {
-    
+
     func testRemovingNSNullValuesFiltersCorrectly() {
         let testValues: [String : Any] = [
             "instrument": "guitar",
@@ -47,9 +47,9 @@ class DictionaryExtensionsTests: XCTestCase {
         let dict = ["a": "1", "b": "1"]
         let dict2 = ["a": "2", "b": "2", "c": "2"]
         let expectedDict = ["a": "1", "b": "1", "c": "2"]
-        
+
         let obtainedDict = dict.merging(dict2, strategy: .keepOriginalValue)
-        
+
         expect(obtainedDict.keys.count).to(equal(expectedDict.keys.count))
         expect(obtainedDict).to(equal(expectedDict))
     }
@@ -58,20 +58,20 @@ class DictionaryExtensionsTests: XCTestCase {
         let dict = ["a": "1", "b": "1"]
         let dict2 = ["a": "2", "b": "2", "c": "2"]
         let expectedDict = ["a": "2", "b": "2", "c": "2"]
-        
+
         let obtainedDict = dict.merging(dict2, strategy: .overwriteValue)
-        
+
         expect(obtainedDict.keys.count).to(equal(expectedDict.keys.count))
         expect(obtainedDict).to(equal(expectedDict))
     }
-    
+
     func testMergeDictionariesWithDefaultMergeStrategy() {
         let dict = ["a": "1", "b": "1"]
         let dict2 = ["a": "2", "b": "2", "c": "2"]
         let expectedDict = ["a": "2", "b": "2", "c": "2"]
-        
+
         let obtainedDict = dict.merging(dict2)
-        
+
         expect(obtainedDict.keys.count).to(equal(expectedDict.keys.count))
         expect(obtainedDict).to(equal(expectedDict))
     }
@@ -80,9 +80,9 @@ class DictionaryExtensionsTests: XCTestCase {
         let dict = ["a": "1", "b": "1"]
         let dict2 = ["a": "2", "b": "2", "c": "2"]
         let expectedDict = ["a": "2", "b": "2", "c": "2"]
-        
+
         let obtainedDict = dict + dict2
-        
+
         expect(obtainedDict.keys.count).to(equal(expectedDict.keys.count))
         expect(obtainedDict).to(equal(expectedDict))
     }
