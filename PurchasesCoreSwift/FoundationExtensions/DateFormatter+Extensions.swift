@@ -13,7 +13,7 @@ extension DateFormatter {
         return dateFormatter
     }()
 
-    static func date(fromiso8601SecondsOrMillisecondsString maybeDateString: String?) -> Date? {
+    static func date(fromISO8601SecondsOrMillisecondsString maybeDateString: String?) -> Date? {
         return (Self.iso8601SecondsDateFormatter.date(fromString: maybeDateString)
             ?? Self.iso8601MilliSecondsDateFormatter.date(fromString: maybeDateString))
     }

@@ -201,17 +201,13 @@ import Foundation
     }
 
     private let allPurchases: [String: [String: Any]]
-
     private let subscriptionTransactionsByProductId: [String: [String: Any]]
-
     private let originalData: [String: Any]
-
     private let dateFormatter: DateFormatter
 
     private lazy var expirationDatesByProductId: [String: Date?] = {
         return parseExpirationDates(transactionsByProductId: subscriptionTransactionsByProductId)
     }()
-
     private lazy var purchaseDatesByProductId: [String: Date?] = {
         return parseExpirationDates(transactionsByProductId: allPurchases)
     }()
