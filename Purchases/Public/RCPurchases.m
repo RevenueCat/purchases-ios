@@ -857,57 +857,6 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                                   completionBlock:completion];
 }
 
-// todo: move to PurchasesManager
-- (void)handleReceiptPostWithTransaction:(SKPaymentTransaction *)transaction
-                           purchaserInfo:(nullable RCPurchaserInfo *)info
-                    subscriberAttributes:(nullable RCSubscriberAttributeDict)subscriberAttributes
-                                   error:(nullable NSError *)error {
-    [self.operationDispatcher dispatchOnMainThread:^{
-        [self markAttributesAsSyncedIfNeeded:subscriberAttributes appUserID:self.appUserID error:error];
-
-        RCPurchaseCompletedBlock _Nullable completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
-        if (info) {
-            [self.purchaserInfoManager cachePurchaserInfo:info forAppUserID:self.appUserID];
-            if (completion) {
-                completion(transaction, info, nil, false);
-            }
-
-            if (self.finishTransactions) {
-                [self.storeKitWrapper finishTransaction:transaction];
-            }
-        } else if ([error.userInfo[RCErrorDetails.RCFinishableKey] boolValue]) {
-            if (completion) {
-                completion(transaction, nil, error, false);
-            }
-            if (self.finishTransactions) {
-                [self.storeKitWrapper finishTransaction:transaction];
-            }
-        } else if (![error.userInfo[RCErrorDetails.RCFinishableKey] boolValue]) {
-            if (completion) {
-                completion(transaction, nil, error, false);
-            }
-        } else {
-            [RCLog error:[NSString stringWithFormat:@"%@", RCStrings.receipt.unknown_backend_error]];
-            if (completion) {
-                completion(transaction, nil, error, false);
-            }
-        }
-    }];
-}
-
-// TODO: move to new class PurchasesManager
-- (nullable RCPurchaseCompletedBlock)getAndRemovePurchaseCompletedBlockFor:(SKPaymentTransaction *)transaction {
-    RCPurchaseCompletedBlock completion = nil;
-    NSString * _Nullable productIdentifier = transaction.rc_productIdentifier;
-    if (productIdentifier) {
-        @synchronized (self) {
-            completion = self.purchaseCompleteCallbacks[productIdentifier];
-            self.purchaseCompleteCallbacks[productIdentifier] = nil;
-        }
-    }
-    return completion;
-}
-
 #pragma MARK: RCPurchaserInfoManagerDelegate
 - (void)purchaserInfoManagerDidReceiveUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo {
     if (self.delegate && [self.delegate respondsToSelector:@selector(purchases:didReceiveUpdatedPurchaserInfo:)]) {
