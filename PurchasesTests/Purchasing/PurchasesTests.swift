@@ -281,6 +281,15 @@ class PurchasesTests: XCTestCase {
     }
 
     private func initializePurchasesInstance(appUserId: String?) {
+        let purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
+                                                          storeKitWrapper: storeKitWrapper,
+                                                          operationDispatcher: mockOperationDispatcher,
+                                                          receiptFetcher: receiptFetcher,
+                                                          purchaserInfoManager: purchaserInfoManager,
+                                                          backend: backend,
+                                                          identityManager: identityManager,
+                                                          receiptParser: mockReceiptParser)
+
         purchases = Purchases(appUserID: appUserId,
                               requestFetcher: requestFetcher,
                               receiptFetcher: receiptFetcher,
@@ -299,8 +308,10 @@ class PurchasesTests: XCTestCase {
                               receiptParser: mockReceiptParser,
                               purchaserInfoManager: purchaserInfoManager,
                               productsManager: mockProductsManager,
-                              offeringsManager: mockOfferingsManager)
+                              offeringsManager: mockOfferingsManager,
+                              purchasesOrchestrator: purchasesOrchestrator)
 
+        purchasesOrchestrator.maybeDelegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }

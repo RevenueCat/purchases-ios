@@ -37,7 +37,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
     private let identityManager: IdentityManager
     private let receiptParser: ReceiptParser
 
-    private weak var maybeDelegate: PurchasesOrchestratorDelegate?
+    @objc public weak var maybeDelegate: PurchasesOrchestratorDelegate?
 
     // todo: remove explicit unwrap once nullability in identityManager is updated
     private var appUserID: String { identityManager.maybeCurrentAppUserID! }
@@ -48,8 +48,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         return [:]
     }
 
-    @objc public init(delegate: PurchasesOrchestratorDelegate,
-                      productsManager: ProductsManager,
+    @objc public init(productsManager: ProductsManager,
                       storeKitWrapper: StoreKitWrapper,
                       operationDispatcher: OperationDispatcher,
                       receiptFetcher: ReceiptFetcher,
@@ -58,7 +57,6 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
                       identityManager: IdentityManager,
                       receiptParser: ReceiptParser) {
         self.productsManager = productsManager
-        self.maybeDelegate = delegate
         self.storeKitWrapper = storeKitWrapper
         self.operationDispatcher = operationDispatcher
         self.receiptFecher = receiptFetcher
@@ -324,6 +322,7 @@ private extension PurchasesOrchestrator {
                         completion(maybeCachedPurchaserInfo, nil)
                     }
                 }
+                return
             }
 
             let unsyncedAttributes = self.unsyncedAttributesByKey
