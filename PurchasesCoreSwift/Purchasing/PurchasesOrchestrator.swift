@@ -159,7 +159,10 @@ private extension PurchasesOrchestrator {
 private extension PurchasesOrchestrator {
 
     func getAndRemovePurchaseCompletedCallback(forTransaction transaction: SKPaymentTransaction) -> PurchaseCompletedBlock? {
-        // todo
+        if let productIdentifier = transaction.rc_productIdentifier {
+            let maybeCompletion = purchaseCompleteCallbacksByProductID.removeValue(forKey: productIdentifier)
+            return maybeCompletion
+        }
         return nil
     }
 
