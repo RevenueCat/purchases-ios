@@ -119,7 +119,7 @@ jobs:
       
       - run:
           name: Run tests
-          command: bundle exec fastlane scan
+          command: bundle exec fastlane test
           environment:
             SCAN_SCHEME: Unit Tests
       - store_test_results:
