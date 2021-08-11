@@ -46,10 +46,6 @@ import Foundation
     }
 
     @objc public func configure(appUserID maybeAppUserID: String?) {
-        if (maybeCurrentAppUserID != nil && maybeAppUserID != nil) && maybeAppUserID != maybeCurrentAppUserID {
-            return
-        }
-
         let appUserID = maybeAppUserID
             ?? deviceCache.cachedAppUserID
             ?? deviceCache.cachedLegacyAppUserID
