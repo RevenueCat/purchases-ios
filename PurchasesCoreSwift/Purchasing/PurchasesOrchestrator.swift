@@ -17,8 +17,8 @@ import StoreKit
 public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, PurchaserInfo?, Error?, Bool) -> Void
 public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
-@objc public protocol PurchasesOrchestratorDelegate {
-    func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: RCDeferredPromotionalPurchaseBlock)
+@objc(RCPurchasesOrchestratorDelegate) public protocol PurchasesOrchestratorDelegate {
+    func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: @escaping RCDeferredPromotionalPurchaseBlock)
 }
 
 // todo: make internal
@@ -47,8 +47,8 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         return [:]
     }
 
-    @objc public init(productsManager: ProductsManager,
-                      delegate: PurchasesOrchestratorDelegate,
+    @objc public init(delegate: PurchasesOrchestratorDelegate,
+                      productsManager: ProductsManager,
                       storeKitWrapper: StoreKitWrapper,
                       operationDispatcher: OperationDispatcher,
                       receiptFetcher: ReceiptFetcher,

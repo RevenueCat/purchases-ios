@@ -14,7 +14,11 @@
 #import "RCPurchases.h"
 #import "RCSubscriberAttributesManager.h"
 
-@interface RCPurchases () <RCStoreKitWrapperDelegate, RCPurchaserInfoManagerDelegate> {
+@interface RCPurchases () <
+RCStoreKitWrapperDelegate,
+RCPurchaserInfoManagerDelegate,
+RCPurchasesOrchestratorDelegate
+> {
     NSNumber * _Nullable _allowSharingAppStoreAccount;
 }
 
@@ -278,12 +282,14 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                                           offeringsFactory:offeringsFactory
                                                                            productsManager:productsManager];
     RCPurchasesOrchestrator *purchasesOrchestrator = [[RCPurchasesOrchestrator alloc]
-                                                      initWithProductsManager:productsManager
-                                                      delegate:<#(id<PurchasesOrchestratorDelegate> _Nonnull)#>
+                                                      initWithDelegate:self
+                                                      productsManager:productsManager
                                                       storeKitWrapper:storeKitWrapper
                                                       operationDispatcher:operationDispatcher
                                                       receiptFetcher:receiptFetcher
-                                                      purchaserInfoManager:purchaserInfoManager];
+                                                      purchaserInfoManager:purchaserInfoManager
+                                                      backend:backend
+                                                      identityManager:identityManager];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher
@@ -302,7 +308,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                      receiptParser:receiptParser
               purchaserInfoManager:purchaserInfoManager
                    productsManager:productsManager
-                  offeringsManager:offeringsManager];
+                  offeringsManager:offeringsManager
+             purchasesOrchestrator:purchasesOrchestrator];
 }
 
 - (instancetype)initWithAppUserID:(nullable NSString *)appUserID
@@ -1148,6 +1155,14 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
 - (void)purchaserInfoManagerDidReceiveUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo {
     if (self.delegate && [self.delegate respondsToSelector:@selector(purchases:didReceiveUpdatedPurchaserInfo:)]) {
         [self.delegate purchases:self didReceiveUpdatedPurchaserInfo:purchaserInfo];
+    }
+}
+
+#pragma MARK: RCPurchasesOrchestratorDelegate
+- (void)shouldPurchasePromoProduct:(SKProduct * _Nonnull)product
+                    defermentBlock:(void (^ _Nonnull)(void (^ _Nonnull)(SKPaymentTransaction * _Nullable, RCPurchaserInfo * _Nullable, NSError * _Nullable, BOOL)))defermentBlock {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(purchases:shouldPurchasePromoProduct:defermentBlock:)]) {
+        [self.delegate purchases:self shouldPurchasePromoProduct:product defermentBlock:defermentBlock];
     }
 }
 
