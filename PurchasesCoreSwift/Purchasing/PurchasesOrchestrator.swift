@@ -36,7 +36,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
             _allowSharingAppStoreAccount = newValue
         }
     }
-    
+
     private var _allowSharingAppStoreAccount: Bool?
 
     private var presentedOfferingIDsByProductID: [String: String] = [:]
@@ -88,6 +88,21 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         syncPurchases(receiptRefreshPolicy: .never,
                       isRestore: allowSharingAppStoreAccount,
                       maybeCompletion: maybeCompletion)
+    }
+
+    @objc public func products(withIdentifiers identifiers: [String],
+                               completion: @escaping ([SKProduct]) -> Void) {
+        let productIdentifiersSet = Set(identifiers)
+        guard !productIdentifiersSet.isEmpty else {
+            operationDispatcher.dispatchOnMainThread { completion([]) }
+            return
+        }
+
+        productsManager.products(withIdentifiers: productIdentifiersSet) { products in
+            self.operationDispatcher.dispatchOnMainThread {
+                completion(Array(products))
+            }
+        }
     }
 
 }
@@ -209,7 +224,9 @@ private extension PurchasesOrchestrator {
         }
 
         self.products(withIdentifiers: [productIdentifier]) { products in
-            self.postReceipt(withTransaction: transaction, receiptData: receiptData, products: products)
+            self.postReceipt(withTransaction: transaction,
+                             receiptData: receiptData,
+                             products: Set(products))
         }
     }
 
@@ -237,21 +254,6 @@ private extension PurchasesOrchestrator {
                                    maybePurchaserInfo: maybePurchaserInfo,
                                    maybeSubscriberAttributes: unsyncedAttributes,
                                    maybeError: maybeError)
-        }
-    }
-
-    func products(withIdentifiers identifiers: [String],
-                  completion: @escaping (Set<SKProduct>) -> Void) {
-        let productIdentifiersSet = Set(identifiers)
-        guard !productIdentifiersSet.isEmpty else {
-            operationDispatcher.dispatchOnMainThread { completion([]) }
-            return
-        }
-
-        productsManager.products(withIdentifiers: productIdentifiersSet) { products in
-            self.operationDispatcher.dispatchOnMainThread {
-                completion(products)
-            }
         }
     }
 

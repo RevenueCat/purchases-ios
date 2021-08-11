@@ -527,15 +527,7 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
 
 - (void)productsWithIdentifiers:(NSArray<NSString *> *)productIdentifiers
                 completionBlock:(RCReceiveProductsBlock)completion {
-    NSSet<NSString *> *productIdentifiersSet = [[NSSet alloc] initWithArray:productIdentifiers];
-    if (productIdentifiersSet.count > 0) {
-        [self.productsManager productsWithIdentifiers:productIdentifiersSet
-                                           completion:^(NSSet<SKProduct *> * _Nonnull products) {
-            [self.operationDispatcher dispatchOnMainThread:^{ completion(products.allObjects); }];
-        }];
-    } else {
-        [self.operationDispatcher dispatchOnMainThread:^{ completion(@[]); }];
-    }
+    [self.purchasesOrchestrator productsWithIdentifiers:productIdentifiers completion:completion];
 }
 
 - (void)purchaseProduct:(SKProduct *)product
