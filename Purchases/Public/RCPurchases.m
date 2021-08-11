@@ -15,7 +15,6 @@
 #import "RCSubscriberAttributesManager.h"
 
 @interface RCPurchases () <
-RCStoreKitWrapperDelegate,
 RCPurchaserInfoManagerDelegate,
 RCPurchasesOrchestratorDelegate
 >
@@ -368,7 +367,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                 [self.purchaserInfoManager sendCachedPurchaserInfoIfAvailableForAppUserID:self.appUserID];
             }
         }];
-        self.storeKitWrapper.delegate = self;
+        self.storeKitWrapper.delegate = purchasesOrchestrator;
 
         [self subscribeToAppStateNotifications];
 
@@ -894,50 +893,6 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             }
         }
     }];
-}
-
-// todo: move to PurchasesManager if viable, new class otherwise
-#pragma MARK: RCStoreKitWrapperDelegate
-- (void)storeKitWrapper:(RCStoreKitWrapper *)storeKitWrapper
-     updatedTransaction:(SKPaymentTransaction *)transaction {
-    switch (transaction.transactionState) {
-        case SKPaymentTransactionStateRestored: // For observer mode
-        case SKPaymentTransactionStatePurchased: {
-            [self handlePurchasedTransaction:transaction];
-            break;
-        }
-        case SKPaymentTransactionStateFailed: {
-            _Nullable RCPurchaseCompletedBlock completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
-            if (completion) {
-                [self.operationDispatcher dispatchOnMainThread:^{
-                    completion(transaction,
-                               nil,
-                               [RCPurchasesErrorUtils purchasesErrorWithSKError:transaction.error],
-                               transaction.error.code == SKErrorPaymentCancelled);
-                }];
-            }
-
-            if (self.finishTransactions) {
-                [self.storeKitWrapper finishTransaction:transaction];
-            }
-            break;
-        }
-        case SKPaymentTransactionStateDeferred: {
-            _Nullable RCPurchaseCompletedBlock completion = [self getAndRemovePurchaseCompletedBlockFor:transaction];
-            BOOL cancelled = transaction.error.code == SKErrorPaymentCancelled;
-            if (completion) {
-                [self.operationDispatcher dispatchOnMainThread:^{
-                    completion(transaction,
-                               nil,
-                               RCPurchasesErrorUtils.paymentDeferredError,
-                               cancelled);
-                }];
-            }
-            break;
-        }
-        case SKPaymentTransactionStatePurchasing:
-            break;
-    }
 }
 
 // TODO: move to new class PurchasesManager

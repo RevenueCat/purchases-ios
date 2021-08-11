@@ -257,6 +257,7 @@ class PurchasesTests: XCTestCase {
     var attributionPoster: RCAttributionPoster!
     var purchaserInfoManager: PurchaserInfoManager!
     var mockOfferingsManager: MockOfferingsManager!
+    var purchasesOrchestrator: PurchasesOrchestrator!
 
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -281,14 +282,14 @@ class PurchasesTests: XCTestCase {
     }
 
     private func initializePurchasesInstance(appUserId: String?) {
-        let purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
-                                                          storeKitWrapper: storeKitWrapper,
-                                                          operationDispatcher: mockOperationDispatcher,
-                                                          receiptFetcher: receiptFetcher,
-                                                          purchaserInfoManager: purchaserInfoManager,
-                                                          backend: backend,
-                                                          identityManager: identityManager,
-                                                          receiptParser: mockReceiptParser)
+        purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
+                                                      storeKitWrapper: storeKitWrapper,
+                                                      operationDispatcher: mockOperationDispatcher,
+                                                      receiptFetcher: receiptFetcher,
+                                                      purchaserInfoManager: purchaserInfoManager,
+                                                      backend: backend,
+                                                      identityManager: identityManager,
+                                                      receiptParser: mockReceiptParser)
 
         purchases = Purchases(appUserID: appUserId,
                               requestFetcher: requestFetcher,
@@ -2710,7 +2711,7 @@ class PurchasesTests: XCTestCase {
             setupPurchases()
             guard let purchases = purchases else { fatalError() }
             expect(self.backend.postReceiptDataCalled).to(beFalse())
-            (purchases as StoreKitWrapperDelegate)
+            (purchasesOrchestrator as StoreKitWrapperDelegate)
                 .storeKitWrapper(storeKitWrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
             expect(self.backend.postReceiptDataCalled).to(beTrue())
         }
