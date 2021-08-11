@@ -153,7 +153,6 @@ import Foundation
         self.init(data: data, dateFormatter: .iso8601SecondsDateFormatter, transactionsFactory: TransactionsFactory())
     }
 
-    // TODO make internal after swift migration
     init?(data: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) {
         guard let subscriberObject = data["subscriber"] as? [String: Any],
               let subscriberData = SubscriberData(subscriberData: subscriberObject,

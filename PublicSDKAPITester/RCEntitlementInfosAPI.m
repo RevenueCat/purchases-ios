@@ -16,7 +16,6 @@
 + (void)checkAPI {
     RCEntitlementInfos *ei = [[RCEntitlementInfos alloc] initWithEntitlementsData:nil
                                                                     purchasesData:@{}
-                                                                    dateFormatter:[[NSDateFormatter alloc] init]
                                                                       requestDate:nil];
     NSDictionary<NSString *, RCEntitlementInfo *> *all = ei.all;
     NSDictionary<NSString *, RCEntitlementInfo *> *active = ei.active;

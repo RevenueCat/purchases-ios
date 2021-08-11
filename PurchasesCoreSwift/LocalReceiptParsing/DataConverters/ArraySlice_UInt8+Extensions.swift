@@ -34,7 +34,7 @@ extension ArraySlice where Element == UInt8 {
 
     func toDate() -> Date? {
         guard let dateString = String(bytes: Array(self), encoding: .ascii) else { return nil }
-        return DateFormatter.iso8601SecondsOrMillisecondsDate(fromString: dateString)
+        return DateFormatter.date(fromiso8601SecondsOrMillisecondsString: dateString)
     }
 
     func toData() -> Data {
