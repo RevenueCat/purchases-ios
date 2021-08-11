@@ -7,7 +7,7 @@
 //
 
 #import "RCAttributionPoster.h"
-#import "RCIdentityManager.h"
+#import "RCSubscriberAttributesManager.h"
 @import PurchasesCoreSwift;
 
 static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
@@ -46,7 +46,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 - (NSString *)latestNetworkIdAndAdvertisingIdentifierSentForNetwork:(RCAttributionNetwork)network {
     NSString *networkID = [NSString stringWithFormat:@"%ld", (long) network];
     NSDictionary *cachedDict =
-            [self.deviceCache latestNetworkAndAdvertisingIdsSentWithAppUserID:self.identityManager.currentAppUserID];
+            [self.deviceCache latestNetworkAndAdvertisingIdsSentWithAppUserID:self.identityManager.maybeCurrentAppUserID];
     return cachedDict[networkID];
 }
 
@@ -60,7 +60,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     if (network == RCAttributionNetworkAppsFlyer && networkUserId == nil) {
         [RCLog warn:[NSString stringWithFormat:@"%@", RCStrings.attribution.networkuserid_required_for_appsflyer]];
     }
-    NSString *appUserID = self.identityManager.currentAppUserID;
+    NSString *appUserID = self.identityManager.maybeCurrentAppUserID;
     NSString *networkKey = [NSString stringWithFormat:@"%ld", (long) network];
     NSString *identifierForAdvertisers = [self.attributionFetcher identifierForAdvertisers];
     NSDictionary *dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks =
@@ -91,11 +91,6 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
                     }
                 }];
             } else {
-                [self.subscriberAttributesManager
-                 convertAttributionDataAndSetAsSubscriberAttributesWithAttributionData:newData
-                                                                               network:network
-                                                                             appUserID:appUserID];
-                
                 [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newDictToCache
                                                            forAppUserID:appUserID];
             }
