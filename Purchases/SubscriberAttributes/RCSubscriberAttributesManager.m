@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 
-@implementation RCSubscriberAttributesManager
+@implementation RCSubscriberAttributesManagerOld
 
 #pragma MARK - Public methods
 

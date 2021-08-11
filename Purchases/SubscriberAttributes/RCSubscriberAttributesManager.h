@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class RCAttributionFetcher;
 @class RCAttributionDataMigrator;
 
-@interface RCSubscriberAttributesManager : NSObject
+@interface RCSubscriberAttributesManagerOld : NSObject
 
 - (instancetype)initWithBackend:(nullable RCBackend *)backend
                     deviceCache:(nullable RCDeviceCache *)deviceCache
