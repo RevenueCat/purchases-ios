@@ -289,7 +289,6 @@ private extension PurchasesOrchestrator {
         // blocked on SubscriberAttributesManager migration
     }
 
-
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
                        maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
@@ -348,7 +347,21 @@ private extension PurchasesOrchestrator {
                            error maybeError: Error?,
                            subscriberAttributes: SubscriberAttributeDict,
                            completion maybeCompletion: ReceivePurchaserInfoBlock?) {
+        operationDispatcher.dispatchOnMainThread {
+            if let purchaserInfo = maybePurchaserInfo {
+                self.purchaserInfoManager.cache(purchaserInfo: purchaserInfo, appUserID: self.appUserID)
+            }
 
+            self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
+                                    appUserID: self.appUserID,
+                                    maybeError: maybeError)
+
+            if let completion = maybeCompletion {
+                self.operationDispatcher.dispatchOnMainThread {
+                    completion(maybePurchaserInfo, maybeError)
+                }
+            }
+        }
     }
 
 }
