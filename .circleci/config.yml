@@ -36,8 +36,9 @@ commands:
           name: Bundle install
           working_directory: << parameters.directory >>
           command: |
+              bundle config set --local clean 'true'
               bundle config set --local path 'vendor/bundle'
-              bundle install --clean
+              bundle install
       - save_cache:
           key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
