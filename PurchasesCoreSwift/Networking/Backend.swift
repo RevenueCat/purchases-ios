@@ -63,6 +63,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
 
         let path = "/subscribers/\(appUserID)/alias"
+        Logger.user(String(format: Strings.identity.creating_alias, appUserID, newAppUserID))
         httpClient.performPOSTRequest(serially: true,
                                       path: path,
                                       requestBody: ["new_app_user_id": newAppUserID],
@@ -458,6 +459,7 @@ private extension Backend {
         }
 
         let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
+        Logger.user(Strings.identity.login_success)
         completion(purchaserInfo, created, nil)
     }
 
