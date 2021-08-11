@@ -42,8 +42,10 @@ platform :ios do
 
   desc "Runs all the tests"
   lane :test do
-    scan
-    snapshot
+    # Need to run iOS and tvOS in two differen
+    # Scan can't target two different platforms in devices
+    scan(devices: ["iPhone 6", "iPhone 12"])
+    scan(devices: ["Apple TV"])
   end
 
   desc "Increment build number"
