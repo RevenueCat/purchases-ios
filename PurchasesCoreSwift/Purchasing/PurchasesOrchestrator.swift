@@ -45,7 +45,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
     private let productsManager: ProductsManager
     private let storeKitWrapper: StoreKitWrapper
     private let operationDispatcher: OperationDispatcher
-    private let receiptFecher: ReceiptFetcher
+    private let receiptFetcher: ReceiptFetcher
     private let purchaserInfoManager: PurchaserInfoManager
     private let backend: Backend
     private let identityManager: IdentityManager
@@ -73,7 +73,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         self.productsManager = productsManager
         self.storeKitWrapper = storeKitWrapper
         self.operationDispatcher = operationDispatcher
-        self.receiptFecher = receiptFetcher
+        self.receiptFetcher = receiptFetcher
         self.purchaserInfoManager = purchaserInfoManager
         self.backend = backend
         self.identityManager = identityManager
@@ -101,6 +101,52 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         productsManager.products(withIdentifiers: productIdentifiersSet) { products in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(Array(products))
+            }
+        }
+    }
+
+    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
+    @objc public func paymentDiscount(forProductDiscount productDiscount: SKProductDiscount,
+                                      product: SKProduct,
+                                      completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
+        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeReceiptData in
+            guard let receiptData = maybeReceiptData,
+                  !receiptData.isEmpty else {
+                      completion(nil, ErrorUtils.missingReceiptFileError())
+                      return
+                  }
+            guard let discountIdentifier = productDiscount.identifier,
+                  let subscriptionGroupIdentifier = product.subscriptionGroupIdentifier else {
+                      // todo: replace with custom exception
+                      completion(nil, ErrorUtils.unexpectedBackendResponseError())
+                      return
+                  }
+            self.backend.post(offerIdForSigning: discountIdentifier,
+                              productIdentifier: product.productIdentifier,
+                              subscriptionGroup: subscriptionGroupIdentifier,
+                              receiptData: receiptData,
+                              appUserID: self.appUserID) { maybeSignature, maybeKeyIdentifier, maybeNonce, maybeTimestamp, maybeError in
+                if let error = maybeError {
+                    // todo: replace with custom exception
+                    completion(nil, error)
+                    return
+                }
+
+                guard let keyIdentifier = maybeKeyIdentifier,
+                      let nonce = maybeNonce,
+                      let signature = maybeSignature,
+                      let timestamp = maybeTimestamp else {
+                          // todo: replace with custom exception
+                          completion(nil, ErrorUtils.unexpectedBackendResponseError())
+                          return
+                      }
+
+                let paymentDiscount = SKPaymentDiscount(identifier: discountIdentifier,
+                                                        keyIdentifier: keyIdentifier,
+                                                        nonce: nonce,
+                                                        signature: signature,
+                                                        timestamp: timestamp)
+                completion(paymentDiscount, nil)
             }
         }
     }
@@ -160,7 +206,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 private extension PurchasesOrchestrator {
 
     func handlePurchasedTransaction(_ transaction: SKPaymentTransaction) {
-        receiptFecher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeReceiptData in
+        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeReceiptData in
             if let receiptData = maybeReceiptData,
                !receiptData.isEmpty {
                 self.fetchProductsAndPostReceipt(withTransaction: transaction, receiptData: receiptData)
@@ -313,7 +359,7 @@ private extension PurchasesOrchestrator {
         let currentAppUserID = self.appUserID
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
         // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
-        receiptFecher.receiptData(refreshPolicy: receiptRefreshPolicy) { maybeReceiptData in
+        receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { maybeReceiptData in
             guard let receiptData = maybeReceiptData,
                   !receiptData.isEmpty else {
                       if SystemInfo.isSandbox {

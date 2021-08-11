@@ -702,34 +702,11 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     }];
 }
 
-// TODO: add API availability check here, match headers
 - (void)paymentDiscountForProductDiscount:(SKProductDiscount *)discount
                                   product:(SKProduct *)product
-                               completion:(RCPaymentDiscountBlock)completion {
-    [self.receiptFetcher receiptDataWithRefreshPolicy:RCReceiptRefreshPolicyOnlyIfEmpty
-                                           completion:^(NSData * _Nullable data) {
-        if (data == nil || data.length == 0) {
-            completion(nil, RCPurchasesErrorUtils.missingReceiptFileError);
-        } else {
-            [self.backend postOfferForSigning:discount.identifier
-                        withProductIdentifier:product.productIdentifier
-                            subscriptionGroup:product.subscriptionGroupIdentifier
-                                  receiptData:data
-                                    appUserID:self.appUserID
-                                   completion:^(NSString *_Nullable signature,
-                                                NSString *_Nullable keyIdentifier,
-                                                NSUUID *_Nullable nonce,
-                                                NSNumber *_Nullable timestamp,
-                                                NSError *_Nullable error) {
-                SKPaymentDiscount *paymentDiscount = [[SKPaymentDiscount alloc] initWithIdentifier:discount.identifier
-                                                                                     keyIdentifier:keyIdentifier
-                                                                                             nonce:nonce
-                                                                                         signature:signature
-                                                                                         timestamp:timestamp];
-                completion(paymentDiscount, error);
-            }];
-        }
-    }];
+                               completion:(RCPaymentDiscountBlock)completion
+API_AVAILABLE(ios(12.2), macos(10.14.4), watchos(6.2), macCatalyst(13.0), tvos(12.2)) {
+    [self.purchasesOrchestrator paymentDiscountForProductDiscount:discount product:product completion:completion];
 }
 
 - (void)invalidatePurchaserInfoCache {
