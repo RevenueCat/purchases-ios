@@ -10,9 +10,6 @@
 #     https://docs.fastlane.tools/plugins/available-plugins
 #
 
-# Uncomment the line if you want fastlane to automatically update itself
-# update_fastlane
-
 default_platform(:ios)
 
 platform :ios do
@@ -42,10 +39,16 @@ platform :ios do
 
   desc "Runs all the tests"
   lane :test do
-    # Need to run iOS and tvOS in two differen
     # Scan can't target two different platforms in devices
-    scan(devices: ["iPhone 6", "iPhone 12"])
-    scan(devices: ["Apple TV"])
+    # Need to run scan multiple times
+    scan(
+      step_name: "scan - iPhone", 
+      devices: ["iPhone 6", "iPhone 12"]
+    )
+    scan(
+      step_name: "scan - Apple TV",
+      devices: ["Apple TV"]
+    )
   end
 
   desc "Increment build number"
