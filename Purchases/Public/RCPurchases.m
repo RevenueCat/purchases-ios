@@ -18,9 +18,7 @@
 RCStoreKitWrapperDelegate,
 RCPurchaserInfoManagerDelegate,
 RCPurchasesOrchestratorDelegate
-> {
-    NSNumber * _Nullable _allowSharingAppStoreAccount;
-}
+>
 
 /**
  * Completion block for calls that send back receipt data
@@ -60,15 +58,11 @@ static RCPurchases *_sharedPurchases = nil;
 #pragma mark - Configuration
 
 - (BOOL)allowSharingAppStoreAccount {
-    if (_allowSharingAppStoreAccount == nil) {
-        return self.isAnonymous;
-    }
-
-    return [_allowSharingAppStoreAccount boolValue];
+    return self.purchasesOrchestrator.allowSharingAppStoreAccount;
 }
 
 - (void)setAllowSharingAppStoreAccount:(BOOL)allow {
-    _allowSharingAppStoreAccount = @(allow);
+    self.purchasesOrchestrator.allowSharingAppStoreAccount = allow;
 }
 
 static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
@@ -282,8 +276,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                                           offeringsFactory:offeringsFactory
                                                                            productsManager:productsManager];
     RCPurchasesOrchestrator *purchasesOrchestrator = [[RCPurchasesOrchestrator alloc]
-                                                      initWithDelegate:self
-                                                      productsManager:productsManager
+                                                      initWithProductsManager:productsManager
                                                       storeKitWrapper:storeKitWrapper
                                                       operationDispatcher:operationDispatcher
                                                       receiptFetcher:receiptFetcher
@@ -291,6 +284,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                       backend:backend
                                                       identityManager:identityManager
                                                       receiptParser:receiptParser];
+    purchasesOrchestrator.maybeDelegate = self;
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher
@@ -645,18 +639,11 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)syncPurchasesWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    [self syncPurchasesWithReceiptRefreshPolicy:RCReceiptRefreshPolicyNever
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-                                      isRestore:self.allowSharingAppStoreAccount
-#pragma GCC diagnostic pop
-                                     completion:completion];
+    [self.purchasesOrchestrator syncPurchasesWithCompletion:completion];
 }
 
 - (void)restoreTransactionsWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    [self syncPurchasesWithReceiptRefreshPolicy:RCReceiptRefreshPolicyAlways
-                                      isRestore:YES
-                                     completion:completion];
+    [self.purchasesOrchestrator restoreTransactionsWithCompletion:completion];
 }
 
 - (void)syncPurchasesWithReceiptRefreshPolicy:(RCReceiptRefreshPolicy)refreshPolicy

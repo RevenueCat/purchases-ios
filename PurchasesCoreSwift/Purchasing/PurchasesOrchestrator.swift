@@ -23,10 +23,24 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
 
 // todo: make internal
 @objc(RCPurchasesOrchestrator) public class PurchasesOrchestrator: NSObject {
+    @objc public var finishTransactions = false
+    @objc public var allowSharingAppStoreAccount: Bool {
+        get {
+            if let allow = _allowSharingAppStoreAccount {
+                return allow
+            } else {
+                return identityManager.currentUserIsAnonymous
+            }
+        }
+        set {
+            _allowSharingAppStoreAccount = newValue
+        }
+    }
+    
+    private var _allowSharingAppStoreAccount: Bool?
+
     private var presentedOfferingIDsByProductID: [String: String] = [:]
     private var purchaseCompleteCallbacksByProductID: [String: PurchaseCompletedBlock] = [:]
-    public var finishTransactions = false
-    public var allowSharingAppStoreAccount = false
 
     private let productsManager: ProductsManager
     private let storeKitWrapper: StoreKitWrapper
