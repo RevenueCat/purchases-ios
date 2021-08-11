@@ -36,10 +36,16 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
     private let backend: Backend
     private let identityManager: IdentityManager
 
+    private weak var maybeDelegate: PurchasesOrchestratorDelegate?
+
     // todo: remove explicit unwrap once nullability in identityManager is updated
     private var appUserID: String { identityManager.maybeCurrentAppUserID! }
 
-    private weak var maybeDelegate: PurchasesOrchestratorDelegate?
+    var unsyncedAttributesByKey: SubscriberAttributeDict {
+        // todo
+        // blocked on SubscriberAttributesManager migration
+        return [:]
+    }
 
     @objc public init(productsManager: ProductsManager,
                       delegate: PurchasesOrchestratorDelegate,
@@ -216,12 +222,6 @@ private extension PurchasesOrchestrator {
                                    maybeSubscriberAttributes: unsyncedAttributes,
                                    maybeError: maybeError)
         }
-    }
-
-    var unsyncedAttributesByKey: SubscriberAttributeDict {
-        // todo
-        // blocked on SubscriberAttributesManager migration
-        return [:]
     }
 
     func products(withIdentifiers identifiers: [String],
