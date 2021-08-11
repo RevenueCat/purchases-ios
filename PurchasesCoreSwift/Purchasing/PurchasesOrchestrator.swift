@@ -14,11 +14,12 @@
 import Foundation
 import StoreKit
 
-@objc public protocol PurchasesOrchestratorDelegate {
-    func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: PurchaseCompletedBlock)
-}
-
 public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, PurchaserInfo?, Error?, Bool) -> Void
+public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
+
+@objc public protocol PurchasesOrchestratorDelegate {
+    func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: RCDeferredPromotionalPurchaseBlock)
+}
 
 // todo: make internal
 @objc(RCPurchasesOrchestrator) public class PurchasesOrchestrator: NSObject {
@@ -86,20 +87,10 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
         productsManager.cacheProduct(product);
         // todo
         guard let delegate = maybeDelegate else { return false }
-        //        delegate.shouldPurchasePromoProduct(product, ) { completion in
-        //            self.purchaseCompleteCallbacks[product.productIdentifier] = completion
-        //            storeKitWrapper.add(payment)
-        //        }
-        //        if ([self.delegate respondsToSelector:@selector(purchases:shouldPurchasePromoProduct:defermentBlock:)]) {
-        //            [self.delegate purchases:self
-        //          shouldPurchasePromoProduct:product
-        //                      defermentBlock:^(RCPurchaseCompletedBlock completion) {
-        //                          self.purchaseCompleteCallbacks[product.productIdentifier] = [completion copy];
-        //                          [self.storeKitWrapper addPayment:payment];
-        //                      }];
-        //        }
-
-        //        return NO;
+        delegate.shouldPurchasePromoProduct(product) { completion in
+            self.purchaseCompleteCallbacksByProductID[product.productIdentifier] = completion
+            storeKitWrapper.add(payment)
+        }
         return false
     }
 
