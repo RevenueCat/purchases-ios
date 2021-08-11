@@ -17,11 +17,8 @@ import Foundation
 @objc(RCSubscriberAttributesManager) public class SubscriberAttributesManager: NSObject {
 
     private let backend: Backend
-
     private let deviceCache: DeviceCache
-
     private let attributionFetcher: AttributionFetcher
-
     private let attributionDataMigrator: AttributionDataMigrator
 
     @objc public init(backend: Backend,
@@ -155,21 +152,54 @@ import Foundation
         }
     }
 
-    // TODO confirm whether i want escaping here
-    @objc public func syncAttributes(attributes: SubscriberAttributeDict, appUserId: String, completion: @escaping (Error?) -> Void) {
-        backend.post(subscriberAttributes: attributes, appUserID: appUserId, completion: completion)
-    }
-
-    func unsyncedAttributesByKey(appUserId: String) -> SubscriberAttributeDict {
+    @objc public func unsyncedAttributesByKey(appUserId: String) -> SubscriberAttributeDict {
         return deviceCache.unsyncedAttributesByKey(appUserID: appUserId)
     }
 
-    func unsyncedAttributesByKeyForAllUsers() -> [String: SubscriberAttributeDict] {
+    @objc public func unsyncedAttributesByKeyForAllUsers() -> [String: SubscriberAttributeDict] {
         return deviceCache.unsyncedAttributesForAllUsers()
     }
 
     private func setAttribute(key: String, value: String?, appUserId: String) {
         storeAttributeLocallyIfNeeded(key: key, value: value, appUserId: appUserId)
+    }
+
+    // TODO confirm whether i want escaping here
+    private func syncAttributes(attributes: SubscriberAttributeDict, appUserId: String, completion: @escaping (Error?) -> Void) {
+        backend.post(subscriberAttributes: attributes, appUserID: appUserId) { error in
+            // TODO confirm this as is correct
+            let receivedNSError = error as NSError?
+            let didBackendReceiveValues = receivedNSError?.rc_successfullySynced ?? true
+
+            if (didBackendReceiveValues) {
+                self.markAttributesAsSynced(attributes: attributes, appUserId: appUserId)
+            }
+            completion(error)
+        }
+    }
+
+    private func markAttributesAsSynced(attributes maybeAttributesToSync: SubscriberAttributeDict?, appUserId: String) {
+        // TODO use guard?
+        guard let attributesToSync = maybeAttributesToSync,
+              !attributesToSync.isEmpty else {
+            return
+        }
+
+        Logger.info(String(format: Strings.attribution.marking_attributes_synced,
+                           appUserId,
+                           attributesToSync.description))
+
+        // TODO synchronized self
+        var unsyncedAttributes = unsyncedAttributesByKey(appUserId: appUserId)
+        for (key, attribute) in attributesToSync {
+            if let unsyncedAttribute = unsyncedAttributes[key] {
+                if (unsyncedAttribute == attribute) {
+                    unsyncedAttribute.isSynced = true
+                    unsyncedAttributes[key] = unsyncedAttribute
+                }
+            }
+        }
+        deviceCache.store(subscriberAttributesByKey: unsyncedAttributes, appUserID: appUserId)
     }
 
     private func storeAttributeLocallyIfNeeded(key: String, value: String?, appUserId: String) {
@@ -194,17 +224,18 @@ import Foundation
         return maybeAttribute?.value
     }
 
-    private func markAttributesAsSynced(syncedAttributes: SubscriberAttributeDict, appUserId: String) {
-        // TODO use guard?
-        if (syncedAttributes.isEmpty) {
-            return
-        }
+    private func setAttributionID(networkID: String?, networkKey: String, appUserId: String) {
+        collectDeviceIdentifiersForAppUserID(appUserId: appUserId)
+        setAttribute(key: networkKey, value: networkID, appUserId: appUserId)
+    }
 
-        Logger.info(String(format: Strings.attribution.marking_attributes_synced, appUserId, syncedAttributes))
-
-        // TODO synchronized self
-        
-
+    private func convertAttributionDataAndSetAsSubscriberAttributes(attributionData: [String: Any],
+                                                                    network: AttributionNetwork,
+                                                                    appUserId: String) {
+        let convertedAttribution =
+            attributionDataMigrator.convertToSubscriberAttributes(attributionData: attributionData,
+        network: network.rawValue)
+        setAttributes(attributes: convertedAttribution, appUserId: appUserId)
     }
 
 }
