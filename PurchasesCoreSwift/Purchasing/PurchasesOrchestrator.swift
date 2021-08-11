@@ -65,7 +65,6 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         self.identityManager = identityManager
     }
 
-
     @objc public func syncPurchases(completion: @escaping (PurchaserInfo?, Error?) -> Void) {
         // todo
     }
@@ -80,17 +79,14 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
         case .restored, // for observer mode
              .purchased:
             handlePurchasedTransaction(transaction)
-            break
         case .purchasing:
             break
         case .failed:
             handleFailedTransaction(transaction)
-            break
         case .deferred:
             handleDeferredTransaction(transaction)
         @unknown default:
             Logger.warn("unhandled transaction state!")
-            break
         }
 
     }
@@ -104,7 +100,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
     public func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                                 shouldAddStorePayment payment: SKPayment,
                                 for product: SKProduct) -> Bool {
-        productsManager.cacheProduct(product);
+        productsManager.cacheProduct(product)
 
         guard let delegate = maybeDelegate else { return false }
         delegate.shouldPurchasePromoProduct(product) { completion in
@@ -117,13 +113,12 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
     public func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                                 didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
         Logger.debug(String(format: Strings.purchase.entitlements_revoked_syncing_purchases, productIdentifiers))
-        syncPurchases { maybePurchaserInfo, maybeError in
+        syncPurchases { _, _ in
             Logger.debug(Strings.purchase.purchases_synced)
         }
     }
 
 }
-
 
 // pragma: transaction state updates
 private extension PurchasesOrchestrator {
