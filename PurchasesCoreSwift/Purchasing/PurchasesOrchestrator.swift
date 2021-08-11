@@ -35,6 +35,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
     private let purchaserInfoManager: PurchaserInfoManager
     private let backend: Backend
     private let identityManager: IdentityManager
+    private let receiptParser: ReceiptParser
 
     private weak var maybeDelegate: PurchasesOrchestratorDelegate?
 
@@ -54,7 +55,8 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
                       receiptFetcher: ReceiptFetcher,
                       purchaserInfoManager: PurchaserInfoManager,
                       backend: Backend,
-                      identityManager: IdentityManager) {
+                      identityManager: IdentityManager,
+                      receiptParser: ReceiptParser) {
         self.productsManager = productsManager
         self.maybeDelegate = delegate
         self.storeKitWrapper = storeKitWrapper
@@ -63,10 +65,17 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         self.purchaserInfoManager = purchaserInfoManager
         self.backend = backend
         self.identityManager = identityManager
+        self.receiptParser = receiptParser
     }
 
-    @objc public func syncPurchases(completion: @escaping (PurchaserInfo?, Error?) -> Void) {
-        // todo
+    @objc public func restoreTransactions(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
+        syncPurchases(receiptRefreshPolicy: .always, isRestore: true, maybeCompletion: maybeCompletion)
+    }
+
+    @objc public func syncPurchases(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
+        syncPurchases(receiptRefreshPolicy: .never,
+                      isRestore: allowSharingAppStoreAccount,
+                      maybeCompletion: maybeCompletion)
     }
 
 }
@@ -278,6 +287,68 @@ private extension PurchasesOrchestrator {
     func markSyncedIfNeeded(subscriberAttributes: SubscriberAttributeDict?, appUserID: String, maybeError: Error?) {
         // todo
         // blocked on SubscriberAttributesManager migration
+    }
+
+
+    func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
+                       isRestore: Bool,
+                       maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
+        if !self.allowSharingAppStoreAccount {
+            Logger.warn(Strings.restore.restoretransactions_called_with_allow_sharing_appstore_account_false_warning)
+        }
+
+        let currentAppUserID = self.appUserID
+        // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
+        // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
+        receiptFecher.receiptData(refreshPolicy: receiptRefreshPolicy) { maybeReceiptData in
+            guard let receiptData = maybeReceiptData,
+                  !receiptData.isEmpty else {
+                      if SystemInfo.isSandbox {
+                          Logger.appleWarning(Strings.receipt.no_sandbox_receipt_restore)
+                      }
+
+                      if let completion = maybeCompletion {
+                          completion(nil, ErrorUtils.missingReceiptFileError())
+                      }
+                      return
+                  }
+
+            let maybeCachedPurchaserInfo = self.purchaserInfoManager.cachedPurchaserInfo(appUserID: currentAppUserID)
+            let hasOriginalPurchaseDate = maybeCachedPurchaserInfo != nil
+                                          && maybeCachedPurchaserInfo!.originalPurchaseDate != nil
+
+            let receiptHasTransactions = self.receiptParser.receiptHasTransactions(receiptData: receiptData)
+
+            if !receiptHasTransactions && hasOriginalPurchaseDate {
+                if let completion = maybeCompletion {
+                    self.operationDispatcher.dispatchOnMainThread {
+                        completion(maybeCachedPurchaserInfo, nil)
+                    }
+                }
+            }
+
+            let unsyncedAttributes = self.unsyncedAttributesByKey
+
+            self.backend.post(receiptData: receiptData,
+                              appUserID: currentAppUserID,
+                              isRestore: isRestore,
+                              productInfo: nil,
+                              presentedOfferingIdentifier: nil,
+                              observerMode: !self.finishTransactions,
+                              subscriberAttributes: unsyncedAttributes) { maybePurchaserInfo, maybeError in
+                self.handleReceiptPost(withPurchaserInfo: maybePurchaserInfo,
+                                       error: maybeError,
+                                       subscriberAttributes: unsyncedAttributes,
+                                       completion: maybeCompletion)
+            }
+        }
+    }
+
+    func handleReceiptPost(withPurchaserInfo maybePurchaserInfo: PurchaserInfo?,
+                           error maybeError: Error?,
+                           subscriberAttributes: SubscriberAttributeDict,
+                           completion maybeCompletion: ReceivePurchaserInfoBlock?) {
+
     }
 
 }

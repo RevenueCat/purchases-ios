@@ -289,7 +289,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                       receiptFetcher:receiptFetcher
                                                       purchaserInfoManager:purchaserInfoManager
                                                       backend:backend
-                                                      identityManager:identityManager];
+                                                      identityManager:identityManager
+                                                      receiptParser:receiptParser];
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher
                     receiptFetcher:receiptFetcher
