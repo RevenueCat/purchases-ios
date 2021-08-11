@@ -43,7 +43,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                      finishTransactions: true)
     var mockReceiptParser: MockReceiptParser!
     var mockAttributionFetcher: MockAttributionFetcher!
-    var mockAttributionPoster: RCAttributionPoster!
+    var mockAttributionPoster: AttributionPoster!
 
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
@@ -84,7 +84,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                         finishTransactions: true)
         self.mockAttributionFetcher = MockAttributionFetcher(attributionFactory: AttributionTypeFactory(),
                                                              systemInfo: systemInfoAttribution)
-        self.mockAttributionPoster = RCAttributionPoster(deviceCache: mockDeviceCache,
+        self.mockAttributionPoster = AttributionPoster(deviceCache: mockDeviceCache,
                                                          identityManager: mockIdentityManager,
                                                          backend: mockBackend,
                                                          systemInfo: systemInfoAttribution,

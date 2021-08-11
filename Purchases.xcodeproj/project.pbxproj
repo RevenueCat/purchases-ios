@@ -102,7 +102,6 @@
 		356D65F620B873AF00576D45 /* Purchases.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 352629FE1F7C4B9100C04F2C /* Purchases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		35D0E5D026A5886C0099EAD8 /* ErrorUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */; };
 		35D5DE05268FABFD002B2DBA /* MockAttributionDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D5DE04268FABFD002B2DBA /* MockAttributionDataMigrator.swift */; };
-		35D5DE09268FB3D7002B2DBA /* RCAttributionPoster.m in Sources */ = {isa = PBXBuildFile; fileRef = 35D5DE08268FB3D7002B2DBA /* RCAttributionPoster.m */; };
 		35D832CD262A5B7500E60AC5 /* ETagManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D832CC262A5B7500E60AC5 /* ETagManager.swift */; };
 		35D832D2262E56DB00E60AC5 /* HTTPStatusCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D832D1262E56DB00E60AC5 /* HTTPStatusCodes.swift */; };
 		35D832F4262E606500E60AC5 /* HTTPResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D832F3262E606500E60AC5 /* HTTPResponse.swift */; };
@@ -114,7 +113,6 @@
 		35F6FD62267426D600ABCB53 /* ETagAndResponseWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F6FD61267426D600ABCB53 /* ETagAndResponseWrapper.swift */; };
 		35F82BA926A849100051DF03 /* RCPurchasesErrorUtilsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BA726A849080051DF03 /* RCPurchasesErrorUtilsAPI.m */; };
 		35F82BAB26A84E130051DF03 /* Dictionary+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BAA26A84E130051DF03 /* Dictionary+Extensions.swift */; };
-		35F82BAC26A988810051DF03 /* RCAttributionPoster.h in Headers */ = {isa = PBXBuildFile; fileRef = 35D5DE06268FB39C002B2DBA /* RCAttributionPoster.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		35F82BB226A98EC50051DF03 /* AttributionDataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BB126A98EC50051DF03 /* AttributionDataMigratorTests.swift */; };
 		35F82BB426A9A74D0051DF03 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BB326A9A74D0051DF03 /* HTTPClient.swift */; };
 		35F82BB626A9B8040051DF03 /* AttributionDataMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BB526A9B8030051DF03 /* AttributionDataMigrator.swift */; };
@@ -202,6 +200,7 @@
 		B39E811A268E849900D31189 /* AttributionNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39E8119268E849900D31189 /* AttributionNetwork.swift */; };
 		B39E811D268E887500D31189 /* SubscriberAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39E811C268E887500D31189 /* SubscriberAttribute.swift */; };
 		B3A36AAE26BC76340059EDEA /* PurchaserInfoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A36AAD26BC76340059EDEA /* PurchaserInfoManager.swift */; };
+		B3A55B7D26C452A7007EFC56 /* AttributionPoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A55B7C26C452A7007EFC56 /* AttributionPoster.swift */; };
 		B3AA35A0268682410007771B /* RCEntitlementInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA359D268682410007771B /* RCEntitlementInfoAPI.m */; };
 		B3AA35A1268682410007771B /* RCPurchasesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA359F268682410007771B /* RCPurchasesAPI.m */; };
 		B3AA6234268A7BA900894871 /* RCEntitlementInfosAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AA6232268A7BA900894871 /* RCEntitlementInfosAPI.m */; };
@@ -399,8 +398,6 @@
 		3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactoryTests.swift; sourceTree = "<group>"; };
 		35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorUtils.swift; sourceTree = "<group>"; };
 		35D5DE04268FABFD002B2DBA /* MockAttributionDataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAttributionDataMigrator.swift; sourceTree = "<group>"; };
-		35D5DE06268FB39C002B2DBA /* RCAttributionPoster.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCAttributionPoster.h; sourceTree = "<group>"; };
-		35D5DE08268FB3D7002B2DBA /* RCAttributionPoster.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCAttributionPoster.m; sourceTree = "<group>"; };
 		35D832CC262A5B7500E60AC5 /* ETagManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETagManager.swift; sourceTree = "<group>"; };
 		35D832D1262E56DB00E60AC5 /* HTTPStatusCodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPStatusCodes.swift; sourceTree = "<group>"; };
 		35D832F3262E606500E60AC5 /* HTTPResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPResponse.swift; sourceTree = "<group>"; };
@@ -529,6 +526,7 @@
 		B39E8119268E849900D31189 /* AttributionNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionNetwork.swift; sourceTree = "<group>"; };
 		B39E811C268E887500D31189 /* SubscriberAttribute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttribute.swift; sourceTree = "<group>"; };
 		B3A36AAD26BC76340059EDEA /* PurchaserInfoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaserInfoManager.swift; sourceTree = "<group>"; };
+		B3A55B7C26C452A7007EFC56 /* AttributionPoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionPoster.swift; sourceTree = "<group>"; };
 		B3AA359C268682410007771B /* RCEntitlementInfoAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfoAPI.h; sourceTree = "<group>"; };
 		B3AA359D268682410007771B /* RCEntitlementInfoAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfoAPI.m; sourceTree = "<group>"; };
 		B3AA359E268682410007771B /* RCPurchasesAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesAPI.h; sourceTree = "<group>"; };
@@ -643,7 +641,6 @@
 				2CD72941268A823900BFC976 /* Data+Extensions.swift */,
 				2CD72943268A826F00BFC976 /* Date+Extensions.swift */,
 				2CD72947268A828400BFC976 /* Locale+Extensions.swift */,
-				B35F9E0826B4BEED00095C3F /* String+Extensions.swift */,
 				37E353FD94A8FD5CD8796530 /* DateFormatter+Extensions.swift */,
 				B35F9E0826B4BEED00095C3F /* String+Extensions.swift */,
 				35F82BAA26A84E130051DF03 /* Dictionary+Extensions.swift */,
@@ -1101,8 +1098,6 @@
 		37E352A0E961EA2ADD444D60 /* Attribution */ = {
 			isa = PBXGroup;
 			children = (
-				35D5DE06268FB39C002B2DBA /* RCAttributionPoster.h */,
-				35D5DE08268FB3D7002B2DBA /* RCAttributionPoster.m */,
 			);
 			path = Attribution;
 			sourceTree = "<group>";
@@ -1339,6 +1334,7 @@
 				F5BE447C269E4ADB00254A30 /* ASIdentifierManagerProxy.swift */,
 				37E35CD16BB73BB091E64D9A /* AttributionData.swift */,
 				37E3521731D8DC16873F55F3 /* AttributionFetcher.swift */,
+				B3A55B7C26C452A7007EFC56 /* AttributionPoster.swift */,
 			);
 			path = Attribution;
 			sourceTree = "<group>";
@@ -1380,7 +1376,6 @@
 				2D5033242406E4E8009CAE61 /* RCTypeDefsPreMigration.h in Headers */,
 				2DD448FF24088473002F5694 /* RCPurchases+SubscriberAttributes.h in Headers */,
 				37E3500156786798CB166571 /* RCPurchases+Protected.h in Headers */,
-				35F82BAC26A988810051DF03 /* RCAttributionPoster.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1583,8 +1578,8 @@
 			);
 			mainGroup = 352629F41F7C4B9100C04F2C;
 			packageReferences = (
-				B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */,
-				B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */,
+				B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */,
+				B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */,
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
 			projectDirPath = "";
@@ -1732,6 +1727,7 @@
 				2DDF41AE24F6F37C005BC22D /* InAppPurchase.swift in Sources */,
 				B32B750126868C1D005647BF /* EntitlementInfo.swift in Sources */,
 				35F82BB426A9A74D0051DF03 /* HTTPClient.swift in Sources */,
+				B3A55B7D26C452A7007EFC56 /* AttributionPoster.swift in Sources */,
 				2DC19195255F36D10039389A /* Logger.swift in Sources */,
 				2DDF419F24F6F331005BC22D /* ReceiptParsingError.swift in Sources */,
 				2DDF419D24F6F331005BC22D /* IntroEligibilityCalculator.swift in Sources */,
@@ -1861,7 +1857,6 @@
 				2DD4490024088473002F5694 /* RCPurchases+SubscriberAttributes.m in Sources */,
 				350FBDEA1F7EEF070065833D /* RCPurchases.m in Sources */,
 				2D4C18A924F47E5000F268CD /* Purchases.swift in Sources */,
-				35D5DE09268FB3D7002B2DBA /* RCAttributionPoster.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2592,7 +2587,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */ = {
+		B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Quick/Nimble.git";
 			requirement = {
@@ -2600,7 +2595,7 @@
 				version = 9.2.0;
 			};
 		};
-		B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */ = {
+		B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/AliSoftware/OHHTTPStubs.git";
 			requirement = {
@@ -2613,37 +2608,37 @@
 /* Begin XCSwiftPackageProductDependency section */
 		B3D5CFBC267282630056FA67 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */;
+			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */;
 			productName = Nimble;
 		};
 		B3D5CFBF267282760056FA67 /* OHHTTPStubsSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
 		};
 		B3D5CFC1267282760056FA67 /* OHHTTPStubs */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubs;
 		};
 		B3D5CFC32672827D0056FA67 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */;
+			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */;
 			productName = Nimble;
 		};
 		B3D5CFC52672827D0056FA67 /* OHHTTPStubs */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubs;
 		};
 		B3D5CFC72672827D0056FA67 /* OHHTTPStubsSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
 		};
 		B3D5CFC9267282860056FA67 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */;
+			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */;
 			productName = Nimble;
 		};
 /* End XCSwiftPackageProductDependency section */

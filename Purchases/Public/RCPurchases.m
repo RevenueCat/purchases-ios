@@ -8,7 +8,6 @@
 
 @import PurchasesCoreSwift;
 
-#import "RCAttributionPoster.h"
 #import "RCPurchases+Protected.h"
 #import "RCPurchases+SubscriberAttributes.h"
 #import "RCPurchases.h"
