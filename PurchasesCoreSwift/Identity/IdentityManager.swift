@@ -139,7 +139,6 @@ extension IdentityManager {
             return
         }
 
-        Logger.user(String(format: Strings.identity.creating_alias, currentAppUserID, alias))
         backend.createAlias(appUserID: currentAppUserID, newAppUserID: alias) { maybeError in
             if maybeError == nil {
                 Logger.user(Strings.identity.creating_alias_success)

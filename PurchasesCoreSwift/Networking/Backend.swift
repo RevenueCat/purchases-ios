@@ -63,6 +63,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
 
         let path = "/subscribers/\(appUserID)/alias"
+        Logger.user(String(format: Strings.identity.creating_alias, appUserID, newAppUserID))
         httpClient.performPOSTRequest(serially: true,
                                       path: path,
                                       requestBody: ["new_app_user_id": newAppUserID],
