@@ -13,13 +13,6 @@
 
 import Foundation
 
-public class SubscriberAttributesManager: NSObject {
-
-    @objc public func convertToSubscriberAttributes(attributionData: [String: Any], network: Int, appUserID: String) {
-        // Stub
-    }
-}
-
 @objc(RCAttributionPoster) public class AttributionPoster: NSObject {
 
     let deviceCache: DeviceCache
@@ -63,9 +56,9 @@ public class SubscriberAttributesManager: NSObject {
             return
         }
 
-        guard let identifierForAdvertisers = attributionFetcher.identifierForAdvertisers else {
-            Logger.error(Strings.attribution.missing_advertiser_identifiers)
-            return
+        let identifierForAdvertisers = attributionFetcher.identifierForAdvertisers
+        if identifierForAdvertisers == nil {
+            Logger.warn(Strings.attribution.missing_advertiser_identifiers)
         }
 
         let networkKey = String(network.rawValue)
@@ -73,7 +66,7 @@ public class SubscriberAttributesManager: NSObject {
         let latestSentToNetwork = dictOfLatestNetworkIdsAndAdvertisingIdsSentToNetworks[networkKey]
 
         // TODO: `(null)` is true to the ObjC code here, maybe we should reject this and not post?
-        let newValueForNetwork = "\(identifierForAdvertisers)_\(networkUserId ?? "(null)")"
+        let newValueForNetwork = "\(identifierForAdvertisers ?? "(null)")_\(networkUserId ?? "(null)")"
         guard latestSentToNetwork != newValueForNetwork else {
             Logger.debug(Strings.attribution.skip_same_attributes)
             return
@@ -98,9 +91,11 @@ public class SubscriberAttributesManager: NSObject {
                 }
             } else {
 
-                self.subscriberAttributesManager.convertToSubscriberAttributes(attributionData: newData,
-                                                                               network: network.rawValue,
-                                                                               appUserID: appUserID)
+                self.subscriberAttributesManager
+                    .convertAttributionDataAndSetAsSubscriberAttributes(attributionData: newData,
+                                                                        network: network,
+                                                                        appUserID: appUserID)
+
                 self.deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: appUserID)
             }
         }
@@ -111,7 +106,8 @@ public class SubscriberAttributesManager: NSObject {
             return
         }
 
-        guard latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds) != nil else {
+        let latestIdsSent = latestNetworkIdAndAdvertisingIdentifierSent(network: .appleSearchAds)
+        guard latestIdsSent == nil else {
             return
         }
 
@@ -148,7 +144,7 @@ public class SubscriberAttributesManager: NSObject {
     }
 
     @objc(storePostponedAttributionData:fromNetwork:forNetworkUserId:)
-    public static func store(postponedAttributionData data: [String: String],
+    public static func store(postponedAttributionData data: [String: Any],
                              fromNetwork network: AttributionNetwork,
                              forNetworkUserId networkUserID: String?) {
         Logger.debug(Strings.attribution.no_instance_configured_caching_attribution)
