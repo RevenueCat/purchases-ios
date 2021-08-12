@@ -227,6 +227,15 @@ import Foundation
         deviceCache.store(subscriberAttributesByKey: unsyncedAttributes, appUserID: appUserID)
     }
 
+    @objc public func convertAttributionDataAndSetAsSubscriberAttributes(attributionData: [String: Any],
+                                                                         network: AttributionNetwork,
+                                                                         appUserID: String) {
+        let convertedAttribution = attributionDataMigrator.convertToSubscriberAttributes(
+            attributionData: attributionData,
+            network: network.rawValue)
+        setAttributes(convertedAttribution, appUserID: appUserID)
+    }
+
     private func storeAttributeLocallyIfNeeded(key: String, value: String?, appUserID: String) {
         let currentValue = currentValueForAttribute(key: key, appUserID: appUserID)
         if currentValue == nil || currentValue != value.rc_orEmpty() {
@@ -247,15 +256,6 @@ import Foundation
     private func setAttributionID(networkID: String?, networkKey: String, appUserID: String) {
         collectDeviceIdentifiers(forAppUserID: appUserID)
         setAttribute(key: networkKey, value: networkID, appUserID: appUserID)
-    }
-
-    @objc public func convertAttributionDataAndSetAsSubscriberAttributes(attributionData: [String: Any],
-                                                                         network: AttributionNetwork,
-                                                                         appUserID: String) {
-        let convertedAttribution = attributionDataMigrator.convertToSubscriberAttributes(
-            attributionData: attributionData,
-            network: network.rawValue)
-        setAttributes(convertedAttribution, appUserID: appUserID)
     }
 
 }
