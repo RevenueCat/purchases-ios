@@ -247,7 +247,13 @@ class PurchasesTests: XCTestCase {
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
-    let subscriberAttributesManager = MockSubscriberAttributesManager()
+    lazy var subscriberAttributesManager: MockSubscriberAttributesManager = {
+        return MockSubscriberAttributesManager(
+            backend: self.backend,
+            deviceCache: self.deviceCache,
+            attributionFetcher: self.attributionFetcher,
+            attributionDataMigrator: AttributionDataMigrator())
+    }()
     let identityManager = MockIdentityManager(mockAppUserID: "app_user");
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!

@@ -28,7 +28,13 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     let mockOfferingsFactory = MockOfferingsFactory()
     var mockDeviceCache: MockDeviceCache!
     let mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user");
-    let mockSubscriberAttributesManager = MockSubscriberAttributesManager()
+    lazy var mockSubscriberAttributesManager: MockSubscriberAttributesManager = {
+        return MockSubscriberAttributesManager(
+            backend: self.mockBackend,
+            deviceCache: self.mockDeviceCache,
+            attributionFetcher: self.mockAttributionFetcher,
+            attributionDataMigrator: AttributionDataMigrator())
+    }()
     var subscriberAttributeHeight: SubscriberAttribute!
     var subscriberAttributeWeight: SubscriberAttribute!
     var mockAttributes: [String: SubscriberAttribute]!

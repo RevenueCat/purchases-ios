@@ -15,11 +15,11 @@ class MockAttributionDataMigrator: AttributionDataMigrator {
     var invokedConvertAttributionDataToSubscriberAttributesCount = 0
     var invokedConvertAttributionDataToSubscriberAttributesParameters: (attributionData: [String: Any], network: Int)?
     var invokedConvertAttributionDataToSubscriberAttributesParametersList = [(attributionData: [String: Any], network: Int)]()
-    var stubbedConvertAttributionDataToSubscriberAttributesResult: [String: Any]! = [:]
+    var stubbedConvertAttributionDataToSubscriberAttributesResult: [String: String]! = [:]
 
     override func convertToSubscriberAttributes(
         attributionData: [String: Any], network: Int
-    ) -> [String: Any] {
+    ) -> [String: String] {
         invokedConvertAttributionDataToSubscriberAttributes = true
         invokedConvertAttributionDataToSubscriberAttributesCount += 1
         invokedConvertAttributionDataToSubscriberAttributesParameters = (attributionData, network)

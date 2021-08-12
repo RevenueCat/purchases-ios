@@ -26,7 +26,13 @@ class AttributionPosterTests: XCTestCase {
     var deviceCache: MockDeviceCache!
     var identityManager: MockIdentityManager!
     var backend: MockBackend!
-    let subscriberAttributesManager = MockSubscriberAttributesManager()
+    lazy var subscriberAttributesManager: MockSubscriberAttributesManager = {
+        return MockSubscriberAttributesManager(
+            backend: self.backend,
+            deviceCache: self.deviceCache,
+            attributionFetcher: self.attributionFetcher,
+            attributionDataMigrator: AttributionDataMigrator())
+    }()
     var attributionFactory: AttributionTypeFactory! = MockAttributionTypeFactory()
     var systemInfo: MockSystemInfo! = try! MockSystemInfo(platformFlavor: "iOS",
                                                           platformFlavorVersion: "3.2.1",

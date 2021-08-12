@@ -23,7 +23,7 @@ import Foundation
     @objc public var marking_attributes_synced: String {
         "Marking the following attributes as synced for App User ID: %@: %@"
     }
-    @objc public var method_called: String { "%s called" }
+    @objc public var method_called: String { "%@ called" }
     @objc public var networkuserid_required_for_appsflyer: String {
         "The parameter networkUserId is REQUIRED for AppsFlyer."
     }

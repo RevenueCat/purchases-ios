@@ -23,6 +23,12 @@ extension String {
 
 }
 
+extension Optional where Wrapped == String {
+
+    func rc_orEmpty() -> String { return self ?? "" }
+
+}
+
 private struct ROT13 {
 
     private static var key = [Character: Character]()

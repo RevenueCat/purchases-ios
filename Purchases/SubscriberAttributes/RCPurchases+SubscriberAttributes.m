@@ -5,7 +5,6 @@
 #import "RCPurchases.h"
 #import "RCPurchases+Protected.h"
 #import "RCPurchases+SubscriberAttributes.h"
-#import "RCSubscriberAttributesManager.h"
 
 @import PurchasesCoreSwift;
 
@@ -19,7 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (RCSubscriberAttributeDict)unsyncedAttributesByKey {
     NSString *appUserID = self.appUserID;
     RCSubscriberAttributeDict unsyncedAttributes = [self.subscriberAttributesManager
-                                                    unsyncedAttributesByKeyForAppUserID:appUserID];
+                                                    unsyncedAttributesByKeyWithAppUserID:appUserID];
+
     [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.unsynced_attributes_count,
                   (unsigned long)unsyncedAttributes.count, appUserID]];
     if (unsyncedAttributes.count > 0) {

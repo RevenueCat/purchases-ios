@@ -13,7 +13,6 @@
 #import "RCPurchases+Protected.h"
 #import "RCPurchases+SubscriberAttributes.h"
 #import "RCPurchases.h"
-#import "RCSubscriberAttributesManager.h"
 
 @interface RCPurchases () <RCStoreKitWrapperDelegate, RCPurchaserInfoManagerDelegate> {
     NSNumber * _Nullable _allowSharingAppStoreAccount;
@@ -894,7 +893,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)collectDeviceIdentifiers {
-    [self.subscriberAttributesManager collectDeviceIdentifiersForAppUserID:self.appUserID];
+    [self.subscriberAttributesManager collectDeviceIdentifiersWithAppUserID:self.appUserID];
 }
 
 #pragma mark - Private Methods
