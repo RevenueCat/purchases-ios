@@ -168,7 +168,17 @@ import Foundation
     }
 
     @objc public func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttributeDict {
-        return deviceCache.unsyncedAttributesByKey(appUserID: appUserID)
+        // TODO  these logs were in RCPurchases+subscriberattributes, are we ok with logging
+        // them every time?
+        let unsyncedAttributes = deviceCache.unsyncedAttributesByKey(appUserID: appUserID)
+        Logger.debug(String(format: Strings.attribution.unsynced_attributes_count,
+                            unsyncedAttributes.count,
+                            appUserID))
+        if unsyncedAttributes.count > 0 {
+            Logger.debug(String(format: Strings.attribution.unsynced_attributes, unsyncedAttributes))
+        }
+
+        return unsyncedAttributes
     }
 
     @objc public func unsyncedAttributesByKeyForAllUsers() -> [String: SubscriberAttributeDict] {

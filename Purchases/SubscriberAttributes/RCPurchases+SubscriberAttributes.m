@@ -15,20 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark protected methods
 
-- (RCSubscriberAttributeDict)unsyncedAttributesByKey {
-    NSString *appUserID = self.appUserID;
-    RCSubscriberAttributeDict unsyncedAttributes = [self.subscriberAttributesManager
-                                                    unsyncedAttributesByKeyWithAppUserID:appUserID];
-
-    [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.unsynced_attributes_count,
-                  (unsigned long)unsyncedAttributes.count, appUserID]];
-    if (unsyncedAttributes.count > 0) {
-        [RCLog debug:[NSString stringWithFormat:RCStrings.attribution.unsynced_attributes, unsyncedAttributes]];
-    }
-
-    return unsyncedAttributes;
-}
-
 - (void)markAttributesAsSyncedIfNeeded:(nullable RCSubscriberAttributeDict)syncedAttributes
                              appUserID:(NSString *)appUserID
                                  error:(nullable NSError *)error {

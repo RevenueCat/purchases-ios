@@ -678,7 +678,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             return;
         }
 
-        RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
+        RCSubscriberAttributeDict subscriberAttributes =
+            [self.subscriberAttributesManager unsyncedAttributesByKeyWithAppUserID:self.appUserID];
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
                             isRestore:isRestore
@@ -1103,7 +1104,7 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
                               data:(NSData *)data
                           products:(NSArray<SKProduct *> *)products {
     SKProduct *product = products.lastObject;
-    RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
+    RCSubscriberAttributeDict subscriberAttributes = [self.subscriberAttributesManager unsyncedAttributesByKeyWithAppUserID:self.appUserID];
     RCProductInfo *productInfo = nil;
     NSString *presentedOffering = nil;
     if (product) {
