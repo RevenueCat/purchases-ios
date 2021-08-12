@@ -561,73 +561,10 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
                     withPayment:(SKMutablePayment *)payment
 withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                      completion:(RCPurchaseCompletedBlock)completion {
-    // todo: move log to relevant class
-    [RCLog debug:[NSString stringWithFormat:@"makePurchase"]];
-
-    if (!product || !payment) {
-        [RCLog appleWarning:[NSString stringWithFormat:@"%@",
-                             RCStrings.purchase.cannot_purchase_product_appstore_configuration_error]];
-        completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorCodeDomain
-                                                 code:RCProductNotAvailableForPurchaseError
-                                             userInfo:@{
-                                                     NSLocalizedDescriptionKey: @"There was problem purchasing the product."
-                                             }], false);
-        return;
-    }
-
-    NSString *productIdentifier;
-    if (product.productIdentifier) {
-        productIdentifier = product.productIdentifier;
-    } else if (payment.productIdentifier) {
-        productIdentifier = payment.productIdentifier;
-    } else {
-        [RCLog info:[NSString stringWithFormat:@"%@", RCStrings.purchase.could_not_purchase_product_id_not_found]];
-        completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorCodeDomain
-                                                 code:RCUnknownError
-                                             userInfo:@{
-                                                     NSLocalizedDescriptionKey: @"There was problem purchasing the product."
-                                             }], false);
-        return;
-    }
-
-    if (!self.finishTransactions) {
-        [RCLog warn:[NSString stringWithFormat:@"%@",
-                     RCStrings.purchase.purchasing_with_observer_mode_and_finish_transactions_false_warning]];
-    }
-    NSString *appUserID = self.appUserID;
-    payment.applicationUsername = appUserID;
-
-    // This is to prevent the UIApplicationDidBecomeActive call from the purchase popup
-    // from triggering a refresh.
-    [self.deviceCache setPurchaserInfoCacheTimestampToNowForAppUserID:appUserID];
-    [self.deviceCache setOfferingsCacheTimestampToNow];
-
-    if (presentedOfferingIdentifier) {
-        [RCLog purchase:[NSString stringWithFormat:RCStrings.purchase.purchasing_product_from_package,
-                          productIdentifier, presentedOfferingIdentifier]];
-    } else {
-        [RCLog purchase:[NSString stringWithFormat:RCStrings.purchase.purchasing_product, productIdentifier]];
-    }
-
-    [self.productsManager cacheProduct:product];
-
-    @synchronized (self) {
-        self.presentedOfferingsByProductIdentifier[productIdentifier] = presentedOfferingIdentifier;
-    }
-
-    @synchronized (self) {
-        if (self.purchaseCompleteCallbacks[productIdentifier]) {
-            completion(nil, nil, [NSError errorWithDomain:RCPurchasesErrorCodeDomain
-                                                     code:RCOperationAlreadyInProgressError
-                                                 userInfo:@{
-                                                         NSLocalizedDescriptionKey: @"Purchase already in progress for this product."
-                                                 }], false);
-            return;
-        }
-        self.purchaseCompleteCallbacks[productIdentifier] = [completion copy];
-    }
-
-    [self.storeKitWrapper addPayment:[payment copy]];
+    [self.purchasesOrchestrator purchaseWithProduct:product
+                                            payment:payment
+                        presentedOfferingIdentifier:presentedOfferingIdentifier
+                                         completion:completion];
 }
 
 - (void)syncPurchasesWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
