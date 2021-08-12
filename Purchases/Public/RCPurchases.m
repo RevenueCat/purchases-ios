@@ -1135,6 +1135,13 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
                        }];
 }
 
+// TODO make private after swift migration
+- (void)syncSubscriberAttributesIfNeeded {
+    [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:NO block:^{
+        [self.subscriberAttributesManager syncAttributesForAllUsersWithCurrentAppUserID:self.appUserID];
+    }];
+}
+
 #pragma MARK: RCPurchaserInfoManagerDelegate
 - (void)purchaserInfoManagerDidReceiveUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo {
     if (self.delegate && [self.delegate respondsToSelector:@selector(purchases:didReceiveUpdatedPurchaserInfo:)]) {

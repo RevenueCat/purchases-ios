@@ -29,11 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self.subscriberAttributesManager markAttributesAsSynced:syncedAttributes appUserID:appUserID];
 }
 
-- (void)syncSubscriberAttributesIfNeeded {
-    [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:NO block:^{
-        [self.subscriberAttributesManager syncAttributesForAllUsersWithCurrentAppUserID:self.appUserID];
-    }];
-}
+
 
 @end
 
