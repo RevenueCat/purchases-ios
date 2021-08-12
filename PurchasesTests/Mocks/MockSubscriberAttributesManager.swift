@@ -255,7 +255,7 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
     var invokedCollectDeviceIdentifiersParameters: (appUserID: String?, Void)?
     var invokedCollectDeviceIdentifiersParametersList = [(appUserID: String?, Void)]()
     
-    override func collectDeviceIdentifiers(appUserID: String) {
+    override func collectDeviceIdentifiers(forAppUserID appUserID: String) {
         invokedCollectDeviceIdentifiers = true
         invokedCollectDeviceIdentifiersCount += 1
         invokedCollectDeviceIdentifiersParameters = (appUserID, ())

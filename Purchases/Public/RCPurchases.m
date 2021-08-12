@@ -893,7 +893,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
 }
 
 - (void)collectDeviceIdentifiers {
-    [self.subscriberAttributesManager collectDeviceIdentifiersWithAppUserID:self.appUserID];
+    [self.subscriberAttributesManager collectDeviceIdentifiersForAppUserID:self.appUserID];
 }
 
 #pragma mark - Private Methods
