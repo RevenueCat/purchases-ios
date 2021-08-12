@@ -272,7 +272,7 @@ class PurchasesTests: XCTestCase {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.identityManager.mockIsAnonymous = false
 
-        initializePurchasesInstance(appUserId: identityManager.currentAppUserID)
+        initializePurchasesInstance(appUserId: identityManager.maybeCurrentAppUserID)
     }
 
     func setupAnonPurchases() {
@@ -359,7 +359,7 @@ class PurchasesTests: XCTestCase {
         let jsonObject = info!.jsonObject()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.maybeCurrentAppUserID] = object
 
         setupPurchases()
         expect(self.purchasesDelegate.purchaserInfoReceivedCount).toEventually(equal(1))
@@ -380,7 +380,7 @@ class PurchasesTests: XCTestCase {
     func testFirstInitializationFromForegroundUpdatesPurchaserInfoCacheIfUserDefaultsCacheStale() {
         let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -20, to: Date())!
         self.deviceCache.setPurchaserInfoCache(timestamp: staleCacheDateForForeground,
-                                               appUserID: identityManager.currentAppUserID)
+                                               appUserID: identityManager.maybeCurrentAppUserID)
         systemInfo.stubbedIsApplicationBackgrounded = false
 
         setupPurchases()
@@ -391,7 +391,7 @@ class PurchasesTests: XCTestCase {
     func testFirstInitializationFromForegroundUpdatesPurchaserInfoEvenIfCacheValid() {
         let staleCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -2, to: Date())!
         self.deviceCache.setPurchaserInfoCache(timestamp: staleCacheDateForForeground,
-                                               appUserID: identityManager.currentAppUserID)
+                                               appUserID: identityManager.maybeCurrentAppUserID)
 
         systemInfo.stubbedIsApplicationBackgrounded = false
 
@@ -1117,7 +1117,7 @@ class PurchasesTests: XCTestCase {
         let jsonObject = info!.jsonObject()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.maybeCurrentAppUserID] = object
 
         mockReceiptParser.stubbedReceiptHasTransactionsResult = false
 
@@ -1151,7 +1151,7 @@ class PurchasesTests: XCTestCase {
         let jsonObject = info!.jsonObject()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.maybeCurrentAppUserID] = object
 
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
 
@@ -1247,7 +1247,7 @@ class PurchasesTests: XCTestCase {
         let jsonObject = info!.jsonObject()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.maybeCurrentAppUserID] = object
 
         mockReceiptParser.stubbedReceiptHasTransactionsResult = false
 
@@ -1281,7 +1281,7 @@ class PurchasesTests: XCTestCase {
         let jsonObject = info!.jsonObject()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.maybeCurrentAppUserID] = object
 
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
 
@@ -1579,7 +1579,7 @@ class PurchasesTests: XCTestCase {
         let jsonObject = info!.jsonObject()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.maybeCurrentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1609,7 +1609,7 @@ class PurchasesTests: XCTestCase {
         jsonObject["schema_version"] = NSNull()
 
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
-        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.maybeCurrentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1633,7 +1633,7 @@ class PurchasesTests: XCTestCase {
                 "other_purchases": [:]
             ]]);
         let object = try! JSONSerialization.data(withJSONObject: info!.jsonObject(), options: []);
-        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.maybeCurrentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1657,7 +1657,7 @@ class PurchasesTests: XCTestCase {
                 "other_purchases": [:]
             ]]);
         let object = try! JSONSerialization.data(withJSONObject: info!.jsonObject(), options: []);
-        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.maybeCurrentAppUserID] = object
         self.deviceCache.stubbedIsPurchaserInfoCacheStale = true
         self.backend.timeout = false
 
@@ -1685,7 +1685,7 @@ class PurchasesTests: XCTestCase {
         jsonObject["schema_version"] = "bad_version"
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
 
-        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.maybeCurrentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1712,7 +1712,7 @@ class PurchasesTests: XCTestCase {
         jsonObject.removeValue(forKey: "schema_version")
         let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
 
-        self.deviceCache.cachedPurchaserInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedPurchaserInfo[identityManager.maybeCurrentAppUserID] = object
         self.backend.timeout = true
 
         setupPurchases()
@@ -1959,7 +1959,7 @@ class PurchasesTests: XCTestCase {
         }
 
         expect(completionCalled).toEventually(beTrue())
-        verifyUpdatedCaches(newAppUserID: self.identityManager.currentAppUserID)
+        verifyUpdatedCaches(newAppUserID: self.identityManager.maybeCurrentAppUserID)
     }
 
     func testCreateAliasForTheSameUserID() {
@@ -1970,7 +1970,7 @@ class PurchasesTests: XCTestCase {
 
         var completionCalled = false
         var info: PurchaserInfo?
-        self.purchases?.createAlias(identityManager.currentAppUserID) { (newInfo, error) in
+        self.purchases?.createAlias(identityManager.maybeCurrentAppUserID) { (newInfo, error) in
             completionCalled = true
             info = newInfo
         }
@@ -1988,7 +1988,7 @@ class PurchasesTests: XCTestCase {
 
         var completionCalled = false
         var info: PurchaserInfo?
-        self.purchases?.identify(identityManager.currentAppUserID) { (newInfo, error) in
+        self.purchases?.identify(identityManager.maybeCurrentAppUserID) { (newInfo, error) in
             completionCalled = true
             info = newInfo
         }
@@ -2267,7 +2267,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.invokedPostAttributionDataParameters?.data?.keys.contains("rc_attribution_network_id")) == true
         expect(self.backend.invokedPostAttributionDataParameters?.data?["rc_attribution_network_id"] as? String) == "newuser"
         expect(self.backend.invokedPostAttributionDataParameters?.network) == AttributionNetwork.appleSearchAds
-        expect(self.backend.invokedPostAttributionDataParameters?.appUserID) == self.identityManager.currentAppUserID
+        expect(self.backend.invokedPostAttributionDataParameters?.appUserID) == self.identityManager.maybeCurrentAppUserID
     }
 
     func testAttributionDataDontSendNetworkAppUserIdIfNotProvided() {
@@ -2285,7 +2285,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.invokedPostAttributionDataParameters?.data?.keys.contains("rc_idfv")) == true
         expect(self.backend.invokedPostAttributionDataParameters?.data?.keys.contains("rc_attribution_network_id")) == false
         expect(self.backend.invokedPostAttributionDataParameters?.network) == AttributionNetwork.appleSearchAds
-        expect(self.backend.invokedPostAttributionDataParameters?.appUserID) == self.identityManager.currentAppUserID
+        expect(self.backend.invokedPostAttributionDataParameters?.appUserID) == self.identityManager.maybeCurrentAppUserID
     }
 
     func testAdClientAttributionDataIsAutomaticallyCollected() {
@@ -2576,7 +2576,7 @@ class PurchasesTests: XCTestCase {
     func testInvalidatePurchaserInfoCacheRemovesCachedPurchaserInfo() {
         setupPurchases()
         guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
-        let appUserID = self.identityManager.currentAppUserID
+        let appUserID = self.identityManager.maybeCurrentAppUserID
         self.deviceCache.cache(purchaserInfo: Data(), appUserID: appUserID)
         expect(self.deviceCache.cachedPurchaserInfoData(appUserID: appUserID)).toNot(beNil())
         expect(self.deviceCache.invokedClearPurchaserInfoCacheCount) == 0
@@ -2590,7 +2590,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
 
-        let appUserID = self.identityManager.currentAppUserID
+        let appUserID = self.identityManager.maybeCurrentAppUserID
         let oldAppUserInfo = Data()
         self.deviceCache.cache(purchaserInfo: oldAppUserInfo, appUserID: appUserID)
         let overridePurchaserInfo = PurchaserInfo(data: [
@@ -2631,7 +2631,7 @@ class PurchasesTests: XCTestCase {
         guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
         expect(self.purchasesDelegate.purchaserInfoReceivedCount) == 0
 
-        let appUserID = self.identityManager.currentAppUserID
+        let appUserID = self.identityManager.maybeCurrentAppUserID
         let oldAppUserInfo = Data()
         self.deviceCache.cache(purchaserInfo: oldAppUserInfo, appUserID: appUserID)
 
