@@ -915,7 +915,6 @@
 				37E3529AD4F30D0B6D56853B /* ProtectedExtensions */,
 				350FBDE61F7EEEDF0065833D /* Public */,
 				B39E811E268E9FF000D31189 /* SwiftObjcCompatibility */,
-				37E352A0E961EA2ADD444D60 /* Attribution */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -1079,13 +1078,6 @@
 				37E352DAD631B3A45C041148 /* RCPurchases+Protected.h */,
 			);
 			path = ProtectedExtensions;
-			sourceTree = "<group>";
-		};
-		37E352A0E961EA2ADD444D60 /* Attribution */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Attribution;
 			sourceTree = "<group>";
 		};
 		37E35555C264F76E6CFFC2C8 /* Purchasing */ = {
