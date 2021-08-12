@@ -282,7 +282,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                                                       purchaserInfoManager:purchaserInfoManager
                                                       backend:backend
                                                       identityManager:identityManager
-                                                      receiptParser:receiptParser];
+                                                      receiptParser:receiptParser
+                                                      deviceCache:deviceCache];
     purchasesOrchestrator.maybeDelegate = self;
     return [self initWithAppUserID:appUserID
                     requestFetcher:fetcher

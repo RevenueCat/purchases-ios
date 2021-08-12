@@ -134,10 +134,21 @@ import StoreKit
     /**
      * Constructs an Error with the [ErrorCode.unknownError] code.
      */
-    @objc public static func unknownError() -> Error {
+    @objc public static func unknownError(message: String? = nil) -> Error {
 
-        return error(with: ErrorCode.unknownError)
+        return error(with: ErrorCode.unknownError, message: message)
 
+    }
+
+    /**
+     * Constructs an Error with the [ErrorCode.operationAlreadyInProgressError] code.
+     *
+     * @note This error is used when a purchase is initiated for a product, but there's already a purchase for the same product in progress.
+     */
+    @objc public static func operationAlreadyInProgressError() -> Error {
+
+        return error(with: ErrorCode.operationAlreadyInProgressError,
+                     message: "Purchase already in progress for this product.")
     }
 
     /**

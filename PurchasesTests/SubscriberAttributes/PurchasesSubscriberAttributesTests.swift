@@ -114,7 +114,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                           purchaserInfoManager: purchaserInfoManager,
                                                           backend: mockBackend,
                                                           identityManager: mockIdentityManager,
-                                                          receiptParser: mockReceiptParser)
+                                                          receiptParser: mockReceiptParser,
+                                                          deviceCache: mockDeviceCache)
         purchases = Purchases(appUserID: mockIdentityManager.maybeCurrentAppUserID,
                               requestFetcher: mockRequestFetcher,
                               receiptFetcher: mockReceiptFetcher,

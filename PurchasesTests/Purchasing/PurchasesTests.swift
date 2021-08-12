@@ -289,7 +289,8 @@ class PurchasesTests: XCTestCase {
                                                       purchaserInfoManager: purchaserInfoManager,
                                                       backend: backend,
                                                       identityManager: identityManager,
-                                                      receiptParser: mockReceiptParser)
+                                                      receiptParser: mockReceiptParser,
+                                                      deviceCache: deviceCache)
 
         purchases = Purchases(appUserID: appUserId,
                               requestFetcher: requestFetcher,

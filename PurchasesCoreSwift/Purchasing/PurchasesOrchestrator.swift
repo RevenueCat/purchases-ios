@@ -50,6 +50,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
     private let backend: Backend
     private let identityManager: IdentityManager
     private let receiptParser: ReceiptParser
+    private let deviceCache: DeviceCache
 
     @objc public weak var maybeDelegate: PurchasesOrchestratorDelegate?
 
@@ -69,7 +70,8 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
                       purchaserInfoManager: PurchaserInfoManager,
                       backend: Backend,
                       identityManager: IdentityManager,
-                      receiptParser: ReceiptParser) {
+                      receiptParser: ReceiptParser,
+                      deviceCache: DeviceCache) {
         self.productsManager = productsManager
         self.storeKitWrapper = storeKitWrapper
         self.operationDispatcher = operationDispatcher
@@ -78,6 +80,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         self.backend = backend
         self.identityManager = identityManager
         self.receiptParser = receiptParser
+        self.deviceCache = deviceCache
     }
 
     @objc public func restoreTransactions(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
@@ -149,6 +152,52 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
                 completion(paymentDiscount, nil)
             }
         }
+    }
+
+    @objc public func purchase(product: SKProduct,
+                               payment: SKMutablePayment,
+                               presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
+                               completion: @escaping PurchaseCompletedBlock) {
+        Logger.debug("makePurchase")
+        guard let productIdentifier = extractProductIdentifier(fromProduct: product, orPayment: payment) else {
+            Logger.info(Strings.purchase.could_not_purchase_product_id_not_found)
+            let errorMessage = "There was a problem purchasing the product: productIdentifier was nil"
+            completion(nil,
+                       nil,
+                       ErrorUtils.unknownError(message: errorMessage),
+                       false)
+            return
+        }
+
+        if !self.finishTransactions {
+            Logger.warn(Strings.purchase.purchasing_with_observer_mode_and_finish_transactions_false_warning)
+        }
+
+        let currentAppUserID = self.appUserID
+        payment.applicationUsername = currentAppUserID
+
+        preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: appUserID)
+
+        if let presentedOfferingIdentifier = maybePresentedOfferingIdentifier {
+            Logger.purchase(String(format: Strings.purchase.purchasing_product_from_package,
+                                   productIdentifier,
+                                   presentedOfferingIdentifier))
+            // todo: concurrency handling
+            presentedOfferingIDsByProductID[productIdentifier] = presentedOfferingIdentifier
+
+        } else {
+            Logger.purchase(String(format: Strings.purchase.purchasing_product, productIdentifier))
+        }
+
+        productsManager.cacheProduct(product)
+
+        // todo: concurrency handling
+        guard purchaseCompleteCallbacksByProductID[productIdentifier] == nil else {
+            completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
+            return
+        }
+        purchaseCompleteCallbacksByProductID[productIdentifier] = completion
+        storeKitWrapper.add(payment)
     }
 
 }
@@ -425,4 +474,27 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    // Although both SKProduct.productIdentifier and SKPayment.productIdentifier
+    // are supposed to be non-null, we've seen instances where this is not true.
+    // so we cast into optionals in order to check nullability, and try to fall back if possible.
+    func extractProductIdentifier(fromProduct product: SKProduct, orPayment payment: SKPayment) -> String? {
+        if let identifierFromProduct = product.productIdentifier as String? {
+            return identifierFromProduct
+        }
+        Logger.appleWarning("product.productIdentifier is nil")
+
+        if let identifierFromPayment = payment.productIdentifier as String? {
+            return identifierFromPayment
+        }
+        Logger.appleWarning("payment.productIdentifier is nil")
+
+        return nil
+    }
+
+    func preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: String) {
+        deviceCache.setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: appUserID)
+        deviceCache.setOfferingsCacheTimestampToNow()
+    }
 }
+
+// swiftlint:disable:this file_length
