@@ -129,8 +129,9 @@ import Foundation
         setAttribute(key: SpecialSubscriberAttributes.creative, value: maybeCreative, appUserID: appUserID)
     }
 
-    @objc public func collectDeviceIdentifiers(appUserID: String) {
+    @objc public func collectDeviceIdentifiers(forAppUserID appUserID: String) {
         Logger.debug("collectDeviceIdentifiers called")
+        // TODO safe to remove log below?
         Logger.debug(String(format: Strings.attribution.method_called, "setAttributes"))
         let identifierForAdvertisers = attributionFetcher.identifierForAdvertisers
         let identifierForVendor = attributionFetcher.identifierForVendor
@@ -145,7 +146,9 @@ import Foundation
 
         for (syncingAppUserId, attributes) in unsyncedAttributesForAllUsers {
             syncAttributes(attributes: attributes, appUserID: syncingAppUserId) { error  in
-                self.handleAttributesSynced(syncingAppUserId: syncingAppUserId, currentAppUserId: currentAppUserID, error: error)
+                self.handleAttributesSynced(syncingAppUserId: syncingAppUserId,
+                                            currentAppUserId: currentAppUserID,
+                                            error: error)
             }
         }
     }
@@ -157,7 +160,6 @@ import Foundation
                 deviceCache.deleteAttributesIfSynced(appUserID: syncingAppUserId)
             }
         } else {
-            // TODO how to get error.userinfo
             let receivedNSError = error as NSError?
             Logger.error(String(format: Strings.attribution.attributes_sync_error,
                                 receivedNSError?.localizedDescription ?? "",
@@ -166,7 +168,17 @@ import Foundation
     }
 
     @objc public func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttributeDict {
-        return deviceCache.unsyncedAttributesByKey(appUserID: appUserID)
+        // TODO  these logs were in RCPurchases+subscriberattributes, are we ok with logging
+        // them every time?
+        let unsyncedAttributes = deviceCache.unsyncedAttributesByKey(appUserID: appUserID)
+        Logger.debug(String(format: Strings.attribution.unsynced_attributes_count,
+                            unsyncedAttributes.count,
+                            appUserID))
+        if unsyncedAttributes.count > 0 {
+            Logger.debug(String(format: Strings.attribution.unsynced_attributes, unsyncedAttributes))
+        }
+
+        return unsyncedAttributes
     }
 
     @objc public func unsyncedAttributesByKeyForAllUsers() -> [String: SubscriberAttributeDict] {
@@ -177,10 +189,11 @@ import Foundation
         storeAttributeLocallyIfNeeded(key: key, value: value, appUserID: appUserID)
     }
 
-    // TODO confirm whether i want escaping here
-    private func syncAttributes(attributes: SubscriberAttributeDict, appUserID: String, completion: @escaping (Error?) -> Void) {
+    // TODO capture weak self?
+    private func syncAttributes(attributes: SubscriberAttributeDict,
+                                appUserID: String,
+                                completion: @escaping (Error?) -> Void) {
         backend.post(subscriberAttributes: attributes, appUserID: appUserID) { error in
-            // TODO confirm this as is correct
             let receivedNSError = error as NSError?
             let didBackendReceiveValues = receivedNSError?.rc_successfullySynced ?? true
 
@@ -214,6 +227,15 @@ import Foundation
         deviceCache.store(subscriberAttributesByKey: unsyncedAttributes, appUserID: appUserID)
     }
 
+    @objc public func convertAttributionDataAndSetAsSubscriberAttributes(attributionData: [String: Any],
+                                                                         network: AttributionNetwork,
+                                                                         appUserID: String) {
+        let convertedAttribution = attributionDataMigrator.convertToSubscriberAttributes(
+            attributionData: attributionData,
+            network: network.rawValue)
+        setAttributes(convertedAttribution, appUserID: appUserID)
+    }
+
     private func storeAttributeLocallyIfNeeded(key: String, value: String?, appUserID: String) {
         let currentValue = currentValueForAttribute(key: key, appUserID: appUserID)
         if currentValue == nil || currentValue != value.rc_orEmpty() {
@@ -232,17 +254,8 @@ import Foundation
     }
 
     private func setAttributionID(networkID: String?, networkKey: String, appUserID: String) {
-        collectDeviceIdentifiers(appUserID: appUserID)
+        collectDeviceIdentifiers(forAppUserID: appUserID)
         setAttribute(key: networkKey, value: networkID, appUserID: appUserID)
-    }
-
-    @objc public func convertAttributionDataAndSetAsSubscriberAttributes(attributionData: [String: Any],
-                                                                         network: AttributionNetwork,
-                                                                         appUserID: String) {
-        let convertedAttribution =
-            attributionDataMigrator.convertToSubscriberAttributes(attributionData: attributionData,
-        network: network.rawValue)
-        setAttributes(convertedAttribution, appUserID: appUserID)
     }
 
 }
