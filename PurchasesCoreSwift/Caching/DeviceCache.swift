@@ -38,7 +38,7 @@ import Foundation
     public init(userDefaults: UserDefaults = UserDefaults.standard,
                 offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject(),
                 notificationCenter: NotificationCenter? = NotificationCenter.default,
-                assertionFunction: @escaping (String) -> Void = { assertionFailure($0) }) {
+                assertionFunction: @escaping (String) -> Void = { fatalError($0) }) {
 
         self.offeringsCachedObject = offeringsCachedObject ?? InMemoryCachedObject()
         self.notificationCenter = notificationCenter ?? NotificationCenter.default

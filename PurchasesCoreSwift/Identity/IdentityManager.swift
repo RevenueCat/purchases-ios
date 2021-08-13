@@ -18,19 +18,20 @@ import Foundation
 
     static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
 
-    @objc public var maybeCurrentAppUserID: String? {
-        return deviceCache.cachedAppUserID
+    @objc public var currentAppUserID: String {
+        guard let appUserID = deviceCache.cachedAppUserID else {
+            fatalError(Strings.identity.null_currentappuserid)
+        }
+
+        return appUserID
     }
 
     @objc public var currentUserIsAnonymous: Bool {
-        guard let cachedAppUserID = maybeCurrentAppUserID else {
-            return false
-        }
 
-        let anonymousFoundRange = maybeCurrentAppUserID?.range(of: IdentityManager.anonymousRegex,
-                                                          options: .regularExpression)
+        let anonymousFoundRange = currentAppUserID.range(of: IdentityManager.anonymousRegex,
+                                                         options: .regularExpression)
         let currentAppUserIDLooksAnonymous = anonymousFoundRange != nil
-        let isLegacyAnonymousAppUserID = cachedAppUserID == deviceCache.cachedLegacyAppUserID
+        let isLegacyAnonymousAppUserID = currentAppUserID == deviceCache.cachedLegacyAppUserID
 
         return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
     }
@@ -58,12 +59,8 @@ import Foundation
 
     @objc public func logIn(appUserID: String, completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
         let newAppUserID = appUserID.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let currentAppUserID = maybeCurrentAppUserID,
-              !newAppUserID.isEmpty else {
-            let message = maybeCurrentAppUserID == nil
-                ? Strings.identity.logging_in_with_initial_appuserid_nil
-                : Strings.identity.logging_in_with_nil_appuserid
-            Logger.error(message)
+        guard !newAppUserID.isEmpty else {
+            Logger.error(Strings.identity.logging_in_with_nil_appuserid)
             completion(nil, false, ErrorUtils.missingAppUserIDError())
             return
         }
@@ -80,7 +77,7 @@ import Foundation
                       newAppUserID: newAppUserID) { maybePurchaserInfo, created, maybeError in
             if maybeError == nil,
                let purchaserInfo = maybePurchaserInfo {
-                self.deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: newAppUserID)
+                self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.purchaserInfoManager.cache(purchaserInfo: purchaserInfo, appUserID: newAppUserID)
             }
 
@@ -89,7 +86,7 @@ import Foundation
     }
 
     @objc public func logOut(completion: (Error?) -> Void) {
-        Logger.info(String(format: Strings.identity.log_out_called_for_user, maybeCurrentAppUserID ?? "<nil currentAppUserID>"))
+        Logger.info(String(format: Strings.identity.log_out_called_for_user, currentAppUserID))
 
         if currentUserIsAnonymous {
             completion(ErrorUtils.logOutAnonymousUserError())
@@ -114,9 +111,6 @@ extension IdentityManager {
 
     @objc(identifyAppUserID:completion:)
     public func identify(appUserID: String, completion: @escaping (Error?) -> Void) {
-        // TODO: Old code assumed we weren't nil, but it doesn't actually look like we need a value since
-        // we'll end up changing the app user id anyway.
-        let currentAppUserID = maybeCurrentAppUserID ?? ""
         if currentUserIsAnonymous {
             Logger.user(String(format: Strings.identity.identifying_anon_id, currentAppUserID))
             createAlias(appUserID: appUserID, completion: completion)
@@ -129,8 +123,8 @@ extension IdentityManager {
 
     @objc(createAliasForAppUserID:completion:)
     public func createAlias(appUserID alias: String, completion: @escaping (Error?) -> Void) {
-        guard let currentAppUserID = maybeCurrentAppUserID else {
-            Logger.warn(Strings.identity.creating_alias_failed_null_currentappuserid)
+        guard !currentAppUserID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              !alias.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             completion(ErrorUtils.missingAppUserIDError())
             return
         }
@@ -138,20 +132,15 @@ extension IdentityManager {
         backend.createAlias(appUserID: currentAppUserID, newAppUserID: alias) { maybeError in
             if maybeError == nil {
                 Logger.user(Strings.identity.creating_alias_success)
-                self.deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: alias)
+                self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID, andSaveWithNewUserID: alias)
             }
             completion(maybeError)
         }
     }
 
     @objc public func resetAppUserID() {
-        guard let oldAppUserID = maybeCurrentAppUserID else {
-            Logger.info(Strings.identity.reset_missing_app_user_id)
-            return
-        }
-
-        deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: generateRandomID())
-        deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: oldAppUserID)
+        deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: generateRandomID())
+        deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         backend.clearCaches()
     }
 
