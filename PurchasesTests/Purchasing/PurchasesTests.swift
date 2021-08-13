@@ -37,11 +37,10 @@ class PurchasesTests: XCTestCase {
         attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfoAttribution)
         attributionPoster = AttributionPoster(deviceCache: deviceCache,
-                                                identityManager: identityManager,
-                                                backend: backend,
-                                                systemInfo: systemInfoAttribution,
-                                                attributionFetcher: attributionFetcher,
-                                                subscriberAttributesManager: subscriberAttributesManager)
+                                              identityManager: identityManager,
+                                              backend: backend,
+                                              attributionFetcher: attributionFetcher,
+                                              subscriberAttributesManager: subscriberAttributesManager)
         purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
                                                     deviceCache: deviceCache,
                                                     backend: backend,

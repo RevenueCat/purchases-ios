@@ -51,7 +51,6 @@ class AttributionPosterTests: XCTestCase {
         attributionPoster = AttributionPoster(deviceCache: deviceCache,
                                                 identityManager: identityManager,
                                                 backend: backend,
-                                                systemInfo: systemInfo,
                                                 attributionFetcher: attributionFetcher,
                                                 subscriberAttributesManager: subscriberAttributesManager)
         resetAttributionStaticProperties()
