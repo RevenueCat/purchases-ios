@@ -228,7 +228,6 @@ import Foundation
         storeAttributeLocallyIfNeeded(key: key, value: value, appUserID: appUserID)
     }
 
-    // TODO capture weak self?
     private func syncAttributes(attributes: SubscriberAttributeDict,
                                 appUserID: String,
                                 completion: @escaping (Error?) -> Void) {
