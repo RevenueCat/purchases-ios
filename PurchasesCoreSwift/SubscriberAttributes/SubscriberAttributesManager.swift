@@ -144,7 +144,7 @@ import Foundation
         let unsyncedAttributesForAllUsers = unsyncedAttributesByKeyForAllUsers()
 
         for (syncingAppUserId, attributes) in unsyncedAttributesForAllUsers {
-            syncAttributes(attributes: attributes, appUserID: syncingAppUserId) { error  in
+            syncAttributes(attributes: attributes, appUserID: syncingAppUserId) { error in
                 self.handleAttributesSynced(syncingAppUserId: syncingAppUserId,
                                             currentAppUserId: currentAppUserID,
                                             error: error)
@@ -184,25 +184,6 @@ import Foundation
         return deviceCache.unsyncedAttributesForAllUsers()
     }
 
-    private func setAttribute(key: String, value: String?, appUserID: String) {
-        storeAttributeLocallyIfNeeded(key: key, value: value, appUserID: appUserID)
-    }
-
-    // TODO capture weak self?
-    private func syncAttributes(attributes: SubscriberAttributeDict,
-                                appUserID: String,
-                                completion: @escaping (Error?) -> Void) {
-        backend.post(subscriberAttributes: attributes, appUserID: appUserID) { error in
-            let receivedNSError = error as NSError?
-            let didBackendReceiveValues = receivedNSError?.rc_successfullySynced ?? true
-
-            if didBackendReceiveValues {
-                self.markAttributesAsSynced(attributes, appUserID: appUserID)
-            }
-            completion(error)
-        }
-    }
-
     @objc public func markAttributesAsSynced(_ maybeAttributesToSync: SubscriberAttributeDict?, appUserID: String) {
         guard let attributesToSync = maybeAttributesToSync,
               !attributesToSync.isEmpty else {
@@ -240,6 +221,25 @@ import Foundation
         let currentValue = currentValueForAttribute(key: key, appUserID: appUserID)
         if currentValue == nil || currentValue != value.rc_orEmpty() {
             storeAttributeLocally(key: key, value: value.rc_orEmpty(), appUserID: appUserID)
+        }
+    }
+
+    private func setAttribute(key: String, value: String?, appUserID: String) {
+        storeAttributeLocallyIfNeeded(key: key, value: value, appUserID: appUserID)
+    }
+
+    // TODO capture weak self?
+    private func syncAttributes(attributes: SubscriberAttributeDict,
+                                appUserID: String,
+                                completion: @escaping (Error?) -> Void) {
+        backend.post(subscriberAttributes: attributes, appUserID: appUserID) { error in
+            let receivedNSError = error as NSError?
+            let didBackendReceiveValues = receivedNSError?.rc_successfullySynced ?? true
+
+            if didBackendReceiveValues {
+                self.markAttributesAsSynced(attributes, appUserID: appUserID)
+            }
+            completion(error)
         }
     }
 
