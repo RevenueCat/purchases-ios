@@ -10,7 +10,6 @@
 
 #import "RCPurchases+Protected.h"
 #import "RCPurchases.h"
-#import "RCTypeDefsPreMigration.h"
 
 @interface RCPurchases () <RCStoreKitWrapperDelegate, RCPurchaserInfoManagerDelegate> {
     NSNumber * _Nullable _allowSharingAppStoreAccount;
@@ -20,6 +19,7 @@
  * Completion block for calls that send back receipt data
  */
 typedef void (^RCReceiveReceiptDataBlock)(NSData *);
+typedef NSDictionary<NSString *, RCSubscriberAttribute *> *RCSubscriberAttributeDict;
 
 @property (nonatomic) RCStoreKitRequestFetcher *requestFetcher;
 @property (nonatomic) RCProductsManager *productsManager;
