@@ -90,10 +90,9 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
                     }
                 }];
             } else {
-                [self.subscriberAttributesManager
-                 convertAttributionDataAndSetAsSubscriberAttributesWithAttributionData:newData
-                                                                               network:network
-                                                                             appUserID:appUserID];
+                [self.subscriberAttributesManager setAttributesFromAttributionData:newData
+                                                                           network:network
+                                                                         appUserID:appUserID];
                 
                 [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newDictToCache
                                                            forAppUserID:appUserID];

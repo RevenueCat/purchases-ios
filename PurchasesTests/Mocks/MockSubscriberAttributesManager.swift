@@ -267,7 +267,7 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
     var invokedConvertAttributionDataAndSetParameters: (attributionData: [String: Any], network: AttributionNetwork, appUserID: String)?
     var invokedConvertAttributionDataAndSetParametersList = [(attributionData: [String: Any], network: AttributionNetwork, appUserID: String)]()
 
-    override func convertAttributionDataAndSetAsSubscriberAttributes(attributionData: [String: Any], network: AttributionNetwork, appUserID: String) {
+    override func setAttributes(fromAttributionData attributionData: [String: Any], network: AttributionNetwork, appUserID: String) {
         invokedConvertAttributionDataAndSet = true
         invokedConvertAttributionDataAndSetCount += 1
         invokedConvertAttributionDataAndSetParameters = (attributionData, network, appUserID)

@@ -55,4 +55,6 @@ import Foundation
     @objc public var subscriber_attributes_error: String { "Subscriber attributes errors: %@" }
     public var unsynced_attributes_count: String { "Found %lu unsynced attributes for App User ID: %@" }
     public var unsynced_attributes: String { "Unsynced attributes: %@" }
+    public var attribute_set_locally: String { "Attribute set locally: %@. It will be synced to the backend" +
+        "when the app backgrounds/foregrounds or when a purchase is made." }
 }
