@@ -15,6 +15,8 @@
 #import "RCPurchaserInfoAPI.h"
 #import "RCPurchasesAPI.h"
 #import "RCTransactionAPI.h"
+#import "RCPurchasesErrorUtilsAPI.h"
+#import "RCPackageAPI.h"
 
 @import StoreKit;
 
@@ -33,13 +35,23 @@ int main(int argc, const char * argv[]) {
         [RCOfferingAPI checkAPI];
 
         [RCOfferingsAPI checkAPI];
+
+        [RCPackageAPI checkAPI];
+        [RCPackageAPI checkEnums];
         
         [RCPurchaserInfoAPI checkAPI];
 
         [RCPurchasesAPI checkAPI];
         [RCPurchasesAPI checkEnums];
+        [RCPurchasesAPI checkConstants];
+
+        [RCPurchasesErrorUtilsAPI checkAPI];
 
         [RCTransactionAPI checkAPI];
+
+        // TODO test class RCPurchasesErrors? that was a breaking change i think?
+        // and enums RCBackendErrorCodes, RCPurchasesErrorCode
+
     }
     return 0;
 }

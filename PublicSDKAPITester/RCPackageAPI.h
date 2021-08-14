@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface RCPackageAPI : NSObject
 
 + (void)checkAPI;
++ (void)checkEnums;
 
 @end
 

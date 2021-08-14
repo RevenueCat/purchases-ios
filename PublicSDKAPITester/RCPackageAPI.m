@@ -31,4 +31,18 @@
 
 }
 
++ (void)checkEnums {
+
+    RCPackageType type = RCPackageTypeUnknown;
+    type = RCPackageTypeCustom;
+    type = RCPackageTypeLifetime;
+    type = RCPackageTypeAnnual;
+    type = RCPackageTypeSixMonth;
+    type = RCPackageTypeThreeMonth;
+    type = RCPackageTypeTwoMonth;
+    type = RCPackageTypeMonthly;
+    type = RCPackageTypeWeekly;
+
+}
+
 @end

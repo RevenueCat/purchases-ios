@@ -41,7 +41,7 @@ BOOL isAnonymous;
     // typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PaymentDiscountBlock);
 
     // TODO: iOS ONLY, TEST FOR THIS API BY LOOKING UP SELECTOR
-//     [p presentCodeRedemptionSheet];
+    // [p presentCodeRedemptionSheet];
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
     
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];
@@ -133,6 +133,15 @@ BOOL isAnonymous;
     l = RCLogLevelWarn;
     l = RCLogLevelDebug;
     l = RCLogLevelError;
+}
+
++ (void)checkConstants {
+    double vn = PurchasesVersionNumber;
+    char vs = PurchasesVersionString;
+    NSErrorDomain bed = RCBackendErrorCodeDomain; // TODO does this replace RCBackendErrorDomain?
+    NSErrorDomain ped = RCPurchasesErrorCodeDomain; // TODO does this replace RCPurchasesErrorDomain?
+    //    NSErrorUserInfoKey fk = RCFinishableKey; // TODO where'd this go
+    //    NSErrorUserInfoKey fk = RCReadableErrorCodeKey; // TODO where'd this go
 }
 
 @end
