@@ -41,7 +41,7 @@ BOOL isAnonymous;
     // typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.PaymentDiscountBlock);
 
     // TODO: iOS ONLY, TEST FOR THIS API BY LOOKING UP SELECTOR
-    // [p presentCodeRedemptionSheet];
+//     [p presentCodeRedemptionSheet];
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
     
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];
@@ -111,6 +111,9 @@ BOOL isAnonymous;
     [p createAlias:@"" completionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
     [p identify:@"" completionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
     [p resetWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
+
+    [p logIn:@"" completionBlock:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
+    [p logOutWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
         
     // RCPurchasesDelegate
     [p.delegate purchases:p didReceiveUpdatedPurchaserInfo:pi];

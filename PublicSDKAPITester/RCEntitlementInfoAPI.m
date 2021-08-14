@@ -19,6 +19,8 @@
                                                              entitlementData:@{}
                                                                  productData:@{}
                                                                  requestDate:NSDate.now];
+    NSString *i = ri.identifier;
+    BOOL ia = [ri isActive];
     BOOL wr = [ri willRenew];
     RCPeriodType pt = [ri periodType];
     NSDate *lpd = [ri latestPurchaseDate];
@@ -31,7 +33,7 @@
     NSDate *bida = [ri billingIssueDetectedAt];
     RCPurchaseOwnershipType ot = [ri ownershipType];
 
-    NSLog(ri, wr, pt, lpd, opd, ed, s, pi, is, uda, bida, ot);
+    NSLog(i, ia, ri, wr, pt, lpd, opd, ed, s, pi, is, uda, bida, ot);
 }
 
 + (void)checkEnums {

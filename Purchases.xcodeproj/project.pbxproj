@@ -173,6 +173,7 @@
 		9A65E0A52591A23500DE00B0 /* PurchaseStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */; };
 		9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */; };
 		A56F9AB126990E9200AFC48F /* PurchaserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */; };
+		A5A92C7926C716F50038D732 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5A92C7826C716F50038D732 /* RCPackageAPI.m */; };
 		A5C7008D26AB647B00B2CA64 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBB9269D100400104A0C /* RCOfferingsAPI.m */; };
 		A5C7009026AF5A7900B2CA64 /* RCPurchaserInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */; };
 		B3083A11269931CF007B5503 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3083A10269931CF007B5503 /* RCOfferingAPI.m */; };
@@ -505,6 +506,8 @@
 		A56F9AAD26990A3A00AFC48F /* RCPurchaserInfoAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPurchaserInfoAPI.h; sourceTree = SOURCE_ROOT; };
 		A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPurchaserInfoAPI.m; sourceTree = SOURCE_ROOT; };
 		A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaserInfo.swift; sourceTree = "<group>"; };
+		A5A92C7726C716F50038D732 /* RCPackageAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPackageAPI.h; sourceTree = "<group>"; };
+		A5A92C7826C716F50038D732 /* RCPackageAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPackageAPI.m; sourceTree = "<group>"; };
 		A976872C3EDAC0B4F4B45481 /* Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3083A0F269931CF007B5503 /* RCOfferingAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOfferingAPI.h; sourceTree = "<group>"; };
 		B3083A10269931CF007B5503 /* RCOfferingAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCOfferingAPI.m; sourceTree = "<group>"; };
@@ -645,7 +648,6 @@
 				2CD72941268A823900BFC976 /* Data+Extensions.swift */,
 				2CD72943268A826F00BFC976 /* Date+Extensions.swift */,
 				2CD72947268A828400BFC976 /* Locale+Extensions.swift */,
-				B35F9E0826B4BEED00095C3F /* String+Extensions.swift */,
 				37E353FD94A8FD5CD8796530 /* DateFormatter+Extensions.swift */,
 				B35F9E0826B4BEED00095C3F /* String+Extensions.swift */,
 				35F82BAA26A84E130051DF03 /* Dictionary+Extensions.swift */,
@@ -1256,6 +1258,8 @@
 				B33CEA9D268BC39D008A3144 /* RCTransactionAPI.m */,
 				35F82BA526A848CB0051DF03 /* RCPurchasesErrorUtilsAPI.h */,
 				35F82BA726A849080051DF03 /* RCPurchasesErrorUtilsAPI.m */,
+				A5A92C7726C716F50038D732 /* RCPackageAPI.h */,
+				A5A92C7826C716F50038D732 /* RCPackageAPI.m */,
 			);
 			path = PublicSDKAPITester;
 			sourceTree = "<group>";
@@ -1587,8 +1591,8 @@
 			);
 			mainGroup = 352629F41F7C4B9100C04F2C;
 			packageReferences = (
-				B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */,
-				B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */,
+				B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */,
+				B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */,
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
 			projectDirPath = "";
@@ -1946,6 +1950,7 @@
 				B33CEA9E268BC39D008A3144 /* RCTransactionAPI.m in Sources */,
 				B3AA35A0268682410007771B /* RCEntitlementInfoAPI.m in Sources */,
 				B34D2AA126960A3200D88C3A /* RCIntroEligibilityAPI.m in Sources */,
+				A5A92C7926C716F50038D732 /* RCPackageAPI.m in Sources */,
 				B3AA6234268A7BA900894871 /* RCEntitlementInfosAPI.m in Sources */,
 				B387F47A2683FDEA0028701F /* main.m in Sources */,
 				B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */,
@@ -2596,7 +2601,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */ = {
+		B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Quick/Nimble.git";
 			requirement = {
@@ -2604,7 +2609,7 @@
 				version = 9.2.0;
 			};
 		};
-		B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */ = {
+		B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/AliSoftware/OHHTTPStubs.git";
 			requirement = {
@@ -2617,37 +2622,37 @@
 /* Begin XCSwiftPackageProductDependency section */
 		B3D5CFBC267282630056FA67 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */;
+			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */;
 			productName = Nimble;
 		};
 		B3D5CFBF267282760056FA67 /* OHHTTPStubsSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
 		};
 		B3D5CFC1267282760056FA67 /* OHHTTPStubs */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubs;
 		};
 		B3D5CFC32672827D0056FA67 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */;
+			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */;
 			productName = Nimble;
 		};
 		B3D5CFC52672827D0056FA67 /* OHHTTPStubs */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubs;
 		};
 		B3D5CFC72672827D0056FA67 /* OHHTTPStubsSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs.git" */;
+			package = B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
 		};
 		B3D5CFC9267282860056FA67 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble.git" */;
+			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */;
 			productName = Nimble;
 		};
 /* End XCSwiftPackageProductDependency section */
