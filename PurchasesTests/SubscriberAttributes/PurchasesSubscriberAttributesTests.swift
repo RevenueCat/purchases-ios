@@ -383,7 +383,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetCreativeCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetCreativeParameters?.creative) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetCreativeParameters?.appUserID) ==
-            mockIdentityManager.maybeCurrentAppUserID
+            mockIdentityManager.currentAppUserID
     }
 
     func testCollectDeviceIdentifiersMakesRightCalls() {
@@ -392,7 +392,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         Purchases.shared.collectDeviceIdentifiers()
         expect(self.mockSubscriberAttributesManager.invokedCollectDeviceIdentifiersCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedCollectDeviceIdentifiersParameters?.appUserID) ==
-            mockIdentityManager.maybeCurrentAppUserID
+            mockIdentityManager.currentAppUserID
     }
 
     // MARK: Post receipt with attributes
@@ -419,7 +419,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == true
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.syncedAttributes) == mockAttributes
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.appUserID) ==
-            mockIdentityManager.maybeCurrentAppUserID
+            mockIdentityManager.currentAppUserID
     }
 
     func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessfullySynced() {
@@ -447,7 +447,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == true
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.syncedAttributes) == mockAttributes
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.appUserID) ==
-            mockIdentityManager.maybeCurrentAppUserID
+            mockIdentityManager.currentAppUserID
     }
 
     func testPostReceiptDoesntMarkSubscriberAttributesSyncedIfBackendNotSuccessfullySynced() {
