@@ -133,15 +133,22 @@ BOOL isAnonymous;
     l = RCLogLevelWarn;
     l = RCLogLevelDebug;
     l = RCLogLevelError;
+    
 }
 
 + (void)checkConstants {
+
     double vn = PurchasesVersionNumber;
-    char vs = PurchasesVersionString;
-    NSErrorDomain bed = RCBackendErrorCodeDomain; // TODO does this replace RCBackendErrorDomain?
-    NSErrorDomain ped = RCPurchasesErrorCodeDomain; // TODO does this replace RCPurchasesErrorDomain?
-    //    NSErrorUserInfoKey fk = RCFinishableKey; // TODO where'd this go
-    //    NSErrorUserInfoKey fk = RCReadableErrorCodeKey; // TODO where'd this go
+    const unsigned char *vs = PurchasesVersionString;
+
+    // breaking changes below this line
+    NSErrorDomain bed = RCBackendErrorCodeDomain;
+    NSErrorDomain ped = RCPurchasesErrorCodeDomain;
+    NSErrorUserInfoKey fk = RCErrorDetails.RCFinishableKey;
+    NSErrorUserInfoKey eck = RCErrorDetails.RCReadableErrorCodeKey;
+
+    NSLog([NSString stringWithFormat:@"%lf", vn], vs, bed, ped, fk, eck);
+
 }
 
 @end

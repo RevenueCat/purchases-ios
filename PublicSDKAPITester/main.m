@@ -49,8 +49,7 @@ int main(int argc, const char * argv[]) {
 
         [RCTransactionAPI checkAPI];
 
-        // TODO test class RCPurchasesErrors? that was a breaking change i think?
-        // and enums RCBackendErrorCodes, RCPurchasesErrorCode
+        // TODO test RCBackendErrorCodes, RCPurchasesErrorCode
 
     }
     return 0;

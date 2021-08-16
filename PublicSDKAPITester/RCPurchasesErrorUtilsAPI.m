@@ -19,6 +19,7 @@
 @implementation RCPurchasesErrorUtilsAPI
 
 + (void)checkAPI {
+    
     NSError* underlying = [[NSError alloc] initWithDomain:@"NetworkErrorDomain" code:28 userInfo:@{@"key": @"value"}];
     [RCPurchasesErrorUtils networkErrorWithUnderlyingError:underlying];
     [RCPurchasesErrorUtils backendErrorWithBackendCode:@12345 backendMessage:@"un mensaje"];
