@@ -45,6 +45,7 @@ import Foundation
     @objc(RCLogOutAnonymousUserError) case logOutAnonymousUserError = 22
     @objc(RCConfigurationError) case configurationError = 23
     @objc(RCEmptySubscriberAttributesError) case emptySubscriberAttributes = 24
+    @objc(RCProductDiscountMissingIdentifierError) case productDiscountMissingIdentifierError = 25
 
 }
 
@@ -107,6 +108,8 @@ extension ErrorCode {
             return "There is an issue with your configuration. Check the underlying error for more details."
         case .emptySubscriberAttributes:
             return "A request for subscriber attributes returned none."
+        case .productDiscountMissingIdentifierError:
+            return "SKProductDiscount must have a non-empty identifier."
         @unknown default:
             return "Something went wrong."
         }
@@ -169,6 +172,8 @@ extension ErrorCode {
             return "CONFIGURATION_ERROR"
         case .emptySubscriberAttributes:
             return "EMPTY_SUBSCRIBER_ATTRIBUTES"
+        case .productDiscountMissingIdentifierError:
+            return "PRODUCT_DISCOUNT_MISSING_IDENTIFIER_ERROR"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }

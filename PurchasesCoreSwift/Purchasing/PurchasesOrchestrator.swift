@@ -21,9 +21,10 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
     func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: @escaping RCDeferredPromotionalPurchaseBlock)
 }
 
-// todo: make internal
+// Todo(post-migration): make internal
 @objc(RCPurchasesOrchestrator) public class PurchasesOrchestrator: NSObject {
-    @objc public var finishTransactions = false
+
+    @objc public var finishTransactions: Bool { systemInfo.finishTransactions }
     @objc public var allowSharingAppStoreAccount: Bool {
         get {
             if let allow = _allowSharingAppStoreAccount {
@@ -37,13 +38,22 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         }
     }
 
-    private var _allowSharingAppStoreAccount: Bool?
+    @objc public weak var maybeDelegate: PurchasesOrchestratorDelegate?
 
+    private var _allowSharingAppStoreAccount: Bool?
     private var presentedOfferingIDsByProductID: [String: String] = [:]
     private var purchaseCompleteCallbacksByProductID: [String: PurchaseCompletedBlock] = [:]
 
+    // todo: remove explicit unwrap once nullability in identityManager is updated
+    private var appUserID: String { identityManager.maybeCurrentAppUserID! }
+    private var unsyncedAttributes: SubscriberAttributeDict {
+        subscriberAttributesManager.unsyncedAttributesByKey(appUserID: self.appUserID)
+    }
+
     private let productsManager: ProductsManager
     private let storeKitWrapper: StoreKitWrapper
+    private let systemInfo: SystemInfo
+    private let subscriberAttributesManager: SubscriberAttributesManager
     private let operationDispatcher: OperationDispatcher
     private let receiptFetcher: ReceiptFetcher
     private let purchaserInfoManager: PurchaserInfoManager
@@ -51,20 +61,12 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
     private let identityManager: IdentityManager
     private let receiptParser: ReceiptParser
     private let deviceCache: DeviceCache
-
-    @objc public weak var maybeDelegate: PurchasesOrchestratorDelegate?
-
-    // todo: remove explicit unwrap once nullability in identityManager is updated
-    private var appUserID: String { identityManager.maybeCurrentAppUserID! }
-
-    var unsyncedAttributesByKey: SubscriberAttributeDict {
-        // todo
-        // blocked on SubscriberAttributesManager migration
-        return [:]
-    }
+    private let lock = NSRecursiveLock()
 
     @objc public init(productsManager: ProductsManager,
                       storeKitWrapper: StoreKitWrapper,
+                      systemInfo: SystemInfo,
+                      subscriberAttributesManager: SubscriberAttributesManager,
                       operationDispatcher: OperationDispatcher,
                       receiptFetcher: ReceiptFetcher,
                       purchaserInfoManager: PurchaserInfoManager,
@@ -74,6 +76,8 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
                       deviceCache: DeviceCache) {
         self.productsManager = productsManager
         self.storeKitWrapper = storeKitWrapper
+        self.systemInfo = systemInfo
+        self.subscriberAttributesManager = subscriberAttributesManager
         self.operationDispatcher = operationDispatcher
         self.receiptFetcher = receiptFetcher
         self.purchaserInfoManager = purchaserInfoManager
@@ -118,19 +122,17 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
                       completion(nil, ErrorUtils.missingReceiptFileError())
                       return
                   }
-            guard let discountIdentifier = productDiscount.identifier,
-                  let subscriptionGroupIdentifier = product.subscriptionGroupIdentifier else {
-                      // todo: replace with custom exception
-                      completion(nil, ErrorUtils.unexpectedBackendResponseError())
+            guard let discountIdentifier = productDiscount.identifier else {
+                      completion(nil, ErrorUtils.productDiscountMissingIdentifierError())
                       return
                   }
             self.backend.post(offerIdForSigning: discountIdentifier,
                               productIdentifier: product.productIdentifier,
-                              subscriptionGroup: subscriptionGroupIdentifier,
+                              subscriptionGroup: product.subscriptionGroupIdentifier ,
                               receiptData: receiptData,
                               appUserID: self.appUserID) { maybeSignature, maybeKeyIdentifier, maybeNonce, maybeTimestamp, maybeError in
                 if let error = maybeError {
-                    // todo: replace with custom exception
+                    // TODO: Consider making a custom error.
                     completion(nil, error)
                     return
                 }
@@ -139,7 +141,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
                       let nonce = maybeNonce,
                       let signature = maybeSignature,
                       let timestamp = maybeTimestamp else {
-                          // todo: replace with custom exception
+                          // TODO: Consider making a custom error.
                           completion(nil, ErrorUtils.unexpectedBackendResponseError())
                           return
                       }
@@ -162,10 +164,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         guard let productIdentifier = extractProductIdentifier(fromProduct: product, orPayment: payment) else {
             Logger.info(Strings.purchase.could_not_purchase_product_id_not_found)
             let errorMessage = "There was a problem purchasing the product: productIdentifier was nil"
-            completion(nil,
-                       nil,
-                       ErrorUtils.unknownError(message: errorMessage),
-                       false)
+            completion(nil, nil, ErrorUtils.unknownError(message: errorMessage), false)
             return
         }
 
@@ -182,8 +181,9 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
             Logger.purchase(String(format: Strings.purchase.purchasing_product_from_package,
                                    productIdentifier,
                                    presentedOfferingIdentifier))
-            // todo: concurrency handling
+            lock.lock()
             presentedOfferingIDsByProductID[productIdentifier] = presentedOfferingIdentifier
+            lock.unlock()
 
         } else {
             Logger.purchase(String(format: Strings.purchase.purchasing_product, productIdentifier))
@@ -191,9 +191,10 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
 
         productsManager.cacheProduct(product)
 
-        // todo: concurrency handling
+        lock.lock()
         guard purchaseCompleteCallbacksByProductID[productIdentifier] == nil else {
             completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
+            lock.unlock()
             return
         }
         purchaseCompleteCallbacksByProductID[productIdentifier] = completion
@@ -219,7 +220,6 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
         @unknown default:
             Logger.warn("unhandled transaction state!")
         }
-
     }
 
     public func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
@@ -251,7 +251,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
 }
 
-// pragma: transaction state updates
+// MARK: Transaction state updates.
 private extension PurchasesOrchestrator {
 
     func handlePurchasedTransaction(_ transaction: SKPaymentTransaction) {
@@ -287,18 +287,25 @@ private extension PurchasesOrchestrator {
     }
 
     func handleDeferredTransaction(_ transaction: SKPaymentTransaction) {
-        if let error = transaction.error,
-           let completion = getAndRemovePurchaseCompletedCallback(forTransaction: transaction) {
-            let nsError = error as NSError
-            let userCancelled = nsError.code == SKError.paymentCancelled.rawValue
-            operationDispatcher.dispatchOnMainThread {
-                completion(transaction, nil, ErrorUtils.paymentDeferredError(), userCancelled)
-            }
+        let userCancelled: Bool
+        if let error = transaction.error as NSError? {
+            userCancelled = error.code == SKError.paymentCancelled.rawValue
+        } else {
+            userCancelled = false
+        }
+        
+        guard let completion = getAndRemovePurchaseCompletedCallback(forTransaction: transaction) else {
+            return
+        }
+
+        operationDispatcher.dispatchOnMainThread {
+            completion(transaction, nil, ErrorUtils.paymentDeferredError(), userCancelled)
         }
     }
 
 }
 
+// MARK: Private funcs.
 private extension PurchasesOrchestrator {
 
     func getAndRemovePurchaseCompletedCallback(forTransaction transaction: SKPaymentTransaction) -> PurchaseCompletedBlock? {
@@ -336,7 +343,7 @@ private extension PurchasesOrchestrator {
             maybeProductInfo = productInfo
             maybePresentedOfferingID = presentedOfferingID
         }
-        let unsyncedAttributes = unsyncedAttributesByKey
+        let unsyncedAttributes = unsyncedAttributes
 
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
@@ -363,39 +370,37 @@ private extension PurchasesOrchestrator {
                                     maybeError: maybeError)
 
             let maybeCompletion = self.getAndRemovePurchaseCompletedCallback(forTransaction: transaction)
+            let nsError = maybeError as NSError?
+            let finishable = (nsError?.userInfo[ErrorDetails.finishableKey as String] as? NSNumber)?.boolValue ?? false
             if let purchaserInfo = maybePurchaserInfo {
                 self.purchaserInfoManager.cache(purchaserInfo: purchaserInfo, appUserID: appUserID)
-
-                if let completion = maybeCompletion {
-                    completion(transaction, purchaserInfo, nil, false)
-                }
+                maybeCompletion?(transaction, purchaserInfo, nil, false)
 
                 if self.finishTransactions {
                     self.storeKitWrapper.finishTransaction(transaction)
                 }
-            } else if let nsError = maybeError as NSError?,
-                  let finishableValue = nsError.userInfo[ErrorDetails.finishableKey as String],
-                  let finishableBool = (finishableValue as AnyObject).boolValue {
-                if let completion = maybeCompletion {
-                    completion(transaction, nil, nsError, false)
-                }
-                if finishableBool {
+            } else if finishable {
+                maybeCompletion?(transaction, nil, maybeError, false)
+                if self.finishTransactions {
                     self.storeKitWrapper.finishTransaction(transaction)
                 }
-            } else {
+            } else if !finishable {
                 Logger.error(Strings.receipt.unknown_backend_error)
-                if let completion = maybeCompletion,
-                   let error = maybeError {
-                    completion(transaction, nil, error, false)
-                }
+                maybeCompletion?(transaction, nil, maybeError, false)
             }
-
         }
     }
 
     func markSyncedIfNeeded(subscriberAttributes: SubscriberAttributeDict?, appUserID: String, maybeError: Error?) {
-        // todo
-        // blocked on SubscriberAttributesManager migration
+        if let error = maybeError as NSError? {
+            if !error.rc_successfullySynced {
+                return
+            }
+            let attributeErrors = (error.rc_subscriberAttributesErrors?.debugDescription ?? "None") as NSString
+            Logger.error(String(format: Strings.attribution.subscriber_attributes_error, attributeErrors))
+        }
+
+        subscriberAttributesManager.markAttributesAsSynced(subscriberAttributes, appUserID: appUserID)
     }
 
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
@@ -405,7 +410,8 @@ private extension PurchasesOrchestrator {
             Logger.warn(Strings.restore.restoretransactions_called_with_allow_sharing_appstore_account_false_warning)
         }
 
-        let currentAppUserID = self.appUserID
+        let currentAppUserID = appUserID
+        let unsyncedAttributes = unsyncedAttributes
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
         // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
         receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { maybeReceiptData in
@@ -435,8 +441,6 @@ private extension PurchasesOrchestrator {
                 }
                 return
             }
-
-            let unsyncedAttributes = self.unsyncedAttributesByKey
 
             self.backend.post(receiptData: receiptData,
                               appUserID: currentAppUserID,
@@ -478,12 +482,14 @@ private extension PurchasesOrchestrator {
     // are supposed to be non-null, we've seen instances where this is not true.
     // so we cast into optionals in order to check nullability, and try to fall back if possible.
     func extractProductIdentifier(fromProduct product: SKProduct, orPayment payment: SKPayment) -> String? {
-        if let identifierFromProduct = product.productIdentifier as String? {
+        if let identifierFromProduct = product.productIdentifier as String?,
+           !identifierFromProduct.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return identifierFromProduct
         }
         Logger.appleWarning("product.productIdentifier is nil")
 
-        if let identifierFromPayment = payment.productIdentifier as String? {
+        if let identifierFromPayment = payment.productIdentifier as String?,
+           !identifierFromPayment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return identifierFromPayment
         }
         Logger.appleWarning("payment.productIdentifier is nil")

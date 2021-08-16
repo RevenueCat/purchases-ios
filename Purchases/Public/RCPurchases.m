@@ -266,6 +266,8 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCPurchasesOrchestrator *purchasesOrchestrator = [[RCPurchasesOrchestrator alloc]
                                                       initWithProductsManager:productsManager
                                                       storeKitWrapper:storeKitWrapper
+                                                      systemInfo:systemInfo
+                                                      subscriberAttributesManager:subscriberAttributesManager
                                                       operationDispatcher:operationDispatcher
                                                       receiptFetcher:receiptFetcher
                                                       purchaserInfoManager:purchaserInfoManager

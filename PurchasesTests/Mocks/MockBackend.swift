@@ -165,7 +165,7 @@ class MockBackend: Backend {
 
     override func post(offerIdForSigning offerIdentifier: String,
                        productIdentifier: String,
-                       subscriptionGroup: String,
+                       subscriptionGroup: String?,
                        receiptData: Data,
                        appUserID: String,
                        completion: @escaping OfferSigningResponseHandler) {

@@ -162,7 +162,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
     @objc(postOfferForSigning:withProductIdentifier:subscriptionGroup:receiptData:appUserID:completion:)
     public func post(offerIdForSigning offerIdentifier: String,
                      productIdentifier: String,
-                     subscriptionGroup: String,
+                     subscriptionGroup: String?,
                      receiptData: Data,
                      appUserID: String,
                      completion: @escaping OfferSigningResponseHandler) {

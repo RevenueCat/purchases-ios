@@ -113,6 +113,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockIdentityManager.mockIsAnonymous = false
         let purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
                                                           storeKitWrapper: mockStoreKitWrapper,
+                                                          systemInfo: systemInfo,
+                                                          subscriberAttributesManager: mockSubscriberAttributesManager,
                                                           operationDispatcher: mockOperationDispatcher,
                                                           receiptFetcher: mockReceiptFetcher,
                                                           purchaserInfoManager: purchaserInfoManager,
