@@ -55,8 +55,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         self.purchaserInfoCallbacksCache = [:]
     }
 
-    @objc(createAliasForAppUserID:newAppUserID:completion:)
-    public func createAlias(appUserID: String, newAppUserID: String, completion: ((Error?) -> Void)?) {
+    func createAlias(appUserID: String, newAppUserID: String, completion: ((Error?) -> Void)?) {
         guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
             completion?(ErrorUtils.missingAppUserIDError())
             return
@@ -72,7 +71,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    @objc public func clearCaches() {
+    func clearCaches() {
         httpClient.clearCaches()
     }
 
@@ -129,8 +128,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    @objc
-    public func getSubscriberData(appUserID: String, completion: @escaping BackendPurchaserInfoResponseHandler) {
+    func getSubscriberData(appUserID: String, completion: @escaping BackendPurchaserInfoResponseHandler) {
         guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
             completion(nil, ErrorUtils.missingAppUserIDError())
             return
@@ -278,9 +276,9 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    @objc public func logIn(currentAppUserID: String,
-                            newAppUserID: String,
-                            completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
+    func logIn(currentAppUserID: String,
+               newAppUserID: String,
+               completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
 
         let requestBody = ["app_user_id": currentAppUserID, "new_app_user_id": newAppUserID]
         httpClient.performPOSTRequest(serially: true,
@@ -292,8 +290,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    @objc(getOfferingsForAppUserID:completion:)
-    public func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
+    func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
         guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
             completion(nil, ErrorUtils.missingAppUserIDError())
             return
