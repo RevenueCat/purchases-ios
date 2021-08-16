@@ -217,6 +217,7 @@ import Foundation
 }
 
 private extension SubscriberAttributesManager {
+
     func storeAttributeLocallyIfNeeded(key: String, value: String?, appUserID: String) {
         let currentValue = currentValueForAttribute(key: key, appUserID: appUserID)
         if currentValue == nil || currentValue != (value ?? "") {
