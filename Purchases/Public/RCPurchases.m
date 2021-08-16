@@ -8,7 +8,6 @@
 
 @import PurchasesCoreSwift;
 
-#import "RCAttributionPoster.h"
 #import "RCPurchases+Protected.h"
 #import "RCPurchases.h"
 #import "RCTypeDefsPreMigration.h"
@@ -263,7 +262,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCAttributionPoster *attributionPoster = [[RCAttributionPoster alloc] initWithDeviceCache:deviceCache
                                                                               identityManager:identityManager
                                                                                       backend:backend
-                                                                                   systemInfo:systemInfo
                                                                            attributionFetcher:attributionFetcher
                                                                   subscriberAttributesManager:subscriberAttributesManager];
 

@@ -3,7 +3,6 @@
 //
 @import PurchasesCoreSwift;
 
-#include <Purchases/RCAttributionPoster.h>
 #include <Purchases/RCPurchases+Protected.h>
 #include <Purchases/RCPurchases.h>
 #include <Purchases/RCTypeDefsPreMigration.h>

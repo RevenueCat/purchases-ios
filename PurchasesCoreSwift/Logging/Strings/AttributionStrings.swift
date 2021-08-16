@@ -57,4 +57,7 @@ import Foundation
     public var unsynced_attributes: String { "Unsynced attributes: %@" }
     public var attribute_set_locally: String { "Attribute set locally: %@. It will be synced to the backend" +
         "when the app backgrounds/foregrounds or when a purchase is made." }
+    var missing_advertiser_identifiers: String { "Attribution error: identifierForAdvertisers is missing" }
+    var missing_app_user_id: String { "Attribution error: can't post attribution, missing appUserId" }
+
 }
