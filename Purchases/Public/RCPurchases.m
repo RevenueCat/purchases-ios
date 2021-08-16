@@ -10,9 +10,8 @@
 
 #import "RCAttributionPoster.h"
 #import "RCPurchases+Protected.h"
-#import "RCPurchases+SubscriberAttributes.h"
 #import "RCPurchases.h"
-#import "RCSubscriberAttributesManager.h"
+#import "RCTypeDefsPreMigration.h"
 
 @interface RCPurchases () <RCStoreKitWrapperDelegate, RCPurchaserInfoManagerDelegate> {
     NSNumber * _Nullable _allowSharingAppStoreAccount;
@@ -678,7 +677,8 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
             return;
         }
 
-        RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
+        RCSubscriberAttributeDict subscriberAttributes =
+            [self.subscriberAttributesManager unsyncedAttributesByKeyWithAppUserID:self.appUserID];
         [self.backend postReceiptData:data
                             appUserID:self.appUserID
                             isRestore:isRestore
@@ -1103,7 +1103,7 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
                               data:(NSData *)data
                           products:(NSArray<SKProduct *> *)products {
     SKProduct *product = products.lastObject;
-    RCSubscriberAttributeDict subscriberAttributes = self.unsyncedAttributesByKey;
+    RCSubscriberAttributeDict subscriberAttributes = [self.subscriberAttributesManager unsyncedAttributesByKeyWithAppUserID:self.appUserID];
     RCProductInfo *productInfo = nil;
     NSString *presentedOffering = nil;
     if (product) {
@@ -1132,6 +1132,28 @@ API_AVAILABLE(ios(14.0), macos(11.0), tvos(14.0), watchos(7.0)) {
                                              subscriberAttributes:subscriberAttributes
                                                             error:error];
                        }];
+}
+
+
+- (void)syncSubscriberAttributesIfNeeded {
+    [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:NO block:^{
+        [self.subscriberAttributesManager syncAttributesForAllUsersWithCurrentAppUserID:self.appUserID];
+    }];
+}
+
+// TODO make private after swift migration
+- (void)markAttributesAsSyncedIfNeeded:(nullable RCSubscriberAttributeDict)syncedAttributes
+                             appUserID:(NSString *)appUserID
+                                 error:(nullable NSError *)error {
+    if (error && !error.rc_successfullySynced) {
+        return;
+    }
+
+    if (error.rc_subscriberAttributesErrors) {
+        [RCLog error:[NSString stringWithFormat:RCStrings.attribution.subscriber_attributes_error,
+                      error.rc_subscriberAttributesErrors]];
+    }
+    [self.subscriberAttributesManager markAttributesAsSynced:syncedAttributes appUserID:appUserID];
 }
 
 #pragma MARK: RCPurchaserInfoManagerDelegate

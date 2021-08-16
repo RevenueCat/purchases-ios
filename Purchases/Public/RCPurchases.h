@@ -10,7 +10,9 @@
 
 #import <Foundation/Foundation.h>
 
-@class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo, RCIntroEligibility, RCOfferings, RCOffering, RCPackage;
+@class SKProduct, SKPayment, SKPaymentTransaction, SKPaymentDiscount, SKProductDiscount, RCPurchaserInfo,
+    RCIntroEligibility, RCOfferings, RCOffering, RCPackage, RCSubscriberAttribute, RCSubscriberAttributesManager,
+    RCOperationDispatcher;
 @protocol RCPurchasesDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -58,6 +60,10 @@ typedef void (^RCPaymentDiscountBlock)(SKPaymentDiscount * _Nullable, NSError * 
  */
 NS_SWIFT_NAME(Purchases)
 @interface RCPurchases : NSObject
+
+// TODO during migration make these protected
+@property (nonatomic) RCSubscriberAttributesManager *subscriberAttributesManager;
+@property (nonatomic) RCOperationDispatcher *operationDispatcher;
 
 /**
  Enable automatic collection of Apple Search Ads attribution. Disabled by default
