@@ -81,6 +81,7 @@ private extension ManageSubscriptionsModalHelper {
             Task.init {
                 await self.showSK2ManageSubscriptions()
             }
+            return
         } else {
             self.openURL(.appleSubscriptionsURL)
         }
@@ -97,20 +98,15 @@ private extension ManageSubscriptionsModalHelper {
     @available(watchOSApplicationExtension, unavailable)
     @available(tvOS, unavailable)
     func showSK2ManageSubscriptions() async {
-        let windowScene = systemInfo.sharedUIApplication?
-            .connectedScenes
-            .filter { $0.activationState == .foregroundActive }
-            .first
-
-        if let windowScene = windowScene as? UIWindowScene {
-
-            do {
-                try await AppStore.showManageSubscriptions(in: windowScene)
-            } catch let error {
-                Logger.error("error when trying to show manage subscription: \(error.localizedDescription)")
-            }
-        } else {
+        guard let windowScene = systemInfo.sharedUIApplication?.currentWindowScene() else {
             Logger.error("couldn't get window")
+            return
+        }
+
+        do {
+            try await AppStore.showManageSubscriptions(in: windowScene)
+        } catch let error {
+            Logger.error("error when trying to show manage subscription: \(error.localizedDescription)")
         }
     }
 #endif
@@ -153,3 +149,18 @@ private extension URL {
 
     static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
 }
+
+#if os(iOS)
+private extension UIApplication {
+
+    @available(iOS 15.0, *)
+    func currentWindowScene() -> UIWindowScene? {
+        let windowScene = self
+            .connectedScenes
+            .filter { $0.activationState == .foregroundActive }
+            .first
+
+        return windowScene as? UIWindowScene
+    }
+}
+#endif
