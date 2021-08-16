@@ -7,7 +7,6 @@
 //
 
 #import "RCAttributionPoster.h"
-#import "RCSubscriberAttributesManager.h"
 @import PurchasesCoreSwift;
 
 static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
@@ -91,9 +90,10 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
                     }
                 }];
             } else {
-                [self.subscriberAttributesManager convertAttributionDataAndSetAsSubscriberAttributes:newData
-                                                                                             network:network
-                                                                                           appUserID:appUserID];
+                [self.subscriberAttributesManager setAttributesFromAttributionData:newData
+                                                                           network:network
+                                                                         appUserID:appUserID];
+                
                 [self.deviceCache setLatestNetworkAndAdvertisingIdsSent:newDictToCache
                                                            forAppUserID:appUserID];
             }
