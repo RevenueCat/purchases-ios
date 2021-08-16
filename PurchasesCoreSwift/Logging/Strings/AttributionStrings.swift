@@ -53,9 +53,11 @@ import Foundation
     }
     @objc public var skip_same_attributes: String { "Attribution data is the same as latest. Skipping." }
     @objc public var subscriber_attributes_error: String { "Subscriber attributes errors: %@" }
-    @objc public var unsynced_attributes_count: String { "Found %lu unsynced attributes for App User ID: %@" }
-    @objc public var unsynced_attributes: String { "Unsynced attributes: %@" }
-
+    public var unsynced_attributes_count: String { "Found %lu unsynced attributes for App User ID: %@" }
+    public var unsynced_attributes: String { "Unsynced attributes: %@" }
+    public var attribute_set_locally: String { "Attribute set locally: %@. It will be synced to the backend" +
+        "when the app backgrounds/foregrounds or when a purchase is made." }
     var missing_advertiser_identifiers: String { "Attribution error: identifierForAdvertisers is missing" }
     var missing_app_user_id: String { "Attribution error: can't post attribution, missing appUserId" }
+
 }

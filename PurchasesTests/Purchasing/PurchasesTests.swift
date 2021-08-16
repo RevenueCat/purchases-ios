@@ -41,12 +41,11 @@ class PurchasesTests: XCTestCase {
                                             deviceCache: self.deviceCache,
                                             attributionFetcher: self.attributionFetcher,
                                             attributionDataMigrator: AttributionDataMigrator())
-        attributionPoster = RCAttributionPoster(deviceCache: deviceCache,
-                                                identityManager: identityManager,
-                                                backend: backend,
-                                                systemInfo: systemInfoAttribution,
-                                                attributionFetcher: attributionFetcher,
-                                                subscriberAttributesManager: subscriberAttributesManager)
+        attributionPoster = AttributionPoster(deviceCache: deviceCache,
+                                              identityManager: identityManager,
+                                              backend: backend,
+                                              attributionFetcher: attributionFetcher,
+                                              subscriberAttributesManager: subscriberAttributesManager)
         purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
                                                     deviceCache: deviceCache,
                                                     backend: backend,

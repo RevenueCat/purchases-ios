@@ -47,12 +47,11 @@ class AttributionPosterTests: XCTestCase {
             attributionFetcher: self.attributionFetcher,
             attributionDataMigrator: AttributionDataMigrator())
         identityManager = MockIdentityManager(mockAppUserID: userID)
-        attributionPoster = RCAttributionPoster(deviceCache: deviceCache,
-                                                identityManager: identityManager,
-                                                backend: backend,
-                                                systemInfo: systemInfo,
-                                                attributionFetcher: attributionFetcher,
-                                                subscriberAttributesManager: subscriberAttributesManager)
+        attributionPoster = AttributionPoster(deviceCache: deviceCache,
+                                              identityManager: identityManager,
+                                              backend: backend,
+                                              attributionFetcher: attributionFetcher,
+                                              subscriberAttributesManager: subscriberAttributesManager)
         resetAttributionStaticProperties()
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
     }

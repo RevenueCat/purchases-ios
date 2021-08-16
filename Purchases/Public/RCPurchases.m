@@ -262,7 +262,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCAttributionPoster *attributionPoster = [[RCAttributionPoster alloc] initWithDeviceCache:deviceCache
                                                                               identityManager:identityManager
                                                                                       backend:backend
-                                                                                   systemInfo:systemInfo
                                                                            attributionFetcher:attributionFetcher
                                                                   subscriberAttributesManager:subscriberAttributesManager];
 
