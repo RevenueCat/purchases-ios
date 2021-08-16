@@ -17,7 +17,7 @@ import Foundation
         "Error when syncing subscriber attributes. Details: %@\n UserInfo:%@"
     }
     @objc public var attributes_sync_success: String { "Subscriber attributes synced successfully for App User ID: %@" }
-    @objc public var empty_subscriber_attributes: String {
+    var empty_subscriber_attributes: String {
         "Called post subscriber attributes with an empty attributes dictionary!"
     }
     @objc public var marking_attributes_synced: String {
@@ -33,21 +33,21 @@ import Foundation
     @objc public var instance_configured_posting_attribution: String {
         "There is a purchase instance configured, posting attribution"
     }
-    @objc public var search_ads_attribution_cancelled_missing_att_framework: String {
+    var search_ads_attribution_cancelled_missing_att_framework: String {
         "Tried to post Apple Search Ads Attribution, but ATT Framework is required on this OS" +
             " and it isn't included"
     }
-    @objc public var att_framework_present_but_couldnt_call_tracking_authorization_status: String {
+    var att_framework_present_but_couldnt_call_tracking_authorization_status: String {
         "ATT Framework was found but it didn't respond to authorization status selector!"
     }
-    @objc public var iad_framework_present_but_couldnt_call_request_attribution_details: String {
+    var iad_framework_present_but_couldnt_call_request_attribution_details: String {
         "iAd Framework was found but it didn't respond to attribution details request!"
     }
-    @objc public var search_ads_attribution_cancelled_missing_iad_framework: String {
+    var search_ads_attribution_cancelled_missing_iad_framework: String {
         "Tried to post Apple Search Ads Attribution, but iAd Framework is is required for it" +
             " and it isn't included"
     }
-    @objc public var search_ads_attribution_cancelled_not_authorized: String {
+    var search_ads_attribution_cancelled_not_authorized: String {
         "Tried to post Apple Search Ads Attribution, but authorization hasn't been granted. " +
             "Will automatically retry if authorization gets granted."
     }

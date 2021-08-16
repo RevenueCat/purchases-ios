@@ -10,9 +10,9 @@ import Foundation
 
 // swiftlint:disable identifier_name
 @objc(RCConfigureStrings) public class ConfigureStrings: NSObject {
-    @objc public var adsupport_not_imported: String { "AdSupport framework not imported. Attribution data incomplete." }
+    var adsupport_not_imported: String { "AdSupport framework not imported. Attribution data incomplete." }
     @objc public var application_active: String { "applicationDidBecomeActive" }
-    @objc public var configuring_purchases_proxy_url_set: String {
+    var configuring_purchases_proxy_url_set: String {
         "Purchases is being configured using a proxy for RevenueCat with URL: %@"
     }
     @objc public var debug_enabled: String { "Debug logging enabled" }
