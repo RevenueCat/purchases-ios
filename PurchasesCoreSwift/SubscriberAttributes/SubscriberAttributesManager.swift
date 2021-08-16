@@ -20,6 +20,7 @@ import Foundation
     private let deviceCache: DeviceCache
     private let attributionFetcher: AttributionFetcher
     private let attributionDataMigrator: AttributionDataMigrator
+    private let lock = NSRecursiveLock()
 
     @objc public init(backend: Backend,
                       deviceCache: DeviceCache,
@@ -32,107 +33,105 @@ import Foundation
     }
 
     @objc public func setAttributes(_ attributes: [String: String], appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setAttributes"))
+        logAttributionMethodCalled(functionName: #function)
         for (key, value) in attributes {
             setAttribute(key: key, value: value, appUserID: appUserID)
         }
     }
 
     @objc public func setEmail(_ maybeEmail: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setEmail"))
+        logAttributionMethodCalled(functionName: #function)
         setAttribute(key: SpecialSubscriberAttributes.email, value: maybeEmail, appUserID: appUserID)
     }
 
     @objc public func setPhoneNumber(_ maybePhoneNumber: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setPhoneNumber"))
+        logAttributionMethodCalled(functionName: #function)
         setAttribute(key: SpecialSubscriberAttributes.phoneNumber, value: maybePhoneNumber, appUserID: appUserID)
     }
 
     @objc public func setDisplayName(_ maybeDisplayName: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setDisplayName"))
+        logAttributionMethodCalled(functionName: #function)
         setAttribute(key: SpecialSubscriberAttributes.displayName, value: maybeDisplayName, appUserID: appUserID)
     }
 
     @objc public func setPushToken(_ maybePushToken: Data?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setPushToken"))
+        logAttributionMethodCalled(functionName: #function)
         let maybePushTokenString = maybePushToken?.rc_asString
         setPushTokenString(maybePushTokenString, appUserID: appUserID)
     }
 
     @objc public func setPushTokenString(_ maybePushTokenString: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setPushTokenString"))
+        logAttributionMethodCalled(functionName: #function)
         setAttribute(key: SpecialSubscriberAttributes.pushToken, value: maybePushTokenString, appUserID: appUserID)
     }
 
     @objc public func setAdjustID(_ maybeAdjustID: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setAdjustID"))
+        logAttributionMethodCalled(functionName: #function)
         setAttributionID(networkID: maybeAdjustID,
                          networkKey: SpecialSubscriberAttributes.adjustID,
                          appUserID: appUserID)
     }
 
     @objc public func setAppsflyerID(_ maybeAppsflyerID: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setAppsflyerID"))
+        logAttributionMethodCalled(functionName: #function)
         setAttributionID(networkID: maybeAppsflyerID,
                          networkKey: SpecialSubscriberAttributes.appsFlyerID,
                          appUserID: appUserID)
     }
 
     @objc public func setFBAnonymousID(_ maybeFBAnonymousID: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setFBAnonymousID"))
+        logAttributionMethodCalled(functionName: #function)
         setAttributionID(networkID: maybeFBAnonymousID,
                          networkKey: SpecialSubscriberAttributes.fBAnonID,
                          appUserID: appUserID)
     }
 
     @objc public func setMparticleID(_ maybeMparticleID: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setMparticleID"))
+        logAttributionMethodCalled(functionName: #function)
         setAttributionID(networkID: maybeMparticleID,
                          networkKey: SpecialSubscriberAttributes.mpParticleID,
                          appUserID: appUserID)
     }
 
     @objc public func setOnesignalID(_ maybeOnesignalID: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setOnesignalID"))
+        logAttributionMethodCalled(functionName: #function)
         setAttributionID(networkID: maybeOnesignalID,
                          networkKey: SpecialSubscriberAttributes.oneSignalID,
                          appUserID: appUserID)
     }
 
     @objc public func setMediaSource(_ maybeMediaSource: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setMediaSource"))
+        logAttributionMethodCalled(functionName: #function)
         setAttribute(key: SpecialSubscriberAttributes.mediaSource, value: maybeMediaSource, appUserID: appUserID)
     }
 
     @objc public func setCampaign(_ maybeCampaign: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setCampaign"))
+        logAttributionMethodCalled(functionName: #function)
         setAttribute(key: SpecialSubscriberAttributes.campaign, value: maybeCampaign, appUserID: appUserID)
     }
 
     @objc public func setAdGroup(_ maybeAdGroup: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setAdGroup"))
+        logAttributionMethodCalled(functionName: #function)
         setAttribute(key: SpecialSubscriberAttributes.adGroup, value: maybeAdGroup, appUserID: appUserID)
     }
 
     @objc public func setAd(_ maybeAd: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setAd"))
+        logAttributionMethodCalled(functionName: #function)
         setAttribute(key: SpecialSubscriberAttributes.ad, value: maybeAd, appUserID: appUserID)
     }
 
     @objc public func setKeyword(_ maybeKeyword: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setKeyword"))
+        logAttributionMethodCalled(functionName: #function)
         setAttribute(key: SpecialSubscriberAttributes.keyword, value: maybeKeyword, appUserID: appUserID)
     }
 
     @objc public func setCreative(_ maybeCreative: String?, appUserID: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, "setCreative"))
+        logAttributionMethodCalled(functionName: #function)
         setAttribute(key: SpecialSubscriberAttributes.creative, value: maybeCreative, appUserID: appUserID)
     }
 
     @objc public func collectDeviceIdentifiers(forAppUserID appUserID: String) {
-        Logger.debug("collectDeviceIdentifiers called")
-        // TODO safe to remove log below?
-        Logger.debug(String(format: Strings.attribution.method_called, "setAttributes"))
+        logAttributionMethodCalled(functionName: #function)
         let identifierForAdvertisers = attributionFetcher.identifierForAdvertisers
         let identifierForVendor = attributionFetcher.identifierForVendor
 
@@ -145,7 +144,7 @@ import Foundation
         let unsyncedAttributesForAllUsers = unsyncedAttributesByKeyForAllUsers()
 
         for (syncingAppUserId, attributes) in unsyncedAttributesForAllUsers {
-            syncAttributes(attributes: attributes, appUserID: syncingAppUserId) { error  in
+            syncAttributes(attributes: attributes, appUserID: syncingAppUserId) { error in
                 self.handleAttributesSynced(syncingAppUserId: syncingAppUserId,
                                             currentAppUserId: currentAppUserID,
                                             error: error)
@@ -168,13 +167,11 @@ import Foundation
     }
 
     @objc public func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttributeDict {
-        // TODO  these logs were in RCPurchases+subscriberattributes, are we ok with logging
-        // them every time?
         let unsyncedAttributes = deviceCache.unsyncedAttributesByKey(appUserID: appUserID)
         Logger.debug(String(format: Strings.attribution.unsynced_attributes_count,
                             unsyncedAttributes.count,
                             appUserID))
-        if unsyncedAttributes.count > 0 {
+        if !unsyncedAttributes.isEmpty {
             Logger.debug(String(format: Strings.attribution.unsynced_attributes, unsyncedAttributes))
         }
 
@@ -183,25 +180,6 @@ import Foundation
 
     @objc public func unsyncedAttributesByKeyForAllUsers() -> [String: SubscriberAttributeDict] {
         return deviceCache.unsyncedAttributesForAllUsers()
-    }
-
-    private func setAttribute(key: String, value: String?, appUserID: String) {
-        storeAttributeLocallyIfNeeded(key: key, value: value, appUserID: appUserID)
-    }
-
-    // TODO capture weak self?
-    private func syncAttributes(attributes: SubscriberAttributeDict,
-                                appUserID: String,
-                                completion: @escaping (Error?) -> Void) {
-        backend.post(subscriberAttributes: attributes, appUserID: appUserID) { error in
-            let receivedNSError = error as NSError?
-            let didBackendReceiveValues = receivedNSError?.rc_successfullySynced ?? true
-
-            if didBackendReceiveValues {
-                self.markAttributesAsSynced(attributes, appUserID: appUserID)
-            }
-            completion(error)
-        }
     }
 
     @objc public func markAttributesAsSynced(_ maybeAttributesToSync: SubscriberAttributeDict?, appUserID: String) {
@@ -214,48 +192,75 @@ import Foundation
                            appUserID,
                            attributesToSync.description))
 
-        // TODO synchronized self
+        lock.lock()
         var unsyncedAttributes = unsyncedAttributesByKey(appUserID: appUserID)
         for (key, attribute) in attributesToSync {
             if let unsyncedAttribute = unsyncedAttributes[key] {
-                if unsyncedAttribute == attribute {
+                if unsyncedAttribute.value == attribute.value {
                     unsyncedAttribute.isSynced = true
                     unsyncedAttributes[key] = unsyncedAttribute
                 }
             }
         }
         deviceCache.store(subscriberAttributesByKey: unsyncedAttributes, appUserID: appUserID)
+        lock.unlock()
     }
 
-    @objc public func convertAttributionDataAndSetAsSubscriberAttributes(attributionData: [String: Any],
-                                                                         network: AttributionNetwork,
-                                                                         appUserID: String) {
+    @objc public func setAttributes(fromAttributionData attributionData: [String: Any],
+                                    network: AttributionNetwork,
+                                    appUserID: String) {
         let convertedAttribution = attributionDataMigrator.convertToSubscriberAttributes(
             attributionData: attributionData,
             network: network.rawValue)
         setAttributes(convertedAttribution, appUserID: appUserID)
     }
+}
 
-    private func storeAttributeLocallyIfNeeded(key: String, value: String?, appUserID: String) {
+private extension SubscriberAttributesManager {
+
+    func storeAttributeLocallyIfNeeded(key: String, value: String?, appUserID: String) {
         let currentValue = currentValueForAttribute(key: key, appUserID: appUserID)
-        if currentValue == nil || currentValue != value.rc_orEmpty() {
-            storeAttributeLocally(key: key, value: value.rc_orEmpty(), appUserID: appUserID)
+        if currentValue == nil || currentValue != (value ?? "") {
+            storeAttributeLocally(key: key, value: value ?? "", appUserID: appUserID)
         }
     }
 
-    private func storeAttributeLocally(key: String, value: String, appUserID: String) {
+    func setAttribute(key: String, value: String?, appUserID: String) {
+        storeAttributeLocallyIfNeeded(key: key, value: value, appUserID: appUserID)
+    }
+
+    func syncAttributes(attributes: SubscriberAttributeDict,
+                        appUserID: String,
+                        completion: @escaping (Error?) -> Void) {
+        backend.post(subscriberAttributes: attributes, appUserID: appUserID) { error in
+            let receivedNSError = error as NSError?
+            let didBackendReceiveValues = receivedNSError?.rc_successfullySynced ?? true
+
+            if didBackendReceiveValues {
+                self.markAttributesAsSynced(attributes, appUserID: appUserID)
+            }
+            completion(error)
+        }
+    }
+
+    func storeAttributeLocally(key: String, value: String, appUserID: String) {
         let subscriberAttribute = SubscriberAttribute.init(withKey: key, value: value)
+        Logger.debug(String(format: Strings.attribution.attribute_set_locally, subscriberAttribute))
         deviceCache.store(subscriberAttribute: subscriberAttribute, appUserID: appUserID)
     }
 
-    private func currentValueForAttribute(key: String, appUserID: String) -> String? {
+    func currentValueForAttribute(key: String, appUserID: String) -> String? {
         let maybeAttribute = deviceCache.subscriberAttribute(attributeKey: key, appUserID: appUserID)
         return maybeAttribute?.value
     }
 
-    private func setAttributionID(networkID: String?, networkKey: String, appUserID: String) {
+    func setAttributionID(networkID: String?, networkKey: String, appUserID: String) {
         collectDeviceIdentifiers(forAppUserID: appUserID)
         setAttribute(key: networkKey, value: networkID, appUserID: appUserID)
+    }
+
+    func logAttributionMethodCalled(functionName: String) {
+        Logger.debug(String(format: Strings.attribution.method_called, functionName))
     }
 
 }

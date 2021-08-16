@@ -86,7 +86,6 @@ private extension AttributionDataMigrator {
     // swiftlint:disable cyclomatic_complexity
     func convertAppsFlyerAttribution(_ data: [String: Any]) -> [String: String] {
         var fixedData = data
-        // TODO confirm casting all to strings makes sense
         if let innerDataObject = fixedData[AttributionKey.AppsFlyer.dataKey.rawValue] as? [String: String?] {
             if fixedData[AttributionKey.AppsFlyer.statusKey.rawValue] != nil {
                 for (key, value) in innerDataObject {

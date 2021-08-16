@@ -26,13 +26,7 @@ class AttributionPosterTests: XCTestCase {
     var deviceCache: MockDeviceCache!
     var identityManager: MockIdentityManager!
     var backend: MockBackend!
-    lazy var subscriberAttributesManager: MockSubscriberAttributesManager = {
-        return MockSubscriberAttributesManager(
-            backend: self.backend,
-            deviceCache: self.deviceCache,
-            attributionFetcher: self.attributionFetcher,
-            attributionDataMigrator: AttributionDataMigrator())
-    }()
+    var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attributionFactory: AttributionTypeFactory! = MockAttributionTypeFactory()
     var systemInfo: MockSystemInfo! = try! MockSystemInfo(platformFlavor: "iOS",
                                                           platformFlavorVersion: "3.2.1",
@@ -46,13 +40,18 @@ class AttributionPosterTests: XCTestCase {
         deviceCache = MockDeviceCache(userDefaults: UserDefaults(suiteName: userDefaultsSuiteName)!)
         deviceCache.cache(appUserID: userID)
         backend = MockBackend()
-        identityManager = MockIdentityManager(mockAppUserID: userID)
         attributionFetcher = AttributionFetcher(attributionFactory: attributionFactory, systemInfo: systemInfo)
+        subscriberAttributesManager = MockSubscriberAttributesManager(
+            backend: self.backend,
+            deviceCache: self.deviceCache,
+            attributionFetcher: self.attributionFetcher,
+            attributionDataMigrator: AttributionDataMigrator())
+        identityManager = MockIdentityManager(mockAppUserID: userID)
         attributionPoster = AttributionPoster(deviceCache: deviceCache,
-                                                identityManager: identityManager,
-                                                backend: backend,
-                                                attributionFetcher: attributionFetcher,
-                                                subscriberAttributesManager: subscriberAttributesManager)
+                                              identityManager: identityManager,
+                                              backend: backend,
+                                              attributionFetcher: attributionFetcher,
+                                              subscriberAttributesManager: subscriberAttributesManager)
         resetAttributionStaticProperties()
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
     }

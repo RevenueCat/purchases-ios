@@ -184,9 +184,9 @@ import Foundation
                                           network: AttributionNetwork,
                                           appUserID: String,
                                           newDictToCache: [String: String]) {
-        subscriberAttributesManager.convertAttributionDataAndSetAsSubscriberAttributes(attributionData: newData,
-                                                                                       network: network,
-                                                                                       appUserID: appUserID)
+        subscriberAttributesManager.setAttributes(fromAttributionData: newData,
+                                                  network: network,
+                                                  appUserID: appUserID)
         deviceCache.set(latestNetworkAndAdvertisingIdsSent: newDictToCache, appUserID: appUserID)
     }
 
