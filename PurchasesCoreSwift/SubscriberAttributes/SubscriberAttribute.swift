@@ -13,11 +13,11 @@ import Foundation
     static private let backendTimestampKey = "updated_at_ms"
 
     // TODO (Post-migration): remove public.
-    @objc public static let keyKey = "key"
-    @objc public static let valueKey = "value"
-    @objc public static let setTimeKey = "setTime"
-    @objc public static let isSyncedKey = "isSynced"
-    public let setTime: Date
+    static let keyKey = "key"
+    static let valueKey = "value"
+    static let setTimeKey = "setTime"
+    static let isSyncedKey = "isSynced"
+    let setTime: Date
 
     @objc public let key: String
     @objc public let value: String
@@ -42,14 +42,14 @@ import Foundation
         fatalError("Init not supported from here")
     }
 
-    @objc public func asDictionary() -> [String: NSObject] {
+    func asDictionary() -> [String: NSObject] {
         return [Self.keyKey: self.key as NSString,
                 Self.valueKey: self.value as NSString,
                 Self.isSyncedKey: NSNumber(value: self.isSynced),
                 Self.setTimeKey: self.setTime as NSDate]
     }
 
-    @objc public func asBackendDictionary() -> [String: Any] {
+    func asBackendDictionary() -> [String: Any] {
         let timestamp = self.setTime.rc_millisecondsSince1970AsUInt64()
 
         return [Self.backendValueKey: self.value,
