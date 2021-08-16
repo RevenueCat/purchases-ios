@@ -155,7 +155,6 @@ import Foundation
     }
 
     private func latestNetworkIdAndAdvertisingIdentifierSent(network: AttributionNetwork) -> String? {
-        print(#function)
         guard let currentAppuserID = identityManager.maybeCurrentAppUserID else {
             return nil
         }
