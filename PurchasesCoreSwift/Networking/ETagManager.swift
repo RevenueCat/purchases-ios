@@ -47,7 +47,7 @@ import Foundation
             }
             if retried {
                 Logger.warn(String(format: Strings.network.could_not_find_cached_response_in_already_retried,
-                        resultFromBackend))
+                        resultFromBackend.description))
                 return resultFromBackend
             }
             return nil
