@@ -123,8 +123,7 @@ extension IdentityManager {
 
     @objc(createAliasForAppUserID:completion:)
     public func createAlias(appUserID alias: String, completion: @escaping (Error?) -> Void) {
-        guard !currentAppUserID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-              !alias.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        guard !alias.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             completion(ErrorUtils.missingAppUserIDError())
             return
         }
