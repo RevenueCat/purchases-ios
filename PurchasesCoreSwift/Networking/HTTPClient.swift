@@ -275,7 +275,7 @@ private extension HTTPClient {
             self.currentSerialRequest = nil
             if !self.queuedRequests.isEmpty {
                 let nextRequest = self.queuedRequests.removeFirst()
-                Logger.debug(String(format: Strings.network.starting_next_request, nextRequest))
+                Logger.debug(String(format: Strings.network.starting_next_request, nextRequest.description))
                 self.performRequest(nextRequest.httpMethod,
                                     serially: true,
                                     path: nextRequest.path,
