@@ -132,11 +132,20 @@ import StoreKit
     }
 
     /**
-     * Constructs an Error with the [ErrorCode.unknownError] code.
+     * Constructs an Error with the [ErrorCode.unknownError] code and optional message.
      */
     @objc public static func unknownError(message: String? = nil) -> Error {
 
         return error(with: ErrorCode.unknownError, message: message)
+
+    }
+
+    /**
+     * Constructs an Error with the [ErrorCode.unknownError] code.
+     */
+    @objc public static func unknownError() -> Error {
+
+        return error(with: ErrorCode.unknownError, message: nil)
 
     }
 
