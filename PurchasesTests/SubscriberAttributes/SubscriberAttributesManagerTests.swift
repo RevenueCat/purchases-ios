@@ -1304,8 +1304,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.mockAttributionDataMigrator.stubbedConvertAttributionDataToSubscriberAttributesResult = [expectedConversionKey: expectedConvertedValue]
         let expectedAttributionData = ["convert": "any", "to": "something"]
 
-        self.subscriberAttributesManager.convertAttributionDataAndSetAsSubscriberAttributes(
-            attributionData:expectedAttributionData,
+        self.subscriberAttributesManager.setAttributes(
+            fromAttributionData: expectedAttributionData,
             network: .adjust,
             appUserID: "user_id")
         expect(self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributes) == true
@@ -1329,8 +1329,8 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.mockAttributionDataMigrator.stubbedConvertAttributionDataToSubscriberAttributesResult = [:]
         let expectedAttributionData = ["convert": "any", "to": "something"]
 
-        self.subscriberAttributesManager.convertAttributionDataAndSetAsSubscriberAttributes(
-            attributionData:expectedAttributionData,
+        self.subscriberAttributesManager.setAttributes(
+            fromAttributionData: expectedAttributionData,
             network: .adjust,
             appUserID: "user_id")
         expect(self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributes) == true

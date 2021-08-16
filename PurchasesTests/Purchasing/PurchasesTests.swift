@@ -36,7 +36,12 @@ class PurchasesTests: XCTestCase {
                                                    finishTransactions: true)
         attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfoAttribution)
-        attributionPoster = AttributionPoster(deviceCache: deviceCache,
+        subscriberAttributesManager =
+            MockSubscriberAttributesManager(backend: self.backend,
+                                            deviceCache: self.deviceCache,
+                                            attributionFetcher: self.attributionFetcher,
+                                            attributionDataMigrator: AttributionDataMigrator())
+        attributionPoster = RCAttributionPoster(deviceCache: deviceCache,
                                                 identityManager: identityManager,
                                                 backend: backend,
                                                 systemInfo: systemInfoAttribution,
@@ -247,13 +252,7 @@ class PurchasesTests: XCTestCase {
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
-    lazy var subscriberAttributesManager: MockSubscriberAttributesManager = {
-        return MockSubscriberAttributesManager(
-            backend: self.backend,
-            deviceCache: self.deviceCache,
-            attributionFetcher: self.attributionFetcher,
-            attributionDataMigrator: AttributionDataMigrator())
-    }()
+    var subscriberAttributesManager: MockSubscriberAttributesManager!
     let identityManager = MockIdentityManager(mockAppUserID: "app_user");
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!

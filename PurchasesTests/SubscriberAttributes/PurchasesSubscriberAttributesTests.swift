@@ -28,13 +28,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     let mockOfferingsFactory = MockOfferingsFactory()
     var mockDeviceCache: MockDeviceCache!
     let mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user");
-    lazy var mockSubscriberAttributesManager: MockSubscriberAttributesManager = {
-        return MockSubscriberAttributesManager(
-            backend: self.mockBackend,
-            deviceCache: self.mockDeviceCache,
-            attributionFetcher: self.mockAttributionFetcher,
-            attributionDataMigrator: AttributionDataMigrator())
-    }()
+    var mockSubscriberAttributesManager: MockSubscriberAttributesManager!
     var subscriberAttributeHeight: SubscriberAttribute!
     var subscriberAttributeWeight: SubscriberAttribute!
     var mockAttributes: [String: SubscriberAttribute]!
@@ -84,12 +78,17 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                         finishTransactions: true)
         self.mockAttributionFetcher = MockAttributionFetcher(attributionFactory: AttributionTypeFactory(),
                                                              systemInfo: systemInfoAttribution)
-        self.mockAttributionPoster = AttributionPoster(deviceCache: mockDeviceCache,
-                                                       identityManager: mockIdentityManager,
-                                                       backend: mockBackend,
-                                                       systemInfo: systemInfoAttribution,
-                                                       attributionFetcher: mockAttributionFetcher,
-                                                       subscriberAttributesManager: mockSubscriberAttributesManager)
+        self.mockSubscriberAttributesManager = MockSubscriberAttributesManager(
+            backend: self.mockBackend,
+            deviceCache: self.mockDeviceCache,
+            attributionFetcher: self.mockAttributionFetcher,
+            attributionDataMigrator: AttributionDataMigrator())
+        self.mockAttributionPoster = RCAttributionPoster(deviceCache: mockDeviceCache,
+                                                         identityManager: mockIdentityManager,
+                                                         backend: mockBackend,
+                                                         systemInfo: systemInfoAttribution,
+                                                         attributionFetcher: mockAttributionFetcher,
+                                                         subscriberAttributesManager: mockSubscriberAttributesManager)
         self.purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
                                                          deviceCache: mockDeviceCache,
                                                          backend: mockBackend,
