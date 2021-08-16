@@ -8,21 +8,17 @@
 
 @import PurchasesCoreSwift;
 
-#import "RCAttributionPoster.h"
 #import "RCPurchases+Protected.h"
-#import "RCPurchases+SubscriberAttributes.h"
 #import "RCPurchases.h"
-#import "RCSubscriberAttributesManager.h"
 
-@interface RCPurchases () <
-RCPurchaserInfoManagerDelegate,
-RCPurchasesOrchestratorDelegate
->
+@interface RCPurchases () <RCPurchaserInfoManagerDelegate, RCPurchasesOrchestratorDelegate>
 
 /**
  * Completion block for calls that send back receipt data
  */
 typedef void (^RCReceiveReceiptDataBlock)(NSData *);
+
+typedef NSDictionary<NSString *, RCSubscriberAttribute *> *RCSubscriberAttributeDict;
 
 @property (nonatomic) RCStoreKitRequestFetcher *requestFetcher;
 @property (nonatomic) RCProductsManager *productsManager;
@@ -30,12 +26,6 @@ typedef void (^RCReceiveReceiptDataBlock)(NSData *);
 @property (nonatomic) RCBackend *backend;
 @property (nonatomic) RCStoreKitWrapper *storeKitWrapper;
 @property (nonatomic) NSNotificationCenter *notificationCenter;
-
-// TODO: move to new class PurchasesManager, possibly rename to a name that describes intent?
-@property (nonatomic) NSMutableDictionary<NSString *, NSString *> *presentedOfferingsByProductIdentifier;
-// TODO: move to new class PurchasesManager
-@property (nonatomic) NSMutableDictionary<NSString *, RCPurchaseCompletedBlock> *purchaseCompleteCallbacks;
-
 @property (nonatomic) RCAttributionFetcher *attributionFetcher;
 @property (nonatomic) RCAttributionPoster *attributionPoster;
 @property (nonatomic) RCOfferingsFactory *offeringsFactory;
@@ -262,7 +252,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
     RCAttributionPoster *attributionPoster = [[RCAttributionPoster alloc] initWithDeviceCache:deviceCache
                                                                               identityManager:identityManager
                                                                                       backend:backend
-                                                                                   systemInfo:systemInfo
                                                                            attributionFetcher:attributionFetcher
                                                                   subscriberAttributesManager:subscriberAttributesManager];
 
@@ -343,9 +332,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
         self.identityManager = identityManager;
 
         self.notificationCenter = notificationCenter;
-
-        self.presentedOfferingsByProductIdentifier = [NSMutableDictionary new];
-        self.purchaseCompleteCallbacks = [NSMutableDictionary new];
 
         self.systemInfo = systemInfo;
         self.subscriberAttributesManager = subscriberAttributesManager;
@@ -772,6 +758,27 @@ API_AVAILABLE(ios(12.2), macos(10.14.4), watchos(6.2), macCatalyst(13.0), tvos(1
                                   completionBlock:completion];
 }
 
+- (void)syncSubscriberAttributesIfNeeded {
+    [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:NO block:^{
+        [self.subscriberAttributesManager syncAttributesForAllUsersWithCurrentAppUserID:self.appUserID];
+    }];
+}
+
+// TODO make private after swift migration
+- (void)markAttributesAsSyncedIfNeeded:(nullable RCSubscriberAttributeDict)syncedAttributes
+                             appUserID:(NSString *)appUserID
+                                 error:(nullable NSError *)error {
+    if (error && !error.rc_successfullySynced) {
+        return;
+    }
+
+    if (error.rc_subscriberAttributesErrors) {
+        [RCLog error:[NSString stringWithFormat:RCStrings.attribution.subscriber_attributes_error,
+                      error.rc_subscriberAttributesErrors]];
+    }
+    [self.subscriberAttributesManager markAttributesAsSynced:syncedAttributes appUserID:appUserID];
+}
+
 #pragma MARK: RCPurchaserInfoManagerDelegate
 - (void)purchaserInfoManagerDidReceiveUpdatedPurchaserInfo:(RCPurchaserInfo *)purchaserInfo {
     if (self.delegate && [self.delegate respondsToSelector:@selector(purchases:didReceiveUpdatedPurchaserInfo:)]) {
@@ -788,4 +795,3 @@ API_AVAILABLE(ios(12.2), macos(10.14.4), watchos(6.2), macCatalyst(13.0), tvos(1
 }
 
 @end
-
