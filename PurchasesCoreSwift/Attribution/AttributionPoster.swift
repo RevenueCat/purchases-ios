@@ -48,18 +48,15 @@ import Foundation
             Logger.warn(Strings.attribution.networkuserid_required_for_appsflyer)
         }
 
-        guard let appUserID: String = self.identityManager.maybeCurrentAppUserID else {
-            Logger.error(Strings.attribution.missing_app_user_id)
-            return
-        }
-
         let maybeIdentifierForAdvertisers = attributionFetcher.identifierForAdvertisers
         if maybeIdentifierForAdvertisers == nil {
             Logger.warn(Strings.attribution.missing_advertiser_identifiers)
         }
 
+        let currentAppUserID = identityManager.currentAppUserID
         let networkKey = String(network.rawValue)
-        let latestNetworkIdsAndAdvertisingIdsSentByNetwork = deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: appUserID)
+        let latestNetworkIdsAndAdvertisingIdsSentByNetwork =
+            deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         let latestSentToNetwork = latestNetworkIdsAndAdvertisingIdsSentByNetwork[networkKey]
 
         // TODO: `(null)` is true to the ObjC code here, maybe we should reject this and not post?
@@ -94,11 +91,14 @@ import Foundation
 
         if !newData.isEmpty {
             if network == .appleSearchAds {
-                postSearchAds(newData: newData, network: network, appUserID: appUserID, newDictToCache: newDictToCache)
+                postSearchAds(newData: newData,
+                              network: network,
+                              appUserID: currentAppUserID,
+                              newDictToCache: newDictToCache)
             } else {
                 postSubscriberAttributes(newData: newData,
                                          network: network,
-                                         appUserID: appUserID,
+                                         appUserID: currentAppUserID,
                                          newDictToCache: newDictToCache)
             }
         }
@@ -158,12 +158,8 @@ import Foundation
     }
 
     private func latestNetworkIdAndAdvertisingIdentifierSent(network: AttributionNetwork) -> String? {
-        guard let currentAppuserID = identityManager.maybeCurrentAppUserID else {
-            return nil
-        }
-
         let networkID = String(network.rawValue)
-        let cachedDict = deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppuserID)
+        let cachedDict = deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: identityManager.currentAppUserID)
         return cachedDict[networkID]
     }
 

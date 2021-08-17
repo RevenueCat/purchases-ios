@@ -430,7 +430,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 #pragma mark Identity
 
 - (NSString *)appUserID {
-    return [self.identityManager maybeCurrentAppUserID];
+    return [self.identityManager currentAppUserID];
 }
 
 - (BOOL)isAnonymous {
@@ -438,7 +438,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)createAlias:(NSString *)alias completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    if ([alias isEqualToString:self.identityManager.maybeCurrentAppUserID]) {
+    if ([alias isEqualToString:self.identityManager.currentAppUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];
     } else {
         [self.identityManager createAliasForAppUserID:alias completion:^(NSError *_Nullable error) {
@@ -454,7 +454,7 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 }
 
 - (void)identify:(NSString *)appUserID completionBlock:(nullable RCReceivePurchaserInfoBlock)completion {
-    if ([appUserID isEqualToString:self.identityManager.maybeCurrentAppUserID]) {
+    if ([appUserID isEqualToString:self.identityManager.currentAppUserID]) {
         [self purchaserInfoWithCompletionBlock:completion];
     } else {
         [self.identityManager identifyAppUserID:appUserID completion:^(NSError *error) {
