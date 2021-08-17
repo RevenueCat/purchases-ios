@@ -267,16 +267,16 @@ import Foundation
 
     // MARK: - attribution
 
-    @objc public func latestNetworkAndAdvertisingIdsSent(appUserID: String) -> [String: Any] {
+    @objc public func latestNetworkAndAdvertisingIdsSent(appUserID: String) -> [String: String] {
         return readCache {
             let key = CacheKeyBases.attributionDataDefaults + appUserID
-            let latestNetworkAndAdvertisingIdsSent = self.userDefaults.object(forKey: key) as? [String: Any] ?? [:]
+            let latestNetworkAndAdvertisingIdsSent = self.userDefaults.object(forKey: key) as? [String: String] ?? [:]
             return latestNetworkAndAdvertisingIdsSent
         }
     }
 
     @objc(setLatestNetworkAndAdvertisingIdsSent:forAppUserID:)
-    public func set(latestNetworkAndAdvertisingIdsSent: [String: Any], appUserID: String) {
+    public func set(latestNetworkAndAdvertisingIdsSent: [String: String], appUserID: String) {
         writeCache {
             self.userDefaults.setValue(latestNetworkAndAdvertisingIdsSent,
                                        forKey: CacheKeyBases.attributionDataDefaults + appUserID)

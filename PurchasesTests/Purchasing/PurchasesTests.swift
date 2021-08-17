@@ -36,12 +36,16 @@ class PurchasesTests: XCTestCase {
                                                    finishTransactions: true)
         attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfoAttribution)
-        attributionPoster = RCAttributionPoster(deviceCache: deviceCache,
-                                                identityManager: identityManager,
-                                                backend: backend,
-                                                systemInfo: systemInfoAttribution,
-                                                attributionFetcher: attributionFetcher,
-                                                subscriberAttributesManager: subscriberAttributesManager)
+        subscriberAttributesManager =
+            MockSubscriberAttributesManager(backend: self.backend,
+                                            deviceCache: self.deviceCache,
+                                            attributionFetcher: self.attributionFetcher,
+                                            attributionDataMigrator: AttributionDataMigrator())
+        attributionPoster = AttributionPoster(deviceCache: deviceCache,
+                                              identityManager: identityManager,
+                                              backend: backend,
+                                              attributionFetcher: attributionFetcher,
+                                              subscriberAttributesManager: subscriberAttributesManager)
         purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
                                                     deviceCache: deviceCache,
                                                     backend: backend,
@@ -247,14 +251,14 @@ class PurchasesTests: XCTestCase {
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
-    let subscriberAttributesManager = MockSubscriberAttributesManager()
+    var subscriberAttributesManager: MockSubscriberAttributesManager!
     let identityManager = MockIdentityManager(mockAppUserID: "app_user");
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
     var mockReceiptParser: MockReceiptParser!
     var attributionFetcher: MockAttributionFetcher!
-    var attributionPoster: RCAttributionPoster!
+    var attributionPoster: AttributionPoster!
     var purchaserInfoManager: PurchaserInfoManager!
     var mockOfferingsManager: MockOfferingsManager!
 
