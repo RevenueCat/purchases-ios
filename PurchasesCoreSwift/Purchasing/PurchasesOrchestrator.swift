@@ -293,7 +293,7 @@ private extension PurchasesOrchestrator {
         } else {
             userCancelled = false
         }
-        
+
         guard let completion = getAndRemovePurchaseCompletedCallback(forTransaction: transaction) else {
             return
         }
