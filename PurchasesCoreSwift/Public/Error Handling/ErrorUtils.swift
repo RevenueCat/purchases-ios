@@ -108,14 +108,14 @@ import StoreKit
     }
 
     /**
-     * Constructs an Error with the [ErrorCode.invalidAppUserIdError] code.
+     * Constructs an Error with the [ErrorCode.productDiscountMissingIdentifierError] code.
      *
-     * @note This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
-     * are removed manually or if the OS deletes entries when running out of space.
+     * @note This error code is used when attemping to post data about product discounts but the discount is
+     * missing an indentifier.
      */
     @objc public static func productDiscountMissingIdentifierError() -> Error {
 
-        return error(with: ErrorCode.invalidAppUserIdError)
+        return error(with: ErrorCode.productDiscountMissingIdentifierError)
 
     }
 
