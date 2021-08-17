@@ -19,19 +19,20 @@
 @implementation RCPurchasesErrorUtilsAPI
 
 + (void)checkAPI {
-    NSError* underlying = [[NSError alloc] initWithDomain:@"NetworkErrorDomain" code:28 userInfo:@{@"key": @"value"}];
-    [RCPurchasesErrorUtils networkErrorWithUnderlyingError:underlying];
-    [RCPurchasesErrorUtils backendErrorWithBackendCode:@12345 backendMessage:@"un mensaje"];
-    [RCPurchasesErrorUtils backendErrorWithBackendCode:@12345 backendMessage:@"un mensaje" finishable:YES];
-    [RCPurchasesErrorUtils unexpectedBackendResponseError];
-    [RCPurchasesErrorUtils missingReceiptFileError];
-    [RCPurchasesErrorUtils missingAppUserIDError];
-    [RCPurchasesErrorUtils logOutAnonymousUserError];
-    [RCPurchasesErrorUtils paymentDeferredError];
-    [RCPurchasesErrorUtils unknownError];
+    NSError *underlying = [[NSError alloc] initWithDomain:@"NetworkErrorDomain" code:28 userInfo:@{@"key": @"value"}];
+    NSError *error = [RCPurchasesErrorUtils networkErrorWithUnderlyingError:underlying];
+    error = [RCPurchasesErrorUtils backendErrorWithBackendCode:@12345 backendMessage:@"un mensaje"];
+    error = [RCPurchasesErrorUtils backendErrorWithBackendCode:@12345 backendMessage:@"un mensaje" finishable:YES];
+    error = [RCPurchasesErrorUtils unexpectedBackendResponseError];
+    error = [RCPurchasesErrorUtils missingReceiptFileError];
+    error = [RCPurchasesErrorUtils missingAppUserIDError];
+    error = [RCPurchasesErrorUtils logOutAnonymousUserError];
+    error = [RCPurchasesErrorUtils paymentDeferredError];
+    error = [RCPurchasesErrorUtils unknownError];
+    error = [RCPurchasesErrorUtils unknownErrorWithMessage:@"🎈🐐"];
     NSError* underlyingSKError = [[NSError alloc] initWithDomain:SKErrorDomain code:SKErrorUnknown userInfo:@{@"key": @"value"}];
-    [RCPurchasesErrorUtils purchasesErrorWithSKError:underlyingSKError];
-
+    error = [RCPurchasesErrorUtils purchasesErrorWithSKError:underlyingSKError];
+    NSLog(@"%@", error.localizedDescription);
 }
 
 @end

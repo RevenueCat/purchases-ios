@@ -111,6 +111,17 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     func setupPurchases(automaticCollection: Bool = false) {
         Purchases.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.mockIdentityManager.mockIsAnonymous = false
+        let purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
+                                                          storeKitWrapper: mockStoreKitWrapper,
+                                                          systemInfo: systemInfo,
+                                                          subscriberAttributesManager: mockSubscriberAttributesManager,
+                                                          operationDispatcher: mockOperationDispatcher,
+                                                          receiptFetcher: mockReceiptFetcher,
+                                                          purchaserInfoManager: purchaserInfoManager,
+                                                          backend: mockBackend,
+                                                          identityManager: mockIdentityManager,
+                                                          receiptParser: mockReceiptParser,
+                                                          deviceCache: mockDeviceCache)
         purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,
                               receiptFetcher: mockReceiptFetcher,
@@ -129,7 +140,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               receiptParser: mockReceiptParser,
                               purchaserInfoManager: purchaserInfoManager,
                               productsManager: mockProductsManager,
-                              offeringsManager: mockOfferingsManager)
+                              offeringsManager: mockOfferingsManager,
+                              purchasesOrchestrator: purchasesOrchestrator)
+        purchasesOrchestrator.maybeDelegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }

@@ -28,9 +28,7 @@ import StoreKit
      * is an [NSJSONSerialization] error.
      */
     @objc public static func networkError(withUnderlyingError underlyingError: Error) -> Error {
-
         return error(with: .networkError, underlyingError: underlyingError)
-
     }
 
     /**
@@ -78,9 +76,7 @@ import StoreKit
      * @note This error is used when an network request returns an unexpected response.
      */
     @objc public static func unexpectedBackendResponseError() -> Error {
-
         return error(with: ErrorCode.unexpectedBackendResponseError)
-
     }
 
     /**
@@ -90,9 +86,7 @@ import StoreKit
      * if there are no previous purchases.
      */
     @objc public static func missingReceiptFileError() -> Error {
-
         return error(with: ErrorCode.missingReceiptFileError)
-
     }
 
     /**
@@ -102,9 +96,17 @@ import StoreKit
      * are removed manually or if the OS deletes entries when running out of space.
      */
     @objc public static func missingAppUserIDError() -> Error {
-
         return error(with: ErrorCode.invalidAppUserIdError)
+    }
 
+    /**
+     * Constructs an Error with the [ErrorCode.productDiscountMissingIdentifierError] code.
+     *
+     * @note This error code is used when attemping to post data about product discounts but the discount is
+     * missing an indentifier.
+     */
+    @objc public static func productDiscountMissingIdentifierError() -> Error {
+        return error(with: ErrorCode.productDiscountMissingIdentifierError)
     }
 
     /**
@@ -124,9 +126,7 @@ import StoreKit
      * as noted by RCPurchaserInfo's isAnonymous property.
      */
     @objc public static func logOutAnonymousUserError() -> Error {
-
         return error(with: ErrorCode.logOutAnonymousUserError)
-
     }
 
     /**
@@ -136,18 +136,31 @@ import StoreKit
      * will get this error to indicate the guardian has to complete the purchase.
      */
     @objc public static func paymentDeferredError() -> Error {
-
         return error(with: ErrorCode.paymentPendingError, message: "The payment is deferred.")
+    }
 
+    /**
+     * Constructs an Error with the [ErrorCode.unknownError] code and optional message.
+     */
+    @objc public static func unknownError(message: String? = nil) -> Error {
+        return error(with: ErrorCode.unknownError, message: message)
     }
 
     /**
      * Constructs an Error with the [ErrorCode.unknownError] code.
      */
     @objc public static func unknownError() -> Error {
+        return error(with: ErrorCode.unknownError, message: nil)
+    }
 
-        return error(with: ErrorCode.unknownError)
-
+    /**
+     * Constructs an Error with the [ErrorCode.operationAlreadyInProgressError] code.
+     *
+     * @note This error is used when a purchase is initiated for a product, but there's already a purchase for the same product in progress.
+     */
+    @objc public static func operationAlreadyInProgressError() -> Error {
+        return error(with: ErrorCode.operationAlreadyInProgressError,
+                     message: "Purchase already in progress for this product.")
     }
 
     /**
@@ -157,10 +170,8 @@ import StoreKit
      * @param skError The originating [SKError].
      */
     @objc public static func purchasesError(withSKError skError: Error) -> Error {
-
         let errorCode = (skError as? SKError)?.toPurchasesErrorCode() ?? .unknownError
         return error(with: errorCode, message: errorCode.description, underlyingError: skError)
-
     }
 
 }
@@ -168,7 +179,6 @@ import StoreKit
 private extension SKError {
 
     func toPurchasesErrorCode() -> ErrorCode {
-
         switch self.code {
         case .unknown,
              .cloudServiceNetworkConnectionFailed,
@@ -200,7 +210,6 @@ private extension SKError {
         @unknown default:
             return .unknownError
         }
-
     }
 
 }
@@ -211,7 +220,6 @@ public extension ErrorUtils {
     @objc static func backendError(withBackendCode backendCode: NSNumber?,
                                    backendMessage: String?,
                                    extraUserInfo: [NSError.UserInfoKey: Any]? = nil) -> Error {
-
         let errorCode: ErrorCode
         if let maybeBackendCode = backendCode,
            let backendErrorCode = BackendErrorCode.init(rawValue: maybeBackendCode.intValue) {
@@ -225,7 +233,6 @@ public extension ErrorUtils {
                      message: errorCode.description,
                      underlyingError: underlyingError,
                      extraUserInfo: extraUserInfo)
-
     }
 
 }
@@ -233,11 +240,9 @@ public extension ErrorUtils {
 private extension ErrorUtils {
 
     static func addUserInfo(userInfo: [String: String], error: Error) -> Error {
-
         let nsError = error as NSError
         let nsErrorWithUserInfo = NSError(domain: nsError.domain, code: nsError.code, userInfo: userInfo)
         return nsErrorWithUserInfo as Error
-
     }
 
     static func error(with code: ErrorCode,
@@ -283,11 +288,9 @@ private extension ErrorUtils {
         let nsErrorWithUserInfo = NSError(domain: nsError.domain, code: nsError.code,
                 userInfo: userInfo as [String: Any])
         return nsErrorWithUserInfo as Error
-
     }
 
     static func backendUnderlyingError(backendCode: NSNumber?, backendMessage: String?) -> Error {
-
         let error: Error
         if let maybeBackendCode = backendCode,
            let backendError = BackendErrorCode.init(rawValue: maybeBackendCode.intValue) {
@@ -301,6 +304,6 @@ private extension ErrorUtils {
         ]
         let errorWithUserInfo = addUserInfo(userInfo: userInfo, error: error)
         return errorWithUserInfo
-
     }
+
 }

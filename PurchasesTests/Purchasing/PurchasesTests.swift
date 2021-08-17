@@ -227,7 +227,7 @@ class PurchasesTests: XCTestCase {
 
         override func post(offerIdForSigning offerIdentifier: String,
                            productIdentifier: String,
-                           subscriptionGroup: String,
+                           subscriptionGroup: String?,
                            receiptData: Data,
                            appUserID: String,
                            completion: @escaping OfferSigningResponseHandler) {
@@ -261,6 +261,7 @@ class PurchasesTests: XCTestCase {
     var attributionPoster: AttributionPoster!
     var purchaserInfoManager: PurchaserInfoManager!
     var mockOfferingsManager: MockOfferingsManager!
+    var purchasesOrchestrator: PurchasesOrchestrator!
 
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -285,6 +286,18 @@ class PurchasesTests: XCTestCase {
     }
 
     private func initializePurchasesInstance(appUserId: String?) {
+        purchasesOrchestrator = PurchasesOrchestrator(productsManager: mockProductsManager,
+                                                      storeKitWrapper: storeKitWrapper,
+                                                      systemInfo: systemInfo,
+                                                      subscriberAttributesManager: subscriberAttributesManager,
+                                                      operationDispatcher: mockOperationDispatcher,
+                                                      receiptFetcher: receiptFetcher,
+                                                      purchaserInfoManager: purchaserInfoManager,
+                                                      backend: backend,
+                                                      identityManager: identityManager,
+                                                      receiptParser: mockReceiptParser,
+                                                      deviceCache: deviceCache)
+
         purchases = Purchases(appUserID: appUserId,
                               requestFetcher: requestFetcher,
                               receiptFetcher: receiptFetcher,
@@ -303,8 +316,10 @@ class PurchasesTests: XCTestCase {
                               receiptParser: mockReceiptParser,
                               purchaserInfoManager: purchaserInfoManager,
                               productsManager: mockProductsManager,
-                              offeringsManager: mockOfferingsManager)
+                              offeringsManager: mockOfferingsManager,
+                              purchasesOrchestrator: purchasesOrchestrator)
 
+        purchasesOrchestrator.maybeDelegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
     }
@@ -560,7 +575,7 @@ class PurchasesTests: XCTestCase {
 
     func testSetsSelfAsStoreKitWrapperDelegate() {
         setupPurchases()
-        expect(self.storeKitWrapper.delegate).to(be(purchases))
+        expect(self.storeKitWrapper.delegate).to(be(purchasesOrchestrator))
     }
 
     func testAddsPaymentToWrapper() {
@@ -2176,6 +2191,30 @@ class PurchasesTests: XCTestCase {
         }
     }
 
+    func testPaymentDiscountForProductDiscountWithNoIDReturnsError() {
+        if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
+            setupPurchases()
+            let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+            let signature = "firma"
+            let keyIdentifier = "key_id"
+            let nonce = UUID()
+            let timestamp = 1234
+            let productDiscount = MockProductDiscount(identifier: nil)
+            self.backend.postOfferForSigningPaymentDiscountResponse["signature"] = signature
+            self.backend.postOfferForSigningPaymentDiscountResponse["keyIdentifier"] = keyIdentifier
+            self.backend.postOfferForSigningPaymentDiscountResponse["nonce"] = nonce
+            self.backend.postOfferForSigningPaymentDiscountResponse["timestamp"] = timestamp
+
+            var maybeError: Error?
+            self.purchases?.paymentDiscount(for: productDiscount, product: product, completion: { (paymentDiscount, error) in
+                maybeError = error
+            })
+
+            expect(maybeError?.localizedDescription)
+                .toEventually(equal(ErrorUtils.productDiscountMissingIdentifierError().localizedDescription))
+        }
+    }
+
     func testPaymentDiscountForProductDiscountCallsCompletionWithErrorIfReceiptNil() {
         if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
             setupPurchases()
@@ -2703,7 +2742,7 @@ class PurchasesTests: XCTestCase {
             setupPurchases()
             guard let purchases = purchases else { fatalError() }
             expect(self.backend.postReceiptDataCalled).to(beFalse())
-            (purchases as StoreKitWrapperDelegate)
+            (purchasesOrchestrator as StoreKitWrapperDelegate)
                 .storeKitWrapper(storeKitWrapper, didRevokeEntitlementsForProductIdentifiers: ["a", "b"])
             expect(self.backend.postReceiptDataCalled).to(beTrue())
         }
