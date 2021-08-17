@@ -18,7 +18,9 @@ public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, PurchaserInfo?
 public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
 @objc(RCPurchasesOrchestratorDelegate) public protocol PurchasesOrchestratorDelegate {
+
     func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: @escaping RCDeferredPromotionalPurchaseBlock)
+
 }
 
 // Todo(post-migration): make internal
@@ -337,11 +339,13 @@ private extension PurchasesOrchestrator {
         var maybePresentedOfferingID: String?
         if let product = products.first {
             let productInfo = ProductInfoExtractor().extractInfo(from: product)
+            maybeProductInfo = productInfo
+
             let productID = productInfo.productIdentifier
             let presentedOfferingID = presentedOfferingIDsByProductID[productID]
-            presentedOfferingIDsByProductID.removeValue(forKey: productID)
-            maybeProductInfo = productInfo
             maybePresentedOfferingID = presentedOfferingID
+
+            presentedOfferingIDsByProductID.removeValue(forKey: productID)
         }
         let unsyncedAttributes = unsyncedAttributes
 
@@ -384,7 +388,7 @@ private extension PurchasesOrchestrator {
                 if self.finishTransactions {
                     self.storeKitWrapper.finishTransaction(transaction)
                 }
-            } else if !finishable {
+            } else {
                 Logger.error(Strings.receipt.unknown_backend_error)
                 maybeCompletion?(transaction, nil, maybeError, false)
             }
@@ -429,7 +433,6 @@ private extension PurchasesOrchestrator {
 
             let maybeCachedPurchaserInfo = self.purchaserInfoManager.cachedPurchaserInfo(appUserID: currentAppUserID)
             let hasOriginalPurchaseDate = maybeCachedPurchaserInfo?.originalPurchaseDate != nil
-
             let receiptHasTransactions = self.receiptParser.receiptHasTransactions(receiptData: receiptData)
 
             if !receiptHasTransactions && hasOriginalPurchaseDate {
