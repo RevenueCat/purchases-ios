@@ -12,7 +12,7 @@ import StoreKit
 // todo: make internal
 @objc(RCReceiptRefreshRequestFactory) public class ReceiptRefreshRequestFactory: NSObject {
 
-    @objc public func receiptRefreshRequest() -> SKReceiptRefreshRequest {
+    func receiptRefreshRequest() -> SKReceiptRefreshRequest {
         return SKReceiptRefreshRequest()
     }
 }
@@ -32,7 +32,7 @@ import StoreKit
         receiptRefreshCompletionHandlers = []
     }
 
-    @objc public func fetchReceiptData(_ completion: @escaping () -> Void) {
+    func fetchReceiptData(_ completion: @escaping () -> Void) {
         operationDispatcher.dispatchOnWorkerThread {
             self.receiptRefreshCompletionHandlers.append(completion)
 

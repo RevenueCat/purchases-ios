@@ -12,8 +12,8 @@ import StoreKit
 // TODO (Post-migration): Remove @objc and make it internal again.
 @objc(RCOfferingsFactory) public class OfferingsFactory: NSObject {
 
-    @objc public func createOfferings(withProducts products: [String: SKProduct],
-                                      data: [String: Any]) -> Offerings? {
+    func createOfferings(withProducts products: [String: SKProduct],
+                         data: [String: Any]) -> Offerings? {
         guard let offeringsData = data["offerings"] as? [[String: Any]] else {
             return nil
         }
@@ -30,8 +30,8 @@ import StoreKit
         return Offerings(offerings: offerings, currentOfferingID: currentOfferingID)
     }
 
-    @objc public func createOffering(withProducts products: [String: SKProduct],
-                                     offeringData: [String: Any]) -> Offering? {
+    func createOffering(withProducts products: [String: SKProduct],
+                        offeringData: [String: Any]) -> Offering? {
         guard let offeringIdentifier = offeringData["identifier"] as? String,
               let packagesData = offeringData["packages"] as? [[String: Any]],
               let serverDescription = offeringData["description"] as? String else {
@@ -49,9 +49,9 @@ import StoreKit
                 availablePackages: availablePackages)
     }
 
-    @objc public func createPackage(withData data: [String: Any],
-                                    products: [String: SKProduct],
-                                    offeringIdentifier: String) -> Package? {
+    func createPackage(withData data: [String: Any],
+                       products: [String: SKProduct],
+                       offeringIdentifier: String) -> Package? {
         guard let platformProductIdentifier = data["platform_product_identifier"] as? String,
               let product = products[platformProductIdentifier],
               let identifier = data["identifier"] as? String else {

@@ -8,9 +8,7 @@
 
 import Foundation
 
-// TODO(post migration): Change back to internal
-@objc(RCHTTPRequest)
-public class HTTPRequest: NSObject, NSCopying {
+class HTTPRequest: NSCopying, CustomStringConvertible {
     @objc public let httpMethod: String
     @objc public let path: String
     @objc public let requestBody: [String: Any]?
@@ -19,7 +17,7 @@ public class HTTPRequest: NSObject, NSCopying {
     @objc public let retried: Bool
     let urlRequest: URLRequest
 
-    @objc public convenience init(byCopyingRequest request: HTTPRequest, retried: Bool) {
+    convenience init(byCopyingRequest request: HTTPRequest, retried: Bool) {
         self.init(httpMethod: request.httpMethod,
                   path: request.path,
                   requestBody: request.requestBody,
@@ -29,14 +27,13 @@ public class HTTPRequest: NSObject, NSCopying {
                   completionHandler: request.completionHandler)
     }
 
-    @objc(initWithHTTPMethod:path:body:headers:retried:urlRequest:completionHandler:)
-    public required init(httpMethod: String,
-                         path: String,
-                         requestBody: [String: Any]?,
-                         authHeaders: [String: String],
-                         retried: Bool,
-                         urlRequest: URLRequest,
-                         completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+    required init(httpMethod: String,
+                  path: String,
+                  requestBody: [String: Any]?,
+                  authHeaders: [String: String],
+                  retried: Bool,
+                  urlRequest: URLRequest,
+                  completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         self.httpMethod = httpMethod
         self.path = path
         self.requestBody = requestBody
@@ -60,7 +57,7 @@ public class HTTPRequest: NSObject, NSCopying {
         return copy
     }
 
-    public override var description: String {
+    var description: String {
         """
         <\(type(of: self)): httpMethod=\(httpMethod)
         path=\(path)

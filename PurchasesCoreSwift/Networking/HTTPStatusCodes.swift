@@ -8,7 +8,7 @@
 
 import Foundation
 
-@objc(RCHTTPStatusCodes) public enum HTTPStatusCodes: Int {
+enum HTTPStatusCodes: Int {
     case success = 200,
          createdSuccess = 201,
          redirect = 300,

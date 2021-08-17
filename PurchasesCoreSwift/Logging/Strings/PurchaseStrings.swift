@@ -15,23 +15,23 @@ import Foundation
         "More info here: https://errors.rev.cat/configuring-products" }
     @objc public var entitlements_revoked_syncing_purchases: String { "Entitlements revoked for product " +
         "identifiers: %@. \nsyncing purchases" }
-    @objc public var finishing_transaction: String { "Finishing transaction %@ %@ (%@)" }
+    var finishing_transaction: String { "Finishing transaction %@ %@ (%@)" }
     @objc public var purchasing_with_observer_mode_and_finish_transactions_false_warning: String { "Observer mode is " +
         "active (finishTransactions is set to false) and purchase has been initiated. RevenueCat will not finish the " +
         "transaction, are you sure you want to do this?" }
-    @objc public var paymentqueue_removedtransaction: String {
+    var paymentqueue_removedtransaction: String {
         "PaymentQueue removedTransaction: %@ %@ (%@ %@) %@ - %d"
     }
-    @objc public var paymentqueue_revoked_entitlements_for_product_identifiers: String { "PaymentQueue " +
+    var paymentqueue_revoked_entitlements_for_product_identifiers: String { "PaymentQueue " +
         "didRevokeEntitlementsForProductIdentifiers: %@" }
-    @objc public var paymentqueue_updatedtransaction: String { "PaymentQueue updatedTransaction: %@ %@ (%@) %@ - %d" }
-    @objc public var presenting_code_redemption_sheet: String { "Presenting code redemption sheet." }
+    var paymentqueue_updatedtransaction: String { "PaymentQueue updatedTransaction: %@ %@ (%@) %@ - %d" }
+    var presenting_code_redemption_sheet: String { "Presenting code redemption sheet." }
     @objc public var purchases_synced: String { "Purchases synced." }
     @objc public var purchasing_product_from_package: String { "Purchasing product from package  - %@ in Offering %@" }
     @objc public var purchasing_product: String { "Purchasing product - %@" }
-    @objc public var skpayment_missing_from_skpaymenttransaction: String { "There is a problem with the " +
+    var skpayment_missing_from_skpaymenttransaction: String { "There is a problem with the " +
         "SKPaymentTransaction missing an SKPayment - this is an issue with the App Store." }
-    @objc public var skpayment_missing_product_identifier: String { "There is a problem with the SKPayment missing " +
+    var skpayment_missing_product_identifier: String { "There is a problem with the SKPayment missing " +
         "a product identifier - this is an issue with the App Store." }
     @objc public var could_not_purchase_product_id_not_found: String { "makePurchase - Could not purchase SKProduct. " +
         "Couldn't find its product identifier. This is possibly an App Store quirk." }
