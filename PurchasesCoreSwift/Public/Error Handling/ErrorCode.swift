@@ -46,6 +46,7 @@ import Foundation
     @objc(RCConfigurationError) case configurationError = 23
     @objc(RCEmptySubscriberAttributesError) case emptySubscriberAttributes = 24
     @objc(RCProductDiscountMissingIdentifierError) case productDiscountMissingIdentifierError = 25
+    @objc(RCmissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 26
 
 }
 
@@ -110,6 +111,8 @@ extension ErrorCode {
             return "A request for subscriber attributes returned none."
         case .productDiscountMissingIdentifierError:
             return "SKProductDiscount must have a non-empty identifier."
+        case .missingAppUserIDForAliasCreationError:
+            return "Unable to create an alias when the alias is either nil or empty string"
         @unknown default:
             return "Something went wrong."
         }
@@ -174,6 +177,8 @@ extension ErrorCode {
             return "EMPTY_SUBSCRIBER_ATTRIBUTES"
         case .productDiscountMissingIdentifierError:
             return "PRODUCT_DISCOUNT_MISSING_IDENTIFIER_ERROR"
+        case .missingAppUserIDForAliasCreationError:
+            return "MISSING_APP_USER_ID_FOR_ALIAS_CREATION_ERROR"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }

@@ -32,11 +32,10 @@ import Foundation
         self.operationDispatcher = operationDispatcher
     }
 
-    @objc(performGETRequestSerially:path:headers:completionHandler:)
-    public func performGETRequest(serially: Bool = false,
-                                  path: String,
-                                  headers authHeaders: [String: String],
-                                  completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+    func performGETRequest(serially: Bool = false,
+                           path: String,
+                           headers authHeaders: [String: String],
+                           completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         performRequest("GET",
                        serially: serially,
                        path: path,
@@ -46,12 +45,11 @@ import Foundation
                        completionHandler: completionHandler)
     }
 
-    @objc(performPOSTRequestSerially:path:requestBody:headers:completionHandler:)
-    public func performPOSTRequest(serially: Bool = false,
-                                   path: String,
-                                   requestBody: [String: Any],
-                                   headers authHeaders: [String: String],
-                                   completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+    func performPOSTRequest(serially: Bool = false,
+                            path: String,
+                            requestBody: [String: Any],
+                            headers authHeaders: [String: String],
+                            completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
         performRequest("POST",
                        serially: serially,
                        path: path,
@@ -61,7 +59,7 @@ import Foundation
                        completionHandler: completionHandler)
     }
 
-    @objc public func clearCaches() {
+    public func clearCaches() {
         operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
             self.eTagManager.clearCaches()
         }
@@ -277,7 +275,7 @@ private extension HTTPClient {
             self.currentSerialRequest = nil
             if !self.queuedRequests.isEmpty {
                 let nextRequest = self.queuedRequests.removeFirst()
-                Logger.debug(String(format: Strings.network.starting_next_request, nextRequest))
+                Logger.debug(String(format: Strings.network.starting_next_request, nextRequest.description))
                 self.performRequest(nextRequest.httpMethod,
                                     serially: true,
                                     path: nextRequest.path,

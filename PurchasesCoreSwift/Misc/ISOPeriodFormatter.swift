@@ -11,11 +11,9 @@ import StoreKit
 
 @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)
 
-// TODO(post-migration): Switch public back to <> (nothing)
-// TODO(post-migration): remove @objc since this is internal only
-@objc(RCISOPeriodFormatter) public class ISOPeriodFormatter: NSObject {
+class ISOPeriodFormatter {
 
-    @objc public func string(fromProductSubscriptionPeriod period: SKProductSubscriptionPeriod) -> String {
+    func string(fromProductSubscriptionPeriod period: SKProductSubscriptionPeriod) -> String {
         let unitString = self.period(fromUnit: period.unit)
         let stringResult = "P\(period.numberOfUnits)\(unitString)"
         return stringResult

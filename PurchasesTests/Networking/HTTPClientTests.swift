@@ -12,7 +12,7 @@ import OHHTTPStubsSwift
 import Nimble
 
 import Purchases
-import PurchasesCoreSwift
+@testable import PurchasesCoreSwift
 
 class HTTPClientTests: XCTestCase {
 

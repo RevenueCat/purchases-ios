@@ -1,32 +1,35 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  IdentityStrings.swift
-//  PurchasesCoreSwift
 //
 //  Created by Tina Nguyen on 12/11/20.
-//  Copyright © 2020 Purchases. All rights reserved.
-//
 
 import Foundation
 
 // swiftlint:disable identifier_name
-@objc(RCIdentityStrings) public class IdentityStrings: NSObject {
+class IdentityStrings {
 
-    @objc public var changing_app_user_id: String { "Changing App User ID: %@ -> %@" }
-    @objc public var creating_alias_failed_null_currentappuserid: String { "Couldn't create an alias because the " +
-        "currentAppUserID is nil. This might happen if the cache in UserDefaults is unintentionally cleared." }
-    @objc public var logging_in_with_initial_appuserid_nil: String { "Couldn't log in because the current appUserID " +
-        "is nil. This might happen if the cache in UserDefaults is unintentionally cleared." }
-    @objc public var logging_in_with_nil_appuserid: String { "The appUserID passed to logIn is nil or empty. " +
+    var changing_app_user_id: String { "Changing App User ID: %@ -> %@" }
+    var logging_in_with_nil_appuserid: String { "The appUserID passed to logIn is nil or empty. " +
         "Can't log in. This method should only be called with non-nil and non-empty values." }
-    @objc public var logging_in_with_same_appuserid: String { "The appUserID passed to logIn is the same as the one " +
+    var logging_in_with_same_appuserid: String { "The appUserID passed to logIn is the same as the one " +
     "already cached. No action will be taken."}
-    @objc public var creating_alias_success: String { "Alias created" }
-    @objc public var login_success: String { "Log in successful" }
-    @objc public var log_out_called_for_user: String { "Log out called for user %@" }
-    @objc public var log_out_success: String { "Log out successful" }
-    @objc public var creating_alias: String { "Creating an alias between current appUserID %@ and %@" }
-    @objc public var identifying_anon_id: String { "Identifying from an anonymous ID: %@. An alias will be created." }
-    @objc public var identifying_app_user_id: String { "Identifying App User ID: %@" }
-    @objc public var reset_missing_app_user_id: String { "Reset App User ID called on nil current user." }
+    var creating_alias_success: String { "Alias created" }
+    var login_success: String { "Log in successful" }
+    var log_out_called_for_user: String { "Log out called for user %@" }
+    var log_out_success: String { "Log out successful" }
+    var creating_alias: String { "Creating an alias between current appUserID %@ and %@" }
+    var identifying_anon_id: String { "Identifying from an anonymous ID: %@. An alias will be created." }
+    var identifying_app_user_id: String { "Identifying App User ID: %@" }
+    var null_currentappuserid: String {
+        "currentAppUserID is nil. This might happen if the cache in UserDefaults is unintentionally cleared."
+    }
 
 }

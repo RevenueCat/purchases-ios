@@ -122,7 +122,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                           identityManager: mockIdentityManager,
                                                           receiptParser: mockReceiptParser,
                                                           deviceCache: mockDeviceCache)
-        purchases = Purchases(appUserID: mockIdentityManager.maybeCurrentAppUserID,
+        purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,
                               receiptFetcher: mockReceiptFetcher,
                               attributionFetcher: mockAttributionFetcher,
@@ -227,7 +227,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         Purchases.shared.setAttributes(["genre": "rock n' roll"])
         expect(self.mockSubscriberAttributesManager.invokedSetAttributesCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetAttributesParameters?.attributes) == ["genre": "rock n' roll"]
-        expect(self.mockSubscriberAttributesManager.invokedSetAttributesParameters?.appUserID) == mockIdentityManager.maybeCurrentAppUserID
+        expect(self.mockSubscriberAttributesManager.invokedSetAttributesParameters?.appUserID) == mockIdentityManager.currentAppUserID
     }
 
     func testSetEmailMakesRightCalls() {
@@ -237,7 +237,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetEmailCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetEmailParameters?.email) == "ac.dc@rock.com"
         expect(self.mockSubscriberAttributesManager.invokedSetEmailParameters?.appUserID) == mockIdentityManager
-            .maybeCurrentAppUserID
+            .currentAppUserID
     }
 
     func testSetPhoneNumberMakesRightCalls() {
@@ -247,7 +247,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetPhoneNumberCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetPhoneNumberParameters?.phoneNumber) == "8561365841"
         expect(self.mockSubscriberAttributesManager.invokedSetPhoneNumberParameters?.appUserID) == mockIdentityManager
-            .maybeCurrentAppUserID
+            .currentAppUserID
     }
 
     func testSetDisplayNameMakesRightCalls() {
@@ -257,7 +257,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetDisplayNameCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetDisplayNameParameters?.displayName) == "Stevie Ray Vaughan"
         expect(self.mockSubscriberAttributesManager.invokedSetDisplayNameParameters?.appUserID) == mockIdentityManager
-            .maybeCurrentAppUserID
+            .currentAppUserID
     }
 
     func testSetPushTokenMakesRightCalls() {
@@ -272,7 +272,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
         expect((receivedPushToken as NSData).rc_asString()) == tokenString
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParameters?.appUserID) == mockIdentityManager
-            .maybeCurrentAppUserID
+            .currentAppUserID
     }
 
     func testSetPushTokenStringMakesRightCalls() {
@@ -286,7 +286,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
         expect(receivedPushToken) == tokenString
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenStringParameters?.appUserID) ==
-            mockIdentityManager.maybeCurrentAppUserID
+            mockIdentityManager.currentAppUserID
     }
 
     func testSetAdjustIDMakesRightCalls() {
@@ -296,7 +296,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetAdjustIDCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetAdjustIDParameters?.adjustID) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetAdjustIDParameters?.appUserID) == mockIdentityManager
-                .maybeCurrentAppUserID
+                .currentAppUserID
     }
 
     func testSetAppsflyerIDMakesRightCalls() {
@@ -306,7 +306,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetAppsflyerIDCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetAppsflyerIDParameters?.appsflyerID) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetAppsflyerIDParameters?.appUserID) == mockIdentityManager
-                .maybeCurrentAppUserID
+                .currentAppUserID
     }
 
     func testSetFBAnonymousIDMakesRightCalls() {
@@ -316,7 +316,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetFBAnonymousIDCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetFBAnonymousIDParameters?.fbAnonymousID) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetFBAnonymousIDParameters?.appUserID) == mockIdentityManager
-                .maybeCurrentAppUserID
+                .currentAppUserID
     }
 
     func testSetMparticleIDMakesRightCalls() {
@@ -326,7 +326,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetMparticleIDCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetMparticleIDParameters?.mparticleID) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetMparticleIDParameters?.appUserID) == mockIdentityManager
-                .maybeCurrentAppUserID
+                .currentAppUserID
     }
 
     func testSetOnesignalIDMakesRightCalls() {
@@ -336,7 +336,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDParameters?.onesignalID) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDParameters?.appUserID) == mockIdentityManager
-                .maybeCurrentAppUserID
+                .currentAppUserID
     }
 
     func testSetMediaSourceMakesRightCalls() {
@@ -346,7 +346,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetMediaSourceCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetMediaSourceParameters?.mediaSource) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetMediaSourceParameters?.appUserID) == mockIdentityManager
-                .maybeCurrentAppUserID
+                .currentAppUserID
     }
 
     func testSetCampaignMakesRightCalls() {
@@ -356,7 +356,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetCampaignCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetCampaignParameters?.campaign) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetCampaignParameters?.appUserID) == mockIdentityManager
-                .maybeCurrentAppUserID
+                .currentAppUserID
     }
 
     func testSetAdGroupMakesRightCalls() {
@@ -366,7 +366,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetAdGroupCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetAdGroupParameters?.adGroup) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetAdGroupParameters?.appUserID) == mockIdentityManager
-                .maybeCurrentAppUserID
+                .currentAppUserID
     }
 
     func testSetAdMakesRightCalls() {
@@ -376,7 +376,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetAdCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetAdParameters?.ad) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetAdParameters?.appUserID) == mockIdentityManager
-                .maybeCurrentAppUserID
+                .currentAppUserID
     }
 
     func testSetKeywordMakesRightCalls() {
@@ -386,7 +386,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetKeywordCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetKeywordParameters?.keyword) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetKeywordParameters?.appUserID) == mockIdentityManager
-                .maybeCurrentAppUserID
+                .currentAppUserID
     }
 
     func testSetCreativeMakesRightCalls() {
@@ -396,7 +396,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetCreativeCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetCreativeParameters?.creative) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetCreativeParameters?.appUserID) ==
-            mockIdentityManager.maybeCurrentAppUserID
+            mockIdentityManager.currentAppUserID
     }
 
     func testCollectDeviceIdentifiersMakesRightCalls() {
@@ -405,7 +405,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         Purchases.shared.collectDeviceIdentifiers()
         expect(self.mockSubscriberAttributesManager.invokedCollectDeviceIdentifiersCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedCollectDeviceIdentifiersParameters?.appUserID) ==
-            mockIdentityManager.maybeCurrentAppUserID
+            mockIdentityManager.currentAppUserID
     }
 
     // MARK: Post receipt with attributes
@@ -432,7 +432,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == true
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.syncedAttributes) == mockAttributes
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.appUserID) ==
-            mockIdentityManager.maybeCurrentAppUserID
+            mockIdentityManager.currentAppUserID
     }
 
     func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessfullySynced() {
@@ -460,7 +460,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == true
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.syncedAttributes) == mockAttributes
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.appUserID) ==
-            mockIdentityManager.maybeCurrentAppUserID
+            mockIdentityManager.currentAppUserID
     }
 
     func testPostReceiptDoesntMarkSubscriberAttributesSyncedIfBackendNotSuccessfullySynced() {

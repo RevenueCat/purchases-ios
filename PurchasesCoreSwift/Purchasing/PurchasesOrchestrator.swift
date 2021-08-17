@@ -43,7 +43,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
     private var purchaseCompleteCallbacksByProductID: [String: PurchaseCompletedBlock] = [:]
 
     // todo: remove explicit unwrap once nullability in identityManager is updated
-    private var appUserID: String { identityManager.maybeCurrentAppUserID! }
+    private var appUserID: String { identityManager.currentAppUserID }
     private var unsyncedAttributes: SubscriberAttributeDict {
         subscriberAttributesManager.unsyncedAttributesByKey(appUserID: self.appUserID)
     }
