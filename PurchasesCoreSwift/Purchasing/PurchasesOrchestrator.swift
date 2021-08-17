@@ -428,8 +428,7 @@ private extension PurchasesOrchestrator {
                   }
 
             let maybeCachedPurchaserInfo = self.purchaserInfoManager.cachedPurchaserInfo(appUserID: currentAppUserID)
-            let hasOriginalPurchaseDate = maybeCachedPurchaserInfo != nil
-                                          && maybeCachedPurchaserInfo!.originalPurchaseDate != nil
+            let hasOriginalPurchaseDate = maybeCachedPurchaserInfo?.originalPurchaseDate != nil
 
             let receiptHasTransactions = self.receiptParser.receiptHasTransactions(receiptData: receiptData)
 
