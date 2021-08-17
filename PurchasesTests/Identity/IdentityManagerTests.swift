@@ -107,7 +107,7 @@ class IdentityManagerTests: XCTestCase {
 
             guard let receivedError = error else { fatalError() }
             receivedNSError = receivedError as NSError
-            expect(receivedNSError!.code) == ErrorCode.invalidAppUserIdError.rawValue
+            expect(receivedNSError!.code) == ErrorCode.missingAppUserIDForAliasCreationError.rawValue
         }
 
         expect(completionCalled).toEventually(beTrue())

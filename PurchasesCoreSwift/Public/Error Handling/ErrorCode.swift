@@ -45,6 +45,7 @@ import Foundation
     @objc(RCLogOutAnonymousUserError) case logOutAnonymousUserError = 22
     @objc(RCConfigurationError) case configurationError = 23
     @objc(RCEmptySubscriberAttributesError) case emptySubscriberAttributes = 24
+    @objc(RCmissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 26
 
 }
 
@@ -107,6 +108,8 @@ extension ErrorCode {
             return "There is an issue with your configuration. Check the underlying error for more details."
         case .emptySubscriberAttributes:
             return "A request for subscriber attributes returned none."
+        case .missingAppUserIDForAliasCreationError:
+            return "Unable to create an alias when the alias is either nil or empty string"
         @unknown default:
             return "Something went wrong."
         }
@@ -169,6 +172,8 @@ extension ErrorCode {
             return "CONFIGURATION_ERROR"
         case .emptySubscriberAttributes:
             return "EMPTY_SUBSCRIBER_ATTRIBUTES"
+        case .missingAppUserIDForAliasCreationError:
+            return "MISSING_APP_USER_ID_FOR_ALIAS_CREATION_ERROR"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }
