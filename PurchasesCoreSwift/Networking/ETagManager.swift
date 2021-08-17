@@ -19,7 +19,7 @@ import Foundation
         self.userDefaults = userDefaults
     }
 
-    @objc public func eTagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
+    func eTagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
         var storedETag = ""
         if !refreshETag, let storedETagAndResponse = storedETagAndResponse(for: urlRequest) {
             storedETag = storedETagAndResponse.eTag
@@ -27,11 +27,11 @@ import Foundation
         return [ETagManager.eTagHeaderName: storedETag]
     }
 
-    @objc public func httpResultFromCacheOrBackend(with response: HTTPURLResponse,
-                                                   jsonObject: [String: Any]?,
-                                                   error: Error?,
-                                                   request: URLRequest,
-                                                   retried: Bool) -> HTTPResponse? {
+    func httpResultFromCacheOrBackend(with response: HTTPURLResponse,
+                                      jsonObject: [String: Any]?,
+                                      error: Error?,
+                                      request: URLRequest,
+                                      retried: Bool) -> HTTPResponse? {
         let statusCode = response.statusCode
         let resultFromBackend = HTTPResponse(statusCode: statusCode, jsonObject: jsonObject)
         guard error == nil else { return resultFromBackend }
@@ -47,7 +47,7 @@ import Foundation
             }
             if retried {
                 Logger.warn(String(format: Strings.network.could_not_find_cached_response_in_already_retried,
-                        resultFromBackend))
+                        resultFromBackend.description))
                 return resultFromBackend
             }
             return nil
@@ -60,7 +60,7 @@ import Foundation
         return resultFromBackend
     }
 
-    @objc public func clearCaches() {
+    func clearCaches() {
         self.userDefaults.removePersistentDomain(forName: ETagManager.suiteName)
     }
 

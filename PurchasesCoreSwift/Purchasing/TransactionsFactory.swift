@@ -10,12 +10,6 @@ import Foundation
 
 @objc(RCTransactionsFactory) public class TransactionsFactory: NSObject {
 
-    @objc public func nonSubscriptionTransactions(
-        withSubscriptionsData subscriptionsData: [String: [[String: Any]]]) -> [Transaction] {
-        nonSubscriptionTransactions(withSubscriptionsData: subscriptionsData,
-                                    dateFormatter: .iso8601SecondsDateFormatter)
-    }
-
     func nonSubscriptionTransactions(withSubscriptionsData subscriptionsData: [String: [[String: Any]]],
                                      dateFormatter: DateFormatter) -> [Transaction] {
         subscriptionsData.flatMap { (productId: String, transactionData: [[String: Any]]) -> [Transaction] in
