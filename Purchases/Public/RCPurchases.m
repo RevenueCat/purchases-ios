@@ -549,10 +549,10 @@ completionBlock:(void (^)(RCPurchaserInfo * _Nullable purchaserInfo, BOOL create
                     withPayment:(SKMutablePayment *)payment
 withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
                      completion:(RCPurchaseCompletedBlock)completion {
-    [self.purchasesOrchestrator purchaseWithProduct:product
-                                            payment:payment
-                        presentedOfferingIdentifier:presentedOfferingIdentifier
-                                         completion:completion];
+    [self.purchasesOrchestrator purchaseProduct:product
+                                        payment:payment
+                    presentedOfferingIdentifier:presentedOfferingIdentifier
+                                     completion:completion];
 }
 
 - (void)syncPurchasesWithCompletionBlock:(nullable RCReceivePurchaserInfoBlock)completion {

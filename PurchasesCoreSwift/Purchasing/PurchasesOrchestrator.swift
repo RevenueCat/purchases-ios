@@ -27,20 +27,16 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
     @objc public var finishTransactions: Bool { systemInfo.finishTransactions }
     @objc public var allowSharingAppStoreAccount: Bool {
         get {
-            if let allow = _allowSharingAppStoreAccount {
-                return allow
-            } else {
-                return identityManager.currentUserIsAnonymous
-            }
+            return maybeAllowSharingAppStoreAccount ?? identityManager.currentUserIsAnonymous
         }
         set {
-            _allowSharingAppStoreAccount = newValue
+            maybeAllowSharingAppStoreAccount = newValue
         }
     }
 
     @objc public weak var maybeDelegate: PurchasesOrchestratorDelegate?
 
-    private var _allowSharingAppStoreAccount: Bool?
+    private var maybeAllowSharingAppStoreAccount: Bool?
     private var presentedOfferingIDsByProductID: [String: String] = [:]
     private var purchaseCompleteCallbacksByProductID: [String: PurchaseCompletedBlock] = [:]
 
@@ -116,16 +112,18 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
     @objc public func paymentDiscount(forProductDiscount productDiscount: SKProductDiscount,
                                       product: SKProduct,
                                       completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
+        guard let discountIdentifier = productDiscount.identifier else {
+            completion(nil, ErrorUtils.productDiscountMissingIdentifierError())
+            return
+        }
+
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeReceiptData in
             guard let receiptData = maybeReceiptData,
                   !receiptData.isEmpty else {
                       completion(nil, ErrorUtils.missingReceiptFileError())
                       return
                   }
-            guard let discountIdentifier = productDiscount.identifier else {
-                      completion(nil, ErrorUtils.productDiscountMissingIdentifierError())
-                      return
-                  }
+
             self.backend.post(offerIdForSigning: discountIdentifier,
                               productIdentifier: product.productIdentifier,
                               subscriptionGroup: product.subscriptionGroupIdentifier ,
@@ -156,13 +154,14 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         }
     }
 
-    @objc public func purchase(product: SKProduct,
-                               payment: SKMutablePayment,
-                               presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
-                               completion: @escaping PurchaseCompletedBlock) {
-        Logger.debug("makePurchase")
+    @objc(purchaseProduct:payment:presentedOfferingIdentifier:completion:)
+    public func purchase(product: SKProduct,
+                         payment: SKMutablePayment,
+                         presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
+                         completion: @escaping PurchaseCompletedBlock) {
+        Logger.debug(String(format: "Make purchase called: %@", #function))
         guard let productIdentifier = extractProductIdentifier(fromProduct: product, orPayment: payment) else {
-            Logger.info(Strings.purchase.could_not_purchase_product_id_not_found)
+            Logger.error(Strings.purchase.could_not_purchase_product_id_not_found)
             let errorMessage = "There was a problem purchasing the product: productIdentifier was nil"
             completion(nil, nil, ErrorUtils.unknownError(message: errorMessage), false)
             return
@@ -172,9 +171,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
             Logger.warn(Strings.purchase.purchasing_with_observer_mode_and_finish_transactions_false_warning)
         }
 
-        let currentAppUserID = self.appUserID
-        payment.applicationUsername = currentAppUserID
-
+        payment.applicationUsername = appUserID
         preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: appUserID)
 
         if let presentedOfferingIdentifier = maybePresentedOfferingIdentifier {
@@ -192,9 +189,12 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         productsManager.cacheProduct(product)
 
         lock.lock()
+        defer {
+            lock.unlock()
+        }
+
         guard purchaseCompleteCallbacksByProductID[productIdentifier] == nil else {
             completion(nil, nil, ErrorUtils.operationAlreadyInProgressError(), false)
-            lock.unlock()
             return
         }
         purchaseCompleteCallbacksByProductID[productIdentifier] = completion
