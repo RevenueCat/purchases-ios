@@ -8,13 +8,13 @@
 
 import Foundation
 
-@objc(RCHTTPResponse) public class HTTPResponse: NSObject {
+struct HTTPResponse: CustomStringConvertible {
 
-    @objc public let statusCode: Int
-    @objc public let jsonObject: [String: Any]?
+    let statusCode: Int
+    let jsonObject: [String: Any]?
 
-    @objc public init(statusCode: Int, jsonObject: [String: Any]?) {
-        self.statusCode = statusCode
-        self.jsonObject = jsonObject
+    var description: String {
+        "HTTPResponse(statusCode: \(statusCode), jsonObject: \(jsonObject?.description ?? ""))"
     }
+
 }

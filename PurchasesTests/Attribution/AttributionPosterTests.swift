@@ -22,7 +22,7 @@ import Purchases
 class AttributionPosterTests: XCTestCase {
 
     var attributionFetcher: AttributionFetcher!
-    var attributionPoster: RCAttributionPoster!
+    var attributionPoster: AttributionPoster!
     var deviceCache: MockDeviceCache!
     var identityManager: MockIdentityManager!
     var backend: MockBackend!
@@ -47,12 +47,11 @@ class AttributionPosterTests: XCTestCase {
             attributionFetcher: self.attributionFetcher,
             attributionDataMigrator: AttributionDataMigrator())
         identityManager = MockIdentityManager(mockAppUserID: userID)
-        attributionPoster = RCAttributionPoster(deviceCache: deviceCache,
-                                                identityManager: identityManager,
-                                                backend: backend,
-                                                systemInfo: systemInfo,
-                                                attributionFetcher: attributionFetcher,
-                                                subscriberAttributesManager: subscriberAttributesManager)
+        attributionPoster = AttributionPoster(deviceCache: deviceCache,
+                                              identityManager: identityManager,
+                                              backend: backend,
+                                              attributionFetcher: attributionFetcher,
+                                              subscriberAttributesManager: subscriberAttributesManager)
         resetAttributionStaticProperties()
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
     }
@@ -77,16 +76,15 @@ class AttributionPosterTests: XCTestCase {
     func testPostAttributionDataSkipsIfAlreadySent() {
         let userID = "userID"
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
-
-        attributionPoster.postAttributionData(["something": "here"],
-                                               from: .adjust,
-                                               forNetworkUserId: userID)
+        attributionPoster.post(attributionData: ["something": "here"],
+                               fromNetwork: .adjust,
+                               forNetworkUserId: userID)
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
-        attributionPoster.postAttributionData(["something": "else"],
-                                               from: .adjust,
-                                               forNetworkUserId: userID)
+        attributionPoster.post(attributionData: ["something": "else"],
+                               fromNetwork: .adjust,
+                               forNetworkUserId: userID)
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
@@ -96,15 +94,15 @@ class AttributionPosterTests: XCTestCase {
         let userID = "userID"
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
 
-        attributionPoster.postAttributionData(["something": "here"],
-                                               from: .appleSearchAds,
-                                               forNetworkUserId: userID)
+        attributionPoster.post(attributionData: ["something": "here"],
+                               fromNetwork: .appleSearchAds,
+                               forNetworkUserId: userID)
         expect(self.backend.invokedPostAttributionDataCount) == 1
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
 
-        attributionPoster.postAttributionData(["something": "else"],
-                                               from: .appleSearchAds,
-                                               forNetworkUserId: userID)
+        attributionPoster.post(attributionData: ["something": "else"],
+                               fromNetwork: .appleSearchAds,
+                               forNetworkUserId: userID)
         expect(self.backend.invokedPostAttributionDataCount) == 1
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
 
@@ -114,15 +112,15 @@ class AttributionPosterTests: XCTestCase {
         let userID = "userID"
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
 
-        attributionPoster.postAttributionData(["something": "here"],
-                                               from: .adjust,
-                                               forNetworkUserId: userID)
+        attributionPoster.post(attributionData: ["something": "here"],
+                               fromNetwork: .adjust,
+                               forNetworkUserId: userID)
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
-        attributionPoster.postAttributionData(["something": "else"],
-                                               from: .facebook,
-                                               forNetworkUserId: userID)
+        attributionPoster.post(attributionData: ["something": "else"],
+                               fromNetwork: .facebook,
+                               forNetworkUserId: userID)
 
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
@@ -131,15 +129,15 @@ class AttributionPosterTests: XCTestCase {
     func testPostAttributionDataDoesntSkipIfDifferentUserIdButSameNetwork() {
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
 
-        attributionPoster.postAttributionData(["something": "here"],
-                                               from: .adjust,
-                                               forNetworkUserId: "attributionUser1")
+        attributionPoster.post(attributionData: ["something": "here"],
+                               fromNetwork: .adjust,
+                               forNetworkUserId: "attributionUser1")
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
-        attributionPoster.postAttributionData(["something": "else"],
-                                               from: .adjust,
-                                               forNetworkUserId: "attributionUser2")
+        attributionPoster.post(attributionData: ["something": "else"],
+                               fromNetwork: .adjust,
+                               forNetworkUserId: "attributionUser2")
 
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
@@ -148,15 +146,15 @@ class AttributionPosterTests: XCTestCase {
     func testPostAppleSearchAdsAttributionDataDoesntSkipIfDifferentUserIdButSameNetwork() {
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
 
-        attributionPoster.postAttributionData(["something": "here"],
-                                               from: .appleSearchAds,
-                                               forNetworkUserId: "attributionUser1")
+        attributionPoster.post(attributionData: ["something": "here"],
+                               fromNetwork: .appleSearchAds,
+                               forNetworkUserId: "attributionUser1")
         expect(self.backend.invokedPostAttributionDataCount) == 1
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
 
-        attributionPoster.postAttributionData(["something": "else"],
-                                               from: .appleSearchAds,
-                                               forNetworkUserId: "attributionUser2")
+        attributionPoster.post(attributionData: ["something": "else"],
+                               fromNetwork: .appleSearchAds,
+                               forNetworkUserId: "attributionUser2")
 
         expect(self.backend.invokedPostAttributionDataCount) == 2
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0

@@ -1304,10 +1304,9 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.mockAttributionDataMigrator.stubbedConvertAttributionDataToSubscriberAttributesResult = [expectedConversionKey: expectedConvertedValue]
         let expectedAttributionData = ["convert": "any", "to": "something"]
 
-        self.subscriberAttributesManager.setAttributes(
-            fromAttributionData: expectedAttributionData,
-            network: .adjust,
-            appUserID: "user_id")
+        self.subscriberAttributesManager.setAttributes(fromAttributionData: expectedAttributionData,
+                                                       network: .adjust,
+                                                       appUserID: "user_id")
         expect(self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributes) == true
         let invokedParameters = self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributesParameters
         expect(invokedParameters!.attributionData.count) == expectedAttributionData.count
@@ -1329,10 +1328,9 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.mockAttributionDataMigrator.stubbedConvertAttributionDataToSubscriberAttributesResult = [:]
         let expectedAttributionData = ["convert": "any", "to": "something"]
 
-        self.subscriberAttributesManager.setAttributes(
-            fromAttributionData: expectedAttributionData,
-            network: .adjust,
-            appUserID: "user_id")
+        self.subscriberAttributesManager.setAttributes(fromAttributionData: expectedAttributionData,
+                                                       network: .adjust,
+                                                       appUserID: "user_id")
         expect(self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributes) == true
         let invokedParameters = self.mockAttributionDataMigrator.invokedConvertAttributionDataToSubscriberAttributesParameters
         expect(invokedParameters!.attributionData.count) == expectedAttributionData.count

@@ -31,7 +31,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-@interface RCPurchases (Protected) <RCStoreKitWrapperDelegate>
+@interface RCPurchases (Protected) <RCPurchasesOrchestratorDelegate>
 
 - (instancetype)initWithAppUserID:(nullable NSString *)appUserID
                    requestFetcher:(RCStoreKitRequestFetcher *)requestFetcher
@@ -51,7 +51,8 @@ NS_ASSUME_NONNULL_BEGIN
                     receiptParser:(RCReceiptParser *)receiptParser
              purchaserInfoManager:(RCPurchaserInfoManager *)purchaserInfoManager
                   productsManager:(RCProductsManager *)productsManager
-                 offeringsManager:(RCOfferingsManager *)offeringsManager;
+                 offeringsManager:(RCOfferingsManager *)offeringsManager
+            purchasesOrchestrator:(RCPurchasesOrchestrator *)purchasesOrchestrator;
 
 + (void)setDefaultInstance:(nullable RCPurchases *)instance;
 
