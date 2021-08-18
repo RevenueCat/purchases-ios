@@ -2160,6 +2160,7 @@ class PurchasesTests: XCTestCase {
         if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
             setupPurchases()
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+            product.mockSubscriptionGroupIdentifier = "productGroup"
 
             let discountIdentifier = "id"
             let signature = "firma"
@@ -2219,6 +2220,7 @@ class PurchasesTests: XCTestCase {
         if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
             setupPurchases()
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+            product.mockSubscriptionGroupIdentifier = "productGroup"
 
             let discountIdentifier = "id"
             let productDiscount = MockProductDiscount(identifier: discountIdentifier)
@@ -2245,6 +2247,7 @@ class PurchasesTests: XCTestCase {
         if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
             setupPurchases()
             let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+            product.mockSubscriptionGroupIdentifier = "productGroup"
 
             let discountIdentifier = "id"
             let productDiscount = MockProductDiscount(identifier: discountIdentifier)
