@@ -110,6 +110,16 @@ import StoreKit
     }
 
     /**
+     * Constructs an Error with the [ErrorCode.productDiscountMissingSubscriptionGroupIdentifierError] code.
+     *
+     * @note This error code is used when attemping to post data about product discounts but the discount is
+     * missing a subscriptionGroupIndentifier.
+     */
+    @objc public static func productDiscountMissingSubscriptionGroupIdentifierError() -> Error {
+        return error(with: ErrorCode.productDiscountMissingSubscriptionGroupIdentifierError)
+    }
+
+    /**
      * Constructs an Error with the [ErrorCode.invalidAppUserIdError] code.
      *
      * @note This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
@@ -159,8 +169,7 @@ import StoreKit
      * @note This error is used when a purchase is initiated for a product, but there's already a purchase for the same product in progress.
      */
     @objc public static func operationAlreadyInProgressError() -> Error {
-        return error(with: ErrorCode.operationAlreadyInProgressError,
-                     message: "Purchase already in progress for this product.")
+        return error(with: ErrorCode.operationAlreadyInProgressForProductError)
     }
 
     /**
@@ -263,7 +272,7 @@ private extension ErrorUtils {
              .unexpectedBackendResponseError,
              .invalidReceiptError,
              .invalidAppUserIdError,
-             .operationAlreadyInProgressError,
+             .operationAlreadyInProgressForProductError,
              .unknownBackendError,
              .invalidSubscriberAttributesError,
              .logOutAnonymousUserError:
