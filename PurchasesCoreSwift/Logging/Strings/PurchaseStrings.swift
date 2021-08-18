@@ -35,4 +35,6 @@ import Foundation
         "a product identifier - this is an issue with the App Store." }
     @objc public var could_not_purchase_product_id_not_found: String { "makePurchase - Could not purchase SKProduct. " +
         "Couldn't find its product identifier. This is possibly an App Store quirk." }
+    var product_identifier_nil: String {"Apple returned a product where the productIdentifier is nil"}
+    var payment_identifier_nil: String {"Apple returned a payment where the productIdentifier is nil"}
 }

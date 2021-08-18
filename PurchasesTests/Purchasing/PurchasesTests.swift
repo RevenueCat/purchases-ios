@@ -1028,7 +1028,7 @@ class PurchasesTests: XCTestCase {
         expect(receivedInfo).toEventually(beNil())
         expect(receivedError).toEventuallyNot(beNil())
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
-        expect(receivedError?.code).toEventually(equal(ErrorCode.operationAlreadyInProgressError.rawValue))
+        expect(receivedError?.code).toEventually(equal(ErrorCode.operationAlreadyInProgressForProductError.rawValue))
         expect(self.storeKitWrapper.addPaymentCallCount).to(equal(1))
         expect(receivedUserCancelled).toEventually(beFalse())
     }
@@ -2474,6 +2474,24 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postedPrice).to(equal(package.product.price))
             expect(self.backend.postedOfferingIdentifier).to(equal("base"))
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
+        }
+    }
+
+    func testRetrievingDiscountMissingSubscriptionGroupIdentifierErrors() {
+        if #available(iOS 12.2, tvOS 12.2, macOS 10.14.4, *) {
+            setupPurchases()
+            var receivedError: NSError? = nil
+            var receivedPaymentDiscount: SKPaymentDiscount? = nil
+            let product = MockSKProduct(mockProductIdentifier: "Tacos_with_free_guac")
+            let discount = MockDiscount()
+
+            purchases.paymentDiscount(for: discount, product: product) { discount, error in
+                receivedError = error as NSError?
+                receivedPaymentDiscount = discount
+            }
+            expect(receivedPaymentDiscount).to(beNil())
+            expect(receivedError?.code)
+                .to(equal(ErrorCode.productDiscountMissingSubscriptionGroupIdentifierError.rawValue))
         }
     }
 
