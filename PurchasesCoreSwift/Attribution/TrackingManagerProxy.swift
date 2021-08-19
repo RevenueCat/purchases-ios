@@ -40,9 +40,7 @@ class FakeTrackingManager: NSObject {
 
 }
 
-// TODO (post-migration): Make all the things internal again.
-@objc(RCTrackingManagerProxy)
-public class TrackingManagerProxy: NSObject {
+class TrackingManagerProxy: NSObject {
 
     static let mangledTrackingClassName = "NGGenpxvatZnantre"
     static let mangledAuthStatusPropertyName = "genpxvatNhgubevmngvbaFgnghf"
@@ -56,11 +54,11 @@ public class TrackingManagerProxy: NSObject {
         NSClassFromString(mangledTrackingClassName.rot13())
     }
 
-    @objc public var authorizationStatusPropertyName: String {
+    var authorizationStatusPropertyName: String {
         Self.mangledAuthStatusPropertyName.rot13()
     }
 
-    @objc func trackingAuthorizationStatus() -> Int {
+    func trackingAuthorizationStatus() -> Int {
         let classType: AnyClass = Self.trackingClass ?? FakeTrackingManager.self
         return classType.trackingAuthorizationStatus()
     }

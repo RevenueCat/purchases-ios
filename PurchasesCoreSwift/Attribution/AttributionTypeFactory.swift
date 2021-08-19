@@ -20,15 +20,15 @@ import Foundation
 @objc(RCAttributionTypeFactory)
 public class AttributionTypeFactory: NSObject {
 
-    @objc public func adClientProxy() -> AdClientProxy? {
+    func adClientProxy() -> AdClientProxy? {
         return AdClientProxy.adClientClass == nil ? nil : AdClientProxy()
     }
 
-    @objc public func atTrackingProxy() -> TrackingManagerProxy? {
+    func atTrackingProxy() -> TrackingManagerProxy? {
         return TrackingManagerProxy.trackingClass == nil ? nil : TrackingManagerProxy()
     }
 
-    @objc public func asIdentifierProxy() -> ASIdentifierManagerProxy? {
+    func asIdentifierProxy() -> ASIdentifierManagerProxy? {
         return ASIdentifierManagerProxy.identifierClass == nil ? nil : ASIdentifierManagerProxy()
     }
 
