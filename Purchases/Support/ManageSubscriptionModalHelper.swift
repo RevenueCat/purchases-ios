@@ -33,7 +33,7 @@ import StoreKit
     @objc public func showManageSubscriptionModal() {
         #if os(iOS) || os(macOS)
         // todo: remove implicit unwrap once currentAppUserID is non-optional
-        let currentAppUserID = identityManager.maybeCurrentAppUserID!
+        let currentAppUserID = identityManager.currentAppUserID
         purchaserInfoManager.purchaserInfo(appUserID: currentAppUserID) { purchaserInfo, error in
             if let error = error {
                 Logger.error("there was an error getting purchaserInfo: \(error.localizedDescription)")
