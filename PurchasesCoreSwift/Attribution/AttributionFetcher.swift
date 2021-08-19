@@ -17,6 +17,7 @@ enum AttributionFetcherError: Error {
 
 }
 
+// TODO(post-migration): Make this internal
 @objc(RCAttributionFetcher) public class AttributionFetcher: NSObject {
 
     private let attributionFactory: AttributionTypeFactory
@@ -33,7 +34,7 @@ enum AttributionFetcherError: Error {
         self.systemInfo = systemInfo
     }
 
-    @objc public var identifierForVendor: String? {
+    var identifierForVendor: String? {
         // Should match available platforms in
         // https://developer.apple.com/documentation/uikit/uidevice?language=swift
         // https://developer.apple.com/documentation/watchkit/wkinterfacedevice?language=swift
@@ -46,7 +47,7 @@ enum AttributionFetcherError: Error {
 #endif
     }
 
-    @objc public var identifierForAdvertisers: String? {
+    var identifierForAdvertisers: String? {
         // should match available platforms here:
         // https://developer.apple.com/documentation/adsupport/asidentifiermanager/1614151-advertisingidentifier
 #if os(iOS) || os(tvOS) || os(macOS)
@@ -67,7 +68,7 @@ enum AttributionFetcherError: Error {
         return nil
     }
 
-    @objc public func adClientAttributionDetails(completion: @escaping ([String: NSObject]?, Error?) -> Void) {
+    func adClientAttributionDetails(completion: @escaping ([String: NSObject]?, Error?) -> Void) {
         // Should match available platforms in
         // https://developer.apple.com/documentation/iad/adclient?language=swift
 #if os(iOS)
@@ -82,7 +83,7 @@ enum AttributionFetcherError: Error {
 #endif
     }
 
-    @objc public var isAuthorizedToPostSearchAds: Bool {
+    var isAuthorizedToPostSearchAds: Bool {
         // Should match platforms that require permissions detailed in
         // https://developer.apple.com/app-store/user-privacy-and-data-use/
         if !appTrackingTransparencyRequired {
