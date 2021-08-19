@@ -23,8 +23,8 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 // TODO(post-migration): Make this internal again, and all the other things too
 @objc(RCBackend) public class Backend: NSObject {
 
-    @objc public static let RCSuccessfullySyncedKey: NSError.UserInfoKey = "rc_successfullySynced"
-    @objc public static let RCAttributeErrorsKey = "attribute_errors"
+    static let RCSuccessfullySyncedKey: NSError.UserInfoKey = "rc_successfullySynced"
+    static let RCAttributeErrorsKey = "attribute_errors"
     static let RCAttributeErrorsResponseKey = "attributes_error_response"
 
     private let httpClient: HTTPClient
@@ -48,7 +48,7 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         self.init(httpClient: httpClient, apiKey: apiKey)
     }
 
-    @objc public required init(httpClient: HTTPClient, apiKey: String) {
+    required init(httpClient: HTTPClient, apiKey: String) {
         self.httpClient = httpClient
         self.apiKey = apiKey
         self.offeringsCallbacksCache = [:]
@@ -76,16 +76,15 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
     }
 
     // swiftlint:disable function_parameter_count
-    @objc (postReceiptData:appUserID:isRestore:productInfo:presentedOfferingIdentifier:observerMode:subscriberAttributes:completion:)
-    public func post(receiptData: Data,
-                     appUserID: String,
-                     isRestore: Bool,
-                     productInfo: ProductInfo?,
-                     presentedOfferingIdentifier offeringIdentifier: String?,
-                     observerMode: Bool,
-                     subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
-                     completion: @escaping BackendPurchaserInfoResponseHandler) {
-    // swiftlint:enable function_parameter_count
+    func post(receiptData: Data,
+              appUserID: String,
+              isRestore: Bool,
+              productInfo: ProductInfo?,
+              presentedOfferingIdentifier offeringIdentifier: String?,
+              observerMode: Bool,
+              subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
+              completion: @escaping BackendPurchaserInfoResponseHandler) {
+        // swiftlint:enable function_parameter_count
         let fetchToken = receiptData.rc_asFetchToken
         var body: [String: Any] = [
             "fetch_token": fetchToken,
@@ -157,13 +156,12 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
     }
 
     // swiftlint:disable function_parameter_count
-    @objc(postOfferForSigning:withProductIdentifier:subscriptionGroup:receiptData:appUserID:completion:)
-    public func post(offerIdForSigning offerIdentifier: String,
-                     productIdentifier: String,
-                     subscriptionGroup: String,
-                     receiptData: Data,
-                     appUserID: String,
-                     completion: @escaping OfferSigningResponseHandler) {
+    func post(offerIdForSigning offerIdentifier: String,
+              productIdentifier: String,
+              subscriptionGroup: String,
+              receiptData: Data,
+              appUserID: String,
+              completion: @escaping OfferSigningResponseHandler) {
     // swiftlint:enable function_parameter_count
         let fetchToken = receiptData.rc_asFetchToken
 
@@ -227,11 +225,10 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    @objc(postAttributionData:network:appUserID:completion:)
-    public func post(attributionData: [String: Any],
-                     network: AttributionNetwork,
-                     appUserID: String,
-                     completion: ((Error?) -> Void)?) {
+    func post(attributionData: [String: Any],
+              network: AttributionNetwork,
+              appUserID: String,
+              completion: ((Error?) -> Void)?) {
         guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
             completion?(ErrorUtils.missingAppUserIDError())
             return
@@ -247,10 +244,9 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    @objc(postSubscriberAttributes:appUserID:completion:)
-    public func post(subscriberAttributes: SubscriberAttributeDict,
-                     appUserID: String,
-                     completion: ((Error?) -> Void)?) {
+    func post(subscriberAttributes: SubscriberAttributeDict,
+              appUserID: String,
+              completion: ((Error?) -> Void)?) {
         guard subscriberAttributes.count > 0 else {
             Logger.warn(Strings.attribution.empty_subscriber_attributes)
             completion?(ErrorCode.emptySubscriberAttributes)
