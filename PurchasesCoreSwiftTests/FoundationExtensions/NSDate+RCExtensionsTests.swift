@@ -7,6 +7,7 @@ import Nimble
 import XCTest
 
 import Purchases
+@testable import PurchasesCoreSwift
 
 class NSDateExtensionsTests: XCTestCase {
     func testMillisecondsSince1970ConvertsCorrectlyWithCurrentTime() {

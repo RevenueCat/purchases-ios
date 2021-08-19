@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import PurchasesCoreSwift
+@testable import PurchasesCoreSwift
 
 extension ProductInfo {
     static func createMockProductInfo(productIdentifier: String = "product_id",

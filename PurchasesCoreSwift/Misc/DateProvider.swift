@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct DateProvider {
+class DateProvider {
 
     func now() -> Date {
         return Date()

@@ -1,7 +1,7 @@
 import XCTest
 import Nimble
 import StoreKit
-import PurchasesCoreSwift
+@testable import PurchasesCoreSwift
 
 class ProductInfoExtractorTests: XCTestCase {
 
