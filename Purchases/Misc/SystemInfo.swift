@@ -129,7 +129,7 @@ class SystemInfo {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }
 
-    #if os(iOS)
+    #if os(iOS) || os(tvOS)
     var sharedUIApplication: UIApplication? {
         UIApplication.value(forKey: "sharedApplication") as? UIApplication
     }
