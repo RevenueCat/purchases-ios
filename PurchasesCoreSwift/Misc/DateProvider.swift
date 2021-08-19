@@ -8,8 +8,10 @@
 
 import Foundation
 
-@objc(RCDateProvider) open class DateProvider: NSObject {
-    @objc open func now() -> Date {
+struct DateProvider {
+
+    func now() -> Date {
         return Date()
     }
+
 }
