@@ -13,8 +13,6 @@
 
 import Foundation
 
-public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
-
 @objc(RCPurchaserInfoManagerDelegate) public protocol PurchaserInfoManagerDelegate: NSObjectProtocol {
 
     @objc(purchaserInfoManagerDidReceiveUpdatedPurchaserInfo:)

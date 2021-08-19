@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Completion block for calls that send back a `PurchaserInfo`
  */
-typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable) NS_SWIFT_NAME(Purchases.ReceivePurchaserInfoBlock);
+typedef void (^RCReceivePurchaserInfoBlock)(RCPurchaserInfo * _Nullable, NSError * _Nullable);
 
 /**
  Completion block for `-[RCPurchases checkTrialOrIntroductoryPriceEligibility:completionBlock:]`

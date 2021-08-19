@@ -184,6 +184,8 @@
 		B34D2AA126960A3200D88C3A /* RCIntroEligibilityAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3DF6A4D269522040030D57C /* RCIntroEligibilityAPI.m */; };
 		B34D2AA4269649EC00D88C3A /* MockProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3572040A16F10B957563A /* MockProductDiscount.swift */; };
 		B34D2AA626976FC700D88C3A /* ErrorCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34D2AA526976FC700D88C3A /* ErrorCode.swift */; };
+		B35042C426CDB79A00905B95 /* Purchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35042C326CDB79A00905B95 /* Purchases.swift */; };
+		B35042C626CDD3B100905B95 /* PurchasesDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */; };
 		B35F9E0926B4BEED00095C3F /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35F9E0826B4BEED00095C3F /* String+Extensions.swift */; };
 		B36824BE268FBC5B00957E4C /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B36824BD268FBC5B00957E4C /* XCTest.framework */; };
 		B36824BF268FBC8700957E4C /* SubscriberAttributeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */; };
@@ -509,6 +511,8 @@
 		B33CEA9D268BC39D008A3144 /* RCTransactionAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTransactionAPI.m; sourceTree = "<group>"; };
 		B33CEA9F268CDCC9008A3144 /* ISOPeriodFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISOPeriodFormatter.swift; sourceTree = "<group>"; };
 		B34D2AA526976FC700D88C3A /* ErrorCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorCode.swift; sourceTree = "<group>"; };
+		B35042C326CDB79A00905B95 /* Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Purchases.swift; sourceTree = "<group>"; };
+		B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDelegate.swift; sourceTree = "<group>"; };
 		B35F9E0826B4BEED00095C3F /* String+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
 		B36824BD268FBC5B00957E4C /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		B372EC53268FEDC60099171E /* PromotionalOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOffer.swift; sourceTree = "<group>"; };
@@ -1283,6 +1287,8 @@
 				B3083A122699334C007B5503 /* Offering.swift */,
 				B3B5FBBB269D121B00104A0C /* Offerings.swift */,
 				A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */,
+				B35042C326CDB79A00905B95 /* Purchases.swift */,
+				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
 			);
 			path = Public;
 			sourceTree = "<group>";
@@ -1701,6 +1707,7 @@
 				2DDF419D24F6F331005BC22D /* IntroEligibilityCalculator.swift in Sources */,
 				A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */,
 				B3E26A4A26BE0A8E003ACCF3 /* Error+Extensions.swift in Sources */,
+				B35042C426CDB79A00905B95 /* Purchases.swift in Sources */,
 				B3B5FBBF269E081E00104A0C /* InMemoryCachedObject.swift in Sources */,
 				9A65E0802591977900DE00B0 /* ReceiptStrings.swift in Sources */,
 				B3DDB55926854865008CCF23 /* PurchaseOwnershipType.swift in Sources */,
@@ -1741,6 +1748,7 @@
 				35D0E5D026A5886C0099EAD8 /* ErrorUtils.swift in Sources */,
 				B372EC54268FEDC60099171E /* PromotionalOffer.swift in Sources */,
 				9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */,
+				B35042C626CDD3B100905B95 /* PurchasesDelegate.swift in Sources */,
 				0313FD41268A506400168386 /* DateProvider.swift in Sources */,
 				B39E811A268E849900D31189 /* AttributionNetwork.swift in Sources */,
 				37E35C8515C5E2D01B0AF5C1 /* Strings.swift in Sources */,
