@@ -14,8 +14,6 @@
 import Foundation
 import StoreKit
 
-public typealias ReceiveOfferingsBlock = (Offerings?, Error?) -> Void
-
 // TODO (post-migration): Make all the things internal again.
 @objc(RCOfferingsManager) public class OfferingsManager: NSObject {
 

@@ -14,12 +14,9 @@
 import Foundation
 import StoreKit
 
-public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, PurchaserInfo?, Error?, Bool) -> Void
-public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
-
 @objc(RCPurchasesOrchestratorDelegate) public protocol PurchasesOrchestratorDelegate {
 
-    func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: @escaping RCDeferredPromotionalPurchaseBlock)
+    func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: @escaping DeferredPromotionalPurchaseBlock)
 
 }
 
