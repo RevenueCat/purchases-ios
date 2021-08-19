@@ -515,6 +515,7 @@ private extension PurchasesOrchestrator {
         deviceCache.setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: appUserID)
         deviceCache.setOfferingsCacheTimestampToNow()
     }
+
 }
 
 // swiftlint:disable:this file_length

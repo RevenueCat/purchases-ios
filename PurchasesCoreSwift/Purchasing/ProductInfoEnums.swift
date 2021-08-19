@@ -8,8 +8,10 @@
 
 import Foundation
 
-@objc(RCIntroDurationType) public enum RCIntroDurationType: Int {
+enum RCIntroDurationType: Int {
+
     case none = -1
     case freeTrial = 0
     case introPrice = 1
+
 }

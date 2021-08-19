@@ -8,7 +8,7 @@
 
 import Foundation
 
-@objc(RCTransactionsFactory) public class TransactionsFactory: NSObject {
+struct TransactionsFactory {
 
     func nonSubscriptionTransactions(withSubscriptionsData subscriptionsData: [String: [[String: Any]]],
                                      dateFormatter: DateFormatter) -> [Transaction] {

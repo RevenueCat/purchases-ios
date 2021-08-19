@@ -10,6 +10,7 @@ import Foundation
 
 // TODO: Make internal after migration to Swift is complete
 @objc(RCReceiptFetcher) public class ReceiptFetcher: NSObject {
+
     private let requestFetcher: StoreKitRequestFetcher
     private let receiptBundle: Bundle
 

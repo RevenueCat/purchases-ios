@@ -22,8 +22,8 @@ import StoreKit
         self.productsRequestFactory = productsRequestFactory
     }
 
-    @objc public func products(withIdentifiers identifiers: Set<String>,
-                               completion: @escaping (Set<SKProduct>) -> Void) {
+    func products(withIdentifiers identifiers: Set<String>,
+                  completion: @escaping (Set<SKProduct>) -> Void) {
         guard identifiers.count > 0 else {
             completion([])
             return
@@ -54,11 +54,12 @@ import StoreKit
         }
     }
 
-    @objc public func cacheProduct(_ product: SKProduct) {
+    func cacheProduct(_ product: SKProduct) {
         queue.async {
             self.cachedProductsByIdentifier[product.productIdentifier] = product
         }
     }
+
 }
 
 extension ProductsManager: SKProductsRequestDelegate {
@@ -110,6 +111,7 @@ extension ProductsManager: SKProductsRequestDelegate {
         }
         request.cancel()
     }
+
 }
 
 private extension ProductsManager {
@@ -121,4 +123,5 @@ private extension ProductsManager {
 
         cachedProductsByIdentifier.merge(productsByIdentifier) { (_, new) in new }
     }
+
 }

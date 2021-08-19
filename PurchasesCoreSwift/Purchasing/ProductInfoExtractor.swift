@@ -9,15 +9,12 @@
 import Foundation
 import StoreKit
 
-// TODO(post migration): Change back to internal and consider converting to a struct
-@objc(RCProductInfoExtractor)
-public class ProductInfoExtractor: NSObject {
+class ProductInfoExtractor {
+
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)
     private lazy var isoPeriodFormatter = ISOPeriodFormatter()
 
-    // TODO(post migration): Change back to internal
-    @objc(extractInfoFromSKProduct:)
-    public func extractInfo(from product: SKProduct) -> ProductInfo {
+    func extractInfo(from product: SKProduct) -> ProductInfo {
         let paymentMode = extractPaymentMode(for: product)
         let introPrice = extractIntroPrice(for: product)
 
@@ -41,11 +38,13 @@ public class ProductInfoExtractor: NSObject {
             discounts: discounts
         )
     }
+
 }
 
 // MARK: - private methods
 
 private extension ProductInfoExtractor {
+
     func extractIntroDurationType(for product: SKProduct) -> RCIntroDurationType {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let paymentMode = product.introductoryPrice?.paymentMode {
@@ -107,4 +106,5 @@ private extension ProductInfoExtractor {
             return nil
         }
     }
+
 }

@@ -9,25 +9,26 @@
 import Foundation
 import StoreKit
 
-@objc(RCProductInfo) public class ProductInfo: NSObject {
+struct ProductInfo {
 
-    // TODO(post migration): Change back to internal
-    @objc public let productIdentifier: String
-    @objc public let paymentMode: PaymentMode
-    @objc public let currencyCode: String?
-    @objc public let price: NSDecimalNumber
-    @objc public let normalDuration: String?
-    @objc public let introDuration: String?
-    @objc public let introDurationType: RCIntroDurationType
-    @objc public let introPrice: NSDecimalNumber?
-    @objc public let subscriptionGroup: String?
-    @objc public let discounts: [PromotionalOffer]?
+    let productIdentifier: String
+    let paymentMode: PaymentMode
+    let currencyCode: String?
+    let price: NSDecimalNumber
+    let normalDuration: String?
+    let introDuration: String?
+    let introDurationType: RCIntroDurationType
+    let introPrice: NSDecimalNumber?
+    let subscriptionGroup: String?
+    let discounts: [PromotionalOffer]?
 
-    @objc(RCPaymentMode) public enum PaymentMode: Int {
+    enum PaymentMode: Int {
+
         case none = -1
         case payAsYouGo = 0
         case payUpFront = 1
         case freeTrial = 2
+
     }
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
@@ -44,29 +45,7 @@ import StoreKit
         }
     }
 
-    @objc public init(productIdentifier: String,
-                      paymentMode: PaymentMode,
-                      currencyCode: String?,
-                      price: NSDecimalNumber,
-                      normalDuration: String?,
-                      introDuration: String?,
-                      introDurationType: RCIntroDurationType,
-                      introPrice: NSDecimalNumber?,
-                      subscriptionGroup: String?,
-                      discounts: [PromotionalOffer]?) {
-        self.productIdentifier = productIdentifier
-        self.paymentMode = paymentMode
-        self.currencyCode = currencyCode
-        self.price = price
-        self.normalDuration = normalDuration
-        self.introDuration = introDuration
-        self.introDurationType = introDurationType
-        self.introPrice = introPrice
-        self.subscriptionGroup = subscriptionGroup
-        self.discounts = discounts
-    }
-
-    @objc public func asDictionary() -> [String: NSObject] {
+    func asDictionary() -> [String: NSObject] {
         var dict: [String: NSObject] = [:]
         dict["product_id"] = productIdentifier as NSString
         dict["price"] = price
@@ -96,7 +75,7 @@ import StoreKit
         return dict
     }
 
-    @objc public var cacheKey: String {
+    var cacheKey: String {
         var key = """
         \(productIdentifier)-\(price)-\(currencyCode ?? "")-\(paymentMode.rawValue)-\(introPrice ?? 0)-\
         \(subscriptionGroup ?? "")-\(normalDuration ?? "")-\(introDuration ?? "")-\(introDurationType.rawValue)
