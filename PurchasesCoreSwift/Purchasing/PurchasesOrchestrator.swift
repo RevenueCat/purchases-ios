@@ -320,7 +320,7 @@ private extension PurchasesOrchestrator {
 private extension PurchasesOrchestrator {
 
     func getAndRemovePurchaseCompletedCallback(forTransaction transaction: SKPaymentTransaction) -> PurchaseCompletedBlock? {
-        guard let productIdentifier = transaction.rc_productIdentifier else {
+        guard let productIdentifier = transaction.productIdentifier else {
             return nil
         }
 
@@ -331,7 +331,7 @@ private extension PurchasesOrchestrator {
     }
 
     func fetchProductsAndPostReceipt(withTransaction transaction: SKPaymentTransaction, receiptData: Data) {
-        guard let productIdentifier = transaction.rc_productIdentifier else {
+        guard let productIdentifier = transaction.productIdentifier else {
             self.handleReceiptPost(withTransaction: transaction,
                                    maybePurchaserInfo: nil,
                                    maybeSubscriberAttributes: nil,

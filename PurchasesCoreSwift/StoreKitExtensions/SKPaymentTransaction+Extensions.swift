@@ -18,7 +18,7 @@ extension SKPaymentTransaction {
     /// Considering issue https://github.com/RevenueCat/purchases-ios/issues/279, sometimes `payment`
     /// and `productIdentifier` can be `nil`, in this case, they must be have treated as nullable.
     /// Due of that an optional reference is created so that the compiler would allow us to check for nullability.
-    var rc_productIdentifier: String? {
+    var productIdentifier: String? {
         guard let maybePayment = payment as SKPayment? else {
             Logger.appleWarning(Strings.purchase.skpayment_missing_from_skpaymenttransaction)
             return nil

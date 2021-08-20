@@ -29,7 +29,7 @@ class FakeASIdentifierManager: NSObject {
 
 }
 
-class ASIdentifierManagerProxy: NSObject {
+class ASIdentifierManagerProxy {
 
     static let mangledIdentifierClassName = "NFVqragvsvreZnantre"
     static let mangledIdentifierPropertyName = "nqiregvfvatVqragvsvre"

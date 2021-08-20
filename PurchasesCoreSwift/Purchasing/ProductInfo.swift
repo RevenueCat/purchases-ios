@@ -17,7 +17,7 @@ struct ProductInfo {
     let price: NSDecimalNumber
     let normalDuration: String?
     let introDuration: String?
-    let introDurationType: RCIntroDurationType
+    let introDurationType: IntroDurationType
     let introPrice: NSDecimalNumber?
     let subscriptionGroup: String?
     let discounts: [PromotionalOffer]?

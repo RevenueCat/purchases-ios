@@ -11,7 +11,7 @@ import StoreKit
 
 @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *)
 
-struct ISOPeriodFormatter {
+class ISOPeriodFormatter {
 
     func string(fromProductSubscriptionPeriod period: SKProductSubscriptionPeriod) -> String {
         let unitString = self.period(fromUnit: period.unit)

@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum RCIntroDurationType: Int {
+enum IntroDurationType: Int {
 
     case none = -1
     case freeTrial = 0

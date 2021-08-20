@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct TransactionsFactory {
+class TransactionsFactory {
 
     func nonSubscriptionTransactions(withSubscriptionsData subscriptionsData: [String: [[String: Any]]],
                                      dateFormatter: DateFormatter) -> [Transaction] {

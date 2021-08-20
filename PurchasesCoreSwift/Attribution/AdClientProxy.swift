@@ -37,7 +37,7 @@ class FakeAdClient: NSObject {
 
 }
 
-class AdClientProxy: NSObject {
+class AdClientProxy {
 
     private static let className = "ADClient"
 

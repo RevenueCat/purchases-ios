@@ -162,7 +162,7 @@ class ProductInfoExtractorTests: XCTestCase {
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.introDurationType) == RCIntroDurationType.none
+            expect(receivedProductInfo.introDurationType) == IntroDurationType.none
         }
     }
 

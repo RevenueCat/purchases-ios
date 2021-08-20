@@ -121,7 +121,7 @@ private extension ProductsManager {
             resultDict[product.productIdentifier] = product
         }
 
-        cachedProductsByIdentifier.merge(productsByIdentifier) { (_, new) in new }
+        cachedProductsByIdentifier.merging(productsByIdentifier)
     }
 
 }

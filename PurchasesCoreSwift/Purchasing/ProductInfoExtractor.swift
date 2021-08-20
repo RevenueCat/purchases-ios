@@ -45,7 +45,7 @@ class ProductInfoExtractor {
 
 private extension ProductInfoExtractor {
 
-    func extractIntroDurationType(for product: SKProduct) -> RCIntroDurationType {
+    func extractIntroDurationType(for product: SKProduct) -> IntroDurationType {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
            let paymentMode = product.introductoryPrice?.paymentMode {
             return paymentMode == .freeTrial ? .freeTrial : .introPrice
