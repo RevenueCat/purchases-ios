@@ -41,7 +41,7 @@ class SystemInfo {
 
         case invalidInitializationData
 
-    }
+    let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")
 
     var finishTransactions: Bool
     let platformFlavor: String
@@ -134,6 +134,10 @@ class SystemInfo {
         UIApplication.value(forKey: "sharedApplication") as? UIApplication
     }
     #endif
+
+    func isAppleSubscription(managementURL: URL) -> Bool {
+        managementURL.absoluteString.contains("apps.apple.com")
+    }
 
 }
 

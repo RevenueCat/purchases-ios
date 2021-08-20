@@ -44,12 +44,14 @@ import StoreKit
 
             guard let managementURL = purchaserInfo.managementURL else {
                 Logger.debug("managementURL is nil, opening iOS subscription management page")
-                self.showAppleManageSubscriptions()
+                if let appleSubscriptionsURL = self.systemInfo.appleSubscriptionsURL {
+                    self.showAppleManageSubscriptions(managementURL: appleSubscriptionsURL)
+                }
                 return
             }
 
-            if managementURL.isAppleSubscription() {
-                self.showAppleManageSubscriptions()
+            if self.systemInfo.isAppleSubscription(managementURL: managementURL) {
+                self.showAppleManageSubscriptions(managementURL: managementURL)
                 return
             }
 
@@ -64,14 +66,14 @@ import StoreKit
 @available(tvOS, unavailable)
 private extension ManageSubscriptionsModalHelper {
 
-    func showAppleManageSubscriptions() {
+    func showAppleManageSubscriptions(managementURL: URL) {
         if #available(iOS 15.0, *) {
             Task.init {
                 await self.showSK2ManageSubscriptions()
             }
             return
         }
-        self.openURL(.appleSubscriptionsURL)
+        self.openURL(managementURL)
     }
 
     func openURL(_ url: URL) {
@@ -120,13 +122,4 @@ private extension ManageSubscriptionsModalHelper {
     }
 #endif
 
-}
-
-private extension URL {
-
-    func isAppleSubscription() -> Bool {
-        self.absoluteString.contains("apps.apple.com")
-    }
-
-    static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
 }
