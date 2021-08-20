@@ -68,12 +68,14 @@ import StoreKit
 private extension ManageSubscriptionsModalHelper {
 
     func showAppleManageSubscriptions(managementURL: URL) {
+#if os(iOS)
         if #available(iOS 15.0, *) {
             Task.init {
                 await self.showSK2ManageSubscriptions()
             }
             return
         }
+#endif
         self.openURL(managementURL)
     }
 
