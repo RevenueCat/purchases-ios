@@ -70,8 +70,6 @@ private extension ManageSubscriptionsModalHelper {
                 await self.showSK2ManageSubscriptions()
             }
             return
-        } else {
-            self.openURL(.appleSubscriptionsURL)
         }
         self.openURL(.appleSubscriptionsURL)
     }
