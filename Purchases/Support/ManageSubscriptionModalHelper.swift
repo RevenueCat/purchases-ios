@@ -13,50 +13,78 @@
 
 import StoreKit
 
+enum ManageSubscriptionsModalError: Error {
+
+    case couldntGetPurchaserInfo(message: String)
+    case couldntGetWindowScene
+    case storeKitShowManageSubscriptionsFailed(error: Error)
+    case couldntGetAppleSubscriptionsURL
+
+}
+
+extension ManageSubscriptionsModalError: CustomStringConvertible {
+
+    public var description: String {
+        switch self {
+        case .couldntGetPurchaserInfo(let message):
+            return "Failed to get managemementURL from PurchaserInfo. Details: \(message)"
+        case .couldntGetWindowScene:
+            return "Failed to get UIWindowScene"
+        case .storeKitShowManageSubscriptionsFailed(let error):
+            return "error when trying to show manage subscription: \(error.localizedDescription)"
+        case .couldntGetAppleSubscriptionsURL:
+            return "error when trying to form the Apple Subscriptions URL."
+        }
+    }
+
+}
+
 @available(iOS 9.0, *)
 @available(macOS 10.12, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
-@objc public class ManageSubscriptionsModalHelper: NSObject {
+class ManageSubscriptionsModalHelper: NSObject {
     private let systemInfo: SystemInfo
     private let purchaserInfoManager: PurchaserInfoManager
     private let identityManager: IdentityManager
 
-    @objc public init(systemInfo: SystemInfo,
-                      purchaserInfoManager: PurchaserInfoManager,
-                      identityManager: IdentityManager) {
+    init(systemInfo: SystemInfo,
+         purchaserInfoManager: PurchaserInfoManager,
+         identityManager: IdentityManager) {
         self.systemInfo = systemInfo
         self.purchaserInfoManager = purchaserInfoManager
         self.identityManager = identityManager
     }
 
-    @objc public func showManageSubscriptionModal() {
+    func showManageSubscriptionModal(completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
         let currentAppUserID = identityManager.currentAppUserID
         purchaserInfoManager.purchaserInfo(appUserID: currentAppUserID) { purchaserInfo, error in
             if let error = error {
-                Logger.error("there was an error getting purchaserInfo: \(error.localizedDescription)")
+                completion(.failure(.couldntGetPurchaserInfo(message: error.localizedDescription)))
                 return
             }
 
             guard let purchaserInfo = purchaserInfo else {
-                Logger.error("there was no error but purchaserInfo is nil!")
+                completion(.failure(.couldntGetPurchaserInfo(message: "purchaserInfo is nil.")))
                 return
             }
 
             guard let managementURL = purchaserInfo.managementURL else {
                 Logger.debug("managementURL is nil, opening iOS subscription management page")
-                if let appleSubscriptionsURL = self.systemInfo.appleSubscriptionsURL {
-                    self.showAppleManageSubscriptions(managementURL: appleSubscriptionsURL)
+                guard let appleSubscriptionsURL = self.systemInfo.appleSubscriptionsURL else {
+                    completion(.failure(.couldntGetAppleSubscriptionsURL))
+                    return
                 }
+                self.showAppleManageSubscriptions(managementURL: appleSubscriptionsURL, completion: completion)
                 return
             }
 
             if self.systemInfo.isAppleSubscription(managementURL: managementURL) {
-                self.showAppleManageSubscriptions(managementURL: managementURL)
+                self.showAppleManageSubscriptions(managementURL: managementURL, completion: completion)
                 return
             }
 
-            self.openURL(managementURL)
+            self.openURL(managementURL, completion: completion)
         }
     }
 
@@ -68,7 +96,8 @@ import StoreKit
 @available(tvOS, unavailable)
 private extension ManageSubscriptionsModalHelper {
 
-    func showAppleManageSubscriptions(managementURL: URL) {
+    func showAppleManageSubscriptions(managementURL: URL,
+                                      completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
 #if os(iOS)
         if #available(iOS 15.0, *) {
             Task.init {
@@ -77,18 +106,21 @@ private extension ManageSubscriptionsModalHelper {
             return
         }
 #endif
-        self.openURL(managementURL)
+        self.openURL(managementURL, completion: completion)
     }
 
-    func openURL(_ url: URL) {
+    func openURL(_ url: URL, completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
 #if os(iOS)
         self.openURLIfNotAppExtension(url: url)
 #elseif os(macOS)
         NSWorkspace.shared.open(url)
 #endif
+        completion(.success(()))
     }
 
 #if os(iOS)
+    // we can't directly reference UIApplication.shared in case this SDK is embedded into an app extension.
+    // so we ensure that it's not running in an app extension and use selectors to call UIApplication methods.
     func openURLIfNotAppExtension(url: URL) {
         guard !systemInfo.isAppExtension,
               let application = systemInfo.sharedUIApplication else { return }
@@ -111,17 +143,17 @@ private extension ManageSubscriptionsModalHelper {
     @MainActor
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
-    func showSK2ManageSubscriptions() async {
+    func showSK2ManageSubscriptions() async -> Result<Void, ManageSubscriptionsModalError> {
         guard let application = systemInfo.sharedUIApplication,
               let windowScene = application.currentWindowScene else {
-            Logger.error("couldn't get window")
-            return
+                  return .failure(.couldntGetWindowScene)
         }
 
         do {
             try await AppStore.showManageSubscriptions(in: windowScene)
+            return .success(())
         } catch let error {
-            Logger.error("error when trying to show manage subscription: \(error.localizedDescription)")
+            return .failure(.storeKitShowManageSubscriptionsFailed(error: error))
         }
     }
 #endif
