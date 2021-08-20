@@ -6,7 +6,7 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-@import Purchases;
+@import PurchasesCoreSwift;
 #import "RCOfferingAPI.h"
 
 @implementation RCOfferingAPI

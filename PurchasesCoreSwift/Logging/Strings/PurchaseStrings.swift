@@ -43,4 +43,6 @@ import Foundation
         "Apple returned a payment where the productIdentifier is nil, this is possibly an App Store quirk"
     }
 
+    var purchases_nil: String { "Purchases has not been configured. Please call Purchases.configure()" }
+
 }

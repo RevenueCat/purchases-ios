@@ -3,6 +3,7 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 @testable import PurchasesCoreSwift
+import StoreKit
 
 class MockOfferingsFactory: OfferingsFactory {
     

@@ -11,8 +11,8 @@
 //
 //  Created by César de la Vega on 7/21/21.
 
-@import Purchases;
 @import PurchasesCoreSwift;
+@import StoreKit;
 
 #import "RCPurchasesErrorUtilsAPI.h"
 

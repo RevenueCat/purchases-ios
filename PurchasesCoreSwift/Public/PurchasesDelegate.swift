@@ -15,30 +15,35 @@ import Foundation
 import StoreKit
 
 /**
- Delegate for `RCPurchases` responsible for handling updating your app's state in response to updated purchaser info or promotional product purchases.
-
- @note Delegate methods can be called at any time after the `delegate` is set, not just in response to `purchaserInfo:` calls. Ensure your app is capable of handling these calls at anytime if `delegate` is set.
+ * Delegate for `RCPurchases` responsible for handling updating your app's state in response to updated purchaser info
+ * or promotional product purchases.
+ *
+ * @note Delegate methods can be called at any time after the `delegate` is set, not just in response to
+ *  `purchaserInfo:` calls. Ensure your app is capable of handling these calls at anytime if `delegate` is set.
  */
-@objc public protocol PurchasessDelegate: NSObjectProtocol {
+@objc(RCPurchasesDelegate) public protocol PurchasesDelegate: NSObjectProtocol {
 
-/**
- Called whenever `Purchases` receives updated purchaser info. This may happen periodically
- throughout the life of the app if new information becomes available (e.g. UIApplicationDidBecomeActive).
-
- @param purchases Related `Purchases` object
- @param purchaserInfo Updated `PurchaserInfo`
- */
+    /**
+     * Called whenever `Purchases` receives updated purchaser info. This may happen periodically
+     * throughout the life of the app if new information becomes available (e.g. UIApplicationDidBecomeActive).*
+     * @param purchases Related `Purchases` object
+     * @param purchaserInfo Updated `PurchaserInfo`
+     */
     @objc(purchases:didReceiveUpdatedPurchaserInfo:)
-    optional func purchases(_ purchases: Purchasess, didReceiveUpdated purchaserInfo: PurchaserInfo)
+    optional func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo)
 
-/**
- Called when a user initiates a promotional in-app purchase from the App Store. If your app is able to handle a purchase at the current time, run the deferment block in this method. If the app is not in a state to make a purchase: cache the defermentBlock, then call the defermentBlock when the app is ready to make the promotional purchase. If the purchase should never be made, you don't need to ever call the defermentBlock and `RCPurchases` will not proceed with promotional purchases.
+    /**
+     * Called when a user initiates a promotional in-app purchase from the App Store.
+     * If your app is able to handle a purchase at the current time, run the deferment block in this method.
+     * If the app is not in a state to make a purchase: cache the defermentBlock,
+     * then call the defermentBlock when the app is ready to make the promotional purchase.
+     * If the purchase should never be made, you don't need to ever call the defermentBlock and
+     * `RCPurchases` will not proceed with promotional purchases.
 
- @param product `SKProduct` the product that was selected from the app store
- */
-
-    @objc optional func purchases(_ purchases: Purchasess,
+     * @param product `SKProduct` the product that was selected from the app store
+     */
+    @objc optional func purchases(_ purchases: Purchases,
                                   shouldPurchasePromoProduct product: SKProduct,
-                                  defermentBlock makeDeferredPurchase: DeferredPromotionalPurchaseBlock)
+                                  defermentBlock makeDeferredPurchase: @escaping DeferredPromotionalPurchaseBlock)
 
 }

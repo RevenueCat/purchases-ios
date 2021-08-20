@@ -10,10 +10,10 @@
 // Created by RevenueCat on 3/01/20.
 //
 
-import XCTest
 import Nimble
+import StoreKit
+import XCTest
 
-@testable import Purchases
 @testable import PurchasesCoreSwift
 
 class PurchasesSubscriberAttributesTests: XCTestCase {
@@ -104,7 +104,6 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     override func tearDown() {
         purchases?.delegate = nil
         purchases = nil
-        Purchases.setDefaultInstance(nil)
         UserDefaults().removePersistentDomain(forName: "TestDefaults")
     }
 
@@ -148,7 +147,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     }
 
     func testInitializerConfiguresSubscriberAttributesManager() {
-        let purchases = Purchases.configure(withAPIKey: "key")
+        let purchases = Purchases.configure(apiKey: "key")
         expect(purchases.subscriberAttributesManager).toNot(beNil())
     }
 
@@ -279,7 +278,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         setupPurchases()
         let tokenString = "ligai32g32ig"
 
-        Purchases.shared._setPushTokenString(tokenString)
+        Purchases.shared.setPushTokenString(tokenString)
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenStringCount) == 1
 
         let receivedPushToken = self.mockSubscriberAttributesManager.invokedSetPushTokenStringParameters!.pushToken!
@@ -410,10 +409,11 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     // MARK: Post receipt with attributes
 
+    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessful() {
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
+        self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in }
         mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
 
         let transaction = MockTransaction()
@@ -435,10 +435,11 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             mockIdentityManager.currentAppUserID
     }
 
+    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessfullySynced() {
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
+        self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in }
         mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
 
         let transaction = MockTransaction()
@@ -463,10 +464,11 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             mockIdentityManager.currentAppUserID
     }
 
+    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func testPostReceiptDoesntMarkSubscriberAttributesSyncedIfBackendNotSuccessfullySynced() {
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
-        self.purchases?.purchaseProduct(product) { (tx, info, error, userCancelled) in }
+        self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in }
         mockSubscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = mockAttributes
 
         let transaction = MockTransaction()

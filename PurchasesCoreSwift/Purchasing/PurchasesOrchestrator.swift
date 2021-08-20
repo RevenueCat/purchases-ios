@@ -86,7 +86,7 @@ import StoreKit
         syncPurchases(receiptRefreshPolicy: .always, isRestore: true, maybeCompletion: maybeCompletion)
     }
 
-    @objc public func syncPurchases(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
+    @objc public func syncPurchases(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)? = nil) {
         syncPurchases(receiptRefreshPolicy: .never,
                       isRestore: allowSharingAppStoreAccount,
                       maybeCompletion: maybeCompletion)
