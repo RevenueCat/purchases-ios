@@ -719,6 +719,7 @@
 		2DC5622224EC63430031F69B /* PurchasesCoreSwiftTests */ = {
 			isa = PBXGroup;
 			children = (
+				37E35AE0CDC4C2AA8260FB58 /* Caching */,
 				F591492426B994A100D32E58 /* StoreKitExtensions */,
 				35F82BBB26A9BFA60051DF03 /* FoundationExtensions */,
 				2DD02D5924AD128A00419CD9 /* LocalReceiptParsing */,
@@ -927,7 +928,6 @@
 				35262A221F7D77E600C04F2C /* Info.plist */,
 				350FBDD61F7DF1640065833D /* Frameworks */,
 				37E35081077192045E3A8080 /* Mocks */,
-				37E35AE0CDC4C2AA8260FB58 /* Caching */,
 				37E35E77A60AC8D3F0E1A23D /* SubscriberAttributes */,
 				37E35555C264F76E6CFFC2C8 /* Purchasing */,
 				37E35F2DF6910CF4AF147DEB /* Networking */,
