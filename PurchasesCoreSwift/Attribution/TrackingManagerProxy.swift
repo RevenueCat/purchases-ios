@@ -57,7 +57,7 @@ class TrackingManagerProxy: NSObject {
         Self.mangledAuthStatusPropertyName.rot13()
     }
 
-    func trackingAuthorizationStatus() -> Int {
+    @objc func trackingAuthorizationStatus() -> Int {
         let classType: AnyClass = Self.trackingClass ?? FakeTrackingManager.self
         return classType.trackingAuthorizationStatus()
     }
