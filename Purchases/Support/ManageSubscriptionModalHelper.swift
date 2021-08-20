@@ -52,7 +52,6 @@ import StoreKit
             }
 
             #if os(iOS)
-            #if swift(>=5.5)
             if managementURL.isAppleSubscription() {
                 if #available(iOS 15.0, *) {
                     Task.init {
@@ -61,7 +60,6 @@ import StoreKit
                 }
                 return
             }
-            #endif
             #endif
             self.openURL(managementURL)
         }
@@ -79,8 +77,6 @@ private extension ManageSubscriptionsModalHelper {
     @available(tvOS, unavailable)
     func showAppleManageSubscriptions() {
 #if os(iOS)
-#if swift(>=5.5)
-
         if #available(iOS 15.0, *) {
             Task.init {
                 await self.showSK2ManageSubscriptions()
@@ -89,14 +85,12 @@ private extension ManageSubscriptionsModalHelper {
         } else {
             self.openURL(.appleSubscriptionsURL)
         }
-#endif
 #elseif os(macOS)
         self.openURL(.appleSubscriptionsURL)
 #endif
     }
 
 #if os(iOS)
-#if swift(>=5.5)
     @MainActor
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
@@ -115,7 +109,6 @@ private extension ManageSubscriptionsModalHelper {
             Logger.error("error when trying to show manage subscription: \(error.localizedDescription)")
         }
     }
-#endif
 #endif
 
     func openURL(_ url: URL) {
@@ -158,7 +151,6 @@ private extension URL {
 }
 
 #if os(iOS)
-#if swift(>=5.5)
 private extension UIApplication {
 
     @available(iOS 15.0, *)
@@ -171,5 +163,4 @@ private extension UIApplication {
         return windowScene as? UIWindowScene
     }
 }
-#endif
 #endif
