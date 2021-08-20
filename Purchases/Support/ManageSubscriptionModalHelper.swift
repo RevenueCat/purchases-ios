@@ -98,7 +98,8 @@ private extension ManageSubscriptionsModalHelper {
     @available(watchOSApplicationExtension, unavailable)
     @available(tvOS, unavailable)
     func showSK2ManageSubscriptions() async {
-        guard let windowScene = systemInfo.sharedUIApplication?.currentWindowScene() else {
+        guard let application = systemInfo.sharedUIApplication,
+              let windowScene = application.currentWindowScene else {
             Logger.error("couldn't get window")
             return
         }
@@ -149,18 +150,3 @@ private extension URL {
 
     static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
 }
-
-#if os(iOS)
-private extension UIApplication {
-
-    @available(iOS 15.0, *)
-    func currentWindowScene() -> UIWindowScene? {
-        let windowScene = self
-            .connectedScenes
-            .filter { $0.activationState == .foregroundActive }
-            .first
-
-        return windowScene as? UIWindowScene
-    }
-}
-#endif
