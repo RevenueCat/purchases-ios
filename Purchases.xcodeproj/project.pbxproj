@@ -719,6 +719,7 @@
 		2DC5622224EC63430031F69B /* PurchasesCoreSwiftTests */ = {
 			isa = PBXGroup;
 			children = (
+				35272E1A26D0023400F22C3B /* Misc */,
 				37E35AE0CDC4C2AA8260FB58 /* Caching */,
 				F591492426B994A100D32E58 /* StoreKitExtensions */,
 				35F82BBB26A9BFA60051DF03 /* FoundationExtensions */,
@@ -935,6 +936,14 @@
 				37E35BCB85973ABD4CEC5904 /* Identity */,
 			);
 			path = PurchasesTests;
+			sourceTree = "<group>";
+		};
+		35272E1A26D0023400F22C3B /* Misc */ = {
+			isa = PBXGroup;
+			children = (
+				37E35EEE7783629CDE41B70C /* SystemInfoTests.swift */,
+			);
+			path = Misc;
 			sourceTree = "<group>";
 		};
 		3530C18722653E8F00D6DF52 /* Frameworks */ = {
@@ -1176,7 +1185,6 @@
 			isa = PBXGroup;
 			children = (
 				37E35B9AC7A350CA2437049D /* ISOPeriodFormatterTests.swift */,
-				37E35EEE7783629CDE41B70C /* SystemInfoTests.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
