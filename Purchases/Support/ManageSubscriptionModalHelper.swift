@@ -59,6 +59,7 @@ import StoreKit
             self.openURL(managementURL)
         }
     }
+
 }
 
 @available(iOS 9.0, *)
