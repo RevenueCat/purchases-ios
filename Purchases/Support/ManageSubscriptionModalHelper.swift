@@ -12,7 +12,10 @@
 //  Created by Andrés Boedo on 16/8/21.
 import StoreKit
 
-// todo: make internal
+@available(iOS 9.0, *)
+@available(macOS 10.12, *)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
 @objc public class ManageSubscriptionsModalHelper: NSObject {
     private let systemInfo: SystemInfo
     private let purchaserInfoManager: PurchaserInfoManager
@@ -26,10 +29,6 @@ import StoreKit
         self.identityManager = identityManager
     }
 
-    @available(iOS 9.0, *)
-    @available(macOS 10.12, *)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     @objc public func showManageSubscriptionModal() {
         let currentAppUserID = identityManager.currentAppUserID
         purchaserInfoManager.purchaserInfo(appUserID: currentAppUserID) { purchaserInfo, error in
@@ -49,31 +48,23 @@ import StoreKit
                 return
             }
 
-            #if os(iOS)
             if managementURL.isAppleSubscription() {
-                if #available(iOS 15.0, *) {
-                    Task.init {
-                        await self.showSK2ManageSubscriptions()
-                    }
-                }
+                self.showAppleManageSubscriptions()
                 return
             }
-            #endif
+
             self.openURL(managementURL)
         }
     }
 }
 
-@available(watchOSApplicationExtension, unavailable)
+@available(iOS 9.0, *)
+@available(macOS 10.12, *)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
 private extension ManageSubscriptionsModalHelper {
 
-    @available(iOS 9.0, *)
-    @available(macOS 10.12, *)
-    @available(watchOS, unavailable)
-    @available(watchOSApplicationExtension, unavailable)
-    @available(tvOS, unavailable)
     func showAppleManageSubscriptions() {
-#if os(iOS)
         if #available(iOS 15.0, *) {
             Task.init {
                 await self.showSK2ManageSubscriptions()
@@ -82,32 +73,8 @@ private extension ManageSubscriptionsModalHelper {
         } else {
             self.openURL(.appleSubscriptionsURL)
         }
-#elseif os(macOS)
         self.openURL(.appleSubscriptionsURL)
-#endif
     }
-
-#if os(iOS)
-    @MainActor
-    @available(iOS 15.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(watchOSApplicationExtension, unavailable)
-    @available(tvOS, unavailable)
-    func showSK2ManageSubscriptions() async {
-        guard let application = systemInfo.sharedUIApplication,
-              let windowScene = application.currentWindowScene else {
-            Logger.error("couldn't get window")
-            return
-        }
-
-        do {
-            try await AppStore.showManageSubscriptions(in: windowScene)
-        } catch let error {
-            Logger.error("error when trying to show manage subscription: \(error.localizedDescription)")
-        }
-    }
-#endif
 
     func openURL(_ url: URL) {
 #if os(iOS)
@@ -134,6 +101,23 @@ private extension ManageSubscriptionsModalHelper {
         } else {
             let selector = NSSelectorFromString("openURL:")
             systemInfo.sharedUIApplication?.perform(selector, with: url)
+        }
+    }
+
+    @MainActor
+    @available(iOS 15.0, *)
+    @available(macOS, unavailable)
+    func showSK2ManageSubscriptions() async {
+        guard let application = systemInfo.sharedUIApplication,
+              let windowScene = application.currentWindowScene else {
+            Logger.error("couldn't get window")
+            return
+        }
+
+        do {
+            try await AppStore.showManageSubscriptions(in: windowScene)
+        } catch let error {
+            Logger.error("error when trying to show manage subscription: \(error.localizedDescription)")
         }
     }
 #endif
