@@ -31,8 +31,6 @@ import StoreKit
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @objc public func showManageSubscriptionModal() {
-        #if os(iOS) || os(macOS)
-        // todo: remove implicit unwrap once currentAppUserID is non-optional
         let currentAppUserID = identityManager.currentAppUserID
         purchaserInfoManager.purchaserInfo(appUserID: currentAppUserID) { purchaserInfo, error in
             if let error = error {
@@ -63,7 +61,6 @@ import StoreKit
             #endif
             self.openURL(managementURL)
         }
-#endif
     }
 }
 
@@ -127,6 +124,7 @@ private extension ManageSubscriptionsModalHelper {
 
         if #available(iOS 10.0, *) {
             // NSInvocation is needed because the method takes three arguments
+            // and performSelector works for up to 2
             typealias ClosureType = @convention(c) (AnyObject, Selector, NSURL, NSDictionary?, Any?) -> Void
 
             let selector: Selector = NSSelectorFromString("openURL:options:completionHandler:")
