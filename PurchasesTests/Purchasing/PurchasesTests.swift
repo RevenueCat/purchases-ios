@@ -339,7 +339,7 @@ class PurchasesTests: XCTestCase {
         wait(for: [assertionHappened], timeout: TimeInterval(1))
 
         #else
-        expectToThrowException(.parameterAssert) { _ = Purchases.shared }
+        expect(Purchases.shared).to(throwAssertion())
 
         #endif
         setupPurchases()
