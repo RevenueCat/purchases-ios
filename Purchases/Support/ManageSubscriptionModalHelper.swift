@@ -151,8 +151,12 @@ private extension ManageSubscriptionsModalHelper {
         }
 
         do {
+#if os(iOS) || os(macOS)
             try await AppStore.showManageSubscriptions(in: windowScene)
             return .success(())
+#else
+            fatalError("tried to call AppStore.showManageSubscriptions in a platform that doesn't support it!")
+#endif
         } catch let error {
             return .failure(.storeKitShowManageSubscriptionsFailed(error: error))
         }
