@@ -16,6 +16,8 @@ import Nimble
 @testable import PurchasesCoreSwift
 import XCTest
 
+#if os(macOS) || os(tvOS)
+
 class ManageSubscriptionsModalHelperTests: XCTestCase {
 
     private var systemInfo: MockSystemInfo!
@@ -66,10 +68,8 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         // AppStore, and check for the calls in those, but it gets very tricky.
     }
 
-    // in tests in iOS 15, this method always fails, since the currentWindow scene can't be obtained.
-    func testShowManageSubscriptionModalReturnsErrorIniOS15() throws {
+    func testShowManageSubscriptionModalInIOS() throws {
 #if os(iOS)
-        guard #available(iOS 15.0, *) else { return }
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, ManageSubscriptionsModalError>?
@@ -84,10 +84,15 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         // then
         expect(callbackCalled).toEventually(beTrue())
         let nonNilReceivedResult: Result<Void, ManageSubscriptionsModalError> = try XCTUnwrap(receivedResult)
-        expect(nonNilReceivedResult).to(beFailure { error in
-            expect(error).to(matchError(ManageSubscriptionsModalError.couldntGetWindowScene))
+        if #available(iOS 15.0, *) {
+            // in tests in iOS 15, this method always fails, since the currentWindow scene can't be obtained.
+            expect(nonNilReceivedResult).to(beFailure { error in
+                expect(error).to(matchError(ManageSubscriptionsModalError.couldntGetWindowScene))
+            })
+        } else {
+            expect(nonNilReceivedResult).to(beSuccess())
+        }
 
-        })
 #endif
     }
 
@@ -113,3 +118,4 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
     
 }
 
+#endif
