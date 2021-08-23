@@ -39,10 +39,6 @@ extension ManageSubscriptionsModalError: CustomStringConvertible {
 
 }
 
-@available(iOS 9.0, *)
-@available(macOS 10.12, *)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
 class ManageSubscriptionsModalHelper: NSObject {
     private let systemInfo: SystemInfo
     private let purchaserInfoManager: PurchaserInfoManager
@@ -56,6 +52,10 @@ class ManageSubscriptionsModalHelper: NSObject {
         self.identityManager = identityManager
     }
 
+    @available(iOS 9.0, *)
+    @available(macOS 10.12, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
     func showManageSubscriptionModal(completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
         let currentAppUserID = identityManager.currentAppUserID
         purchaserInfoManager.purchaserInfo(appUserID: currentAppUserID) { purchaserInfo, error in
