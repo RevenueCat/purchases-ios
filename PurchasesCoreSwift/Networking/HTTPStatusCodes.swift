@@ -9,6 +9,7 @@
 import Foundation
 
 enum HTTPStatusCodes: Int {
+
     case success = 200,
          createdSuccess = 201,
          redirect = 300,
@@ -16,4 +17,5 @@ enum HTTPStatusCodes: Int {
          internalServerError = 500,
          notFoundError = 404,
          networkConnectTimeoutError = 599
+
 }

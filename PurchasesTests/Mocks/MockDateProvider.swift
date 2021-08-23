@@ -3,7 +3,7 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-import PurchasesCoreSwift
+@testable import PurchasesCoreSwift
 
 class MockDateProvider: DateProvider {
     var invokedNow = false

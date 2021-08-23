@@ -797,7 +797,7 @@ class PurchasesTests: XCTestCase {
                 let postedDiscount: PromotionalOffer = self.backend.postedDiscounts![0]
                 expect(postedDiscount.offerIdentifier).to(equal("discount_id"))
                 expect(postedDiscount.price).to(equal(1.99))
-                expect(postedDiscount.paymentMode.rawValue).to(equal(PaymentMode.payAsYouGo.rawValue))
+                expect(postedDiscount.paymentMode.rawValue).to(equal(ProductInfo.PaymentMode.payAsYouGo.rawValue))
             }
 
             expect(self.backend.postedCurrencyCode).to(equal(product.priceLocale.currencyCode))

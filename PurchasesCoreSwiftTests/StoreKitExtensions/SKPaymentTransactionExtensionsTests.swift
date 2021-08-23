@@ -20,14 +20,14 @@ class SKPaymentTransactionExtensionsTests: XCTestCase {
 
     func testNilProductIdentifierIfPaymentIsMissing() {
         let transaction = SKPaymentTransaction()
-        expect(transaction.rc_productIdentifier).to(beNil())
+        expect(transaction.productIdentifier).to(beNil())
     }
     
     func testNilProductIdentifierIfPaymentDoesNotHaveProductIdenfier() {
         let transaction = MockTransaction()
         transaction.mockPayment = SKPayment()
         
-        expect(transaction.rc_productIdentifier).to(beNil())
+        expect(transaction.productIdentifier).to(beNil())
     }
     
     func testProductIdentifierFromAnyTransaction() {
@@ -37,7 +37,7 @@ class SKPaymentTransactionExtensionsTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = payment
         
-        expect(transaction.rc_productIdentifier).to(equal(expectedProductIdentifier))
+        expect(transaction.productIdentifier).to(equal(expectedProductIdentifier))
     }
 
 }

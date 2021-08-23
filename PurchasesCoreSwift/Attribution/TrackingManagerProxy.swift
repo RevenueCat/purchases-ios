@@ -40,7 +40,7 @@ class FakeTrackingManager: NSObject {
 
 }
 
-// TODO (post-migration): Make all the things internal again.
+// TODO (post-migration): Make all the things internal again if possible. Test if Objc can be removed.
 @objc(RCTrackingManagerProxy)
 public class TrackingManagerProxy: NSObject {
 

@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import PurchasesCoreSwift
+@testable import PurchasesCoreSwift
 
 extension ProductInfo {
     static func createMockProductInfo(productIdentifier: String = "product_id",
@@ -13,7 +13,7 @@ extension ProductInfo {
                                       price: NSDecimalNumber = 15.99,
                                       normalDuration: String? = nil,
                                       introDuration: String? = nil,
-                                      introDurationType: RCIntroDurationType = .none,
+                                      introDurationType: IntroDurationType = .none,
                                       introPrice: NSDecimalNumber? = nil,
                                       subscriptionGroup: String? = nil,
                                       discounts: [PromotionalOffer]? = nil) -> ProductInfo {

@@ -61,6 +61,7 @@ extension StoreKitRequestFetcher: SKRequestDelegate {
         finishReceiptRequest(request)
         request.cancel()
     }
+
 }
 
 private extension StoreKitRequestFetcher {
@@ -78,4 +79,5 @@ private extension StoreKitRequestFetcher {
             }
         }
     }
+
 }

@@ -13,8 +13,7 @@
 
 import Foundation
 
-// TODO (post-migration): set this back to internal
-@objc(RCHTTPClient) public class HTTPClient: NSObject {
+class HTTPClient {
 
     private let session: URLSession
     private let systemInfo: SystemInfo
@@ -23,7 +22,7 @@ import Foundation
     private var eTagManager: ETagManager
     private let operationDispatcher: OperationDispatcher
 
-    @objc public init(systemInfo: SystemInfo, eTagManager: ETagManager, operationDispatcher: OperationDispatcher) {
+    init(systemInfo: SystemInfo, eTagManager: ETagManager, operationDispatcher: OperationDispatcher) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
         self.session = URLSession(configuration: config)
@@ -59,7 +58,7 @@ import Foundation
                        completionHandler: completionHandler)
     }
 
-    public func clearCaches() {
+    func clearCaches() {
         operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
             self.eTagManager.clearCaches()
         }

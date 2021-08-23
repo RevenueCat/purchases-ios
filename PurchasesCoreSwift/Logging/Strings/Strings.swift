@@ -11,8 +11,8 @@ import Foundation
     static let identity = IdentityStrings()
     static let network = NetworkStrings()
     static let offering = OfferingStrings()
-    @objc public static let purchase = PurchaseStrings()
+    static let purchase = PurchaseStrings()
     static let purchaserInfo = PurchaserInfoStrings()
     @objc public static let receipt = ReceiptStrings()
-    @objc public static let restore = RestoreStrings()
+    static let restore = RestoreStrings()
 }
