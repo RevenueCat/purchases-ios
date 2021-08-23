@@ -15,6 +15,7 @@ import Foundation
 import Nimble
 @testable import PurchasesCoreSwift
 import XCTest
+@testable import PurchasesTests
 
 class ManageSubscriptionsModalHelperTests: XCTestCase {
 
@@ -22,6 +23,18 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
     private var purchaserInfoManager: MockPurchaserInfoManager!
     private var identityManager: MockIdentityManager!
     private var helper: ManageSubscriptionsModalHelper!
+    private let mockPurchaserInfoData: [String: Any] = [
+        "request_date": "2018-12-21T02:40:36Z",
+        "subscriber": [
+            "original_app_user_id": "app_user_id",
+            "first_seen": "2019-06-17T16:05:33Z",
+            "subscriptions": [:],
+            "other_purchases": [:],
+            "original_application_version": NSNull()
+        ],
+        "managementURL": NSNull()
+    ]
+
 
     override func setUp() {
         systemInfo = try! MockSystemInfo(platformFlavor: "", platformFlavorVersion: "", finishTransactions: true)
@@ -34,8 +47,24 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
                                                 purchaserInfoManager: purchaserInfoManager,
                                                 identityManager: identityManager)
     }
-    func testShowManageSubscriptionModal() {
-        helper.showManageSubscriptionModal()
+    func testShowManageSubscriptionModalMakesRightCalls() throws {
+        guard #available(iOS 15.0, *) else { return }
+        // given
+        var callbackCalled = false
+        var receivedResult: Result<Void, ManageSubscriptionsModalError>?
+        purchaserInfoManager.stubbedPurchaserInfo = PurchaserInfo(data: mockPurchaserInfoData)
+
+        // when
+        helper.showManageSubscriptionModal { result in
+            callbackCalled = true
+            receivedResult = result
+        }
+
+        // then
+        expect(callbackCalled).toEventually(beTrue())
+        expect(self.purchaserInfoManager.invokedPurchaserInfo) == true
+        let nonNilReceivedResult: Result<Void, ManageSubscriptionsModalError> = try XCTUnwrap(receivedResult)
+        expect(nonNilReceivedResult).to(beSuccess())
     }
 }
 
