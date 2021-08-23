@@ -16,6 +16,7 @@
 
 import Foundation
 
+// TODO (post-migration): Make all the things internal again.
 @objc public enum FakeTrackingManagerAuthorizationStatus: Int {
 
     case notDetermined = 0

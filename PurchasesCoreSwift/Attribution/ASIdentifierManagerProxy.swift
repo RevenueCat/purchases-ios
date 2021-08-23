@@ -29,8 +29,7 @@ class FakeASIdentifierManager: NSObject {
 
 }
 
-// TODO (post-migration): Make all the things internal again if possible. Test if Objc can be removed if possible.
-// Test if Objc can be removed.
+// TODO (post-migration): Make all the things internal again if possible. Test if Objc can be removed.
 @objc(RCASIdentifierManagerProxy)
 public class ASIdentifierManagerProxy: NSObject {
 
