@@ -15,7 +15,6 @@ import Foundation
 import Nimble
 @testable import PurchasesCoreSwift
 import XCTest
-@testable import PurchasesTests
 
 class ManageSubscriptionsModalHelperTests: XCTestCase {
 
@@ -47,24 +46,70 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
                                                 purchaserInfoManager: purchaserInfoManager,
                                                 identityManager: identityManager)
     }
+
     func testShowManageSubscriptionModalMakesRightCalls() throws {
+        guard #available(iOS 15.0, *) else { return }
+        // given
+        var callbackCalled = false
+        purchaserInfoManager.stubbedPurchaserInfo = PurchaserInfo(data: mockPurchaserInfoData)
+        
+        // when
+        helper.showManageSubscriptionModal { result in
+            callbackCalled = true
+        }
+        
+        // then
+        expect(callbackCalled).toEventually(beTrue())
+        expect(self.purchaserInfoManager.invokedPurchaserInfo) == true
+        
+        // we'd ideally also patch the UIApplication (or NSApplication for mac), as well as
+        // AppStore, and check for the calls in those, but it gets very tricky.
+    }
+
+    // in tests in iOS 15, this method always fails, since the currentWindow scene can't be obtained.
+    func testShowManageSubscriptionModalReturnsErrorIniOS15() throws {
+#if os(iOS)
         guard #available(iOS 15.0, *) else { return }
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, ManageSubscriptionsModalError>?
         purchaserInfoManager.stubbedPurchaserInfo = PurchaserInfo(data: mockPurchaserInfoData)
-
+        
         // when
         helper.showManageSubscriptionModal { result in
             callbackCalled = true
             receivedResult = result
         }
-
+        
         // then
         expect(callbackCalled).toEventually(beTrue())
-        expect(self.purchaserInfoManager.invokedPurchaserInfo) == true
+        let nonNilReceivedResult: Result<Void, ManageSubscriptionsModalError> = try XCTUnwrap(receivedResult)
+        expect(nonNilReceivedResult).to(beFailure { error in
+            expect(error).to(matchError(ManageSubscriptionsModalError.couldntGetWindowScene))
+
+        })
+#endif
+    }
+
+    func testShowManageSubscriptionModalSucceedsInMacOS() throws {
+#if os(macOS)
+        // given
+        var callbackCalled = false
+        var receivedResult: Result<Void, ManageSubscriptionsModalError>?
+        purchaserInfoManager.stubbedPurchaserInfo = PurchaserInfo(data: mockPurchaserInfoData)
+        
+        // when
+        helper.showManageSubscriptionModal { result in
+            callbackCalled = true
+            receivedResult = result
+        }
+        
+        // then
+        expect(callbackCalled).toEventually(beTrue())
         let nonNilReceivedResult: Result<Void, ManageSubscriptionsModalError> = try XCTUnwrap(receivedResult)
         expect(nonNilReceivedResult).to(beSuccess())
+#endif
     }
+    
 }
 

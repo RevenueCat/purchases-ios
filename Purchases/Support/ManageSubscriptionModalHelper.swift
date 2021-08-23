@@ -101,7 +101,8 @@ private extension ManageSubscriptionsModalHelper {
 #if os(iOS)
         if #available(iOS 15.0, *) {
             Task.init {
-                await self.showSK2ManageSubscriptions()
+                let result = await self.showSK2ManageSubscriptions()
+                completion(result)
             }
             return
         }
