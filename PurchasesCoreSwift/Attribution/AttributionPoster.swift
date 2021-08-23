@@ -13,6 +13,7 @@
 
 import Foundation
 
+// TODO(post-migration): Make this internal
 @objc(RCAttributionPoster) public class AttributionPoster: NSObject {
 
     let deviceCache: DeviceCache

@@ -2,6 +2,7 @@ import Foundation
 
 // swiftlint:disable identifier_name
 enum AttributionKey: String {
+
     case idfa = "rc_idfa",
          idfv = "rc_idfv",
          ip = "rc_ip_address",
@@ -38,4 +39,5 @@ enum AttributionKey: String {
     enum MParticle: String {
         case id = "mpid"
     }
+
 }

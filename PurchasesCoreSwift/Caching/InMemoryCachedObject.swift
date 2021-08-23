@@ -6,9 +6,10 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
+// TODO (post-migration) switch back to internal
 public class InMemoryCachedObject<T> {
 
-    public var lastUpdatedAt: Date? {
+    var lastUpdatedAt: Date? {
         accessQueue.sync {
             return lastUpdated
         }

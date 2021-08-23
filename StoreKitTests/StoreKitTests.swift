@@ -22,7 +22,7 @@ class TestPurchaseDelegate: NSObject, PurchasesDelegate {
 
     func purchases(_ purchases: Purchases,
                    shouldPurchasePromoProduct product: SKProduct,
-                   defermentBlock makeDeferredPurchase: @escaping RCDeferredPromotionalPurchaseBlock) {
+                   defermentBlock makeDeferredPurchase: @escaping DeferredPromotionalPurchaseBlock) {
     }
 }
 

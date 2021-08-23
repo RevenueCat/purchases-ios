@@ -3,6 +3,8 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
+import Foundation
+
 class MockNotificationCenter: NotificationCenter {
 
     typealias AddObserverTuple = (observer: AnyObject,

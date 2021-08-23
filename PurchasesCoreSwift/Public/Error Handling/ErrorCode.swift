@@ -35,7 +35,7 @@ import Foundation
     @objc(RCUnexpectedBackendResponseError) case unexpectedBackendResponseError = 12
     @objc(RCReceiptInUseByOtherSubscriberError) case receiptInUseByOtherSubscriberError = 13
     @objc(RCInvalidAppUserIdError) case invalidAppUserIdError = 14
-    @objc(RCOperationAlreadyInProgressError) case operationAlreadyInProgressError = 15
+    @objc(RCOperationAlreadyInProgressForProductError) case operationAlreadyInProgressForProductError = 15
     @objc(RCUnknownBackendError) case unknownBackendError = 16
     @objc(RCInvalidAppleSubscriptionKeyError) case invalidAppleSubscriptionKeyError = 17
     @objc(RCIneligibleError) case ineligibleError = 18
@@ -46,7 +46,9 @@ import Foundation
     @objc(RCConfigurationError) case configurationError = 23
     @objc(RCEmptySubscriberAttributesError) case emptySubscriberAttributes = 24
     @objc(RCProductDiscountMissingIdentifierError) case productDiscountMissingIdentifierError = 25
-    @objc(RCmissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 26
+    @objc(RCMissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 26
+    @objc(RCProductDiscountMissingSubscriptionGroupIdentifierError)
+    case productDiscountMissingSubscriptionGroupIdentifierError = 27
 
 }
 
@@ -83,8 +85,8 @@ extension ErrorCode {
             return "The receipt is not valid."
         case .invalidAppUserIdError:
             return "The app user id is not valid."
-        case .operationAlreadyInProgressError:
-            return "The operation is already in progress."
+        case .operationAlreadyInProgressForProductError:
+            return "The operation is already in progress for this product."
         case .unknownBackendError:
             return "There was an unknown backend error."
         case .receiptInUseByOtherSubscriberError:
@@ -110,9 +112,11 @@ extension ErrorCode {
         case .emptySubscriberAttributes:
             return "A request for subscriber attributes returned none."
         case .productDiscountMissingIdentifierError:
-            return "SKProductDiscount must have a non-empty identifier."
+            return "SKProductDiscount must have a non-empty identifier. This is possibly an App Store quirk."
         case .missingAppUserIDForAliasCreationError:
             return "Unable to create an alias when the alias is either nil or empty string"
+        case .productDiscountMissingSubscriptionGroupIdentifierError:
+            return "Unable to create a discount offer, the product is missing a subscriptionGroupIdentifier."
         @unknown default:
             return "Something went wrong."
         }
@@ -123,7 +127,6 @@ extension ErrorCode {
      * The error short string, based on the error code.
      */
     var codeName: String {
-
         switch self {
         case .networkError:
             return "NETWORK_ERROR"
@@ -153,8 +156,8 @@ extension ErrorCode {
             return "INVALID_RECEIPT"
         case .invalidAppUserIdError:
             return "INVALID_APP_USER_ID"
-        case .operationAlreadyInProgressError:
-            return "OPERATION_ALREADY_IN_PROGRESS"
+        case .operationAlreadyInProgressForProductError:
+            return "OPERATION_ALREADY_IN_PROGRESS_FOR_PRODUCT_ERROR"
         case .unknownBackendError:
             return "UNKNOWN_BACKEND_ERROR"
         case .receiptInUseByOtherSubscriberError:
@@ -179,10 +182,11 @@ extension ErrorCode {
             return "PRODUCT_DISCOUNT_MISSING_IDENTIFIER_ERROR"
         case .missingAppUserIDForAliasCreationError:
             return "MISSING_APP_USER_ID_FOR_ALIAS_CREATION_ERROR"
+        case .productDiscountMissingSubscriptionGroupIdentifierError:
+            return "PRODUCT_DISCOUNT_MISSING_SUBSCRIPTION_GROUP_IDENTIFIER_ERROR"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }
-
     }
 
 }

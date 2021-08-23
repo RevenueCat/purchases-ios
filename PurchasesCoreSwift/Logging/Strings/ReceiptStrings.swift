@@ -17,7 +17,7 @@ import Foundation
     var loaded_receipt: String { "Loaded receipt from url %@" }
     var no_sandbox_receipt_intro_eligibility: String { "App running on sandbox without a receipt file. " +
         "Unable to determine into eligibility unless you've purchased before and there is a receipt available." }
-    @objc public var no_sandbox_receipt_restore: String { "App running in sandbox without a receipt file. Restoring " +
+    var no_sandbox_receipt_restore: String { "App running in sandbox without a receipt file. Restoring " +
         "transactions won't work until a purchase is made to generate a receipt. This should not happen in " +
         "production unless user is logged out of Apple account." }
     @objc public var parse_receipt_locally_error: String { "There was an error when trying to parse the receipt " +
@@ -28,6 +28,6 @@ import Foundation
     var refreshing_empty_receipt: String { "Receipt empty, refreshing" }
     var unable_to_load_receipt: String { "Unable to load receipt, ensure you are logged in to a valid " +
         "Apple account." }
-    @objc public var unknown_backend_error: String { "Unexpected backend error when posting receipt. Make sure you " +
+    var unknown_backend_error: String { "Unexpected backend error when posting receipt. Make sure you " +
         "are on latest SDK version and let us know if problem persists." }
 }

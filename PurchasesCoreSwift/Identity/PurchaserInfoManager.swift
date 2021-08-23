@@ -13,8 +13,6 @@
 
 import Foundation
 
-public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
-
 @objc(RCPurchaserInfoManagerDelegate) public protocol PurchaserInfoManagerDelegate: NSObjectProtocol {
 
     @objc(purchaserInfoManagerDidReceiveUpdatedPurchaserInfo:)
@@ -126,8 +124,7 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
         }
     }
 
-    @objc(cachedPurchaserInfoForAppUserID:)
-    public func cachedPurchaserInfo(appUserID: String) -> PurchaserInfo? {
+    func cachedPurchaserInfo(appUserID: String) -> PurchaserInfo? {
         guard let purchaserInfoData = deviceCache.cachedPurchaserInfoData(appUserID: appUserID) else {
             return nil
         }
@@ -149,8 +146,7 @@ public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
         return nil
     }
 
-    @objc(cachePurchaserInfo:forAppUserID:)
-    public func cache(purchaserInfo: PurchaserInfo, appUserID: String) {
+    func cache(purchaserInfo: PurchaserInfo, appUserID: String) {
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: purchaserInfo.jsonObject())
             deviceCache.cache(purchaserInfo: jsonData, appUserID: appUserID)

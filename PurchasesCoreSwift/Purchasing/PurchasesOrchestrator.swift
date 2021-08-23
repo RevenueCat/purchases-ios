@@ -14,12 +14,9 @@
 import Foundation
 import StoreKit
 
-public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, PurchaserInfo?, Error?, Bool) -> Void
-public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
-
 @objc(RCPurchasesOrchestratorDelegate) public protocol PurchasesOrchestratorDelegate {
 
-    func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: @escaping RCDeferredPromotionalPurchaseBlock)
+    func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: @escaping DeferredPromotionalPurchaseBlock)
 
 }
 
@@ -89,7 +86,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
         syncPurchases(receiptRefreshPolicy: .always, isRestore: true, maybeCompletion: maybeCompletion)
     }
 
-    @objc public func syncPurchases(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
+    @objc public func syncPurchases(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)? = nil) {
         syncPurchases(receiptRefreshPolicy: .never,
                       isRestore: allowSharingAppStoreAccount,
                       maybeCompletion: maybeCompletion)
@@ -119,6 +116,11 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
             return
         }
 
+        guard let subscriptionGroupIdentifier = product.subscriptionGroupIdentifier else {
+            completion(nil, ErrorUtils.productDiscountMissingSubscriptionGroupIdentifierError())
+            return
+        }
+
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeReceiptData in
             guard let receiptData = maybeReceiptData,
                   !receiptData.isEmpty else {
@@ -128,11 +130,12 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
 
             self.backend.post(offerIdForSigning: discountIdentifier,
                               productIdentifier: product.productIdentifier,
-                              subscriptionGroup: product.subscriptionGroupIdentifier ,
+                              subscriptionGroup: subscriptionGroupIdentifier,
                               receiptData: receiptData,
                               appUserID: self.appUserID) { maybeSignature, maybeKeyIdentifier, maybeNonce, maybeTimestamp, maybeError in
                 if let error = maybeError {
-                    // TODO: Consider making a custom error.
+                    // TODO: Consider making a custom error. issues/751
+                    // https://github.com/RevenueCat/purchases-ios/issues/751
                     completion(nil, error)
                     return
                 }
@@ -142,6 +145,7 @@ public typealias RCDeferredPromotionalPurchaseBlock = (@escaping PurchaseComplet
                       let signature = maybeSignature,
                       let timestamp = maybeTimestamp else {
                           // TODO: Consider making a custom error.
+                          // https://github.com/RevenueCat/purchases-ios/issues/751
                           completion(nil, ErrorUtils.unexpectedBackendResponseError())
                           return
                       }
@@ -234,12 +238,14 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
                                 shouldAddStorePayment payment: SKPayment,
                                 for product: SKProduct) -> Bool {
         productsManager.cacheProduct(product)
-
         guard let delegate = maybeDelegate else { return false }
+
+        lock.lock()
         delegate.shouldPurchasePromoProduct(product) { completion in
             self.purchaseCompleteCallbacksByProductID[product.productIdentifier] = completion
             storeKitWrapper.add(payment)
         }
+        lock.unlock()
         return false
     }
 
@@ -311,15 +317,18 @@ private extension PurchasesOrchestrator {
 private extension PurchasesOrchestrator {
 
     func getAndRemovePurchaseCompletedCallback(forTransaction transaction: SKPaymentTransaction) -> PurchaseCompletedBlock? {
-        if let productIdentifier = transaction.rc_productIdentifier {
-            let maybeCompletion = purchaseCompleteCallbacksByProductID.removeValue(forKey: productIdentifier)
-            return maybeCompletion
+        guard let productIdentifier = transaction.productIdentifier else {
+            return nil
         }
-        return nil
+
+        lock.lock()
+        let maybeCompletion = purchaseCompleteCallbacksByProductID.removeValue(forKey: productIdentifier)
+        lock.unlock()
+        return maybeCompletion
     }
 
     func fetchProductsAndPostReceipt(withTransaction transaction: SKPaymentTransaction, receiptData: Data) {
-        guard let productIdentifier = transaction.rc_productIdentifier else {
+        guard let productIdentifier = transaction.productIdentifier else {
             self.handleReceiptPost(withTransaction: transaction,
                                    maybePurchaserInfo: nil,
                                    maybeSubscriberAttributes: nil,
@@ -488,13 +497,13 @@ private extension PurchasesOrchestrator {
            !identifierFromProduct.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return identifierFromProduct
         }
-        Logger.appleWarning("product.productIdentifier is nil")
+        Logger.appleWarning(Strings.purchase.product_identifier_nil)
 
         if let identifierFromPayment = payment.productIdentifier as String?,
            !identifierFromPayment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return identifierFromPayment
         }
-        Logger.appleWarning("payment.productIdentifier is nil")
+        Logger.appleWarning(Strings.purchase.payment_identifier_nil)
 
         return nil
     }
@@ -503,6 +512,7 @@ private extension PurchasesOrchestrator {
         deviceCache.setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: appUserID)
         deviceCache.setOfferingsCacheTimestampToNow()
     }
+
 }
 
 // swiftlint:disable:this file_length

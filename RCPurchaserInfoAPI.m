@@ -8,7 +8,6 @@
 
 #import "RCPurchaserInfoAPI.h"
 
-@import Purchases;
 @import PurchasesCoreSwift;
 
 @implementation RCPurchaserInfoAPI

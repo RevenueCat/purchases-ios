@@ -1,7 +1,7 @@
 import XCTest
 import Nimble
 import StoreKit
-import PurchasesCoreSwift
+@testable import PurchasesCoreSwift
 
 class ProductInfoExtractorTests: XCTestCase {
 
@@ -162,7 +162,7 @@ class ProductInfoExtractorTests: XCTestCase {
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.introDurationType) == RCIntroDurationType.none
+            expect(receivedProductInfo.introDurationType) == IntroDurationType.none
         }
     }
 

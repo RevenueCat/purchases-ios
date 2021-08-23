@@ -34,7 +34,7 @@ import Foundation
         self.init(withKey: withKey, value: value, dateProvider: DateProvider())
     }
 
-    @objc convenience public init(withKey key: String, value: String?, dateProvider: DateProvider) {
+    convenience init(withKey key: String, value: String?, dateProvider: DateProvider) {
         self.init(withKey: key, value: value, isSynced: false, setTime: dateProvider.now())
     }
 

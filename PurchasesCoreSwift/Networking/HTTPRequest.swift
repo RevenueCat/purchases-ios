@@ -9,12 +9,13 @@
 import Foundation
 
 class HTTPRequest: NSCopying, CustomStringConvertible {
-    @objc public let httpMethod: String
-    @objc public let path: String
-    @objc public let requestBody: [String: Any]?
-    @objc public let authHeaders: [String: String]
-    @objc public let completionHandler: ((Int, [String: Any]?, Error?) -> Void)?
-    @objc public let retried: Bool
+
+    let httpMethod: String
+    let path: String
+    let requestBody: [String: Any]?
+    let authHeaders: [String: String]
+    let completionHandler: ((Int, [String: Any]?, Error?) -> Void)?
+    let retried: Bool
     let urlRequest: URLRequest
 
     convenience init(byCopyingRequest request: HTTPRequest, retried: Bool) {
@@ -43,7 +44,7 @@ class HTTPRequest: NSCopying, CustomStringConvertible {
         self.urlRequest = urlRequest
     }
 
-    public func copy(with zone: NSZone? = nil) -> Any {
+    func copy(with zone: NSZone? = nil) -> Any {
         let copy = HTTPRequest(
             httpMethod: httpMethod,
             path: path,
@@ -68,4 +69,5 @@ class HTTPRequest: NSCopying, CustomStringConvertible {
         >
         """
     }
+
 }

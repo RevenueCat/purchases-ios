@@ -16,9 +16,9 @@ enum PayWallEdgeStyle : String {
 }
 
 @objc protocol SwiftPaywallDelegate {
-    func purchaseCompleted(paywall: SwiftPaywall, transaction: SKPaymentTransaction, purchaserInfo: Purchases.PurchaserInfo)
-    @objc optional func purchaseFailed(paywall: SwiftPaywall, purchaserInfo: Purchases.PurchaserInfo?, error: Error, userCancelled: Bool)
-    @objc optional func purchaseRestored(paywall: SwiftPaywall, purchaserInfo: Purchases.PurchaserInfo?, error: Error?)
+    func purchaseCompleted(paywall: SwiftPaywall, transaction: SKPaymentTransaction, purchaserInfo: PurchaserInfo)
+    @objc optional func purchaseFailed(paywall: SwiftPaywall, purchaserInfo: PurchaserInfo?, error: Error, userCancelled: Bool)
+    @objc optional func purchaseRestored(paywall: SwiftPaywall, purchaserInfo: PurchaserInfo?, error: Error?)
 }
 
 class SwiftPaywall: UIViewController {

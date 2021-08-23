@@ -5,7 +5,6 @@
 //  Created by Joshua Liebowitz on 6/18/21.
 //
 
-@import Purchases;
 @import PurchasesCoreSwift;
 @import StoreKit;
 
@@ -43,6 +42,9 @@ BOOL isAnonymous;
     // TODO: iOS ONLY, TEST FOR THIS API BY LOOKING UP SELECTOR
     // [p presentCodeRedemptionSheet];
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
+    [RCPurchases configureWithAPIKey:@"" appUserID:@""];
+    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false];
+    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:nil];
     
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];
     canI = [RCPurchases canMakePayments];
@@ -70,10 +72,7 @@ BOOL isAnonymous;
     SKPaymentDiscount *skmd = [[SKPaymentDiscount alloc] init];
     
     RCPackage *pack = [[RCPackage alloc] initWithIdentifier:@"" packageType:RCPackageTypeCustom product:skp offeringIdentifier:@""];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@""];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:nil];
-    
+
     [p invalidatePurchaserInfoCache];
 
     NSDictionary<NSString *, NSString *> *attributes = nil;
@@ -103,7 +102,6 @@ BOOL isAnonymous;
     [p restoreTransactionsWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) {}];
     [p syncPurchasesWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) {}];
     [p checkTrialOrIntroductoryPriceEligibility:@[@""] completionBlock:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
-    [p checkTrialOrIntroductoryPriceEligibility:@[@""] completionBlock:^(NSDictionary<NSString *,RCIntroEligibility *> *r) { }];
     [p paymentDiscountForProductDiscount:skpd product:skp completion:^(SKPaymentDiscount *d, NSError *e) { }];
     [p purchaseProduct:skp withDiscount:skmd completionBlock:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
     [p purchasePackage:pack withDiscount:skmd completionBlock:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
@@ -112,7 +110,8 @@ BOOL isAnonymous;
     [p identify:@"" completionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
     [p resetWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
 
-    [p logIn:@"" completionBlock:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
+    // TODO used to be: [p logIn:@"" completionBlock:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
+    [p logInAppUserID:@"" completionBlock:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
         
     // RCPurchasesDelegate
@@ -137,9 +136,9 @@ BOOL isAnonymous;
 }
 
 + (void)checkConstants {
-
-    double vn = PurchasesVersionNumber;
-    const unsigned char *vs = PurchasesVersionString;
+// TODO we lost these?
+//    double vn = PurchasesVersionNumber;
+//    const unsigned char *vs = PurchasesVersionString;
 
     // breaking changes below this line
     NSErrorDomain bed = RCBackendErrorCodeDomain;
@@ -147,7 +146,8 @@ BOOL isAnonymous;
     NSErrorUserInfoKey fk = RCErrorDetails.RCFinishableKey;
     NSErrorUserInfoKey eck = RCErrorDetails.RCReadableErrorCodeKey;
 
-    NSLog([NSString stringWithFormat:@"%lf", vn], vs, bed, ped, fk, eck);
+//    NSLog([NSString stringWithFormat:@"%lf", vn], vs, bed, ped, fk, eck);
+    NSLog(bed, ped, fk, eck);
 
 }
 

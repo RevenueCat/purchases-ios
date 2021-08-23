@@ -3,22 +3,29 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-class MockPurchasesDelegate: NSObject, PurchasesDelegate {
+import Foundation
+import StoreKit
+@testable import PurchasesCoreSwift
+
+public class MockPurchasesDelegate: NSObject, PurchasesDelegate {
+
     var purchaserInfo: PurchaserInfo?
     var purchaserInfoReceivedCount = 0
 
-    func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) {
+    public func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) {
         purchaserInfoReceivedCount += 1
         self.purchaserInfo = purchaserInfo
     }
 
     var promoProduct: SKProduct?
-    var makeDeferredPurchase: RCDeferredPromotionalPurchaseBlock?
+    var makeDeferredPurchase: DeferredPromotionalPurchaseBlock?
 
-    func purchases(_ purchases: Purchases,
-                   shouldPurchasePromoProduct product: SKProduct,
-                   defermentBlock makeDeferredPurchase: @escaping RCDeferredPromotionalPurchaseBlock) {
+
+    public func purchases(_ purchases: Purchases,
+                          shouldPurchasePromoProduct product: SKProduct,
+                          defermentBlock makeDeferredPurchase: @escaping (@escaping PurchaseCompletedBlock) -> Void) {
         promoProduct = product
         self.makeDeferredPurchase = makeDeferredPurchase
     }
+
 }

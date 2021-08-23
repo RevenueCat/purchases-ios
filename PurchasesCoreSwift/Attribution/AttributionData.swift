@@ -8,16 +8,10 @@
 
 import Foundation
 
-// TODO(post-migration): Make this internal
-@objc(RCAttributionData) public class AttributionData: NSObject {
+struct AttributionData {
 
-    @objc public let data: [String: Any]
-    @objc public let network: AttributionNetwork
-    @objc public let networkUserId: String?
+    let data: [String: Any]
+    let network: AttributionNetwork
+    let networkUserId: String?
 
-    @objc public init(data: [String: Any], network: AttributionNetwork, networkUserId: String?) {
-        self.data = data
-        self.network = network
-        self.networkUserId = networkUserId
-    }
 }
