@@ -16,7 +16,7 @@
 
 import Foundation
 
-@objc enum FakeTrackingManagerAuthorizationStatus: Int {
+@objc public enum FakeTrackingManagerAuthorizationStatus: Int {
 
     case notDetermined = 0
     case restricted
@@ -39,7 +39,9 @@ class FakeTrackingManager: NSObject {
 
 }
 
-@objc class TrackingManagerProxy: NSObject {
+// TODO (post-migration): Make all the things internal again.
+@objc(RCTrackingManagerProxy)
+public class TrackingManagerProxy: NSObject {
 
     static let mangledTrackingClassName = "NGGenpxvatZnantre"
     static let mangledAuthStatusPropertyName = "genpxvatNhgubevmngvbaFgnghf"
@@ -53,7 +55,7 @@ class FakeTrackingManager: NSObject {
         NSClassFromString(mangledTrackingClassName.rot13())
     }
 
-    var authorizationStatusPropertyName: String {
+    @objc public var authorizationStatusPropertyName: String {
         Self.mangledAuthStatusPropertyName.rot13()
     }
 

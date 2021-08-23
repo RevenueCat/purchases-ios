@@ -16,7 +16,8 @@
 
 import Foundation
 
-typealias AttributionDetailsBlock = ([String: NSObject]?, Error?) -> Void
+// TODO (post-migration): Make all the things internal again.
+public typealias AttributionDetailsBlock = ([String: NSObject]?, Error?) -> Void
 
 // We need this class to avoid Kid apps being rejected for getting idfa. It seems like App
 // Review uses some grep to find the class names, so we ended up creating a fake class that
@@ -37,7 +38,9 @@ class FakeAdClient: NSObject {
 
 }
 
-class AdClientProxy {
+// TODO (post-migration): Make all the things internal again.
+@objc(RCAdClientProxy)
+public class AdClientProxy: NSObject {
 
     private static let className = "ADClient"
 
@@ -45,7 +48,8 @@ class AdClientProxy {
         NSClassFromString(Self.className)
     }
 
-    func requestAttributionDetails(_ completionHandler: @escaping AttributionDetailsBlock) {
+    @objc(requestAttributionDetailsWithBlock:)
+    public func requestAttributionDetails(_ completionHandler: @escaping AttributionDetailsBlock) {
         let client: AnyObject
         if let klass = Self.adClientClass, let clientClass = klass as AnyObject as? NSObjectProtocol {
             // This looks strange, but #selector() does fun things to create a selector. If the selector for the given
