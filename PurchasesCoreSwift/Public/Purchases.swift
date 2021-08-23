@@ -705,7 +705,8 @@ public extension Purchases {
      * indicating whether the user was created for the first time in the RevenueCat backend.
      * See https://docs.revenuecat.com/docs/user-ids
      */
-    @objc func logIn(appUserID: String, completionBlock completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
+    @objc(logIn:completionBlock:)
+    func logIn(appUserID: String, completionBlock completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
         identityManager.logIn(appUserID: appUserID) { purchaserInfo, created, maybeError in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(purchaserInfo, created, maybeError)
