@@ -151,7 +151,7 @@ private extension ManageSubscriptionsModalHelper {
         }
 
         do {
-#if os(iOS) || os(macOS)
+#if os(iOS)
             try await AppStore.showManageSubscriptions(in: windowScene)
             return .success(())
 #else
