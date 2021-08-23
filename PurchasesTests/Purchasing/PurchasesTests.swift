@@ -335,7 +335,6 @@ class PurchasesTests: XCTestCase {
             assertionHappened.fulfill()
         }
         let purchases = Purchases.shared
-        print(purchases)
         wait(for: [assertionHappened], timeout: TimeInterval(1))
 
         #else
