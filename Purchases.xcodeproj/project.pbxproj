@@ -64,7 +64,6 @@
 		2DDF41CE24F6F4C3005BC22D /* InAppPurchaseBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C524F6F4C3005BC22D /* InAppPurchaseBuilderTests.swift */; };
 		2DDF41CF24F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41C724F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift */; };
 		2DDF41DA24F6F4DB005BC22D /* ReceiptParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E351D0EBC4698E1D3585A6 /* ReceiptParserTests.swift */; };
-		2DDF41DB24F6F4DB005BC22D /* IntroEligibilityCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */; };
 		2DDF41DC24F6F4DB005BC22D /* ProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E351F0E21361EAEC078A0D /* ProductsManagerTests.swift */; };
 		2DDF41DE24F6F527005BC22D /* MockAppleReceiptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C1554F296F7F1317747 /* MockAppleReceiptBuilder.swift */; };
 		2DDF41DF24F6F527005BC22D /* MockProductsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C9439E087F63ECC4F59 /* MockProductsManager.swift */; };
@@ -169,6 +168,7 @@
 		A5C7009026AF5A7900B2CA64 /* RCPurchaserInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */; };
 		B300E4BF26D436F900B22262 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
 		B300E4C026D4371200B22262 /* SKPaymentTransactionExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591492526B994B400D32E58 /* SKPaymentTransactionExtensionsTests.swift */; };
+		B300E4C126D4393700B22262 /* IntroEligibilityCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */; };
 		B3083A11269931CF007B5503 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3083A10269931CF007B5503 /* RCOfferingAPI.m */; };
 		B3083A132699334C007B5503 /* Offering.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3083A122699334C007B5503 /* Offering.swift */; };
 		B319514926C19856002CA9AC /* NSData+RCExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35ABEE9FD79CCA64E4F8B /* NSData+RCExtensionsTests.swift */; };
@@ -668,14 +668,14 @@
 			isa = PBXGroup;
 			children = (
 				2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */,
-				9A65E09F2591A23200DE00B0 /* OfferingStrings.swift */,
-				9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */,
-				9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */,
+				9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */,
 				9A65E0752591977200DE00B0 /* IdentityStrings.swift */,
 				9A65E07A2591977500DE00B0 /* NetworkStrings.swift */,
-				9A65E07F2591977900DE00B0 /* ReceiptStrings.swift */,
-				9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */,
+				9A65E09F2591A23200DE00B0 /* OfferingStrings.swift */,
 				9A65E03A25918B0900DE00B0 /* PurchaserInfoStrings.swift */,
+				9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */,
+				9A65E07F2591977900DE00B0 /* ReceiptStrings.swift */,
+				9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */,
 				37E3507939634ED5A9280544 /* Strings.swift */,
 			);
 			path = Strings;
@@ -684,11 +684,11 @@
 		2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */ = {
 			isa = PBXGroup;
 			children = (
-				2D5BB46A24C8E8ED00E27537 /* ReceiptParser.swift */,
-				2D8F622224D30F9D00F993AA /* ReceiptParsingError.swift */,
 				37E35FCF87558ACB498521F1 /* BasicTypes */,
 				37E355596456B3DFA01EF081 /* Builders */,
 				37E35556F2D7B8B28B169C77 /* DataConverters */,
+				2D5BB46A24C8E8ED00E27537 /* ReceiptParser.swift */,
+				2D8F622224D30F9D00F993AA /* ReceiptParsingError.swift */,
 			);
 			path = LocalReceiptParsing;
 			sourceTree = "<group>";
@@ -696,22 +696,22 @@
 		2DC5621724EC63420031F69B /* PurchasesCoreSwift */ = {
 			isa = PBXGroup;
 			children = (
+				F5BE44412698580200254A30 /* Attribution */,
 				B3B5FBBD269E080A00104A0C /* Caching */,
 				2CD72940268A820E00BFC976 /* FoundationExtensions */,
-				F5E4383626B852D700841CC8 /* StoreKitExtensions */,
-				2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */,
 				B3A36AAC26BC76230059EDEA /* Identity */,
-				35D832CB262A5B3400E60AC5 /* Networking */,
-				354895D0267AE32D001DC5B1 /* SubscriberAttributes */,
-				2D11F5DE250FF63E005A70E8 /* Logging */,
-				2DDA3E4524DB0B4500EDFE5B /* Misc */,
-				B3DDB55726854850008CCF23 /* Public */,
-				354235D524C11138008C84EE /* Purchasing */,
-				B39E811B268E885900D31189 /* SubscriberAttributes */,
-				F5BE44412698580200254A30 /* Attribution */,
 				2DC5621924EC63430031F69B /* Info.plist */,
 				2D97458E24BDFCEF006245E9 /* IntroEligibilityCalculator.swift */,
+				2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */,
+				2D11F5DE250FF63E005A70E8 /* Logging */,
+				2DDA3E4524DB0B4500EDFE5B /* Misc */,
+				35D832CB262A5B3400E60AC5 /* Networking */,
+				B3DDB55726854850008CCF23 /* Public */,
 				2DC5621824EC63430031F69B /* PurchasesCoreSwift.h */,
+				354235D524C11138008C84EE /* Purchasing */,
+				F5E4383626B852D700841CC8 /* StoreKitExtensions */,
+				354895D0267AE32D001DC5B1 /* SubscriberAttributes */,
+				B39E811B268E885900D31189 /* SubscriberAttributes */,
 				37E355CBB3F3A31A32687B14 /* Transaction.swift */,
 			);
 			path = PurchasesCoreSwift;
@@ -720,17 +720,17 @@
 		2DC5622224EC63430031F69B /* PurchasesCoreSwiftTests */ = {
 			isa = PBXGroup;
 			children = (
-				35272E1A26D0023400F22C3B /* Misc */,
+				F5BE444626985E6E00254A30 /* Attribution */,
 				37E35AE0CDC4C2AA8260FB58 /* Caching */,
-				F591492426B994A100D32E58 /* StoreKitExtensions */,
 				35F82BBB26A9BFA60051DF03 /* FoundationExtensions */,
 				2DD02D5924AD128A00419CD9 /* LocalReceiptParsing */,
+				35272E1A26D0023400F22C3B /* Misc */,
 				2DDF41DD24F6F4F9005BC22D /* Mocks */,
-				354235D624C11160008C84EE /* Purchasing */,
 				35D832FE262FAD6900E60AC5 /* Networking */,
+				354235D624C11160008C84EE /* Purchasing */,
 				2DDE559824C8B5D100DCB087 /* Resources */,
+				F591492426B994A100D32E58 /* StoreKitExtensions */,
 				B36824BB268FBB9B00957E4C /* SubscriberAttributes */,
-				F5BE444626985E6E00254A30 /* Attribution */,
 				37E35A5970D1604E8C8011FC /* TestHelpers */,
 				2DC5622524EC63430031F69B /* Info.plist */,
 				37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */,
@@ -752,12 +752,12 @@
 		2DDA3E4524DB0B4500EDFE5B /* Misc */ = {
 			isa = PBXGroup;
 			children = (
-				2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */,
 				37E3567189CF6A746EE3CCC2 /* DateExtensions.swift */,
 				0313FD40268A506400168386 /* DateProvider.swift */,
-				B3AA6237268B926F00894871 /* SystemInfo.swift */,
 				B33CEA9F268CDCC9008A3144 /* ISOPeriodFormatter.swift */,
+				2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */,
 				B35042CA26D0457E00905B95 /* PurchasesTestStandIn.swift */,
+				B3AA6237268B926F00894871 /* SystemInfo.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -834,9 +834,9 @@
 			isa = PBXGroup;
 			children = (
 				2DE20B7926408921004C597D /* Configuration.storekit */,
-				2DE20B6E264087FB004C597D /* StoreKitTests.swift */,
-				2DE20B70264087FB004C597D /* Info.plist */,
 				2DE61A83264190830021CEA0 /* Constants.swift */,
+				2DE20B70264087FB004C597D /* Info.plist */,
+				2DE20B6E264087FB004C597D /* StoreKitTests.swift */,
 			);
 			path = StoreKitTests;
 			sourceTree = "<group>";
@@ -844,11 +844,11 @@
 		2DE20B8026409EB7004C597D /* StoreKitTestApp */ = {
 			isa = PBXGroup;
 			children = (
-				2DE20B8126409EB7004C597D /* StoreKitTestAppApp.swift */,
-				2DE20B8326409EB7004C597D /* ContentView.swift */,
-				2DE20B8526409EB8004C597D /* Assets.xcassets */,
-				2DE20B8A26409EB8004C597D /* Info.plist */,
 				2DE20B8726409EB8004C597D /* Preview Content */,
+				2DE20B8526409EB8004C597D /* Assets.xcassets */,
+				2DE20B8326409EB7004C597D /* ContentView.swift */,
+				2DE20B8A26409EB8004C597D /* Info.plist */,
+				2DE20B8126409EB7004C597D /* StoreKitTestAppApp.swift */,
 			);
 			path = StoreKitTestApp;
 			sourceTree = "<group>";
@@ -965,20 +965,20 @@
 		354235D524C11138008C84EE /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
-				80E80EF026970DC3008F245A /* ReceiptFetcher.swift */,
+				35549322269E298B005F9AE9 /* OfferingsFactory.swift */,
+				F575858C26C088FE00C12B97 /* OfferingsManager.swift */,
 				B372EC55268FEF020099171E /* ProductInfo.swift */,
+				B3C1AEF9268FF4DB0013D50D /* ProductInfoEnums.swift */,
+				F5BE424126965F9F00254A30 /* ProductInfoExtractor.swift */,
 				37E35C7060D7E486F5958BED /* ProductsManager.swift */,
 				37E35E8DCF998D9DB63850F8 /* ProductsRequestFactory.swift */,
 				B372EC53268FEDC60099171E /* PromotionalOffer.swift */,
-				3597020F24BF6A710010506E /* TransactionsFactory.swift */,
-				B3C1AEF9268FF4DB0013D50D /* ProductInfoEnums.swift */,
+				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
+				80E80EF026970DC3008F245A /* ReceiptFetcher.swift */,
 				F5BE423F26962ACF00254A30 /* ReceiptRefreshPolicy.swift */,
 				2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */,
-				F5BE424126965F9F00254A30 /* ProductInfoExtractor.swift */,
 				2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */,
-				35549322269E298B005F9AE9 /* OfferingsFactory.swift */,
-				F575858C26C088FE00C12B97 /* OfferingsManager.swift */,
-				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
+				3597020F24BF6A710010506E /* TransactionsFactory.swift */,
 			);
 			path = Purchasing;
 			sourceTree = "<group>";
@@ -1016,12 +1016,12 @@
 			isa = PBXGroup;
 			children = (
 				B3C4AAD426B8911300E1B3C8 /* Backend.swift */,
-				35D832CC262A5B7500E60AC5 /* ETagManager.swift */,
-				35D832F3262E606500E60AC5 /* HTTPResponse.swift */,
-				F5BE443C26977F9B00254A30 /* HTTPRequest.swift */,
-				35D832D1262E56DB00E60AC5 /* HTTPStatusCodes.swift */,
 				35F6FD61267426D600ABCB53 /* ETagAndResponseWrapper.swift */,
+				35D832CC262A5B7500E60AC5 /* ETagManager.swift */,
 				35F82BB326A9A74D0051DF03 /* HTTPClient.swift */,
+				F5BE443C26977F9B00254A30 /* HTTPRequest.swift */,
+				35D832F3262E606500E60AC5 /* HTTPResponse.swift */,
+				35D832D1262E56DB00E60AC5 /* HTTPStatusCodes.swift */,
 				B3766F1D26BDA95100141450 /* IntroEligibilityResponse.swift */,
 			);
 			path = Networking;
@@ -1202,8 +1202,6 @@
 		B387F46B2683FD730028701F /* PublicSDKAPITester */ = {
 			isa = PBXGroup;
 			children = (
-				A56F9AAD26990A3A00AFC48F /* RCPurchaserInfoAPI.h */,
-				A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */,
 				B3D3C46E26856AFE00CB3C21 /* APITester-Bridging-Header.h */,
 				B3D3C46F26856AFF00CB3C21 /* APITester.swift */,
 				B387F46D2683FDAC0028701F /* main.m */,
@@ -1219,12 +1217,14 @@
 				B3083A10269931CF007B5503 /* RCOfferingAPI.m */,
 				B3B5FBB8269D100400104A0C /* RCOfferingsAPI.h */,
 				B3B5FBB9269D100400104A0C /* RCOfferingsAPI.m */,
+				A56F9AAD26990A3A00AFC48F /* RCPurchaserInfoAPI.h */,
+				A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */,
 				B3AA359E268682410007771B /* RCPurchasesAPI.h */,
 				B3AA359F268682410007771B /* RCPurchasesAPI.m */,
-				B33CEA9C268BC39D008A3144 /* RCTransactionAPI.h */,
-				B33CEA9D268BC39D008A3144 /* RCTransactionAPI.m */,
 				35F82BA526A848CB0051DF03 /* RCPurchasesErrorUtilsAPI.h */,
 				35F82BA726A849080051DF03 /* RCPurchasesErrorUtilsAPI.m */,
+				B33CEA9C268BC39D008A3144 /* RCTransactionAPI.h */,
+				B33CEA9D268BC39D008A3144 /* RCTransactionAPI.m */,
 			);
 			path = PublicSDKAPITester;
 			sourceTree = "<group>";
@@ -1263,8 +1263,8 @@
 		B3B5FBBD269E080A00104A0C /* Caching */ = {
 			isa = PBXGroup;
 			children = (
-				B3B5FBBE269E081E00104A0C /* InMemoryCachedObject.swift */,
 				B3B5FBC0269E17CE00104A0C /* DeviceCache.swift */,
+				B3B5FBBE269E081E00104A0C /* InMemoryCachedObject.swift */,
 			);
 			path = Caching;
 			sourceTree = "<group>";
@@ -1273,14 +1273,14 @@
 			isa = PBXGroup;
 			children = (
 				B3B5FBB7269CED6D00104A0C /* Error Handling */,
+				B39E8119268E849900D31189 /* AttributionNetwork.swift */,
 				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
 				B3AA6235268A81C700894871 /* EntitlementInfos.swift */,
 				B3DF6A4F269524080030D57C /* IntroEligibility.swift */,
-				B3D3C4712685784800CB3C21 /* Package.swift */,
-				B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */,
-				B39E8119268E849900D31189 /* AttributionNetwork.swift */,
 				B3083A122699334C007B5503 /* Offering.swift */,
 				B3B5FBBB269D121B00104A0C /* Offerings.swift */,
+				B3D3C4712685784800CB3C21 /* Package.swift */,
+				B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */,
 				A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */,
 				B35042C326CDB79A00905B95 /* Purchases.swift */,
 				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
@@ -1299,13 +1299,13 @@
 		F5BE44412698580200254A30 /* Attribution */ = {
 			isa = PBXGroup;
 			children = (
-				F5BE44422698581100254A30 /* AttributionTypeFactory.swift */,
 				F5BE4478269E4A4C00254A30 /* AdClientProxy.swift */,
-				F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */,
 				F5BE447C269E4ADB00254A30 /* ASIdentifierManagerProxy.swift */,
 				37E35CD16BB73BB091E64D9A /* AttributionData.swift */,
 				37E3521731D8DC16873F55F3 /* AttributionFetcher.swift */,
 				B3A55B7C26C452A7007EFC56 /* AttributionPoster.swift */,
+				F5BE44422698581100254A30 /* AttributionTypeFactory.swift */,
+				F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */,
 			);
 			path = Attribution;
 			sourceTree = "<group>";
@@ -1768,7 +1768,6 @@
 				2DDF41C924F6F4C3005BC22D /* UInt8+ExtensionsTests.swift in Sources */,
 				2D4D6AF524F717B800B656BE /* ContainerFactory.swift in Sources */,
 				2DDF41CA24F6F4C3005BC22D /* ArraySlice_UInt8+ExtensionsTests.swift in Sources */,
-				2DDF41DB24F6F4DB005BC22D /* IntroEligibilityCalculatorTests.swift in Sources */,
 				2DDF41E124F6F527005BC22D /* MockReceiptParser.swift in Sources */,
 				35F82BB226A98EC50051DF03 /* AttributionDataMigratorTests.swift in Sources */,
 				2DDF41E224F6F527005BC22D /* MockProductsRequest.swift in Sources */,
@@ -1832,6 +1831,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B300E4C126D4393700B22262 /* IntroEligibilityCalculatorTests.swift in Sources */,
 				2D4C18A924F47E5000F268CD /* Purchases.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
