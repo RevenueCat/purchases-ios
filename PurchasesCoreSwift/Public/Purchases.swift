@@ -59,10 +59,25 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
  * `Purchases` is the entry point for Purchases.framework. It should be instantiated as soon as your app has a unique
  * user id for your user. This can be when a user logs in if you have accounts or on launch if you can generate a random
  * user identifier.
- *  @warning Only one instance of Purchases should be instantiated at a time! Use a configure method to let the
+ *  - Warning: Only one instance of Purchases should be instantiated at a time! Use a configure method to let the
  *  framework handle the singleton instance for you.
  */
 @objc(RCPurchases) public class Purchases: NSObject {
+
+    @objc public static var shared: Purchases {
+        if let purchases = purchases {
+            return purchases
+        }
+
+        notConfiguredAssertionFunction()
+
+        // This will only be returned during testing. #hack for ARM64 testing fatalError()
+        // See https://github.com/Quick/Nimble/blob/main/Sources/Nimble/Matchers/ThrowAssertion.swift#L87
+        return PurchasesTestStandIn(apiKey: "StandIn", appUserID: nil)
+    }
+    private static var purchases: Purchases?
+
+    @objc public static var isConfigured: Bool { purchases != nil }
 
     /**
      * Delegate for `Purchases` instance. The delegate is responsible for handling promotional product purchases and
@@ -71,6 +86,15 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
     @objc public var delegate: PurchasesDelegate? {
         get { privateDelegate }
         set {
+            guard newValue !== privateDelegate else {
+                Logger.warn(Strings.purchase.purchases_delegate_set_multiple_times)
+                return
+            }
+
+            if newValue == nil {
+                Logger.info(Strings.purchase.purchases_delegate_set_to_nil)
+            }
+
             privateDelegate = newValue
             purchaserInfoManager.delegate = self
             purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(appUserID: appUserID)
@@ -78,29 +102,36 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
         }
     }
 
-    let subscriberAttributesManager: SubscriberAttributesManager
-
     private weak var privateDelegate: PurchasesDelegate?
     private let operationDispatcher: OperationDispatcher
 
     /**
      * Enable automatic collection of Apple Search Ads attribution. Disabled by default
      */
-    @objc static var automaticAppleSearchAdsAttributionCollection: Bool = false
+    @objc public static var automaticAppleSearchAdsAttributionCollection: Bool = false
 
     /**
      * Used to set the log level. Useful for debugging issues with the lovely team @RevenueCat
      */
-    @objc static var logLevel: LogLevel {
+    @objc public static var logLevel: LogLevel {
         get { Logger.logLevel }
         set { Logger.logLevel = newValue }
+    }
+
+    /**
+     * Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
+     */
+    @available(*, deprecated, message: "use Purchases.logLevel instead.")
+    @objc public static var debugLogsEnabled: Bool {
+        get { logLevel == .debug }
+        set { logLevel = newValue ? .debug : .info }
     }
 
     /**
      * Set this property to your proxy URL before configuring Purchases *only* if you've received a proxy key value
      * from your RevenueCat contact.
      */
-    @objc static var proxyURL: URL? {
+    @objc public static var proxyURL: URL? {
         get { SystemInfo.proxyURL }
         set { SystemInfo.proxyURL = newValue }
     }
@@ -110,7 +141,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
      * Mac App Store into the Universal Store, and you've configured your RevenueCat app accordingly.
      * Contact support before using this.
      */
-    @objc static var forceUniversalAppStore: Bool {
+    @objc public static var forceUniversalAppStore: Bool {
         get { SystemInfo.forceUniversalAppStore }
         set { SystemInfo.forceUniversalAppStore = newValue }
     }
@@ -120,84 +151,61 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
      * http://errors.rev.cat/ask-to-buy
      */
     @available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *)
-    @objc static var simulatesAskToBuyInSandbox: Bool {
+    @objc public static var simulatesAskToBuyInSandbox: Bool {
         get { StoreKitWrapper.simulatesAskToBuyInSandbox }
         set { StoreKitWrapper.simulatesAskToBuyInSandbox = newValue }
     }
 
     /**
-     * Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
+     * Indicates whether the user is allowed to make payments.
      */
-    @objc static var debugLogsEnabled: Bool {
-        get { logLevel == .debug }
-        set { logLevel = newValue ? .debug : .info }
-    }
+    @objc public static func canMakePayments() -> Bool { SKPaymentQueue.canMakePayments() }
 
     /**
      * Set a custom log handler for redirecting logs to your own logging system.
      * By default, this sends Info, Warn, and Error messages. If you wish to receive Debug level messages,
      * you must enable debug logs.
      */
-    @objc static var logHandler: (LogLevel, String) -> Void {
+    @objc public static var logHandler: (LogLevel, String) -> Void {
         get { Logger.logHandler }
         set { Logger.logHandler = newValue }
     }
 
     /// Current version of the Purchases framework.
-    @objc static var frameworkVersion: String { SystemInfo.frameworkVersion }
+    @objc public static var frameworkVersion: String { SystemInfo.frameworkVersion }
 
-    @objc var allowSharingAppStoreAccount: Bool {
+    @objc public var allowSharingAppStoreAccount: Bool {
         get { purchasesOrchestrator.allowSharingAppStoreAccount }
         set { purchasesOrchestrator.allowSharingAppStoreAccount = newValue }
     }
 
-    @objc var finishTransactions: Bool {
+    @objc public var finishTransactions: Bool {
         get { systemInfo.finishTransactions }
         set { systemInfo.finishTransactions = newValue }
     }
 
-    @objc static var sharedPurchases: Purchases {
-        if let purchases = purchases {
-            return purchases
-        }
-
-        notConfiguredAssertionFunction()
-
-        // This will only be returned during testing. #hack for ARM64 testing fatalError()
-        return PurchasesTestStandIn(apiKey: "StandIn", appUserID: nil)
-    }
-
-    static var shared: Purchases { sharedPurchases }
-    @objc static var isConfigured: Bool { purchases != nil }
-
-    private static var purchases: Purchases?
-
-    private let requestFetcher: StoreKitRequestFetcher
-    private let productsManager: ProductsManager
-    private let receiptFetcher: ReceiptFetcher
-    private let backend: Backend
-    private let storeKitWrapper: StoreKitWrapper
-    private let notificationCenter: NotificationCenter
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
-    private let offeringsFactory: OfferingsFactory
+    private let backend: Backend
     private let deviceCache: DeviceCache
     private let identityManager: IdentityManager
-    private let systemInfo: SystemInfo
     private let introEligibilityCalculator: IntroEligibilityCalculator
-    private let receiptParser: ReceiptParser
-    private let purchaserInfoManager: PurchaserInfoManager
+    private let notificationCenter: NotificationCenter
+    private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
+    private let productsManager: ProductsManager
+    private let purchaserInfoManager: PurchaserInfoManager
     private let purchasesOrchestrator: PurchasesOrchestrator
+    private let receiptFetcher: ReceiptFetcher
+    private let receiptParser: ReceiptParser
+    private let requestFetcher: StoreKitRequestFetcher
+    private let storeKitWrapper: StoreKitWrapper
+    private let subscriberAttributesManager: SubscriberAttributesManager
+    private let systemInfo: SystemInfo
 
     fileprivate static let initLock = NSLock()
 
     static var notConfiguredAssertionFunction: () -> Void = { fatalError(Strings.purchase.purchases_nil) }
-
-    /**
-     * Indicates whether the user is allowed to make payments.
-     */
-    @objc public static func canMakePayments() -> Bool { SKPaymentQueue.canMakePayments() }
 
     @objc convenience init(apiKey: String, appUserID: String?) {
         self.init(apiKey: apiKey,
@@ -299,27 +307,26 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
                   purchasesOrchestrator: purchasesOrchestrator)
     }
 
-    @objc
-    public init(appUserID: String?,
-                requestFetcher: StoreKitRequestFetcher,
-                receiptFetcher: ReceiptFetcher,
-                attributionFetcher: AttributionFetcher,
-                attributionPoster: AttributionPoster,
-                backend: Backend,
-                storeKitWrapper: StoreKitWrapper,
-                notificationCenter: NotificationCenter,
-                systemInfo: SystemInfo,
-                offeringsFactory: OfferingsFactory,
-                deviceCache: DeviceCache,
-                identityManager: IdentityManager,
-                subscriberAttributesManager: SubscriberAttributesManager,
-                operationDispatcher: OperationDispatcher,
-                introEligibilityCalculator: IntroEligibilityCalculator,
-                receiptParser: ReceiptParser,
-                purchaserInfoManager: PurchaserInfoManager,
-                productsManager: ProductsManager,
-                offeringsManager: OfferingsManager,
-                purchasesOrchestrator: PurchasesOrchestrator) {
+    init(appUserID: String?,
+         requestFetcher: StoreKitRequestFetcher,
+         receiptFetcher: ReceiptFetcher,
+         attributionFetcher: AttributionFetcher,
+         attributionPoster: AttributionPoster,
+         backend: Backend,
+         storeKitWrapper: StoreKitWrapper,
+         notificationCenter: NotificationCenter,
+         systemInfo: SystemInfo,
+         offeringsFactory: OfferingsFactory,
+         deviceCache: DeviceCache,
+         identityManager: IdentityManager,
+         subscriberAttributesManager: SubscriberAttributesManager,
+         operationDispatcher: OperationDispatcher,
+         introEligibilityCalculator: IntroEligibilityCalculator,
+         receiptParser: ReceiptParser,
+         purchaserInfoManager: PurchaserInfoManager,
+         productsManager: ProductsManager,
+         offeringsManager: OfferingsManager,
+         purchasesOrchestrator: PurchasesOrchestrator) {
 
         Logger.debug(Strings.configure.debug_enabled)
         Logger.debug(String(format: Strings.configure.sdk_version, Self.frameworkVersion))
@@ -351,12 +358,12 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
         self.purchasesOrchestrator.maybeDelegate = self
 
         systemInfo.isApplicationBackgrounded { isBackgrounded in
-            if !isBackgrounded {
+            if isBackgrounded {
+                self.purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(appUserID: self.appUserID)
+            } else {
                 self.operationDispatcher.dispatchOnWorkerThread {
                     self.updateAllCaches(completion: nil)
                 }
-            } else {
-                self.purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(appUserID: self.appUserID)
             }
         }
 
@@ -388,103 +395,14 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
         Self.purchases = nil
     }
 
-}
-
-extension Purchases {
-
     static func setDefaultInstance(_ purchases: Purchases) {
         initLock.lock()
-        if Self.purchases != nil {
+        if isConfigured {
             Logger.info(Strings.configure.purchase_instance_already_set)
         }
+
         Self.purchases = purchases
         initLock.unlock()
-    }
-
-    @objc private func applicationDidBecomeActive(notification: Notification) {
-        Logger.debug(Strings.configure.application_active)
-        updateAllCachesIfNeeded()
-        syncSubscriberAttributesIfNeeded()
-        postAppleSearchAddsAttributionCollectionIfNeeded()
-    }
-
-    @objc private func applicationWillResignActive(notification: Notification) {
-        syncSubscriberAttributesIfNeeded()
-    }
-
-    private func subscribeToAppStateNotifications() {
-        notificationCenter.addObserver(self,
-                                       selector: #selector(applicationDidBecomeActive(notification:)),
-                                       name: SystemInfo.applicationDidBecomeActiveNotification, object: nil)
-
-        notificationCenter.addObserver(self,
-                                       selector: #selector(applicationWillResignActive(notification:)),
-                                       name: SystemInfo.applicationWillResignActiveNotification, object: nil)
-    }
-
-    private func syncSubscriberAttributesIfNeeded() {
-        operationDispatcher.dispatchOnWorkerThread {
-            self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: self.appUserID)
-        }
-    }
-
-    private func updateAllCachesIfNeeded() {
-        systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(appUserID: self.appUserID,
-                                                                        isAppBackgrounded: isAppBackgrounded,
-                                                                        completion: nil)
-            guard self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) else {
-                return
-            }
-
-            Logger.debug("Offerings cache is stale, updating caches")
-            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                       isAppBackgrounded: isAppBackgrounded,
-                                                       completion: nil)
-        }
-    }
-
-    private func updateAllCaches(completion: ReceivePurchaserInfoBlock?) {
-        systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.purchaserInfoManager.fetchAndCachePurchaserInfo(appUserID: self.appUserID,
-                                                                 isAppBackgrounded: isAppBackgrounded,
-                                                                 completion: completion)
-            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                       isAppBackgrounded: isAppBackgrounded,
-                                                       completion: nil)
-        }
-    }
-
-}
-
-extension Purchases: PurchaserInfoManagerDelegate {
-
-    public func purchaserInfoManagerDidReceiveUpdated(purchaserInfo: PurchaserInfo) {
-        delegate?.purchases?(self, didReceiveUpdated: purchaserInfo)
-    }
-
-}
-
-extension Purchases: PurchasesOrchestratorDelegate {
-
-    /**
-     * Called when a user initiates a promotional in-app purchase from the App Store.
-     * If your app is able to handle a purchase at the current time, run the deferment block in this method.
-     * If the app is not in a state to make a purchase: cache the defermentBlock, then call the defermentBlock
-     * when the app is ready to make the promotional purchase.
-     * If the purchase should never be made, you don't need to ever call the defermentBlock and `Purchases`
-     * will not proceed with promotional purchases.
-     *
-     * @param product `SKProduct` the product that was selected from the app store
-     */
-    @objc
-    public func shouldPurchasePromoProduct(_ product: SKProduct,
-                                           defermentBlock: @escaping DeferredPromotionalPurchaseBlock) {
-        guard let delegate = delegate else {
-            return
-        }
-
-        delegate.purchases?(self, shouldPurchasePromoProduct: product, defermentBlock: defermentBlock)
     }
 
 }
@@ -500,7 +418,7 @@ extension Purchases {
      * Key names starting with "$" are reserved names used by RevenueCat. For a full list of key
      * restrictions refer to our guide: https://docs.revenuecat.com/docs/subscriber-attributes
      *
-     * @param attributes Map of attributes by key. Set the value as an empty string to delete an attribute.
+     * - Parameter attributes: Map of attributes by key. Set the value as an empty string to delete an attribute.
      */
     @objc public func setAttributes(_ attributes: [String: String]) {
         subscriberAttributesManager.setAttributes(attributes, appUserID: appUserID)
@@ -509,7 +427,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the email address for the user
      *
-     * @param email Empty String or nil will delete the subscriber attribute.
+     * - Parameter email: Empty String or nil will delete the subscriber attribute.
      */
     @objc public func setEmail(_ email: String) {
         subscriberAttributesManager.setEmail(email, appUserID: appUserID)
@@ -518,7 +436,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the phone number for the user
      *
-     * @param phoneNumber Empty String or nil will delete the subscriber attribute.
+     * - Parameter phoneNumber: Empty String or nil will delete the subscriber attribute.
      */
     @objc public func setPhoneNumber(_ phoneNumber: String) {
         subscriberAttributesManager.setPhoneNumber(phoneNumber, appUserID: appUserID)
@@ -527,7 +445,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the display name for the user
      *
-     * @param displayName Empty String or nil will delete the subscriber attribute.
+     * - Parameter displayName: Empty String or nil will delete the subscriber attribute.
      */
     @objc public func setDisplayName(_ displayName: String) {
         subscriberAttributesManager.setDisplayName(displayName, appUserID: appUserID)
@@ -536,7 +454,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the push token for the user
      *
-     * @param pushToken nil will delete the subscriber attribute.
+     * - Parameter pushToken: nil will delete the subscriber attribute.
      */
     @objc public func setPushToken(_ pushToken: Data) {
         subscriberAttributesManager.setPushToken(pushToken, appUserID: appUserID)
@@ -546,7 +464,7 @@ extension Purchases {
      * Subscriber attribute associated with the Adjust Id for the user
      * Required for the RevenueCat Adjust integration
      *
-     * @param adjustID nil will delete the subscriber attribute
+     * - Parameter adjustID: nil will delete the subscriber attribute
      */
     @objc public func setAdjustID(_ adjustID: String) {
         subscriberAttributesManager.setAdjustID(adjustID, appUserID: appUserID)
@@ -556,7 +474,7 @@ extension Purchases {
      * Subscriber attribute associated with the Appsflyer Id for the user
      * Required for the RevenueCat Appsflyer integration
      *
-     * @param appsflyerID nil will delete the subscriber attribute
+     * - Parameter appsflyerID: nil will delete the subscriber attribute
      */
     @objc public func setAppsflyerID(_ appsflyerID: String) {
         subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: appUserID)
@@ -566,7 +484,7 @@ extension Purchases {
      * Subscriber attribute associated with the Facebook SDK Anonymous Id for the user
      * Recommended for the RevenueCat Facebook integration
      *
-     * @param fbAnonymousID nil will delete the subscriber attribute
+     * - Parameter fbAnonymousID: nil will delete the subscriber attribute
      */
     @objc public func setFBAnonymousID(_ fbAnonymousID: String) {
         subscriberAttributesManager.setFBAnonymousID(fbAnonymousID, appUserID: appUserID)
@@ -576,7 +494,7 @@ extension Purchases {
      * Subscriber attribute associated with the mParticle Id for the user
      * Recommended for the RevenueCat mParticle integration
      *
-     * @param mparticleID nil will delete the subscriber attribute
+     * - Parameter mparticleID: nil will delete the subscriber attribute
      */
     @objc public func setMparticleID(_ mparticleID: String) {
         subscriberAttributesManager.setMparticleID(mparticleID, appUserID: appUserID)
@@ -586,7 +504,7 @@ extension Purchases {
      * Subscriber attribute associated with the OneSignal Player Id for the user
      * Required for the RevenueCat OneSignal integration
      *
-     * @param onesignalID nil will delete the subscriber attribute
+     * - Parameter onesignalID: nil will delete the subscriber attribute
      */
     @objc public func setOnesignalID(_ onesignalID: String) {
         subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: appUserID)
@@ -595,7 +513,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install media source for the user
      *
-     * @param mediaSource nil will delete the subscriber attribute.
+     * - Parameter mediaSource: nil will delete the subscriber attribute.
      */
     @objc public func setMediaSource(_ mediaSource: String) {
         subscriberAttributesManager.setMediaSource(mediaSource, appUserID: appUserID)
@@ -604,7 +522,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install campaign for the user
      *
-     * @param campaign nil will delete the subscriber attribute.
+     * - Parameter campaign: nil will delete the subscriber attribute.
      */
     @objc public func setCampaign(_ campaign: String) {
         subscriberAttributesManager.setCampaign(campaign, appUserID: appUserID)
@@ -613,7 +531,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install ad group for the user
      *
-     * @param adGroup nil will delete the subscriber attribute.
+     * - Parameter adGroup: nil will delete the subscriber attribute.
      */
     @objc public func setAdGroup(_ adGroup: String) {
         subscriberAttributesManager.setAdGroup(adGroup, appUserID: appUserID)
@@ -622,7 +540,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install ad for the user
      *
-     * @param ad nil will delete the subscriber attribute.
+     * - Parameter ad: nil will delete the subscriber attribute.
      */
     @objc public func setAd(_ ad: String) {
         subscriberAttributesManager.setAd(ad, appUserID: appUserID)
@@ -631,7 +549,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install keyword for the user
      *
-     * @param keyword nil will delete the subscriber attribute.
+     * - Parameter keyword: nil will delete the subscriber attribute.
      */
     @objc public func setKeyword(_ keyword: String) {
         subscriberAttributesManager.setKeyword(keyword, appUserID: appUserID)
@@ -640,7 +558,7 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install ad creative for the user.
      *
-     * @param creative nil will delete the subscriber attribute.
+     * - Parameter creative: nil will delete the subscriber attribute.
      */
     @objc public func setCreative(_ creative: String) {
         subscriberAttributesManager.setCreative(creative, appUserID: appUserID)
@@ -658,8 +576,9 @@ extension Purchases {
     /**
      * Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
      *
-     * @param data Dictionary provided by the network. See https://docs.revenuecat.com/docs/attribution
-     * @param network Enum for the network the data is coming from, see `RCAttributionNetwork` for supported networks.
+     * - Parameter data: Dictionary provided by the network. See https://docs.revenuecat.com/docs/attribution
+     * - Parameter network: Enum for the network the data is coming from, see `RCAttributionNetwork` for supported
+     * networks.
      */
     @objc public static func addAttributionData(_ data: [String: Any], fromNetwork network: AttributionNetwork) {
             addAttributionData(data, fromNetwork: network, forNetworkUserId: nil)
@@ -668,28 +587,30 @@ extension Purchases {
     /**
      * Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
      *
-     * @param data Dictionary provided by the network. See https://docs.revenuecat.com/docs/attribution
-     * @param network Enum for the network the data is coming from, see `RCAttributionNetwork` for supported networks.
-     * @param networkUserId User Id that should be sent to the network. Default is the current App User Id.
+     * - Parameter data: Dictionary provided by the network. See https://docs.revenuecat.com/docs/attribution
+     * - Parameter network: Enum for the network the data is coming from, see `RCAttributionNetwork` for supported
+     * networks.
+     * - Parameter maybeNetworkUserId: User Id that should be sent to the network. Default is the current App User Id.
      */
     @objc public static func addAttributionData(_ data: [String: Any],
                                                 fromNetwork network: AttributionNetwork,
-                                                forNetworkUserId networkUserId: String?) {
+                                                forNetworkUserId maybeNetworkUserId: String?) {
         if Self.isConfigured {
-            shared.post(attributionData: data, fromNetwork: network, forNetworkUserId: networkUserId)
+            shared.post(attributionData: data, fromNetwork: network, forNetworkUserId: maybeNetworkUserId)
         } else {
             AttributionPoster.store(postponedAttributionData: data,
                                     fromNetwork: network,
-                                    forNetworkUserId: networkUserId)
+                                    forNetworkUserId: maybeNetworkUserId)
         }
     }
 
     /**
      * Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
      *
-     * @param data Dictionary provided by the network. See https://docs.revenuecat.com/docs/attribution
-     * @param network Enum for the network the data is coming from, see `RCAttributionNetwork` for supported networks.
-     * @param networkUserId User Id that should be sent to the network. Default is the current App User Id.
+     * - Parameter data: Dictionary provided by the network. See https://docs.revenuecat.com/docs/attribution
+     * - Parameter network: Enum for the network the data is coming from, see `RCAttributionNetwork` for supported
+     * networks.
+     * - Parameter networkUserId: User Id that should be sent to the network. Default is the current App User Id.
      */
     public static func addAttributionData(_ data: [String: Any],
                                           from network: AttributionNetwork,
@@ -727,8 +648,8 @@ public extension Purchases {
     /**
      * This function will alias two appUserIDs together.
      *
-     * @param alias The new appUserID that should be linked to the currently identified appUserID
-     * @param maybeCompletionBlock An optional completion block called when the aliasing has been successful.
+     * - Parameter alias: The new appUserID that should be linked to the currently identified appUserID
+     * - Parameter maybeCompletionBlock: An optional completion block called when the aliasing has been successful.
      * This completion block will receive an error if there's been one.
      */
     @objc func createAlias(_ alias: String, completionBlock maybeCompletionBlock: ReceivePurchaserInfoBlock?) {
@@ -754,7 +675,7 @@ public extension Purchases {
      * This function will identify the current user with an appUserID. Typically this would be used after a
      * logout to identify a new user without calling configure.
      *
-     * @param appUserID The appUserID that should be linked to the current user.
+     * - Parameter appUserID: The appUserID that should be linked to the current user.
      */
     @objc func identify(_ appUserID: String, completionBlock maybeCompletion: ReceivePurchaserInfoBlock?) {
         if appUserID == identityManager.currentAppUserID {
@@ -777,7 +698,7 @@ public extension Purchases {
     /**
      * This function will logIn the current user with an appUserID.
      *
-     * @param appUserID The appUserID that should be linked to the current user.
+     * - Parameter appUserID: The appUserID that should be linked to the current user.
      *
      * The callback will be called with the latest PurchaserInfo for the user, as well as a boolean
      * indicating whether the user was created for the first time in the RevenueCat backend.
@@ -840,7 +761,7 @@ public extension Purchases {
      * Offerings will be fetched and cached on instantiation so that, by the time they are needed,
      * your prices are loaded for your purchase flow. Time is money.
      *
-     * @param completion A completion block called when offerings are available.
+     * - Parameter completion: A completion block called when offerings are available.
      * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
      */
     @objc func offerings(completionBlock completion: @escaping ReceiveOfferingsBlock) {
@@ -855,7 +776,7 @@ public extension Purchases {
     /**
      * Get latest available purchaser info.
      *
-     * @param completion A completion block called when purchaser info is available and not stale.
+     * - Parameter completion: A completion block called when purchaser info is available and not stale.
      * Called immediately if purchaser info is cached. Purchaser info can be nil * if an error occurred.
      */
     @objc func purchaserInfo(completionBlock completion: @escaping ReceivePurchaserInfoBlock) {
@@ -867,16 +788,16 @@ public extension Purchases {
      * Use this method if you aren't using `-offeringsWithCompletionBlock:`.
      * You should use offerings though.
      *
-     * @note `completion` may be called without `SKProduct`s that you are expecting. This is usually caused by
+     * - Note: `completion` may be called without `SKProduct`s that you are expecting. This is usually caused by
      * iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect.
      * Also ensure that you have an active developer program subscription and you have signed the latest paid
      * application agreements.
      * If you're having trouble see: https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard
      *
-     * @param identifiers A set of product identifiers for in app purchases setup via iTunesConnect.
+     * - Parameter identifiers: A set of product identifiers for in app purchases setup via iTunesConnect.
      * This should be either hard coded in your application, from a file, or from a custom endpoint if you want
      * to be able to deploy new IAPs without an app update.
-     * @param completion An @escaping callback that is called with the loaded products.
+     * - Parameter completion: An @escaping callback that is called with the loaded products.
      * If the fetch fails for any reason it will return an empty array.
      */
     @objc func products(identifiers: [String], completionBlock completion: @escaping ([SKProduct]) -> Void) {
@@ -884,23 +805,25 @@ public extension Purchases {
     }
 
     /**
-    * Use this function if you are not using the Offerings system to purchase an `SKProduct`.
-    * If you are using the Offerings system, use `Purchases.purchase(package:completion:)` instead.
-    *
-    * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
-    *
-    * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
-    *
-    * @note You do not need to finish the transaction yourself in the completion callback, Purchases will
-    * handle this for you.
-    *
-    * @param product The `SKProduct` the user intends to purchase
-    * @param completion A completion block that is called when the purchase completes.
-    *
-    * If the purchase was successful there will be a `SKPaymentTransaction` and a `PurchaserInfo`.
-    * If the purchase was not successful, there will be an `NSError`.
-    * If the user cancelled, `userCancelled` will be `YES`.
-    */
+     * Use this function if you are not using the Offerings system to purchase an `SKProduct`.
+     * If you are using the Offerings system, use `Purchases.purchase(package:completion:)` instead.
+     *
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     *
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
+     * handle this for you.
+     *
+     * - Parameter product: The `SKProduct` the user intends to purchase
+     * - Parameter completion: A completion block that is called when the purchase completes.
+     *
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a `PurchaserInfo`.
+     *
+     * If the purchase was not successful, there will be an `NSError`.
+     *
+     * If the user cancelled, `userCancelled` will be `YES`.
+     */
     @objc(purchaseProduct:withCompletionBlock:)
     func purchase(product: SKProduct, completion: @escaping PurchaseCompletedBlock) {
         let payment: SKMutablePayment = storeKitWrapper.payment(withProduct: product)
@@ -912,14 +835,16 @@ public extension Purchases {
      * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
      * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
      *
-     * @note You do not need to finish the transaction yourself in the completion callback, Purchases will
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
      * handle this for you.
      *
-     * @param package The `Package` the user intends to purchase
-     * @param completion A completion block that is called when the purchase completes.
+     * - Parameter package: The `Package` the user intends to purchase
+     * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the purchase was successful there will be a `SKPaymentTransaction` and a `PurchaserInfo`.
+     *
      * If the purchase was not successful, there will be an `NSError`.
+     *
      * If the user cancelled, `userCancelled` will be `YES`.
      */
     @objc(purchasePackage:withCompletionBlock:)
@@ -941,11 +866,12 @@ public extension Purchases {
      *
      * From here `Purchases` will handle the purchase with `StoreKit` and call the `PurchaseCompletedBlock`.
      *
-     * @note You do not need to finish the transaction yourself in the completion callback, Purchases will handle this for you.
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will handle
+     * this for you.
      *
-     * @param product The `SKProduct` the user intends to purchase
-     * @param discount The `SKPaymentDiscount` to apply to the purchase
-     * @param completion A completion block that is called when the purchase completes.
+     * - Parameter product: The `SKProduct` the user intends to purchase
+     * - Parameter discount: The `SKPaymentDiscount` to apply to the purchase
+     * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the purchase was successful there will be a `SKPaymentTransaction` and a `PurchaserInfo`.
      * If the purchase was not successful, there will be an `NSError`.
@@ -964,12 +890,12 @@ public extension Purchases {
      * direct response to user input. From here `Purchases` will handle the purchase with `StoreKit` and call the
      * `PurchaseCompletedBlock`.
      *
-     * @note You do not need to finish the transaction yourself in the completion callback, Purchases will handle
+     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will handle
      * this for you.
      *
-     * @param package The `Package` the user intends to purchase
-     * @param discount The `PaymentDiscount` to apply to the purchase
-     * @param completion A completion block that is called when the purchase completes.
+     * - Parameter package: The `Package` the user intends to purchase
+     * - Parameter discount: The `PaymentDiscount` to apply to the purchase
+     * - Parameter completion: A completion block that is called when the purchase completes.
      *
      * If the purchase was successful there will be a `SKPaymentTransaction` and a * `PurchaserInfo`.
      * If the purchase was not successful, there will be an `Error`.
@@ -993,9 +919,9 @@ public extension Purchases {
      * the `appUserID` of the existing user.
      * Going forward, either `appUserID` will be able to reference the same user.
      *
-     * @warning This function should only be called if you're not calling any purchase method.
+     * - Warning: This function should only be called if you're not calling any purchase method.
      *
-     * @note This method will not trigger a login prompt from App Store. However, if the receipt currently
+     * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
      * won't be able to restore them. Use restoreTransactionsWithCompletionBlock to cover those cases.
      */
@@ -1012,7 +938,7 @@ public extension Purchases {
      * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
      * by your app passing the same `appUserId` used to purchase originally.
      *
-     * @note This may force your users to enter the App Store password so should only be performed on request of
+     * - Note: This may force your users to enter the App Store password so should only be performed on request of
      * the user. Typically with a button in settings or near your purchase UI. Use syncPurchasesWithCompletionBlock
      * if you need to restore transactions programmatically.
      */
@@ -1025,40 +951,27 @@ public extension Purchases {
      * You should use this method to determine whether or not you show the user the normal product price or
      * the introductory price. This also applies to trials (trials are considered a type of introductory pricing).
      *
-     * @note Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
+     * - Note: Subscription groups are automatically collected for determining eligibility. If RevenueCat can't
      * definitively compute the eligibilty, most likely because of missing group information, it will return
      * `RCIntroEligibilityStatusUnknown`. The best course of action on unknown status is to display the non-intro
      * pricing, to not create a misleading situation. To avoid this, make sure you are testing with the latest
      * version of iOS so that the subscription group can be collected by the SDK.
      *
-     * @param productIdentifiers Array of product identifiers for which you want to compute eligibility
-     * @param receiveEligibility A block that receives a dictionary of product_id -> `RCIntroEligibility`.
+     * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
+     * - Parameter receiveEligibility: A block that receives a dictionary of product_id -> `RCIntroEligibility`.
      */
     @objc
     func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String],
                                                   completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
-            if let data = maybeData {
-                if #available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *) {
-                    self.modernEligibilityHandler(maybeReceiptData: data,
-                                                  productIdentifiers: productIdentifiers,
-                                                  completionBlock: receiveEligibility)
-                } else {
-                    self.backend.getIntroEligibility(appUserID: self.appUserID,
-                                                     receiptData: data,
-                                                     productIdentifiers: productIdentifiers) { result, maybeError in
-                        if let error = maybeError {
-                            Logger.error(String(format: "Unable to getIntroEligibilityForAppUserID: %@",
-                                                error.localizedDescription))
-                        }
-                        self.operationDispatcher.dispatchOnMainThread {
-                            receiveEligibility(result)
-                        }
-                    }
-                }
+            if #available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *),
+               let data = maybeData {
+                self.modernEligibilityHandler(maybeReceiptData: data,
+                                              productIdentifiers: productIdentifiers,
+                                              completionBlock: receiveEligibility)
             } else {
                 self.backend.getIntroEligibility(appUserID: self.appUserID,
-                                                 receiptData: Data(),
+                                                 receiptData: maybeData ?? Data(),
                                                  productIdentifiers: productIdentifiers) { result, maybeError in
                     if let error = maybeError {
                         Logger.error(String(format: "Unable to getIntroEligibilityForAppUserID: %@",
@@ -1099,31 +1012,31 @@ public extension Purchases {
     /**
      * Use this function to retrieve the `SKPaymentDiscount` for a given `SKProduct`.
      *
-     * @param discount The `SKProductDiscount` to apply to the product.
-     * @param product The `SKProduct` the user intends to purchase.
-     * @param completion A completion block that is called when the `SKPaymentDiscount` is returned.
+     * - Parameter discount: The `SKProductDiscount` to apply to the product.
+     * - Parameter product: The `SKProduct` the user intends to purchase.
+     * - Parameter completion: A completion block that is called when the `SKPaymentDiscount` is returned.
      * If it was not successful, there will be an `NSError`.
      */
     @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
     @objc(paymentDiscountForProductDiscount:product:completion:)
-    func paymentDiscount(for discount: SKProductDiscount,
+    func paymentDiscount(forProductDiscount discount: SKProductDiscount,
                          product: SKProduct,
                          completion: @escaping PaymentDiscountBlock) {
         purchasesOrchestrator.paymentDiscount(forProductDiscount: discount, product: product, completion: completion)
     }
 
     @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
-    private func modernEligibilityHandler(maybeReceiptData maybeData: Data?,
+    private func modernEligibilityHandler(maybeReceiptData data: Data,
                                           productIdentifiers: [String],
                                           completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
         introEligibilityCalculator
-            .checkTrialOrIntroductoryPriceEligibility(with: maybeData ?? Data(),
+            .checkTrialOrIntroductoryPriceEligibility(with: data,
                                                       productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
                 if let error = maybeError {
                     Logger.error(String(format: Strings.receipt.parse_receipt_locally_error,
                                         error.localizedDescription))
                     self.backend.getIntroEligibility(appUserID: self.appUserID,
-                                                     receiptData: maybeData ?? Data(),
+                                                     receiptData: data,
                                                      productIdentifiers: productIdentifiers) { result, maybeAnotherError in
                         if let intoEligibilityError = maybeAnotherError {
                             Logger.error(String(format: "Unable to getIntroEligibilityForAppUserID: %@",
@@ -1170,13 +1083,13 @@ extension Purchases {
      * Configures an instance of the Purchases SDK with a specified API key. The instance will be set as a singleton.
      * You should access the singleton instance using [RCPurchases sharedPurchases]
      *
-     * @note Use this initializer if your app does not have an account system.
+     * - Note: Use this initializer if your app does not have an account system.
      * `RCPurchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`.
      * This also affects the behavior of `restoreTransactionsWithCompletionBlock`.
      *
-     * @param apiKey The API Key generated for your app from https://app.revenuecat.com/
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
-     * @return An instantiated `RCPurchases` object that has been set as a singleton.
+     * - Returns: An instantiated `RCPurchases` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:)
     @discardableResult static func configure(apiKey: String) -> Purchases {
@@ -1188,16 +1101,16 @@ extension Purchases {
      * The instance will be set as a singleton.
      * You should access the singleton instance using [RCPurchases sharedPurchases]
      *
-     * @note Best practice is to use a salted hash of your unique app user ids.
+     * - Note: Best practice is to use a salted hash of your unique app user ids.
      *
-     * @warning Use this initializer if you have your own user identifiers that you manage.
+     * - Warning: Use this initializer if you have your own user identifiers that you manage.
      *
-     * @param apiKey The API Key generated for your app from https://app.revenuecat.com/
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
-     * @param appUserID The unique app user id for this user. This user id will allow users to share their
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
      * purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
      *
-     * @return An instantiated `RCPurchases` object that has been set as a singleton.
+     * - Returns: An instantiated `RCPurchases` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:appUserID:)
     @discardableResult static func configure(apiKey: String, appUserID: String?) -> Purchases {
@@ -1210,15 +1123,15 @@ extension Purchases {
      * Purchases SDK will be set as a singleton.
      * You should access the singleton instance using [RCPurchases sharedPurchases]
      *
-     * @param apiKey The API Key generated for your app from https://app.revenuecat.com/
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
-     * @param appUserID The unique app user id for this user. This user id will allow users to share their
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
      * purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
      *
-     * @param observerMode Set this to TRUE if you have your own IAP implementation and want to use only
+     * - Parameter observerMode: Set this to TRUE if you have your own IAP implementation and want to use only
      * RevenueCat's backend. Default is FALSE.
      *
-     * @return An instantiated `RCPurchases` object that has been set as a singleton.
+     * - Returns: An instantiated `RCPurchases` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:appUserID:observerMode:)
     @discardableResult static func configure(apiKey: String, appUserID: String?, observerMode: Bool) -> Purchases {
@@ -1231,17 +1144,17 @@ extension Purchases {
      * Purchases SDK will be set as a singleton.
      * You should access the singleton instance using [RCPurchases sharedPurchases]
      *
-     * @param apiKey The API Key generated for your app from https://app.revenuecat.com/
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
-     * @param appUserID The unique app user id for this user. This user id will allow users to share their
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
      * purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
      *
-     * @param observerMode Set this to TRUE if you have your own IAP implementation and want to use only
+     * - Parameter observerMode: Set this to TRUE if you have your own IAP implementation and want to use only
      * RevenueCat's backend. Default is FALSE.
      *
-     * @param userDefaults Custom userDefaults to use
+     * - Parameter userDefaults: Custom userDefaults to use
      *
-     * @return An instantiated `RCPurchases` object that has been set as a singleton.
+     * - Returns: An instantiated `RCPurchases` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:)
     @discardableResult static func configure(apiKey: String,
@@ -1270,6 +1183,101 @@ extension Purchases {
                                    platformFlavorVersion: platformFlavorVersion)
         setDefaultInstance(purchases)
         return purchases
+    }
+
+}
+
+// MARK: Delegate implementation
+extension Purchases: PurchaserInfoManagerDelegate {
+
+    public func purchaserInfoManagerDidReceiveUpdated(purchaserInfo: PurchaserInfo) {
+        delegate?.purchases?(self, didReceiveUpdated: purchaserInfo)
+    }
+
+}
+
+extension Purchases: PurchasesOrchestratorDelegate {
+
+    /**
+     * Called when a user initiates a promotional in-app purchase from the App Store.
+     *
+     * If your app is able to handle a purchase at the current time, run the deferment block in this method.
+     *
+     * If the app is not in a state to make a purchase: cache the defermentBlock, then call the defermentBlock
+     * when the app is ready to make the promotional purchase.
+     *
+     * If the purchase should never be made, you don't need to ever call the defermentBlock and `Purchases`
+     * will not proceed with promotional purchases.
+     *
+     * - Parameter product: `SKProduct` the product that was selected from the app store
+     */
+    @objc
+    public func shouldPurchasePromoProduct(_ product: SKProduct,
+                                           defermentBlock: @escaping DeferredPromotionalPurchaseBlock) {
+        guard let delegate = delegate else {
+            return
+        }
+
+        delegate.purchases?(self, shouldPurchasePromoProduct: product, defermentBlock: defermentBlock)
+    }
+
+}
+
+// MARK: Private
+private extension Purchases {
+
+    @objc func applicationDidBecomeActive(notification: Notification) {
+        Logger.debug(Strings.configure.application_active)
+        updateAllCachesIfNeeded()
+        syncSubscriberAttributesIfNeeded()
+        postAppleSearchAddsAttributionCollectionIfNeeded()
+    }
+
+    @objc func applicationWillResignActive(notification: Notification) {
+        syncSubscriberAttributesIfNeeded()
+    }
+
+    func subscribeToAppStateNotifications() {
+        notificationCenter.addObserver(self,
+                                       selector: #selector(applicationDidBecomeActive(notification:)),
+                                       name: SystemInfo.applicationDidBecomeActiveNotification, object: nil)
+
+        notificationCenter.addObserver(self,
+                                       selector: #selector(applicationWillResignActive(notification:)),
+                                       name: SystemInfo.applicationWillResignActiveNotification, object: nil)
+    }
+
+    func syncSubscriberAttributesIfNeeded() {
+        operationDispatcher.dispatchOnWorkerThread {
+            self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: self.appUserID)
+        }
+    }
+
+    func updateAllCachesIfNeeded() {
+        systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(appUserID: self.appUserID,
+                                                                        isAppBackgrounded: isAppBackgrounded,
+                                                                        completion: nil)
+            guard self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) else {
+                return
+            }
+
+            Logger.debug("Offerings cache is stale, updating caches")
+            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
+                                                       isAppBackgrounded: isAppBackgrounded,
+                                                       completion: nil)
+        }
+    }
+
+    func updateAllCaches(completion: ReceivePurchaserInfoBlock?) {
+        systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.purchaserInfoManager.fetchAndCachePurchaserInfo(appUserID: self.appUserID,
+                                                                 isAppBackgrounded: isAppBackgrounded,
+                                                                 completion: completion)
+            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
+                                                       isAppBackgrounded: isAppBackgrounded,
+                                                       completion: nil)
+        }
     }
 
 }

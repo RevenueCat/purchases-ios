@@ -14,9 +14,9 @@
 import Foundation
 
 // This class is used during unit testing on ARM64. We cannot check for fatalError() in tests. Instead of skipping
-// testing on that platform for the fatalError() that should occure when we call .sharedPurchases before
+// testing on that platform for the fatalError() that should occur when we call .sharedPurchases before
 // .configure/init, we substitute this class as the return and check for it. If this class is used at all, which
 // it shouldn't be due to internal visibility.
-@objc class PurchasesTestStandIn: Purchases {
+class PurchasesTestStandIn: Purchases {
 
 }

@@ -146,11 +146,6 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         Purchases.setDefaultInstance(purchases!)
     }
 
-    func testInitializerConfiguresSubscriberAttributesManager() {
-        let purchases = Purchases.configure(apiKey: "key")
-        expect(purchases.subscriberAttributesManager).toNot(beNil())
-    }
-
     // Mark: Notifications
 
     func testSubscribesToForegroundNotifications() {

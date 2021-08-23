@@ -2201,7 +2201,9 @@ class PurchasesTests: XCTestCase {
 
             var completionCalled = false
             var receivedPaymentDiscount: SKPaymentDiscount?
-            self.purchases?.paymentDiscount(for: productDiscount, product: product, completion: { (paymentDiscount, error) in
+            self.purchases?.paymentDiscount(forProductDiscount: productDiscount,
+                                            product: product,
+                                            completion: { (paymentDiscount, error) in
                 receivedPaymentDiscount = paymentDiscount
                 completionCalled = true
             })
@@ -2233,7 +2235,9 @@ class PurchasesTests: XCTestCase {
             self.backend.postOfferForSigningPaymentDiscountResponse["timestamp"] = timestamp
 
             var maybeError: Error?
-            self.purchases?.paymentDiscount(for: productDiscount, product: product, completion: { (paymentDiscount, error) in
+            self.purchases?.paymentDiscount(forProductDiscount: productDiscount,
+                                            product: product,
+                                            completion: { (paymentDiscount, error) in
                 maybeError = error
             })
 
@@ -2255,7 +2259,9 @@ class PurchasesTests: XCTestCase {
             var completionCalled = false
             var receivedPaymentDiscount: SKPaymentDiscount?
             var receivedError: Error? = nil
-            self.purchases?.paymentDiscount(for: productDiscount, product: product, completion: { (paymentDiscount, error) in
+            self.purchases?.paymentDiscount(forProductDiscount: productDiscount,
+                                            product: product,
+                                            completion: { (paymentDiscount, error) in
                 receivedPaymentDiscount = paymentDiscount
                 completionCalled = true
                 receivedError = error
@@ -2283,7 +2289,9 @@ class PurchasesTests: XCTestCase {
             var completionCalled = false
             var receivedPaymentDiscount: SKPaymentDiscount?
             var receivedError: Error? = nil
-            self.purchases?.paymentDiscount(for: productDiscount, product: product, completion: { (paymentDiscount, error) in
+            self.purchases?.paymentDiscount(forProductDiscount: productDiscount,
+                                            product: product,
+                                            completion: { (paymentDiscount, error) in
                 receivedPaymentDiscount = paymentDiscount
                 completionCalled = true
                 receivedError = error
@@ -2514,7 +2522,7 @@ class PurchasesTests: XCTestCase {
             let product = MockSKProduct(mockProductIdentifier: "Tacos_with_free_guac")
             let discount = MockDiscount()
 
-            purchases.paymentDiscount(for: discount, product: product) { discount, error in
+            purchases.paymentDiscount(forProductDiscount: discount, product: product) { discount, error in
                 receivedError = error as NSError?
                 receivedPaymentDiscount = discount
             }
