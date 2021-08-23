@@ -65,7 +65,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         expect(callbackCalled).toEventually(beTrue())
         expect(self.purchaserInfoManager.invokedPurchaserInfo) == true
         
-        // we'd ideally also patch the UIApplication (or NSApplication for mac), as well as
+        // we'd ideally also patch the UIApplication (or NSWorkspace for mac), as well as
         // AppStore, and check for the calls in those, but it gets very tricky.
     }
 
