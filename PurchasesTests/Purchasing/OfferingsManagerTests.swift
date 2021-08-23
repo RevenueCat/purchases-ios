@@ -14,7 +14,7 @@
 import XCTest
 import Nimble
 import StoreKit
-import PurchasesCoreSwift
+@testable import PurchasesCoreSwift
 
 // TODO (post-migration): Move this test case to the new framework target (PurchasesCoreSwift).
 class OfferingsManagerTests: XCTestCase {

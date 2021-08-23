@@ -8,13 +8,12 @@
 
 import Foundation
 
-// TODO: Make internal after migration to Swift is complete
-@objc(RCReceiptFetcher) public class ReceiptFetcher: NSObject {
+class ReceiptFetcher: NSObject {
 
     private let requestFetcher: StoreKitRequestFetcher
     private let receiptBundle: Bundle
 
-    @objc public convenience init(requestFetcher: StoreKitRequestFetcher) {
+    convenience init(requestFetcher: StoreKitRequestFetcher) {
         self.init(requestFetcher: requestFetcher, bundle: .main)
     }
 
@@ -23,8 +22,7 @@ import Foundation
         self.receiptBundle = bundle
     }
 
-    @objc public func receiptData(refreshPolicy: ReceiptRefreshPolicy,
-                                  completion: @escaping (Data?) -> Void) {
+    func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping (Data?) -> Void) {
         if refreshPolicy == .always {
             Logger.debug(String(format: Strings.receipt.force_refreshing_receipt))
             refreshReceipt(completion)

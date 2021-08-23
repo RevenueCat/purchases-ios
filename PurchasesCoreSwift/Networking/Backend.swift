@@ -13,15 +13,14 @@
 
 import Foundation
 
-public typealias SubscriberAttributeDict = [String: SubscriberAttribute]
-public typealias BackendPurchaserInfoResponseHandler = (PurchaserInfo?, Error?) -> Void
-public typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], Error?) -> Void
-public typealias OfferingsResponseHandler = ([String: Any]?, Error?) -> Void
-public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumber?, Error?) -> Void
+typealias SubscriberAttributeDict = [String: SubscriberAttribute]
+typealias BackendPurchaserInfoResponseHandler = (PurchaserInfo?, Error?) -> Void
+typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], Error?) -> Void
+typealias OfferingsResponseHandler = ([String: Any]?, Error?) -> Void
+typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumber?, Error?) -> Void
 
 // swiftlint:disable type_body_length file_length
-// TODO(post-migration): Make this internal again, and all the other things too
-@objc(RCBackend) public class Backend: NSObject {
+class Backend {
 
     static let RCSuccessfullySyncedKey: NSError.UserInfoKey = "rc_successfullySynced"
     static let RCAttributeErrorsKey = "attribute_errors"
@@ -37,11 +36,10 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
 
     private var authHeaders: [String: String] { return ["Authorization": "Bearer \(self.apiKey)"] }
 
-    @objc(initWithAPIKey:systemInfo:eTagManager:operationDispatcher:)
-    public convenience init(apiKey: String,
-                            systemInfo: SystemInfo,
-                            eTagManager: ETagManager,
-                            operationDispatcher: OperationDispatcher) {
+    convenience init(apiKey: String,
+                     systemInfo: SystemInfo,
+                     eTagManager: ETagManager,
+                     operationDispatcher: OperationDispatcher) {
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     operationDispatcher: operationDispatcher)
@@ -329,11 +327,10 @@ public typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumbe
         }
     }
 
-    @objc(getIntroEligibilityForAppUserID:receiptData:productIdentifiers:completion:)
-    public func getIntroEligibility(appUserID: String,
-                                    receiptData: Data,
-                                    productIdentifiers: [String],
-                                    completion: @escaping IntroEligibilityResponseHandler) {
+func getIntroEligibility(appUserID: String,
+                         receiptData: Data,
+                         productIdentifiers: [String],
+                         completion: @escaping IntroEligibilityResponseHandler) {
         guard productIdentifiers.count > 0 else {
             completion([:], nil)
             return

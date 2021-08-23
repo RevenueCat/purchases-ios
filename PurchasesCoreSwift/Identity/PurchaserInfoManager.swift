@@ -13,17 +13,15 @@
 
 import Foundation
 
-@objc(RCPurchaserInfoManagerDelegate) public protocol PurchaserInfoManagerDelegate: NSObjectProtocol {
+@objc protocol PurchaserInfoManagerDelegate: NSObjectProtocol {
 
-    @objc(purchaserInfoManagerDidReceiveUpdatedPurchaserInfo:)
     func purchaserInfoManagerDidReceiveUpdated(purchaserInfo: PurchaserInfo)
 
 }
 
-// TODO (post-migration) make all the things internal, including the protocol.
-@objc(RCPurchaserInfoManager) public class PurchaserInfoManager: NSObject {
+class PurchaserInfoManager: NSObject {
 
-    @objc public weak var delegate: PurchaserInfoManagerDelegate?
+    @objc weak var delegate: PurchaserInfoManagerDelegate?
 
     private(set) var lastSentPurchaserInfo: PurchaserInfo?
     private let operationDispatcher: OperationDispatcher
@@ -32,19 +30,19 @@ import Foundation
     private let systemInfo: SystemInfo
     private let purchaserInfoCacheLock = NSRecursiveLock()
 
-    @objc public init(operationDispatcher: OperationDispatcher,
-                      deviceCache: DeviceCache,
-                      backend: Backend,
-                      systemInfo: SystemInfo) {
+    init(operationDispatcher: OperationDispatcher,
+         deviceCache: DeviceCache,
+         backend: Backend,
+         systemInfo: SystemInfo) {
         self.operationDispatcher = operationDispatcher
         self.deviceCache = deviceCache
         self.backend = backend
         self.systemInfo = systemInfo
     }
 
-    @objc public func fetchAndCachePurchaserInfo(appUserID: String,
-                                                 isAppBackgrounded: Bool,
-                                                 completion maybeCompletion: ReceivePurchaserInfoBlock?) {
+    func fetchAndCachePurchaserInfo(appUserID: String,
+                                    isAppBackgrounded: Bool,
+                                    completion maybeCompletion: ReceivePurchaserInfoBlock?) {
         deviceCache.setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: appUserID)
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
             self.backend.getSubscriberData(appUserID: appUserID) { maybePurchaserInfo, maybeError in
@@ -67,9 +65,9 @@ import Foundation
         }
     }
 
-    @objc public func fetchAndCachePurchaserInfoIfStale(appUserID: String,
-                                                        isAppBackgrounded: Bool,
-                                                        completion: ReceivePurchaserInfoBlock?) {
+    func fetchAndCachePurchaserInfoIfStale(appUserID: String,
+                                           isAppBackgrounded: Bool,
+                                           completion: ReceivePurchaserInfoBlock?) {
         let maybeCachedPurchaserInfo = cachedPurchaserInfo(appUserID: appUserID)
         let isCacheStale = deviceCache.isPurchaserInfoCacheStale(appUserID: appUserID,
                                                                  isAppBackgrounded: isAppBackgrounded)
@@ -90,8 +88,7 @@ import Foundation
         }
     }
 
-    @objc(sendCachedPurchaserInfoIfAvailableForAppUserID:)
-    public func sendCachedPurchaserInfoIfAvailable(appUserID: String) {
+    func sendCachedPurchaserInfoIfAvailable(appUserID: String) {
         guard let info = cachedPurchaserInfo(appUserID: appUserID) else {
             return
         }
@@ -99,8 +96,7 @@ import Foundation
         sendUpdateIfChanged(purchaserInfo: info)
     }
 
-    @objc(purchaserInfoWithAppUserID:completionBlock:)
-    public func purchaserInfo(appUserID: String, completion maybeCompletion: ReceivePurchaserInfoBlock?) {
+    func purchaserInfo(appUserID: String, completion maybeCompletion: ReceivePurchaserInfoBlock?) {
         let maybeInfoFromCache = cachedPurchaserInfo(appUserID: appUserID)
         var completionCalled = false
 
@@ -156,7 +152,7 @@ import Foundation
         }
     }
 
-    @objc public func clearPurchaserInfoCache(forAppUserID appUserID: String) {
+    func clearPurchaserInfoCache(forAppUserID appUserID: String) {
         purchaserInfoCacheLock.lock()
         deviceCache.clearPurchaserInfoCache(appUserID: appUserID)
         lastSentPurchaserInfo = nil

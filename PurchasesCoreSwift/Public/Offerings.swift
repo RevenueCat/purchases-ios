@@ -51,7 +51,6 @@ import Foundation
         return offering(identifier: key)
     }
 
-    // TODO (Post-migration): Remove @objc and make it internal again.
     @objc public init(offerings: [String: Offering], currentOfferingID: String?) {
         all = offerings
         self.currentOfferingID = currentOfferingID

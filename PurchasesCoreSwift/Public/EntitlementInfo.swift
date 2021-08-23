@@ -128,7 +128,6 @@ import Foundation
                   dateFormatter: .iso8601SecondsDateFormatter)
     }
 
-    // TODO(post-migration): Make this internal
     // TODO(cleanup): Codable
     init(entitlementId: String,
          entitlementData: [String: Any],

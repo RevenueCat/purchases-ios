@@ -13,8 +13,7 @@
 
 import Foundation
 
-// TODO(post-migration): Make this internal
-@objc(RCAttributionPoster) public class AttributionPoster: NSObject {
+class AttributionPoster: NSObject {
 
     let deviceCache: DeviceCache
     let identityManager: IdentityManager
@@ -24,22 +23,20 @@ import Foundation
 
     private static var postponedAttributionData: [AttributionData]?
 
-    @objc public init(deviceCache: DeviceCache,
-                      identityManager: IdentityManager,
-                      backend: Backend,
-                      attributionFetcher: AttributionFetcher,
-                      subscriberAttributesManager: SubscriberAttributesManager) {
+    init(deviceCache: DeviceCache,
+         identityManager: IdentityManager,
+         backend: Backend,
+         attributionFetcher: AttributionFetcher,
+         subscriberAttributesManager: SubscriberAttributesManager) {
         self.deviceCache = deviceCache
         self.identityManager = identityManager
         self.backend = backend
         self.attributionFetcher = attributionFetcher
         self.subscriberAttributesManager = subscriberAttributesManager
     }
-
-    @objc(postAttributionData:fromNetwork:forNetworkUserId:)
-    public func post(attributionData data: [String: Any],
-                     fromNetwork network: AttributionNetwork,
-                     forNetworkUserId networkUserId: String?) {
+    func post(attributionData data: [String: Any],
+              fromNetwork network: AttributionNetwork,
+              forNetworkUserId networkUserId: String?) {
         Logger.debug(Strings.attribution.instance_configured_posting_attribution)
         if data["rc_appsflyer_id"] != nil {
             Logger.warn(Strings.attribution.appsflyer_id_deprecated)
@@ -105,7 +102,7 @@ import Foundation
         }
     }
 
-    @objc public func postAppleSearchAdsAttributionIfNeeded() {
+    func postAppleSearchAdsAttributionIfNeeded() {
         guard attributionFetcher.isAuthorizedToPostSearchAds else {
             return
         }
@@ -133,7 +130,7 @@ import Foundation
         }
     }
 
-    @objc public func postPostponedAttributionDataIfNeeded() {
+    func postPostponedAttributionDataIfNeeded() {
         guard let postponedAttributionData = Self.postponedAttributionData else {
             return
         }
@@ -147,10 +144,9 @@ import Foundation
         Self.postponedAttributionData = nil
     }
 
-    @objc(storePostponedAttributionData:fromNetwork:forNetworkUserId:)
-    public static func store(postponedAttributionData data: [String: Any],
-                             fromNetwork network: AttributionNetwork,
-                             forNetworkUserId networkUserID: String?) {
+    static func store(postponedAttributionData data: [String: Any],
+                      fromNetwork network: AttributionNetwork,
+                      forNetworkUserId networkUserID: String?) {
         Logger.debug(Strings.attribution.no_instance_configured_caching_attribution)
 
         var postponedData = postponedAttributionData ?? []

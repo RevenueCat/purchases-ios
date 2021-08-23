@@ -13,12 +13,11 @@
 
 import Foundation
 
-// TODO (post-migration): Change back to internal, including all public properties.
-@objc(RCIdentityManager) public class IdentityManager: NSObject {
+class IdentityManager {
 
     static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
 
-    @objc public var currentAppUserID: String {
+    var currentAppUserID: String {
         guard let appUserID = deviceCache.cachedAppUserID else {
             fatalError(Strings.identity.null_currentappuserid)
         }
@@ -26,7 +25,7 @@ import Foundation
         return appUserID
     }
 
-    @objc public var currentUserIsAnonymous: Bool {
+    var currentUserIsAnonymous: Bool {
 
         let anonymousFoundRange = currentAppUserID.range(of: IdentityManager.anonymousRegex,
                                                          options: .regularExpression)
@@ -40,13 +39,13 @@ import Foundation
     private let backend: Backend
     private let purchaserInfoManager: PurchaserInfoManager
 
-    @objc public init(deviceCache: DeviceCache, backend: Backend, purchaserInfoManager: PurchaserInfoManager) {
+    init(deviceCache: DeviceCache, backend: Backend, purchaserInfoManager: PurchaserInfoManager) {
         self.deviceCache = deviceCache
         self.backend = backend
         self.purchaserInfoManager = purchaserInfoManager
     }
 
-    @objc public func configure(appUserID maybeAppUserID: String?) {
+    func configure(appUserID maybeAppUserID: String?) {
         let appUserID = maybeAppUserID
             ?? deviceCache.cachedAppUserID
             ?? deviceCache.cachedLegacyAppUserID
@@ -57,7 +56,7 @@ import Foundation
         deviceCache.cleanupSubscriberAttributes()
     }
 
-    @objc public func logIn(appUserID: String, completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
+    func logIn(appUserID: String, completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
         let newAppUserID = appUserID.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !newAppUserID.isEmpty else {
             Logger.error(Strings.identity.logging_in_with_nil_appuserid)
@@ -85,7 +84,7 @@ import Foundation
         }
     }
 
-    @objc public func logOut(completion: (Error?) -> Void) {
+    func logOut(completion: (Error?) -> Void) {
         Logger.info(String(format: Strings.identity.log_out_called_for_user, currentAppUserID))
 
         if currentUserIsAnonymous {
@@ -98,7 +97,6 @@ import Foundation
         completion(nil)
     }
 
-    // TODO (post-migration): Change back to private.
     func generateRandomID() -> String {
         "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
     }
@@ -109,8 +107,7 @@ import Foundation
 // TODO: Migrate off these so we can mark them deprecated.
 extension IdentityManager {
 
-    @objc(identifyAppUserID:completion:)
-    public func identify(appUserID: String, completion: @escaping (Error?) -> Void) {
+    func identify(appUserID: String, completion: @escaping (Error?) -> Void) {
         if currentUserIsAnonymous {
             Logger.user(String(format: Strings.identity.identifying_anon_id, currentAppUserID))
             createAlias(appUserID: appUserID, completion: completion)
@@ -121,8 +118,7 @@ extension IdentityManager {
         }
     }
 
-    @objc(createAliasForAppUserID:completion:)
-    public func createAlias(appUserID alias: String, completion: @escaping (Error?) -> Void) {
+    func createAlias(appUserID alias: String, completion: @escaping (Error?) -> Void) {
         guard !alias.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             completion(ErrorUtils.missingAppUserIDForAliasCreationError())
             return
@@ -137,7 +133,7 @@ extension IdentityManager {
         }
     }
 
-    @objc public func resetAppUserID() {
+    func resetAppUserID() {
         deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: generateRandomID())
         deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         backend.clearCaches()

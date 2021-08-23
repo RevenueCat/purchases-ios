@@ -16,9 +16,7 @@
 
 import Foundation
 
-// TODO (post-migration): change back to internal.
-@objc(RCAttributionTypeFactory)
-public class AttributionTypeFactory: NSObject {
+class AttributionTypeFactory {
 
     func adClientProxy() -> AdClientProxy? {
         return AdClientProxy.adClientClass == nil ? nil : AdClientProxy()

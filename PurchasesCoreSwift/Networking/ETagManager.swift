@@ -1,11 +1,20 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+// ETagManager.swift
+//
 // Created by César de la Vega on 4/16/21.
 //
 
 import Foundation
 
-// TODO:(post-migration): make internal
-@objc(RCETagManager) public class ETagManager: NSObject {
+class ETagManager: NSObject {
 
     static let eTagHeaderName = "X-RevenueCat-ETag"
 
@@ -13,7 +22,7 @@ import Foundation
 
     private let userDefaults: UserDefaults
 
-    @objc public override init() {
+    override init() {
         self.userDefaults = UserDefaults(suiteName: ETagManager.suiteName) ?? UserDefaults.standard
     }
 
@@ -114,7 +123,7 @@ private extension ETagManager {
         return request.url?.absoluteString
     }
 
-    private static let suiteNameBase: String  = "revenuecat.etags"
+    static let suiteNameBase: String  = "revenuecat.etags"
     static var suiteName: String {
         guard let bundleID = Bundle.main.bundleIdentifier else {
             return suiteNameBase

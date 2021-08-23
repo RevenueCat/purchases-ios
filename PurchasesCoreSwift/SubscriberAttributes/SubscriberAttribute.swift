@@ -1,45 +1,47 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  SubscriberAttribute.swift
-//  PurchasesCoreSwift
 //
 //  Created by Joshua Liebowitz on 7/1/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
 
-@objc(RCSubscriberAttribute) public class SubscriberAttribute: NSObject {
+class SubscriberAttribute {
+
     static private let backendValueKey = "value"
     static private let backendTimestampKey = "updated_at_ms"
 
-    // TODO (Post-migration): remove public.
     static let keyKey = "key"
     static let valueKey = "value"
     static let setTimeKey = "setTime"
     static let isSyncedKey = "isSynced"
+
     let setTime: Date
+    let key: String
+    let value: String
+    var isSynced: Bool
 
-    @objc public let key: String
-    @objc public let value: String
-    @objc public var isSynced: Bool
-
-    @objc required public init(withKey key: String, value: String?, isSynced: Bool, setTime: Date) {
+    required init(withKey key: String, value: String?, isSynced: Bool, setTime: Date) {
         self.key = key
         self.value = value ?? ""
         self.isSynced = isSynced
         self.setTime = setTime
     }
 
-    @objc convenience public init(withKey: String, value: String?) {
+    convenience init(withKey: String, value: String?) {
         self.init(withKey: withKey, value: value, dateProvider: DateProvider())
     }
 
     convenience init(withKey key: String, value: String?, dateProvider: DateProvider) {
         self.init(withKey: key, value: value, isSynced: false, setTime: dateProvider.now())
-    }
-
-    private override init() {
-        fatalError("Init not supported from here")
     }
 
     func asDictionary() -> [String: NSObject] {
@@ -56,26 +58,31 @@ import Foundation
                 Self.backendTimestampKey: timestamp]
     }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let attribute = object as? SubscriberAttribute else {
-            return false
-        }
+}
 
-        if self === attribute {
+extension SubscriberAttribute: Equatable {
+
+    static func == (lhs: SubscriberAttribute, rhs: SubscriberAttribute) -> Bool {
+        if lhs === rhs {
             return true
-        } else if self.key != attribute.key {
+        } else if lhs.key != rhs.key {
             return false
-        } else if self.value != attribute.value {
+        } else if lhs.value != rhs.value {
             return false
-        } else if self.setTime != attribute.setTime {
+        } else if lhs.setTime != rhs.setTime {
             return false
-        } else if self.isSynced != attribute.isSynced {
+        } else if lhs.isSynced != rhs.isSynced {
             return false
         }
         return true
     }
 
-    public override var description: String {
+}
+
+extension SubscriberAttribute: CustomStringConvertible {
+
+    var description: String {
         return "Subscriber attribute: key: \(self.key) value: \(self.value) setTime: \(self.setTime)"
     }
+
 }

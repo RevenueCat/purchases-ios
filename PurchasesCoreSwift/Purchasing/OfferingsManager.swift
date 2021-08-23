@@ -14,8 +14,7 @@
 import Foundation
 import StoreKit
 
-// TODO (post-migration): Make all the things internal again.
-@objc(RCOfferingsManager) public class OfferingsManager: NSObject {
+class OfferingsManager {
 
     private let deviceCache: DeviceCache
     private let operationDispatcher: OperationDispatcher
@@ -24,12 +23,12 @@ import StoreKit
     private let offeringsFactory: OfferingsFactory
     private let productsManager: ProductsManager
 
-    @objc public init(deviceCache: DeviceCache,
-                      operationDispatcher: OperationDispatcher,
-                      systemInfo: SystemInfo,
-                      backend: Backend,
-                      offeringsFactory: OfferingsFactory,
-                      productsManager: ProductsManager) {
+    init(deviceCache: DeviceCache,
+         operationDispatcher: OperationDispatcher,
+         systemInfo: SystemInfo,
+         backend: Backend,
+         offeringsFactory: OfferingsFactory,
+         productsManager: ProductsManager) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
@@ -40,9 +39,8 @@ import StoreKit
 
 }
 
-public extension OfferingsManager {
+extension OfferingsManager {
 
-    @objc(offeringsWithAppUserID:completionBlock:)
     func offerings(appUserID: String, completion: ReceiveOfferingsBlock?) {
         guard let cachedOfferings = deviceCache.cachedOfferings else {
             Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
@@ -74,7 +72,6 @@ public extension OfferingsManager {
         }
     }
 
-    @objc(updateOfferingsCacheWithAppUserID:isAppBackgrounded:completion:)
     func updateOfferingsCache(appUserID: String, isAppBackgrounded: Bool, completion: ReceiveOfferingsBlock?) {
         deviceCache.setOfferingsCacheTimestampToNow()
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {

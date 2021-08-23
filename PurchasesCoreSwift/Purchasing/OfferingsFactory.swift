@@ -1,16 +1,21 @@
 //
-//  OfferingsFactory.swift
-//  PurchasesCoreSwift
+//  Copyright RevenueCat Inc. All Rights Reserved.
 //
-//  Created by César de la Vega on 7/13/21.
-//  Copyright © 2021 Purchases. All rights reserved.
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+// OfferingsFactory.swift
+//
+// Created by César de la Vega on 7/13/21.
 //
 
 import Foundation
 import StoreKit
 
-// TODO (Post-migration): Remove @objc and make it internal again.
-@objc(RCOfferingsFactory) public class OfferingsFactory: NSObject {
+class OfferingsFactory: NSObject {
 
     func createOfferings(withProducts products: [String: SKProduct],
                          data: [String: Any]) -> Offerings? {
