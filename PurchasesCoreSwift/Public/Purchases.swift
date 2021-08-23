@@ -64,7 +64,8 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
  */
 @objc(RCPurchases) public class Purchases: NSObject {
 
-    @objc public static var shared: Purchases {
+    @objc(sharedPurchases)
+    public static var shared: Purchases {
         if let purchases = purchases {
             return purchases
         }
