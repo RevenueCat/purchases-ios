@@ -4,6 +4,7 @@
 //
 
 @testable import PurchasesCoreSwift
+import StoreKit
 
 class MockStoreKitWrapper: StoreKitWrapper {
     var payment: SKPayment?

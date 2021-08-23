@@ -2,6 +2,8 @@
 // Created by RevenueCat on 3/2/20.
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
+
+import PurchasesCoreSwift
 import StoreKit
 
 class MockSKProduct: SKProduct {

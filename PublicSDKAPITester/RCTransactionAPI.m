@@ -6,7 +6,6 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-@import Purchases;
 @import PurchasesCoreSwift;
 
 #import "RCTransactionAPI.h"

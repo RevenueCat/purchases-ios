@@ -111,7 +111,7 @@ class HTTPClientTests: XCTestCase {
         let path = "/a_random_path"
         var headerPresent = false
 
-        stub(condition: hasHeaderNamed("X-Version", value: Purchases.frameworkVersion())) { request in
+        stub(condition: hasHeaderNamed("X-Version", value: Purchases.frameworkVersion)) { request in
             headerPresent = true
             return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }

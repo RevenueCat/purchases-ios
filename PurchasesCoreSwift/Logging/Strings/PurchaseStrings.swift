@@ -43,4 +43,12 @@ class PurchaseStrings {
         "Apple returned a payment where the productIdentifier is nil, this is possibly an App Store quirk"
     }
 
+    var purchases_nil: String { "Purchases has not been configured. Please call Purchases.configure()" }
+
+    var purchases_delegate_set_multiple_times: String { "Purchases delegate has already been configured." }
+
+    var purchases_delegate_set_to_nil: String {
+        "Purchases delegate is being set to nil, you probably don't want to do this."
+    }
+
 }

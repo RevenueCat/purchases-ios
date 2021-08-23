@@ -2,7 +2,6 @@ import XCTest
 import Nimble
 import StoreKit
 
-import Purchases
 @testable import PurchasesCoreSwift
 
 class ETagManagerTests: XCTestCase {

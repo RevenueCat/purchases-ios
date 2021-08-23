@@ -7,8 +7,9 @@
 //
 
 import Foundation
-import XCTest
 import Nimble
+import StoreKit
+import XCTest
 
 @testable import PurchasesCoreSwift
 
