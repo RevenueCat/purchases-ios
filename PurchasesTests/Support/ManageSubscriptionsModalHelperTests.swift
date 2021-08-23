@@ -13,10 +13,11 @@
 
 import Foundation
 import Nimble
-@testable import PurchasesCoreSwift
 import XCTest
 
-#if os(macOS) || os(tvOS)
+@testable import PurchasesCoreSwift
+
+#if os(macOS) || os(iOS)
 
 class ManageSubscriptionsModalHelperTests: XCTestCase {
 
@@ -114,6 +115,29 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         let nonNilReceivedResult: Result<Void, ManageSubscriptionsModalError> = try XCTUnwrap(receivedResult)
         expect(nonNilReceivedResult).to(beSuccess())
 #endif
+    }
+
+    func testShowManageSubscriptionModalFailsIfCouldntGetPurchaserInfo() throws {
+        // given
+        var callbackCalled = false
+        var receivedResult: Result<Void, ManageSubscriptionsModalError>?
+        purchaserInfoManager.stubbedError = NSError(domain: RCPurchasesErrorCodeDomain, code: 123, userInfo: nil)
+
+        // when
+        helper.showManageSubscriptionModal { result in
+            callbackCalled = true
+            receivedResult = result
+        }
+
+        // then
+        expect(callbackCalled).toEventually(beTrue())
+        let nonNilReceivedResult: Result<Void, ManageSubscriptionsModalError> = try XCTUnwrap(receivedResult)
+        let expectedErrorMessage = "Failed to get managemementURL from PurchaserInfo. " +
+        "Details: The operation couldn’t be completed"
+        let expectedError = ManageSubscriptionsModalError.couldntGetPurchaserInfo(message: expectedErrorMessage)
+        expect(nonNilReceivedResult).to(beFailure { error in
+            expect(error).to(matchError(expectedError))
+        })
     }
     
 }
