@@ -14,5 +14,5 @@ import Foundation
     static let purchase = PurchaseStrings()
     static let purchaserInfo = PurchaserInfoStrings()
     @objc public static let receipt = ReceiptStrings()
-    @objc public static let restore = RestoreStrings()
+    static let restore = RestoreStrings()
 }

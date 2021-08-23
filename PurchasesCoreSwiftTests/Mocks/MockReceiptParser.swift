@@ -38,4 +38,18 @@ class MockReceiptParser: ReceiptParser {
         }
         return stubbedParseResult
     }
+
+    var invokedReceiptHasTransactions = false
+    var invokedReceiptHasTransactionsCount = 0
+    var invokedReceiptHasTransactionsParameters: (receiptData: Data, Void)?
+    var invokedReceiptHasTransactionsParametersList = [(receiptData: Data, Void)]()
+    var stubbedReceiptHasTransactionsResult: Bool! = false
+
+    override func receiptHasTransactions(receiptData: Data) -> Bool {
+        invokedReceiptHasTransactions = true
+        invokedReceiptHasTransactionsCount += 1
+        invokedReceiptHasTransactionsParameters = (receiptData, ())
+        invokedReceiptHasTransactionsParametersList.append((receiptData, ()))
+        return stubbedReceiptHasTransactionsResult
+    }
 }

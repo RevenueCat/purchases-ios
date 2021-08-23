@@ -38,7 +38,7 @@ class FakeAdClient: NSObject {
 
 }
 
-// TODO (post-migration): Make all the things internal again.
+// TODO (post-migration): Make all the things internal again if possible. Test if Objc can be removed.
 @objc(RCAdClientProxy)
 public class AdClientProxy: NSObject {
 

@@ -9,14 +9,14 @@
 import Foundation
 import StoreKit
 
-@objc(RCPromotionalOffer) public class PromotionalOffer: NSObject {
+class PromotionalOffer {
 
-    @objc public let offerIdentifier: String?
-    @objc public let price: NSDecimalNumber
-    @objc public let paymentMode: ProductInfo.PaymentMode
+    let offerIdentifier: String?
+    let price: NSDecimalNumber
+    let paymentMode: ProductInfo.PaymentMode
 
     @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
-    @objc public convenience init(withProductDiscount productDiscount: SKProductDiscount) {
+    convenience init(withProductDiscount productDiscount: SKProductDiscount) {
         let skPaymentMode = productDiscount.paymentMode
         let rcPaymentMode = ProductInfo.paymentMode(fromSKProductDiscountPaymentMode: skPaymentMode)
         self.init(offerIdentifier: productDiscount.identifier,

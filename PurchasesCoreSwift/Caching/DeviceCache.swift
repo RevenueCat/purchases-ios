@@ -155,8 +155,7 @@ import Foundation
         }
     }
 
-    @objc(setPurchaserInfoCacheTimestampToNowForAppUserID:)
-    public func setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: String) {
+    func setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: String) {
         writeCache {
             self.threadUnsafeSetPurchaserInfoCacheTimestampToNow(appUserID: appUserID)
         }
@@ -176,19 +175,17 @@ import Foundation
         offeringsCachedObject.clearCacheTimestamp()
     }
 
-    @objc public func setOfferingsCacheTimestampToNow() {
+    func setOfferingsCacheTimestampToNow() {
         offeringsCachedObject.updateCacheTimestamp(date: Date())
     }
 
     // MARK: - subscriber attributes
 
-    @objc(storeSubscriberAttribute:appUserID:)
-    public func store(subscriberAttribute: SubscriberAttribute, appUserID: String) {
+    func store(subscriberAttribute: SubscriberAttribute, appUserID: String) {
         store(subscriberAttributesByKey: [subscriberAttribute.key: subscriberAttribute], appUserID: appUserID)
     }
 
-    @objc(storeSubscriberAttributes:appUserID:)
-    public func store(subscriberAttributesByKey: [String: SubscriberAttribute], appUserID: String) {
+    func store(subscriberAttributesByKey: [String: SubscriberAttribute], appUserID: String) {
         guard !subscriberAttributesByKey.isEmpty else {
             return
         }
@@ -204,15 +201,14 @@ import Foundation
         }
     }
 
-    @objc(subscriberAttributeWithKey:appUserID:)
-    public func subscriberAttribute(attributeKey: String, appUserID: String) -> SubscriberAttribute? {
+    func subscriberAttribute(attributeKey: String, appUserID: String) -> SubscriberAttribute? {
         return readCache { self.threadUnsafeStoredSubscriberAttributes(appUserID: appUserID)[attributeKey] }
     }
 
     // Threadsafe using accessQueue, however accessQueue is not reentrant. If you're calling this from somewhere
     // that ends up in the accessQueue, it will deadlock. Instead, you'll want to call the version that isn't wrapped
     // in a readCache{} block: threadUnsafeUnsyncedAttributesByKey
-    @objc public func unsyncedAttributesByKey(appUserID: String) -> [String: SubscriberAttribute] {
+    func unsyncedAttributesByKey(appUserID: String) -> [String: SubscriberAttribute] {
         return readCache { self.threadUnsafeUnsyncedAttributesByKey(appUserID: appUserID) }
     }
 
@@ -229,7 +225,7 @@ import Foundation
         }
     }
 
-    @objc public func unsyncedAttributesForAllUsers() -> [String: [String: SubscriberAttribute]] {
+    func unsyncedAttributesForAllUsers() -> [String: [String: SubscriberAttribute]] {
         return readCache {
             let attributesDict = self.userDefaults.dictionary(forKey: CacheKeys.subscriberAttributes) ?? [:]
             var attributes: [String: [String: SubscriberAttribute]] = [:]
@@ -250,7 +246,7 @@ import Foundation
         }
     }
 
-    @objc public func deleteAttributesIfSynced(appUserID: String) {
+    func deleteAttributesIfSynced(appUserID: String) {
         writeCache {
             guard self.threadUnsafeUnsyncedAttributesByKey(appUserID: appUserID).isEmpty else {
                 return
@@ -267,7 +263,7 @@ import Foundation
 
     // MARK: - attribution
 
-    @objc public func latestNetworkAndAdvertisingIdsSent(appUserID: String) -> [String: String] {
+    func latestNetworkAndAdvertisingIdsSent(appUserID: String) -> [String: String] {
         return readCache {
             let key = CacheKeyBases.attributionDataDefaults + appUserID
             let latestNetworkAndAdvertisingIdsSent = self.userDefaults.object(forKey: key) as? [String: String] ?? [:]
@@ -275,8 +271,7 @@ import Foundation
         }
     }
 
-    @objc(setLatestNetworkAndAdvertisingIdsSent:forAppUserID:)
-    public func set(latestNetworkAndAdvertisingIdsSent: [String: String], appUserID: String) {
+    func set(latestNetworkAndAdvertisingIdsSent: [String: String], appUserID: String) {
         writeCache {
             self.userDefaults.setValue(latestNetworkAndAdvertisingIdsSent,
                                        forKey: CacheKeyBases.attributionDataDefaults + appUserID)

@@ -4,8 +4,10 @@
 
 import Foundation
 
+// TODO:(post-migration): make internal
 @objc(RCETagManager) public class ETagManager: NSObject {
-    internal static let eTagHeaderName = "X-RevenueCat-ETag"
+
+    static let eTagHeaderName = "X-RevenueCat-ETag"
 
     private let queue = DispatchQueue(label: "ETagManager")
 
@@ -15,7 +17,7 @@ import Foundation
         self.userDefaults = UserDefaults(suiteName: ETagManager.suiteName) ?? UserDefaults.standard
     }
 
-    @objc public init(userDefaults: UserDefaults) {
+    init(userDefaults: UserDefaults) {
         self.userDefaults = userDefaults
     }
 

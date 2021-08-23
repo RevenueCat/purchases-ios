@@ -15,9 +15,9 @@
 
 import Foundation
 
-public extension NSData {
+extension NSData {
 
-    @objc func rc_asString() -> String {
+    func rc_asString() -> String {
         var deviceTokenString = ""
         self.enumerateBytes { bytes, byteRange, _ in
             for index in stride(from: 0, to: byteRange.length, by: 1) {

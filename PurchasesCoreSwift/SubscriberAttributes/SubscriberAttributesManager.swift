@@ -166,7 +166,7 @@ import Foundation
         }
     }
 
-    @objc public func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttributeDict {
+    func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttributeDict {
         let unsyncedAttributes = deviceCache.unsyncedAttributesByKey(appUserID: appUserID)
         Logger.debug(String(format: Strings.attribution.unsynced_attributes_count,
                             unsyncedAttributes.count,
@@ -178,7 +178,7 @@ import Foundation
         return unsyncedAttributes
     }
 
-    @objc public func unsyncedAttributesByKeyForAllUsers() -> [String: SubscriberAttributeDict] {
+    func unsyncedAttributesByKeyForAllUsers() -> [String: SubscriberAttributeDict] {
         return deviceCache.unsyncedAttributesForAllUsers()
     }
 
@@ -206,9 +206,9 @@ import Foundation
         lock.unlock()
     }
 
-    @objc public func setAttributes(fromAttributionData attributionData: [String: Any],
-                                    network: AttributionNetwork,
-                                    appUserID: String) {
+    func setAttributes(fromAttributionData attributionData: [String: Any],
+                       network: AttributionNetwork,
+                       appUserID: String) {
         let convertedAttribution = attributionDataMigrator.convertToSubscriberAttributes(
             attributionData: attributionData,
             network: network.rawValue)

@@ -6,16 +6,20 @@
 import Foundation
 
 enum DateExtensionsError: Error {
+
     case invalidDateComponents(_ dateComponents: DateComponents)
+
 }
 
 extension DateExtensionsError: CustomStringConvertible {
+
     public var description: String {
         switch self {
         case .invalidDateComponents(let dateComponents):
             return "invalid date components: \(dateComponents.description)"
         }
     }
+
 }
 
 extension Date {
@@ -35,4 +39,5 @@ extension Date {
         }
         return date
     }
+
 }
