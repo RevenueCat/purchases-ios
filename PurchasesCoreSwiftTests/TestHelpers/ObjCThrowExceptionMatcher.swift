@@ -17,9 +17,9 @@ import Foundation
 import Nimble
 
 enum ObjCException: String {
-    
+
     case parameterAssert = "NSInternalInconsistencyException"
-    
+
 }
 
 func expectToThrowException(_ named: ObjCException? = nil, closure: @escaping  () -> Void) -> Void {
