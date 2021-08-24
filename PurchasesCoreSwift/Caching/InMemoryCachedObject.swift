@@ -1,13 +1,18 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  InMemoryCachedObject.swift
-//  PurchasesCoreSwift
 //
 //  Created by Joshua Liebowitz on 7/13/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
-// TODO (post-migration) switch back to internal
-public class InMemoryCachedObject<T> {
+class InMemoryCachedObject<T> {
 
     var lastUpdatedAt: Date? {
         accessQueue.sync {
@@ -18,8 +23,6 @@ public class InMemoryCachedObject<T> {
     private let accessQueue = DispatchQueue(label: "InMemoryCachedObjectQueue", attributes: .concurrent)
     private var lastUpdated: Date?
     private var cachedObject: T?
-
-    public init() { }
 
     func isCacheStale(durationInSeconds: Double) -> Bool {
         accessQueue.sync {

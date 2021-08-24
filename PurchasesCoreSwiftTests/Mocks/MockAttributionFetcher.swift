@@ -6,7 +6,7 @@
 @testable import PurchasesCoreSwift
 
 class MockAttributionFetcher: AttributionFetcher {
-    
+
     override var identifierForAdvertisers: String? {
         return "rc_idfa"
     }

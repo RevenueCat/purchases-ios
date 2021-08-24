@@ -1,14 +1,21 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  Logger.swift
-//  PurchasesCoreSwift
 //
 //  Created by Andrés Boedo on 11/13/20.
-//  Copyright © 2020 Purchases. All rights reserved.
 //
 
 import Foundation
 
 @objc(RCLogLevel) public enum LogLevel: Int {
+
     case debug, info, warn, error
 
     func description() -> String {
@@ -21,42 +28,45 @@ import Foundation
     }
 }
 
-@objc(RCLog) public class Logger: NSObject {
-    @objc public static var logLevel: LogLevel = .info
-    @objc public static var logHandler: (LogLevel, String) -> Void = { level, message in
+class Logger {
+
+    static var logLevel: LogLevel = .info
+    static var logHandler: (LogLevel, String) -> Void = { level, message in
         NSLog("[\(frameworkDescription)] - \(level.description()): \(message)")
     }
 
     private static let frameworkDescription = "Purchases"
 
-    @objc public static func log(level: LogLevel, message: String) {
+    static func log(level: LogLevel, message: String) {
         guard self.logLevel.rawValue <= level.rawValue else { return }
         logHandler(level, message)
     }
 
-    @objc public static func log(level: LogLevel, intent: LogIntent, message: String) {
+    static func log(level: LogLevel, intent: LogIntent, message: String) {
         let messageWithPrefix = "\(intent.suffix) \(message)"
         Logger.log(level: level, message: messageWithPrefix)
     }
 
-    @objc public static func debug(_ message: String) {
+    static func debug(_ message: String) {
         log(level: .debug, intent: .info, message: message)
     }
 
-    @objc public static func info(_ message: String) {
+    static func info(_ message: String) {
         log(level: .info, intent: .info, message: message)
     }
 
-    @objc public static func warn(_ message: String) {
+    static func warn(_ message: String) {
         log(level: .warn, intent: .warning, message: message)
     }
 
-    @objc public static func error(_ message: String) {
+    static func error(_ message: String) {
         log(level: .error, intent: .rcError, message: message)
     }
+
 }
 
-@objc public extension Logger {
+extension Logger {
+
     static func appleError(_ message: String) {
         log(level: .error, intent: .appleError, message: message)
     }
@@ -80,4 +90,5 @@ import Foundation
     static func user(_ message: String) {
         log(level: .debug, intent: .user, message: message)
     }
+
 }

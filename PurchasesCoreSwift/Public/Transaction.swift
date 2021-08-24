@@ -1,9 +1,15 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  Transaction.swift
-//  Purchases
 //
 //  Created by RevenueCat.
-//  Copyright © 2020 Purchases. All rights reserved.
 //
 
 import Foundation
@@ -18,10 +24,9 @@ import Foundation
         self.revenueCatId = transactionId
         self.productId = productId
         self.purchaseDate = purchaseDate
-        super.init()
     }
 
-    init?(with serverResponse: [String: Any], productId: String, dateFormatter: DateFormatter) {
+    @objc public init?(with serverResponse: [String: Any], productId: String, dateFormatter: DateFormatter) {
         guard let revenueCatId = serverResponse["id"] as? String,
               let dateString = serverResponse["purchase_date"] as? String,
               let purchaseDate = dateFormatter.date(fromString: dateString) else {
@@ -33,7 +38,6 @@ import Foundation
         self.revenueCatId = revenueCatId
         self.purchaseDate = purchaseDate
         self.productId = productId
-        super.init()
     }
 
 }

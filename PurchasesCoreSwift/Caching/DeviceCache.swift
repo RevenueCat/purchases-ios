@@ -1,16 +1,21 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  DeviceCache.swift
-//  PurchasesCoreSwift
 //
 //  Created by Joshua Liebowitz on 7/13/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
 
 // swiftlint:disable file_length
-// TODO (post-migration) switch back to internal, along with most of the functions.
-@objc(RCDeviceCache) public class DeviceCache: NSObject {
+class DeviceCache {
 
     // Thread-safe, but don't call from anywhere inside this class.
     var cachedAppUserID: String? { readCache { self.threadUnsafeCachedAppUserID } }
@@ -31,22 +36,20 @@ import Foundation
     private var appUserIDHasBeenSet: Bool = false
     private let assertionFunction: (String) -> Void
 
-    @objc convenience public init(userDefaults: UserDefaults = UserDefaults.standard) {
+    convenience init(userDefaults: UserDefaults = UserDefaults.standard) {
         self.init(userDefaults: userDefaults, offeringsCachedObject: nil, notificationCenter: nil)
     }
 
-    public init(userDefaults: UserDefaults = UserDefaults.standard,
-                offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject(),
-                notificationCenter: NotificationCenter? = NotificationCenter.default,
-                assertionFunction: @escaping (String) -> Void = { fatalError($0) }) {
+    init(userDefaults: UserDefaults = UserDefaults.standard,
+         offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject(),
+         notificationCenter: NotificationCenter? = NotificationCenter.default,
+         assertionFunction: @escaping (String) -> Void = { fatalError($0) }) {
 
         self.offeringsCachedObject = offeringsCachedObject ?? InMemoryCachedObject()
         self.notificationCenter = notificationCenter ?? NotificationCenter.default
         self.userDefaults = userDefaults
         self.assertionFunction = assertionFunction
         self.appUserIDHasBeenSet = userDefaults.string(forKey: CacheKeys.appUserDefaults) != nil
-
-        super.init()
 
         self.notificationCenter.addObserver(self,
                                             selector: #selector(handleUserDefaultsChanged),
@@ -141,7 +144,6 @@ import Foundation
         }
     }
 
-    // TODO (post-migration): set this back to internal, it's only used during testing.
     func setPurchaserInfoCache(timestamp: Date, appUserID: String) {
         writeCache {
             self.threadUnsafeSetPurchaserInfoCache(timestamp: timestamp, appUserID: appUserID)
@@ -166,7 +168,7 @@ import Foundation
         offeringsCachedObject.cache(instance: offerings)
     }
 
-    @objc public func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
+    func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
         let cacheDurationInSeconds = cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
         return offeringsCachedObject.isCacheStale(durationInSeconds: cacheDurationInSeconds)
     }
@@ -346,9 +348,9 @@ import Foundation
 
 // All methods that modify or read from the UserDefaults data source but require external mechanisms for ensuring
 // mutual exclusion.
-extension DeviceCache {
+private extension DeviceCache {
 
-    private func threadUnsafeAppUserIDsWithLegacyAttributes() -> [String] {
+    func threadUnsafeAppUserIDsWithLegacyAttributes() -> [String] {
         var appUserIDsWithLegacyAttributes: [String] = []
 
         let userDefaultsDict = userDefaults.dictionaryRepresentation()
@@ -360,20 +362,20 @@ extension DeviceCache {
         return appUserIDsWithLegacyAttributes
     }
 
-    private var threadUnsafeStoredAttributesForAllUsers: [String: Any] {
+    var threadUnsafeStoredAttributesForAllUsers: [String: Any] {
         let attributes = userDefaults.dictionary(forKey: CacheKeys.subscriberAttributes) ?? [:]
         return attributes
     }
 
-    private func threadUnsafePurchaserInfoLastUpdated(appUserID: String) -> Date? {
+    func threadUnsafePurchaserInfoLastUpdated(appUserID: String) -> Date? {
         return userDefaults.object(forKey: CacheKeyBases.purchaserInfoLastUpdated + appUserID) as? Date
     }
 
-    private func threadUnsafeClearPurchaserInfoCacheTimestamp(appUserID: String) {
+    func threadUnsafeClearPurchaserInfoCacheTimestamp(appUserID: String) {
         userDefaults.removeObject(forKey: CacheKeyBases.purchaserInfoLastUpdated + appUserID)
     }
 
-    private func threadUnsafeUnsyncedAttributesByKey(appUserID: String) -> [String: SubscriberAttribute] {
+    func threadUnsafeUnsyncedAttributesByKey(appUserID: String) -> [String: SubscriberAttribute] {
         let allSubscriberAttributesByKey = threadUnsafeStoredSubscriberAttributes(appUserID: appUserID)
         var unsyncedAttributesByKey: [String: SubscriberAttribute] = [:]
         for attribute in allSubscriberAttributesByKey.values where !attribute.isSynced {
@@ -382,19 +384,19 @@ extension DeviceCache {
         return unsyncedAttributesByKey
     }
 
-    private func threadUnsafeSetPurchaserInfoCache(timestamp: Date, appUserID: String) {
+    func threadUnsafeSetPurchaserInfoCache(timestamp: Date, appUserID: String) {
         userDefaults.setValue(timestamp, forKey: CacheKeyBases.purchaserInfoLastUpdated + appUserID)
     }
 
-    private func threadUnsafeSetPurchaserInfoCacheTimestampToNow(appUserID: String) {
+    func threadUnsafeSetPurchaserInfoCacheTimestampToNow(appUserID: String) {
         threadUnsafeSetPurchaserInfoCache(timestamp: Date(), appUserID: appUserID)
     }
 
-    private func threadUnsafeSubscriberAttributes(appUserID: String) -> [String: Any] {
+    func threadUnsafeSubscriberAttributes(appUserID: String) -> [String: Any] {
         return threadUnsafeStoredAttributesForAllUsers[appUserID] as? [String: Any] ?? [:]
     }
 
-    private func threadUnsafeStoredSubscriberAttributes(appUserID: String) -> [String: SubscriberAttribute] {
+    func threadUnsafeStoredSubscriberAttributes(appUserID: String) -> [String: SubscriberAttribute] {
         let allAttributesObjectsByKey = threadUnsafeSubscriberAttributes(appUserID: appUserID)
         var allSubscriberAttributesByKey: [String: SubscriberAttribute] = [:]
         for (key, attributeDict) in allAttributesObjectsByKey {
@@ -408,7 +410,7 @@ extension DeviceCache {
         return allSubscriberAttributesByKey
     }
 
-    private func threadUnsafeMigrateSubscriberAttributes() {
+    func threadUnsafeMigrateSubscriberAttributes() {
         let appUserIDsWithLegacyAttributes = threadUnsafeAppUserIDsWithLegacyAttributes()
         var attributesInNewFormat = userDefaults.dictionary(forKey: CacheKeys.subscriberAttributes) ?? [:]
         for appUserID in appUserIDsWithLegacyAttributes {
@@ -425,7 +427,7 @@ extension DeviceCache {
         userDefaults.setValue(attributesInNewFormat, forKey: CacheKeys.subscriberAttributes)
     }
 
-    private func threadUnsafeDeleteSyncedSubscriberAttributesForOtherUsers() {
+    func threadUnsafeDeleteSyncedSubscriberAttributesForOtherUsers() {
         let allStoredAttributes: [String: [String: Any]]
             = userDefaults.dictionary(forKey: CacheKeys.subscriberAttributes)
             as? [String: [String: Any]] ?? [:]
@@ -457,21 +459,21 @@ extension DeviceCache {
 
 }
 
-extension UserDefaults {
+fileprivate extension UserDefaults {
 
-    fileprivate func setValue(_ value: Any?, forKey key: DeviceCache.CacheKeys) {
+    func setValue(_ value: Any?, forKey key: DeviceCache.CacheKeys) {
         self.setValue(value, forKey: key.rawValue)
     }
 
-    fileprivate func string(forKey defaultName: DeviceCache.CacheKeys) -> String? {
+    func string(forKey defaultName: DeviceCache.CacheKeys) -> String? {
         return self.string(forKey: defaultName.rawValue)
     }
 
-    fileprivate func removeObject(forKey defaultName: DeviceCache.CacheKeys) {
+    func removeObject(forKey defaultName: DeviceCache.CacheKeys) {
         removeObject(forKey: defaultName.rawValue)
     }
 
-    fileprivate func dictionary(forKey defaultName: DeviceCache.CacheKeys) -> [String: Any]? {
+    func dictionary(forKey defaultName: DeviceCache.CacheKeys) -> [String: Any]? {
         return dictionary(forKey: defaultName.rawValue)
     }
 

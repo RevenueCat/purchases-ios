@@ -1,14 +1,21 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  Offering.swift
-//  PurchasesCoreSwift
 //
 //  Created by Joshua Liebowitz on 7/9/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
 
 @objc(RCOffering) public class Offering: NSObject {
+
     /**
      Unique identifier defined in RevenueCat dashboard.
      */
@@ -59,8 +66,7 @@ import Foundation
      */
     @objc private(set) public var weekly: Package?
 
-    // TODO(post-migration): Change back to internal instead of public
-    @objc public init(identifier: String, serverDescription: String, availablePackages: [Package]) {
+    init(identifier: String, serverDescription: String, availablePackages: [Package]) {
         self.identifier = identifier
         self.serverDescription = serverDescription
         self.availablePackages = availablePackages

@@ -1,7 +1,6 @@
 import XCTest
 import Nimble
 
-@testable import Purchases
 @testable import PurchasesCoreSwift
 
 class PurchaserInfoManagerTests: XCTestCase {

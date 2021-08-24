@@ -8,17 +8,13 @@
 //      https://opensource.org/licenses/MIT
 //
 //  AttributionTypeFactory.swift
-//  PurchasesCoreSwift
 //
 //  Created by Juanpe Catalán on 9/7/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
 
-// TODO (post-migration): change back to internal.
-@objc(RCAttributionTypeFactory)
-public class AttributionTypeFactory: NSObject {
+class AttributionTypeFactory {
 
     func adClientProxy() -> AdClientProxy? {
         return AdClientProxy.adClientClass == nil ? nil : AdClientProxy()

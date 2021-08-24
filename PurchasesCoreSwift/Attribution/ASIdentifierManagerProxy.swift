@@ -8,10 +8,8 @@
 //      https://opensource.org/licenses/MIT
 //
 //  ASIdentifierManagerProxy.swift
-//  PurchasesCoreSwift
 //
 //  Created by Juanpe Catalán on 14/7/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
@@ -29,9 +27,9 @@ class FakeASIdentifierManager: NSObject {
 
 }
 
-// TODO (post-migration): Make all the things internal again if possible. Test if Objc can be removed.
+// TODO: Test if Objc can be removed.
 @objc(RCASIdentifierManagerProxy)
-public class ASIdentifierManagerProxy: NSObject {
+class ASIdentifierManagerProxy: NSObject {
 
     static let mangledIdentifierClassName = "NFVqragvsvreZnantre"
     static let mangledIdentifierPropertyName = "nqiregvfvatVqragvsvre"
@@ -44,7 +42,7 @@ public class ASIdentifierManagerProxy: NSObject {
         NSClassFromString(Self.mangledIdentifierClassName.rot13())
     }
 
-    @objc public var adsIdentifier: UUID? {
+    @objc var adsIdentifier: UUID? {
         guard let classType: AnyClass = Self.identifierClass else {
             return nil
         }

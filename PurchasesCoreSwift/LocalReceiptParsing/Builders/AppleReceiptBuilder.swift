@@ -1,11 +1,21 @@
 //
-// Created by Andrés Boedo on 7/29/20.
-// Copyright (c) 2020 Purchases. All rights reserved.
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  AppleReceiptBuilder.swift
+//
+//  Created by Andrés Boedo on 7/29/20.
 //
 
 import Foundation
 
 class AppleReceiptBuilder {
+
     private let containerBuilder: ASN1ContainerBuilder
     private let inAppPurchaseBuilder: InAppPurchaseBuilder
 
@@ -92,4 +102,5 @@ class AppleReceiptBuilder {
                                    inAppPurchases: inAppPurchases)
         return receipt
     }
+
 }

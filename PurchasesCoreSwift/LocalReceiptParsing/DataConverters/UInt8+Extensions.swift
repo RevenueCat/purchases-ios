@@ -1,9 +1,15 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  UInt8+Extensions.swift
-//  Purchases
 //
 //  Created by Andrés Boedo on 7/24/20.
-//  Copyright © 2020 Purchases. All rights reserved.
 //
 
 import Foundation
@@ -19,7 +25,8 @@ enum BitShiftError: Error {
 }
 
 extension BitShiftError: CustomStringConvertible {
-    public var description: String {
+
+    var description: String {
         switch self {
         case .invalidIndex(let index):
             return "invalid index: \(index)"
@@ -31,9 +38,11 @@ extension BitShiftError: CustomStringConvertible {
             return "unhandled range"
         }
     }
+
 }
 
 extension UInt8 {
+
     func bitAtIndex(_ index: UInt8) throws -> UInt8 {
         guard index <= 7 else { throw BitShiftError.invalidIndex(index) }
         let shifted = self >> (7 - index)
@@ -49,9 +58,11 @@ extension UInt8 {
         let mask = try maskForRange(range)
         return shifted & mask
     }
+
 }
 
 private extension UInt8 {
+
     func maskForRange(_ range: UInt8) throws -> UInt8 {
         guard 0 <= range && range <= 8 else { throw BitShiftError.rangeLargerThanByte }
         switch range {
@@ -67,4 +78,5 @@ private extension UInt8 {
             throw BitShiftError.unhandledRange
         }
     }
+
 }

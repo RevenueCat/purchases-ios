@@ -1,9 +1,15 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  Offerings.swift
-//  PurchasesCoreSwift
 //
 //  Created by Joshua Liebowitz on 7/12/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
@@ -51,7 +57,6 @@ import Foundation
         return offering(identifier: key)
     }
 
-    // TODO (Post-migration): Remove @objc and make it internal again.
     @objc public init(offerings: [String: Offering], currentOfferingID: String?) {
         all = offerings
         self.currentOfferingID = currentOfferingID

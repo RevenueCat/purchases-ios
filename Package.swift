@@ -6,15 +6,7 @@ import class Foundation.ProcessInfo
 
 func resolveTargets() -> [Target] {
     let objcSources = ["Purchases/Info.plist",
-                       "Purchases/Attribution",
-                       "Purchases/Caching",
-                       "Purchases/FoundationExtensions",
-                       "Purchases/Networking",
-                       "Purchases/Public",
-                       "Purchases/ProtectedExtensions",
-                       "Purchases/SubscriberAttributes",
-                       "Purchases/SwiftObjcCompatibility",
-                       "Purchases/Identity"]
+                       "Purchases/Public"]
     let infoPlist = "Purchases/Info.plist"
 
     let baseTargets: [Target] = [

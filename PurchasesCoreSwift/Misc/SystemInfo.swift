@@ -1,9 +1,15 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  SystemInfo.swift
-//  PurchasesCoreSwift
 //
 //  Created by Joshua Liebowitz on 6/29/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
@@ -17,7 +23,7 @@ import WatchKit
 import AppKit
 #endif
 
-@objc(RCSystemInfo) open class SystemInfo: NSObject {
+class SystemInfo {
 
     #if targetEnvironment(macCatalyst)
     static let platformHeaderConstant = "uikitformac"
@@ -31,17 +37,17 @@ import AppKit
     static let platformHeaderConstant = "macOS"
     #endif
 
-    public enum SystemInfoError: Error {
+    enum SystemInfoError: Error {
+
         case invalidInitializationData
+
     }
 
-    private static let defaultServerHostName = "https://api.revenuecat.com"
-
-    @objc public var finishTransactions: Bool
-    @objc public let platformFlavor: String
-    @objc public let platformFlavorVersion: String?
-    @objc public static var forceUniversalAppStore: Bool = false
-    @objc public static var isSandbox: Bool {
+    var finishTransactions: Bool
+    let platformFlavor: String
+    let platformFlavorVersion: String?
+    static var forceUniversalAppStore: Bool = false
+    static var isSandbox: Bool {
         let url = Bundle.main.appStoreReceiptURL
         guard let url = url else {
             return false
@@ -51,27 +57,27 @@ import AppKit
         return receiptURLString.contains("sandboxReceipt")
     }
 
-    @objc public static var frameworkVersion: String { // TODO: automate the setting of this, if it hasn't been.
+    static var frameworkVersion: String {
         return "3.13.0-SNAPSHOT"
     }
 
-    @objc public static var systemVersion: String {
+    static var systemVersion: String {
         return ProcessInfo().operatingSystemVersionString
     }
 
-    @objc public static var appVersion: String {
+    static var appVersion: String {
         return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
     }
 
-    @objc public static var buildVersion: String {
+    static var buildVersion: String {
         return Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
     }
 
-    @objc public static var platformHeader: String {
+    static var platformHeader: String {
         return Self.forceUniversalAppStore ? "iOS" : platformHeaderConstant
     }
 
-    @objc public static var identifierForVendor: String? {
+    static var identifierForVendor: String? {
         #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
             return UIDevice.current.identifierForVendor?.uuidString
         #elseif os(watchOS)
@@ -81,15 +87,11 @@ import AppKit
         #endif
     }
 
-    private static var defaultServerHostURL: URL {
-        return URL(string: defaultServerHostName)!
-    }
-
-    @objc public static var serverHostURL: URL {
+    static var serverHostURL: URL {
         return Self.proxyURL ?? Self.defaultServerHostURL
     }
 
-    @objc public static var proxyURL: URL? {
+    static var proxyURL: URL? {
         didSet {
             if let privateProxyURLString = proxyURL?.absoluteString {
                 Logger.info(Strings.configure.configuring_purchases_proxy_url_set
@@ -98,7 +100,13 @@ import AppKit
         }
     }
 
-    @objc required public init(platformFlavor: String?, platformFlavorVersion: String?, finishTransactions: Bool) throws {
+    private static let defaultServerHostName = "https://api.revenuecat.com"
+
+    private static var defaultServerHostURL: URL {
+        return URL(string: defaultServerHostName)!
+    }
+
+    init(platformFlavor: String?, platformFlavorVersion: String?, finishTransactions: Bool) throws {
         self.platformFlavor = platformFlavor ?? "native"
         self.platformFlavorVersion = platformFlavorVersion
 
@@ -111,19 +119,19 @@ import AppKit
         self.finishTransactions = finishTransactions
     }
 
-    @objc open func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
+    func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
         DispatchQueue.main.async {
             completion(self.isApplicationBackgrounded)
         }
     }
 
-    @objc open func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
+    func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }
 
 }
 
-@objc public extension SystemInfo {
+extension SystemInfo {
 
     static var applicationDidBecomeActiveNotification: Notification.Name {
         #if os(iOS) || os(tvOS)

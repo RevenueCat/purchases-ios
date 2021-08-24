@@ -16,7 +16,7 @@
 import Foundation
 import XCTest
 import Nimble
-import Purchases
+
 @testable import PurchasesCoreSwift
 
 class AttributionPosterTests: XCTestCase {
@@ -78,13 +78,13 @@ class AttributionPosterTests: XCTestCase {
         backend.stubbedPostAttributionDataCompletionResult = (nil, ())
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
-                               forNetworkUserId: userID)
+                               networkUserId: userID)
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .adjust,
-                               forNetworkUserId: userID)
+                               networkUserId: userID)
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
@@ -96,13 +96,13 @@ class AttributionPosterTests: XCTestCase {
 
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .appleSearchAds,
-                               forNetworkUserId: userID)
+                               networkUserId: userID)
         expect(self.backend.invokedPostAttributionDataCount) == 1
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .appleSearchAds,
-                               forNetworkUserId: userID)
+                               networkUserId: userID)
         expect(self.backend.invokedPostAttributionDataCount) == 1
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
 
@@ -114,13 +114,13 @@ class AttributionPosterTests: XCTestCase {
 
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
-                               forNetworkUserId: userID)
+                               networkUserId: userID)
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .facebook,
-                               forNetworkUserId: userID)
+                               networkUserId: userID)
 
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
@@ -131,13 +131,13 @@ class AttributionPosterTests: XCTestCase {
 
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .adjust,
-                               forNetworkUserId: "attributionUser1")
+                               networkUserId: "attributionUser1")
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 1
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .adjust,
-                               forNetworkUserId: "attributionUser2")
+                               networkUserId: "attributionUser2")
 
         expect(self.backend.invokedPostAttributionDataCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 2
@@ -148,13 +148,13 @@ class AttributionPosterTests: XCTestCase {
 
         attributionPoster.post(attributionData: ["something": "here"],
                                fromNetwork: .appleSearchAds,
-                               forNetworkUserId: "attributionUser1")
+                               networkUserId: "attributionUser1")
         expect(self.backend.invokedPostAttributionDataCount) == 1
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
 
         attributionPoster.post(attributionData: ["something": "else"],
                                fromNetwork: .appleSearchAds,
-                               forNetworkUserId: "attributionUser2")
+                               networkUserId: "attributionUser2")
 
         expect(self.backend.invokedPostAttributionDataCount) == 2
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0

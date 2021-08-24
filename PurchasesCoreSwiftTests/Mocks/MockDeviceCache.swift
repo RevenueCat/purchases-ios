@@ -3,7 +3,6 @@
 //  Copyright © 2020 RevenueCat. All rights reserved.
 //
 
-import Purchases
 @testable import PurchasesCoreSwift
 
 class MockDeviceCache: DeviceCache {

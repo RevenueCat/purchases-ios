@@ -1,24 +1,29 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  ProductsManager.swift
-//  Purchases
 //
 //  Created by Andrés Boedo on 7/14/20.
-//  Copyright © 2020 Purchases. All rights reserved.
 //
 
 import Foundation
 import StoreKit
 
-// TODO: make internal
-@objc(RCProductsManager) public class ProductsManager: NSObject {
-    private let productsRequestFactory: ProductsRequestFactory
+class ProductsManager: NSObject {
 
+    private let productsRequestFactory: ProductsRequestFactory
     private var cachedProductsByIdentifier: [String: SKProduct] = [:]
     private let queue = DispatchQueue(label: "ProductsManager")
     private var productsByRequests: [SKRequest: Set<String>] = [:]
     private var completionHandlers: [Set<String>: [(Set<SKProduct>) -> Void]] = [:]
 
-    @objc public init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory()) {
+    init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory()) {
         self.productsRequestFactory = productsRequestFactory
     }
 
@@ -64,7 +69,7 @@ import StoreKit
 
 extension ProductsManager: SKProductsRequestDelegate {
 
-    public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
+    func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         queue.async { [self] in
             Logger.rcSuccess(Strings.network.skproductsrequest_received_response)
             guard let requestProducts = self.productsByRequests[request] else {
@@ -86,12 +91,12 @@ extension ProductsManager: SKProductsRequestDelegate {
         }
     }
 
-    public func requestDidFinish(_ request: SKRequest) {
+    func requestDidFinish(_ request: SKRequest) {
         Logger.rcSuccess(Strings.network.skproductsrequest_finished)
         request.cancel()
     }
 
-    public func request(_ request: SKRequest, didFailWithError error: Error) {
+    func request(_ request: SKRequest, didFailWithError error: Error) {
         queue.async { [self] in
             Logger.appleError(String(format: Strings.network.skproductsrequest_failed, error.localizedDescription))
             guard let products = self.productsByRequests[request] else {

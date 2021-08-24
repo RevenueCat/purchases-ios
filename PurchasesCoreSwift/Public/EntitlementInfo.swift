@@ -1,9 +1,15 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  EntitlementInfo.swift
-//  PurchasesCoreSwift
 //
 //  Created by Joshua Liebowitz on 6/25/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
@@ -128,7 +134,6 @@ import Foundation
                   dateFormatter: .iso8601SecondsDateFormatter)
     }
 
-    // TODO(post-migration): Make this internal
     // TODO(cleanup): Codable
     init(entitlementId: String,
          entitlementData: [String: Any],
@@ -173,73 +178,6 @@ import Foundation
                                                           store: store,
                                                           unsubscribeDetectedAt: unsubscribeDetectedAt,
                                                           billingIssueDetectedAt: billingIssueDetectedAt)
-    }
-
-    private class func isDateActive(expirationDate: Date?, forRequestDate requestDate: Date?) -> Bool {
-        guard let expirationDate = expirationDate else {
-            return true
-        }
-
-        let referenceDate: Date = requestDate ?? Date.init()
-        return expirationDate.timeIntervalSince(referenceDate) > 0
-    }
-
-    private class func parseOwnershipType(ownershipType: String?) -> PurchaseOwnershipType {
-        switch ownershipType {
-        case nil:
-            return .purchased
-        case "PURCHASED":
-            return .purchased
-        case "FAMILY_SHARED":
-            return .familyShared
-        default:
-            // TODO(post-migration check): Logging?
-            return .unknown
-        }
-    }
-
-    private class func parsePeriodType(periodType: String?) -> PeriodType {
-        switch periodType {
-        case "normal":
-            return .normal
-        case "intro":
-            return .intro
-        case "trial":
-            return .trial
-        default:
-            // TODO(post-migration check): Also handles nil.
-            return .normal
-        }
-    }
-
-    private class func parseStore(store: String?) -> Store {
-        switch store {
-        case "app_store":
-            return .appStore
-        case "mac_app_store":
-            return .macAppStore
-        case "play_store":
-            return .playStore
-        case "stripe":
-            return .stripe
-        case "promotional":
-            return .promotional
-        default:
-            // TODO(post-migration check): Logging?
-            return .unknownStore
-        }
-    }
-
-    private class func willRenewWithExpirationDate(expirationDate: Date?,
-                                                   store: Store,
-                                                   unsubscribeDetectedAt: Date?,
-                                                   billingIssueDetectedAt: Date?) -> Bool {
-        let isPromo = store == .promotional
-        let isLifetime = expirationDate == nil
-        let hasUnsubscribed = unsubscribeDetectedAt != nil
-        let hasBillingIssues = billingIssueDetectedAt != nil
-
-        return !(isPromo || isLifetime || hasUnsubscribed || hasBillingIssues)
     }
 
     public override var description: String {
@@ -331,4 +269,89 @@ import Foundation
         hash = hash * 31 + UInt(self.ownershipType.hashValue)
         return Int(hash)
     }
+
+}
+
+private extension EntitlementInfo {
+
+    class func isDateActive(expirationDate: Date?, forRequestDate requestDate: Date?) -> Bool {
+        guard let expirationDate = expirationDate else {
+            return true
+        }
+
+        let referenceDate: Date = requestDate ?? Date.init()
+        return expirationDate.timeIntervalSince(referenceDate) > 0
+    }
+
+    class func parseOwnershipType(ownershipType: String?) -> PurchaseOwnershipType {
+        guard let ownershipType = ownershipType else {
+            // TODO: should this be a warning?
+            return .purchased
+        }
+
+        switch ownershipType {
+        case "PURCHASED":
+            return .purchased
+        case "FAMILY_SHARED":
+            return .familyShared
+        default:
+            Logger.warn("received unknown ownershipType: \(ownershipType)")
+            return .unknown
+        }
+    }
+
+    class func parsePeriodType(periodType: String?) -> PeriodType {
+        guard let periodType = periodType else {
+            Logger.warn("nil periodType found during parsePeriodType")
+            return .normal
+        }
+
+        switch periodType {
+        case "normal":
+            return .normal
+        case "intro":
+            return .intro
+        case "trial":
+            return .trial
+        default:
+            Logger.warn("received unknown periodType: \(periodType)")
+            return .normal
+        }
+    }
+
+    class func parseStore(store: String?) -> Store {
+        guard let store = store else {
+            Logger.warn("nil store found during parseStore")
+            return .unknownStore
+        }
+
+        switch store {
+        case "app_store":
+            return .appStore
+        case "mac_app_store":
+            return .macAppStore
+        case "play_store":
+            return .playStore
+        case "stripe":
+            return .stripe
+        case "promotional":
+            return .promotional
+        default:
+            Logger.warn("received unknown store: \(store)")
+            return .unknownStore
+        }
+    }
+
+    class func willRenewWithExpirationDate(expirationDate: Date?,
+                                           store: Store,
+                                           unsubscribeDetectedAt: Date?,
+                                           billingIssueDetectedAt: Date?) -> Bool {
+        let isPromo = store == .promotional
+        let isLifetime = expirationDate == nil
+        let hasUnsubscribed = unsubscribeDetectedAt != nil
+        let hasBillingIssues = billingIssueDetectedAt != nil
+
+        return !(isPromo || isLifetime || hasUnsubscribed || hasBillingIssues)
+    }
+
 }

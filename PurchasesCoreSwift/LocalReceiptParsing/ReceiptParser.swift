@@ -1,34 +1,34 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  ReceiptParser.swift
-//  Purchases
 //
 //  Created by Andrés Boedo on 7/22/20.
-//  Copyright © 2020 Purchases. All rights reserved.
 //
 
 import Foundation
 
-@objc(RCReceiptParser) public class ReceiptParser: NSObject {
+class ReceiptParser {
+
     private let objectIdentifierBuilder: ASN1ObjectIdentifierBuilder
     private let containerBuilder: ASN1ContainerBuilder
     private let receiptBuilder: AppleReceiptBuilder
 
-    @objc public convenience override init() {
-        self.init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder(),
-                  containerBuilder: ASN1ContainerBuilder(),
-                  receiptBuilder: AppleReceiptBuilder())
-    }
-
-    init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder,
-         containerBuilder: ASN1ContainerBuilder,
-         receiptBuilder: AppleReceiptBuilder) {
+    init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder = ASN1ObjectIdentifierBuilder(),
+         containerBuilder: ASN1ContainerBuilder = ASN1ContainerBuilder(),
+         receiptBuilder: AppleReceiptBuilder = AppleReceiptBuilder()) {
         self.objectIdentifierBuilder = objectIdentifierBuilder
         self.containerBuilder = containerBuilder
         self.receiptBuilder = receiptBuilder
-        super.init()
     }
 
-    @objc public func receiptHasTransactions(receiptData: Data) -> Bool {
+    func receiptHasTransactions(receiptData: Data) -> Bool {
         Logger.info(Strings.receipt.parsing_receipt)
         if let receipt = try? parse(from: receiptData) {
             return receipt.inAppPurchases.count > 0
@@ -54,6 +54,7 @@ import Foundation
 }
 
 private extension ReceiptParser {
+
     func findASN1Container(withObjectId objectId: ASN1ObjectIdentifier,
                            inContainer container: ASN1Container) throws -> ASN1Container? {
         if container.encodingType == .constructed {
@@ -75,4 +76,5 @@ private extension ReceiptParser {
         }
         return nil
     }
+
 }
