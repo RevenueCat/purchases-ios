@@ -112,7 +112,7 @@ class MockBackend: Backend {
         invokedGetOfferingsForAppUserIDCount += 1
         invokedGetOfferingsForAppUserIDParameters = (appUserID, completion)
         invokedGetOfferingsForAppUserIDParametersList.append((appUserID, completion))
-        
+
         completion(stubbedGetOfferingsCompletionResult?.data, stubbedGetOfferingsCompletionResult?.error)
     }
 

@@ -78,12 +78,12 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetPushTokenStringParameters = (pushToken, appUserID)
         invokedSetPushTokenStringParametersList.append((pushToken, appUserID))
     }
-    
+
     var invokedSetAdjustID = false
     var invokedSetAdjustIDCount = 0
     var invokedSetAdjustIDParameters: (adjustID: String?, appUserID: String?)?
     var invokedSetAdjustIDParametersList = [(pushToken: String?, appUserID: String?)]()
-    
+
     override func setAdjustID(_ adjustID: String?, appUserID: String) {
         invokedSetAdjustID = true
         invokedSetAdjustIDCount += 1
@@ -249,12 +249,12 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSyncAttributesForAllUsersParameters = (currentAppUserID, ())
         invokedSyncAttributesForAllUsersParametersList.append((currentAppUserID, ()))
     }
-    
+
     var invokedCollectDeviceIdentifiers = false
     var invokedCollectDeviceIdentifiersCount = 0
     var invokedCollectDeviceIdentifiersParameters: (appUserID: String?, Void)?
     var invokedCollectDeviceIdentifiersParametersList = [(appUserID: String?, Void)]()
-    
+
     override func collectDeviceIdentifiers(forAppUserID appUserID: String) {
         invokedCollectDeviceIdentifiers = true
         invokedCollectDeviceIdentifiersCount += 1

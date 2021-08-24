@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "35262A1D1F7D77E600C04F2C"
-               BuildableName = "PurchasesTests.xctest"
-               BlueprintName = "PurchasesTests"
+               BlueprintIdentifier = "2DC5621D24EC63430031F69B"
+               BuildableName = "PurchasesCoreSwiftTests.xctest"
+               BlueprintName = "PurchasesCoreSwiftTests"
                ReferencedContainer = "container:Purchases.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,17 +28,6 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "NO">
       <Testables>
-         <TestableReference
-            skipped = "NO"
-            testExecutionOrdering = "random">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "35262A1D1F7D77E600C04F2C"
-               BuildableName = "PurchasesTests.xctest"
-               BlueprintName = "PurchasesTests"
-               ReferencedContainer = "container:Purchases.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
          <TestableReference
             skipped = "NO"
             testExecutionOrdering = "random">
@@ -76,9 +65,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "35262A1D1F7D77E600C04F2C"
-            BuildableName = "PurchasesTests.xctest"
-            BlueprintName = "PurchasesTests"
+            BlueprintIdentifier = "2DC5621D24EC63430031F69B"
+            BuildableName = "PurchasesCoreSwiftTests.xctest"
+            BlueprintName = "PurchasesCoreSwiftTests"
             ReferencedContainer = "container:Purchases.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

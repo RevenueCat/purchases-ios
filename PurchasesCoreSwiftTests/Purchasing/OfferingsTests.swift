@@ -11,7 +11,6 @@ import Nimble
 import StoreKit
 import XCTest
 
-import Purchases
 @testable import PurchasesCoreSwift
 
 class OfferingsTests: XCTestCase {
