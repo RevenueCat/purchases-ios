@@ -13,7 +13,7 @@
 
 import Foundation
 
-@objc public extension NSError {
+extension NSError {
 
     var rc_successfullySynced: Bool {
         if code == ErrorCode.networkError.rawValue {
