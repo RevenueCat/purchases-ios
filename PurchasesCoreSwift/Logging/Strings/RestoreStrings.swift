@@ -15,11 +15,13 @@
 import Foundation
 
 // swiftlint:disable identifier_name
-class RestoreStrings {
+extension Strings {
 
-    var restoretransactions_called_with_allow_sharing_appstore_account_false_warning: String {
-        "allowSharingAppStoreAccount is set to false and restoreTransactions has been called. Are you sure you want " +
-        "to do this?"
+    enum RestoreStrings {
+
+        static let restoretransactions_called_with_allow_sharing_appstore_account_false_warning = "allowSharingAppStoreAccount is set to false and restoreTransactions has been called. Are you sure you want " +
+            "to do this?"
+
     }
 
 }
