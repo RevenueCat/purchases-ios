@@ -1,3 +1,15 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  AttributionKey.swift
+//
+
 import Foundation
 
 // swiftlint:disable identifier_name
@@ -10,14 +22,17 @@ enum AttributionKey: String {
          networkID = "rc_attribution_network_id"
 
     enum Adjust: String {
+
         case id = "adid",
              network = "network",
              campaign = "campaign",
              adGroup = "adgroup",
              creative = "creative"
+
     }
 
     enum AppsFlyer: String {
+
         case id = "rc_appsflyer_id",
              campaign = "campaign",
              channel = "af_channel",
@@ -29,15 +44,20 @@ enum AttributionKey: String {
              adId = "ad_id",
              dataKey = "data",
              statusKey = "status"
+
     }
 
     enum Branch: String {
+
         case campaign,
              channel
+
     }
 
     enum MParticle: String {
+
         case id = "mpid"
+
     }
 
 }

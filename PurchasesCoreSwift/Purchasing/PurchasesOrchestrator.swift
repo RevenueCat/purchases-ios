@@ -14,17 +14,16 @@
 import Foundation
 import StoreKit
 
-@objc(RCPurchasesOrchestratorDelegate) public protocol PurchasesOrchestratorDelegate {
+@objc protocol PurchasesOrchestratorDelegate {
 
     func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: @escaping DeferredPromotionalPurchaseBlock)
 
 }
 
-// Todo(post-migration): make internal
-@objc(RCPurchasesOrchestrator) public class PurchasesOrchestrator: NSObject {
+class PurchasesOrchestrator {
 
-    @objc public var finishTransactions: Bool { systemInfo.finishTransactions }
-    @objc public var allowSharingAppStoreAccount: Bool {
+    var finishTransactions: Bool { systemInfo.finishTransactions }
+    var allowSharingAppStoreAccount: Bool {
         get {
             return maybeAllowSharingAppStoreAccount ?? identityManager.currentUserIsAnonymous
         }
@@ -33,13 +32,12 @@ import StoreKit
         }
     }
 
-    @objc public weak var maybeDelegate: PurchasesOrchestratorDelegate?
+    @objc weak var maybeDelegate: PurchasesOrchestratorDelegate?
 
     private var maybeAllowSharingAppStoreAccount: Bool?
     private var presentedOfferingIDsByProductID: [String: String] = [:]
     private var purchaseCompleteCallbacksByProductID: [String: PurchaseCompletedBlock] = [:]
 
-    // todo: remove explicit unwrap once nullability in identityManager is updated
     private var appUserID: String { identityManager.currentAppUserID }
     private var unsyncedAttributes: SubscriberAttributeDict {
         subscriberAttributesManager.unsyncedAttributesByKey(appUserID: self.appUserID)
@@ -58,17 +56,17 @@ import StoreKit
     private let deviceCache: DeviceCache
     private let lock = NSRecursiveLock()
 
-    @objc public init(productsManager: ProductsManager,
-                      storeKitWrapper: StoreKitWrapper,
-                      systemInfo: SystemInfo,
-                      subscriberAttributesManager: SubscriberAttributesManager,
-                      operationDispatcher: OperationDispatcher,
-                      receiptFetcher: ReceiptFetcher,
-                      purchaserInfoManager: PurchaserInfoManager,
-                      backend: Backend,
-                      identityManager: IdentityManager,
-                      receiptParser: ReceiptParser,
-                      deviceCache: DeviceCache) {
+    init(productsManager: ProductsManager,
+         storeKitWrapper: StoreKitWrapper,
+         systemInfo: SystemInfo,
+         subscriberAttributesManager: SubscriberAttributesManager,
+         operationDispatcher: OperationDispatcher,
+         receiptFetcher: ReceiptFetcher,
+         purchaserInfoManager: PurchaserInfoManager,
+         backend: Backend,
+         identityManager: IdentityManager,
+         receiptParser: ReceiptParser,
+         deviceCache: DeviceCache) {
         self.productsManager = productsManager
         self.storeKitWrapper = storeKitWrapper
         self.systemInfo = systemInfo
@@ -82,18 +80,17 @@ import StoreKit
         self.deviceCache = deviceCache
     }
 
-    @objc public func restoreTransactions(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
+    func restoreTransactions(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
         syncPurchases(receiptRefreshPolicy: .always, isRestore: true, maybeCompletion: maybeCompletion)
     }
 
-    @objc public func syncPurchases(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)? = nil) {
+    func syncPurchases(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)? = nil) {
         syncPurchases(receiptRefreshPolicy: .never,
                       isRestore: allowSharingAppStoreAccount,
                       maybeCompletion: maybeCompletion)
     }
 
-    @objc public func products(withIdentifiers identifiers: [String],
-                               completion: @escaping ([SKProduct]) -> Void) {
+    func products(withIdentifiers identifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
         let productIdentifiersSet = Set(identifiers)
         guard !productIdentifiersSet.isEmpty else {
             operationDispatcher.dispatchOnMainThread { completion([]) }
@@ -108,9 +105,9 @@ import StoreKit
     }
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    @objc public func paymentDiscount(forProductDiscount productDiscount: SKProductDiscount,
-                                      product: SKProduct,
-                                      completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
+    func paymentDiscount(forProductDiscount productDiscount: SKProductDiscount,
+                         product: SKProduct,
+                         completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
         guard let discountIdentifier = productDiscount.identifier else {
             completion(nil, ErrorUtils.productDiscountMissingIdentifierError())
             return
@@ -160,11 +157,10 @@ import StoreKit
         }
     }
 
-    @objc(purchaseProduct:payment:presentedOfferingIdentifier:completion:)
-    public func purchase(product: SKProduct,
-                         payment: SKMutablePayment,
-                         presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
-                         completion: @escaping PurchaseCompletedBlock) {
+    func purchase(product: SKProduct,
+                  payment: SKMutablePayment,
+                  presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
+                  completion: @escaping PurchaseCompletedBlock) {
         Logger.debug(String(format: "Make purchase called: %@", #function))
         guard let productIdentifier = extractProductIdentifier(fromProduct: product, orPayment: payment) else {
             Logger.error(Strings.purchase.could_not_purchase_product_id_not_found)
@@ -211,8 +207,7 @@ import StoreKit
 
 extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
-    public func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
-                                updatedTransaction transaction: SKPaymentTransaction) {
+    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper, updatedTransaction transaction: SKPaymentTransaction) {
         switch transaction.transactionState {
         case .restored, // for observer mode
              .purchased:
@@ -228,15 +223,15 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
         }
     }
 
-    public func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
-                                removedTransaction transaction: SKPaymentTransaction) {
+    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
+                         removedTransaction transaction: SKPaymentTransaction) {
         // todo: remove
         // unused for now
     }
 
-    public func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
-                                shouldAddStorePayment payment: SKPayment,
-                                for product: SKProduct) -> Bool {
+    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
+                         shouldAddStorePayment payment: SKPayment,
+                         for product: SKProduct) -> Bool {
         productsManager.cacheProduct(product)
         guard let delegate = maybeDelegate else { return false }
 
@@ -249,8 +244,8 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
         return false
     }
 
-    public func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
-                                didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
+    func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
+                         didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
         Logger.debug(String(format: Strings.purchase.entitlements_revoked_syncing_purchases, productIdentifiers))
         syncPurchases { _, _ in
             Logger.debug(Strings.purchase.purchases_synced)
@@ -406,10 +401,10 @@ private extension PurchasesOrchestrator {
 
     func markSyncedIfNeeded(subscriberAttributes: SubscriberAttributeDict?, appUserID: String, maybeError: Error?) {
         if let error = maybeError as NSError? {
-            if !error.rc_successfullySynced {
+            if !error.successfullySynced {
                 return
             }
-            let attributeErrors = (error.rc_subscriberAttributesErrors?.debugDescription ?? "None") as NSString
+            let attributeErrors = (error.subscriberAttributesErrors?.debugDescription ?? "None") as NSString
             Logger.error(String(format: Strings.attribution.subscriber_attributes_error, attributeErrors))
         }
 

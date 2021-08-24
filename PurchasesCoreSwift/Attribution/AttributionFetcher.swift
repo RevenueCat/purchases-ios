@@ -1,6 +1,15 @@
 //
-// Created by Andrés Boedo on 4/8/21.
-// Copyright (c) 2021 Purchases. All rights reserved.
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  AttributionFetcher.swift
+//
+//  Created by Andrés Boedo on 4/8/21.
 //
 
 import Foundation
@@ -17,8 +26,7 @@ enum AttributionFetcherError: Error {
 
 }
 
-// TODO(post-migration): Make this internal
-@objc(RCAttributionFetcher) public class AttributionFetcher: NSObject {
+class AttributionFetcher {
 
     private let attributionFactory: AttributionTypeFactory
     private let systemInfo: SystemInfo
@@ -29,7 +37,7 @@ enum AttributionFetcherError: Error {
     private let appTrackingTransparencyRequired = true
 #endif
 
-    @objc public init(attributionFactory: AttributionTypeFactory, systemInfo: SystemInfo) {
+    init(attributionFactory: AttributionTypeFactory, systemInfo: SystemInfo) {
         self.attributionFactory = attributionFactory
         self.systemInfo = systemInfo
     }

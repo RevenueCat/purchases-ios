@@ -643,7 +643,6 @@
 				F5E4383626B852D700841CC8 /* StoreKitExtensions */,
 				354895D0267AE32D001DC5B1 /* SubscriberAttributes */,
 				B39E811B268E885900D31189 /* SubscriberAttributes */,
-				37E355CBB3F3A31A32687B14 /* Transaction.swift */,
 			);
 			path = PurchasesCoreSwift;
 			sourceTree = "<group>";
@@ -1139,6 +1138,7 @@
 				A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */,
 				B35042C326CDB79A00905B95 /* Purchases.swift */,
 				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
+				37E355CBB3F3A31A32687B14 /* Transaction.swift */,
 			);
 			path = Public;
 			sourceTree = "<group>";

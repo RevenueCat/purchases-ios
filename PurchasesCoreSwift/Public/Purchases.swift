@@ -622,7 +622,7 @@ extension Purchases {
     private func post(attributionData data: [String: Any],
                       fromNetwork network: AttributionNetwork,
                       forNetworkUserId networkUserId: String?) {
-        attributionPoster.post(attributionData: data, fromNetwork: network, forNetworkUserId: networkUserId)
+        attributionPoster.post(attributionData: data, fromNetwork: network, networkUserId: networkUserId)
     }
 
     private func postAppleSearchAddsAttributionCollectionIfNeeded() {

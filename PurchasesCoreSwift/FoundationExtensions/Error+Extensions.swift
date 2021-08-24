@@ -15,7 +15,7 @@ import Foundation
 
 extension NSError {
 
-    var rc_successfullySynced: Bool {
+    var successfullySynced: Bool {
         if code == ErrorCode.networkError.rawValue {
             return false
         }
@@ -27,7 +27,7 @@ extension NSError {
         return false
     }
 
-    var rc_subscriberAttributesErrors: [String: String]? {
+    var subscriberAttributesErrors: [String: String]? {
         return userInfo[Backend.RCAttributeErrorsKey as String] as? [String: String]
     }
 

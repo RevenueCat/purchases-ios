@@ -8,16 +8,13 @@
 //      https://opensource.org/licenses/MIT
 //
 //  AdClientProxy.swift
-//  PurchasesCoreSwift
 //
 //  Created by Juanpe Catalán on 14/7/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
 
-// TODO (post-migration): Make all the things internal again.
-public typealias AttributionDetailsBlock = ([String: NSObject]?, Error?) -> Void
+typealias AttributionDetailsBlock = ([String: NSObject]?, Error?) -> Void
 
 // We need this class to avoid Kid apps being rejected for getting idfa. It seems like App
 // Review uses some grep to find the class names, so we ended up creating a fake class that
@@ -38,9 +35,9 @@ class FakeAdClient: NSObject {
 
 }
 
-// TODO (post-migration): Make all the things internal again if possible. Test if Objc can be removed.
+// TODO: Test if Objc can be removed.
 @objc(RCAdClientProxy)
-public class AdClientProxy: NSObject {
+class AdClientProxy: NSObject {
 
     private static let className = "ADClient"
 
@@ -49,7 +46,7 @@ public class AdClientProxy: NSObject {
     }
 
     @objc(requestAttributionDetailsWithBlock:)
-    public func requestAttributionDetails(_ completionHandler: @escaping AttributionDetailsBlock) {
+    func requestAttributionDetails(_ completionHandler: @escaping AttributionDetailsBlock) {
         let client: AnyObject
         if let klass = Self.adClientClass, let clientClass = klass as AnyObject as? NSObjectProtocol {
             // This looks strange, but #selector() does fun things to create a selector. If the selector for the given

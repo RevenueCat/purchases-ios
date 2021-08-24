@@ -1,20 +1,25 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  ReceiptFetcher.swift
-//  Purchases
 //
 //  Created by Javier de Martín Gil on 8/7/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
 
-// TODO: Make internal after migration to Swift is complete
-@objc(RCReceiptFetcher) public class ReceiptFetcher: NSObject {
+class ReceiptFetcher {
 
     private let requestFetcher: StoreKitRequestFetcher
     private let receiptBundle: Bundle
 
-    @objc public convenience init(requestFetcher: StoreKitRequestFetcher) {
+    convenience init(requestFetcher: StoreKitRequestFetcher) {
         self.init(requestFetcher: requestFetcher, bundle: .main)
     }
 
@@ -23,8 +28,7 @@ import Foundation
         self.receiptBundle = bundle
     }
 
-    @objc public func receiptData(refreshPolicy: ReceiptRefreshPolicy,
-                                  completion: @escaping (Data?) -> Void) {
+    func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping (Data?) -> Void) {
         if refreshPolicy == .always {
             Logger.debug(String(format: Strings.receipt.force_refreshing_receipt))
             refreshReceipt(completion)

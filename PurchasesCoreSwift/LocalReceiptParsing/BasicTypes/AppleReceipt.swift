@@ -1,21 +1,30 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  AppleReceipt.swift
-//  Purchases
 //
 //  Created by Andrés Boedo on 7/22/20.
-//  Copyright © 2020 Purchases. All rights reserved.
 //
 
 import Foundation
 
 // https://developer.apple.com/library/archive/releasenotes/General/ValidateAppStoreReceipt/Chapters/ReceiptFields.html
 struct ReceiptAttribute {
+
     let type: ReceiptAttributeType
     let version: Int
     let value: String
+
 }
 
 enum ReceiptAttributeType: Int {
+
     case bundleId = 2,
          applicationVersion = 3,
          opaqueValue = 4,
@@ -24,9 +33,11 @@ enum ReceiptAttributeType: Int {
          inAppPurchase = 17,
          originalApplicationVersion = 19,
          expirationDate = 21
+
 }
 
 struct AppleReceipt: Equatable {
+
     let bundleId: String
     let applicationVersion: String
     let originalApplicationVersion: String
@@ -59,4 +70,5 @@ struct AppleReceipt: Equatable {
     var description: String {
         return String(describing: self.asDict)
     }
+
 }

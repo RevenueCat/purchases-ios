@@ -1,6 +1,13 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  Created by RevenueCat.
-//  Copyright © 2019 RevenueCat. All rights reserved.
 //
 
 import Nimble
@@ -334,7 +341,7 @@ class PurchasesTests: XCTestCase {
         Purchases.notConfiguredAssertionFunction = {
             assertionHappened.fulfill()
         }
-        let purchases = Purchases.shared
+        _ = Purchases.shared
         wait(for: [assertionHappened], timeout: TimeInterval(1))
 
         #else
@@ -2802,6 +2809,7 @@ class PurchasesTests: XCTestCase {
         }
     }
 
+    @available(iOS, deprecated: 0.1) // Ignore deprecation warnings
     func testSetDebugLogsEnabledSetsTheCorrectValue() {
         Logger.logLevel = .warn
 

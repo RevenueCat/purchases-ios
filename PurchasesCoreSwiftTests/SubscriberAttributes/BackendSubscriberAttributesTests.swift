@@ -74,11 +74,11 @@ class BackendSubscriberAttributesTests: XCTestCase {
         let expectedBody: [String: [String: NSObject]] = [
             "attributes": [
                 subscriberAttribute1.key: [
-                    "updated_at_ms": (subscriberAttribute1.setTime as NSDate).rc_millisecondsSince1970AsUInt64(),
+                    "updated_at_ms": (subscriberAttribute1.setTime as NSDate).millisecondsSince1970AsUInt64(),
                     "value": subscriberAttribute1.value
                 ] as NSObject,
                 subscriberAttribute2.key: [
-                    "updated_at_ms": (subscriberAttribute2.setTime as NSDate).rc_millisecondsSince1970AsUInt64(),
+                    "updated_at_ms": (subscriberAttribute2.setTime as NSDate).millisecondsSince1970AsUInt64(),
                     "value": subscriberAttribute2.value
                 ] as NSObject,
             ]
@@ -130,7 +130,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
         let receivedNSError = receivedError! as NSError
 
         expect(receivedNSError.code) == ErrorCode.networkError.rawValue
-        expect(receivedNSError.rc_successfullySynced) == false
+        expect(receivedNSError.successfullySynced) == false
     }
 
     func testPostSubscriberAttributesCallsCompletionWithErrorInBackendErrorCase() {
@@ -157,7 +157,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
-        expect(receivedNSError.rc_successfullySynced) == false
+        expect(receivedNSError.successfullySynced) == false
         expect(receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String]).toNot(beNil())
         expect((receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String] as! NSNumber).boolValue) == false
     }
@@ -223,7 +223,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
-        expect(receivedNSError.rc_successfullySynced) == true
+        expect(receivedNSError.successfullySynced) == true
         expect(receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String]).toNot(beNil())
         expect((receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String] as! NSNumber).boolValue) == true
     }
@@ -263,7 +263,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == ErrorCode.unknownBackendError.rawValue
-        expect(receivedNSError.rc_successfullySynced) == false
+        expect(receivedNSError.successfullySynced) == false
         expect(receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String]).toNot(beNil())
         let code = receivedNSError.userInfo[Backend.RCSuccessfullySyncedKey as String] as! NSNumber
 
@@ -302,11 +302,11 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         let expectedBody: [String: NSObject] = [
             subscriberAttribute1.key: [
-                "updated_at_ms": (subscriberAttribute1.setTime as NSDate).rc_millisecondsSince1970AsUInt64(),
+                "updated_at_ms": (subscriberAttribute1.setTime as NSDate).millisecondsSince1970AsUInt64(),
                 "value": subscriberAttribute1.value
             ] as NSObject,
             subscriberAttribute2.key: [
-                "updated_at_ms": (subscriberAttribute2.setTime as NSDate).rc_millisecondsSince1970AsUInt64(),
+                "updated_at_ms": (subscriberAttribute2.setTime as NSDate).millisecondsSince1970AsUInt64(),
                 "value": subscriberAttribute2.value
             ] as NSObject
         ]
@@ -371,8 +371,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         expect(receivedError).toNot(beNil())
         guard let nonNilReceivedError = receivedError else { fatalError() }
-        expect(nonNilReceivedError.rc_successfullySynced) == true
-        expect(nonNilReceivedError.rc_subscriberAttributesErrors)
+        expect(nonNilReceivedError.successfullySynced) == true
+        expect(nonNilReceivedError.subscriberAttributesErrors)
             == attributeErrors[Backend.RCAttributeErrorsKey]
     }
 
@@ -408,8 +408,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         expect(receivedError).toNot(beNil())
         guard let nonNilReceivedError = receivedError else { fatalError() }
-        expect(nonNilReceivedError.rc_successfullySynced) == true
-        expect(nonNilReceivedError.rc_subscriberAttributesErrors)
+        expect(nonNilReceivedError.successfullySynced) == true
+        expect(nonNilReceivedError.subscriberAttributesErrors)
             == attributeErrors[Backend.RCAttributeErrorsKey]
     }
 

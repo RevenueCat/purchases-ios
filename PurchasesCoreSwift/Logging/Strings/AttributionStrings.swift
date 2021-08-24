@@ -1,15 +1,22 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  AttributionStrings.swift
-//  PurchasesCoreSwift
 //
 //  Created by Andrés Boedo on 9/14/20.
-//  Copyright © 2020 Purchases. All rights reserved.
 //
 
 import Foundation
 
 // swiftlint:disable identifier_name
-@objc(RCAttributionStrings) public class AttributionStrings: NSObject {
+class AttributionStrings {
+
     var appsflyer_id_deprecated: String {
         "The parameter key rc_appsflyer_id is deprecated. Pass networkUserId to addAttribution instead."
     }
@@ -52,7 +59,7 @@ import Foundation
             "Will automatically retry if authorization gets granted."
     }
     var skip_same_attributes: String { "Attribution data is the same as latest. Skipping." }
-    @objc public var subscriber_attributes_error: String { "Subscriber attributes errors: %@" }
+    var subscriber_attributes_error: String { "Subscriber attributes errors: %@" }
     var unsynced_attributes_count: String { "Found %lu unsynced attributes for App User ID: %@" }
     var unsynced_attributes: String { "Unsynced attributes: %@" }
     var attribute_set_locally: String { "Attribute set locally: %@. It will be synced to the backend" +
