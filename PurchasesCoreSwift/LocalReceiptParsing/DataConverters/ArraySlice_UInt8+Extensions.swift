@@ -16,7 +16,7 @@ import Foundation
 
 extension ArraySlice where Element == UInt8 {
 
-    func toUInt() -> UInt64 {
+    func toUInt64() -> UInt64 {
         let array = Array(self)
         var result: UInt64 = 0
         for idx in 0..<(array.count) {
@@ -27,15 +27,15 @@ extension ArraySlice where Element == UInt8 {
     }
 
     func toInt() -> Int {
-        return Int(self.toUInt())
+        return Int(self.toUInt64())
     }
 
     func toInt64() -> Int64 {
-        return Int64(self.toUInt())
+        return Int64(self.toUInt64())
     }
 
     func toBool() -> Bool {
-        return self.toUInt() == 1
+        return self.toUInt64() == 1
     }
 
     func toString() -> String? {

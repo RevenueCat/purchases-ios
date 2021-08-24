@@ -23,7 +23,7 @@ import WatchKit
 import AppKit
 #endif
 
-open class SystemInfo {
+class SystemInfo {
 
     #if targetEnvironment(macCatalyst)
     static let platformHeaderConstant = "uikitformac"
@@ -43,8 +43,6 @@ open class SystemInfo {
 
     }
 
-    private static let defaultServerHostName = "https://api.revenuecat.com"
-
     var finishTransactions: Bool
     let platformFlavor: String
     let platformFlavorVersion: String?
@@ -59,7 +57,7 @@ open class SystemInfo {
         return receiptURLString.contains("sandboxReceipt")
     }
 
-    static var frameworkVersion: String { // TODO: automate the setting of this, if it hasn't been.
+    static var frameworkVersion: String {
         return "3.13.0-SNAPSHOT"
     }
 
@@ -89,10 +87,6 @@ open class SystemInfo {
         #endif
     }
 
-    private static var defaultServerHostURL: URL {
-        return URL(string: defaultServerHostName)!
-    }
-
     static var serverHostURL: URL {
         return Self.proxyURL ?? Self.defaultServerHostURL
     }
@@ -104,6 +98,12 @@ open class SystemInfo {
                                 .replacingOccurrences(of: "%@", with: privateProxyURLString))
             }
         }
+    }
+
+    private static let defaultServerHostName = "https://api.revenuecat.com"
+
+    private static var defaultServerHostURL: URL {
+        return URL(string: defaultServerHostName)!
     }
 
     init(platformFlavor: String?, platformFlavorVersion: String?, finishTransactions: Bool) throws {
@@ -119,13 +119,13 @@ open class SystemInfo {
         self.finishTransactions = finishTransactions
     }
 
-    open func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
+    func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
         DispatchQueue.main.async {
             completion(self.isApplicationBackgrounded)
         }
     }
 
-    open func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
+    func isOperatingSystemAtLeastVersion(_ version: OperatingSystemVersion) -> Bool {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }
 

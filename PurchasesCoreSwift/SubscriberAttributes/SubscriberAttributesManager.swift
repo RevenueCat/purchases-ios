@@ -233,7 +233,7 @@ private extension SubscriberAttributesManager {
                         completion: @escaping (Error?) -> Void) {
         backend.post(subscriberAttributes: attributes, appUserID: appUserID) { error in
             let receivedNSError = error as NSError?
-            let didBackendReceiveValues = receivedNSError?.rc_successfullySynced ?? true
+            let didBackendReceiveValues = receivedNSError?.successfullySynced ?? true
 
             if didBackendReceiveValues {
                 self.markAttributesAsSynced(attributes, appUserID: appUserID)

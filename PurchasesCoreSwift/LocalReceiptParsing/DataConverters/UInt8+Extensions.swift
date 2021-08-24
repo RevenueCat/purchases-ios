@@ -26,7 +26,7 @@ enum BitShiftError: Error {
 
 extension BitShiftError: CustomStringConvertible {
 
-    public var description: String {
+    var description: String {
         switch self {
         case .invalidIndex(let index):
             return "invalid index: \(index)"

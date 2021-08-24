@@ -37,7 +37,7 @@ class AttributionPoster {
 
     func post(attributionData data: [String: Any],
               fromNetwork network: AttributionNetwork,
-              forNetworkUserId networkUserId: String?) {
+              networkUserId: String?) {
         Logger.debug(Strings.attribution.instance_configured_posting_attribution)
         if data["rc_appsflyer_id"] != nil {
             Logger.warn(Strings.attribution.appsflyer_id_deprecated)
@@ -127,7 +127,7 @@ class AttributionPoster {
                 return
             }
 
-            self.post(attributionData: attributionDetails, fromNetwork: .appleSearchAds, forNetworkUserId: nil)
+            self.post(attributionData: attributionDetails, fromNetwork: .appleSearchAds, networkUserId: nil)
         }
     }
 
@@ -139,7 +139,7 @@ class AttributionPoster {
         for attributionData in postponedAttributionData {
             post(attributionData: attributionData.data,
                  fromNetwork: attributionData.network,
-                 forNetworkUserId: attributionData.networkUserId)
+                 networkUserId: attributionData.networkUserId)
         }
 
         Self.postponedAttributionData = nil

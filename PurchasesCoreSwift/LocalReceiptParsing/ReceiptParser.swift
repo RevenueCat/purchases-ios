@@ -15,19 +15,14 @@
 import Foundation
 
 class ReceiptParser {
+
     private let objectIdentifierBuilder: ASN1ObjectIdentifierBuilder
     private let containerBuilder: ASN1ContainerBuilder
     private let receiptBuilder: AppleReceiptBuilder
 
-    convenience init() {
-        self.init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder(),
-                  containerBuilder: ASN1ContainerBuilder(),
-                  receiptBuilder: AppleReceiptBuilder())
-    }
-
-    init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder,
-         containerBuilder: ASN1ContainerBuilder,
-         receiptBuilder: AppleReceiptBuilder) {
+    init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder = ASN1ObjectIdentifierBuilder(),
+         containerBuilder: ASN1ContainerBuilder = ASN1ContainerBuilder(),
+         receiptBuilder: AppleReceiptBuilder = AppleReceiptBuilder()) {
         self.objectIdentifierBuilder = objectIdentifierBuilder
         self.containerBuilder = containerBuilder
         self.receiptBuilder = receiptBuilder

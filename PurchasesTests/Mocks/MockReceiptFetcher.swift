@@ -13,6 +13,7 @@
 @testable import PurchasesCoreSwift
 
 class MockReceiptFetcher: ReceiptFetcher {
+
     var receiptDataCalled = false
     var shouldReturnReceipt = true
     var shouldReturnZeroBytesReceipt = false
@@ -23,7 +24,7 @@ class MockReceiptFetcher: ReceiptFetcher {
         self.init(requestFetcher: requestFetcher, bundle: .main)
     }
 
-    override public func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping ((Data?) -> Void)) {
+    override func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping ((Data?) -> Void)) {
         receiptDataReceivedRefreshPolicy = refreshPolicy
         receiptDataCalled = true
         receiptDataTimesCalled += 1
@@ -37,4 +38,5 @@ class MockReceiptFetcher: ReceiptFetcher {
             completion(nil)
         }
     }
+
 }

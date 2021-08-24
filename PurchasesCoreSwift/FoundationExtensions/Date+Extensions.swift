@@ -16,7 +16,7 @@ import Foundation
 
 extension NSDate {
 
-    func rc_millisecondsSince1970AsUInt64() -> UInt64 {
+    func millisecondsSince1970AsUInt64() -> UInt64 {
         return UInt64(self.timeIntervalSince1970 * 1000.0)
     }
 
@@ -24,7 +24,7 @@ extension NSDate {
 
 extension Date {
 
-    func rc_millisecondsSince1970AsUInt64() -> UInt64 {
+    func millisecondsSince1970AsUInt64() -> UInt64 {
         return UInt64(self.timeIntervalSince1970 * 1000.0)
     }
 

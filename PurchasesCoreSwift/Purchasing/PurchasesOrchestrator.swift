@@ -401,10 +401,10 @@ private extension PurchasesOrchestrator {
 
     func markSyncedIfNeeded(subscriberAttributes: SubscriberAttributeDict?, appUserID: String, maybeError: Error?) {
         if let error = maybeError as NSError? {
-            if !error.rc_successfullySynced {
+            if !error.successfullySynced {
                 return
             }
-            let attributeErrors = (error.rc_subscriberAttributesErrors?.debugDescription ?? "None") as NSString
+            let attributeErrors = (error.subscriberAttributesErrors?.debugDescription ?? "None") as NSString
             Logger.error(String(format: Strings.attribution.subscriber_attributes_error, attributeErrors))
         }
 
