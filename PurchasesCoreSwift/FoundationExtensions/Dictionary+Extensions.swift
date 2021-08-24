@@ -1,9 +1,15 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  Dictionary+Extensions.swift
-//  PurchasesCoreSwift
 //
 //  Created by César de la Vega on 7/21/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
@@ -62,4 +68,5 @@ extension Dictionary {
     static func + (lhs: [Key: Value], rhs: [Key: Value]) -> [Key: Value] {
         lhs.merging(rhs)
     }
+
 }

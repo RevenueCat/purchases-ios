@@ -1,14 +1,20 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  AttributionDataMigrator.swift
-//  PurchasesCoreSwift
 //
 //  Created by César de la Vega on 6/16/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
 
-@objc(RCAttributionDataMigrator) public class AttributionDataMigrator: NSObject {
+class AttributionDataMigrator {
 
     func convertToSubscriberAttributes(attributionData: [String: Any], network: Int) -> [String: String] {
         let network = AttributionNetwork(rawValue: network)

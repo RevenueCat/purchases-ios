@@ -1,31 +1,37 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  StoreKitRequestFetcher.swift
-//  PurchasesCoreSwift
 //
 //  Created by Andrés Boedo on 6/29/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
 import StoreKit
 
-// todo: make internal
-@objc(RCReceiptRefreshRequestFactory) public class ReceiptRefreshRequestFactory: NSObject {
+class ReceiptRefreshRequestFactory {
 
     func receiptRefreshRequest() -> SKReceiptRefreshRequest {
         return SKReceiptRefreshRequest()
     }
+
 }
 
-// todo: make internal
-@objc(RCStoreKitRequestFetcher) public class StoreKitRequestFetcher: NSObject {
+class StoreKitRequestFetcher: NSObject {
+
     private let requestFactory: ReceiptRefreshRequestFactory
     private var receiptRefreshRequest: SKRequest?
     private var receiptRefreshCompletionHandlers: [() -> Void]
     private let operationDispatcher: OperationDispatcher
 
-    @objc public init(requestFactory: ReceiptRefreshRequestFactory = ReceiptRefreshRequestFactory(),
-                      operationDispatcher: OperationDispatcher) {
+    init(requestFactory: ReceiptRefreshRequestFactory = ReceiptRefreshRequestFactory(),
+         operationDispatcher: OperationDispatcher) {
         self.requestFactory = requestFactory
         self.operationDispatcher = operationDispatcher
         receiptRefreshRequest = nil
@@ -43,6 +49,7 @@ import StoreKit
             }
         }
     }
+
 }
 
 extension StoreKitRequestFetcher: SKRequestDelegate {

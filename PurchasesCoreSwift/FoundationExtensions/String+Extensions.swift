@@ -8,7 +8,6 @@
 //      https://opensource.org/licenses/MIT
 //
 //  String+Extensions.swift
-//  PurchasesCoreSwift
 //
 //  Created by Juanpe Catalán on 9/7/21.
 //

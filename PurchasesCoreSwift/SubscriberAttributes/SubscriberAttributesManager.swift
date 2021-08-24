@@ -13,7 +13,7 @@
 
 import Foundation
 
-class SubscriberAttributesManager: NSObject {
+class SubscriberAttributesManager {
 
     private let backend: Backend
     private let deviceCache: DeviceCache

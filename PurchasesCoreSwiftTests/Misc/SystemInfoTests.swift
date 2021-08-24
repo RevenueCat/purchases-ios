@@ -1,7 +1,7 @@
 import XCTest
 import Nimble
 
-import PurchasesCoreSwift
+@testable import PurchasesCoreSwift
 
 class SystemInfoTests: XCTestCase {
     func testproxyURL() {

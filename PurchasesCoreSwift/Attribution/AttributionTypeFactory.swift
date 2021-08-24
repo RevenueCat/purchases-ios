@@ -8,10 +8,8 @@
 //      https://opensource.org/licenses/MIT
 //
 //  AttributionTypeFactory.swift
-//  PurchasesCoreSwift
 //
 //  Created by Juanpe Catalán on 9/7/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation

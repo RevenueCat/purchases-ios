@@ -9,7 +9,7 @@
 //
 //  AttributionFetcher.swift
 //
-// Created by Andrés Boedo on 4/8/21.
+//  Created by Andrés Boedo on 4/8/21.
 //
 
 import Foundation
@@ -26,7 +26,7 @@ enum AttributionFetcherError: Error {
 
 }
 
-class AttributionFetcher: NSObject {
+class AttributionFetcher {
 
     private let attributionFactory: AttributionTypeFactory
     private let systemInfo: SystemInfo

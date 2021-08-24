@@ -7,15 +7,15 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-// OfferingsFactory.swift
+//  OfferingsFactory.swift
 //
-// Created by César de la Vega on 7/13/21.
+//  Created by César de la Vega on 7/13/21.
 //
 
 import Foundation
 import StoreKit
 
-class OfferingsFactory: NSObject {
+class OfferingsFactory {
 
     func createOfferings(withProducts products: [String: SKProduct],
                          data: [String: Any]) -> Offerings? {

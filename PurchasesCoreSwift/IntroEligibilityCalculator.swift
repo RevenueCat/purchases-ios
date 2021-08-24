@@ -1,31 +1,32 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  IntroEligibilityCalculator.swift
-//  Purchases
 //
 //  Created by Andrés Boedo on 7/14/20.
-//  Copyright © 2020 Purchases. All rights reserved.
 //
 
 import Foundation
 import StoreKit
 
-@objc(RCIntroEligibilityCalculator) public class IntroEligibilityCalculator: NSObject {
+class IntroEligibilityCalculator {
+
     private let productsManager: ProductsManager
     private let receiptParser: ReceiptParser
 
-    @objc public override init() {
-        self.productsManager = ProductsManager()
-        self.receiptParser = ReceiptParser()
-    }
-
-    internal init(productsManager: ProductsManager,
-                  receiptParser: ReceiptParser) {
+    init(productsManager: ProductsManager = ProductsManager(), receiptParser: ReceiptParser = ReceiptParser()) {
         self.productsManager = productsManager
         self.receiptParser = receiptParser
     }
 
     @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
-    @objc public func checkTrialOrIntroductoryPriceEligibility(
+    func checkTrialOrIntroductoryPriceEligibility(
         with receiptData: Data,
         productIdentifiers candidateProductIdentifiers: Set<String>,
         completion: @escaping ([String: NSNumber], Error?) -> Void) {
@@ -93,10 +94,13 @@ private extension IntroEligibilityCalculator {
         }
         return result
     }
+
 }
 
 extension IntroEligibilityStatus {
+
     func toNSNumber() -> NSNumber {
         return self.rawValue as NSNumber
     }
+
 }

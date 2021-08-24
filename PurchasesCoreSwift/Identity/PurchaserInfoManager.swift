@@ -13,15 +13,15 @@
 
 import Foundation
 
-@objc protocol PurchaserInfoManagerDelegate: NSObjectProtocol {
+protocol PurchaserInfoManagerDelegate: AnyObject {
 
     func purchaserInfoManagerDidReceiveUpdated(purchaserInfo: PurchaserInfo)
 
 }
 
-class PurchaserInfoManager: NSObject {
+class PurchaserInfoManager {
 
-    @objc weak var delegate: PurchaserInfoManagerDelegate?
+    weak var delegate: PurchaserInfoManagerDelegate?
 
     private(set) var lastSentPurchaserInfo: PurchaserInfo?
     private let operationDispatcher: OperationDispatcher

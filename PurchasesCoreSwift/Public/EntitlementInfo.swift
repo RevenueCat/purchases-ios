@@ -1,9 +1,15 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  EntitlementInfo.swift
-//  PurchasesCoreSwift
 //
 //  Created by Joshua Liebowitz on 6/25/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
@@ -184,20 +190,28 @@ import Foundation
     }
 
     private class func parseOwnershipType(ownershipType: String?) -> PurchaseOwnershipType {
-        switch ownershipType {
-        case nil:
+        guard let ownershipType = ownershipType else {
+            // TODO: should this be a warning?
             return .purchased
+        }
+
+        switch ownershipType {
         case "PURCHASED":
             return .purchased
         case "FAMILY_SHARED":
             return .familyShared
         default:
-            // TODO(post-migration check): Logging?
+            Logger.warn("received unknown ownershipType: \(ownershipType)")
             return .unknown
         }
     }
 
     private class func parsePeriodType(periodType: String?) -> PeriodType {
+        guard let periodType = periodType else {
+            Logger.warn("nil periodType found during parsePeriodType")
+            return .normal
+        }
+
         switch periodType {
         case "normal":
             return .normal
@@ -206,12 +220,17 @@ import Foundation
         case "trial":
             return .trial
         default:
-            // TODO(post-migration check): Also handles nil.
+            Logger.warn("received unknown periodType: \(periodType)")
             return .normal
         }
     }
 
     private class func parseStore(store: String?) -> Store {
+        guard let store = store else {
+            Logger.warn("nil store found during parseStore")
+            return .unknownStore
+        }
+
         switch store {
         case "app_store":
             return .appStore
@@ -224,7 +243,7 @@ import Foundation
         case "promotional":
             return .promotional
         default:
-            // TODO(post-migration check): Logging?
+            Logger.warn("received unknown store: \(store)")
             return .unknownStore
         }
     }

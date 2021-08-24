@@ -1,6 +1,13 @@
 //
-// Created by RevenueCat on 3/2/20.
-// Copyright (c) 2020 Purchases. All rights reserved.
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  MockReceiptFetcher.swift
 //
 
 @testable import PurchasesCoreSwift
@@ -16,8 +23,7 @@ class MockReceiptFetcher: ReceiptFetcher {
         self.init(requestFetcher: requestFetcher, bundle: .main)
     }
 
-    @objc override public func receiptData(refreshPolicy: ReceiptRefreshPolicy,
-                                           completion: @escaping ((Data?) -> Void)) {
+    override public func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping ((Data?) -> Void)) {
         receiptDataReceivedRefreshPolicy = refreshPolicy
         receiptDataCalled = true
         receiptDataTimesCalled += 1

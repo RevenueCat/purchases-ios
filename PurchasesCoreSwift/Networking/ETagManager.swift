@@ -7,14 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-// ETagManager.swift
+//  ETagManager.swift
 //
-// Created by César de la Vega on 4/16/21.
+//  Created by César de la Vega on 4/16/21.
 //
 
 import Foundation
 
-class ETagManager: NSObject {
+class ETagManager {
 
     static let eTagHeaderName = "X-RevenueCat-ETag"
 
@@ -22,7 +22,7 @@ class ETagManager: NSObject {
 
     private let userDefaults: UserDefaults
 
-    override init() {
+    init() {
         self.userDefaults = UserDefaults(suiteName: ETagManager.suiteName) ?? UserDefaults.standard
     }
 
@@ -72,7 +72,7 @@ class ETagManager: NSObject {
     }
 
     func clearCaches() {
-        self.userDefaults.removePersistentDomain(forName: ETagManager.suiteName)
+        userDefaults.removePersistentDomain(forName: ETagManager.suiteName)
     }
 
 }
@@ -130,4 +130,5 @@ private extension ETagManager {
         }
         return bundleID + ".\(suiteNameBase)"
     }
+
 }

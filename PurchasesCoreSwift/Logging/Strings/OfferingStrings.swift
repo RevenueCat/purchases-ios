@@ -1,15 +1,22 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  OfferingStrings.swift
-//  PurchasesCoreSwift
 //
 //  Created by Tina Nguyen on 12/11/20.
-//  Copyright © 2020 Purchases. All rights reserved.
 //
 
 import Foundation
 
 // swiftlint:disable identifier_name
 class OfferingStrings {
+
     var cannot_find_product_configuration_error: String { "Could not find SKProduct for %@ " +
         "\nThere is a problem with your configuration in App Store Connect. " +
         "\nMore info here: https://errors.rev.cat/configuring-products"}
@@ -36,4 +43,5 @@ class OfferingStrings {
     var skproductsrequest_did_finish: String { "SKProductsRequest did finish" }
     var skproductsrequest_received_response: String { "SKProductsRequest request received response" }
     var vending_offerings_cache: String { "Vending Offerings from cache" }
+
 }

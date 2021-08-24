@@ -1,15 +1,22 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  NetworkStrings.swift
-//  PurchasesCoreSwift
 //
 //  Created by Tina Nguyen on 12/11/20.
-//  Copyright © 2020 Purchases. All rights reserved.
 //
 
 import Foundation
 
 // swiftlint:disable identifier_name
 class NetworkStrings {
+
     var api_request_completed: String { "API request completed with status: %@ %@ %d" }
     var api_request_started: String { "API request started: %@ %@" }
     var creating_json_error: String { "Error creating request with JSON body: %@ ; error: %@" }
@@ -35,4 +42,5 @@ class NetworkStrings {
         We can't find the cached response, but call has already been retried. Returning result from backend %@.
         """
     }
+
 }

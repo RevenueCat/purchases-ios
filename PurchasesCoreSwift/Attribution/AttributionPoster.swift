@@ -13,7 +13,7 @@
 
 import Foundation
 
-class AttributionPoster: NSObject {
+class AttributionPoster {
 
     let deviceCache: DeviceCache
     let identityManager: IdentityManager
@@ -34,6 +34,7 @@ class AttributionPoster: NSObject {
         self.attributionFetcher = attributionFetcher
         self.subscriberAttributesManager = subscriberAttributesManager
     }
+
     func post(attributionData data: [String: Any],
               fromNetwork network: AttributionNetwork,
               forNetworkUserId networkUserId: String?) {

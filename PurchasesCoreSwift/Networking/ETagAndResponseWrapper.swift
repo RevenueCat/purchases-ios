@@ -1,9 +1,15 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  ETagAndResponseWrapper.swift
-//  PurchasesCoreSwift
 //
 //  Created by César de la Vega on 6/11/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
@@ -36,6 +42,7 @@ struct ETagAndResponseWrapper {
 }
 
 extension ETagAndResponseWrapper {
+
     init?(with data: Data) {
         guard let dictionary =
                 try? JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String: Any] else {
@@ -54,4 +61,5 @@ extension ETagAndResponseWrapper {
         }
         self.init(eTag: eTag, statusCode: statusCode, jsonObject: jsonObject)
     }
+
 }

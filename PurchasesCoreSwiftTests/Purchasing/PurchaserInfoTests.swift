@@ -10,7 +10,6 @@ import Foundation
 import XCTest
 import Nimble
 
-import Purchases
 import PurchasesCoreSwift
 
 class EmptyPurchaserInfoTests: XCTestCase {

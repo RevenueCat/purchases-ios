@@ -223,12 +223,11 @@ private extension SKError {
 
 }
 
-// TODO(post migration): Change back to internal
-public extension ErrorUtils {
+extension ErrorUtils {
 
-    @objc static func backendError(withBackendCode backendCode: NSNumber?,
-                                   backendMessage: String?,
-                                   extraUserInfo: [NSError.UserInfoKey: Any]? = nil) -> Error {
+    static func backendError(withBackendCode backendCode: NSNumber?,
+                             backendMessage: String?,
+                             extraUserInfo: [NSError.UserInfoKey: Any]? = nil) -> Error {
         let errorCode: ErrorCode
         if let maybeBackendCode = backendCode,
            let backendErrorCode = BackendErrorCode.init(rawValue: maybeBackendCode.intValue) {

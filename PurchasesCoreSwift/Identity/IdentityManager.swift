@@ -101,11 +101,7 @@ class IdentityManager {
         "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
     }
 
-}
-
 // MARK: Deprecated
-// TODO: Migrate off these so we can mark them deprecated.
-extension IdentityManager {
 
     func identify(appUserID: String, completion: @escaping (Error?) -> Void) {
         if currentUserIsAnonymous {

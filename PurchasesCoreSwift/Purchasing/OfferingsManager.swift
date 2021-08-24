@@ -37,10 +37,6 @@ class OfferingsManager {
         self.productsManager = productsManager
     }
 
-}
-
-extension OfferingsManager {
-
     func offerings(appUserID: String, completion: ReceiveOfferingsBlock?) {
         guard let cachedOfferings = deviceCache.cachedOfferings else {
             Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
