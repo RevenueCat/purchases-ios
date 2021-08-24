@@ -3,7 +3,7 @@ import Nimble
 
 @testable import PurchasesCoreSwift
 
-@available(iOS 11.2, *)
+@available(iOS 12.2, *)
 class ProductInfoTests: XCTestCase {
     func testAsDictionaryConvertsProductIdentifierCorrectly() {
         let productIdentifier = "cool_product"
