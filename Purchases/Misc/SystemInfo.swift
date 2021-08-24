@@ -40,7 +40,8 @@ class SystemInfo {
     enum SystemInfoError: Error {
 
         case invalidInitializationData
-
+    }
+    
     let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")
 
     var finishTransactions: Bool
