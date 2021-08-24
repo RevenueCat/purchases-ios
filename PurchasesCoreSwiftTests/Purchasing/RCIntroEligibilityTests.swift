@@ -8,7 +8,7 @@
 
 import XCTest
 import Nimble
-import Purchases
+
 @testable import PurchasesCoreSwift
 
 class IntroEligibilityTests: XCTestCase {
