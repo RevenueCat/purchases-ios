@@ -151,7 +151,8 @@ private extension ManageSubscriptionsModalHelper {
         }
 
         do {
-#if os(iOS)
+// limiting to arm architecture since builds on beta 5 fail if other archs are included
+#if os(iOS) && arch(arm64)
             try await AppStore.showManageSubscriptions(in: windowScene)
             return .success(())
 #else
