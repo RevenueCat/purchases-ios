@@ -110,7 +110,6 @@ BOOL isAnonymous;
     [p identify:@"" completionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
     [p resetWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
 
-    // TODO used to be: [p logIn:@"" completionBlock:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
     [p logIn:@"" completionBlock:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
         
