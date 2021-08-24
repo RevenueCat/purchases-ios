@@ -41,7 +41,7 @@ class SystemInfo {
 
         case invalidInitializationData
     }
-    
+
     let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")
 
     var finishTransactions: Bool
