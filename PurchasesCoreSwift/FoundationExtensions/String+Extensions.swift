@@ -22,6 +22,7 @@ extension String {
 
 }
 
+// swiftlint:disable identifier_name
 private struct ROT13 {
 
     private static var key = [Character: Character]()

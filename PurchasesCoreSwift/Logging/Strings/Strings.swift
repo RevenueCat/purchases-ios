@@ -12,16 +12,16 @@
 
 import Foundation
 
-class Strings {
+enum Strings {
 
-    static let attribution = AttributionStrings()
-    static let configure = ConfigureStrings()
-    static let identity = IdentityStrings()
-    static let network = NetworkStrings()
-    static let offering = OfferingStrings()
-    static let purchase = PurchaseStrings()
-    static let purchaserInfo = PurchaserInfoStrings()
-    static let receipt = ReceiptStrings()
-    static let restore = RestoreStrings()
+    static let attribution = AttributionStrings.self
+    static let configure = ConfigureStrings.self
+    static let identity = IdentityStrings.self
+    static let network = NetworkStrings.self
+    static let offering = OfferingStrings.self
+    static let purchase = PurchaseStrings.self
+    static let purchaserInfo = PurchaserInfoStrings.self
+    static let receipt = ReceiptStrings.self
+    static let restore = RestoreStrings.self
 
 }
