@@ -17,7 +17,7 @@ import Foundation
 
 extension NSData {
 
-    func rc_asString() -> String {
+    func asString() -> String {
         var deviceTokenString = ""
         self.enumerateBytes { bytes, byteRange, _ in
             for index in stride(from: 0, to: byteRange.length, by: 1) {
@@ -32,12 +32,12 @@ extension NSData {
 
 extension Data {
 
-    var rc_asString: String {
-        return (self as NSData).rc_asString()
+    var asString: String {
+        return (self as NSData).asString()
     }
 
     // Returns a string representing a fetch token.
-    var rc_asFetchToken: String {
+    var asFetchToken: String {
         return self.base64EncodedString()
     }
 

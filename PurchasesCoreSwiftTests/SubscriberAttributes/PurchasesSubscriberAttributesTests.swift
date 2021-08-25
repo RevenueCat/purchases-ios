@@ -257,14 +257,14 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     func testSetPushTokenMakesRightCalls() {
         setupPurchases()
         let tokenData = Data("ligai32g32ig".data(using: .utf8)!)
-        let tokenString = (tokenData as NSData).rc_asString()
+        let tokenString = (tokenData as NSData).asString()
 
         Purchases.shared.setPushToken(tokenData)
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenCount) == 1
 
         let receivedPushToken = self.mockSubscriberAttributesManager.invokedSetPushTokenParameters!.pushToken!
 
-        expect((receivedPushToken as NSData).rc_asString()) == tokenString
+        expect((receivedPushToken as NSData).asString()) == tokenString
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParameters?.appUserID) == mockIdentityManager
             .currentAppUserID
     }

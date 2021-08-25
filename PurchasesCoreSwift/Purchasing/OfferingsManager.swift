@@ -107,7 +107,8 @@ private extension OfferingsManager {
     }
 
     func handleOfferingsUpdateError(_ error: Error, completion: ReceiveOfferingsBlock?) {
-        Logger.appleError(String(format: Strings.offering.fetching_offerings_error, error.localizedDescription as CVarArg))
+        Logger.appleError(String(format: Strings.offering.fetching_offerings_error,
+                                 error.localizedDescription as CVarArg))
         deviceCache.clearOfferingsCacheTimestamp()
         dispatchCompletionOnMainThreadIfPossible(completion,
                                                  offerings: nil,
@@ -141,7 +142,9 @@ private extension OfferingsManager {
         }
     }
 
-    func dispatchCompletionOnMainThreadIfPossible(_ completion: ReceiveOfferingsBlock?, offerings: Offerings?, error: Error?) {
+    func dispatchCompletionOnMainThreadIfPossible(_ completion: ReceiveOfferingsBlock?,
+                                                  offerings: Offerings?,
+                                                  error: Error?) {
         if let completion = completion {
             operationDispatcher.dispatchOnMainThread {
                 completion(offerings, error)

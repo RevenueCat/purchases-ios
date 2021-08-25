@@ -27,9 +27,7 @@ class FakeASIdentifierManager: NSObject {
 
 }
 
-// TODO: Test if Objc can be removed.
-@objc(RCASIdentifierManagerProxy)
-class ASIdentifierManagerProxy: NSObject {
+@objc class ASIdentifierManagerProxy: NSObject {
 
     static let mangledIdentifierClassName = "NFVqragvsvreZnantre"
     static let mangledIdentifierPropertyName = "nqiregvfvatVqragvsvre"

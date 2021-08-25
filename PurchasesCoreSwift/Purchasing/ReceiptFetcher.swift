@@ -63,10 +63,12 @@ private extension ReceiptFetcher {
         // correct receipt.
         // This has been filed as radar FB7699277. More info in https://github.com/RevenueCat/purchases-ios/issues/207.
 
-        let minimumOSVersionWithoutBug: OperatingSystemVersion = OperatingSystemVersion(majorVersion: 7, minorVersion: 0, patchVersion: 0)
-        let isBelowMinimumOSVersionWithoutBug: Bool = ProcessInfo.processInfo.isOperatingSystemAtLeast(minimumOSVersionWithoutBug)
+        let firstOSVersionWithoutBug: OperatingSystemVersion = OperatingSystemVersion(majorVersion: 7,
+                                                                                      minorVersion: 0,
+                                                                                      patchVersion: 0)
+        let isBelowFirstOSVersionWithoutBug = ProcessInfo.processInfo.isOperatingSystemAtLeast(firstOSVersionWithoutBug)
 
-        if isBelowMinimumOSVersionWithoutBug && SystemInfo.isSandbox {
+        if isBelowFirstOSVersionWithoutBug && SystemInfo.isSandbox {
             let receiptURLFolder: URL = receiptURL.deletingLastPathComponent()
             let productionReceiptURL: URL = receiptURLFolder.appendingPathComponent("receipt")
             receiptURL = productionReceiptURL

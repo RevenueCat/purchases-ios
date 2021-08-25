@@ -125,6 +125,7 @@ class PurchasesOrchestrator {
                       return
                   }
 
+            // swiftlint:disable line_length
             self.backend.post(offerIdForSigning: discountIdentifier,
                               productIdentifier: product.productIdentifier,
                               subscriptionGroup: subscriptionGroupIdentifier,
@@ -134,7 +135,7 @@ class PurchasesOrchestrator {
                     completion(nil, error)
                     return
                 }
-
+            // swiftlint:enable line_length
                 guard let keyIdentifier = maybeKeyIdentifier,
                       let nonce = maybeNonce,
                       let signature = maybeSignature,
@@ -306,7 +307,8 @@ private extension PurchasesOrchestrator {
 // MARK: Private funcs.
 private extension PurchasesOrchestrator {
 
-    func getAndRemovePurchaseCompletedCallback(forTransaction transaction: SKPaymentTransaction) -> PurchaseCompletedBlock? {
+    func getAndRemovePurchaseCompletedCallback(forTransaction transaction: SKPaymentTransaction) ->
+        PurchaseCompletedBlock? {
         guard let productIdentifier = transaction.productIdentifier else {
             return nil
         }
@@ -416,7 +418,9 @@ private extension PurchasesOrchestrator {
         let currentAppUserID = appUserID
         let unsyncedAttributes = unsyncedAttributes
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
+        // swiftlint:disable line_length
         // https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html
+        // swiftlint:enable line_length
         receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { maybeReceiptData in
             guard let receiptData = maybeReceiptData,
                   !receiptData.isEmpty else {
