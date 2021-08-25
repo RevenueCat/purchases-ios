@@ -35,9 +35,7 @@ class FakeAdClient: NSObject {
 
 }
 
-// TODO: Test if Objc can be removed.
-@objc(RCAdClientProxy)
-class AdClientProxy: NSObject {
+@objc class AdClientProxy: NSObject {
 
     private static let className = "ADClient"
 

@@ -114,7 +114,8 @@ private extension AttributionFetcher {
         let minimumOSVersionRequiringAuthorization = OperatingSystemVersion(majorVersion: 14,
                                                                             minorVersion: 5,
                                                                             patchVersion: 0)
-        let needsTrackingAuthorization = systemInfo.isOperatingSystemAtLeastVersion(minimumOSVersionRequiringAuthorization)
+        let needsTrackingAuthorization = systemInfo
+            .isOperatingSystemAtLeastVersion(minimumOSVersionRequiringAuthorization)
 
         guard let trackingManagerProxy = attributionFactory.atTrackingProxy() else {
             if needsTrackingAuthorization {

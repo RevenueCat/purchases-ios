@@ -83,12 +83,12 @@ class Backend {
               subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
               completion: @escaping BackendPurchaserInfoResponseHandler) {
         // swiftlint:enable function_parameter_count
-        let fetchToken = receiptData.rc_asFetchToken
+        let fetchToken = receiptData.asFetchToken
         var body: [String: Any] = [
             "fetch_token": fetchToken,
             "app_user_id": appUserID,
             "is_restore": isRestore,
-            "observer_mode": observerMode,
+            "observer_mode": observerMode
         ]
 
         let cacheKey =
@@ -153,15 +153,15 @@ class Backend {
         }
     }
 
-    // swiftlint:disable function_parameter_count
+    // swiftlint:disable function_parameter_count function_body_length
     func post(offerIdForSigning offerIdentifier: String,
               productIdentifier: String,
               subscriptionGroup: String,
               receiptData: Data,
               appUserID: String,
               completion: @escaping OfferSigningResponseHandler) {
-    // swiftlint:enable function_parameter_count
-        let fetchToken = receiptData.rc_asFetchToken
+    // swiftlint:enable function_parameter_count function_body_length
+        let fetchToken = receiptData.asFetchToken
 
         let requestBody: [String: Any] = ["app_user_id": appUserID,
                                           "fetch_token": fetchToken,
@@ -365,7 +365,7 @@ class Backend {
             return
         }
 
-        let fetchToken = receiptData.rc_asFetchToken
+        let fetchToken = receiptData.asFetchToken
         let path = "/subscribers/\(appUserID)/intro_eligibility"
         let body: [String: Any] = ["product_identifiers": productIdentifiers,
                                    "fetch_token": fetchToken]
@@ -437,7 +437,8 @@ private extension Backend {
         if statusCode > HTTPStatusCodes.redirect.rawValue {
             let backendCode = maybeNumberFromError(code: response?["code"])
             let backendMessage = response?["message"] as? String
-            let responsError = ErrorUtils.backendError(withBackendCode: backendCode as NSNumber?, backendMessage: backendMessage)
+            let responsError = ErrorUtils.backendError(withBackendCode: backendCode as NSNumber?,
+                                                       backendMessage: backendMessage)
             completion(nil, false, ErrorUtils.networkError(withUnderlyingError: responsError))
             return
         }

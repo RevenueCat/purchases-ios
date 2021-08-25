@@ -71,12 +71,12 @@ import Foundation
     @objc public let originalPurchaseDate: Date?
 
     /**
-    Returns the build number (in iOS) or the marketing version (in macOS) for the version of the application when the user bought the app.
-    This corresponds to the value of CFBundleVersion (in iOS) or CFBundleShortVersionString (in macOS) in the Info.plist file when the purchase was originally made.
-    Use this for grandfathering users when migrating to subscriptions.
-
-     
-     Note: This can be nil, see -`Purchases.restoreTransactions(completionBlock:)`
+     * The build number (in iOS) or the marketing version (in macOS) for the version of the application when the user
+     * bought the app. This corresponds to the value of CFBundleVersion (in iOS) or CFBundleShortVersionString
+     * (in macOS) in the Info.plist file when the purchase was originally made. Use this for grandfathering users
+     * when migrating to subscriptions.
+     *
+     * - Note: This can be nil, see -`Purchases.restoreTransactions(completionBlock:)`
      */
     @objc public let originalApplicationVersion: String?
 
@@ -254,7 +254,8 @@ import Foundation
                 dateFormatter: dateFormatter)
 
             let latestNonSubscriptionTransactionsByProductId = [String: [String: Any]](
-                uniqueKeysWithValues: nonSubscriptionsByProductId.map { productId, transactionsArray in (productId, transactionsArray.last ?? [:])
+                uniqueKeysWithValues: nonSubscriptionsByProductId.map { productId, transactionsArray in
+                    (productId, transactionsArray.last ?? [:])
             })
 
             self.allTransactionsByProductId = latestNonSubscriptionTransactionsByProductId

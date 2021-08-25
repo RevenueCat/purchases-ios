@@ -199,7 +199,9 @@ import Foundation
             """
     }
 
+    // swiftlint:disable cyclomatic_complexity
     public override func isEqual(_ object: Any?) -> Bool {
+    // swiftlint:enable cyclomatic_complexity
         guard let info = object as? EntitlementInfo else {
             return false
         }

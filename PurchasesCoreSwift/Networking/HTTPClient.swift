@@ -105,7 +105,7 @@ private extension HTTPClient {
                                             requestBody: maybeRequestBody,
                                             authHeaders: authHeaders,
                                             retried: retried,
-                                            completionHandler: maybeCompletionHandler)
+                                            completion: maybeCompletionHandler)
         }
 
         if serially {
@@ -120,9 +120,10 @@ private extension HTTPClient {
                         request: HTTPRequest,
                         data maybeData: Data?,
                         error maybeNetworkError: Error?,
-                        completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
+                        completion maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
                         retried: Bool) {
+    // swiftlint:enable function_parameter_count
         operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
             self.threadUnsafeHandleResponse(urlResponse: maybeURLResponse,
                                             request: request,
@@ -134,13 +135,15 @@ private extension HTTPClient {
         }
     }
 
+    // swiftlint:disable function_body_length function_parameter_count
     func threadUnsafePerformRequest(_ httpMethod: String,
                                     serially: Bool,
                                     path: String,
                                     requestBody maybeRequestBody: [String: Any]?,
                                     authHeaders: [String: String],
                                     retried: Bool,
-                                    completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+                                    completion maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
+    // swiftlint:enable function_body_length function_parameter_count
         let requestHeaders = self.defaultHeaders.merging(authHeaders)
 
         let maybeURLRequest = self.createRequest(httpMethod: httpMethod,
@@ -194,14 +197,14 @@ private extension HTTPClient {
                                 request: request,
                                 data: data,
                                 error: error,
-                                completionHandler: maybeCompletionHandler,
+                                completion: maybeCompletionHandler,
                                 beginNextRequestWhenFinished: serially,
                                 retried: retried)
         }
         task.resume()
     }
 
-    // swiftlint:disable function_parameter_count
+    // swiftlint:disable function_body_length function_parameter_count
     func threadUnsafeHandleResponse(urlResponse maybeURLResponse: URLResponse?,
                                     request: HTTPRequest,
                                     data maybeData: Data?,
@@ -209,6 +212,7 @@ private extension HTTPClient {
                                     completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                                     beginNextRequestWhenFinished: Bool,
                                     retried: Bool) {
+    // swiftlint:enable function_body_length function_parameter_count
         var shouldBeginNextRequestWhenFinished = beginNextRequestWhenFinished
         var statusCode = HTTPStatusCodes.networkConnectTimeoutError.rawValue
         var jsonObject: [String: Any]?
@@ -310,7 +314,9 @@ private extension HTTPClient {
                 do {
                     urlRequest.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
                 } catch let error {
-                    Logger.error(String(format: Strings.network.creating_json_error, requestBody, error.localizedDescription))
+                    Logger.error(String(format: Strings.network.creating_json_error,
+                                        requestBody,
+                                        error.localizedDescription))
                     return nil
                 }
             } else {

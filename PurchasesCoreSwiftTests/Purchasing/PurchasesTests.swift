@@ -2809,7 +2809,7 @@ class PurchasesTests: XCTestCase {
         }
     }
 
-    @available(iOS, deprecated: 0.1) // Ignore deprecation warnings
+    @available(*, deprecated) // Ignore deprecation warnings
     func testSetDebugLogsEnabledSetsTheCorrectValue() {
         Logger.logLevel = .warn
 

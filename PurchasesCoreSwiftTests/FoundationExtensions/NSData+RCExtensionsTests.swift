@@ -25,17 +25,17 @@ class NSDataExtensionsTests: XCTestCase {
 
         let nsData = data as NSData
 
-        expect(nsData.rc_asString()) == "e388152d6c67f4d5f7a78edf073946f158357f89a1dc74dff80a796740fd9d91"
+        expect(nsData.asString()) == "e388152d6c67f4d5f7a78edf073946f158357f89a1dc74dff80a796740fd9d91"
     }
 
     func testAsFetchToken() {
         let receiptFilename = "base64EncodedReceiptSampleForDataExtension"
         let storedReceiptText = NSDataExtensionsTests.readFile(named: receiptFilename)
         let storedReceiptData = NSDataExtensionsTests.sampleReceiptData(receiptName: receiptFilename)
-        let fetchToken = storedReceiptData.rc_asFetchToken
+        let fetchToken = storedReceiptData.asFetchToken
 
         expect(fetchToken).to(equal(storedReceiptText))
-        expect(storedReceiptData.rc_asFetchToken).to(equal(storedReceiptText))
+        expect(storedReceiptData.asFetchToken).to(equal(storedReceiptText))
     }
 }
 

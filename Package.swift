@@ -33,7 +33,7 @@ let package = Package(
     ],
     products: [
         .library(name: "Purchases",
-                 targets: ["Purchases"]),
+                 targets: ["Purchases"])
     ],
     dependencies: [],
     targets: resolveTargets()
