@@ -809,7 +809,7 @@ class PurchasesTests: XCTestCase {
                 expect(self.backend.postedSubscriptionGroup).to(equal(product.subscriptionGroupIdentifier))
             }
 
-            if #available(iOS 11.2, *) {
+            if #available(iOS 12.2, *) {
                 expect(self.backend.postedDiscounts?.count).to(equal(1))
                 let postedDiscount: PromotionalOffer = self.backend.postedDiscounts![0]
                 expect(postedDiscount.offerIdentifier).to(equal("discount_id"))
@@ -845,7 +845,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postedProductID).toNot(beNil())
         expect(self.backend.postedPrice).toNot(beNil())
         expect(self.backend.postedCurrencyCode).toNot(beNil())
-        if #available(iOS 11.2, macOS 10.14.4, *) {
+        if #available(iOS 12.2, macOS 10.14.4, *) {
             expect(self.backend.postedIntroPrice).toNot(beNil())
         }
     }

@@ -40,7 +40,7 @@ class MockSKProduct: SKProduct {
     @available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *)
     lazy var mockDiscount: SKProductDiscount? = nil
 
-    @available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *)
+    @available(iOS 12.2, tvOS 12.2, macOS 10.13.2, *)
     override var discounts: [SKProductDiscount] {
         return (mockDiscount != nil) ? [mockDiscount!] : []
     }

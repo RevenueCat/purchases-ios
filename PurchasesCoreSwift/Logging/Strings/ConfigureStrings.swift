@@ -15,23 +15,17 @@
 import Foundation
 
 // swiftlint:disable identifier_name
-class ConfigureStrings {
+enum ConfigureStrings {
 
-    var adsupport_not_imported: String { "AdSupport framework not imported. Attribution data incomplete." }
-    var application_active: String { "applicationDidBecomeActive" }
-    var configuring_purchases_proxy_url_set: String {
-        "Purchases is being configured using a proxy for RevenueCat with URL: %@"
-    }
-    var debug_enabled: String { "Debug logging enabled" }
-    var delegate_set: String { "Delegate set" }
-    var purchase_instance_already_set: String {
-        "Purchases instance already set. Did you mean to configure two Purchases objects?"
-    }
-    var initial_app_user_id: String { "Initial App User ID - %@" }
-    var no_singleton_instance: String {
-        "There is no singleton instance. Make sure you configure Purchases before trying to get the default instance." +
-            " More info here: https://errors.rev.cat/configuring-sdk"
-    }
-    var sdk_version: String { "SDK Version - %@" }
+    static let adsupport_not_imported = "AdSupport framework not imported. Attribution data incomplete."
+    static let application_active = "applicationDidBecomeActive"
+    static let configuring_purchases_proxy_url_set = "Purchases is being configured using a proxy for RevenueCat with URL: %@"
+    static let debug_enabled = "Debug logging enabled"
+    static let delegate_set = "Delegate set"
+    static let purchase_instance_already_set = "Purchases instance already set. Did you mean to configure two Purchases objects?"
+    static let initial_app_user_id = "Initial App User ID - %@"
+    static let no_singleton_instance = "There is no singleton instance. Make sure you configure Purchases before trying to get the default instance." +
+        " More info here: https://errors.rev.cat/configuring-sdk"
+    static let sdk_version = "SDK Version - %@"
 
 }
