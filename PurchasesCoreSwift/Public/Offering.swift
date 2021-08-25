@@ -71,7 +71,6 @@ import Foundation
         self.serverDescription = serverDescription
         self.availablePackages = availablePackages
 
-        // TODO: add validation to ensure we don't get multiple packages with the same type
         for package in availablePackages {
             switch package.packageType {
             case .lifetime:

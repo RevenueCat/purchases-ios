@@ -13,7 +13,6 @@
 import Foundation
 import StoreKit
 
-// todo: make internal
 class ProductsRequestFactory {
 
     func request(productIdentifiers: Set<String>) -> SKProductsRequest {
