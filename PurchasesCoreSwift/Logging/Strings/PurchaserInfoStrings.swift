@@ -22,8 +22,10 @@ enum PurchaserInfoStrings {
     static let checking_intro_eligibility_locally = "Attempting to check intro eligibility locally"
     static let invalidating_purchaserinfo_cache = "Invalidating PurchaserInfo cache."
     static let no_cached_purchaserinfo = "No cached PurchaserInfo, fetching from network."
-    static let purchaserinfo_stale_updating_in_background = "PurchaserInfo cache is stale, updating from network in background."
-    static let purchaserinfo_stale_updating_in_foreground = "PurchaserInfo cache is stale, updating from network in foreground."
+    static let purchaserinfo_stale_updating_in_background = "PurchaserInfo cache is stale, " +
+        "updating from network in background."
+    static let purchaserinfo_stale_updating_in_foreground = "PurchaserInfo cache is stale, " +
+        "updating from network in foreground."
     static let purchaserinfo_updated_from_network = "PurchaserInfo updated from network."
     static let purchaserinfo_updated_from_network_error = "Attempt to update PurchaserInfo from network failed."
     static let sending_latest_purchaserinfo_to_delegate = "Sending latest PurchaserInfo to delegate."
