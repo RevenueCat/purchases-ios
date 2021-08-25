@@ -10,10 +10,10 @@ import Foundation
 import XCTest
 import Nimble
 
-import PurchasesCoreSwift
+@testable import PurchasesCoreSwift
 
 class EmptyPurchaserInfoTests: XCTestCase {
-    let purchaserInfo = PurchaserInfo.init(data: [String : Any]())
+    let purchaserInfo = PurchaserInfo(data: [String : Any]())
 
     func testEmptyDataYieldsANilInfo() {
         expect(self.purchaserInfo).to(beNil())
