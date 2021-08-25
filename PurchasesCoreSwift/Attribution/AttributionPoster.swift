@@ -58,8 +58,6 @@ class AttributionPoster {
             deviceCache.latestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         let latestSentToNetwork = latestNetworkIdsAndAdvertisingIdsSentByNetwork[networkKey]
 
-        // TODO: `(null)` is true to the ObjC code here, maybe we should reject this and not post?
-        // Post-migration: early return here.
         let newValueForNetwork = "\(maybeIdentifierForAdvertisers ?? "(null)")_\(networkUserId ?? "(null)")"
         guard latestSentToNetwork != newValueForNetwork else {
             Logger.debug(Strings.attribution.skip_same_attributes)

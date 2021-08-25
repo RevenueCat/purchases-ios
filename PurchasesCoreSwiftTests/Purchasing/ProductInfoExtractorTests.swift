@@ -181,14 +181,14 @@ class ProductInfoExtractorTests: XCTestCase {
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.subscriptionGroup).to(beEmpty())
+            expect(receivedProductInfo.subscriptionGroup).to(beNil())
         }
     }
 
     func testExtractInfoFromProductExtractsDiscounts() {
         let product = MockSKProduct(mockProductIdentifier: "cool_product")
 
-        if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
+        if #available(iOS 12.2, tvOS 12.2, macOS 10.13.2, *) {
             let mockDiscount = MockDiscount()
             let paymentMode: SKProductDiscount.PaymentMode = .freeTrial
             mockDiscount.mockPaymentMode = paymentMode
@@ -212,7 +212,7 @@ class ProductInfoExtractorTests: XCTestCase {
 
             let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
 
-            expect(receivedProductInfo.discounts).to(beEmpty())
+            expect(receivedProductInfo.discounts).to(beNil())
         }
     }
 }

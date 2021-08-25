@@ -636,7 +636,6 @@ private extension Backend {
     func getOfferingsCallbacksAndClearCache(forKey key: String) -> [OfferingsResponseHandler] {
         return callbackQueue.sync { [self] in
             let callbacks = offeringsCallbacksCache.removeValue(forKey: key)
-            // TODO: Should we throw instead of NSParameterAssert?
             assert(callbacks != nil)
             return callbacks ?? []
         }
@@ -645,7 +644,6 @@ private extension Backend {
     func getPurchaserInfoCallbacksAndClearCache(forKey key: String) -> [BackendPurchaserInfoResponseHandler] {
         return callbackQueue.sync { [self] in
             let callbacks = purchaserInfoCallbacksCache.removeValue(forKey: key)
-            // TODO: Should we throw instead of NSParameterAssert?
             assert(callbacks != nil)
             return callbacks ?? []
         }

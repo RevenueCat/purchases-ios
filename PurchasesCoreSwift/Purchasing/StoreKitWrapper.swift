@@ -82,7 +82,7 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
 
     func payment(withProduct product: SKProduct) -> SKMutablePayment {
         let payment = SKMutablePayment(product: product)
-        // todo: check that it's fine to omit tvOS and iOS since the relevant methods exist in targets lower than ours
+
         if #available(macOS 10.14, watchOS 6.2, macCatalyst 13.0, *) {
             payment.simulatesAskToBuyInSandbox = Self.simulatesAskToBuyInSandbox
         }
