@@ -13,7 +13,7 @@ import Foundation
  * RCIntroEligibilityStatusUnknown RevenueCat doesn't have enough information to determine eligibility.
  * RCIntroEligibilityStatusIneligible The user is not eligible for a free trial or intro pricing for this
  * product.
- * @constant RCIntroEligibilityStatusEligible The user is eligible for a free trial or intro pricing for this product.
+ * RCIntroEligibilityStatusEligible The user is eligible for a free trial or intro pricing for this product.
  */
 @objc(RCIntroEligibilityStatus) public enum IntroEligibilityStatus: Int {
     /**
