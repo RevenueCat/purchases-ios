@@ -28,6 +28,7 @@ enum IdentityStrings {
     static let creating_alias = "Creating an alias between current appUserID %@ and %@"
     static let identifying_anon_id = "Identifying from an anonymous ID: %@. An alias will be created."
     static let identifying_app_user_id = "Identifying App User ID: %@"
-    static let null_currentappuserid = "currentAppUserID is nil. This might happen if the cache in UserDefaults is unintentionally cleared."
+    static let null_currentappuserid = "currentAppUserID is nil. This might happen if the cache in UserDefaults is " +
+        "unintentionally cleared."
 
 }

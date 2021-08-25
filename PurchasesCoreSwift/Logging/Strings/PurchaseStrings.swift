@@ -40,10 +40,13 @@ enum PurchaseStrings {
         "a product identifier - this is an issue with the App Store."
     static let could_not_purchase_product_id_not_found = "makePurchase - Could not purchase SKProduct. " +
         "Couldn't find its product identifier. This is possibly an App Store quirk."
-    static let product_identifier_nil = "Apple returned a product where the productIdentifier is nil, this is possibly an App Store quirk"
-    static let payment_identifier_nil = "Apple returned a payment where the productIdentifier is nil, this is possibly an App Store quirk"
+    static let product_identifier_nil = "Apple returned a product where the productIdentifier is nil, " +
+        "this is possibly an App Store quirk"
+    static let payment_identifier_nil = "Apple returned a payment where the productIdentifier is nil, " +
+        "this is possibly an App Store quirk"
     static let purchases_nil = "Purchases has not been configured. Please call Purchases.configure()"
     static let purchases_delegate_set_multiple_times = "Purchases delegate has already been configured."
-    static let purchases_delegate_set_to_nil = "Purchases delegate is being set to nil, you probably don't want to do this."
+    static let purchases_delegate_set_to_nil = "Purchases delegate is being set to nil, " +
+        "you probably don't want to do this."
 
 }
