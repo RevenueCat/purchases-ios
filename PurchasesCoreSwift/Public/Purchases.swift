@@ -1196,7 +1196,7 @@ extension Purchases {
      *
      * - Parameter platformFlavorVersion: The current version of the platformFlavor you are configuring.
      *
-     * - Returns: An instantiated `RCPurchases` object that has been set as a singleton.
+     * - Returns: An instantiated `Purchases` object that has been set as a singleton.
      */
     public static func configure(apiKey: String,
                                  appUserID: String?,
