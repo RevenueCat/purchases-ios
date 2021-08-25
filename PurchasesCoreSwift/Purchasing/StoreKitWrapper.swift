@@ -82,7 +82,7 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
 
     func payment(withProduct product: SKProduct) -> SKMutablePayment {
         let payment = SKMutablePayment(product: product)
-        
+
         if #available(macOS 10.14, watchOS 6.2, macCatalyst 13.0, *) {
             payment.simulatesAskToBuyInSandbox = Self.simulatesAskToBuyInSandbox
         }
