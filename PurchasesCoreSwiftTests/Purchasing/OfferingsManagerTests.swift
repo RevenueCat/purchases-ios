@@ -16,7 +16,6 @@ import Nimble
 import StoreKit
 @testable import PurchasesCoreSwift
 
-// TODO (post-migration): Move this test case to the new framework target (PurchasesCoreSwift).
 class OfferingsManagerTests: XCTestCase {
 
     let mockDeviceCache = MockDeviceCache()

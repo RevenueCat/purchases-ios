@@ -131,8 +131,6 @@ class PurchasesOrchestrator {
                               receiptData: receiptData,
                               appUserID: self.appUserID) { maybeSignature, maybeKeyIdentifier, maybeNonce, maybeTimestamp, maybeError in
                 if let error = maybeError {
-                    // TODO: Consider making a custom error. issues/751
-                    // https://github.com/RevenueCat/purchases-ios/issues/751
                     completion(nil, error)
                     return
                 }
@@ -141,8 +139,6 @@ class PurchasesOrchestrator {
                       let nonce = maybeNonce,
                       let signature = maybeSignature,
                       let timestamp = maybeTimestamp else {
-                          // TODO: Consider making a custom error.
-                          // https://github.com/RevenueCat/purchases-ios/issues/751
                           completion(nil, ErrorUtils.unexpectedBackendResponseError())
                           return
                       }
@@ -225,7 +221,6 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          removedTransaction transaction: SKPaymentTransaction) {
-        // todo: remove
         // unused for now
     }
 

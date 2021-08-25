@@ -10,7 +10,7 @@ import Foundation
 import XCTest
 import Nimble
 
-import PurchasesCoreSwift
+@testable import PurchasesCoreSwift
 
 class EntitlementInfosTests: XCTestCase {
 

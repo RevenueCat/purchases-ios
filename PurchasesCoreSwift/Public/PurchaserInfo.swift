@@ -145,11 +145,9 @@ import Foundation
             """
     }
 
-    // TODO after migration make this internal
-    @objc public let schemaVersion: String?
+    let schemaVersion: String?
 
-    // TODO after migration make this internal
-    @objc public convenience init?(data: [String: Any]) {
+    convenience init?(data: [String: Any]) {
         self.init(data: data, dateFormatter: .iso8601SecondsDateFormatter, transactionsFactory: TransactionsFactory())
     }
 
@@ -189,11 +187,9 @@ import Foundation
         self.allPurchases = subscriberData.allPurchases
     }
 
-    // TODO after migration make this internal
-    @objc public static let currentSchemaVersion = "2"
+    static let currentSchemaVersion = "2"
 
-    // TODO after migration make this internal and remove objc rename
-    @objc(JSONObject) public func jsonObject() -> [String: Any] {
+    func jsonObject() -> [String: Any] {
         return originalData.merging(
             ["schema_version": PurchaserInfo.currentSchemaVersion],
             strategy: .keepOriginalValue

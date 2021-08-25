@@ -13,7 +13,8 @@
 @implementation RCPurchaserInfoAPI
 
 + (void)checkAPI {
-    RCPurchaserInfo *pi = [[RCPurchaserInfo alloc]initWithData: [[NSDictionary alloc] init]];
+    // RCPurchaserInfo initializer is publically unavailable.
+    RCPurchaserInfo *pi = nil;
     RCEntitlementInfos *ei = pi.entitlements;
     NSSet<NSString *> *as = pi.activeSubscriptions;
     NSSet<NSString *> *appis = pi.allPurchasedProductIdentifiers;

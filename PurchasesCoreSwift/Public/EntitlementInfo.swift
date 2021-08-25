@@ -134,7 +134,6 @@ import Foundation
                   dateFormatter: .iso8601SecondsDateFormatter)
     }
 
-    // TODO(cleanup): Codable
     init(entitlementId: String,
          entitlementData: [String: Any],
          productData: [String: Any],
@@ -285,7 +284,6 @@ private extension EntitlementInfo {
 
     class func parseOwnershipType(ownershipType: String?) -> PurchaseOwnershipType {
         guard let ownershipType = ownershipType else {
-            // TODO: should this be a warning?
             return .purchased
         }
 
