@@ -137,7 +137,8 @@ class SystemInfo {
     #endif
 
     func isAppleSubscription(managementURL: URL) -> Bool {
-        managementURL.absoluteString.contains("apps.apple.com")
+        guard let host = managementURL.host else { return false }
+        return host.contains("apple.com")
     }
 
 }
