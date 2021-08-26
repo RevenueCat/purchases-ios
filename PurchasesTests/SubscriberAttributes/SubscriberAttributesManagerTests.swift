@@ -13,7 +13,7 @@
 import XCTest
 import Nimble
 
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 class SubscriberAttributesManagerTests: XCTestCase {
 

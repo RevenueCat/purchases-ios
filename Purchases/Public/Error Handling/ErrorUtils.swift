@@ -8,7 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 //  RCPurchasesErrorUtils.swift
-//  PurchasesCoreSwift
+//  Purchases
 //
 //  Created by Cesar de la Vega on 7/21/21.
 //

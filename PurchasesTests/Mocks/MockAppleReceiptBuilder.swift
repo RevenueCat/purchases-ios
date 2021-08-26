@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 class MockAppleReceiptBuilder: AppleReceiptBuilder {
 

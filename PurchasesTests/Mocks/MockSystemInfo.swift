@@ -7,7 +7,7 @@
 //
 
 import Foundation
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 
 class MockSystemInfo: SystemInfo {

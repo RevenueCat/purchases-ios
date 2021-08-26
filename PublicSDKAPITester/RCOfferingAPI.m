@@ -12,7 +12,7 @@
 //  Created by Joshua Liebowitz on 7/9/21.
 //
 
-@import PurchasesCoreSwift;
+@import Purchases;
 #import "RCOfferingAPI.h"
 
 @implementation RCOfferingAPI

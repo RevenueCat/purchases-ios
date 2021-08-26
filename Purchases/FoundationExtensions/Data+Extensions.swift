@@ -8,7 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 //  Data+Extensions.swift
-//  PurchasesCoreSwift
+//  Purchases
 //
 //  Created by Josh Holtz on 6/28/21.
 //

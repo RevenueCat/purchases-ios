@@ -1,6 +1,6 @@
 //
 //  NSDictionaryExtensionsTests.swift
-//  PurchasesCoreSwiftTests
+//  PurchasesTests
 //
 //  Created by Andrés Boedo on 9/28/20.
 //  Copyright © 2020 Purchases. All rights reserved.
@@ -9,7 +9,7 @@
 import XCTest
 import Nimble
 
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 class DictionaryExtensionsTests: XCTestCase {
 

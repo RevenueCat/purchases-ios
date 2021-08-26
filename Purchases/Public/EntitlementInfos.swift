@@ -1,6 +1,6 @@
 //
 //  EntitlementInfos.swift
-//  PurchasesCoreSwift
+//  Purchases
 //
 //  Created by Joshua Liebowitz on 6/28/21.
 //  Copyright © 2021 Purchases. All rights reserved.

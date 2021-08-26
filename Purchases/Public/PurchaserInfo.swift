@@ -1,6 +1,6 @@
 //
 //  PurchaserInfo.swift
-//  PurchasesCoreSwift
+//  Purchases
 //
 //  Created by Madeline Beyl on 7/9/21.
 //  Copyright © 2021 Purchases. All rights reserved.

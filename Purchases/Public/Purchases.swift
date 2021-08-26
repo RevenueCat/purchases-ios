@@ -16,7 +16,7 @@ import Foundation
 import StoreKit
 
 // MARK: Block definitions
-// NOTE: Any changes here must be reflected in PurchasesCoreSwift.h for ObjC compatibility.
+// NOTE: Any changes here must be reflected in Purchases.h for ObjC compatibility.
 /**
  Completion block for calls that send back a `PurchaserInfo`
  */

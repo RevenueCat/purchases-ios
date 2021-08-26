@@ -1,6 +1,6 @@
 //
 //  IntroEligibility.swift
-//  PurchasesCoreSwift
+//  Purchases
 //
 //  Created by Joshua Liebowitz on 7/6/21.
 //  Copyright © 2021 Purchases. All rights reserved.

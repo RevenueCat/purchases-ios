@@ -8,7 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 //  ErrorDetails.swift
-//  PurchasesCoreSwift
+//  Purchases
 //
 //  Created by Joshua Liebowitz on 7/12/21.
 //

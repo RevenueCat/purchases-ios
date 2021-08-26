@@ -1,6 +1,6 @@
 //
 //  AttributionNetwork.swift
-//  PurchasesCoreSwift
+//  Purchases
 //
 //  Created by Joshua Liebowitz on 7/1/21.
 //  Copyright © 2021 Purchases. All rights reserved.

@@ -8,7 +8,7 @@
 
 import Nimble
 import XCTest
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 class TransactionsFactoryTests: XCTestCase {
 

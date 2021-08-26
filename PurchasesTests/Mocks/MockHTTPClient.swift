@@ -1,4 +1,4 @@
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 class MockHTTPClient: HTTPClient {
 

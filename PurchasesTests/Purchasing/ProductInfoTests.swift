@@ -1,7 +1,7 @@
 import XCTest
 import Nimble
 
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 @available(iOS 12.2, *)
 class ProductInfoTests: XCTestCase {

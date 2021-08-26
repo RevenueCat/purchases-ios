@@ -14,7 +14,7 @@
 import Foundation
 import XCTest
 
-@testable import PurchasesCoreSwift
+@testable import Purchases
 import Nimble
 
 

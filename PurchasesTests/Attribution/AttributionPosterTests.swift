@@ -17,7 +17,7 @@ import Foundation
 import XCTest
 import Nimble
 
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 class AttributionPosterTests: XCTestCase {
 

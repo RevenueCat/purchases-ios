@@ -1,6 +1,6 @@
 //
-//  PurchasesCoreSwift.h
-//  PurchasesCoreSwift
+//  Purchases.h
+//  Purchases
 //
 //  Created by Andrés Boedo on 8/18/20.
 //  Copyright © 2020 Purchases. All rights reserved.
@@ -8,13 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
-//! Project version number for PurchasesCoreSwift.
-FOUNDATION_EXPORT double PurchasesCoreSwiftVersionNumber;
+//! Project version number for Purchases.
+FOUNDATION_EXPORT double PurchasesVersionNumber;
 
-//! Project version string for PurchasesCoreSwift.
-FOUNDATION_EXPORT const unsigned char PurchasesCoreSwiftVersionString[];
+//! Project version string for Purchases.
+FOUNDATION_EXPORT const unsigned char PurchasesVersionString[];
 
-// In this header, you should import all the public headers of your framework using statements like #import <PurchasesCoreSwift/PublicHeader.h>
+// In this header, you should import all the public headers of your framework using statements like #import <Purchases/PublicHeader.h>
 
 @class RCPurchaserInfo, RCIntroEligibility, RCOfferings;
 @class SKPaymentTransaction, SKProduct, SKPaymentDiscount;

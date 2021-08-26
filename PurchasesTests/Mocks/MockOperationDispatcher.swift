@@ -5,7 +5,7 @@
 
 import Foundation
 
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 class MockOperationDispatcher: OperationDispatcher {
 

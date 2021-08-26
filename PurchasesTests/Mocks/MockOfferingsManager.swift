@@ -12,7 +12,7 @@
 //  Created by Juanpe Catalán on 8/8/21.
 
 import Foundation
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 class MockOfferingsManager: OfferingsManager {
 

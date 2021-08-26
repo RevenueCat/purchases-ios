@@ -14,7 +14,7 @@ import Foundation
 #if canImport(AppTrackingTransparency)
   import AppTrackingTransparency
 #endif
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 class MockAdClientProxy: AdClientProxy {
 

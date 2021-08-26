@@ -5,7 +5,7 @@
 
 import Foundation
 import StoreKit
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 class MockProductsRequestFactory: ProductsRequestFactory {
 

@@ -10,7 +10,7 @@
 //  MockReceiptFetcher.swift
 //
 
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 class MockReceiptFetcher: ReceiptFetcher {
 

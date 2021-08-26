@@ -3,7 +3,7 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 class MockInMemoryCachedOfferings<T: Offerings> : InMemoryCachedObject<Offerings> {
 

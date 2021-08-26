@@ -11,17 +11,17 @@ func resolveTargets() -> [Target] {
 
     let baseTargets: [Target] = [
         .target(name: "Purchases",
-                dependencies: ["PurchasesCoreSwift"],
+                dependencies: ["Purchases"],
                 path: ".",
                 exclude: [infoPlist],
                 sources: ["Purchases"],
                 publicHeadersPath: "Purchases/Public",
                 cSettings: objcSources.map { CSetting.headerSearchPath($0) }
         ),
-        .target(name: "PurchasesCoreSwift",
+        .target(name: "Purchases",
                 dependencies: [],
                 path: ".",
-                sources: ["PurchasesCoreSwift"])]
+                sources: ["Purchases"])]
 
     return baseTargets
 }
