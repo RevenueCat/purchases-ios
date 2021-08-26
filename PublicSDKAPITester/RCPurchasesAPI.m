@@ -126,9 +126,9 @@ BOOL isAnonymous;
 }
 
 + (void)checkConstants {
-// TODO we lost these?
-//    double vn = PurchasesVersionNumber;
-//    const unsigned char *vs = PurchasesVersionString;
+// TODO convert back once everything moved into Purchases
+    double vn = PurchasesCoreSwiftVersionNumber;
+    const unsigned char *vs = PurchasesCoreSwiftVersionString;
 
     // breaking changes below this line
     NSErrorDomain bed = RCBackendErrorCodeDomain;
@@ -136,9 +136,7 @@ BOOL isAnonymous;
     NSErrorUserInfoKey fk = RCErrorDetails.RCFinishableKey;
     NSErrorUserInfoKey eck = RCErrorDetails.RCReadableErrorCodeKey;
 
-//    NSLog([NSString stringWithFormat:@"%lf", vn], vs, bed, ped, fk, eck);
-    NSLog(bed, ped, fk, eck);
-
+    NSLog([NSString stringWithFormat:@"%lf", vn], vs, bed, ped, fk, eck);
 }
 
 @end

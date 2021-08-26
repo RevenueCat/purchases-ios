@@ -19,7 +19,6 @@
 @implementation RCPackageAPI
 
 + (void)checkAPI {
-
     RCPackage *p = [[RCPackage alloc] initWithIdentifier:@"" packageType:RCPackageTypeAnnual product:[[SKProduct alloc] init] offeringIdentifier:@""];
     NSString *i = p.identifier;
     RCPackageType t = p.packageType;
@@ -28,11 +27,9 @@
     NSString *lips = p.localizedIntroductoryPriceString;
 
     NSLog(p, i, t, prod, lps, lips);
-
 }
 
 + (void)checkEnums {
-
     RCPackageType type = RCPackageTypeUnknown;
     type = RCPackageTypeCustom;
     type = RCPackageTypeLifetime;
@@ -42,7 +39,6 @@
     type = RCPackageTypeTwoMonth;
     type = RCPackageTypeMonthly;
     type = RCPackageTypeWeekly;
-
 }
 
 @end
