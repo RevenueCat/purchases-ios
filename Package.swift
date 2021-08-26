@@ -9,9 +9,9 @@ func resolveTargets() -> [Target] {
         .target(name: "Purchases",
                 path: ".",
                 exclude: ["Purchases/Info.plist"],
-                sources: ["Purchases"],
-                publicHeadersPath: "Purchases/Public"
+                sources: ["Purchases"]
         )
+        // Note: publicHeadersPath: "Purchases/Public" doesn't actually pick up .h headers in Swift projects.
     ]
 
     return baseTargets
