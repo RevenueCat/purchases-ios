@@ -349,7 +349,7 @@ class PurchasesTests: XCTestCase {
 
         #endif
         setupPurchases()
-        expectToNotThrowException { _ = Purchases.shared }
+        expect { _ = Purchases.shared }.toNot(throwAssertion())
     }
 
     func testIsConfiguredReturnsCorrectvalue() {

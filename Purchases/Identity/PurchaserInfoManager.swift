@@ -143,12 +143,18 @@ class PurchaserInfoManager {
     }
 
     func cache(purchaserInfo: PurchaserInfo, appUserID: String) {
-        do {
-            let jsonData = try JSONSerialization.data(withJSONObject: purchaserInfo.jsonObject())
-            deviceCache.cache(purchaserInfo: jsonData, appUserID: appUserID)
-            sendUpdateIfChanged(purchaserInfo: purchaserInfo)
-        } catch {
-            Logger.warn("Invalid JSON returned from purchaserInfo.jsonObject\n\(error.localizedDescription)")
+        let purchaserInfoJSONObject = purchaserInfo.jsonObject()
+        if JSONSerialization.isValidJSONObject(purchaserInfoJSONObject) {
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: purchaserInfo.jsonObject())
+                deviceCache.cache(purchaserInfo: jsonData, appUserID: appUserID)
+                sendUpdateIfChanged(purchaserInfo: purchaserInfo)
+            } catch {
+                Logger.warn(String(format: Strings.purchaserInfo.error_getting_data_from_purchaserinfo_json,
+                                   error.localizedDescription))
+            }
+        } else {
+            Logger.warn(Strings.purchaserInfo.invalid_json)
         }
     }
 

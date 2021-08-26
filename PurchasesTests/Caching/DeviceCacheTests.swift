@@ -213,14 +213,14 @@ class DeviceCacheTests: XCTestCase {
         self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
                                        offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter,
-                                       assertionFunction: { _ in assertionHappened.fulfill() })
+                                       errorFunction: { _ in assertionHappened.fulfill() })
         #else
         self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
                                        offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
         #endif
 
-        expectToNotThrowException { mockNotificationCenter.fireNotifications() }
+        expect(mockNotificationCenter.fireNotifications()).toNot(throwAssertion())
 
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
 
@@ -241,7 +241,7 @@ class DeviceCacheTests: XCTestCase {
                                          offeringsCachedObject: nil,
                                          notificationCenter: mockNotificationCenter)
 
-        expectToNotThrowException { mockNotificationCenter.fireNotifications() }
+        expect(mockNotificationCenter.fireNotifications).toNot(throwAssertion())
     }
 
     func testNewDeviceCacheInstanceWithExistingValidPurchaserInfoCacheIsntStale() {
