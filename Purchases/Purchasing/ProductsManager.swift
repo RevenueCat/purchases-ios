@@ -51,4 +51,8 @@ class ProductsManager: NSObject {
                   completion: @escaping (Set<SKProduct>) -> Void) {
         return productsFetcherSK1.products(withIdentifiers: identifiers, completion: completion)
     }
+
+    func cacheProduct(_ product: SKProduct) {
+        productsFetcherSK1.cacheProduct(product)
+    }
 }

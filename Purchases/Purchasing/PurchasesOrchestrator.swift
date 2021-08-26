@@ -185,8 +185,7 @@ class PurchasesOrchestrator {
             Logger.purchase(String(format: Strings.purchase.purchasing_product, productIdentifier))
         }
 
-        // todo: re-add
-//        productsManager.cacheProduct(product)
+        productsManager.cacheProduct(product)
 
         lock.lock()
         defer {
@@ -229,8 +228,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          shouldAddStorePayment payment: SKPayment,
                          for product: SKProduct) -> Bool {
-        // todo: re-add
-//        productsManager.cacheProduct(product)
+        productsManager.cacheProduct(product)
         guard let delegate = maybeDelegate else { return false }
 
         lock.lock()

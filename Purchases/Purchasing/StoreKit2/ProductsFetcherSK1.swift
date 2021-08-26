@@ -105,15 +105,23 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
         }
         request.cancel()
     }
+
+    func cacheProduct(_ product: SKProduct) {
+        queue.async {
+            self.cachedProductsByIdentifier[product.productIdentifier] = product
+        }
+    }
 }
 
 private extension ProductsFetcherSK1 {
 
     func cacheProducts(_ products: [SKProduct]) {
-        let productsByIdentifier = products.reduce(into: [:]) { resultDict, product in
-            resultDict[product.productIdentifier] = product
-        }
+        queue.async {
+            let productsByIdentifier = products.reduce(into: [:]) { resultDict, product in
+                resultDict[product.productIdentifier] = product
+            }
 
-        cachedProductsByIdentifier.merge(productsByIdentifier) { (_, new) in new }
+            self.cachedProductsByIdentifier = self.cachedProductsByIdentifier + productsByIdentifier
+        }
     }
 }

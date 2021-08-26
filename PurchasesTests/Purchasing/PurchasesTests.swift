@@ -1793,24 +1793,6 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.getSubscriberCallCount).to(equal(2))
     }
 
-    // todo: was this test removed? 
-    func testGetsProductInfoFromOfferings() throws {
-        setupPurchases()
-        expect(self.backend.gotOfferings).toEventually(equal(1))
-
-        var offerings: Offerings?
-        self.purchases?.offerings { (newOfferings, _) in
-            offerings = newOfferings
-        }
-
-        expect(offerings).toEventuallyNot(beNil());
-        let nonOptionalOfferings = try XCTUnwrap(offerings)
-        let baseOfferings = try XCTUnwrap(nonOptionalOfferings["base"])
-        expect(baseOfferings).toNot(beNil())
-        expect(baseOfferings.monthly).toNot(beNil())
-        expect(baseOfferings.monthly?.productWrapper).toNot(beNil())
-    }
-
     func testFirstInitializationGetsOfferingsIfAppActive() {
         systemInfo.stubbedIsApplicationBackgrounded = false
         setupPurchases()
