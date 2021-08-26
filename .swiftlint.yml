@@ -2,7 +2,6 @@ excluded:
   - Carthage
   - Pods
   - PurchasesTests
-  - PurchasesCoreSwiftTests
   - Examples
   - IntegrationTests
   - StoreKitTests
@@ -18,3 +17,4 @@ identifier_name:
   max_length: 
     warning: 60 
     error: 80
+

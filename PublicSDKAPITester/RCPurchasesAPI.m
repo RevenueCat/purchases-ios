@@ -5,7 +5,7 @@
 //  Created by Joshua Liebowitz on 6/18/21.
 //
 
-@import PurchasesCoreSwift;
+@import Purchases;
 @import StoreKit;
 
 #import "RCPurchasesAPI.h"
@@ -127,8 +127,8 @@ BOOL isAnonymous;
 
 + (void)checkConstants {
 // TODO convert back once everything moved into Purchases
-    double vn = PurchasesCoreSwiftVersionNumber;
-    const unsigned char *vs = PurchasesCoreSwiftVersionString;
+    double vn = PurchasesVersionNumber;
+    const unsigned char *vs = PurchasesVersionString;
 
     // breaking changes below this line
     NSErrorDomain bed = RCBackendErrorCodeDomain;

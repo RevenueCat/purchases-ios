@@ -5,23 +5,14 @@ import PackageDescription
 import class Foundation.ProcessInfo
 
 func resolveTargets() -> [Target] {
-    let objcSources = ["Purchases/Info.plist",
-                       "Purchases/Public"]
-    let infoPlist = "Purchases/Info.plist"
-
     let baseTargets: [Target] = [
         .target(name: "Purchases",
-                dependencies: ["PurchasesCoreSwift"],
                 path: ".",
-                exclude: [infoPlist],
-                sources: ["Purchases"],
-                publicHeadersPath: "Purchases/Public",
-                cSettings: objcSources.map { CSetting.headerSearchPath($0) }
-        ),
-        .target(name: "PurchasesCoreSwift",
-                dependencies: [],
-                path: ".",
-                sources: ["PurchasesCoreSwift"])]
+                exclude: ["Purchases/Info.plist"],
+                sources: ["Purchases"]
+        )
+        // Note: publicHeadersPath: "Purchases/Public" doesn't actually pick up .h headers in Swift projects.
+    ]
 
     return baseTargets
 }

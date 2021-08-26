@@ -3,7 +3,6 @@ target 'PurchaseTester' do
   platform :ios, '12.1'
   # Pods for PurchaseTester
   pod 'Purchases', :path => '../../'
-  pod 'PurchasesCoreSwift', :path => '../../'
 
 end
 
@@ -12,6 +11,5 @@ target 'WatchPurchaseTester Extension' do
 
   # Pods for PurchaseTester
   pod 'Purchases', :path => '../../'
-  pod 'PurchasesCoreSwift', :path => '../../'
 
 end

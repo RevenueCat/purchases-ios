@@ -1,7 +1,7 @@
 # Generate Swift SourceKitten output
 sourcekitten doc -- \
     -project Purchases.xcodeproj \
-    -scheme PurchasesCoreSwift > swiftDoc.json
+    -scheme Purchases > swiftDoc.json
 
 # Generate Objective-C SourceKitten output
 sourcekitten doc --objc $(pwd)/Purchases/Public/Purchases.h \
