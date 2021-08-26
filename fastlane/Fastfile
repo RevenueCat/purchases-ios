@@ -251,9 +251,7 @@ platform :ios do
 
   desc "Generate Jazzy Docs"
   lane :generate_docs do
-    Dir.chdir("..") do
-      sh("./scripts/generate_docs.sh")
-    end
+    jazzy(config: ".jazzy.yaml")    
   end
 
 end
