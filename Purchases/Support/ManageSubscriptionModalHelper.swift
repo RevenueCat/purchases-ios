@@ -71,7 +71,7 @@ class ManageSubscriptionsModalHelper: NSObject {
             }
 
             guard let managementURL = purchaserInfo.managementURL else {
-                Logger.debug("managementURL is nil, opening iOS subscription management page")
+                Logger.debug(Strings.purchase.management_url_nil_opening_default)
                 guard let appleSubscriptionsURL = self.systemInfo.appleSubscriptionsURL else {
                     completion(.failure(.couldntGetAppleSubscriptionsURL))
                     return
