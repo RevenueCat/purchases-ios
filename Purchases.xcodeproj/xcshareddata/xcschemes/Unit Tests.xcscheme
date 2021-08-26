@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DC5621D24EC63430031F69B"
-               BuildableName = "PurchasesCoreSwiftTests.xctest"
-               BlueprintName = "PurchasesCoreSwiftTests"
+               BuildableName = "PurchasesTests.xctest"
+               BlueprintName = "PurchasesTests"
                ReferencedContainer = "container:Purchases.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -34,8 +34,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DC5621D24EC63430031F69B"
-               BuildableName = "PurchasesCoreSwiftTests.xctest"
-               BlueprintName = "PurchasesCoreSwiftTests"
+               BuildableName = "PurchasesTests.xctest"
+               BlueprintName = "PurchasesTests"
                ReferencedContainer = "container:Purchases.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -66,8 +66,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2DC5621D24EC63430031F69B"
-            BuildableName = "PurchasesCoreSwiftTests.xctest"
-            BlueprintName = "PurchasesCoreSwiftTests"
+            BuildableName = "PurchasesTests.xctest"
+            BlueprintName = "PurchasesTests"
             ReferencedContainer = "container:Purchases.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
