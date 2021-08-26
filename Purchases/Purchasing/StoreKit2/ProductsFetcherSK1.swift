@@ -121,7 +121,7 @@ private extension ProductsFetcherSK1 {
                 resultDict[product.productIdentifier] = product
             }
 
-            self.cachedProductsByIdentifier = self.cachedProductsByIdentifier + productsByIdentifier
+            self.cachedProductsByIdentifier += productsByIdentifier
         }
     }
 }

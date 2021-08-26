@@ -18,7 +18,7 @@ import StoreKit
 class OfferingsFactory {
 
     func createOfferings(withProductWrappers products: [String: ProductWrapper],
-                                      data: [String: Any]) -> Offerings? {
+                         data: [String: Any]) -> Offerings? {
         guard let offeringsData = data["offerings"] as? [[String: Any]] else {
             return nil
         }
@@ -38,14 +38,18 @@ class OfferingsFactory {
     func createOfferings(withProducts products: [String: SKProduct],
                          data: [String: Any]) -> Offerings? {
         let productWrappersByKey = Dictionary(uniqueKeysWithValues:
-            products.map { productIdentifier, skProduct in (productIdentifier, SK1ProductWrapper(sk1Product: skProduct)) })
+                                                products.map { productIdentifier, skProduct in
+            (productIdentifier, SK1ProductWrapper(sk1Product: skProduct)) }
+        )
         return self.createOfferings(withProductWrappers: productWrappersByKey, data: data)
     }
 
     func createOffering(withProducts products: [String: SKProduct],
                         offeringData: [String: Any]) -> Offering? {
         let productWrappersByKey = Dictionary(uniqueKeysWithValues:
-            products.map { productIdentifier, skProduct in (productIdentifier, SK1ProductWrapper(sk1Product: skProduct)) })
+                                                products.map { productIdentifier, skProduct in
+            (productIdentifier, SK1ProductWrapper(sk1Product: skProduct)) }
+        )
         return self.createOffering(withProductWrappers: productWrappersByKey, offeringData: offeringData)
     }
 

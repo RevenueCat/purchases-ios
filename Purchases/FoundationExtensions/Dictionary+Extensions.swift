@@ -69,4 +69,16 @@ extension Dictionary {
         lhs.merging(rhs)
     }
 
+    /// Adds values from rhs to lhs dictionary
+    ///
+    /// The merge strategy used is `overwriteValue`.
+    ///
+    /// - Parameters:
+    ///   - lhs: A dictionary to merge.
+    ///   - rhs: Another dictionary to merge.
+    /// - Returns: An dictionary with keys and values from both.
+    static func += (lhs: inout [Key: Value], rhs: [Key: Value]) {
+        lhs = lhs.merging(rhs)
+    }
+
 }

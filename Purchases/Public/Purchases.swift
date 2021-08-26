@@ -854,7 +854,10 @@ public extension Purchases {
     @objc(purchasePackage:withCompletionBlock:)
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
         // todo: clean up
-        let sk1Product = (package.productWrapper as! SK1ProductWrapper).underlyingSK1Product
+        guard let sk1ProductWrapper = package.productWrapper as? SK1ProductWrapper else {
+            return
+        }
+        let sk1Product = sk1ProductWrapper.underlyingSK1Product
         let payment = storeKitWrapper.payment(withProduct: sk1Product)
         purchase(product: sk1Product,
                  payment: payment,
@@ -911,7 +914,10 @@ public extension Purchases {
     @objc(purchasePackage:withDiscount:completionBlock:)
     func purchase(package: Package, discount: SKPaymentDiscount, completion: @escaping PurchaseCompletedBlock) {
         // todo: clean up
-        let sk1Product = (package.productWrapper as! SK1ProductWrapper).underlyingSK1Product
+        guard let sk1ProductWrapper = package.productWrapper as? SK1ProductWrapper else {
+            return
+        }
+        let sk1Product = sk1ProductWrapper.underlyingSK1Product
         let payment = storeKitWrapper.payment(withProduct: sk1Product,
                                               discount: discount)
         purchase(product: sk1Product,

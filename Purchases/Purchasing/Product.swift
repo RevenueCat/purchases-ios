@@ -66,7 +66,9 @@ import StoreKit
 
     @objc public override var localizedTitle: String { underlyingSK2Product.displayName }
 
-    @objc public override var subscriptionGroupIdentifier: String? { underlyingSK2Product.subscription?.subscriptionGroupID }
+    @objc public override var subscriptionGroupIdentifier: String? {
+        underlyingSK2Product.subscription?.subscriptionGroupID
+    }
 
 }
 

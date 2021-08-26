@@ -24,7 +24,6 @@ class ProductsManager: NSObject {
         self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory)
     }
 
-   
     func productsFromOptimalStore(withIdentifiers identifiers: Set<String>,
                                   completion: @escaping (Set<ProductWrapper>) -> Void) {
 
