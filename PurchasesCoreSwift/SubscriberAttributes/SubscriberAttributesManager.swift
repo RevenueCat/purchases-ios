@@ -55,7 +55,7 @@ class SubscriberAttributesManager {
 
     func setPushToken(_ maybePushToken: Data?, appUserID: String) {
         logAttributionMethodCalled(functionName: #function)
-        let maybePushTokenString = maybePushToken?.rc_asString
+        let maybePushTokenString = maybePushToken?.asString
         setPushTokenString(maybePushTokenString, appUserID: appUserID)
     }
 

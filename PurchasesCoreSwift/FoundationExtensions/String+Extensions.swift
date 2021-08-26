@@ -22,7 +22,6 @@ extension String {
 
 }
 
-// swiftlint:disable identifier_name
 private struct ROT13 {
 
     private static var key = [Character: Character]()
@@ -32,9 +31,9 @@ private struct ROT13 {
 
     fileprivate static func string(_ string: String) -> String {
         if ROT13.key.isEmpty {
-            for i in 0 ..< 26 {
-                ROT13.key[ROT13.uppercase[i]] = ROT13.uppercase[(i + 13) % 26]
-                ROT13.key[ROT13.lowercase[i]] = ROT13.lowercase[(i + 13) % 26]
+            for number in 0 ..< 26 {
+                ROT13.key[ROT13.uppercase[number]] = ROT13.uppercase[(number + 13) % 26]
+                ROT13.key[ROT13.lowercase[number]] = ROT13.lowercase[(number + 13) % 26]
             }
         }
 

@@ -50,7 +50,7 @@ private extension PackageType {
             "$rc_three_month": .threeMonth,
             "$rc_two_month": .twoMonth,
             "$rc_monthly": .monthly,
-            "$rc_weekly": .weekly,
+            "$rc_weekly": .weekly
         ]
     }
 }
@@ -94,10 +94,19 @@ private extension PackageType {
 }
 
 @objc public extension Package {
+
+    /**
+     * - Parameter packageType: A PackageType.
+     * - Returns: an optional description of the packageType.
+     */
     static func string(from packageType: PackageType) -> String? {
         return packageType.description
     }
 
+    /**
+     * - Parameter string: A string that maps to a enumeration value of type PackageType
+     * - Returns: a PackageType for the given string.
+     */
     class func packageType(from string: String) -> PackageType {
         if let packageType = PackageType.typesByDescription[string] {
             return packageType
@@ -105,4 +114,5 @@ private extension PackageType {
 
         return string.hasPrefix("$rc_") ? .unknown : .custom
     }
+
 }

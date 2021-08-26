@@ -22,9 +22,9 @@ import StoreKit
      * Constructs an NSError with the [ErrorCode.networkError] code and a populated [NSUnderlyingErrorKey] in
      * the [NSError.userInfo] dictionary.
      *
-     * @param underlyingError The value of the [NSUnderlyingErrorKey] key.
+     * - Parameter: underlyingError The value of the [NSUnderlyingErrorKey] key.
      *
-     * @note This error is used when there is an error performing network request returns an error or when there
+     * - Note: This error is used when there is an error performing network request returns an error or when there
      * is an [NSJSONSerialization] error.
      */
     @objc public static func networkError(withUnderlyingError underlyingError: Error) -> Error {
@@ -36,10 +36,10 @@ import StoreKit
      * [RCUnderlyingErrorKey] in the [NSError.userInfo] dictionary. The backend error code will be mapped using
      * [BackendErrorCode.toPurchasesErrorCode()].
      *
-     * @param backendCode The numerical value of the error.
-     * @param backendMessage The message of the errror contained under the [NSUnderlyingErrorKey] key.
+     * - Parameter: backendCode The numerical value of the error.
+     * - Parameter: backendMessage The message of the errror contained under the [NSUnderlyingErrorKey] key.
      *
-     * @note This error is used when an network request returns an error. The backend error returned is wrapped in
+     * - Note: This error is used when an network request returns an error. The backend error returned is wrapped in
      * this internal error code.
      */
     @objc public static func backendError(withBackendCode backendCode: NSNumber?,
@@ -52,12 +52,13 @@ import StoreKit
      * [RCUnderlyingErrorKey] in the [NSError.userInfo] dictionary. The backend error code will be mapped using
      * [BackendErrorCode.toPurchasesErrorCode()].
      *
-     * @param backendCode The numerical value of the error.
-     * @param backendMessage The message of the errror contained under the [NSUnderlyingErrorKey] key in the UserInfo dictionary.
-     * @param finishable Will be added to the UserInfo dictionary under the [RCFinishableKey] to indicate if the transaction
-     * should be finished after this error.
+     * - Parameter: backendCode The numerical value of the error.
+     * - Parameter: backendMessage The message of the errror contained under the [NSUnderlyingErrorKey] key in the
+     * UserInfo dictionary.
+     * - Parameter: finishable Will be added to the UserInfo dictionary under the [RCFinishableKey] to indicate if the
+     * transaction should be finished after this error.
      *
-     * @note This error is used when an network request returns an error. The backend error returned is wrapped in
+     * - Note: This error is used when an network request returns an error. The backend error returned is wrapped in
      * this internal error code.
      */
     @objc public static func backendError(withBackendCode backendCode: NSNumber?,
@@ -73,7 +74,7 @@ import StoreKit
     /**
      * Constructs an Error with the [ErrorCode.unexpectedBackendResponseError] code.
      *
-     * @note This error is used when an network request returns an unexpected response.
+     * - Note: This error is used when an network request returns an unexpected response.
      */
     @objc public static func unexpectedBackendResponseError() -> Error {
         return error(with: ErrorCode.unexpectedBackendResponseError)
@@ -82,8 +83,8 @@ import StoreKit
     /**
      * Constructs an Error with the [ErrorCode.missingReceiptFileError] code.
      *
-     * @note This error is used when the receipt is missing in the device. This can happen if the user is in sandbox or
-     * if there are no previous purchases.
+     * - Note: This error is used when the receipt is missing in the device. This can happen if the user is in
+     * sandbox or if there are no previous purchases.
      */
     @objc public static func missingReceiptFileError() -> Error {
         return error(with: ErrorCode.missingReceiptFileError)
@@ -92,7 +93,7 @@ import StoreKit
     /**
      * Constructs an Error with the [ErrorCode.invalidAppUserIdError] code.
      *
-     * @note This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
+     * - Note: This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
      * are removed manually or if the OS deletes entries when running out of space.
      */
     @objc public static func missingAppUserIDError() -> Error {
@@ -102,7 +103,7 @@ import StoreKit
     /**
      * Constructs an Error with the [ErrorCode.productDiscountMissingIdentifierError] code.
      *
-     * @note This error code is used when attemping to post data about product discounts but the discount is
+     * - Note: This error code is used when attemping to post data about product discounts but the discount is
      * missing an indentifier.
      */
     @objc public static func productDiscountMissingIdentifierError() -> Error {
@@ -112,7 +113,7 @@ import StoreKit
     /**
      * Constructs an Error with the [ErrorCode.productDiscountMissingSubscriptionGroupIdentifierError] code.
      *
-     * @note This error code is used when attemping to post data about product discounts but the discount is
+     * - Note: This error code is used when attemping to post data about product discounts but the discount is
      * missing a subscriptionGroupIndentifier.
      */
     @objc public static func productDiscountMissingSubscriptionGroupIdentifierError() -> Error {
@@ -122,7 +123,7 @@ import StoreKit
     /**
      * Constructs an Error with the [ErrorCode.invalidAppUserIdError] code.
      *
-     * @note This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
+     * - Note: This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
      * are removed manually or if the OS deletes entries when running out of space.
      */
     @objc public static func missingAppUserIDForAliasCreationError() -> Error {
@@ -132,7 +133,7 @@ import StoreKit
     /**
      * Constructs an Error with the [ErrorCode.logOutAnonymousUserError] code.
      *
-     * @note This error is used when logOut is called but the current user is anonymous,
+     * - Note: This error is used when logOut is called but the current user is anonymous,
      * as noted by RCPurchaserInfo's isAnonymous property.
      */
     @objc public static func logOutAnonymousUserError() -> Error {
@@ -142,8 +143,8 @@ import StoreKit
     /**
      * Constructs an Error with the [ErrorCode.paymentPendingError] code.
      *
-     * @note This error is used during an “ask to buy” flow for a payment. The completion block of the purchasing function
-     * will get this error to indicate the guardian has to complete the purchase.
+     * - Note: This error is used during an “ask to buy” flow for a payment. The completion block of the purchasing
+     * function will get this error to indicate the guardian has to complete the purchase.
      */
     @objc public static func paymentDeferredError() -> Error {
         return error(with: ErrorCode.paymentPendingError, message: "The payment is deferred.")
@@ -166,17 +167,19 @@ import StoreKit
     /**
      * Constructs an Error with the [ErrorCode.operationAlreadyInProgressError] code.
      *
-     * @note This error is used when a purchase is initiated for a product, but there's already a purchase for the same product in progress.
+     * - Note: This error is used when a purchase is initiated for a product, but there's already a purchase for the
+     * same product in progress.
      */
     @objc public static func operationAlreadyInProgressError() -> Error {
         return error(with: ErrorCode.operationAlreadyInProgressForProductError)
     }
 
     /**
-     * Maps an SKError to a Error with a [ErrorCode]. Adds a underlying error in the NSError.userInfo dictionary. The SKError code will be mapped using
+     * Maps an SKError to a Error with a [ErrorCode]. Adds a underlying error in the NSError.userInfo dictionary.
+     * The SKError code will be mapped using
      * [SKError.toPurchasesErrorCode()].
      *
-     * @param skError The originating [SKError].
+     * - Parameter: skError The originating [SKError].
      */
     @objc public static func purchasesError(withSKError skError: Error) -> Error {
         let errorCode = (skError as? SKError)?.toPurchasesErrorCode() ?? .unknownError

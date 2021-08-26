@@ -42,7 +42,6 @@ public typealias ReceiveProductsBlock = ([SKProduct]) -> Void
  Completion block for `-[Purchases purchaseProduct:withCompletionBlock:]`
  */
 public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, PurchaserInfo?, Error?, Bool) -> Void
-public typealias RCPurchaseCompletedBlock = PurchaseCompletedBlock
 
 /**
  Deferred block for `purchases:shouldPurchasePromoProduct:defermentBlock:`
@@ -217,6 +216,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
                   platformFlavorVersion: nil)
     }
 
+    // swiftlint:disable function_body_length
     @objc public convenience init(apiKey: String,
                                   appUserID: String?,
                                   userDefaults: UserDefaults?,
@@ -307,6 +307,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
                   offeringsManager: offeringsManager,
                   purchasesOrchestrator: purchasesOrchestrator)
     }
+    // swiftlint:enable function_body_length
 
     init(appUserID: String?,
          requestFetcher: StoreKitRequestFetcher,
@@ -541,10 +542,10 @@ extension Purchases {
     /**
      * Subscriber attribute associated with the install ad for the user
      *
-     * - Parameter ad: nil will delete the subscriber attribute.
+     * - Parameter installAd: nil will delete the subscriber attribute.
      */
-    @objc public func setAd(_ ad: String) {
-        subscriberAttributesManager.setAd(ad, appUserID: appUserID)
+    @objc public func setAd(_ installAd: String) {
+        subscriberAttributesManager.setAd(installAd, appUserID: appUserID)
     }
 
     /**
@@ -963,8 +964,10 @@ public extension Purchases {
      * - Parameter receiveEligibility: A block that receives a dictionary of product_id -> `RCIntroEligibility`.
      */
     @objc
+    // swiftlint:disable line_length
     func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String],
                                                   completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+    // swiftlint:enable line_length
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
             if #available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *),
                let data = maybeData {
@@ -1031,6 +1034,7 @@ public extension Purchases {
     private func modernEligibilityHandler(maybeReceiptData data: Data,
                                           productIdentifiers: [String],
                                           completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+        // swiftlint:disable line_length
         introEligibilityCalculator
             .checkTrialOrIntroductoryPriceEligibility(with: data,
                                                       productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
@@ -1064,6 +1068,7 @@ public extension Purchases {
                     }
                 }
             }
+        // swiftlint:enable line_length
     }
 
     private func purchase(product: SKProduct,
@@ -1171,6 +1176,28 @@ extension Purchases {
                   platformFlavorVersion: nil)
     }
 
+    /**
+     * Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to
+     * sync status across a shared container, such as between a host app and an extension. The instance of the
+     * Purchases SDK will be set as a singleton.
+     * You should access the singleton instance using Purchases.sharedPurchases
+     *
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
+     *
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
+     * purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
+     *
+     * - Parameter observerMode: Set this to TRUE if you have your own IAP implementation and want to use only
+     * RevenueCat's backend. Default is FALSE.
+     *
+     * - Parameter userDefaults: Custom userDefaults to use
+     *
+     * - Parameter platformFlavor: The current platformFlavor you are configuring.
+     *
+     * - Parameter platformFlavorVersion: The current version of the platformFlavor you are configuring.
+     *
+     * - Returns: An instantiated `Purchases` object that has been set as a singleton.
+     */
     public static func configure(apiKey: String,
                                  appUserID: String?,
                                  observerMode: Bool,

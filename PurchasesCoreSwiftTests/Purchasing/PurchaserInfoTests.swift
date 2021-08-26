@@ -116,10 +116,18 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
 
     func testParsesOtherPurchases() {
+        let nonConsumables = purchaserInfo!.nonSubscriptionTransactions
+        expect(nonConsumables.count).to(equal(1))
+
+        expect(nonConsumables[0].productId).to(equal("onetime_purchase"))
+    }
+
+    @available(*, deprecated) // Ignore deprecation warnings
+    func testDeprecatedParsesOtherPurchases() {
         let nonConsumables = purchaserInfo!.nonConsumablePurchases
         expect(nonConsumables.count).to(equal(1))
 
-        expect(nonConsumables as NSSet).to(contain(["onetime_purchase"]))
+        expect(nonConsumables).to(contain(["onetime_purchase"]))
     }
 
     func testOriginalApplicationVersionNilIfNotPresent() {
