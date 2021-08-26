@@ -18,6 +18,7 @@ func resolveTargets() -> [Target] {
                 publicHeadersPath: "Purchases/Public",
                 cSettings: objcSources.map { CSetting.headerSearchPath($0) }
         )
+    ]
 
     return baseTargets
 }
