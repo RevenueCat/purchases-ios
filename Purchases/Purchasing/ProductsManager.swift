@@ -17,11 +17,11 @@ import StoreKit
 
 class ProductsManager: NSObject {
 
-    private let productsFetcherSK1 = ProductsFetcherSK1()
+    let productsFetcherSK1: ProductsFetcherSK1
     private let productsFetcherSK2 = ProductsFetcherSK2()
 
     init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory()) {
-        self.productsRequestFactory = productsRequestFactory
+        self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory)
     }
 
    

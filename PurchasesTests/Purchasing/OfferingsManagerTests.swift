@@ -79,7 +79,7 @@ extension OfferingsManagerTests {
         expect(obtainedOfferings).toNot(beNil())
         expect(obtainedOfferings!["base"]).toNot(beNil())
         expect(obtainedOfferings!["base"]!.monthly).toNot(beNil())
-        expect(obtainedOfferings!["base"]!.monthly?.product).toNot(beNil())
+        expect(obtainedOfferings!["base"]!.monthly?.productWrapper).toNot(beNil())
     }
 
     func testOfferingsForAppUserIDReturnsNilIfFailBackendRequest() {

@@ -1794,7 +1794,7 @@ class PurchasesTests: XCTestCase {
     }
 
     // todo: was this test removed? 
-    func testGetsProductInfoFromOfferings() {
+    func testGetsProductInfoFromOfferings() throws {
         setupPurchases()
         expect(self.backend.gotOfferings).toEventually(equal(1))
 
@@ -1804,9 +1804,11 @@ class PurchasesTests: XCTestCase {
         }
 
         expect(offerings).toEventuallyNot(beNil());
-        expect(offerings!["base"]).toNot(beNil())
-        expect(offerings!["base"]!.monthly).toNot(beNil())
-        expect(offerings!["base"]!.monthly?.productWrapper).toNot(beNil())
+        let nonOptionalOfferings = try XCTUnwrap(offerings)
+        let baseOfferings = try XCTUnwrap(nonOptionalOfferings["base"])
+        expect(baseOfferings).toNot(beNil())
+        expect(baseOfferings.monthly).toNot(beNil())
+        expect(baseOfferings.monthly?.productWrapper).toNot(beNil())
     }
 
     func testFirstInitializationGetsOfferingsIfAppActive() {

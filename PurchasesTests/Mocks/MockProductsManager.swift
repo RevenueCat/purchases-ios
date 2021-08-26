@@ -41,11 +41,12 @@ class MockProductsManager: ProductsManager {
     var invokedCacheProductCount = 0
     var invokedCacheProductParameter: SKProduct?
 
-    override func cacheProduct(_ product: SKProduct) {
-        invokedCacheProduct = true
-        invokedCacheProductCount += 1
-        invokedCacheProductParameter = product
-    }
+    // todo: re-add
+//    override func cacheProduct(_ product: SKProduct) {
+//        invokedCacheProduct = true
+//        invokedCacheProductCount += 1
+//        invokedCacheProductParameter = product
+//    }
 
     func resetMock() {
         invokedProducts = false
