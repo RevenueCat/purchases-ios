@@ -251,7 +251,7 @@ platform :ios do
 
   desc "Generate Jazzy Docs"
   lane :generate_docs do
-    jazzy(config: ".jazzy.yaml")    
+    jazzy    
   end
 
 end
