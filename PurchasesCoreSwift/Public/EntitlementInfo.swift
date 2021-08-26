@@ -294,7 +294,7 @@ private extension EntitlementInfo {
 }
 
 /**
- This extension contains some internal helpers to decode the data received from the backend.
+ This extension contains some internal helper structs to decode the data received from the backend.
  */
 private extension EntitlementInfo {
 
