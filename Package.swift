@@ -4,24 +4,6 @@
 import PackageDescription
 import class Foundation.ProcessInfo
 
-func resolveTargets() -> [Target] {
-    let objcSources = ["Purchases/Info.plist",
-                       "Purchases/Public"]
-    let infoPlist = "Purchases/Info.plist"
-
-    let baseTargets: [Target] = [
-        .target(name: "Purchases",
-                dependencies: ["Purchases"],
-                path: ".",
-                exclude: [infoPlist],
-                sources: ["Purchases"],
-                publicHeadersPath: "Purchases/Public",
-                cSettings: objcSources.map { CSetting.headerSearchPath($0) }
-        )
-    ]
-
-    return baseTargets
-}
 
 let package = Package(
     name: "Purchases",
@@ -33,5 +15,7 @@ let package = Package(
                  targets: ["Purchases"])
     ],
     dependencies: [],
-    targets: resolveTargets()
+    targets: [
+        .target(name: "Purchases", sources: ["Purchases"])
+    ]
 )
