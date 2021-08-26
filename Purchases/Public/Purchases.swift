@@ -1099,8 +1099,8 @@ public extension Purchases {
      * - Returns: An instantiated `RCPurchases` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:)
-    @discardableResult static func configure(apiKey: String) -> Purchases {
-        configure(apiKey: apiKey, appUserID: nil)
+    @discardableResult static func configure(withAPIKey apiKey: String) -> Purchases {
+        configure(withAPIKey: apiKey, appUserID: nil)
     }
 
     /**
@@ -1120,8 +1120,8 @@ public extension Purchases {
      * - Returns: An instantiated `RCPurchases` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:appUserID:)
-    @discardableResult static func configure(apiKey: String, appUserID: String?) -> Purchases {
-        configure(apiKey: apiKey, appUserID: appUserID, observerMode: false)
+    @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
+        configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false)
     }
 
     /**
@@ -1141,8 +1141,10 @@ public extension Purchases {
      * - Returns: An instantiated `RCPurchases` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:appUserID:observerMode:)
-    @discardableResult static func configure(apiKey: String, appUserID: String?, observerMode: Bool) -> Purchases {
-        configure(apiKey: apiKey, appUserID: appUserID, observerMode: observerMode, userDefaults: nil)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool) -> Purchases {
+        configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: observerMode, userDefaults: nil)
     }
 
     /**
@@ -1164,7 +1166,7 @@ public extension Purchases {
      * - Returns: An instantiated `RCPurchases` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:)
-    @discardableResult static func configure(apiKey: String,
+    @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,
                                              observerMode: Bool,
                                              userDefaults: UserDefaults?) -> Purchases {
@@ -1183,11 +1185,11 @@ public extension Purchases {
                                    platformFlavor: String?,
                                    platformFlavorVersion: String?) -> Purchases {
         let purchases = Purchases(apiKey: apiKey,
-                                   appUserID: appUserID,
-                                   userDefaults: userDefaults,
-                                   observerMode: observerMode,
-                                   platformFlavor: platformFlavor,
-                                   platformFlavorVersion: platformFlavorVersion)
+                                  appUserID: appUserID,
+                                  userDefaults: userDefaults,
+                                  observerMode: observerMode,
+                                  platformFlavor: platformFlavor,
+                                  platformFlavorVersion: platformFlavorVersion)
         setDefaultInstance(purchases)
         return purchases
     }

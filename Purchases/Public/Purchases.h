@@ -14,8 +14,6 @@ FOUNDATION_EXPORT double PurchasesVersionNumber;
 //! Project version string for Purchases.
 FOUNDATION_EXPORT const unsigned char PurchasesVersionString[];
 
-// In this header, you should import all the public headers of your framework using statements like #import <Purchases/PublicHeader.h>
-
 @class RCPurchaserInfo, RCIntroEligibility, RCOfferings;
 @class SKPaymentTransaction, SKProduct, SKPaymentDiscount;
 
