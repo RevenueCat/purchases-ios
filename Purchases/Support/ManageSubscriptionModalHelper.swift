@@ -24,7 +24,7 @@ enum ManageSubscriptionsModalError: Error {
 
 extension ManageSubscriptionsModalError: CustomStringConvertible {
 
-    public var description: String {
+    var description: String {
         switch self {
         case .couldntGetPurchaserInfo(let message):
             return "Failed to get managemementURL from PurchaserInfo. Details: \(message)"
