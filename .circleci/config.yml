@@ -124,7 +124,7 @@ jobs:
           name: Run tests
           command: bundle exec fastlane test
           environment:
-            SCAN_SCHEME: Unit Tests
+            SCAN_SCHEME: Purchases
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
