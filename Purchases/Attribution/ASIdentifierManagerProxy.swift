@@ -27,7 +27,7 @@ class FakeASIdentifierManager: NSObject {
 
 }
 
-@objc class ASIdentifierManagerProxy: NSObject {
+class ASIdentifierManagerProxy {
 
     static let mangledIdentifierClassName = "NFVqragvsvreZnantre"
     static let mangledIdentifierPropertyName = "nqiregvfvatVqragvsvre"
@@ -40,7 +40,7 @@ class FakeASIdentifierManager: NSObject {
         NSClassFromString(Self.mangledIdentifierClassName.rot13())
     }
 
-    @objc var adsIdentifier: UUID? {
+    var adsIdentifier: UUID? {
         guard let classType: AnyClass = Self.identifierClass else {
             return nil
         }
