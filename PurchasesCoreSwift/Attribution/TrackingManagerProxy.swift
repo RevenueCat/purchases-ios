@@ -37,7 +37,7 @@ class FakeTrackingManager: NSObject {
 
 }
 
-@objc class TrackingManagerProxy: NSObject {
+class TrackingManagerProxy: NSObject {
 
     static let mangledTrackingClassName = "NGGenpxvatZnantre"
     static let mangledAuthStatusPropertyName = "genpxvatNhgubevmngvbaFgnghf"
