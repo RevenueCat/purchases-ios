@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import PurchasesCoreSwift
+@testable import Purchases
 
 #if os(macOS) || os(iOS)
 

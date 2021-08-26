@@ -40,7 +40,7 @@ extension ManageSubscriptionsModalError: CustomStringConvertible {
 }
 
 class ManageSubscriptionsModalHelper: NSObject {
-    
+
     private let systemInfo: SystemInfo
     private let purchaserInfoManager: PurchaserInfoManager
     private let identityManager: IdentityManager
