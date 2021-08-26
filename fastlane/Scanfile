@@ -4,7 +4,7 @@
 # In general, you can use the options available
 # fastlane scan --help
 
-scheme("Unit Tests")
+scheme("Purchases")
 
 # Commenting out devices in Scanfile as of fastlane 2.191.0
 # Scan cannot handle running multiple platform type (iOS and tvOS)
