@@ -46,8 +46,9 @@ import Foundation
 
 extension BackendErrorCode {
 
+    // swiftlint:disable cyclomatic_complexity
     func toPurchasesErrorCode() -> ErrorCode {
-
+    // swiftlint:enable cyclomatic_complexity
         switch self {
         case .invalidPlatform:
             return .configurationError
@@ -85,7 +86,6 @@ extension BackendErrorCode {
         @unknown default:
             return .unknownError
         }
-
     }
 
 }

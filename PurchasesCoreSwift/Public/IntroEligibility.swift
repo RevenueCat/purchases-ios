@@ -9,11 +9,11 @@
 import Foundation
 
 /**
- @typedef RCIntroEligibilityStatus
- @brief Enum of different possible states for intro price eligibility status.
- @constant RCIntroEligibilityStatusUnknown RevenueCat doesn't have enough information to determine eligibility.
- @constant RCIntroEligibilityStatusIneligible The user is not eligible for a free trial or intro pricing for this product.
- @constant RCIntroEligibilityStatusEligible The user is eligible for a free trial or intro pricing for this product.
+ * - Note: Enum of different possible states for intro price eligibility status.
+ * RCIntroEligibilityStatusUnknown RevenueCat doesn't have enough information to determine eligibility.
+ * RCIntroEligibilityStatusIneligible The user is not eligible for a free trial or intro pricing for this
+ * product.
+ * RCIntroEligibilityStatusEligible The user is eligible for a free trial or intro pricing for this product.
  */
 @objc(RCIntroEligibilityStatus) public enum IntroEligibilityStatus: Int {
     /**

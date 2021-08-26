@@ -37,7 +37,6 @@ class FakeTrackingManager: NSObject {
 
 }
 
-// TODO: Test if Objc can be removed.
 @objc class TrackingManagerProxy: NSObject {
 
     static let mangledTrackingClassName = "NGGenpxvatZnantre"
