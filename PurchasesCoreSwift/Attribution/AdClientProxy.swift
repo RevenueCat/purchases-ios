@@ -35,7 +35,7 @@ class FakeAdClient: NSObject {
 
 }
 
-@objc class AdClientProxy: NSObject {
+class AdClientProxy {
 
     private static let className = "ADClient"
 
@@ -43,7 +43,6 @@ class FakeAdClient: NSObject {
         NSClassFromString(Self.className)
     }
 
-    @objc(requestAttributionDetailsWithBlock:)
     func requestAttributionDetails(_ completionHandler: @escaping AttributionDetailsBlock) {
         let client: AnyObject
         if let klass = Self.adClientClass, let clientClass = klass as AnyObject as? NSObjectProtocol {
