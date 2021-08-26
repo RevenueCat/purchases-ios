@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = "Purchases"
   s.version          = "3.13.0-SNAPSHOT"
-  s.summary          = "Swift portion of RevenueCat's Subscription and in-app-purchase backend service."
+  s.summary          = "Subscription and in-app-purchase backend service."
 
   s.description      = <<-DESC
                        Save yourself the hastle of implementing a subscriptions backend. Use RevenueCat instead https://www.revenuecat.com/

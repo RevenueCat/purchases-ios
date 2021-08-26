@@ -338,7 +338,7 @@
 		351B515D26D44B9900BD2BD7 /* MockPurchasesDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPurchasesDelegate.swift; sourceTree = "<group>"; };
 		351B515F26D44BB600BD2BD7 /* MockAttributionDataMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAttributionDataMigrator.swift; sourceTree = "<group>"; };
 		351B516326D44C1F00BD2BD7 /* ObjCThrowExceptionMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjCThrowExceptionMatcher.swift; sourceTree = "<group>"; };
-		351B516526D44C3600BD2BD7 /* PurchasesCoreSwiftTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PurchasesCoreSwiftTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		351B516526D44C3600BD2BD7 /* PurchasesTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PurchasesTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		351B516626D44C3700BD2BD7 /* RCObjC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCObjC.m; sourceTree = "<group>"; };
 		351B516826D44C4F00BD2BD7 /* RCObjC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCObjC.h; sourceTree = "<group>"; };
 		351B516F26D44E8D00BD2BD7 /* MockDateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDateProvider.swift; sourceTree = "<group>"; };
@@ -413,7 +413,6 @@
 		37E35EEE7783629CDE41B70C /* SystemInfoTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemInfoTests.swift; sourceTree = "<group>"; };
 		37E35F783903362B65FB7AF3 /* MockProductsRequestFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockProductsRequestFactory.swift; sourceTree = "<group>"; };
 		37E35FDA0A44EA03EA12DAA2 /* DateFormatter+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "DateFormatter+ExtensionsTests.swift"; sourceTree = "<group>"; };
-		6B5DC754D48165CE32D8133B /* Pods_PurchasesCoreSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PurchasesCoreSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
 		84C3F1AC1D7E1E64341D3936 /* Pods_Purchases_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Purchases_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogIntent.swift; sourceTree = "<group>"; };
@@ -431,7 +430,6 @@
 		A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaserInfo.swift; sourceTree = "<group>"; };
 		A5A92C7726C716F50038D732 /* RCPackageAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPackageAPI.h; sourceTree = "<group>"; };
 		A5A92C7826C716F50038D732 /* RCPackageAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPackageAPI.m; sourceTree = "<group>"; };
-		A976872C3EDAC0B4F4B45481 /* Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3083A0F269931CF007B5503 /* RCOfferingAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOfferingAPI.h; sourceTree = "<group>"; };
 		B3083A10269931CF007B5503 /* RCOfferingAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCOfferingAPI.m; sourceTree = "<group>"; };
 		B3083A122699334C007B5503 /* Offering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Offering.swift; sourceTree = "<group>"; };
@@ -635,7 +633,6 @@
 				B36824BB268FBB9B00957E4C /* SubscriberAttributes */,
 				37E35A5970D1604E8C8011FC /* TestHelpers */,
 				2DC5622524EC63430031F69B /* Info.plist */,
-				37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */,
 			);
 			path = PurchasesTests;
 			sourceTree = "<group>";
@@ -832,8 +829,6 @@
 				3530C18822653E8F00D6DF52 /* AdSupport.framework */,
 				33FFC8744F2BAE7BD8889A4C /* Pods_Purchases.framework */,
 				84C3F1AC1D7E1E64341D3936 /* Pods_Purchases_PurchasesTests.framework */,
-				6B5DC754D48165CE32D8133B /* Pods_PurchasesCoreSwift.framework */,
-				A976872C3EDAC0B4F4B45481 /* Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -863,20 +858,21 @@
 		354235D624C11160008C84EE /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
-				37E35DE5707E845DA3FF51BC /* PurchasesTests.swift */,
-				F575859126C08E3F00C12B97 /* OfferingsManagerTests.swift */,
-				F5BE4244269676E200254A30 /* StoreKitRequestFetcherTests.swift */,
 				37E3582920E16E065502E5FC /* EntitlementInfosTests.swift */,
-				2DD02D5624AD0B0500419CD9 /* RCIntroEligibilityTests.swift */,
+				37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */,
+				F575859126C08E3F00C12B97 /* OfferingsManagerTests.swift */,
 				37E357C2D977BBB081216B5F /* OfferingsTests.swift */,
-				37E359D8F304C83184560135 /* PurchaserInfoTests.swift */,
 				37E3583675928C01D92E3166 /* ProductInfoExtensions.swift */,
 				37E3548189DA008320B3FC98 /* ProductInfoExtractorTests.swift */,
 				37E350E57B0A393455A72B40 /* ProductInfoTests.swift */,
 				37E351F0E21361EAEC078A0D /* ProductsManagerTests.swift */,
+				37E359D8F304C83184560135 /* PurchaserInfoTests.swift */,
+				37E35DE5707E845DA3FF51BC /* PurchasesTests.swift */,
+				2DD02D5624AD0B0500419CD9 /* RCIntroEligibilityTests.swift */,
+				2D84458826B9CD270033B5A3 /* ReceiptFetcherTests.swift */,
+				F5BE4244269676E200254A30 /* StoreKitRequestFetcherTests.swift */,
 				37E352F86A0A8EB05BAD77C4 /* StoreKitWrapperTests.swift */,
 				3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */,
-				2D84458826B9CD270033B5A3 /* ReceiptFetcherTests.swift */,
 			);
 			path = Purchasing;
 			sourceTree = "<group>";
@@ -958,7 +954,7 @@
 				351B516326D44C1F00BD2BD7 /* ObjCThrowExceptionMatcher.swift */,
 				351B516826D44C4F00BD2BD7 /* RCObjC.h */,
 				351B516626D44C3700BD2BD7 /* RCObjC.m */,
-				351B516526D44C3600BD2BD7 /* PurchasesCoreSwiftTests-Bridging-Header.h */,
+				351B516526D44C3600BD2BD7 /* PurchasesTests-Bridging-Header.h */,
 			);
 			path = TestHelpers;
 			sourceTree = "<group>";
@@ -1733,7 +1729,7 @@
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos macosx appletvsimulator appletvos";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OBJC_BRIDGING_HEADER = "PurchasesTests/TestHelpers/PurchasesCoreSwiftTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "PurchasesTests/TestHelpers/PurchasesTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,6";
@@ -1764,7 +1760,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos macosx appletvsimulator appletvos";
-				SWIFT_OBJC_BRIDGING_HEADER = "PurchasesTests/TestHelpers/PurchasesCoreSwiftTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "PurchasesTests/TestHelpers/PurchasesTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,6";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
