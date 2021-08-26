@@ -100,6 +100,9 @@ BOOL isAnonymous;
     [p createAlias:@"" completionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
     [p identify:@"" completionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
     [p resetWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
+
+    [p logIn:@"" completionBlock:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
+    [p logOutWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
         
     // RCPurchasesDelegate
     [p.delegate purchases:p didReceiveUpdatedPurchaserInfo:pi];
@@ -119,6 +122,21 @@ BOOL isAnonymous;
     l = RCLogLevelWarn;
     l = RCLogLevelDebug;
     l = RCLogLevelError;
+    
+}
+
++ (void)checkConstants {
+// TODO convert back once everything moved into Purchases
+    double vn = PurchasesCoreSwiftVersionNumber;
+    const unsigned char *vs = PurchasesCoreSwiftVersionString;
+
+    // breaking changes below this line
+    NSErrorDomain bed = RCBackendErrorCodeDomain;
+    NSErrorDomain ped = RCPurchasesErrorCodeDomain;
+    NSErrorUserInfoKey fk = RCErrorDetails.RCFinishableKey;
+    NSErrorUserInfoKey eck = RCErrorDetails.RCReadableErrorCodeKey;
+
+    NSLog([NSString stringWithFormat:@"%lf", vn], vs, bed, ped, fk, eck);
 }
 
 @end

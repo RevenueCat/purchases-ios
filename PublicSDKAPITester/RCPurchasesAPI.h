@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)checkAPI;
 + (void)checkEnums;
++ (void)checkConstants;
 
 @end
 

@@ -160,6 +160,7 @@
 		9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */; };
 		A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */; };
 		A56F9AB126990E9200AFC48F /* PurchaserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */; };
+		A5A92C7926C716F50038D732 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5A92C7826C716F50038D732 /* RCPackageAPI.m */; };
 		A5C7008D26AB647B00B2CA64 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBB9269D100400104A0C /* RCOfferingsAPI.m */; };
 		A5C7009026AF5A7900B2CA64 /* RCPurchaserInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */; };
 		B300E4BF26D436F900B22262 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
@@ -447,6 +448,8 @@
 		A56F9AAD26990A3A00AFC48F /* RCPurchaserInfoAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPurchaserInfoAPI.h; sourceTree = SOURCE_ROOT; };
 		A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPurchaserInfoAPI.m; sourceTree = SOURCE_ROOT; };
 		A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaserInfo.swift; sourceTree = "<group>"; };
+		A5A92C7726C716F50038D732 /* RCPackageAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPackageAPI.h; sourceTree = "<group>"; };
+		A5A92C7826C716F50038D732 /* RCPackageAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPackageAPI.m; sourceTree = "<group>"; };
 		A976872C3EDAC0B4F4B45481 /* Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PurchasesCoreSwift_PurchasesCoreSwiftTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3083A0F269931CF007B5503 /* RCOfferingAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOfferingAPI.h; sourceTree = "<group>"; };
 		B3083A10269931CF007B5503 /* RCOfferingAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCOfferingAPI.m; sourceTree = "<group>"; };
@@ -1077,6 +1080,8 @@
 				B3AA359F268682410007771B /* RCPurchasesAPI.m */,
 				35F82BA526A848CB0051DF03 /* RCPurchasesErrorUtilsAPI.h */,
 				35F82BA726A849080051DF03 /* RCPurchasesErrorUtilsAPI.m */,
+				A5A92C7726C716F50038D732 /* RCPackageAPI.h */,
+				A5A92C7826C716F50038D732 /* RCPackageAPI.m */,
 				B33CEA9C268BC39D008A3144 /* RCTransactionAPI.h */,
 				B33CEA9D268BC39D008A3144 /* RCTransactionAPI.m */,
 			);
@@ -1705,6 +1710,7 @@
 				B33CEA9E268BC39D008A3144 /* RCTransactionAPI.m in Sources */,
 				B3AA35A0268682410007771B /* RCEntitlementInfoAPI.m in Sources */,
 				B34D2AA126960A3200D88C3A /* RCIntroEligibilityAPI.m in Sources */,
+				A5A92C7926C716F50038D732 /* RCPackageAPI.m in Sources */,
 				B3AA6234268A7BA900894871 /* RCEntitlementInfosAPI.m in Sources */,
 				B387F47A2683FDEA0028701F /* main.m in Sources */,
 				B3D3C47026856AFF00CB3C21 /* APITester.swift in Sources */,
