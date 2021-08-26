@@ -227,7 +227,7 @@
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 2DC5621524EC63420031F69B;
-			remoteInfo = PurchasesCoreSwift;
+			remoteInfo = Purchases;
 		};
 		2DE20B8E26409EC0004C597D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -614,7 +614,6 @@
 				F5E4383626B852D700841CC8 /* StoreKitExtensions */,
 				354895D0267AE32D001DC5B1 /* SubscriberAttributes */,
 				2DC5621924EC63430031F69B /* Info.plist */,
-				2D97458E24BDFCEF006245E9 /* IntroEligibilityCalculator.swift */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -842,6 +841,7 @@
 		354235D524C11138008C84EE /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
+				2D97458E24BDFCEF006245E9 /* IntroEligibilityCalculator.swift */,
 				35549322269E298B005F9AE9 /* OfferingsFactory.swift */,
 				F575858C26C088FE00C12B97 /* OfferingsManager.swift */,
 				B372EC55268FEF020099171E /* ProductInfo.swift */,
@@ -1155,7 +1155,7 @@
 			dependencies = (
 			);
 			name = Purchases;
-			productName = PurchasesCoreSwift;
+			productName = Purchases;
 			productReference = 2DC5621624EC63420031F69B /* Purchases.framework */;
 			productType = "com.apple.product-type.framework";
 		};
@@ -1178,7 +1178,7 @@
 				B3D5CFC52672827D0056FA67 /* OHHTTPStubs */,
 				B3D5CFC72672827D0056FA67 /* OHHTTPStubsSwift */,
 			);
-			productName = PurchasesCoreSwiftTests;
+			productName = PurchasesTests;
 			productReference = 2DC5621E24EC63430031F69B /* PurchasesTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};

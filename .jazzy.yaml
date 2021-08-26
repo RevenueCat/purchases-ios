@@ -8,4 +8,3 @@ github_file_prefix: https://github.com/revenuecat/purchases-ios/tree/3.13.0-SNAP
 output: docs
 include:
   - "Purchases/Public/*/"
-  - "PurchasesCoreSwift/Public/*/"

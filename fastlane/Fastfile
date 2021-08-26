@@ -61,9 +61,8 @@ platform :ios do
     increment_version_number(version_number: version_number_without_prerelease_modifiers)
     
     files_to_update = [
-      '../PurchasesCoreSwift.podspec',
       '../Purchases.podspec',
-      '../PurchasesCoreSwift/Misc/SystemInfo.swift',
+      '../Purchases/Misc/SystemInfo.swift',
       '../.jazzy.yaml',
       '../.version',
       '../Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
@@ -260,7 +259,6 @@ platform :ios do
 end
 
 def push_pods
-  pod_push(path: "PurchasesCoreSwift.podspec")
   pod_push(path: "Purchases.podspec", synchronous: true)
 end
 
@@ -289,8 +287,7 @@ def carthage_archive
 end
 
 def check_pods
-  pod_lib_lint(verbose: true, podspec:'PurchasesCoreSwift.podspec')
-  pod_lib_lint(verbose: true, podspec:'Purchases.podspec', include_podspecs:'PurchasesCoreSwift.podspec')
+  pod_lib_lint(verbose: true, podspec:'Purchases.podspec')
 end
 
 def increment_build_number(previous_version_number, new_version_number, file_path)

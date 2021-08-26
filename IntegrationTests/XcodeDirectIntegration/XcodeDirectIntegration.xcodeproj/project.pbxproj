@@ -49,14 +49,14 @@
 			containerPortal = 2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 2DC5621624EC63420031F69B;
-			remoteInfo = PurchasesCoreSwift;
+			remoteInfo = Purchases;
 		};
 		2D6C0461254A0AF10039CB92 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 2DC5621E24EC63430031F69B;
-			remoteInfo = PurchasesCoreSwiftTests;
+			remoteInfo = PurchasesTests;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -183,8 +183,6 @@
 			children = (
 				2D6C045C254A0AF10039CB92 /* Purchases.framework */,
 				2D6C045E254A0AF10039CB92 /* PurchasesTests.xctest */,
-				2D6C0460254A0AF10039CB92 /* PurchasesCoreSwift.framework */,
-				2D6C0462254A0AF10039CB92 /* PurchasesCoreSwiftTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -304,20 +302,6 @@
 			fileType = wrapper.cfbundle;
 			path = PurchasesTests.xctest;
 			remoteRef = 2D6C045D254A0AF10039CB92 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2D6C0460254A0AF10039CB92 /* PurchasesCoreSwift.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = PurchasesCoreSwift.framework;
-			remoteRef = 2D6C045F254A0AF10039CB92 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2D6C0462254A0AF10039CB92 /* PurchasesCoreSwiftTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = PurchasesCoreSwiftTests.xctest;
-			remoteRef = 2D6C0461254A0AF10039CB92 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */

@@ -6,7 +6,6 @@ target 'CocoapodsIntegration' do
   use_frameworks!
 
   pod 'Purchases', path: '../../'
-  pod 'PurchasesCoreSwift', path: '../../'
   
   target 'CocoapodsIntegrationTests' do
     inherit! :search_paths

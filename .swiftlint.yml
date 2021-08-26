@@ -2,7 +2,6 @@ excluded:
   - Carthage
   - Pods
   - PurchasesTests
-  - PurchasesCoreSwiftTests
   - Examples
   - IntegrationTests
   - StoreKitTests
@@ -14,7 +13,7 @@ opt_in_rules:
   - sorted_imports
   - missing_docs
 
-identifier_name:
+git identifier_name:
   max_length: 
     warning: 60 
     error: 80
