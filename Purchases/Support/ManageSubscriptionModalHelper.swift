@@ -40,6 +40,7 @@ extension ManageSubscriptionsModalError: CustomStringConvertible {
 }
 
 class ManageSubscriptionsModalHelper: NSObject {
+    
     private let systemInfo: SystemInfo
     private let purchaserInfoManager: PurchaserInfoManager
     private let identityManager: IdentityManager
@@ -107,12 +108,12 @@ private extension ManageSubscriptionsModalHelper {
             return
         }
 #endif
-        self.openURL(managementURL, completion: completion)
+        openURL(managementURL, completion: completion)
     }
 
     func openURL(_ url: URL, completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
 #if os(iOS)
-        self.openURLIfNotAppExtension(url: url)
+        openURLIfNotAppExtension(url: url)
 #elseif os(macOS)
         NSWorkspace.shared.open(url)
 #endif
@@ -151,6 +152,8 @@ private extension ManageSubscriptionsModalHelper {
         }
 
         do {
+
+// todo: remove when this gets fixed.
 // limiting to arm architecture since builds on beta 5 fail if other archs are included
 #if os(iOS) && arch(arm64)
             try await AppStore.showManageSubscriptions(in: windowScene)
