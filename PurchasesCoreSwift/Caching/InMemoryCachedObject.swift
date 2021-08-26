@@ -12,6 +12,8 @@
 //  Created by Joshua Liebowitz on 7/13/21.
 //
 
+import Foundation
+
 class InMemoryCachedObject<T> {
 
     var lastUpdatedAt: Date? {
