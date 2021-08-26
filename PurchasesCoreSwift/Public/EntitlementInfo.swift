@@ -131,48 +131,43 @@ import Foundation
                   entitlementData: entitlementData,
                   productData: productData,
                   requestDate: requestDate,
-                  dateFormatter: .iso8601SecondsDateFormatter)
+                  dateFormatter: .iso8601SecondsDateFormatter,
+                  jsonDecoder: JSONDecoder())
     }
 
     init(entitlementId: String,
-         entitlementData: [String: Any],
-         productData: [String: Any],
+         entitlementData entitlementDataDict: [String: Any],
+         productData productDataDict: [String: Any],
          requestDate: Date?,
-         dateFormatter: DateFormatter) {
+         dateFormatter: DateFormatter,
+         jsonDecoder: JSONDecoder) {
         // Entitlement data
-        let entitlementExpiresDateString = entitlementData["expires_date"] as? String
-        let entitlementPurchaseDateString = entitlementData["purchase_date"] as? String
-        let productIdString = entitlementData["product_identifier"] as? String
+        let maybeEntitlementData: EntitlementData? = try? jsonDecoder.decode(
+            dictionary: entitlementDataDict,
+            keyDecodingStrategy: .convertFromSnakeCase,
+            dateDecodingStrategy: .formatted(dateFormatter)
+        )
 
         // Product data
-        let periodTypeString = productData["period_type"] as? String
-        let originalPurchaseDateString = productData["original_purchase_date"] as? String
-        let productExpiresDateString = productData["expires_date"] as? String
-        let storeString = productData["store"] as? String
-        let isSandbox = (productData["is_sandbox"] as? NSNumber)?.boolValue ?? false
-        let unsubscribeDetectedAtString = productData["unsubscribe_detected_at"] as? String
-        let billingIssuesDetectedAtString = productData["billing_issues_detected_at"] as? String
-        let ownershipType = productData["ownership_type"] as? String
+        let maybeProductData: ProductData? = try? jsonDecoder.decode(
+            dictionary: productDataDict,
+            keyDecodingStrategy: .convertFromSnakeCase,
+            dateDecodingStrategy: .formatted(dateFormatter)
+        )
 
-        let store = Self.parseStore(store: storeString)
-        let expirationDate = dateFormatter.date(fromString: productExpiresDateString)
-        let unsubscribeDetectedAt = dateFormatter.date(fromString: unsubscribeDetectedAtString)
-        let billingIssueDetectedAt = dateFormatter.date(fromString: billingIssuesDetectedAtString)
-        let entitlementExpiresDate = dateFormatter.date(fromString: entitlementExpiresDateString)
-
-        self.store = store
-        self.expirationDate = expirationDate
-        self.unsubscribeDetectedAt = unsubscribeDetectedAt
-        self.billingIssueDetectedAt = billingIssueDetectedAt
+        self.store = maybeProductData?.store ?? .unknownStore
+        self.expirationDate = maybeProductData?.expiresDate
+        self.unsubscribeDetectedAt = maybeProductData?.unsubscribeDetectedAt
+        self.billingIssueDetectedAt = maybeProductData?.billingIssuesDetectedAt
         self.identifier = entitlementId
-        self.productIdentifier = productIdString!
-        self.isSandbox = isSandbox
+        self.productIdentifier = (maybeEntitlementData?.productIdentifier)!
+        self.isSandbox = maybeProductData?.isSandbox ?? false
 
-        self.isActive = Self.isDateActive(expirationDate: entitlementExpiresDate, forRequestDate: requestDate)
-        self.periodType = Self.parsePeriodType(periodType: periodTypeString)
-        self.latestPurchaseDate = dateFormatter.date(fromString: entitlementPurchaseDateString)
-        self.originalPurchaseDate = dateFormatter.date(fromString: originalPurchaseDateString)
-        self.ownershipType = Self.parseOwnershipType(ownershipType: ownershipType)
+        self.isActive = Self.isDateActive(expirationDate: maybeEntitlementData?.expiresDate, forRequestDate: requestDate)
+        self.periodType = maybeProductData?.periodType ?? .normal
+        self.latestPurchaseDate = maybeEntitlementData?.purchaseDate
+        self.originalPurchaseDate = maybeProductData?.originalPurchaseDate
+        self.ownershipType = maybeProductData?.ownershipType ?? .purchased
         self.willRenew = Self.willRenewWithExpirationDate(expirationDate: expirationDate,
                                                           store: store,
                                                           unsubscribeDetectedAt: unsubscribeDetectedAt,
@@ -282,64 +277,6 @@ private extension EntitlementInfo {
         return expirationDate.timeIntervalSince(referenceDate) > 0
     }
 
-    class func parseOwnershipType(ownershipType: String?) -> PurchaseOwnershipType {
-        guard let ownershipType = ownershipType else {
-            return .purchased
-        }
-
-        switch ownershipType {
-        case "PURCHASED":
-            return .purchased
-        case "FAMILY_SHARED":
-            return .familyShared
-        default:
-            Logger.warn("received unknown ownershipType: \(ownershipType)")
-            return .unknown
-        }
-    }
-
-    class func parsePeriodType(periodType: String?) -> PeriodType {
-        guard let periodType = periodType else {
-            Logger.warn("nil periodType found during parsePeriodType")
-            return .normal
-        }
-
-        switch periodType {
-        case "normal":
-            return .normal
-        case "intro":
-            return .intro
-        case "trial":
-            return .trial
-        default:
-            Logger.warn("received unknown periodType: \(periodType)")
-            return .normal
-        }
-    }
-
-    class func parseStore(store: String?) -> Store {
-        guard let store = store else {
-            Logger.warn("nil store found during parseStore")
-            return .unknownStore
-        }
-
-        switch store {
-        case "app_store":
-            return .appStore
-        case "mac_app_store":
-            return .macAppStore
-        case "play_store":
-            return .playStore
-        case "stripe":
-            return .stripe
-        case "promotional":
-            return .promotional
-        default:
-            Logger.warn("received unknown store: \(store)")
-            return .unknownStore
-        }
-    }
-
     class func willRenewWithExpirationDate(expirationDate: Date?,
                                            store: Store,
                                            unsubscribeDetectedAt: Date?,
@@ -350,6 +287,30 @@ private extension EntitlementInfo {
         let hasBillingIssues = billingIssueDetectedAt != nil
 
         return !(isPromo || isLifetime || hasUnsubscribed || hasBillingIssues)
+    }
+
+}
+
+/**
+ This extension contains some internal helpers to decode the data received from the backend.
+ */
+private extension EntitlementInfo {
+
+    struct EntitlementData: Decodable {
+        let expiresDate: Date?
+        let purchaseDate: Date?
+        let productIdentifier: String?
+    }
+
+    struct ProductData: Decodable {
+        let periodType: PeriodType?
+        let originalPurchaseDate: Date?
+        let expiresDate: Date?
+        let store: Store?
+        let isSandbox: Bool?
+        let unsubscribeDetectedAt: Date?
+        let billingIssuesDetectedAt: Date?
+        let ownershipType: PurchaseOwnershipType?
     }
 
 }
