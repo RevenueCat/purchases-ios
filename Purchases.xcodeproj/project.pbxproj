@@ -1149,6 +1149,7 @@
 				2DC5621324EC63420031F69B /* Frameworks */,
 				2DC5621424EC63420031F69B /* Resources */,
 				F578415E26A0407A00EA3D8A /* Check TARGET_OS macro */,
+				B3C302D926D8066F002B72D1 /* SwiftLint */,
 			);
 			buildRules = (
 			);
@@ -1337,6 +1338,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		B3C302D926D8066F002B72D1 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "scripts/swiftlint.sh\n";
+		};
 		F578415E26A0407A00EA3D8A /* Check TARGET_OS macro */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;

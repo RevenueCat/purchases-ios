@@ -1084,7 +1084,7 @@ public extension Purchases {
 }
 
 // MARK: Configuring Purchases
-extension Purchases {
+public extension Purchases {
 
     /**
      * Configures an instance of the Purchases SDK with a specified API key. The instance will be set as a singleton.
@@ -1176,34 +1176,12 @@ extension Purchases {
                   platformFlavorVersion: nil)
     }
 
-    /**
-     * Configures an instance of the Purchases SDK with a custom userDefaults. Use this constructor if you want to
-     * sync status across a shared container, such as between a host app and an extension. The instance of the
-     * Purchases SDK will be set as a singleton.
-     * You should access the singleton instance using Purchases.sharedPurchases
-     *
-     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
-     *
-     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass nil if you want `RCPurchases` to generate this for you.
-     *
-     * - Parameter observerMode: Set this to TRUE if you have your own IAP implementation and want to use only
-     * RevenueCat's backend. Default is FALSE.
-     *
-     * - Parameter userDefaults: Custom userDefaults to use
-     *
-     * - Parameter platformFlavor: The current platformFlavor you are configuring.
-     *
-     * - Parameter platformFlavorVersion: The current version of the platformFlavor you are configuring.
-     *
-     * - Returns: An instantiated `Purchases` object that has been set as a singleton.
-     */
-    public static func configure(apiKey: String,
-                                 appUserID: String?,
-                                 observerMode: Bool,
-                                 userDefaults: UserDefaults?,
-                                 platformFlavor: String?,
-                                 platformFlavorVersion: String?) -> Purchases {
+    static internal func configure(apiKey: String,
+                                   appUserID: String?,
+                                   observerMode: Bool,
+                                   userDefaults: UserDefaults?,
+                                   platformFlavor: String?,
+                                   platformFlavorVersion: String?) -> Purchases {
         let purchases = Purchases(apiKey: apiKey,
                                    appUserID: appUserID,
                                    userDefaults: userDefaults,
