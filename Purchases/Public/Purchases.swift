@@ -804,7 +804,7 @@ public extension Purchases {
      * - Parameter completion: An @escaping callback that is called with the loaded products.
      * If the fetch fails for any reason it will return an empty array.
      */
-    @objc func products(identifiers: [String], completionBlock completion: @escaping ([SKProduct]) -> Void) {
+    @objc func products(identifiers: [String], completionBlock completion: @escaping ([ProductWrapper]) -> Void) {
         purchasesOrchestrator.products(withIdentifiers: identifiers, completion: completion)
     }
 
@@ -854,14 +854,43 @@ public extension Purchases {
     @objc(purchasePackage:withCompletionBlock:)
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
         // todo: clean up
-        guard let sk1ProductWrapper = package.productWrapper as? SK1ProductWrapper else {
+        if package.productWrapper is SK1ProductWrapper {
+            purchase(sk1Package: package, completion: completion)
+            return
+        }
+
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            if package.productWrapper is SK2ProductWrapper {
+                purchase(sk2Package: package, completion: completion)
+            }
+        } else {
+            // Fallback on earlier versions
+        }
+
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func purchase(sk2Package: Package, completion: @escaping PurchaseCompletedBlock) {
+        guard let sk2ProductWrapper = sk2Package.productWrapper as? SK2ProductWrapper else {
+            return
+        }
+        let sk2Product = sk2ProductWrapper.underlyingSK2Product
+        Task.init {
+            try await sk2Product.purchase()
+        }
+
+
+    }
+
+    private func purchase(sk1Package: Package, completion: @escaping PurchaseCompletedBlock) {
+        guard let sk1ProductWrapper = sk1Package.productWrapper as? SK1ProductWrapper else {
             return
         }
         let sk1Product = sk1ProductWrapper.underlyingSK1Product
         let payment = storeKitWrapper.payment(withProduct: sk1Product)
         purchase(product: sk1Product,
                  payment: payment,
-                 presentedOfferingIdentifier: package.offeringIdentifier,
+                 presentedOfferingIdentifier: sk1Package.offeringIdentifier,
                  completion: completion)
     }
 
