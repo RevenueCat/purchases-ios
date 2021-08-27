@@ -8,7 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 //  SwiftStyleGuide.swift
-//  PurchasesCoreSwift
+//  Purchases
 //
 //  Created by Andrés Boedo on 7/12/21.
 //

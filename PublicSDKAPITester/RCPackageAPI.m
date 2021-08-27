@@ -13,8 +13,8 @@
 
 #import "RCPackageAPI.h"
 
+@import StoreKit;
 @import Purchases;
-@import PurchasesCoreSwift;
 
 @implementation RCPackageAPI
 
