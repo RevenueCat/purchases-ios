@@ -8,6 +8,7 @@
 
 import UIKit
 import Purchases
+import StoreKit
 
 enum PayWallEdgeStyle : String {
     case square
@@ -163,7 +164,7 @@ class SwiftPaywall: UIViewController {
         }
         
         setState(loading: true)
-        Purchases.shared.purchasePackage(package) { (trans, info, error, cancelled) in
+        Purchases.shared.purchase(package: package) { (trans, info, error, cancelled) in
 
             self.setState(loading: false)
 
