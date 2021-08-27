@@ -31,5 +31,7 @@ enum PurchaserInfoStrings {
     static let sending_latest_purchaserinfo_to_delegate = "Sending latest PurchaserInfo to delegate."
     static let sending_updated_purchaserinfo_to_delegate = "Sending updated PurchaserInfo to delegate."
     static let vending_cache = "Vending PurchaserInfo from cache."
+    static let error_getting_data_from_purchaserinfo_json = "Couldn't get data from purchaserInfo.jsonObject\n%@"
+    static let invalid_json = "Invalid JSON returned from purchaserInfo.jsonObject"
 
 }
