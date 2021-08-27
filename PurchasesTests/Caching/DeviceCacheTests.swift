@@ -213,7 +213,7 @@ class DeviceCacheTests: XCTestCase {
         self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
                                        offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter,
-                                       errorFunction: { _ in assertionHappened.fulfill() })
+                                       appUserIdDeletedAssertionFunction: { _ in assertionHappened.fulfill() })
         #else
         self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
                                        offeringsCachedObject: nil,
