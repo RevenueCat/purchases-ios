@@ -90,14 +90,14 @@ class PurchasesOrchestrator {
                       maybeCompletion: maybeCompletion)
     }
 
-    func products(withIdentifiers identifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
+    func products(withIdentifiers identifiers: [String], completion: @escaping ([ProductWrapper]) -> Void) {
         let productIdentifiersSet = Set(identifiers)
         guard !productIdentifiersSet.isEmpty else {
             operationDispatcher.dispatchOnMainThread { completion([]) }
             return
         }
 
-        productsManager.products(withIdentifiers: productIdentifiersSet) { products in
+        productsManager.productsFromOptimalStore(withIdentifiers: productIdentifiersSet) { products in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(Array(products))
             }
@@ -335,11 +335,13 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func postReceipt(withTransaction transaction: SKPaymentTransaction, receiptData: Data, products: Set<SKProduct>) {
+    func postReceipt(withTransaction transaction: SKPaymentTransaction, receiptData: Data, products: Set<ProductWrapper>) {
         var maybeProductInfo: ProductInfo?
         var maybePresentedOfferingID: String?
         if let product = products.first {
-            let productInfo = ProductInfoExtractor().extractInfo(from: product)
+            // todo
+            guard product is SK1ProductWrapper else { return }
+            let productInfo = ProductInfoExtractor().extractInfo(from: (product as! SK1ProductWrapper).underlyingSK1Product)
             maybeProductInfo = productInfo
 
             let productID = productInfo.productIdentifier

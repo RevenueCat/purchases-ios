@@ -35,11 +35,11 @@ class OfferingsFactory {
         return Offerings(offerings: offerings, currentOfferingID: currentOfferingID)
     }
 
-    func createOfferings(withProducts products: [String: SKProduct],
+    func createOfferings(withProducts products: [String: ProductWrapper],
                          data: [String: Any]) -> Offerings? {
         let productWrappersByKey = Dictionary(uniqueKeysWithValues:
-                                                products.map { productIdentifier, skProduct in
-            (productIdentifier, SK1ProductWrapper(sk1Product: skProduct)) }
+                                                products.map { productIdentifier, productWrapper in
+            (productIdentifier, productWrapper) }
         )
         return self.createOfferings(withProductWrappers: productWrappersByKey, data: data)
     }
