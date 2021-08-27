@@ -14,17 +14,11 @@
 import Foundation
 
 extension Store: Decodable {
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let maybeStoreString = try? container.decode(String.self)
-        
-        guard let storeString = maybeStoreString else {
-            Logger.warn("nil store found during decoding")
-            self = .unknownStore
-            return
-        }
-        
+        let storeString = try container.decode(String.self)
+
         switch storeString {
         case "app_store":
             self = .appStore
@@ -41,5 +35,5 @@ extension Store: Decodable {
             self = .unknownStore
         }
     }
-    
+
 }

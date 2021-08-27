@@ -14,16 +14,10 @@
 import Foundation
 
 extension PurchaseOwnershipType: Decodable {
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let maybePurchaseOwnershipTypeString = try? container.decode(String.self)
-        
-        guard let purchaseOwnershipTypeString = maybePurchaseOwnershipTypeString else {
-            Logger.warn("nil ownershipType found during decoding")
-            self = .purchased
-            return
-        }
+        let purchaseOwnershipTypeString = try container.decode(String.self)
 
         switch purchaseOwnershipTypeString {
         case "PURCHASED":
@@ -35,5 +29,5 @@ extension PurchaseOwnershipType: Decodable {
             self = .unknown
         }
     }
-    
+
 }

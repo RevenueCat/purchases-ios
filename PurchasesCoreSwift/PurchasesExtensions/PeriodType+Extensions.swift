@@ -14,16 +14,10 @@
 import Foundation
 
 extension PeriodType: Decodable {
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let maybePeriodTypeString = try? container.decode(String.self)
-        
-        guard let periodTypeString = maybePeriodTypeString else {
-            Logger.warn("nil periodType found during decoding")
-            self = .normal
-            return
-        }
+        let periodTypeString = try container.decode(String.self)
 
         switch periodTypeString {
         case "normal":
@@ -37,5 +31,5 @@ extension PeriodType: Decodable {
             self = .normal
         }
     }
-    
+
 }

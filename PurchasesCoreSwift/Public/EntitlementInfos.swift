@@ -58,10 +58,17 @@ import Foundation
             guard let productData = productData as? [String: Any] else {
                 return
             }
-            entitlementInfos[identifier] = EntitlementInfo(entitlementId: identifier,
-                                                           entitlementData: entitlement,
-                                                           productData: productData,
-                                                           requestDate: requestDate)
+
+            guard let entitlementInfo = EntitlementInfo(
+                entitlementId: identifier,
+                entitlementData: entitlement,
+                productData: productData,
+                requestDate: requestDate
+            ) else {
+                return
+            }
+
+            entitlementInfos[identifier] = entitlementInfo
         }
         self.all = entitlementInfos
     }

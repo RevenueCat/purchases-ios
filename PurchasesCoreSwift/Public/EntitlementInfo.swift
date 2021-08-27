@@ -123,10 +123,10 @@ import Foundation
      */
     @objc public let ownershipType: PurchaseOwnershipType
 
-    @objc public convenience init(entitlementId: String,
-                                  entitlementData: [String: Any],
-                                  productData: [String: Any],
-                                  requestDate: Date?) {
+    @objc public convenience init?(entitlementId: String,
+                                   entitlementData: [String: Any],
+                                   productData: [String: Any],
+                                   requestDate: Date?) {
         self.init(entitlementId: entitlementId,
                   entitlementData: entitlementData,
                   productData: productData,
@@ -135,39 +135,43 @@ import Foundation
                   jsonDecoder: JSONDecoder())
     }
 
-    init(entitlementId: String,
-         entitlementData entitlementDataDict: [String: Any],
-         productData productDataDict: [String: Any],
-         requestDate: Date?,
-         dateFormatter: DateFormatter,
-         jsonDecoder: JSONDecoder) {
+    init?(entitlementId: String,
+          entitlementData entitlementDataDict: [String: Any],
+          productData productDataDict: [String: Any],
+          requestDate: Date?,
+          dateFormatter: DateFormatter,
+          jsonDecoder: JSONDecoder) {
         // Entitlement data
-        let maybeEntitlementData: EntitlementData? = try? jsonDecoder.decode(
+        guard let entitlementData: EntitlementData = try? jsonDecoder.decode(
             dictionary: entitlementDataDict,
             keyDecodingStrategy: .convertFromSnakeCase,
             dateDecodingStrategy: .formatted(dateFormatter)
-        )
+        ) else {
+            return nil
+        }
 
         // Product data
-        let maybeProductData: ProductData? = try? jsonDecoder.decode(
+        guard let productData: ProductData = try? jsonDecoder.decode(
             dictionary: productDataDict,
             keyDecodingStrategy: .convertFromSnakeCase,
             dateDecodingStrategy: .formatted(dateFormatter)
-        )
+        ) else {
+            return nil
+        }
 
-        self.store = maybeProductData?.store ?? .unknownStore
-        self.expirationDate = maybeProductData?.expiresDate
-        self.unsubscribeDetectedAt = maybeProductData?.unsubscribeDetectedAt
-        self.billingIssueDetectedAt = maybeProductData?.billingIssuesDetectedAt
+        self.store = productData.store
+        self.expirationDate = productData.expiresDate
+        self.unsubscribeDetectedAt = productData.unsubscribeDetectedAt
+        self.billingIssueDetectedAt = productData.billingIssuesDetectedAt
         self.identifier = entitlementId
-        self.productIdentifier = (maybeEntitlementData?.productIdentifier)!
-        self.isSandbox = maybeProductData?.isSandbox ?? false
+        self.productIdentifier = entitlementData.productIdentifier
+        self.isSandbox = productData.isSandbox
 
-        self.isActive = Self.isDateActive(expirationDate: maybeEntitlementData?.expiresDate, forRequestDate: requestDate)
-        self.periodType = maybeProductData?.periodType ?? .normal
-        self.latestPurchaseDate = maybeEntitlementData?.purchaseDate
-        self.originalPurchaseDate = maybeProductData?.originalPurchaseDate
-        self.ownershipType = maybeProductData?.ownershipType ?? .purchased
+        self.isActive = Self.isDateActive(expirationDate: entitlementData.expiresDate, forRequestDate: requestDate)
+        self.periodType = productData.periodType
+        self.latestPurchaseDate = entitlementData.purchaseDate
+        self.originalPurchaseDate = productData.originalPurchaseDate
+        self.ownershipType = productData.ownershipType
         self.willRenew = Self.willRenewWithExpirationDate(expirationDate: expirationDate,
                                                           store: store,
                                                           unsubscribeDetectedAt: unsubscribeDetectedAt,
@@ -296,23 +300,23 @@ private extension EntitlementInfo {
 /**
  This extension contains some internal helper structs to decode the data received from the backend.
  */
-private extension EntitlementInfo {
+extension EntitlementInfo {
 
     struct EntitlementData: Decodable {
         let expiresDate: Date?
         let purchaseDate: Date?
-        let productIdentifier: String?
+        let productIdentifier: String
     }
 
     struct ProductData: Decodable {
-        let periodType: PeriodType?
+        let periodType: PeriodType
         let originalPurchaseDate: Date?
         let expiresDate: Date?
-        let store: Store?
-        let isSandbox: Bool?
+        let store: Store
+        let isSandbox: Bool
         let unsubscribeDetectedAt: Date?
         let billingIssuesDetectedAt: Date?
-        let ownershipType: PurchaseOwnershipType?
+        let ownershipType: PurchaseOwnershipType
     }
 
 }

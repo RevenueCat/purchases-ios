@@ -20,7 +20,8 @@ extension JSONDecoder {
     /// - Parameters:
     ///   - type: The type of the value to decode. The default is `T.self`.
     ///   - dictionary: The dictionary to decode from.
-    ///   - keyDecodingStrategy: The strategy to use for automatically changing the value of keys before decoding. The default is `useDefaultKeys`.
+    ///   - keyDecodingStrategy: The strategy to use for automatically changing the
+    ///   value of keys before decoding. The default is `useDefaultKeys`.
     ///   - dateDecodingStrategy: The strategy to use for decoding `Date` values. The default is `deferredToDate`.
     ///   - dataDecodingStrategy: The strategy to use for decoding `Data` values. The default is `deferredToData`.
     /// - Returns: A value of the requested type.

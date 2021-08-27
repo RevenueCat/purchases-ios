@@ -216,6 +216,8 @@
 		F5714EA826D7A83A00635477 /* Store+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EA726D7A83A00635477 /* Store+Extensions.swift */; };
 		F5714EAA26D7A85D00635477 /* PeriodType+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EA926D7A85D00635477 /* PeriodType+Extensions.swift */; };
 		F5714EAC26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EAB26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift */; };
+		F5714EC226D8D82100635477 /* EntitlementProductData+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EC126D8D82100635477 /* EntitlementProductData+Extensions.swift */; };
+		F5714EC426D8D86800635477 /* EntitlementData+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5714EC326D8D86800635477 /* EntitlementData+Extensions.swift */; };
 		F575858D26C088FE00C12B97 /* OfferingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F575858C26C088FE00C12B97 /* OfferingsManager.swift */; };
 		F575858F26C0893600C12B97 /* MockOfferingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F575858E26C0893600C12B97 /* MockOfferingsManager.swift */; };
 		F591492826B9956C00D32E58 /* MockTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591492726B9956C00D32E58 /* MockTransaction.swift */; };
@@ -510,6 +512,8 @@
 		F5714EA726D7A83A00635477 /* Store+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Store+Extensions.swift"; sourceTree = "<group>"; };
 		F5714EA926D7A85D00635477 /* PeriodType+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PeriodType+Extensions.swift"; sourceTree = "<group>"; };
 		F5714EAB26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PurchaseOwnershipType+Extensions.swift"; sourceTree = "<group>"; };
+		F5714EC126D8D82100635477 /* EntitlementProductData+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EntitlementProductData+Extensions.swift"; sourceTree = "<group>"; };
+		F5714EC326D8D86800635477 /* EntitlementData+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EntitlementData+Extensions.swift"; sourceTree = "<group>"; };
 		F575858C26C088FE00C12B97 /* OfferingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsManager.swift; sourceTree = "<group>"; };
 		F575858E26C0893600C12B97 /* MockOfferingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOfferingsManager.swift; sourceTree = "<group>"; };
 		F575859126C08E3F00C12B97 /* OfferingsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsManagerTests.swift; sourceTree = "<group>"; };
@@ -1164,6 +1168,8 @@
 				F5714EA726D7A83A00635477 /* Store+Extensions.swift */,
 				F5714EA926D7A85D00635477 /* PeriodType+Extensions.swift */,
 				F5714EAB26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift */,
+				F5714EC126D8D82100635477 /* EntitlementProductData+Extensions.swift */,
+				F5714EC326D8D86800635477 /* EntitlementData+Extensions.swift */,
 			);
 			path = PurchasesExtensions;
 			sourceTree = "<group>";
@@ -1523,6 +1529,7 @@
 				35F6FD62267426D600ABCB53 /* ETagAndResponseWrapper.swift in Sources */,
 				B3852FA026C1ED1F005384F8 /* IdentityManager.swift in Sources */,
 				9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */,
+				F5714EC226D8D82100635477 /* EntitlementProductData+Extensions.swift in Sources */,
 				354895D6267BEDE3001DC5B1 /* SpecialSubscriberAttributes.swift in Sources */,
 				2D11F5E1250FF886005A70E8 /* AttributionStrings.swift in Sources */,
 				2CD72944268A826F00BFC976 /* Date+Extensions.swift in Sources */,
@@ -1566,6 +1573,7 @@
 				B3B5FBC1269E17CE00104A0C /* DeviceCache.swift in Sources */,
 				F5BE424226965F9F00254A30 /* ProductInfoExtractor.swift in Sources */,
 				2DDF41AD24F6F37C005BC22D /* ASN1ObjectIdentifier.swift in Sources */,
+				F5714EC426D8D86800635477 /* EntitlementData+Extensions.swift in Sources */,
 				35549323269E298B005F9AE9 /* OfferingsFactory.swift in Sources */,
 				2CD72948268A828400BFC976 /* Locale+Extensions.swift in Sources */,
 				2DC5622E24EC636C0031F69B /* Transaction.swift in Sources */,
