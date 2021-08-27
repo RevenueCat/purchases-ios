@@ -337,17 +337,13 @@ class PurchasesTests: XCTestCase {
 
     func testUsingSharedInstanceWithoutInitializingThrowsAssertion() {
         #if arch(arm64)
-        // Create an inverted expectation. So, it'll fail if fulfilled.
-        let assertionDidNotHappen = expectation(description: "Assertion did not happen")
-        assertionDidNotHappen.isInverted = true
         let assertionHappened = expectation(description: "Assertion happened")
-
         Purchases.notConfiguredAssertionFunction = {
             assertionHappened.fulfill()
-            assertionDidNotHappen.fulfill()
         }
 
         _ = Purchases.shared
+
         wait(for: [assertionHappened], timeout: TimeInterval(1))
         #else
         expect(Purchases.shared).to(throwAssertion())
@@ -356,7 +352,15 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
 
         #if arch(arm64)
+        // Create an inverted expectation. So, it'll fail if fulfilled.
+        let assertionDidNotHappen = expectation(description: "Assertion did not happen")
+        assertionDidNotHappen.isInverted = true
+        Purchases.notConfiguredAssertionFunction = {
+            assertionDidNotHappen.fulfill()
+        }
+
         _ = Purchases.shared
+
         wait(for: [assertionDidNotHappen], timeout: TimeInterval(1))
         #else
         expect { _ = Purchases.shared }.toNot(throwAssertion())
