@@ -14,16 +14,16 @@ import StoreKit
         return self.productIdentifier == (object as? ProductWrapper)?.productIdentifier
     }
 
-    @objc var localizedDescription: String { fatalError() }
-    @objc var localizedTitle: String { fatalError() }
-    @objc var price: Decimal { fatalError() }
-    @objc var localizedPriceString: String { fatalError() }
-    @objc var productIdentifier: String { fatalError() }
+    @objc public var localizedDescription: String { fatalError() }
+    @objc public var localizedTitle: String { fatalError() }
+    @objc public var price: Decimal { fatalError() }
+    @objc public var localizedPriceString: String { fatalError() }
+    @objc public var productIdentifier: String { fatalError() }
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
-    @objc var isFamilyShareable: Bool { fatalError() }
+    @objc public var isFamilyShareable: Bool { fatalError() }
 
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, *)
-    @objc var subscriptionGroupIdentifier: String? { fatalError() }
+    @objc public var subscriptionGroupIdentifier: String? { fatalError() }
 
     //    YES if this product has content downloadable using SKDownload
     //    var isDownloadable: Bool { get }
@@ -96,7 +96,7 @@ import StoreKit
     }
 
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, *)
-    override var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
+    override public var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
     private lazy var formatter: NumberFormatter = {
         let formatter = NumberFormatter()
