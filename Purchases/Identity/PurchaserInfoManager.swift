@@ -150,11 +150,11 @@ class PurchaserInfoManager {
                 deviceCache.cache(purchaserInfo: jsonData, appUserID: appUserID)
                 sendUpdateIfChanged(purchaserInfo: purchaserInfo)
             } catch {
-                Logger.warn(String(format: Strings.purchaserInfo.error_getting_data_from_purchaserinfo_json,
+                Logger.error(String(format: Strings.purchaserInfo.error_getting_data_from_purchaserinfo_json,
                                    error.localizedDescription))
             }
         } else {
-            Logger.warn(Strings.purchaserInfo.invalid_json)
+            Logger.error(Strings.purchaserInfo.invalid_json)
         }
     }
 
