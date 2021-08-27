@@ -48,5 +48,5 @@ enum PurchaseStrings {
     static let purchases_delegate_set_multiple_times = "Purchases delegate has already been configured."
     static let purchases_delegate_set_to_nil = "Purchases delegate is being set to nil, " +
         "you probably don't want to do this."
-    static let management_url_nil_opening_default = "managementURL is nil, opening iOS subscription management page"
+    static let management_url_nil_opening_default = "managementURL is nil, opening Apple's subscription management page"
 }

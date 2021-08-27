@@ -31,15 +31,15 @@ extension ManageSubscriptionsModalError: CustomStringConvertible {
         case .couldntGetWindowScene:
             return "Failed to get UIWindowScene"
         case .storeKitShowManageSubscriptionsFailed(let error):
-            return "error when trying to show manage subscription: \(error.localizedDescription)"
+            return "Error when trying to show manage subscription: \(error.localizedDescription)"
         case .couldntGetAppleSubscriptionsURL:
-            return "error when trying to form the Apple Subscriptions URL."
+            return "Error when trying to form the Apple Subscriptions URL."
         }
     }
 
 }
 
-class ManageSubscriptionsModalHelper: NSObject {
+class ManageSubscriptionsModalHelper {
 
     private let systemInfo: SystemInfo
     private let purchaserInfoManager: PurchaserInfoManager
@@ -59,13 +59,13 @@ class ManageSubscriptionsModalHelper: NSObject {
     @available(tvOS, unavailable)
     func showManageSubscriptionModal(completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
         let currentAppUserID = identityManager.currentAppUserID
-        purchaserInfoManager.purchaserInfo(appUserID: currentAppUserID) { purchaserInfo, error in
-            if let error = error {
+        purchaserInfoManager.purchaserInfo(appUserID: currentAppUserID) { maybePurchaserInfo, maybeError in
+            if let error = maybeError {
                 completion(.failure(.couldntGetPurchaserInfo(message: error.localizedDescription)))
                 return
             }
 
-            guard let purchaserInfo = purchaserInfo else {
+            guard let purchaserInfo = maybePurchaserInfo else {
                 completion(.failure(.couldntGetPurchaserInfo(message: "purchaserInfo is nil.")))
                 return
             }
