@@ -8,6 +8,7 @@
 
 import UIKit
 import Purchases
+import StoreKit
 
 enum PayWallEdgeStyle : String {
     case square
@@ -163,7 +164,7 @@ class SwiftPaywall: UIViewController {
         }
         
         setState(loading: true)
-        Purchases.shared.purchasePackage(package) { (trans, info, error, cancelled) in
+        Purchases.shared.purchase(package: package) { (trans, info, error, cancelled) in
 
             self.setState(loading: false)
 
@@ -362,7 +363,7 @@ class SwiftPaywall: UIViewController {
             ])
         
         // The offerings loading indicator
-        offeringLoadingIndicator = UIActivityIndicatorView(style: .gray)
+        offeringLoadingIndicator = UIActivityIndicatorView(style: .medium)
         offeringLoadingIndicator.hidesWhenStopped = true
         offeringLoadingIndicator.translatesAutoresizingMaskIntoConstraints = false
         offeringCollectionView.addSubview(offeringLoadingIndicator)
@@ -415,7 +416,7 @@ class SwiftPaywall: UIViewController {
             ])
         
         // The buy button loading indicator
-        buyButtonLoadingIndicator = UIActivityIndicatorView(style: .gray)
+        buyButtonLoadingIndicator = UIActivityIndicatorView(style: .medium)
         buyButtonLoadingIndicator.hidesWhenStopped = true
         buyButtonLoadingIndicator.translatesAutoresizingMaskIntoConstraints = false
         buyButton.addSubview(buyButtonLoadingIndicator)
@@ -557,6 +558,8 @@ extension SwiftPaywall: UICollectionViewDelegate, UICollectionViewDataSource, UI
                     trialLength = "\(numUnits)-year"
                     cancelDate = Calendar.current.date(byAdding: .year, value: numUnits, to: Date())
                     cancelDate = Calendar.current.date(byAdding: .day, value: -1, to: cancelDate ?? Date())
+                @unknown default:
+                    fatalError()
                 }
                 
                 let dateFormatter = DateFormatter()
