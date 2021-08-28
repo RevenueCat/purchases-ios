@@ -32,7 +32,7 @@ import Foundation
      The user is not eligible for a free trial or intro pricing for this product.
      */
     case ineligible
-    
+
     /**
      The user is eligible for a free trial or intro pricing for this product.
      */

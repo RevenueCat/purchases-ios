@@ -652,7 +652,7 @@ public extension Purchases {
      * This function will alias two appUserIDs together.
      *
      * - Parameter alias: The new appUserID that should be linked to the currently identified appUserID
-     * - Parameter completionBlock: An optional completion block called when the aliasing has been successful.
+     * - Parameter maybeCompletionBlock: An optional completion block called when the aliasing has been successful.
      * This completion block will receive an error if there's been one.
      */
     @objc func createAlias(_ alias: String, completionBlock maybeCompletionBlock: ReceivePurchaserInfoBlock?) {

@@ -30,7 +30,7 @@ import Foundation
 
     /// For entitlements granted via Stripe.
     @objc(RCStripe) case stripe = 3
-    
+
     /// For entitlements granted via a promo in RevenueCat.
     @objc(RCPromotional) case promotional = 4
 
