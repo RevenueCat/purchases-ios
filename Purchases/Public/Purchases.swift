@@ -62,7 +62,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
  *  - Warning: Only one instance of Purchases should be instantiated at a time! Use a configure method to let the
  *  framework handle the singleton instance for you.
  */
-@objc(Purchases) public class Purchases: NSObject {
+@objc(RCPurchases) public class Purchases: NSObject {
 
     @objc(sharedPurchases)
     public static var shared: Purchases {
