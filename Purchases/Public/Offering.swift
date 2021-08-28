@@ -27,7 +27,7 @@ import Foundation
     @objc public let serverDescription: String
 
     /**
-     Array of `RCPackage` objects available for purchase.
+     Array of `Package` objects available for purchase.
      */
     @objc public let availablePackages: [Package]
 
@@ -105,7 +105,7 @@ import Foundation
 
     /**
      Retrieves a specific package by identifier, use this to access custom package types configured in the RevenueCat
-     dashboard, e.g. `[offering packageWithIdentifier:@"custom_package_id"]` or `offering[@"custom_package_id"]`.
+     dashboard, e.g. `offering.package(identifier: "custom_package_id")` or `offering["custom_package_id"]`.
      */
     @objc public func package(identifier: String?) -> Package? {
         guard let identifier = identifier else {
@@ -117,7 +117,6 @@ import Foundation
             .first
     }
 
-    /// :nodoc:
     @objc public subscript(key: String) -> Package? {
         return package(identifier: key)
     }

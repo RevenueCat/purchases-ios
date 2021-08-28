@@ -1,33 +1,43 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  IntroEligibility.swift
-//  Purchases
 //
 //  Created by Joshua Liebowitz on 7/6/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
 
 /**
- * - Note: Enum of different possible states for intro price eligibility status.
- * RCIntroEligibilityStatusUnknown RevenueCat doesn't have enough information to determine eligibility.
- * RCIntroEligibilityStatusIneligible The user is not eligible for a free trial or intro pricing for this
+ * Enum of different possible states for intro price eligibility status.
+ * * .unknown RevenueCat doesn't have enough information to determine eligibility.
+ * * .ineligible The user is not eligible for a free trial or intro pricing for this
  * product.
- * RCIntroEligibilityStatusEligible The user is eligible for a free trial or intro pricing for this product.
+ * * .eligible The user is eligible for a free trial or intro pricing for this product.
  */
 @objc(RCIntroEligibilityStatus) public enum IntroEligibilityStatus: Int {
+
     /**
      RevenueCat doesn't have enough information to determine eligibility.
      */
     case unknown = 0
+
     /**
      The user is not eligible for a free trial or intro pricing for this product.
      */
     case ineligible
+    
     /**
      The user is eligible for a free trial or intro pricing for this product.
      */
     case eligible
+
 }
 
 private extension IntroEligibilityStatus {
@@ -58,7 +68,7 @@ private extension IntroEligibilityStatus {
 }
 
 /**
- Class that holds the introductory price status
+ Holds the introductory price status
  */
 @objc(RCIntroEligibility) public class IntroEligibility: NSObject {
 

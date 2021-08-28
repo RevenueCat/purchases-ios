@@ -1,9 +1,15 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  EntitlementInfos.swift
-//  Purchases
 //
 //  Created by Joshua Liebowitz on 6/28/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
@@ -13,9 +19,9 @@ import Foundation
  */
 @objc(RCEntitlementInfos) public class EntitlementInfos: NSObject {
     /**
-     Dictionary of all EntitlementInfo (`RCEntitlementInfo`) objects (active and inactive) keyed by entitlement
-     identifier. This dictionary can also be accessed by using an index subscript on EntitlementInfos, e.g.
-     `entitlementInfos[@"pro_entitlement_id"]`.
+     Dictionary of all EntitlementInfo (`EntitlementInfo`) objects (active and inactive) keyed by entitlement
+     identifier. This dictionary can also be accessed by using an index subscript on `EntitlementInfos`, e.g.
+     `entitlementInfos["pro_entitlement_id"]`.
      */
     @objc public let all: [String: EntitlementInfo]
 

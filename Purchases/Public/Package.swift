@@ -1,13 +1,23 @@
 //
-// Created by Andrés Boedo on 6/18/21.
-// Copyright (c) 2021 Purchases. All rights reserved.
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  Package.swift
+//
+//  Created by Andrés Boedo on 6/18/21.
 //
 
 import Foundation
 import StoreKit
 
 @objc(RCPackageType) public enum PackageType: Int {
-    /// A package that was defined with a custom identifier.
+
+    /// A package that was defined with an unknown identifier.
     case unknown = -2,
         /// A package that was defined with a custom identifier.
          custom,
@@ -28,6 +38,7 @@ import StoreKit
 }
 
 private extension PackageType {
+
     var description: String? {
         switch self {
         case .unknown: return nil
@@ -40,6 +51,7 @@ private extension PackageType {
         case .monthly: return "$rc_monthly"
         case .weekly: return "$rc_weekly"
         }
+
     }
 
     static var typesByDescription: [String: PackageType] {
@@ -96,7 +108,7 @@ private extension PackageType {
 @objc public extension Package {
 
     /**
-     * - Parameter packageType: A PackageType.
+     * - Parameter packageType: A `PackageType`.
      * - Returns: an optional description of the packageType.
      */
     static func string(from packageType: PackageType) -> String? {
@@ -104,8 +116,8 @@ private extension PackageType {
     }
 
     /**
-     * - Parameter string: A string that maps to a enumeration value of type PackageType
-     * - Returns: a PackageType for the given string.
+     * - Parameter string: A string that maps to a enumeration value of type `PackageType`
+     * - Returns: a `PackageType` for the given string.
      */
     class func packageType(from string: String) -> PackageType {
         if let packageType = PackageType.typesByDescription[string] {
