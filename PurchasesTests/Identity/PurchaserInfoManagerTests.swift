@@ -407,9 +407,10 @@ class PurchaserInfoManagerTests: XCTestCase {
                 "original_application_version": NSNull()
             ]])!
 
-        expectToThrowException {
+        expect {
             self.purchaserInfoManager.cache(purchaserInfo: invalidPurchaserInfo, appUserID: "myUser")
-        }
+        }.toNot(throwError())
+
         expect(self.mockDeviceCache.cachePurchaserInfoCount).toEventually(be(0))
     }
 

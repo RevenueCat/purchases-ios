@@ -40,8 +40,9 @@ class SystemInfo {
     enum SystemInfoError: Error {
 
         case invalidInitializationData
-
     }
+
+    let appleSubscriptionsURL = URL(string: "https://rev.cat/manage-apple-subscription")
 
     var finishTransactions: Bool
     let platformFlavor: String
@@ -129,6 +130,17 @@ class SystemInfo {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }
 
+    #if os(iOS) || os(tvOS)
+    var sharedUIApplication: UIApplication? {
+        UIApplication.value(forKey: "sharedApplication") as? UIApplication
+    }
+    #endif
+
+    func isAppleSubscription(managementURL: URL) -> Bool {
+        guard let host = managementURL.host else { return false }
+        return host.contains("apple.com")
+    }
+
 }
 
 extension SystemInfo {
@@ -151,6 +163,10 @@ extension SystemInfo {
         #elseif os(watchOS)
             Notification.Name.NSExtensionHostWillResignActive
         #endif
+    }
+
+    var isAppExtension: Bool {
+        return Bundle.main.bundlePath.hasSuffix(".appex")
     }
 
 }
@@ -178,14 +194,6 @@ private extension SystemInfo {
 
         guard let sharedUIApplication = self.sharedUIApplication else { return false }
         return sharedUIApplication.applicationState == UIApplication.State.background
-    }
-
-    var isAppExtension: Bool {
-        return Bundle.main.bundlePath.hasSuffix(".appex")
-    }
-
-    var sharedUIApplication: UIApplication? {
-        UIApplication.value(forKey: "sharedApplication") as? UIApplication
     }
 
     #endif
