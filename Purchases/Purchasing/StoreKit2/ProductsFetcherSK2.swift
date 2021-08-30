@@ -20,14 +20,25 @@ enum ProductsManagerSK2Error: Error {
 
 }
 
-struct ProductsFetcherSK2 {
+@available(iOS 15.0, tvOS 15.0, macOS 13.0, watchOS 8.0, *)
+actor ProductsFetcherSK2 {
 
-    @available(iOS 15.0, tvOS 15.0, macOS 13.0, watchOS 8.0, *)
+    private var cachedProductsByIdentifier: [String: SK2ProductWrapper] = [:]
+
     func products(identifiers: Set<String>) async throws -> Set<ProductWrapper> {
         do {
+            let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
+            if productsAlreadyCached.count == identifiers.count {
+                let productsAlreadyCachedSet = Set(productsAlreadyCached.values)
+                Logger.debug(String(format: Strings.offering.products_already_cached, identifiers))
+
+                return productsAlreadyCachedSet
+            }
+
             let storeKitProducts = try await StoreKit.Product.products(for: identifiers)
             let sk2Wrappers = storeKitProducts.map { SK2ProductWrapper(sk2Product: $0) }
             return Set(sk2Wrappers)
+            
         } catch let error {
             throw ProductsManagerSK2Error.productsRequestError(innerError: error)
         }

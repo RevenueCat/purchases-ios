@@ -18,7 +18,7 @@ class ProductsFetcherSK1: NSObject {
     private let productsRequestFactory: ProductsRequestFactory
 
     private var cachedProductsByIdentifier: [String: SKProduct] = [:]
-    private let queue = DispatchQueue(label: "ProductsManager")
+    private let queue = DispatchQueue(label: "ProductsFetcherSK1")
     private var productsByRequests: [SKRequest: Set<String>] = [:]
     private var completionHandlers: [Set<String>: [(Set<SKProduct>) -> Void]] = [:]
 

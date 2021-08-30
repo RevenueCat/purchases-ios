@@ -18,7 +18,9 @@ import StoreKit
 class ProductsManager: NSObject {
 
     let productsFetcherSK1: ProductsFetcherSK1
-    private let productsFetcherSK2 = ProductsFetcherSK2()
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 15.0, *)
+    private(set) lazy var productsFetcherSK2 = ProductsFetcherSK2()
 
     init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory()) {
         self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory)
