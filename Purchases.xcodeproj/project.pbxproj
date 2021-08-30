@@ -259,15 +259,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		A592DAC726D83ED30065C78B /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
 		B387F4712683FDDB0028701F /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1287,7 +1278,7 @@
 			buildPhases = (
 				A592DAC526D83ED30065C78B /* Sources */,
 				A592DAC626D83ED30065C78B /* Frameworks */,
-				A592DAC726D83ED30065C78B /* CopyFiles */,
+				B3103D9126DDA19200B60990 /* SwiftLint */,
 			);
 			buildRules = (
 			);
@@ -1423,6 +1414,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		B3103D9126DDA19200B60990 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "scripts/swiftlint.sh\n\n";
+		};
 		B3C302D926D8066F002B72D1 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
