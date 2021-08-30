@@ -27,42 +27,42 @@ import Foundation
     @objc public let serverDescription: String
 
     /**
-     Array of `Package` objects available for purchase.
+     Array of ``Package`` objects available for purchase.
      */
     @objc public let availablePackages: [Package]
 
     /**
-     Lifetime package type configured in the RevenueCat dashboard, if available.
+     Lifetime ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var lifetime: Package?
 
     /**
-     Annual package type configured in the RevenueCat dashboard, if available.
+     Annual ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var annual: Package?
 
     /**
-     Six month package type configured in the RevenueCat dashboard, if available.
+     Six month ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var sixMonth: Package?
 
     /**
-     Three month package type configured in the RevenueCat dashboard, if available.
+     Three month ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var threeMonth: Package?
 
     /**
-     Two month package type configured in the RevenueCat dashboard, if available.
+     Two month ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var twoMonth: Package?
 
     /**
-     Monthly package type configured in the RevenueCat dashboard, if available.
+     Monthly ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var monthly: Package?
 
     /**
-     Weekly package type configured in the RevenueCat dashboard, if available.
+     Weekly ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var weekly: Package?
 
