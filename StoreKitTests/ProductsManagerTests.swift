@@ -30,7 +30,7 @@ class ProductsManagerTests: XCTestCase {
         productsManager = ProductsManager()
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 13.0, watchOS 7.0, *)
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testFetchProductsFromOptimalStore() {
         let identifiers = Set([
             "com.revenuecat.monthly_4.99.1_week_intro"

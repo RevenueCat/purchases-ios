@@ -20,7 +20,7 @@ enum ProductsManagerSK2Error: Error {
 
 }
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 13.0, *)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 actor ProductsFetcherSK2 {
 
     private var cachedProductsByIdentifier: [String: SK2ProductWrapper] = [:]
