@@ -36,6 +36,6 @@ func checkPurchaserInfoAPI() {
 
     let desc: String = purchaserInfo!.description
 
-    print(purchaserInfo!, ei, asubs, appis, led!, ncp, nst, oav!, opd!, rDate!, fSeen, oaud!, murl!,
-          edfpurchaserInfo!, pdfpurchaserInfo!, exdf!, pdfe!, desc)
+    print(purchaserInfo!, entitlementInfo, asubs, appis, led!, ncp, nst, oav!, opd!, rDate!, fSeen, oaud!, murl!,
+          edfpi!, pdfpi!, exdf!, pdfe!, desc)
 }

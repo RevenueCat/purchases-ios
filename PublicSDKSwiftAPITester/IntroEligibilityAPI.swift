@@ -16,7 +16,7 @@ import Purchases
 
 func checkIntroEligibilityAPI() {
     let introE: RCIntroEligibility = RCIntroEligibility()
-    let status: RCIntroEligibilityStatus = ie.status
+    let status: RCIntroEligibilityStatus = introE.status
 
     print(introE, status)
 }

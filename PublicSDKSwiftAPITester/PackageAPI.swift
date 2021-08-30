@@ -16,11 +16,11 @@ import Purchases
 
 func checkPackageAPI() {
     let pack: Purchases.Package = Purchases.Package()
-    let ident: String = p.identifier
-    let pType: Purchases.PackageType = p.packageType
-    let prod: SKProduct = p.product
-    let lps: String = p.localizedPriceString
-    let lips: String = p.localizedIntroductoryPriceString
+    let ident: String = pack.identifier
+    let pType: Purchases.PackageType = pack.packageType
+    let prod: SKProduct = pack.product
+    let lps: String = pack.localizedPriceString
+    let lips: String = pack.localizedIntroductoryPriceString
 
     print(pack, ident, pType, prod, lps, lips)
 }

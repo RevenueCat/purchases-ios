@@ -31,7 +31,7 @@ func checkPurchasesAPI() {
     Purchases.setLogHandler(logHandler)
 
     let canI: Bool = Purchases.canMakePayments()
-    let version = Purchases.frameworkVersion()
+    let version = Purchases.frameworkVersion
     Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust)
     Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust, forNetworkUserId: "")
     Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust, forNetworkUserId: nil)
@@ -44,18 +44,19 @@ func checkPurchasesAPI() {
     let simulatesAskToBuyInSandbox: Bool = Purchases.simulatesAskToBuyInSandbox
     let sharedPurchases: Purchases = Purchases.shared
     let isConfigured: Bool = Purchases.isConfigured
-    let finishTransactions: Bool = p.finishTransactions
-    let delegate: PurchasesDelegate? = p.delegate
-    let appUserID: String = p.appUserID
-    let isAnonymous: Bool = p.isAnonymous
+    let finishTransactions: Bool = purch.finishTransactions
+    let delegate: PurchasesDelegate? = purch.delegate
+    let appUserID: String = purch.appUserID
+    let isAnonymous: Bool = purch.isAnonymous
 
     print(canI, version, automaticAppleSearchAdsAttributionCollection, debugLogsEnabled, logLevel, proxyUrl!,
           forceUniversalAppStore, simulatesAskToBuyInSandbox, sharedPurchases, isConfigured, finishTransactions,
           delegate!, appUserID, isAnonymous)
 
-    checkPurchasesSubscriberAttributesAPI()
-    checkPurchasesPurchasingAPI()
+    checkPurchasesSubscriberAttributesAPI(purchases: purch)
+    checkPurchasesPurchasingAPI(purchases: purch)
 
+    let piComplete: Purchases.ReceivePurchaserInfoBlock = { _, _ in }
     // identity
     purch.createAlias("", piComplete)
     purch.identify("", piComplete)
@@ -64,14 +65,6 @@ func checkPurchasesAPI() {
 
     let loginComplete: (Purchases.PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
     purch.logIn("", loginComplete)
-
-    // PurchasesDelegate
-    let purchaserInfo: Purchases.PurchaserInfo? = nil
-    purch.delegate?.purchases?(p, didReceiveUpdated: purchaserInfo!)
-
-    let defermentBlock: RCDeferredPromotionalPurchaseBlock = { _ in }
-    purch.delegate?.purchases?(p, shouldPurchasePromoProduct: skp, defermentBlock: defermentBlock)
-
 }
 
 func checkPurchasesEnums() {
@@ -92,22 +85,22 @@ func checkPurchasesEnums() {
 }
 
 func checkConstants() {
-    // TODO fix
-//    let vn: Double = PurchasesVersionNumber
-//    let vs: String = Purchases.PurchasesVersionString
+    // were these never available from swift?
+//    let versionNum: Double = PurchasesVersionNumber
+//    let versionString: String = PurchasesVersionString
 
-    log(vn)
+//    print(versionNum)
 }
 
-private func checkPurchasesPurchasingAPI() {
+private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let piComplete: Purchases.ReceivePurchaserInfoBlock = { _, _ in }
-    purch.purchaserInfo(piComplete)
+    purchases.purchaserInfo(piComplete)
 
     let offeringsComplete: Purchases.ReceiveOfferingsBlock = { _, _ in }
-    purch.offerings(offeringsComplete)
+    purchases.offerings(offeringsComplete)
 
     let productsComplete: Purchases.ReceiveProductsBlock = { _ in }
-    purch.products([String](), productsComplete)
+    purchases.products([String](), productsComplete)
 
     let skp: SKProduct = SKProduct()
     let skpd: SKProductDiscount = SKProductDiscount()
@@ -115,53 +108,60 @@ private func checkPurchasesPurchasingAPI() {
     let pack: Purchases.Package = Purchases.Package()
 
     let purchaseProductComplete: Purchases.PurchaseCompletedBlock = { _, _, _, _  in }
-    purch.purchaseProduct(skp, purchaseProductComplete)
-    purch.purchasePackage(pack, purchaseProductComplete)
+    purchases.purchaseProduct(skp, purchaseProductComplete)
+    purchases.purchasePackage(pack, purchaseProductComplete)
 
-    purch.restoreTransactions(piComplete)
-    purch.syncPurchases(piComplete)
+    purchases.restoreTransactions(piComplete)
+    purchases.syncPurchases(piComplete)
 
     let checkEligComplete: ([String: RCIntroEligibility]) -> Void = { _ in }
-    purch.checkTrialOrIntroductoryPriceEligibility([String](), completionBlock: checkEligComplete)
+    purchases.checkTrialOrIntroductoryPriceEligibility([String](), completionBlock: checkEligComplete)
 
     let discountComplete: Purchases.PaymentDiscountBlock = { _, _ in }
-    purch.paymentDiscount(for: skpd, product: skp, completion: discountComplete)
-    purch.purchaseProduct(skp, discount: skmd, purchaseProductComplete)
-    purch.purchasePackage(pack, discount: skmd, purchaseProductComplete)
-    purch.invalidatePurchaserInfoCache()
+    purchases.paymentDiscount(for: skpd, product: skp, completion: discountComplete)
+    purchases.purchaseProduct(skp, discount: skmd, purchaseProductComplete)
+    purchases.purchasePackage(pack, discount: skmd, purchaseProductComplete)
+    purchases.invalidatePurchaserInfoCache()
+
+    // PurchasesDelegate
+    let purchaserInfo: Purchases.PurchaserInfo? = nil
+    purchases.delegate?.purchases?(purchases, didReceiveUpdated: purchaserInfo!)
+
+    let defermentBlock: RCDeferredPromotionalPurchaseBlock = { _ in }
+    purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp, defermentBlock: defermentBlock)
 }
 
-private func checkPurchasesSubscriberAttributesAPI() {
-    purch.setAttributes([String: String]())
-    purch.setEmail("")
-    purch.setEmail(nil)
-    purch.setPhoneNumber("")
-    purch.setPhoneNumber(nil)
-    purch.setDisplayName("")
-    purch.setDisplayName(nil)
-    purch.setPushToken("".data(using: String.Encoding.utf8))
-    purch.setPushToken(nil)
-    purch.setAdjustID("")
-    purch.setAdjustID(nil)
-    purch.setAppsflyerID("")
-    purch.setAppsflyerID(nil)
-    purch.setFBAnonymousID("")
-    purch.setFBAnonymousID(nil)
-    purch.setMparticleID("")
-    purch.setMparticleID(nil)
-    purch.setOnesignalID("")
-    purch.setOnesignalID(nil)
-    purch.setMediaSource("")
-    purch.setMediaSource(nil)
-    purch.setCampaign("")
-    purch.setCampaign(nil)
-    purch.setAdGroup("")
-    purch.setAdGroup(nil)
-    purch.setAd("")
-    purch.setAd(nil)
-    purch.setKeyword("")
-    purch.setKeyword(nil)
-    purch.setCreative("")
-    purch.setCreative(nil)
-    purch.collectDeviceIdentifiers()
+private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
+    purchases.setAttributes([String: String]())
+    purchases.setEmail("")
+    purchases.setEmail(nil)
+    purchases.setPhoneNumber("")
+    purchases.setPhoneNumber(nil)
+    purchases.setDisplayName("")
+    purchases.setDisplayName(nil)
+    purchases.setPushToken("".data(using: String.Encoding.utf8))
+    purchases.setPushToken(nil)
+    purchases.setAdjustID("")
+    purchases.setAdjustID(nil)
+    purchases.setAppsflyerID("")
+    purchases.setAppsflyerID(nil)
+    purchases.setFBAnonymousID("")
+    purchases.setFBAnonymousID(nil)
+    purchases.setMparticleID("")
+    purchases.setMparticleID(nil)
+    purchases.setOnesignalID("")
+    purchases.setOnesignalID(nil)
+    purchases.setMediaSource("")
+    purchases.setMediaSource(nil)
+    purchases.setCampaign("")
+    purchases.setCampaign(nil)
+    purchases.setAdGroup("")
+    purchases.setAdGroup(nil)
+    purchases.setAd("")
+    purchases.setAd(nil)
+    purchases.setKeyword("")
+    purchases.setKeyword(nil)
+    purchases.setCreative("")
+    purchases.setCreative(nil)
+    purchases.collectDeviceIdentifiers()
 }
