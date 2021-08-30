@@ -155,6 +155,7 @@
 		9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */; };
 		A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */; };
 		A56F9AB126990E9200AFC48F /* PurchaserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */; };
+		A592DAD226D83EF70065C78B /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = A592DAD126D83EF70065C78B /* Purchases */; };
 		A592DADF26D83F080065C78B /* TransactionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAD326D83F080065C78B /* TransactionAPI.swift */; };
 		A592DAE026D83F080065C78B /* IntroEligibilityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAD426D83F080065C78B /* IntroEligibilityAPI.swift */; };
 		A592DAE126D83F080065C78B /* PurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAD526D83F080065C78B /* PurchasesAPI.swift */; };
@@ -175,7 +176,6 @@
 		B300E4C226D439B700B22262 /* IntroEligibilityCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */; };
 		B3083A11269931CF007B5503 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3083A10269931CF007B5503 /* RCOfferingAPI.m */; };
 		B3083A132699334C007B5503 /* Offering.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3083A122699334C007B5503 /* Offering.swift */; };
-		B3103D9026DDA02700B60990 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = B3103D8F26DDA02700B60990 /* Purchases */; };
 		B319514926C19856002CA9AC /* NSData+RCExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35ABEE9FD79CCA64E4F8B /* NSData+RCExtensionsTests.swift */; };
 		B319514B26C1991E002CA9AC /* base64EncodedReceiptSampleForDataExtension.txt in Resources */ = {isa = PBXBuildFile; fileRef = B319514A26C1991E002CA9AC /* base64EncodedReceiptSampleForDataExtension.txt */; };
 		B32B74FF26868AEB005647BF /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D3C4712685784800CB3C21 /* Package.swift */; };
@@ -572,7 +572,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B3103D9026DDA02700B60990 /* Purchases in Frameworks */,
+				A592DAD226D83EF70065C78B /* Purchases in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1295,7 +1295,7 @@
 			);
 			name = PublicSDKSwiftAPITester;
 			packageProductDependencies = (
-				B3103D8F26DDA02700B60990 /* Purchases */,
+				A592DAD126D83EF70065C78B /* Purchases */,
 			);
 			productName = PublicSDKSwiftAPITester;
 			productReference = A592DAC926D83ED30065C78B /* PublicSDKSwiftAPITester */;
@@ -2252,8 +2252,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
 			requirement = {
-				branch = swift_migration;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.12.3;
 			};
 		};
 		B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */ = {
@@ -2275,7 +2275,7 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B3103D8F26DDA02700B60990 /* Purchases */ = {
+		A592DAD126D83EF70065C78B /* Purchases */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A592DAD026D83EF70065C78B /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = Purchases;

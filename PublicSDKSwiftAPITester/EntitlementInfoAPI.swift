@@ -15,35 +15,35 @@ import Foundation
 import Purchases
 
 func checkEntitlementInfoAPI() {
-    let entitlementInfo = EntitlementInfo(entitlementId: "", entitlementData: [:], productData: [:], requestDate: nil)
+    let entitlementInfo = Purchases.EntitlementInfo()
     let ident: String = entitlementInfo.identifier
     let isActive: Bool = entitlementInfo.isActive
     let willRenew: Bool = entitlementInfo.willRenew
-    let pType: PeriodType = entitlementInfo.periodType
+    let pType: Purchases.PeriodType = entitlementInfo.periodType
     let lpd = entitlementInfo.latestPurchaseDate
-    let opd: Date? = entitlementInfo.originalPurchaseDate
+    let opd: Date = entitlementInfo.originalPurchaseDate
     let eDate: Date? = entitlementInfo.expirationDate
-    let store: Store = entitlementInfo.store
+    let store: Purchases.Store = entitlementInfo.store
     let pId: String = entitlementInfo.productIdentifier
     let iss: Bool = entitlementInfo.isSandbox
     let uda: Date? = entitlementInfo.unsubscribeDetectedAt
     let bida: Date? = entitlementInfo.billingIssueDetectedAt
-    let oType: PurchaseOwnershipType = entitlementInfo.ownershipType
+    let oType: RCPurchaseOwnershipType = entitlementInfo.ownershipType
 
-    print(entitlementInfo, ident, isActive, willRenew, pType, lpd ?? "noDate", opd ?? "noDate", eDate!, store, pId, iss, uda!, bida!, oType)
+    print(entitlementInfo, ident, isActive, willRenew, pType, lpd, opd, eDate!, store, pId, iss, uda!, bida!, oType)
 }
 
 func checkEntitlementInfoEnums() {
-    var store: Store = Store.appStore
-    store = Store.macAppStore
-    store = Store.playStore
-    store = Store.stripe
-    store = Store.promotional
-    store = Store.unknownStore
+    var store: Purchases.Store = Purchases.Store.appStore
+    store = Purchases.Store.macAppStore
+    store = Purchases.Store.playStore
+    store = Purchases.Store.stripe
+    store = Purchases.Store.promotional
+    store = Purchases.Store.unknownStore
 
-    var pType: PeriodType = .intro
-    pType = .trial
-    pType = .normal
+    var pType: Purchases.PeriodType = Purchases.PeriodType.intro
+    pType = Purchases.PeriodType.trial
+    pType = Purchases.PeriodType.normal
 
     print(store, pType)
 }

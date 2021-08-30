@@ -15,7 +15,7 @@ import Foundation
 import Purchases
 
 func checkTransactionAPI() {
-    let trans = Transaction(transactionId: "", productId: "", purchaseDate: Date())
+    let trans = Purchases.Transaction.init(transactionId: "", productId: "", purchaseDate: Date())
     let rci: String = trans.revenueCatId
     let pid: String = trans.productId
     let date: Date = trans.purchaseDate

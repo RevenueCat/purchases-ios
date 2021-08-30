@@ -15,13 +15,13 @@ import Foundation
 import Purchases
 
 func checkRCAttributionNetworkEnums() {
-    var aNetwork: AttributionNetwork = AttributionNetwork.appleSearchAds
-    aNetwork = AttributionNetwork.adjust
-    aNetwork = AttributionNetwork.appsFlyer
-    aNetwork = AttributionNetwork.branch
-    aNetwork = AttributionNetwork.tenjin
-    aNetwork = AttributionNetwork.facebook
-    aNetwork = AttributionNetwork.mParticle
+    var aNetwork: RCAttributionNetwork = RCAttributionNetwork.appleSearchAds
+    aNetwork = RCAttributionNetwork.adjust
+    aNetwork = RCAttributionNetwork.appsFlyer
+    aNetwork = RCAttributionNetwork.branch
+    aNetwork = RCAttributionNetwork.tenjin
+    aNetwork = RCAttributionNetwork.facebook
+    aNetwork = RCAttributionNetwork.mParticle
 
     print(aNetwork)
 }

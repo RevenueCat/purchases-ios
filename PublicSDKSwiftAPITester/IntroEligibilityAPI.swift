@@ -15,16 +15,16 @@ import Foundation
 import Purchases
 
 func checkIntroEligibilityAPI() {
-    let introE: IntroEligibility = IntroEligibility()
-    let status: IntroEligibilityStatus = introE.status
+    let introE: RCIntroEligibility = RCIntroEligibility()
+    let status: RCIntroEligibilityStatus = introE.status
 
     print(introE, status)
 }
 
 func checkIntroEligibilityEnums() {
-    var status = IntroEligibilityStatus.unknown
-    status = .ineligible
-    status = .eligible
+    var status = RCIntroEligibilityStatus.unknown
+    status = RCIntroEligibilityStatus.ineligible
+    status = RCIntroEligibilityStatus.eligible
 
     print(status)
 }
