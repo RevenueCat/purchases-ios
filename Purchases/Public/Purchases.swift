@@ -804,8 +804,15 @@ public extension Purchases {
      * - Parameter completion: An @escaping callback that is called with the loaded products.
      * If the fetch fails for any reason it will return an empty array.
      */
-    @objc func products(identifiers: [String], completionBlock completion: @escaping ([ProductWrapper]) -> Void) {
+    @objc func products(identifiers: [String], completionBlock completion: @escaping ([SKProduct]) -> Void) {
         purchasesOrchestrator.products(withIdentifiers: identifiers, completion: completion)
+    }
+
+    // todo: docs
+    /// :nodoc:
+    @objc func productsDetails(identifiers: [String],
+                               completionBlock completion: @escaping ([ProductWrapper]) -> Void) {
+        purchasesOrchestrator.productsFromOptimalStore(withIdentifiers: identifiers, completion: completion)
     }
 
     /**
@@ -878,7 +885,6 @@ public extension Purchases {
         Task.init {
             try await sk2Product.purchase()
         }
-
 
     }
 
