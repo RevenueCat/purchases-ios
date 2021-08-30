@@ -18,33 +18,44 @@ import Foundation
  Enum of supported stores
  */
 @objc(RCStore) public enum Store: Int {
+
     /// For entitlements granted via Apple App Store.
     @objc(RCAppStore) case appStore = 0
+
     /// For entitlements granted via Apple Mac App Store.
     @objc(RCMacAppStore) case macAppStore = 1
+
     /// For entitlements granted via Google Play Store.
     @objc(RCPlayStore) case playStore = 2
+
     /// For entitlements granted via Stripe.
     @objc(RCStripe) case stripe = 3
+
     /// For entitlements granted via a promo in RevenueCat.
     @objc(RCPromotional) case promotional = 4
+
     /// For entitlements granted via an unknown store.
     @objc(RCUnknownStore) case unknownStore = 5
+
 }
 
 /**
  Enum of supported period types for an entitlement.
  */
 @objc(RCPeriodType) public enum PeriodType: Int {
+
     /// If the entitlement is not under an introductory or trial period.
     @objc(RCNormal) case normal = 0
+
     /// If the entitlement is under a introductory price period.
     @objc(RCIntro) case intro = 1
+
     /// If the entitlement is under a trial period.
     @objc(RCTrial) case trial = 2
 }
 
 @objc(RCEntitlementInfo) public class EntitlementInfo: NSObject {
+
     /**
      The entitlement identifier configured in the RevenueCat dashboard
      */
@@ -57,14 +68,14 @@ import Foundation
 
     /**
      True if the underlying subscription is set to renew at the end of
-     the billing period (expirationDate). Will always be True if entitlement
+     the billing period (``expirationDate``). Will always be `true` if entitlement
      is for lifetime access.
      */
     @objc public let willRenew: Bool
 
     /**
      The last period type this entitlement was in
-     Either: RCNormal, RCIntro, RCTrial
+     Either: ``PeriodType/normal``, ``PeriodType/intro``, ``PeriodType/trial``
      */
     @objc public let periodType: PeriodType
 
@@ -80,13 +91,13 @@ import Foundation
 
     /**
      The expiration date for the entitlement, can be `nil` for lifetime access.
-     If the `periodType` is `trial`, this is the trial expiration date.
+     If the ``periodType`` is ``PeriodType/trial``, this is the trial expiration date.
      */
     @objc public let expirationDate: Date?
 
     /**
-     The store where this entitlement was unlocked from
-     Either: RCAppStore, RCMacAppStore, RCPlayStore, RCStripe, RCPromotional, RCUnknownStore
+     * The store where this entitlement was unlocked from either: ``Store/appStore``, ``Store/macAppStore``,
+     * ``Store/playStore``, ``Store/stripe``, ``Store/promotional``, or ``Store/unknownStore``.
      */
     @objc public let store: Store
 
@@ -103,7 +114,7 @@ import Foundation
     /**
      The date an unsubscribe was detected. Can be `nil`.
 
-     Note: Entitlement may still be active even if user has unsubscribed. Check the `isActive` property.
+     Note: Entitlement may still be active even if user has unsubscribed. Check the ``isActive`` property.
      */
     @objc public let unsubscribeDetectedAt: Date?
 
@@ -112,7 +123,7 @@ import Foundation
      billing issue or an issue has been resolved.
 
      Note: Entitlement may still be active even if there is a billing issue.
-     Check the `isActive` property.
+     Check the ``isActive`` property.
      */
     @objc public let billingIssueDetectedAt: Date?
 

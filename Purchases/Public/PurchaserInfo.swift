@@ -1,16 +1,22 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  PurchaserInfo.swift
-//  Purchases
 //
 //  Created by Madeline Beyl on 7/9/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
 
 @objc(RCPurchaserInfo) public class PurchaserInfo: NSObject {
 
-    /// Entitlements attached to this purchaser info
+    /// ``EntitlementInfos`` attached to this purchaser info.
     @objc public let entitlements: EntitlementInfos
 
     /// All *subscription* product identifiers with expiration dates in the future.
@@ -21,7 +27,7 @@ import Foundation
         return Set(self.expirationDatesByProductId.keys).union(self.nonSubscriptionTransactions.map { $0.productId })
     }()
 
-    /// Returns the latest expiration date of all products, nil if there are none
+    /// Returns the latest expiration date of all products, nil if there are none.
     @objc public var latestExpirationDate: Date? {
         let mostRecentDate = self.expirationDatesByProductId
             .values
@@ -43,7 +49,6 @@ import Foundation
 
     /**
      Returns the fetch date of this Purchaser info.
-     Note: Can be `nil` if was cached before we added this
      */
     @objc public let requestDate: Date
 
@@ -55,10 +60,10 @@ import Foundation
 
     /**
      URL to manage the active subscription of the user.
-     If this user has an active iOS subscription, this will point to the App Store,
-     if the user has an active Play Store subscription it will point there.
-     If there are no active subscriptions it will be null.
-     If there are multiple for different platforms, it will point to the App Store
+     * If this user has an active iOS subscription, this will point to the App Store.
+     * If the user has an active Play Store subscription it will point there.
+     * If there are no active subscriptions it will be null.
+     * If there are multiple for different platforms, it will point to the App Store.
      */
     @objc public let managementURL: URL?
 
@@ -66,7 +71,7 @@ import Foundation
     Returns the purchase date for the version of the application when the user bought the app.
     Use this for grandfathering users when migrating to subscriptions.
 
-    Note: This can be `nil`, see `Purchases.restoreTransactions(completionBlock:)`
+    Note: This can be `nil`, see ``Purchases/restoreTransactions(completionBlock:)``
      */
     @objc public let originalPurchaseDate: Date?
 
@@ -96,7 +101,7 @@ import Foundation
 
     /// Get the expiration date for a given entitlement.
     /// - Parameter entitlementIdentifier: The ID of the entitlement
-    /// - Returns: The expiration date for the passed in `entitltmentIdentifier`, or `nil`
+    /// - Returns: The expiration date for the passed in `entitlementIdentifier`, or `nil`
     @objc public func expirationDate(forEntitlement entitlementIdentifier: String) -> Date? {
         return entitlements[entitlementIdentifier]?.expirationDate
     }
