@@ -31,7 +31,6 @@ actor ProductsFetcherSK2 {
             if productsAlreadyCached.count == identifiers.count {
                 let productsAlreadyCachedSet = Set(productsAlreadyCached.values)
                 Logger.debug(String(format: Strings.offering.products_already_cached, identifiers))
-
                 return productsAlreadyCachedSet
             }
 

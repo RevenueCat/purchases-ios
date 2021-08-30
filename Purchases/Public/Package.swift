@@ -80,14 +80,8 @@ private extension PackageType {
 
     @objc public var localizedIntroductoryPriceString: String {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) {
-//            let formatter = NumberFormatter()
-//            formatter.numberStyle = .currency
-//            formatter.locale = product.priceLocale
-
-//            if let price = product.introductoryPrice?.price {
-//                return formatter.string(from: price) ?? ""
-//            }
-//            return productWrapper.localizedIntroductoryPriceString
+            // todo: uncomment when product discounts are supported in product wrapper
+            // return productWrapper.localizedIntroductoryPriceString
             return ""
         } else {
             return ""
