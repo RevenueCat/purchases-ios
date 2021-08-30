@@ -860,7 +860,7 @@ public extension Purchases {
      */
     @objc(purchasePackage:withCompletionBlock:)
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
-        // todo: clean up
+        // todo: clean up, move to new class along with the private funcs below
         if package.productWrapper is SK1ProductWrapper {
             purchase(sk1Package: package, completion: completion)
             return
@@ -948,7 +948,7 @@ public extension Purchases {
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchasePackage:withDiscount:completionBlock:)
     func purchase(package: Package, discount: SKPaymentDiscount, completion: @escaping PurchaseCompletedBlock) {
-        // todo: clean up
+        // todo: add support for SK2 with discounts, move to new class
         guard let sk1ProductWrapper = package.productWrapper as? SK1ProductWrapper else {
             return
         }
