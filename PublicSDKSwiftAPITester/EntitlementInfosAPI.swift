@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RCEntitlementInfosAPI.swift
+//  EntitlementInfosAPI.swift
 //
 //  Created by Madeline Beyl on 8/25/21.
 

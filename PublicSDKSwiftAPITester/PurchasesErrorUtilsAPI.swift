@@ -13,7 +13,6 @@
 
 import Foundation
 import Purchases
-import StoreKit
 
 func checkPurchasesErrorUtilsAPI() {
     let underlyingError = NSError(domain: "NetworkErrorDomain", code: 28, userInfo: [String: Any]())
