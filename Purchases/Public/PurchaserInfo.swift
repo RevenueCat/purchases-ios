@@ -16,7 +16,7 @@ import Foundation
 
 @objc(RCPurchaserInfo) public class PurchaserInfo: NSObject {
 
-    /// `EntitlementInfos` attached to this purchaser info.
+    /// ``EntitlementInfos`` attached to this purchaser info.
     @objc public let entitlements: EntitlementInfos
 
     /// All *subscription* product identifiers with expiration dates in the future.
@@ -71,7 +71,7 @@ import Foundation
     Returns the purchase date for the version of the application when the user bought the app.
     Use this for grandfathering users when migrating to subscriptions.
 
-    Note: This can be `nil`, see `Purchases.restoreTransactions(completionBlock:)`
+    Note: This can be `nil`, see ``Purchases/restoreTransactions(completionBlock:)``
      */
     @objc public let originalPurchaseDate: Date?
 
@@ -101,7 +101,7 @@ import Foundation
 
     /// Get the expiration date for a given entitlement.
     /// - Parameter entitlementIdentifier: The ID of the entitlement
-    /// - Returns: The expiration date for the passed in `entitltmentIdentifier`, or `nil`
+    /// - Returns: The expiration date for the passed in `entitlementIdentifier`, or `nil`
     @objc public func expirationDate(forEntitlement entitlementIdentifier: String) -> Date? {
         return entitlements[entitlementIdentifier]?.expirationDate
     }

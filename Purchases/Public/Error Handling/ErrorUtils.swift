@@ -18,7 +18,7 @@ import StoreKit
 @objc(RCPurchasesErrorUtils) public class ErrorUtils: NSObject {
 
     /**
-     * Constructs an NSError with the `ErrorCode.networkError` code and a populated `NSUnderlyingErrorKey` in
+     * Constructs an NSError with the ``ErrorCode/networkError`` code and a populated `NSUnderlyingErrorKey` in
      * the `NSError.userInfo` dictionary.
      *
      * - Parameter underlyingError: The value of the `NSUnderlyingErrorKey` key.
@@ -31,9 +31,9 @@ import StoreKit
     }
 
     /**
-     * Maps an `BackendErrorCode` code to a `ErrorCode`. code. Constructs an Error with the mapped code and adds a
-     * `RCUnderlyingErrorKey` in the `NSError.userInfo` dictionary. The backend error code will be mapped using
-     * `BackendErrorCode.toPurchasesErrorCode()`.
+     * Maps an ``BackendErrorCode`` code to a ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
+     * `NSUnderlyingErrorKey` in the `NSError.userInfo` dictionary. The backend error code will be mapped using
+     * ``BackendErrorCode/toPurchasesErrorCode()``.
      *
      * - Parameter backendCode: The numerical value of the error.
      * - Parameter backendMessage: The message of the errror contained under the `NSUnderlyingErrorKey` key.
@@ -47,15 +47,15 @@ import StoreKit
     }
 
     /**
-     * Maps an `BackendErrorCode` code to a `ErrorCode`. code. Constructs an Error with the mapped code and adds a
+     * Maps an ``BackendErrorCode`` code to an ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
      * `RCUnderlyingErrorKey` in the `NSError.userInfo` dictionary. The backend error code will be mapped using
-     * `BackendErrorCode.toPurchasesErrorCode()`.
+     * ``BackendErrorCode/toPurchasesErrorCode()``.
      *
      * - Parameter backendCode: The numerical value of the error.
      * - Parameter backendMessage: The message of the errror contained under the `NSUnderlyingErrorKey` key in the
      * UserInfo dictionary.
-     * - Parameter finishable: Will be added to the UserInfo dictionary under the `RCFinishableKey` to indicate if the
-     * transaction should be finished after this error.
+     * - Parameter finishable: Will be added to the UserInfo dictionary under the ``ErrorDetails/finishableKey`` to
+     * indicate if the transaction should be finished after this error.
      *
      * - Note: This error is used when an network request returns an error. The backend error returned is wrapped in
      * this internal error code.
@@ -71,7 +71,7 @@ import StoreKit
     }
 
     /**
-     * Constructs an Error with the `ErrorCode.unexpectedBackendResponseError` code.
+     * Constructs an Error with the ``ErrorCode/unexpectedBackendResponseError`` code.
      *
      * - Note: This error is used when an network request returns an unexpected response.
      */
@@ -80,7 +80,7 @@ import StoreKit
     }
 
     /**
-     * Constructs an Error with the `ErrorCode.missingReceiptFileError` code.
+     * Constructs an Error with the ``ErrorCode/missingReceiptFileError`` code.
      *
      * - Note: This error is used when the receipt is missing in the device. This can happen if the user is in
      * sandbox or if there are no previous purchases.
@@ -90,7 +90,7 @@ import StoreKit
     }
 
     /**
-     * Constructs an Error with the `ErrorCode.invalidAppUserIdError` code.
+     * Constructs an Error with the ``ErrorCode/invalidAppUserIdError`` code.
      *
      * - Note: This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
      * are removed manually or if the OS deletes entries when running out of space.
@@ -100,7 +100,7 @@ import StoreKit
     }
 
     /**
-     * Constructs an Error with the `ErrorCode.productDiscountMissingIdentifierError` code.
+     * Constructs an Error with the ``ErrorCode/productDiscountMissingIdentifierError`` code.
      *
      * - Note: This error code is used when attemping to post data about product discounts but the discount is
      * missing an indentifier.
@@ -110,7 +110,7 @@ import StoreKit
     }
 
     /**
-     * Constructs an Error with the `ErrorCode.productDiscountMissingSubscriptionGroupIdentifierError` code.
+     * Constructs an Error with the ``ErrorCode/productDiscountMissingSubscriptionGroupIdentifierError`` code.
      *
      * - Note: This error code is used when attemping to post data about product discounts but the discount is
      * missing a subscriptionGroupIndentifier.
@@ -120,7 +120,7 @@ import StoreKit
     }
 
     /**
-     * Constructs an Error with the `ErrorCode.invalidAppUserIdError` code.
+     * Constructs an Error with the ``ErrorCode/invalidAppUserIdError`` code.
      *
      * - Note: This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
      * are removed manually or if the OS deletes entries when running out of space.
@@ -130,17 +130,17 @@ import StoreKit
     }
 
     /**
-     * Constructs an Error with the `ErrorCode.logOutAnonymousUserError` code.
+     * Constructs an Error with the ``ErrorCode/logOutAnonymousUserError`` code.
      *
      * - Note: This error is used when logOut is called but the current user is anonymous,
-     * as noted by PurchaserInfo's isAnonymous property.
+     * as noted by ``Purchases/isAnonymous`` property.
      */
     @objc public static func logOutAnonymousUserError() -> Error {
         return error(with: ErrorCode.logOutAnonymousUserError)
     }
 
     /**
-     * Constructs an Error with the `ErrorCode.paymentPendingError` code.
+     * Constructs an Error with the ``ErrorCode/paymentPendingError`` code.
      *
      * - Note: This error is used during an “ask to buy” flow for a payment. The completion block of the purchasing
      * function will get this error to indicate the guardian has to complete the purchase.
@@ -150,21 +150,21 @@ import StoreKit
     }
 
     /**
-     * Constructs an Error with the `ErrorCode.unknownError` code and optional message.
+     * Constructs an Error with the ``ErrorCode/unknownError`` code and optional message.
      */
     @objc public static func unknownError(message: String? = nil) -> Error {
         return error(with: ErrorCode.unknownError, message: message)
     }
 
     /**
-     * Constructs an Error with the `ErrorCode.unknownError` code.
+     * Constructs an Error with the ``ErrorCode/unknownError`` code.
      */
     @objc public static func unknownError() -> Error {
         return error(with: ErrorCode.unknownError, message: nil)
     }
 
     /**
-     * Constructs an Error with the `ErrorCode.operationAlreadyInProgressError` code.
+     * Constructs an Error with the ``ErrorCode/operationAlreadyInProgressForProductError`` code.
      *
      * - Note: This error is used when a purchase is initiated for a product, but there's already a purchase for the
      * same product in progress.
@@ -174,9 +174,7 @@ import StoreKit
     }
 
     /**
-     * Maps an SKError to a Error with a `ErrorCode`. Adds a underlying error in the NSError.userInfo dictionary.
-     * The SKError code will be mapped using
-     * `SKError.toPurchasesErrorCode()`.
+     * Maps an `SKError` to a Error with a ``ErrorCode``. Adds a underlying error in the `NSError.userInfo` dictionary.
      *
      * - Parameter skError: The originating `SKError`.
      */

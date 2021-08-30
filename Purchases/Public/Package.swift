@@ -108,7 +108,7 @@ private extension PackageType {
 @objc public extension Package {
 
     /**
-     * - Parameter packageType: A `PackageType`.
+     * - Parameter packageType: A ``PackageType``.
      * - Returns: an optional description of the packageType.
      */
     static func string(from packageType: PackageType) -> String? {
@@ -116,8 +116,8 @@ private extension PackageType {
     }
 
     /**
-     * - Parameter string: A string that maps to a enumeration value of type `PackageType`
-     * - Returns: a `PackageType` for the given string.
+     * - Parameter string: A string that maps to a enumeration value of type ``PackageType``
+     * - Returns: a ``PackageType`` for the given string.
      */
     class func packageType(from string: String) -> PackageType {
         if let packageType = PackageType.typesByDescription[string] {

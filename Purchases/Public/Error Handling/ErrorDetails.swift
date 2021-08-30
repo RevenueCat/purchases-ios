@@ -16,6 +16,9 @@ import Foundation
 
 @objc(RCErrorDetails) public class ErrorDetails: NSObject {
 
+    /**
+     * These are tacos
+     */
     @objc(RCFinishableKey) public static let finishableKey: NSError.UserInfoKey = "finishable"
     @objc(RCReadableErrorCodeKey) public static let readableErrorCodeKey: NSError.UserInfoKey = "readable_error_code"
 

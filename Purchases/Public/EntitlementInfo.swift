@@ -68,14 +68,14 @@ import Foundation
 
     /**
      True if the underlying subscription is set to renew at the end of
-     the billing period (`expirationDate`). Will always be `true` if entitlement
+     the billing period (``expirationDate``). Will always be `true` if entitlement
      is for lifetime access.
      */
     @objc public let willRenew: Bool
 
     /**
      The last period type this entitlement was in
-     Either: RCNormal, RCIntro, RCTrial
+     Either: ``PeriodType/normal``, ``PeriodType/intro``, ``PeriodType/trial``
      */
     @objc public let periodType: PeriodType
 
@@ -91,13 +91,13 @@ import Foundation
 
     /**
      The expiration date for the entitlement, can be `nil` for lifetime access.
-     If the `periodType` is `trial`, this is the trial expiration date.
+     If the ``periodType`` is ``PeriodType/trial``, this is the trial expiration date.
      */
     @objc public let expirationDate: Date?
 
     /**
-     The store where this entitlement was unlocked from
-     Either: `.appStore`, `.macAppStore`, `.playStore`, `.stripe`, `.promotional`, or `.unknownStore`.
+     * The store where this entitlement was unlocked from either: ``Store/appStore``, ``Store/macAppStore``,
+     * ``Store/playStore``, ``Store/stripe``, ``Store/promotional``, or ``Store/unknownStore``.
      */
     @objc public let store: Store
 
@@ -114,7 +114,7 @@ import Foundation
     /**
      The date an unsubscribe was detected. Can be `nil`.
 
-     Note: Entitlement may still be active even if user has unsubscribed. Check the `isActive` property.
+     Note: Entitlement may still be active even if user has unsubscribed. Check the ``isActive`` property.
      */
     @objc public let unsubscribeDetectedAt: Date?
 
@@ -123,7 +123,7 @@ import Foundation
      billing issue or an issue has been resolved.
 
      Note: Entitlement may still be active even if there is a billing issue.
-     Check the `isActive` property.
+     Check the ``isActive`` property.
      */
     @objc public let billingIssueDetectedAt: Date?
 

@@ -19,14 +19,14 @@ import Foundation
  */
 @objc(RCEntitlementInfos) public class EntitlementInfos: NSObject {
     /**
-     Dictionary of all EntitlementInfo (`EntitlementInfo`) objects (active and inactive) keyed by entitlement
-     identifier. This dictionary can also be accessed by using an index subscript on `EntitlementInfos`, e.g.
+     Dictionary of all EntitlementInfo (``EntitlementInfo``) objects (active and inactive) keyed by entitlement
+     identifier. This dictionary can also be accessed by using an index subscript on ``EntitlementInfos``, e.g.
      `entitlementInfos["pro_entitlement_id"]`.
      */
     @objc public let all: [String: EntitlementInfo]
 
     /**
-     Dictionary of active EntitlementInfo (`RCEntitlementInfo`) objects keyed by entitlement identifier.
+     Dictionary of active ``EntitlementInfo`` (`RCEntitlementInfo`) objects keyed by entitlement identifier.
      */
     @objc public var active: [String: EntitlementInfo] {
         return self.all.filter { $0.value.isActive }
