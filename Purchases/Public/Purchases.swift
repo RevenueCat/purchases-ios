@@ -798,7 +798,8 @@ public extension Purchases {
      * application agreements.
      * If you're having trouble see: https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard
      *
-     * - Parameter identifiers: A set of product identifiers for in app purchases setup via AppStoreConnect.
+     * - Parameter identifiers: A set of product identifiers for in app purchases setup via AppStoreConnect:
+     * https://appstoreconnect.apple.com/
      * This should be either hard coded in your application, from a file, or from a custom endpoint if you want
      * to be able to deploy new IAPs without an app update.
      * - Parameter completion: An @escaping callback that is called with the loaded products.
