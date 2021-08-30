@@ -104,8 +104,9 @@ import Foundation
     }
 
     /**
-     Retrieves a specific package by identifier, use this to access custom package types configured in the RevenueCat
-     dashboard, e.g. `offering.package(identifier: "custom_package_id")` or `offering["custom_package_id"]`.
+     Retrieves a specific ``Package`` by identifier, use this to access custom package types configured in the 
+     RevenueCat dashboard, e.g. `offering.package(identifier: "custom_package_id")` or
+     `offering["custom_package_id"]`.
      */
     @objc public func package(identifier: String?) -> Package? {
         guard let identifier = identifier else {
