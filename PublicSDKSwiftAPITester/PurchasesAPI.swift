@@ -115,7 +115,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.syncPurchases(completionBlock: piComplete)
 
     let checkEligComplete: ([String: IntroEligibility]) -> Void = { _ in }
-    purchases.checkTrialOrIntroductoryPriceEligibility([], completionBlock: checkEligComplete)
+    purchases.checkTrialOrIntroductoryPriceEligibility([],completionBlock: checkEligComplete)
 
     let discountComplete: PaymentDiscountBlock = { _, _ in }
     purchases.paymentDiscount(forProductDiscount: skpd, product: skp, completion: discountComplete)
