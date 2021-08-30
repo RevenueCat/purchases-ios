@@ -861,17 +861,14 @@ public extension Purchases {
     @objc(purchasePackage:withCompletionBlock:)
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
         // todo: clean up, move to new class along with the private funcs below
-        if package.productWrapper is SK1ProductWrapper {
-            purchase(sk1Package: package, completion: completion)
-            return
-        }
-
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            if package.productWrapper is SK2ProductWrapper {
-                purchase(sk2Package: package, completion: completion)
-            }
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
+           package.productWrapper is SK2ProductWrapper {
+            purchase(sk2Package: package, completion: completion)
         } else {
-            // Fallback on earlier versions
+            guard package.productWrapper is SK1ProductWrapper else {
+                fatalError("could not identify StoreKit version to use!")
+            }
+            purchase(sk1Package: package, completion: completion)
         }
 
     }
