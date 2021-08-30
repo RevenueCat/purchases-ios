@@ -13,23 +13,24 @@
 
 import Foundation
 import Purchases
+import StoreKit
 
 func checkPurchasesErrorUtilsAPI() {
     let underlyingError = NSError(domain: "NetworkErrorDomain", code: 28, userInfo: [String: Any]())
-    var error: Error = Purchases.ErrorUtils.networkError(withUnderlyingError: underlyingError)
-    error = Purchases.ErrorUtils.backendError(withBackendCode: 12345, backendMessage: nil)
-    error = Purchases.ErrorUtils.backendError(withBackendCode: 12345, backendMessage: "message")
-    error = Purchases.ErrorUtils.unexpectedBackendResponseError()
-    error = Purchases.ErrorUtils.missingReceiptFileError()
-    error = Purchases.ErrorUtils.missingAppUserIDError()
-    error = Purchases.ErrorUtils.logOutAnonymousUserError()
-    error = Purchases.ErrorUtils.paymentDeferredError()
-    error = Purchases.ErrorUtils.unknownError()
+    var error: Error = ErrorUtils.networkError(withUnderlyingError: underlyingError)
+    error = ErrorUtils.backendError(withBackendCode: 12345, backendMessage: nil)
+    error = ErrorUtils.backendError(withBackendCode: 12345, backendMessage: "message")
+    error = ErrorUtils.unexpectedBackendResponseError()
+    error = ErrorUtils.missingReceiptFileError()
+    error = ErrorUtils.missingAppUserIDError()
+    error = ErrorUtils.logOutAnonymousUserError()
+    error = ErrorUtils.paymentDeferredError()
+    error = ErrorUtils.unknownError()
     // TODO we had this in objc, do we not in swift?
-//    error = Purchases.ErrorUtils.unknownError(message: )
+//    error = ErrorUtils.unknownError(message: )
 
     let underlyingSKError = NSError(domain: SKErrorDomain, code: SKError.unknown.rawValue, userInfo: nil)
-    error = Purchases.ErrorUtils.purchasesError(withSKError: underlyingSKError)
+    error = ErrorUtils.purchasesError(withSKError: underlyingSKError)
 
     print(error, error.localizedDescription)
 }

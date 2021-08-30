@@ -13,11 +13,12 @@
 
 import Foundation
 import Purchases
+import StoreKit
 
 func checkPackageAPI() {
-    let pack: Purchases.Package = Purchases.Package()
+    let pack: Package = Package(identifier: "", packageType: .custom, product: SKProduct(), offeringIdentifier: "")
     let ident: String = pack.identifier
-    let pType: Purchases.PackageType = pack.packageType
+    let pType: PackageType = pack.packageType
     let prod: SKProduct = pack.product
     let lps: String = pack.localizedPriceString
     let lips: String = pack.localizedIntroductoryPriceString
@@ -26,15 +27,15 @@ func checkPackageAPI() {
 }
 
 func checkPackageEnums() {
-    var type: Purchases.PackageType = Purchases.PackageType.unknown
-    type = Purchases.PackageType.custom
-    type = Purchases.PackageType.lifetime
-    type = Purchases.PackageType.annual
-    type = Purchases.PackageType.sixMonth
-    type = Purchases.PackageType.threeMonth
-    type = Purchases.PackageType.twoMonth
-    type = Purchases.PackageType.monthly
-    type = Purchases.PackageType.weekly
+    var type: PackageType = PackageType.unknown
+    type = PackageType.custom
+    type = PackageType.lifetime
+    type = PackageType.annual
+    type = PackageType.sixMonth
+    type = PackageType.threeMonth
+    type = PackageType.twoMonth
+    type = PackageType.monthly
+    type = PackageType.weekly
 
     print(type)
 }

@@ -13,6 +13,7 @@
 
 import Foundation
 import Purchases
+import StoreKit
 
 func checkPurchasesAPI() {
 
@@ -27,18 +28,17 @@ func checkPurchasesAPI() {
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: UserDefaults())
 
     // static methods
-    let logHandler: (Purchases.LogLevel, String) -> Void = { _, _ in }
-    Purchases.setLogHandler(logHandler)
+    let logHandler: (LogLevel, String) -> Void = { _, _ in }
+    Purchases.logHandler = logHandler
 
     let canI: Bool = Purchases.canMakePayments()
     let version = Purchases.frameworkVersion
-    Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust)
-    Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust, forNetworkUserId: "")
-    Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust, forNetworkUserId: nil)
+    Purchases.addAttributionData([:], from: .adjust, forNetworkUserId: "")
+    Purchases.addAttributionData([:], from: .adjust, forNetworkUserId: nil)
 
     let automaticAppleSearchAdsAttributionCollection: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
     let debugLogsEnabled: Bool = Purchases.debugLogsEnabled
-    let logLevel: Purchases.LogLevel = Purchases.logLevel
+    let logLevel: LogLevel = Purchases.logLevel
     let proxyUrl: URL? = Purchases.proxyURL
     let forceUniversalAppStore: Bool = Purchases.forceUniversalAppStore
     let simulatesAskToBuyInSandbox: Bool = Purchases.simulatesAskToBuyInSandbox
@@ -56,30 +56,30 @@ func checkPurchasesAPI() {
     checkPurchasesSubscriberAttributesAPI(purchases: purch)
     checkPurchasesPurchasingAPI(purchases: purch)
 
-    let piComplete: Purchases.ReceivePurchaserInfoBlock = { _, _ in }
+    let piComplete: ReceivePurchaserInfoBlock = { _, _ in }
     // identity
-    purch.createAlias("", piComplete)
-    purch.identify("", piComplete)
-    purch.reset(piComplete)
-    purch.logOut(piComplete)
+    purch.createAlias("", completionBlock: piComplete)
+    purch.identify("", completionBlock: piComplete)
+    purch.reset(completionBlock: piComplete)
+    purch.logOut(completionBlock: piComplete)
 
-    let loginComplete: (Purchases.PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
-    purch.logIn("", loginComplete)
+    let loginComplete: (PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
+    purch.logIn(appUserID: "", completionBlock: loginComplete)
 }
 
 func checkPurchasesEnums() {
-    var type: Purchases.PeriodType = Purchases.PeriodType.normal
-    type = Purchases.PeriodType.intro
-    type = Purchases.PeriodType.trial
+    var type: PeriodType = PeriodType.normal
+    type = PeriodType.intro
+    type = PeriodType.trial
 
-    var oType: RCPurchaseOwnershipType = RCPurchaseOwnershipType.purchased
-    oType = RCPurchaseOwnershipType.familyShared
-    oType = RCPurchaseOwnershipType.unknown
+    var oType: PurchaseOwnershipType = PurchaseOwnershipType.purchased
+    oType = PurchaseOwnershipType.familyShared
+    oType = PurchaseOwnershipType.unknown
 
-    var logLevel: Purchases.LogLevel = Purchases.LogLevel.info
-    logLevel = Purchases.LogLevel.warn
-    logLevel = Purchases.LogLevel.debug
-    logLevel = Purchases.LogLevel.error
+    var logLevel: LogLevel = LogLevel.info
+    logLevel = LogLevel.warn
+    logLevel = LogLevel.debug
+    logLevel = LogLevel.error
 
     print(type, oType, logLevel)
 }
@@ -93,75 +93,60 @@ func checkConstants() {
 }
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
-    let piComplete: Purchases.ReceivePurchaserInfoBlock = { _, _ in }
-    purchases.purchaserInfo(piComplete)
+    let piComplete: ReceivePurchaserInfoBlock = { _, _ in }
+    purchases.purchaserInfo(completionBlock: piComplete)
 
-    let offeringsComplete: Purchases.ReceiveOfferingsBlock = { _, _ in }
-    purchases.offerings(offeringsComplete)
+    let offeringsComplete: ReceiveOfferingsBlock = { _, _ in }
+    purchases.offerings(completionBlock: offeringsComplete)
 
-    let productsComplete: Purchases.ReceiveProductsBlock = { _ in }
-    purchases.products([String](), productsComplete)
+    let productsComplete: ReceiveProductsBlock = { _ in }
+    purchases.products(identifiers: [String](), completionBlock: productsComplete)
 
     let skp: SKProduct = SKProduct()
     let skpd: SKProductDiscount = SKProductDiscount()
     let skmd: SKPaymentDiscount = SKPaymentDiscount()
-    let pack: Purchases.Package = Purchases.Package()
+    let pack: Package = Package(identifier: "", packageType: .custom, product: SKProduct(), offeringIdentifier: "")
 
-    let purchaseProductComplete: Purchases.PurchaseCompletedBlock = { _, _, _, _  in }
-    purchases.purchaseProduct(skp, purchaseProductComplete)
-    purchases.purchasePackage(pack, purchaseProductComplete)
+    let purchaseProductComplete: PurchaseCompletedBlock = { _, _, _, _  in }
+    purchases.purchase(product: skp, completion: purchaseProductComplete)
+    purchases.purchase(package: pack, completion: purchaseProductComplete)
 
-    purchases.restoreTransactions(piComplete)
-    purchases.syncPurchases(piComplete)
+    purchases.restoreTransactions(completionBlock: piComplete)
+    purchases.syncPurchases(completionBlock: piComplete)
 
-    let checkEligComplete: ([String: RCIntroEligibility]) -> Void = { _ in }
-    purchases.checkTrialOrIntroductoryPriceEligibility([String](), completionBlock: checkEligComplete)
+    let checkEligComplete: ([String: IntroEligibility]) -> Void = { _ in }
+    purchases.checkTrialOrIntroductoryPriceEligibility([],completionBlock: checkEligComplete)
 
-    let discountComplete: Purchases.PaymentDiscountBlock = { _, _ in }
-    purchases.paymentDiscount(for: skpd, product: skp, completion: discountComplete)
-    purchases.purchaseProduct(skp, discount: skmd, purchaseProductComplete)
-    purchases.purchasePackage(pack, discount: skmd, purchaseProductComplete)
+    let discountComplete: PaymentDiscountBlock = { _, _ in }
+    purchases.paymentDiscount(forProductDiscount: skpd, product: skp, completion: discountComplete)
+    purchases.purchase(product: skp, discount: skmd, completion: purchaseProductComplete)
+    purchases.purchase(package: pack, discount: skmd, completion: purchaseProductComplete)
     purchases.invalidatePurchaserInfoCache()
 
     // PurchasesDelegate
-    let purchaserInfo: Purchases.PurchaserInfo? = nil
+    let purchaserInfo: PurchaserInfo? = nil
     purchases.delegate?.purchases?(purchases, didReceiveUpdated: purchaserInfo!)
 
-    let defermentBlock: RCDeferredPromotionalPurchaseBlock = { _ in }
+    let defermentBlock: DeferredPromotionalPurchaseBlock = { _ in }
     purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp, defermentBlock: defermentBlock)
 }
 
 private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.setAttributes([String: String]())
     purchases.setEmail("")
-    purchases.setEmail(nil)
     purchases.setPhoneNumber("")
-    purchases.setPhoneNumber(nil)
     purchases.setDisplayName("")
-    purchases.setDisplayName(nil)
-    purchases.setPushToken("".data(using: String.Encoding.utf8))
-    purchases.setPushToken(nil)
+    purchases.setPushToken("".data(using: String.Encoding.utf8)!)
     purchases.setAdjustID("")
-    purchases.setAdjustID(nil)
     purchases.setAppsflyerID("")
-    purchases.setAppsflyerID(nil)
     purchases.setFBAnonymousID("")
-    purchases.setFBAnonymousID(nil)
     purchases.setMparticleID("")
-    purchases.setMparticleID(nil)
     purchases.setOnesignalID("")
-    purchases.setOnesignalID(nil)
     purchases.setMediaSource("")
-    purchases.setMediaSource(nil)
     purchases.setCampaign("")
-    purchases.setCampaign(nil)
     purchases.setAdGroup("")
-    purchases.setAdGroup(nil)
     purchases.setAd("")
-    purchases.setAd(nil)
     purchases.setKeyword("")
-    purchases.setKeyword(nil)
     purchases.setCreative("")
-    purchases.setCreative(nil)
-    purchases.collectDeviceIdentifiers()
+//    purchases.collectDeviceIdentifiers()
 }
