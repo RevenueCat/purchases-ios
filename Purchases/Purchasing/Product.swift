@@ -25,6 +25,7 @@ import StoreKit
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, *)
     @objc public var subscriptionGroupIdentifier: String? { fatalError() }
 
+    // todo: it looks like StoreKit 2 doesn't have support for these?
     //    YES if this product has content downloadable using SKDownload
     //    var isDownloadable: Bool { get }
     //
@@ -35,9 +36,13 @@ import StoreKit
     //
     //    var downloadContentVersion: String { get }
     //
+
+    // todo: add subscription period
     //    @available(iOS 11.2, *)
     //    var subscriptionPeriod: SKProductSubscriptionPeriod? { get }
     //
+
+    // todo: add product discounts
     //    @available(iOS 11.2, *)
     //    var introductoryPrice: SKProductDiscount? { get }
     //    //

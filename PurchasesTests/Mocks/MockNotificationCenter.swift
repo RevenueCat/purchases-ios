@@ -4,8 +4,6 @@
 //
 import Foundation
 
-import Foundation
-
 class MockNotificationCenter: NotificationCenter {
 
     typealias AddObserverTuple = (observer: AnyObject,
