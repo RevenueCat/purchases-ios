@@ -22,7 +22,7 @@ import StoreKit
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
     @objc public var isFamilyShareable: Bool { fatalError() }
 
-    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, *)
+    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     @objc public var subscriptionGroupIdentifier: String? { fatalError() }
 
     // todo: it looks like StoreKit 2 doesn't have support for these?
@@ -100,7 +100,7 @@ import StoreKit
         self.underlyingSK1Product = sk1Product
     }
 
-    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, *)
+    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     override public var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
     private lazy var formatter: NumberFormatter = {
