@@ -161,13 +161,13 @@
 		A592DAE126D83F080065C78B /* PurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAD526D83F080065C78B /* PurchasesAPI.swift */; };
 		A592DAE226D83F080065C78B /* PurchasesErrorUtilsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAD626D83F080065C78B /* PurchasesErrorUtilsAPI.swift */; };
 		A592DAE326D83F080065C78B /* OfferingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAD726D83F080065C78B /* OfferingAPI.swift */; };
-		A592DAE426D83F080065C78B /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAD826D83F080065C78B /* main.swift */; };
 		A592DAE526D83F080065C78B /* AttributionNetworkAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAD926D83F080065C78B /* AttributionNetworkAPI.swift */; };
 		A592DAE626D83F080065C78B /* PackageAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DADA26D83F080065C78B /* PackageAPI.swift */; };
 		A592DAE726D83F080065C78B /* PurchaserInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DADB26D83F080065C78B /* PurchaserInfoAPI.swift */; };
 		A592DAE826D83F080065C78B /* OfferingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DADC26D83F080065C78B /* OfferingsAPI.swift */; };
 		A592DAE926D83F080065C78B /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DADD26D83F080065C78B /* EntitlementInfoAPI.swift */; };
 		A592DAEA26D83F080065C78B /* EntitlementInfosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DADE26D83F080065C78B /* EntitlementInfosAPI.swift */; };
+		A592DAEC26DD828B0065C78B /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAEB26DD828B0065C78B /* main.swift */; };
 		A5A92C7926C716F50038D732 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5A92C7826C716F50038D732 /* RCPackageAPI.m */; };
 		A5C7008D26AB647B00B2CA64 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = B3B5FBB9269D100400104A0C /* RCOfferingsAPI.m */; };
 		A5C7009026AF5A7900B2CA64 /* RCPurchaserInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */; };
@@ -456,13 +456,13 @@
 		A592DAD526D83F080065C78B /* PurchasesAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesAPI.swift; sourceTree = "<group>"; };
 		A592DAD626D83F080065C78B /* PurchasesErrorUtilsAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesErrorUtilsAPI.swift; sourceTree = "<group>"; };
 		A592DAD726D83F080065C78B /* OfferingAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingAPI.swift; sourceTree = "<group>"; };
-		A592DAD826D83F080065C78B /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = main.swift; path = "../../../../Desktop/swift tester/main.swift"; sourceTree = "<group>"; };
 		A592DAD926D83F080065C78B /* AttributionNetworkAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttributionNetworkAPI.swift; sourceTree = "<group>"; };
 		A592DADA26D83F080065C78B /* PackageAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PackageAPI.swift; sourceTree = "<group>"; };
 		A592DADB26D83F080065C78B /* PurchaserInfoAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaserInfoAPI.swift; sourceTree = "<group>"; };
 		A592DADC26D83F080065C78B /* OfferingsAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingsAPI.swift; sourceTree = "<group>"; };
 		A592DADD26D83F080065C78B /* EntitlementInfoAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntitlementInfoAPI.swift; sourceTree = "<group>"; };
 		A592DADE26D83F080065C78B /* EntitlementInfosAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntitlementInfosAPI.swift; sourceTree = "<group>"; };
+		A592DAEB26DD828B0065C78B /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		A5A92C7726C716F50038D732 /* RCPackageAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPackageAPI.h; sourceTree = "<group>"; };
 		A5A92C7826C716F50038D732 /* RCPackageAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPackageAPI.m; sourceTree = "<group>"; };
 		B3083A0F269931CF007B5503 /* RCOfferingAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOfferingAPI.h; sourceTree = "<group>"; };
@@ -1040,7 +1040,6 @@
 				A592DADD26D83F080065C78B /* EntitlementInfoAPI.swift */,
 				A592DADE26D83F080065C78B /* EntitlementInfosAPI.swift */,
 				A592DAD426D83F080065C78B /* IntroEligibilityAPI.swift */,
-				A592DAD826D83F080065C78B /* main.swift */,
 				A592DAD726D83F080065C78B /* OfferingAPI.swift */,
 				A592DADC26D83F080065C78B /* OfferingsAPI.swift */,
 				A592DADA26D83F080065C78B /* PackageAPI.swift */,
@@ -1048,6 +1047,7 @@
 				A592DAD526D83F080065C78B /* PurchasesAPI.swift */,
 				A592DAD626D83F080065C78B /* PurchasesErrorUtilsAPI.swift */,
 				A592DAD326D83F080065C78B /* TransactionAPI.swift */,
+				A592DAEB26DD828B0065C78B /* main.swift */,
 			);
 			path = PublicSDKSwiftAPITester;
 			sourceTree = "<group>";
@@ -1680,9 +1680,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				A592DAE326D83F080065C78B /* OfferingAPI.swift in Sources */,
+				A592DAEC26DD828B0065C78B /* main.swift in Sources */,
 				A592DAE826D83F080065C78B /* OfferingsAPI.swift in Sources */,
 				A592DAE926D83F080065C78B /* EntitlementInfoAPI.swift in Sources */,
-				A592DAE426D83F080065C78B /* main.swift in Sources */,
 				A592DAEA26D83F080065C78B /* EntitlementInfosAPI.swift in Sources */,
 				A592DAE626D83F080065C78B /* PackageAPI.swift in Sources */,
 				A592DAE126D83F080065C78B /* PurchasesAPI.swift in Sources */,
