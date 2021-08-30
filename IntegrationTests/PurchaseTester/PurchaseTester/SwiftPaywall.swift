@@ -363,7 +363,11 @@ class SwiftPaywall: UIViewController {
             ])
         
         // The offerings loading indicator
-        offeringLoadingIndicator = UIActivityIndicatorView(style: .medium)
+        if #available(iOS 13.0, *) {
+            offeringLoadingIndicator = UIActivityIndicatorView(style: .medium)
+        } else {
+            offeringLoadingIndicator = UIActivityIndicatorView(style: .white)
+        }
         offeringLoadingIndicator.hidesWhenStopped = true
         offeringLoadingIndicator.translatesAutoresizingMaskIntoConstraints = false
         offeringCollectionView.addSubview(offeringLoadingIndicator)
@@ -416,7 +420,11 @@ class SwiftPaywall: UIViewController {
             ])
         
         // The buy button loading indicator
-        buyButtonLoadingIndicator = UIActivityIndicatorView(style: .medium)
+        if #available(iOS 13.0, *) {
+            buyButtonLoadingIndicator = UIActivityIndicatorView(style: .medium)
+        } else {
+            buyButtonLoadingIndicator = UIActivityIndicatorView(style: .white)
+        }
         buyButtonLoadingIndicator.hidesWhenStopped = true
         buyButtonLoadingIndicator.translatesAutoresizingMaskIntoConstraints = false
         buyButton.addSubview(buyButtonLoadingIndicator)
