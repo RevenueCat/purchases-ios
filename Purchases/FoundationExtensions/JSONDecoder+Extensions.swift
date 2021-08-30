@@ -13,6 +13,21 @@
 
 import Foundation
 
+enum CodableError: Error, CustomStringConvertible {
+
+    case unexpectedValue(Any.Type)
+    case valueNotFound(Any.Type)
+
+    var description: String {
+        switch self {
+        case .unexpectedValue(let type):
+            return Strings.codable.unexpectedValueError(for: type)
+        case .valueNotFound(let type):
+            return Strings.codable.valueNotFoundError(for: type)
+        }
+    }
+}
+
 extension JSONDecoder {
 
     /// Decodes a top-level value of the given type from the given Dictionary.
@@ -33,15 +48,45 @@ extension JSONDecoder {
         keyDecodingStrategy: KeyDecodingStrategy = .useDefaultKeys,
         dateDecodingStrategy: DateDecodingStrategy = .deferredToDate,
         dataDecodingStrategy: DataDecodingStrategy = .deferredToData
-    ) throws -> T {
+    ) throws -> T? {
 
         self.keyDecodingStrategy = keyDecodingStrategy
         self.dateDecodingStrategy = dateDecodingStrategy
         self.dataDecodingStrategy = dataDecodingStrategy
 
-        let maybeJsonData = try JSONSerialization.data(withJSONObject: dictionary)
+        if JSONSerialization.isValidJSONObject(dictionary) {
+            let maybeJsonData = try JSONSerialization.data(withJSONObject: dictionary)
+            do {
+                return try decode(type, from: maybeJsonData)
+            } catch {
+                Logger.error(String(format: Strings.codable.decoding_error,
+                                    error.localizedDescription))
+                return nil
+            }
+        } else {
+            Logger.error(String(format: Strings.codable.invalid_json_error, dictionary))
+            return nil
+        }
+    }
 
-        return try decode(type, from: maybeJsonData)
+}
+
+extension KeyedDecodingContainer {
+
+    /// Decodes a value of the given type for the given key.
+    /// - Parameters:
+    ///   - type: The type of value to decode.
+    ///   - key: The key that the decoded value is associated with.
+    ///   - defaultValue: The default value returned if decoding fails.
+    /// - Returns: A value of the requested type, or the given default value
+    /// if decoding fails.
+    func decode<T: Decodable>(_ type: T.Type, forKey key: Self.Key, defaultValue: T) -> T {
+        do {
+            return try decode(type, forKey: key)
+        } catch {
+            Logger.error(error.localizedDescription)
+            return defaultValue
+        }
     }
 
 }

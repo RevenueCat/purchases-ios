@@ -17,7 +17,9 @@ extension PurchaseOwnershipType: Decodable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let purchaseOwnershipTypeString = try container.decode(String.self)
+        guard let purchaseOwnershipTypeString = try? container.decode(String.self) else {
+            throw CodableError.valueNotFound(PurchaseOwnershipType.self)
+        }
 
         switch purchaseOwnershipTypeString {
         case "PURCHASED":
@@ -25,7 +27,7 @@ extension PurchaseOwnershipType: Decodable {
         case "FAMILY_SHARED":
             self = .familyShared
         default:
-            Logger.warn("received unknown ownershipType: \(purchaseOwnershipTypeString)")
+            Logger.error(Strings.codable.unexpectedValueError(for: PurchaseOwnershipType.self))
             self = .unknown
         }
     }

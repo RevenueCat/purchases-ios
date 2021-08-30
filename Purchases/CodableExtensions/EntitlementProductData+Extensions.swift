@@ -28,27 +28,11 @@ extension EntitlementInfo.ProductData {
         self.expiresDate = try container.decodeIfPresent(Date.self, forKey: .expiresDate)
         self.unsubscribeDetectedAt = try container.decodeIfPresent(Date.self, forKey: .unsubscribeDetectedAt)
         self.billingIssuesDetectedAt = try container.decodeIfPresent(Date.self, forKey: .billingIssuesDetectedAt)
-
-        if let periodType = try container.decodeIfPresent(PeriodType.self, forKey: .periodType) {
-            self.periodType = periodType
-        } else {
-            Logger.warn("nil periodType found during decoding")
-            self.periodType = .normal
-        }
-
-        if let ownershipType = try container.decodeIfPresent(PurchaseOwnershipType.self, forKey: .ownershipType) {
-            self.ownershipType = ownershipType
-        } else {
-            Logger.warn("nil ownershipType found during decoding")
-            self.ownershipType = .purchased
-        }
-
-        if let store = try container.decodeIfPresent(Store.self, forKey: .store) {
-            self.store = store
-        } else {
-            Logger.warn("nil store found during decoding")
-            self.store = .unknownStore
-        }
+        self.periodType = container.decode(PeriodType.self, forKey: .periodType, defaultValue: .normal)
+        self.store = container.decode(Store.self, forKey: .store, defaultValue: .unknownStore)
+        self.ownershipType = container.decode(PurchaseOwnershipType.self,
+                                              forKey: .ownershipType,
+                                              defaultValue: .purchased)
     }
 
 }

@@ -23,5 +23,6 @@ enum Strings {
     static let purchaserInfo = PurchaserInfoStrings.self
     static let receipt = ReceiptStrings.self
     static let restore = RestoreStrings.self
+    static let codable = CodableStrings.self
 
 }

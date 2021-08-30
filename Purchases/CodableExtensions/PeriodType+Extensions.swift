@@ -17,7 +17,9 @@ extension PeriodType: Decodable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let periodTypeString = try container.decode(String.self)
+        guard let periodTypeString = try? container.decode(String.self) else {
+            throw CodableError.valueNotFound(PeriodType.self)
+        }
 
         switch periodTypeString {
         case "normal":
@@ -27,8 +29,7 @@ extension PeriodType: Decodable {
         case "trial":
             self = .trial
         default:
-            Logger.warn("received unknown periodType: \(periodTypeString)")
-            self = .normal
+            throw CodableError.unexpectedValue(PeriodType.self)
         }
     }
 

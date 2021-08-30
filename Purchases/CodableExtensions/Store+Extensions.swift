@@ -17,7 +17,9 @@ extension Store: Decodable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let storeString = try container.decode(String.self)
+        guard let storeString = try? container.decode(String.self) else {
+            throw CodableError.valueNotFound(Store.self)
+        }
 
         switch storeString {
         case "app_store":
@@ -31,8 +33,7 @@ extension Store: Decodable {
         case "promotional":
             self = .promotional
         default:
-            Logger.warn("received unknown store: \(storeString)")
-            self = .unknownStore
+            throw CodableError.unexpectedValue(Store.self)
         }
     }
 
