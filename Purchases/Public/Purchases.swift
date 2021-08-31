@@ -208,7 +208,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
 
     static var notConfiguredAssertionFunction: () -> Void = { fatalError(Strings.purchase.purchases_nil) }
 
-    @objc convenience init(apiKey: String, appUserID: String?) {
+    convenience init(apiKey: String, appUserID: String?) {
         self.init(apiKey: apiKey,
                   appUserID: appUserID,
                   userDefaults: nil,
@@ -218,12 +218,12 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
     }
 
     // swiftlint:disable function_body_length
-    @objc public convenience init(apiKey: String,
-                                  appUserID: String?,
-                                  userDefaults: UserDefaults?,
-                                  observerMode: Bool,
-                                  platformFlavor: String?,
-                                  platformFlavorVersion: String?) {
+    convenience init(apiKey: String,
+                     appUserID: String?,
+                     userDefaults: UserDefaults?,
+                     observerMode: Bool,
+                     platformFlavor: String?,
+                     platformFlavorVersion: String?) {
         let operationDispatcher = OperationDispatcher()
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
@@ -374,7 +374,6 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
         subscribeToAppStateNotifications()
         attributionPoster.postPostponedAttributionDataIfNeeded()
         postAppleSearchAddsAttributionCollectionIfNeeded()
-
     }
 
     /**

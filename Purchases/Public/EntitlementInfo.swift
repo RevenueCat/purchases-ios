@@ -134,62 +134,6 @@ import Foundation
      */
     @objc public let ownershipType: PurchaseOwnershipType
 
-    @objc public convenience init(entitlementId: String,
-                                  entitlementData: [String: Any],
-                                  productData: [String: Any],
-                                  requestDate: Date?) {
-        self.init(entitlementId: entitlementId,
-                  entitlementData: entitlementData,
-                  productData: productData,
-                  requestDate: requestDate,
-                  dateFormatter: .iso8601SecondsDateFormatter)
-    }
-
-    init(entitlementId: String,
-         entitlementData: [String: Any],
-         productData: [String: Any],
-         requestDate: Date?,
-         dateFormatter: DateFormatter) {
-        // Entitlement data
-        let entitlementExpiresDateString = entitlementData["expires_date"] as? String
-        let entitlementPurchaseDateString = entitlementData["purchase_date"] as? String
-        let productIdString = entitlementData["product_identifier"] as? String
-
-        // Product data
-        let periodTypeString = productData["period_type"] as? String
-        let originalPurchaseDateString = productData["original_purchase_date"] as? String
-        let productExpiresDateString = productData["expires_date"] as? String
-        let storeString = productData["store"] as? String
-        let isSandbox = (productData["is_sandbox"] as? NSNumber)?.boolValue ?? false
-        let unsubscribeDetectedAtString = productData["unsubscribe_detected_at"] as? String
-        let billingIssuesDetectedAtString = productData["billing_issues_detected_at"] as? String
-        let ownershipType = productData["ownership_type"] as? String
-
-        let store = Self.parseStore(store: storeString)
-        let expirationDate = dateFormatter.date(fromString: productExpiresDateString)
-        let unsubscribeDetectedAt = dateFormatter.date(fromString: unsubscribeDetectedAtString)
-        let billingIssueDetectedAt = dateFormatter.date(fromString: billingIssuesDetectedAtString)
-        let entitlementExpiresDate = dateFormatter.date(fromString: entitlementExpiresDateString)
-
-        self.store = store
-        self.expirationDate = expirationDate
-        self.unsubscribeDetectedAt = unsubscribeDetectedAt
-        self.billingIssueDetectedAt = billingIssueDetectedAt
-        self.identifier = entitlementId
-        self.productIdentifier = productIdString!
-        self.isSandbox = isSandbox
-
-        self.isActive = Self.isDateActive(expirationDate: entitlementExpiresDate, forRequestDate: requestDate)
-        self.periodType = Self.parsePeriodType(periodType: periodTypeString)
-        self.latestPurchaseDate = dateFormatter.date(fromString: entitlementPurchaseDateString)
-        self.originalPurchaseDate = dateFormatter.date(fromString: originalPurchaseDateString)
-        self.ownershipType = Self.parseOwnershipType(ownershipType: ownershipType)
-        self.willRenew = Self.willRenewWithExpirationDate(expirationDate: expirationDate,
-                                                          store: store,
-                                                          unsubscribeDetectedAt: unsubscribeDetectedAt,
-                                                          billingIssueDetectedAt: billingIssueDetectedAt)
-    }
-
     public override var description: String {
         return """
             <\(String(describing: EntitlementInfo.self)): "
@@ -280,6 +224,62 @@ import Foundation
         hash = hash * 31 + UInt(self.billingIssueDetectedAt?.hashValue ?? 0)
         hash = hash * 31 + UInt(self.ownershipType.hashValue)
         return Int(hash)
+    }
+
+    convenience init(entitlementId: String,
+                     entitlementData: [String: Any],
+                     productData: [String: Any],
+                     requestDate: Date?) {
+        self.init(entitlementId: entitlementId,
+                  entitlementData: entitlementData,
+                  productData: productData,
+                  requestDate: requestDate,
+                  dateFormatter: .iso8601SecondsDateFormatter)
+    }
+
+    init(entitlementId: String,
+         entitlementData: [String: Any],
+         productData: [String: Any],
+         requestDate: Date?,
+         dateFormatter: DateFormatter) {
+        // Entitlement data
+        let entitlementExpiresDateString = entitlementData["expires_date"] as? String
+        let entitlementPurchaseDateString = entitlementData["purchase_date"] as? String
+        let productIdString = entitlementData["product_identifier"] as? String
+
+        // Product data
+        let periodTypeString = productData["period_type"] as? String
+        let originalPurchaseDateString = productData["original_purchase_date"] as? String
+        let productExpiresDateString = productData["expires_date"] as? String
+        let storeString = productData["store"] as? String
+        let isSandbox = (productData["is_sandbox"] as? NSNumber)?.boolValue ?? false
+        let unsubscribeDetectedAtString = productData["unsubscribe_detected_at"] as? String
+        let billingIssuesDetectedAtString = productData["billing_issues_detected_at"] as? String
+        let ownershipType = productData["ownership_type"] as? String
+
+        let store = Self.parseStore(store: storeString)
+        let expirationDate = dateFormatter.date(fromString: productExpiresDateString)
+        let unsubscribeDetectedAt = dateFormatter.date(fromString: unsubscribeDetectedAtString)
+        let billingIssueDetectedAt = dateFormatter.date(fromString: billingIssuesDetectedAtString)
+        let entitlementExpiresDate = dateFormatter.date(fromString: entitlementExpiresDateString)
+
+        self.store = store
+        self.expirationDate = expirationDate
+        self.unsubscribeDetectedAt = unsubscribeDetectedAt
+        self.billingIssueDetectedAt = billingIssueDetectedAt
+        self.identifier = entitlementId
+        self.productIdentifier = productIdString!
+        self.isSandbox = isSandbox
+
+        self.isActive = Self.isDateActive(expirationDate: entitlementExpiresDate, forRequestDate: requestDate)
+        self.periodType = Self.parsePeriodType(periodType: periodTypeString)
+        self.latestPurchaseDate = dateFormatter.date(fromString: entitlementPurchaseDateString)
+        self.originalPurchaseDate = dateFormatter.date(fromString: originalPurchaseDateString)
+        self.ownershipType = Self.parseOwnershipType(ownershipType: ownershipType)
+        self.willRenew = Self.willRenewWithExpirationDate(expirationDate: expirationDate,
+                                                          store: store,
+                                                          unsubscribeDetectedAt: unsubscribeDetectedAt,
+                                                          billingIssueDetectedAt: billingIssueDetectedAt)
     }
 
 }

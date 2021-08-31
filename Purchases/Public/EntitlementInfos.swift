@@ -32,9 +32,29 @@ import Foundation
         return self.all.filter { $0.value.isActive }
     }
 
-    @objc public convenience init(entitlementsData: [String: Any]?,
-                                  purchasesData: [String: Any],
-                                  requestDate: Date?) {
+    @objc public subscript(key: String) -> EntitlementInfo? {
+        return self.all[key]
+    }
+
+    public override var description: String {
+        return "<\(NSStringFromClass(Self.self)): self.all=\(self.all), self.active=\(self.active)>"
+    }
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let object = object as? EntitlementInfos else {
+            return false
+        }
+
+        if object === self {
+            return true
+        }
+
+        return isEqual(toInfos: object)
+    }
+
+    convenience init(entitlementsData: [String: Any]?,
+                     purchasesData: [String: Any],
+                     requestDate: Date?) {
         self.init(entitlementsData: entitlementsData,
                   purchasesData: purchasesData,
                   requestDate: requestDate,
@@ -72,14 +92,6 @@ import Foundation
         self.all = entitlementInfos
     }
 
-    @objc public subscript(key: String) -> EntitlementInfo? {
-        return self.all[key]
-    }
-
-    public override var description: String {
-        return "<\(NSStringFromClass(Self.self)): self.all=\(self.all), self.active=\(self.active)>"
-    }
-
     private func isEqual(toInfos infos: EntitlementInfos?) -> Bool {
         guard let infos = infos else {
             return false
@@ -96,15 +108,4 @@ import Foundation
         return true
     }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let object = object as? EntitlementInfos else {
-            return false
-        }
-
-        if object === self {
-            return true
-        }
-
-        return isEqual(toInfos: object)
-    }
 }
