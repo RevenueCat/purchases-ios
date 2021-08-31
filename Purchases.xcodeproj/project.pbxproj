@@ -632,9 +632,9 @@
 		2DC5621724EC63420031F69B /* Purchases */ = {
 			isa = PBXGroup;
 			children = (
-				F5714EA626D7A82E00635477 /* CodableExtensions */,
 				F5BE44412698580200254A30 /* Attribution */,
 				B3B5FBBD269E080A00104A0C /* Caching */,
+				F5714EA626D7A82E00635477 /* CodableExtensions */,
 				2CD72940268A820E00BFC976 /* FoundationExtensions */,
 				B3A36AAC26BC76230059EDEA /* Identity */,
 				2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */,

@@ -314,12 +314,15 @@ private extension EntitlementInfo {
 extension EntitlementInfo {
 
     struct EntitlementData: Decodable {
+
         let expiresDate: Date?
         let purchaseDate: Date?
         let productIdentifier: String
+
     }
 
     struct ProductData: Decodable {
+
         let periodType: PeriodType
         let originalPurchaseDate: Date?
         let expiresDate: Date?
@@ -328,6 +331,7 @@ extension EntitlementInfo {
         let unsubscribeDetectedAt: Date?
         let billingIssuesDetectedAt: Date?
         let ownershipType: PurchaseOwnershipType
+
     }
 
 }
