@@ -594,6 +594,7 @@
 			isa = PBXGroup;
 			children = (
 				2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */,
+				F5714EE426DC2F1D00635477 /* CodableStrings.swift */,
 				9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */,
 				9A65E0752591977200DE00B0 /* IdentityStrings.swift */,
 				9A65E07A2591977500DE00B0 /* NetworkStrings.swift */,
@@ -603,7 +604,6 @@
 				9A65E07F2591977900DE00B0 /* ReceiptStrings.swift */,
 				9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */,
 				37E3507939634ED5A9280544 /* Strings.swift */,
-				F5714EE426DC2F1D00635477 /* CodableStrings.swift */,
 			);
 			path = Strings;
 			sourceTree = "<group>";
