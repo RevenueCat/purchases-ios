@@ -175,6 +175,20 @@ class PurchasesOrchestrator {
         }
     }
 
+    func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
+        // todo: clean up, move to new class along with the private funcs below
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
+           package.productWrapper is SK2ProductWrapper {
+            purchase(sk2Package: package, completion: completion)
+        } else {
+            guard package.productWrapper is SK1ProductWrapper else {
+                fatalError("could not identify StoreKit version to use!")
+            }
+            purchase(sk1Package: package, completion: completion)
+        }
+
+    }
+
     func purchase(product: SKProduct,
                   payment: SKMutablePayment,
                   presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
@@ -323,6 +337,13 @@ private extension PurchasesOrchestrator {
         }
     }
 
+}
+
+extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
+
+    func transactionsUpdated() {
+        syncPurchases(receiptRefreshPolicy: .always, isRestore: false, maybeCompletion: nil)
+    }
 }
 
 // MARK: Private funcs.
@@ -529,15 +550,40 @@ private extension PurchasesOrchestrator {
         deviceCache.setOfferingsCacheTimestampToNow()
     }
 
-}
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func purchase(sk2Package: Package, completion: @escaping PurchaseCompletedBlock) {
+        guard let sk2ProductWrapper = sk2Package.productWrapper as? SK2ProductWrapper else {
+            return
+        }
+        // todo: remove when this gets fixed.
+        // limiting to arm architecture since builds on beta 5 fail if other archs are included
+        #if arch(arm64)
 
-extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
+        let sk2Product = sk2ProductWrapper.underlyingSK2Product
+        Task.init {
+            let result = try await sk2Product.purchase()
+            await storeKit2Listener.handle(purchaseResult: result)
+            // todo: nicer handling, improve the userCancelled case
+            syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybePurchaserInfo, maybeError in
+                completion(nil, maybePurchaserInfo, maybeError, false)
+            }
+        }
+        #endif
 
-    func transactionsUpdated() {
-        syncPurchases(receiptRefreshPolicy: .always, isRestore: false, maybeCompletion: nil)
     }
+
+    private func purchase(sk1Package: Package, completion: @escaping PurchaseCompletedBlock) {
+        guard let sk1ProductWrapper = sk1Package.productWrapper as? SK1ProductWrapper else {
+            return
+        }
+        let sk1Product = sk1ProductWrapper.underlyingSK1Product
+        let payment = storeKitWrapper.payment(withProduct: sk1Product)
+        purchase(product: sk1Product,
+                 payment: payment,
+                 presentedOfferingIdentifier: sk1Package.offeringIdentifier,
+                 completion: completion)
+    }
+
 }
-
-
 
 // swiftlint:disable:this file_length
