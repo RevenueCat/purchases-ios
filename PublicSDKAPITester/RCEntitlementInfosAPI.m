@@ -13,9 +13,7 @@
 @implementation RCEntitlementInfosAPI
 
 + (void)checkAPI {
-    RCEntitlementInfos *ei = [[RCEntitlementInfos alloc] initWithEntitlementsData:nil
-                                                                    purchasesData:@{}
-                                                                      requestDate:nil];
+    RCEntitlementInfos *ei;
     NSDictionary<NSString *, RCEntitlementInfo *> *all = ei.all;
     NSDictionary<NSString *, RCEntitlementInfo *> *active = ei.active;
     RCEntitlementInfo *e = [ei objectForKeyedSubscript:@""];

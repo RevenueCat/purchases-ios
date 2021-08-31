@@ -12,7 +12,7 @@
 @implementation RCIntroEligibilityAPI
 
 + (void)checkAPI {
-    RCIntroEligibility *ie = [[RCIntroEligibility alloc] init];
+    RCIntroEligibility *ie;
     RCIntroEligibilityStatus status = [ie status];
     NSLog(@"%zd", status);
 

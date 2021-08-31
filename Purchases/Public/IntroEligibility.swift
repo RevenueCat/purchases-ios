@@ -77,18 +77,6 @@ private extension IntroEligibilityStatus {
      */
     @objc public let status: IntroEligibilityStatus
 
-    @objc required public init(eligibilityStatus status: IntroEligibilityStatus) {
-        self.status = status
-    }
-
-    @objc public init(eligibilityStatusCode statusCode: NSNumber) throws {
-        self.status = try IntroEligibilityStatus(statusCode: statusCode.intValue)
-    }
-
-    @objc public override init() {
-        self.status = .unknown
-    }
-
     public override var description: String {
         switch status {
         case .eligible:
@@ -98,6 +86,18 @@ private extension IntroEligibilityStatus {
         default:
             return "Status indeterminate."
         }
+    }
+
+    init(eligibilityStatus status: IntroEligibilityStatus) {
+        self.status = status
+    }
+
+    init(eligibilityStatusCode statusCode: NSNumber) throws {
+        self.status = try IntroEligibilityStatus(statusCode: statusCode.intValue)
+    }
+
+    @objc private override init() {
+        self.status = .unknown
     }
 
 }

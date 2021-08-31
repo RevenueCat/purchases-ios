@@ -74,13 +74,6 @@ private extension PackageType {
     @objc public let product: SKProduct
     @objc public let offeringIdentifier: String
 
-    @objc public init(identifier: String, packageType: PackageType, product: SKProduct, offeringIdentifier: String) {
-        self.identifier = identifier
-        self.packageType = packageType
-        self.product = product
-        self.offeringIdentifier = offeringIdentifier
-    }
-
     @objc public var localizedPriceString: String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -103,6 +96,14 @@ private extension PackageType {
             return ""
         }
     }
+
+    init(identifier: String, packageType: PackageType, product: SKProduct, offeringIdentifier: String) {
+        self.identifier = identifier
+        self.packageType = packageType
+        self.product = product
+        self.offeringIdentifier = offeringIdentifier
+    }
+
 }
 
 @objc public extension Package {
