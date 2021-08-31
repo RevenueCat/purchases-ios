@@ -531,7 +531,7 @@ private extension PurchasesOrchestrator {
 
 }
 
-private extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
+extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 
     func transactionsUpdated() {
         syncPurchases(receiptRefreshPolicy: .always, isRestore: false, maybeCompletion: nil)
