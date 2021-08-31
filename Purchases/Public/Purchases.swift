@@ -808,13 +808,6 @@ public extension Purchases {
         purchasesOrchestrator.products(withIdentifiers: identifiers, completion: completion)
     }
 
-    // todo: docs
-    /// :nodoc:
-    @objc func productsDetails(identifiers: [String],
-                               completionBlock completion: @escaping ([ProductWrapper]) -> Void) {
-        purchasesOrchestrator.productsFromOptimalStore(withIdentifiers: identifiers, completion: completion)
-    }
-
     /**
      * Use this function if you are not using the Offerings system to purchase an `SKProduct`.
      * If you are using the Offerings system, use ``Purchases/purchase(package:completion:)`` instead.
