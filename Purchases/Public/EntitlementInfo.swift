@@ -134,61 +134,6 @@ import Foundation
      */
     @objc public let ownershipType: PurchaseOwnershipType
 
-    @objc public convenience init?(entitlementId: String,
-                                   entitlementData: [String: Any],
-                                   productData: [String: Any],
-                                   requestDate: Date?) {
-        self.init(entitlementId: entitlementId,
-                  entitlementData: entitlementData,
-                  productData: productData,
-                  requestDate: requestDate,
-                  dateFormatter: .iso8601SecondsDateFormatter,
-                  jsonDecoder: JSONDecoder())
-    }
-
-    init?(entitlementId: String,
-          entitlementData entitlementDataDict: [String: Any],
-          productData productDataDict: [String: Any],
-          requestDate: Date?,
-          dateFormatter: DateFormatter,
-          jsonDecoder: JSONDecoder) {
-        // Entitlement data
-        guard let entitlementData: EntitlementData = try? jsonDecoder.decode(
-            dictionary: entitlementDataDict,
-            keyDecodingStrategy: .convertFromSnakeCase,
-            dateDecodingStrategy: .formatted(dateFormatter)
-        ) else {
-            return nil
-        }
-
-        // Product data
-        guard let productData: ProductData = try? jsonDecoder.decode(
-            dictionary: productDataDict,
-            keyDecodingStrategy: .convertFromSnakeCase,
-            dateDecodingStrategy: .formatted(dateFormatter)
-        ) else {
-            return nil
-        }
-
-        self.store = productData.store
-        self.expirationDate = productData.expiresDate
-        self.unsubscribeDetectedAt = productData.unsubscribeDetectedAt
-        self.billingIssueDetectedAt = productData.billingIssuesDetectedAt
-        self.identifier = entitlementId
-        self.productIdentifier = entitlementData.productIdentifier
-        self.isSandbox = productData.isSandbox
-
-        self.isActive = Self.isDateActive(expirationDate: entitlementData.expiresDate, forRequestDate: requestDate)
-        self.periodType = productData.periodType
-        self.latestPurchaseDate = entitlementData.purchaseDate
-        self.originalPurchaseDate = productData.originalPurchaseDate
-        self.ownershipType = productData.ownershipType
-        self.willRenew = Self.willRenewWithExpirationDate(expirationDate: expirationDate,
-                                                          store: store,
-                                                          unsubscribeDetectedAt: unsubscribeDetectedAt,
-                                                          billingIssueDetectedAt: billingIssueDetectedAt)
-    }
-
     public override var description: String {
         return """
             <\(String(describing: EntitlementInfo.self)): "
@@ -279,6 +224,61 @@ import Foundation
         hash = hash * 31 + UInt(self.billingIssueDetectedAt?.hashValue ?? 0)
         hash = hash * 31 + UInt(self.ownershipType.hashValue)
         return Int(hash)
+    }
+
+    convenience init?(entitlementId: String,
+                      entitlementData: [String: Any],
+                      productData: [String: Any],
+                      requestDate: Date?) {
+        self.init(entitlementId: entitlementId,
+                  entitlementData: entitlementData,
+                  productData: productData,
+                  requestDate: requestDate,
+                  dateFormatter: .iso8601SecondsDateFormatter,
+                  jsonDecoder: JSONDecoder())
+    }
+
+    init?(entitlementId: String,
+          entitlementData entitlementDataDict: [String: Any],
+          productData productDataDict: [String: Any],
+          requestDate: Date?,
+          dateFormatter: DateFormatter,
+          jsonDecoder: JSONDecoder) {
+        // Entitlement data
+        guard let entitlementData: EntitlementData = try? jsonDecoder.decode(
+            dictionary: entitlementDataDict,
+            keyDecodingStrategy: .convertFromSnakeCase,
+            dateDecodingStrategy: .formatted(dateFormatter)
+        ) else {
+            return nil
+        }
+
+        // Product data
+        guard let productData: ProductData = try? jsonDecoder.decode(
+            dictionary: productDataDict,
+            keyDecodingStrategy: .convertFromSnakeCase,
+            dateDecodingStrategy: .formatted(dateFormatter)
+        ) else {
+            return nil
+        }
+
+        self.store = productData.store
+        self.expirationDate = productData.expiresDate
+        self.unsubscribeDetectedAt = productData.unsubscribeDetectedAt
+        self.billingIssueDetectedAt = productData.billingIssuesDetectedAt
+        self.identifier = entitlementId
+        self.productIdentifier = entitlementData.productIdentifier
+        self.isSandbox = productData.isSandbox
+
+        self.isActive = Self.isDateActive(expirationDate: entitlementData.expiresDate, forRequestDate: requestDate)
+        self.periodType = productData.periodType
+        self.latestPurchaseDate = entitlementData.purchaseDate
+        self.originalPurchaseDate = productData.originalPurchaseDate
+        self.ownershipType = productData.ownershipType
+        self.willRenew = Self.willRenewWithExpirationDate(expirationDate: expirationDate,
+                                                          store: store,
+                                                          unsubscribeDetectedAt: unsubscribeDetectedAt,
+                                                          billingIssueDetectedAt: billingIssueDetectedAt)
     }
 
 }

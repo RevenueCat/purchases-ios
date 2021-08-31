@@ -62,7 +62,7 @@ BOOL isAnonymous;
     SKProductDiscount *skpd = [[SKProductDiscount alloc] init];
     SKPaymentDiscount *skmd = [[SKPaymentDiscount alloc] init];
     
-    RCPackage *pack = [[RCPackage alloc] initWithIdentifier:@"" packageType:RCPackageTypeCustom product:skp offeringIdentifier:@""];
+    RCPackage *pack;
 
     [p invalidatePurchaserInfoCache];
 

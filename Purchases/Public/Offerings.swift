@@ -56,11 +56,6 @@ import Foundation
         return offering(identifier: key)
     }
 
-    @objc public init(offerings: [String: Offering], currentOfferingID: String?) {
-        all = offerings
-        self.currentOfferingID = currentOfferingID
-    }
-
     @objc public override var description: String {
         var description = "<Offerings {\n"
         for offering in all.values {
@@ -68,6 +63,11 @@ import Foundation
         }
         description += "\tcurrentOffering=\(current?.description ?? "<none>")>"
         return description
+    }
+
+    init(offerings: [String: Offering], currentOfferingID: String?) {
+        all = offerings
+        self.currentOfferingID = currentOfferingID
     }
 
 }

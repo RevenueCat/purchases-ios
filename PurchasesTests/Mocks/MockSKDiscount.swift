@@ -26,6 +26,6 @@ class MockDiscount: SKProductDiscount {
     lazy var mockSubscriptionPeriod: SKProductSubscriptionPeriod? = nil
 
     override var subscriptionPeriod: SKProductSubscriptionPeriod {
-        return mockSubscriptionPeriod ?? SKProductSubscriptionPeriod(numberOfUnits: 1, unit:.month)
+        return mockSubscriptionPeriod ?? SKProductSubscriptionPeriod(numberOfUnits: 1, unit: .month)
     }
 }

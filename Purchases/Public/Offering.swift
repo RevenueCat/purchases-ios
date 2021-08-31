@@ -66,33 +66,6 @@ import Foundation
      */
     @objc private(set) public var weekly: Package?
 
-    init(identifier: String, serverDescription: String, availablePackages: [Package]) {
-        self.identifier = identifier
-        self.serverDescription = serverDescription
-        self.availablePackages = availablePackages
-
-        for package in availablePackages {
-            switch package.packageType {
-            case .lifetime:
-                self.lifetime = package
-            case .annual:
-                self.annual = package
-            case .sixMonth:
-                self.sixMonth = package
-            case .threeMonth:
-                self.threeMonth = package
-            case .twoMonth:
-                self.twoMonth = package
-            case .monthly:
-                self.monthly = package
-            case .weekly:
-                self.weekly = package
-            case .unknown, .custom:
-                break
-            }
-        }
-    }
-
     public override var description: String {
         return """
         <Offering {\n\tidentifier=\(identifier)\n\tserverDescription=\(serverDescription)\n"
@@ -120,6 +93,33 @@ import Foundation
 
     @objc public subscript(key: String) -> Package? {
         return package(identifier: key)
+    }
+
+    init(identifier: String, serverDescription: String, availablePackages: [Package]) {
+        self.identifier = identifier
+        self.serverDescription = serverDescription
+        self.availablePackages = availablePackages
+
+        for package in availablePackages {
+            switch package.packageType {
+            case .lifetime:
+                self.lifetime = package
+            case .annual:
+                self.annual = package
+            case .sixMonth:
+                self.sixMonth = package
+            case .threeMonth:
+                self.threeMonth = package
+            case .twoMonth:
+                self.twoMonth = package
+            case .monthly:
+                self.monthly = package
+            case .weekly:
+                self.weekly = package
+            case .unknown, .custom:
+                break
+            }
+        }
     }
 
     private func valueOrEmpty<T: CustomStringConvertible>(_ value: T?) -> String {
