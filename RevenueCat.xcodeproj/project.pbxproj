@@ -1650,7 +1650,6 @@
 				2DE20B6F264087FB004C597D /* StoreKitTests.swift in Sources */,
 				2DE61A84264190830021CEA0 /* Constants.swift in Sources */,
 				2D3BFAD226DEA46600370B11 /* MockProductsRequest.swift in Sources */,
-				A83B8E48AE8E2A6238ED0B30 /* ProductsFetcherSK1Tests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
