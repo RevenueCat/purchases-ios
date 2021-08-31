@@ -15,13 +15,13 @@ import Foundation
 import Purchases
 
 func checkPurchaserInfoAPI() {
-    let purchaserInfo: Purchases.PurchaserInfo? = nil
-    let entitlementInfo: Purchases.EntitlementInfos = purchaserInfo!.entitlements
+    let purchaserInfo: PurchaserInfo? = nil
+    let entitlementInfo: EntitlementƒInfos = purchaserInfo!.entitlements
     let asubs: Set<String> = purchaserInfo!.activeSubscriptions
     let appis: Set<String> = purchaserInfo!.allPurchasedProductIdentifiers
     let led: Date? = purchaserInfo!.latestExpirationDate
     let ncp: Set<String> = purchaserInfo!.nonConsumablePurchases
-    let nst: [Purchases.Transaction] = purchaserInfo!.nonSubscriptionTransactions
+    let nst: [Transaction] = purchaserInfo!.nonSubscriptionTransactions
     let oav: String? = purchaserInfo!.originalApplicationVersion
     let opd: Date? = purchaserInfo!.originalPurchaseDate
     let rDate: Date? = purchaserInfo!.requestDate
