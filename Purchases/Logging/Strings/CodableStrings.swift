@@ -24,4 +24,5 @@ enum CodableStrings {
     }
     static let invalid_json_error: String = "The given data was not valid JSON\n%@"
     static let decoding_error = "Couldn't decode data from json\n%@"
+
 }
