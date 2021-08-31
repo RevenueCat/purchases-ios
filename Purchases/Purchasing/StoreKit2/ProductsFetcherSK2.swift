@@ -33,10 +33,16 @@ actor ProductsFetcherSK2 {
                 Logger.debug(String(format: Strings.offering.products_already_cached, identifiers))
                 return productsAlreadyCachedSet
             }
+            // todo: remove when this gets fixed.
+            // limiting to arm architecture since builds on beta 5 fail if other archs are included
+            #if arch(arm64)
 
             let storeKitProducts = try await StoreKit.Product.products(for: identifiers)
             let sk2Wrappers = storeKitProducts.map { SK2ProductWrapper(sk2Product: $0) }
             return Set(sk2Wrappers)
+            #else
+            return Set()
+            #endif
 
         } catch let error {
             throw ProductsManagerSK2Error.productsRequestError(innerError: error)

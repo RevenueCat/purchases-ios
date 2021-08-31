@@ -878,10 +878,15 @@ public extension Purchases {
         guard let sk2ProductWrapper = sk2Package.productWrapper as? SK2ProductWrapper else {
             return
         }
+        // todo: remove when this gets fixed.
+        // limiting to arm architecture since builds on beta 5 fail if other archs are included
+        #if arch(arm64)
+
         let sk2Product = sk2ProductWrapper.underlyingSK2Product
         Task.init {
             try await sk2Product.purchase()
         }
+        #endif
 
     }
 

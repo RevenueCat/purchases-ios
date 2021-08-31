@@ -11,7 +11,6 @@
 //
 //  Created by Andrés Boedo on 7/23/21.
 
-@testable import PurchasesCoreSwift
 import Nimble
 import StoreKitTest
 import XCTest
