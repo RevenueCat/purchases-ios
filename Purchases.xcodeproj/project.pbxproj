@@ -271,6 +271,7 @@
 		2CD72947268A828400BFC976 /* Locale+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Locale+Extensions.swift"; sourceTree = "<group>"; };
 		2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionStrings.swift; sourceTree = "<group>"; };
 		2D1C3F3826B9D8B800112626 /* MockBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBundle.swift; sourceTree = "<group>"; };
+		2D343C0726DEC0950049DE09 /* Purchases.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = Purchases.xctestplan; path = Purchases.xcodeproj/Purchases.xctestplan; sourceTree = "<group>"; };
 		2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWrapper.swift; sourceTree = "<group>"; };
 		2D5BB46A24C8E8ED00E27537 /* ReceiptParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptParser.swift; sourceTree = "<group>"; };
 		2D84458826B9CD270033B5A3 /* ReceiptFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcherTests.swift; sourceTree = "<group>"; };
@@ -811,6 +812,7 @@
 		352629F41F7C4B9100C04F2C = {
 			isa = PBXGroup;
 			children = (
+				2D343C0726DEC0950049DE09 /* Purchases.xctestplan */,
 				2DC5621724EC63420031F69B /* Purchases */,
 				2DC5622224EC63430031F69B /* PurchasesTests */,
 				B387F46B2683FD730028701F /* PublicSDKAPITester */,
