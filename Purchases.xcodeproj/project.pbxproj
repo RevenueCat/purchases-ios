@@ -13,6 +13,10 @@
 		2CD72948268A828400BFC976 /* Locale+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD72947268A828400BFC976 /* Locale+Extensions.swift */; };
 		2D11F5E1250FF886005A70E8 /* AttributionStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */; };
 		2D1C3F3926B9D8B800112626 /* MockBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1C3F3826B9D8B800112626 /* MockBundle.swift */; };
+		2D3BFAD126DEA45C00370B11 /* MockSKProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E524F6F5DC005BC22D /* MockSKProduct.swift */; };
+		2D3BFAD226DEA46600370B11 /* MockProductsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35B08709090FBBFB16EBD /* MockProductsRequest.swift */; };
+		2D3BFAD326DEA47100370B11 /* MockSKDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E724F6F61B005BC22D /* MockSKDiscount.swift */; };
+		2D3BFAD426DEA49200370B11 /* SKProductSubscriptionDurationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E924F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift */; };
 		2D4D6AF424F717B800B656BE /* ASN1ObjectIdentifierEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35C4A4B241A545D1D06BD /* ASN1ObjectIdentifierEncoder.swift */; };
 		2D4D6AF524F717B800B656BE /* ContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35092F0E41512E0D610BA /* ContainerFactory.swift */; };
 		2D4D6AF624F7193700B656BE /* verifyReceiptSample1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2DDE559A24C8B5E300DCB087 /* verifyReceiptSample1.txt */; };
@@ -23,6 +27,9 @@
 		2D9C7BB126D838C2006838BE /* ManageSubscriptionsModalHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9C7BB026D838C2006838BE /* ManageSubscriptionsModalHelperTests.swift */; };
 		2D9C7BB326D838FC006838BE /* UIApplication+RCExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9C7BB226D838FC006838BE /* UIApplication+RCExtensions.swift */; };
 		2D9F4A5526C30CA800B07B43 /* PurchasesOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */; };
+		2DA85A8A26DEA7DC00F1136D /* MockProductsRequestFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35F783903362B65FB7AF3 /* MockProductsRequestFactory.swift */; };
+		2DA85A8B26DEA7DD00F1136D /* MockProductsRequestFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35F783903362B65FB7AF3 /* MockProductsRequestFactory.swift */; };
+		2DA85A8C26DEA7FB00F1136D /* Purchases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* Purchases.framework */; };
 		2DC19195255F36D10039389A /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19194255F36D10039389A /* Logger.swift */; };
 		2DC5622624EC63430031F69B /* Purchases.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DC5621824EC63430031F69B /* Purchases.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2DC5622E24EC636C0031F69B /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E355CBB3F3A31A32687B14 /* Transaction.swift */; };
@@ -58,7 +65,6 @@
 		2DDF41E124F6F527005BC22D /* MockReceiptParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B13440508B46C9A530 /* MockReceiptParser.swift */; };
 		2DDF41E224F6F527005BC22D /* MockProductsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35B08709090FBBFB16EBD /* MockProductsRequest.swift */; };
 		2DDF41E324F6F527005BC22D /* MockASN1ContainerBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E351EB3689AF304E5B1031 /* MockASN1ContainerBuilder.swift */; };
-		2DDF41E424F6F527005BC22D /* MockProductsRequestFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35F783903362B65FB7AF3 /* MockProductsRequestFactory.swift */; };
 		2DDF41E624F6F5DC005BC22D /* MockSKProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E524F6F5DC005BC22D /* MockSKProduct.swift */; };
 		2DDF41E824F6F61B005BC22D /* MockSKDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E724F6F61B005BC22D /* MockSKDiscount.swift */; };
 		2DDF41EA24F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E924F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift */; };
@@ -520,6 +526,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2DA85A8C26DEA7FB00F1136D /* Purchases.framework in Frameworks */,
 				B3D5CFCA267282860056FA67 /* Nimble in Frameworks */,
 				2DE20B7626408807004C597D /* StoreKitTest.framework in Frameworks */,
 			);
@@ -1573,10 +1580,10 @@
 				2D1C3F3926B9D8B800112626 /* MockBundle.swift in Sources */,
 				351B515E26D44B9900BD2BD7 /* MockPurchasesDelegate.swift in Sources */,
 				351B515A26D44B6200BD2BD7 /* MockAttributionFetcher.swift in Sources */,
-				2DDF41E424F6F527005BC22D /* MockProductsRequestFactory.swift in Sources */,
 				351B51BD26D450E800BD2BD7 /* EntitlementInfosTests.swift in Sources */,
 				351B514526D449E600BD2BD7 /* MockAttributionTypeFactory.swift in Sources */,
 				F575858F26C0893600C12B97 /* MockOfferingsManager.swift in Sources */,
+				2DA85A8A26DEA7DC00F1136D /* MockProductsRequestFactory.swift in Sources */,
 				351B516026D44BB600BD2BD7 /* MockAttributionDataMigrator.swift in Sources */,
 				2DDF41E024F6F527005BC22D /* MockInAppPurchaseBuilder.swift in Sources */,
 				37E352973B0901E3CAA717E1 /* DateFormatter+ExtensionsTests.swift in Sources */,
@@ -1588,8 +1595,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2DA85A8B26DEA7DD00F1136D /* MockProductsRequestFactory.swift in Sources */,
+				2D3BFAD326DEA47100370B11 /* MockSKDiscount.swift in Sources */,
+				2D3BFAD426DEA49200370B11 /* SKProductSubscriptionDurationExtensions.swift in Sources */,
+				2D3BFAD126DEA45C00370B11 /* MockSKProduct.swift in Sources */,
 				2DE20B6F264087FB004C597D /* StoreKitTests.swift in Sources */,
 				2DE61A84264190830021CEA0 /* Constants.swift in Sources */,
+				2D3BFAD226DEA46600370B11 /* MockProductsRequest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

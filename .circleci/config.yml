@@ -356,7 +356,7 @@ workflows:
       - runtest
       - apitest
       - buildTvWatchAndMacOS
-      - storekit_tests: *release-tags-and-branches
+      - storekit_tests
       - deployment-checks: *release-branches
       - integration-tests-cocoapods: *release-tags-and-branches
       - integration-tests-swift-package-manager: *release-tags-and-branches
