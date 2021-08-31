@@ -8,7 +8,6 @@
 //      https://opensource.org/licenses/MIT
 //
 //  BackendErrorCode.swift
-//  Purchases
 //
 //  Created by Joshua Liebowitz on 7/12/21.
 //
@@ -44,9 +43,10 @@ import Foundation
 
 }
 
-extension BackendErrorCode {
+public extension BackendErrorCode {
 
     // swiftlint:disable cyclomatic_complexity
+    /// Turns ``BackendErrorCode``(RCBackendErrorCode) codes into ``ErrorCode``(RCPurchasesErrorCode) error codes
     func toPurchasesErrorCode() -> ErrorCode {
     // swiftlint:enable cyclomatic_complexity
         switch self {
