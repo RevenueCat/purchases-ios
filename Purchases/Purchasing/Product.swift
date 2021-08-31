@@ -96,7 +96,7 @@ import StoreKit
 
     @objc public override var localizedTitle: String { underlyingSK1Product.localizedTitle }
 
-    init(sk1Product: SKProduct) {
+    @objc public init(sk1Product: SKProduct) {
         self.underlyingSK1Product = sk1Product
     }
 
