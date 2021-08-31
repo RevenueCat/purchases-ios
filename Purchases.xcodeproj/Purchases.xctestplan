@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "6EE88B1C-2739-4847-85D2-D560E881945B",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Purchases.xcodeproj",
+        "identifier" : "2DC5621D24EC63430031F69B",
+        "name" : "PurchasesTests"
+      }
+    }
+  ],
+  "version" : 1
+}
