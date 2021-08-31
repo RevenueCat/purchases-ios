@@ -565,9 +565,9 @@
 				37E353FD94A8FD5CD8796530 /* DateFormatter+Extensions.swift */,
 				35F82BAA26A84E130051DF03 /* Dictionary+Extensions.swift */,
 				B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */,
+				F5714EA426D6C24D00635477 /* JSONDecoder+Extensions.swift */,
 				2CD72947268A828400BFC976 /* Locale+Extensions.swift */,
 				B35F9E0826B4BEED00095C3F /* String+Extensions.swift */,
-				F5714EA426D6C24D00635477 /* JSONDecoder+Extensions.swift */,
 				2D9C7BB226D838FC006838BE /* UIApplication+RCExtensions.swift */,
 			);
 			path = FoundationExtensions;
@@ -1118,11 +1118,11 @@
 		F5714EA626D7A82E00635477 /* CodableExtensions */ = {
 			isa = PBXGroup;
 			children = (
-				F5714EA726D7A83A00635477 /* Store+Extensions.swift */,
+				F5714EC326D8D86800635477 /* EntitlementData+Extensions.swift */,
+				F5714EC126D8D82100635477 /* EntitlementProductData+Extensions.swift */,
 				F5714EA926D7A85D00635477 /* PeriodType+Extensions.swift */,
 				F5714EAB26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift */,
-				F5714EC126D8D82100635477 /* EntitlementProductData+Extensions.swift */,
-				F5714EC326D8D86800635477 /* EntitlementData+Extensions.swift */,
+				F5714EA726D7A83A00635477 /* Store+Extensions.swift */,
 			);
 			path = CodableExtensions;
 			sourceTree = "<group>";
