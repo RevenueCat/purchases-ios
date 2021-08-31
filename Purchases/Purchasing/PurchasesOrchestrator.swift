@@ -56,6 +56,9 @@ class PurchasesOrchestrator {
     private let deviceCache: DeviceCache
     private let lock = NSRecursiveLock()
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    private lazy var storeKit2Listener = StoreKit2TransactionListener(delegate: self)
+
     init(productsManager: ProductsManager,
          storeKitWrapper: StoreKitWrapper,
          systemInfo: SystemInfo,
@@ -78,6 +81,9 @@ class PurchasesOrchestrator {
         self.identityManager = identityManager
         self.receiptParser = receiptParser
         self.deviceCache = deviceCache
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            storeKit2Listener.listenForTransactions()
+        }
     }
 
     func restoreTransactions(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
@@ -524,5 +530,14 @@ private extension PurchasesOrchestrator {
     }
 
 }
+
+private extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
+
+    func transactionsUpdated() {
+        syncPurchases(receiptRefreshPolicy: .always, isRestore: false, maybeCompletion: nil)
+    }
+}
+
+
 
 // swiftlint:disable:this file_length
