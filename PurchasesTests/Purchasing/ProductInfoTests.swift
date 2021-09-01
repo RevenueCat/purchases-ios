@@ -122,6 +122,8 @@ class ProductInfoTests: XCTestCase {
     }
     
     func testCacheKey() {
+        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else { return }
+        
         let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
                                          price: NSDecimalNumber(decimal: 11),
                                          paymentMode: .payAsYouGo)
