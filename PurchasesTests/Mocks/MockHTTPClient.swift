@@ -1,4 +1,4 @@
-@testable import Purchases
+@testable import RevenueCat
 
 class MockHTTPClient: HTTPClient {
 

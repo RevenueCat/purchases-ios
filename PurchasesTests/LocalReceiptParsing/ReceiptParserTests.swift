@@ -1,7 +1,7 @@
 import XCTest
 import Nimble
 
-@testable import Purchases
+@testable import RevenueCat
 
 class ReceiptParserTests: XCTestCase {
     var receiptParser: ReceiptParser!

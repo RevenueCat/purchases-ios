@@ -8,7 +8,7 @@
 
 import Foundation
 
-@testable import Purchases
+@testable import RevenueCat
 
 class MockETagManager: ETagManager {
 

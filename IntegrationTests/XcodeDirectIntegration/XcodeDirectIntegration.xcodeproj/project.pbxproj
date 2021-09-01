@@ -32,28 +32,28 @@
 		};
 		2D6C045B254A0AF10039CB92 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */;
+			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 352629FE1F7C4B9100C04F2C;
 			remoteInfo = Purchases;
 		};
 		2D6C045D254A0AF10039CB92 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */;
+			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 35262A1E1F7D77E600C04F2C;
 			remoteInfo = PurchasesTests;
 		};
 		2D6C045F254A0AF10039CB92 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */;
+			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 2DC5621624EC63420031F69B;
 			remoteInfo = Purchases;
 		};
 		2D6C0461254A0AF10039CB92 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */;
+			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 2DC5621E24EC63430031F69B;
 			remoteInfo = PurchasesTests;
@@ -93,7 +93,7 @@
 		2D6C042E254A0A550039CB92 /* SceneDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
 		2D6C0442254A0A760039CB92 /* XcodeDirectIntegration-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XcodeDirectIntegration-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C0443254A0A760039CB92 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
-		2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Purchases.xcodeproj; path = ../../Purchases.xcodeproj; sourceTree = "<group>"; };
+		2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RevenueCat.xcodeproj; path = ../../RevenueCat.xcodeproj; sourceTree = "<group>"; };
 		2D6C047B254A0C230039CB92 /* XcodeDirectIntegrationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XcodeDirectIntegrationTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		2DC19142255F1AFE0039389A /* IntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -120,7 +120,7 @@
 		2D6C03D6254A0A460039CB92 = {
 			isa = PBXGroup;
 			children = (
-				2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */,
+				2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */,
 				2D6C041D254A0A550039CB92 /* CommonFiles */,
 				2D6C03E1254A0A460039CB92 /* XcodeDirectIntegration */,
 				2D6C03FD254A0A470039CB92 /* XcodeDirectIntegrationTests */,
@@ -278,7 +278,7 @@
 			projectReferences = (
 				{
 					ProductGroup = 2D6C0455254A0AF10039CB92 /* Products */;
-					ProjectRef = 2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */;
+					ProjectRef = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 				},
 			);
 			projectRoot = "";

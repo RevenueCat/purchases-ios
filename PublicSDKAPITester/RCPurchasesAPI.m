@@ -5,7 +5,7 @@
 //  Created by Joshua Liebowitz on 6/18/21.
 //
 
-@import Purchases;
+@import RevenueCat;
 @import StoreKit;
 
 #import "RCPurchasesAPI.h"
@@ -106,7 +106,7 @@ BOOL isAnonymous;
         
     // RCPurchasesDelegate
     [p.delegate purchases:p didReceiveUpdatedPurchaserInfo:pi];
-    [p.delegate purchases:p shouldPurchasePromoProduct:skp defermentBlock:^(RCPurchaseCompletedBlock makeDeferredPurchase) {}];
+    [p.delegate purchases:p shouldPurchasePromoProduct:skp defermentBlock:^(void (^ _Nonnull completion)(SKPaymentTransaction * _Nullable transaction, RCPurchaserInfo * _Nullable info, NSError * _Nullable error, BOOL cancelled)) {}];
 }
 
 + (void)checkEnums {
@@ -127,8 +127,8 @@ BOOL isAnonymous;
 
 + (void)checkConstants {
 // TODO convert back once everything moved into Purchases
-    double vn = PurchasesVersionNumber;
-    const unsigned char *vs = PurchasesVersionString;
+    double vn = RevenueCatVersionNumber;
+    const unsigned char *vs = RevenueCatVersionString;
 
     // breaking changes below this line
     NSErrorDomain bed = RCBackendErrorCodeDomain;

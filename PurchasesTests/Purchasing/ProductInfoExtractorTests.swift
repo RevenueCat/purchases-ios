@@ -1,7 +1,7 @@
 import XCTest
 import Nimble
 import StoreKit
-@testable import Purchases
+@testable import RevenueCat
 
 class ProductInfoExtractorTests: XCTestCase {
 

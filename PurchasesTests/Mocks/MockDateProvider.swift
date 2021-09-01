@@ -3,7 +3,7 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-@testable import Purchases
+@testable import RevenueCat
 
 class MockDateProvider: DateProvider {
     var invokedNow = false

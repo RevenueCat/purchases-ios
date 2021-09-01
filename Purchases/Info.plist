@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>Purchases</string>
+	<string>RevenueCat</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2021 RevenueCat, Inc. All rights reserved.</string>
 	<key>LSApplicationCategoryType</key>

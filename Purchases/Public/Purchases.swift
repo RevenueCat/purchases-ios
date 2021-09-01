@@ -17,7 +17,7 @@ import Foundation
 import StoreKit
 
 // MARK: Block definitions
-// NOTE: Any changes here must be reflected in Purchases.h for ObjC compatibility.
+// NOTE: Any changes here must be reflected in RevenueCat.h for ObjC compatibility.
 /**
  Completion block for calls that send back a ``PurchaserInfo``
  */
@@ -56,7 +56,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
 
 /**
- * `Purchases` is the entry point for Purchases.framework. It should be instantiated as soon as your app has a unique
+ * `Purchases` is the entry point for RevenueCat.framework. It should be instantiated as soon as your app has a unique
  * user id for your user. This can be when a user logs in if you have accounts or on launch if you can generate a random
  * user identifier.
  *  - Warning: Only one instance of Purchases should be instantiated at a time! Use a configure method to let the

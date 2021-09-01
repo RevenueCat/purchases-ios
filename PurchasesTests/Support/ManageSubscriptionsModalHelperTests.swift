@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import Purchases
+@testable import RevenueCat
 
 #if os(macOS) || os(iOS)
 

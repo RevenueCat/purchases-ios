@@ -11,7 +11,7 @@ import OHHTTPStubs
 import OHHTTPStubsSwift
 import Nimble
 
-@testable import Purchases
+@testable import RevenueCat
 
 class HTTPClientTests: XCTestCase {
 
