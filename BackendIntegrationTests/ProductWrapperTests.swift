@@ -92,4 +92,23 @@ class ProductsWrapperTests: XCTestCase {
         expect(callbackCalled).toEventually(beTrue())
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSk2WrapperWrappsCorrectly() async throws {
+        let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        let sk2Fetcher = ProductsFetcherSK2()
+
+        let productWrappers = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
+
+        let productWrapper = try XCTUnwrap(productWrappers.first)
+
+        expect(productWrapper.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
+        expect(productWrapper.localizedDescription) == "Monthly subscription with a 1-week free trial"
+        expect(productWrapper.price.description) == "4.99"
+        expect(productWrapper.localizedPriceString) == "$4.99"
+        expect(productWrapper.productIdentifier) == productIdentifier
+        expect(productWrapper.isFamilyShareable) == true
+        expect(productWrapper.localizedTitle) == "Monthly Free Trial"
+
+    }
+
 }
