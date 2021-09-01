@@ -208,7 +208,15 @@ class DeviceCacheTests: XCTestCase {
         let mockNotificationCenter = MockNotificationCenter()
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = "Rage Against the Machine"
 
-        #if arch(arm64)
+        #if arch(x86_64) && canImport(Darwin)
+        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
+                                       offeringsCachedObject: nil,
+                                       notificationCenter: mockNotificationCenter)
+
+        // Only check the assertion for the valid archs.
+        expect { mockNotificationCenter.fireNotifications() }.toNot(throwAssertion())
+
+        #else
         let assertionHappened = expectation(description: "Assertion happened")
 
         // Create an inverted expectation. So, it'll fail if fulfilled.
@@ -225,30 +233,28 @@ class DeviceCacheTests: XCTestCase {
 
         // Here we check that the expectation has not been fulfilled
         wait(for: [assertionDidNotHappen], timeout: TimeInterval(1))
-
-        #elseif arch(x86_64) && canImport(Darwin)
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
-                                       offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter)
-
-        // Only check the assertion for the valid archs.
-        expect { mockNotificationCenter.fireNotifications() }.toNot(throwAssertion())
         #endif
 
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
 
-        #if arch(arm64)
+        #if arch(x86_64) && canImport(Darwin)
+        expect { mockNotificationCenter.fireNotifications() }.to(throwAssertion())
+        #else
         mockNotificationCenter.fireNotifications()
         wait(for: [assertionHappened], timeout: TimeInterval(1))
-        #elseif arch(x86_64) && canImport(Darwin)
-        expect { mockNotificationCenter.fireNotifications() }.to(throwAssertion())
         #endif
     }
 
     func testDoesntCrashIfOtherSettingIsDeletedAndAppUserIDHadntBeenSet() {
         let mockNotificationCenter = MockNotificationCenter()
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
-        #if arch(arm64)
+        #if arch(x86_64) && canImport(Darwin)
+        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
+                                         offeringsCachedObject: nil,
+                                         notificationCenter: mockNotificationCenter)
+
+        expect { mockNotificationCenter.fireNotifications }.toNot(throwAssertion())
+        #else
         // Create an inverted expectation. So, it'll fail if fulfilled.
         let assertionDidNotHappen = expectation(description: "Assertion did not happen")
         assertionDidNotHappen.isInverted = true
@@ -262,12 +268,6 @@ class DeviceCacheTests: XCTestCase {
 
         // Here we check that the expectation has not been fulfilled
         wait(for: [assertionDidNotHappen], timeout: TimeInterval(1))
-        #elseif arch(x86_64) && canImport(Darwin)
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
-                                         offeringsCachedObject: nil,
-                                         notificationCenter: mockNotificationCenter)
-
-        expect { mockNotificationCenter.fireNotifications }.toNot(throwAssertion())
         #endif
     }
 
