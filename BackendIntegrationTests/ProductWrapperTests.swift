@@ -71,4 +71,25 @@ class ProductsWrapperTests: XCTestCase {
         #endif
     }
 
+    func testSk1WrapperWrappsCorrectly() throws {
+        let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
+        var callbackCalled = false
+
+        sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { productWrappers in
+            callbackCalled = true
+            guard let productWrapper = productWrappers.first else { fatalError("couldn't get product!") }
+
+            expect(productWrapper.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
+            expect(productWrapper.localizedDescription) == "Monthly subscription with a 1-week free trial"
+            expect(productWrapper.price.description) == "4.99"
+            expect(productWrapper.localizedPriceString) == "$4.99"
+            expect(productWrapper.productIdentifier) == productIdentifier
+            expect(productWrapper.isFamilyShareable) == true
+            expect(productWrapper.localizedTitle) == "Monthly Free Trial"
+        }
+
+        expect(callbackCalled).toEventually(beTrue())
+    }
+
 }
