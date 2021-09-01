@@ -2354,7 +2354,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
 
         for key in data.keys {
-            expect(self.backend.invokedPostAttributionDataParameters?.data?.keys.contains(key)) == true
+            expect(self.backend.invokedPostAttributionDataParameters?.data?.keys.contains(key)).toEventually(beTrue())
         }
 
         expect(self.backend.invokedPostAttributionDataParameters?.data?.keys.contains("rc_idfa")) == true
