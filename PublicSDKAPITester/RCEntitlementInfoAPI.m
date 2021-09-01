@@ -13,10 +13,7 @@
 @implementation RCEntitlementInfoAPI
 
 + (void)checkAPI {
-    RCEntitlementInfo *ri = [[RCEntitlementInfo alloc] initWithEntitlementId:@""
-                                                             entitlementData:@{}
-                                                                 productData:@{}
-                                                                 requestDate:NSDate.now];
+    RCEntitlementInfo *ri;
     NSString *i = ri.identifier;
     BOOL ia = [ri isActive];
     BOOL wr = [ri willRenew];

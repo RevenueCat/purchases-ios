@@ -40,9 +40,7 @@ class Backend {
                      systemInfo: SystemInfo,
                      eTagManager: ETagManager,
                      operationDispatcher: OperationDispatcher) {
-        let httpClient = HTTPClient(systemInfo: systemInfo,
-                                    eTagManager: eTagManager,
-                                    operationDispatcher: operationDispatcher)
+        let httpClient = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         self.init(httpClient: httpClient, apiKey: apiKey)
     }
 

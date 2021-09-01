@@ -5,6 +5,6 @@ sdk: iphonesimulator
 module_version: 3.13.0-SNAPSHOT
 github_url: https://github.com/revenuecat/purchases-ios
 github_file_prefix: https://github.com/revenuecat/purchases-ios/tree/3.13.0-SNAPSHOT
-output: docs
+output: generated_docs
 include:
   - "Purchases/Public/*/"

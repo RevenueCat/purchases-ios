@@ -1,14 +1,21 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  PurchaseOwnershipType.swift
-//  Purchases
 //
 //  Created by Joshua Liebowitz on 6/24/21.
-//  Copyright © 2021 Purchases. All rights reserved.
 //
 
 import Foundation
 
 @objc(RCPurchaseOwnershipType) public enum PurchaseOwnershipType: Int {
+
     /**
      The purchase was made directly by this user.
      */
@@ -19,4 +26,5 @@ import Foundation
     case familyShared = 1
 
     case unknown = 2
+
 }

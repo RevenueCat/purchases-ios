@@ -19,7 +19,7 @@
 @implementation RCPackageAPI
 
 + (void)checkAPI {
-    RCPackage *p = [[RCPackage alloc] initWithIdentifier:@"" packageType:RCPackageTypeAnnual product:[[SKProduct alloc] init] offeringIdentifier:@""];
+    RCPackage *p;
     NSString *i = p.identifier;
     RCPackageType t = p.packageType;
     SKProduct *prod = p.product;

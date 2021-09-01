@@ -27,44 +27,73 @@ import Foundation
     @objc public let serverDescription: String
 
     /**
-     Array of `RCPackage` objects available for purchase.
+     Array of ``Package`` objects available for purchase.
      */
     @objc public let availablePackages: [Package]
 
     /**
-     Lifetime package type configured in the RevenueCat dashboard, if available.
+     Lifetime ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var lifetime: Package?
 
     /**
-     Annual package type configured in the RevenueCat dashboard, if available.
+     Annual ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var annual: Package?
 
     /**
-     Six month package type configured in the RevenueCat dashboard, if available.
+     Six month ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var sixMonth: Package?
 
     /**
-     Three month package type configured in the RevenueCat dashboard, if available.
+     Three month ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var threeMonth: Package?
 
     /**
-     Two month package type configured in the RevenueCat dashboard, if available.
+     Two month ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var twoMonth: Package?
 
     /**
-     Monthly package type configured in the RevenueCat dashboard, if available.
+     Monthly ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var monthly: Package?
 
     /**
-     Weekly package type configured in the RevenueCat dashboard, if available.
+     Weekly ``Package`` type configured in the RevenueCat dashboard, if available.
      */
     @objc private(set) public var weekly: Package?
+
+    public override var description: String {
+        return """
+        <Offering {\n\tidentifier=\(identifier)\n\tserverDescription=\(serverDescription)\n"
+        \tavailablePackages=\(valueOrEmpty(availablePackages))\n\tlifetime=\(valueOrEmpty(lifetime))\n
+        \tannual=\(valueOrEmpty(annual))\n\tsixMonth=\(valueOrEmpty(sixMonth))\n
+        \tthreeMonth=\(valueOrEmpty(threeMonth))\n\ttwoMonth=\(valueOrEmpty(twoMonth))\n
+        \tmonthly=\(valueOrEmpty(monthly))\n\tweekly=\(valueOrEmpty(weekly))\n}>
+        """
+    }
+
+    /**
+     Retrieves a specific ``Package`` by identifier, use this to access custom package types configured in the 
+     RevenueCat dashboard, e.g. `offering.package(identifier: "custom_package_id")` or
+     `offering["custom_package_id"]`.
+     */
+    @objc public func package(identifier: String?) -> Package? {
+        guard let identifier = identifier else {
+            return nil
+        }
+
+        return availablePackages
+            .filter { $0.identifier == identifier }
+            .first
+    }
+
+    @objc public subscript(key: String) -> Package? {
+        return package(identifier: key)
+    }
 
     init(identifier: String, serverDescription: String, availablePackages: [Package]) {
         self.identifier = identifier
@@ -91,35 +120,6 @@ import Foundation
                 break
             }
         }
-    }
-
-    public override var description: String {
-        return """
-        <Offering {\n\tidentifier=\(identifier)\n\tserverDescription=\(serverDescription)\n"
-        \tavailablePackages=\(valueOrEmpty(availablePackages))\n\tlifetime=\(valueOrEmpty(lifetime))\n
-        \tannual=\(valueOrEmpty(annual))\n\tsixMonth=\(valueOrEmpty(sixMonth))\n
-        \tthreeMonth=\(valueOrEmpty(threeMonth))\n\ttwoMonth=\(valueOrEmpty(twoMonth))\n
-        \tmonthly=\(valueOrEmpty(monthly))\n\tweekly=\(valueOrEmpty(weekly))\n}>
-        """
-    }
-
-    /**
-     Retrieves a specific package by identifier, use this to access custom package types configured in the RevenueCat
-     dashboard, e.g. `[offering packageWithIdentifier:@"custom_package_id"]` or `offering[@"custom_package_id"]`.
-     */
-    @objc public func package(identifier: String?) -> Package? {
-        guard let identifier = identifier else {
-            return nil
-        }
-
-        return availablePackages
-            .filter { $0.identifier == identifier }
-            .first
-    }
-
-    /// :nodoc:
-    @objc public subscript(key: String) -> Package? {
-        return package(identifier: key)
     }
 
     private func valueOrEmpty<T: CustomStringConvertible>(_ value: T?) -> String {

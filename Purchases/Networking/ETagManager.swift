@@ -19,8 +19,8 @@ class ETagManager {
     static let eTagHeaderName = "X-RevenueCat-ETag"
 
     private let queue = DispatchQueue(label: "ETagManager")
-
     private let userDefaults: UserDefaults
+    private let recursiveLock = NSRecursiveLock()
 
     init() {
         self.userDefaults = UserDefaults(suiteName: ETagManager.suiteName) ?? UserDefaults.standard
@@ -72,7 +72,9 @@ class ETagManager {
     }
 
     func clearCaches() {
+        recursiveLock.lock()
         userDefaults.removePersistentDomain(forName: ETagManager.suiteName)
+        recursiveLock.unlock()
     }
 
 }
@@ -84,12 +86,15 @@ private extension ETagManager {
     }
 
     func storedETagAndResponse(for request: URLRequest) -> ETagAndResponseWrapper? {
+        recursiveLock.lock()
         if let cacheKey = eTagDefaultCacheKey(for: request),
             let value = userDefaults.object(forKey: cacheKey),
             let data = value as? Data {
-                return ETagAndResponseWrapper(with: data)
-            }
+            recursiveLock.unlock()
+            return ETagAndResponseWrapper(with: data)
+        }
 
+        recursiveLock.unlock()
         return nil
     }
 
@@ -111,10 +116,11 @@ private extension ETagManager {
             statusCode < HTTPStatusCodes.internalServerError.rawValue,
            let responseObject = responseObject,
            let cacheKey = eTagDefaultCacheKey(for: request) {
-            let eTagAndResponse =
-                ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, jsonObject: responseObject)
+            let eTagAndResponse = ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, jsonObject: responseObject)
             if let dataToStore = eTagAndResponse.asData() {
+                recursiveLock.lock()
                 userDefaults.set(dataToStore, forKey: cacheKey)
+                recursiveLock.unlock()
             }
         }
     }

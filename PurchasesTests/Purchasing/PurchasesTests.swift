@@ -249,8 +249,7 @@ class PurchasesTests: XCTestCase {
     let backend = MockBackend(httpClient: MockHTTPClient(systemInfo: try! MockSystemInfo(platformFlavor: nil,
                                                                                          platformFlavorVersion: nil,
                                                                                          finishTransactions: false),
-                                                         eTagManager: MockETagManager(),
-                                                         operationDispatcher: MockOperationDispatcher()),
+                                                         eTagManager: MockETagManager()),
                               apiKey: "mockAPIKey")
     let storeKitWrapper = MockStoreKitWrapper()
     let notificationCenter = MockNotificationCenter()
@@ -335,21 +334,36 @@ class PurchasesTests: XCTestCase {
         expect(self.purchases).toNot(beNil())
     }
 
-    func testUsingSharedInstanceWithoutInitializingRaisesException() {
+    func testUsingSharedInstanceWithoutInitializingThrowsAssertion() {
         #if arch(arm64)
         let assertionHappened = expectation(description: "Assertion happened")
         Purchases.notConfiguredAssertionFunction = {
             assertionHappened.fulfill()
         }
-        _ = Purchases.shared
-        wait(for: [assertionHappened], timeout: TimeInterval(1))
 
+        _ = Purchases.shared
+
+        wait(for: [assertionHappened], timeout: TimeInterval(1))
         #else
         expect(Purchases.shared).to(throwAssertion())
-
         #endif
+
         setupPurchases()
-        expectToNotThrowException { _ = Purchases.shared }
+
+        #if arch(arm64)
+        // Create an inverted expectation. So, it'll fail if fulfilled.
+        let assertionDidNotHappen = expectation(description: "Assertion did not happen")
+        assertionDidNotHappen.isInverted = true
+        Purchases.notConfiguredAssertionFunction = {
+            assertionDidNotHappen.fulfill()
+        }
+
+        _ = Purchases.shared
+
+        wait(for: [assertionDidNotHappen], timeout: TimeInterval(1))
+        #else
+        expect { _ = Purchases.shared }.toNot(throwAssertion())
+        #endif
     }
 
     func testIsConfiguredReturnsCorrectvalue() {
@@ -2338,8 +2352,9 @@ class PurchasesTests: XCTestCase {
 
         setupPurchases()
 
+        expect(self.backend.invokedPostAttributionData).toEventually(beTrue())
         for key in data.keys {
-            expect(self.backend.invokedPostAttributionDataParameters?.data?.keys.contains(key)) == true
+            expect(self.backend.invokedPostAttributionDataParameters?.data?.keys.contains(key)).to(beTrue())
         }
 
         expect(self.backend.invokedPostAttributionDataParameters?.data?.keys.contains("rc_idfa")) == true

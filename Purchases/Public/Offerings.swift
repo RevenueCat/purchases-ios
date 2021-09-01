@@ -21,14 +21,14 @@ import Foundation
 @objc(RCOfferings) public class Offerings: NSObject {
 
     /**
-     Dictionary of all Offerings (`RCOffering`) objects keyed by their identifier. This dictionary can also be accessed
-     by using an index subscript on RCOfferings, e.g. `offerings[@"offering_id"]`. To access the current offering use
-     `RCOfferings.current`.
+     Dictionary of all Offerings (``Offering``) objects keyed by their identifier. This dictionary can also be accessed
+     by using an index subscript on ``Offerings``, e.g. `offerings["offering_id"]`. To access the current offering use
+     ``Offerings/current``.
      */
     @objc public let all: [String: Offering]
 
     /**
-     Current offering configured in the RevenueCat dashboard.
+     Current ``Offering`` configured in the RevenueCat dashboard.
      */
     @objc public var current: Offering? {
         guard let currentOfferingID = currentOfferingID else {
@@ -41,8 +41,8 @@ import Foundation
 
     /**
      Retrieves a specific offering by its identifier, use this to access additional offerings configured in the
-     RevenueCat dashboard, e.g. `[offerings offeringWithIdentifier:@"offering_id"]` or `offerings[@"offering_id"]`.
-     To access the current offering use `RCOfferings.current`.
+     RevenueCat dashboard, e.g. `offerings.offering(identifier: "offering_id")` or `offerings[@"offering_id"]`.
+     To access the current offering use ``Offerings/current``.
      */
     @objc public func offering(identifier: String?) -> Offering? {
         guard let identifier = identifier else {
@@ -52,14 +52,8 @@ import Foundation
         return all[identifier]
     }
 
-    /// :nodoc:
     @objc public subscript(key: String) -> Offering? {
         return offering(identifier: key)
-    }
-
-    @objc public init(offerings: [String: Offering], currentOfferingID: String?) {
-        all = offerings
-        self.currentOfferingID = currentOfferingID
     }
 
     @objc public override var description: String {
@@ -69,6 +63,11 @@ import Foundation
         }
         description += "\tcurrentOffering=\(current?.description ?? "<none>")>"
         return description
+    }
+
+    init(offerings: [String: Offering], currentOfferingID: String?) {
+        all = offerings
+        self.currentOfferingID = currentOfferingID
     }
 
 }

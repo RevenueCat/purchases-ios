@@ -20,15 +20,14 @@ class HTTPClient {
     private var queuedRequests: [HTTPRequest] = []
     private var currentSerialRequest: HTTPRequest?
     private var eTagManager: ETagManager
-    private let operationDispatcher: OperationDispatcher
+    private let recursiveLock = NSRecursiveLock()
 
-    init(systemInfo: SystemInfo, eTagManager: ETagManager, operationDispatcher: OperationDispatcher) {
+    init(systemInfo: SystemInfo, eTagManager: ETagManager) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
         self.session = URLSession(configuration: config)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
-        self.operationDispatcher = operationDispatcher
     }
 
     func performGETRequest(serially: Bool = false,
@@ -59,9 +58,7 @@ class HTTPClient {
     }
 
     func clearCaches() {
-        operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
-            self.eTagManager.clearCaches()
-        }
+        eTagManager.clearCaches()
     }
 
 }
@@ -91,6 +88,7 @@ private extension HTTPClient {
         return headers
     }
 
+    // swiftlint:disable function_body_length
     func performRequest(_ httpMethod: String,
                         serially: Bool = false,
                         path: String,
@@ -98,59 +96,15 @@ private extension HTTPClient {
                         authHeaders: [String: String],
                         retried: Bool = false,
                         completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
-        let performRequestFunc = {
-            self.threadUnsafePerformRequest(httpMethod,
-                                            serially: serially,
+
+        // swiftlint:enable function_body_length
+        let requestHeaders = defaultHeaders.merging(authHeaders)
+
+        let maybeURLRequest = createRequest(httpMethod: httpMethod,
                                             path: path,
                                             requestBody: maybeRequestBody,
-                                            authHeaders: authHeaders,
-                                            retried: retried,
-                                            completion: maybeCompletionHandler)
-        }
-
-        if serially {
-            operationDispatcher.dispatchOnHTTPSerialQueue(performRequestFunc)
-        } else {
-            performRequestFunc()
-        }
-    }
-
-    // swiftlint:disable function_parameter_count
-    func handleResponse(urlResponse maybeURLResponse: URLResponse?,
-                        request: HTTPRequest,
-                        data maybeData: Data?,
-                        error maybeNetworkError: Error?,
-                        completion maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
-                        beginNextRequestWhenFinished: Bool,
-                        retried: Bool) {
-    // swiftlint:enable function_parameter_count
-        operationDispatcher.dispatchOnHTTPSerialQueue { [self] in
-            self.threadUnsafeHandleResponse(urlResponse: maybeURLResponse,
-                                            request: request,
-                                            data: maybeData,
-                                            error: maybeNetworkError,
-                                            completionHandler: maybeCompletionHandler,
-                                            beginNextRequestWhenFinished: beginNextRequestWhenFinished,
-                                            retried: retried)
-        }
-    }
-
-    // swiftlint:disable function_body_length function_parameter_count
-    func threadUnsafePerformRequest(_ httpMethod: String,
-                                    serially: Bool,
-                                    path: String,
-                                    requestBody maybeRequestBody: [String: Any]?,
-                                    authHeaders: [String: String],
-                                    retried: Bool,
-                                    completion maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
-    // swiftlint:enable function_body_length function_parameter_count
-        let requestHeaders = self.defaultHeaders.merging(authHeaders)
-
-        let maybeURLRequest = self.createRequest(httpMethod: httpMethod,
-                                                 path: path,
-                                                 requestBody: maybeRequestBody,
-                                                 headers: requestHeaders,
-                                                 refreshETag: retried)
+                                            headers: requestHeaders,
+                                            refreshETag: retried)
 
         guard let urlRequest = maybeURLRequest else {
             if let requestBody = maybeRequestBody {
@@ -158,11 +112,8 @@ private extension HTTPClient {
             } else {
                 Logger.error("Could not create request to \(path) without body")
             }
-            if let completionHandler = maybeCompletionHandler {
-                self.operationDispatcher.dispatchOnMainThread {
-                    completionHandler(-1, nil, ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
-                }
-            }
+
+            maybeCompletionHandler?(-1, nil, ErrorUtils.networkError(withUnderlyingError: ErrorUtils.unknownError()))
             return
         }
 
@@ -175,15 +126,20 @@ private extension HTTPClient {
                                   completionHandler: maybeCompletionHandler)
 
         if serially && !retried {
-            if self.currentSerialRequest != nil {
-                let logMessage =
-                    String(format: Strings.network.serial_request_queued, self.queuedRequests.count, httpMethod, path)
+            recursiveLock.lock()
+            if currentSerialRequest != nil {
+                let logMessage = String(format: Strings.network.serial_request_queued,
+                                        queuedRequests.count,
+                                        httpMethod,
+                                        path)
                 Logger.debug(logMessage)
-                self.queuedRequests.append(request)
+                queuedRequests.append(request)
+                recursiveLock.unlock()
                 return
             } else {
                 Logger.debug(String(format: Strings.network.starting_request, httpMethod, path))
-                self.currentSerialRequest = request
+                currentSerialRequest = request
+                recursiveLock.unlock()
             }
         }
 
@@ -192,7 +148,7 @@ private extension HTTPClient {
                                 urlRequest.url?.path ?? "")
         Logger.debug(logMessage)
 
-        let task = self.session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
+        let task = session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
             self.handleResponse(urlResponse: urlResponse,
                                 request: request,
                                 data: data,
@@ -202,6 +158,24 @@ private extension HTTPClient {
                                 retried: retried)
         }
         task.resume()
+    }
+
+    // swiftlint:disable function_parameter_count
+    func handleResponse(urlResponse maybeURLResponse: URLResponse?,
+                        request: HTTPRequest,
+                        data maybeData: Data?,
+                        error maybeNetworkError: Error?,
+                        completion maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
+                        beginNextRequestWhenFinished: Bool,
+                        retried: Bool) {
+    // swiftlint:enable function_parameter_count
+        threadUnsafeHandleResponse(urlResponse: maybeURLResponse,
+                                   request: request,
+                                   data: maybeData,
+                                   error: maybeNetworkError,
+                                   completionHandler: maybeCompletionHandler,
+                                   beginNextRequestWhenFinished: beginNextRequestWhenFinished,
+                                   retried: retried)
     }
 
     // swiftlint:disable function_body_length function_parameter_count
@@ -263,13 +237,12 @@ private extension HTTPClient {
 
         if let httpResponse = maybeHTTPResponse,
             let completionHandler = maybeCompletionHandler {
-            self.operationDispatcher.dispatchOnMainThread {
-                let error = maybeJSONError ?? maybeNetworkError
-                completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
-            }
+            let error = maybeJSONError ?? maybeNetworkError
+            completionHandler(httpResponse.statusCode, httpResponse.jsonObject, error)
         }
 
         if shouldBeginNextRequestWhenFinished {
+            recursiveLock.lock()
             let logMessage = String(format: Strings.network.serial_request_done,
                                     self.currentSerialRequest?.httpMethod ?? "",
                                     self.currentSerialRequest?.path ?? "",
@@ -287,6 +260,7 @@ private extension HTTPClient {
                                     retried: false,
                                     completionHandler: nextRequest.completionHandler)
             }
+            recursiveLock.unlock()
         }
     }
 
