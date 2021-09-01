@@ -33,6 +33,8 @@ class ProductsWrapperTests: XCTestCase {
 
         let productIdentifiers = Set([
             "com.revenuecat.monthly_4.99.1_week_intro",
+            "com.revenuecat.annual_39.99.2_week_intro",
+            "lifetime",
             ])
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
         let sk1ProductWrappers = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
@@ -46,6 +48,7 @@ class ProductsWrapperTests: XCTestCase {
             partialResult[wrapper.productIdentifier] = wrapper
         }
 
+        expect(sk1ProductWrappers.count) == productIdentifiers.count
         expect(sk1ProductWrappers.count) == sk2ProductWrappers.count
 
         for sk1ProductID in sk1ProductWrappersByID.keys {
@@ -53,7 +56,17 @@ class ProductsWrapperTests: XCTestCase {
             let equivalentSK2Product = try XCTUnwrap(sk2ProductWrappersByID[sk1ProductID])
 
             expect(sk1Product.productIdentifier) == equivalentSK2Product.productIdentifier
-            
+            expect(sk1Product.localizedDescription) == equivalentSK2Product.localizedDescription
+            expect(sk1Product.price) == equivalentSK2Product.price
+            expect(sk1Product.localizedPriceString) == equivalentSK2Product.localizedPriceString
+            expect(sk1Product.productIdentifier) == equivalentSK2Product.productIdentifier
+            expect(sk1Product.isFamilyShareable) == equivalentSK2Product.isFamilyShareable
+            expect(sk1Product.localizedTitle) == equivalentSK2Product.localizedTitle
+            if sk1Product.subscriptionGroupIdentifier != nil {
+                expect(sk1Product.subscriptionGroupIdentifier) == equivalentSK2Product.subscriptionGroupIdentifier
+            } else {
+                expect(equivalentSK2Product.subscriptionGroupIdentifier).to(beNil())
+            }
         }
         #endif
     }
