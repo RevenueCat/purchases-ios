@@ -26,7 +26,7 @@ class HTTPClientTests: XCTestCase {
         userDefaults = MockUserDefaults()
         eTagManager = MockETagManager(userDefaults: userDefaults)
         operationDispatcher = OperationDispatcher()
-        client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
     }
 
     override func tearDown() {
@@ -406,7 +406,7 @@ class HTTPClientTests: XCTestCase {
         let systemInfo = try! SystemInfo(platformFlavor: "react-native",
                                          platformFlavorVersion: "3.2.1",
                                          finishTransactions: true)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         client.performPOSTRequest(serially: true,
                                   path: path,
                                   requestBody: Dictionary.init(),
@@ -427,7 +427,7 @@ class HTTPClientTests: XCTestCase {
         let systemInfo = try! SystemInfo(platformFlavor: "react-native",
                                          platformFlavorVersion: "1.2.3",
                                          finishTransactions: true)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         
         client.performPOSTRequest(serially: true,
                                   path: path,
@@ -447,7 +447,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         client.performPOSTRequest(serially: true,
                                   path: path,
                                   requestBody: Dictionary.init(),
@@ -466,7 +466,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         client.performPOSTRequest(serially: true,
                                   path: path,
                                   requestBody: Dictionary.init(),

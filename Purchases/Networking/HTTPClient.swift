@@ -20,16 +20,14 @@ class HTTPClient {
     private var queuedRequests: [HTTPRequest] = []
     private var currentSerialRequest: HTTPRequest?
     private var eTagManager: ETagManager
-    private let operationDispatcher: OperationDispatcher
     private let recursiveLock = NSRecursiveLock()
 
-    init(systemInfo: SystemInfo, eTagManager: ETagManager, operationDispatcher: OperationDispatcher) {
+    init(systemInfo: SystemInfo, eTagManager: ETagManager) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
         self.session = URLSession(configuration: config)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
-        self.operationDispatcher = operationDispatcher
     }
 
     func performGETRequest(serially: Bool = false,

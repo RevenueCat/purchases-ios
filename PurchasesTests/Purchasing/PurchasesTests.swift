@@ -249,8 +249,7 @@ class PurchasesTests: XCTestCase {
     let backend = MockBackend(httpClient: MockHTTPClient(systemInfo: try! MockSystemInfo(platformFlavor: nil,
                                                                                          platformFlavorVersion: nil,
                                                                                          finishTransactions: false),
-                                                         eTagManager: MockETagManager(),
-                                                         operationDispatcher: MockOperationDispatcher()),
+                                                         eTagManager: MockETagManager()),
                               apiKey: "mockAPIKey")
     let storeKitWrapper = MockStoreKitWrapper()
     let notificationCenter = MockNotificationCenter()
