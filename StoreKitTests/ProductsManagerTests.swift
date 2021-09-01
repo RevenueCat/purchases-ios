@@ -13,6 +13,7 @@
 
 import Nimble
 import StoreKitTest
+@testable import Purchases
 import XCTest
 
 
@@ -31,18 +32,19 @@ class ProductsManagerTests: XCTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testFetchProductsFromOptimalStore() {
-        let identifiers = Set([
-            "com.revenuecat.monthly_4.99.1_week_intro"
-        ])
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
         var receivedProducts: Set<ProductWrapper>?
-        let products = productsManager.productsFromOptimalStore(withIdentifiers: identifiers, completion: { products in
+
+        productsManager.productsFromOptimalStore(withIdentifiers: Set([identifier]), completion: { products in
             completionCalled = true
             receivedProducts = products
         })
+
         expect(completionCalled).toEventually(beTrue())
         expect(receivedProducts?.count) == 1
         let firstProduct = receivedProducts!.first!
-        expect(firstProduct as? SK1ProductWrapper).toNot(beNil())
+        expect(firstProduct as? SK2ProductWrapper).toNot(beNil())
+        expect(firstProduct.productIdentifier) == identifier
     }
 }
