@@ -931,6 +931,7 @@
 				3597020F24BF6A710010506E /* TransactionsFactory.swift */,
 				FECF627761D375C8431EB866 /* ProductDetails.swift */,
 				359E8E3E26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift */,
+				006E105DDA8D0D0FA32D690C /* StoreKit2 */,
 			);
 			path = Purchasing;
 			sourceTree = "<group>";
