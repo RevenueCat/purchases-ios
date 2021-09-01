@@ -41,7 +41,7 @@ class ProductsManagerTests: XCTestCase {
             receivedProducts = products
         })
 
-        expect(completionCalled).toEventually(beTrue())
+        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(3))
         expect(receivedProducts?.count) == 1
         let firstProduct = receivedProducts!.first!
         expect(firstProduct as? SK2ProductWrapper).toNot(beNil())
