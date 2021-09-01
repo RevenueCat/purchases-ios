@@ -32,6 +32,7 @@
 		2D803F6626F144BF0069D717 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = 2D803F6526F144BF0069D717 /* Nimble */; };
 		2D803F6826F144C40069D717 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = 2D803F6726F144C40069D717 /* Nimble */; };
 		2D803F6926F149E70069D717 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
+		2D69384526DFF93300FCDBC0 /* ProductWrapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D69384426DFF93300FCDBC0 /* ProductWrapperTests.swift */; };
 		2D991ACA268BA56900085481 /* StoreKitRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */; };
 		2D9C7BB326D838FC006838BE /* UIApplication+RCExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9C7BB226D838FC006838BE /* UIApplication+RCExtensions.swift */; };
 		2D9F4A5526C30CA800B07B43 /* PurchasesOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */; };
@@ -290,6 +291,7 @@
 		2D43017726EBFD7100BAB891 /* UnitTestsConfiguration.storekit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = UnitTestsConfiguration.storekit; sourceTree = "<group>"; };
 		2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWrapper.swift; sourceTree = "<group>"; };
 		2D5BB46A24C8E8ED00E27537 /* ReceiptParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptParser.swift; sourceTree = "<group>"; };
+		2D69384426DFF93300FCDBC0 /* ProductWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductWrapperTests.swift; sourceTree = "<group>"; };
 		2D84458826B9CD270033B5A3 /* ReceiptFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcherTests.swift; sourceTree = "<group>"; };
 		2D8DB34A24072AAE00BE3D31 /* SubscriberAttributeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscriberAttributeTests.swift; sourceTree = "<group>"; };
 		2D8F622224D30F9D00F993AA /* ReceiptParsingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptParsingError.swift; sourceTree = "<group>"; };
@@ -813,6 +815,8 @@
 				2DE61A83264190830021CEA0 /* Constants.swift */,
 				2DE20B70264087FB004C597D /* Info.plist */,
 				2DE20B6E264087FB004C597D /* BackendIntegrationTests.swift */,
+				B3125B347EB31B67FE7B497A /* ProductsManagerTests.swift */,
+				2D69384426DFF93300FCDBC0 /* ProductWrapperTests.swift */,
 			);
 			path = BackendIntegrationTests;
 			sourceTree = "<group>";
@@ -1702,6 +1706,7 @@
 				2DA85A8B26DEA7DD00F1136D /* MockProductsRequestFactory.swift in Sources */,
 				2D3BFAD326DEA47100370B11 /* MockSKDiscount.swift in Sources */,
 				2D3BFAD426DEA49200370B11 /* SKProductSubscriptionDurationExtensions.swift in Sources */,
+				2D69384526DFF93300FCDBC0 /* ProductWrapperTests.swift in Sources */,
 				2D3BFAD126DEA45C00370B11 /* MockSKProduct.swift in Sources */,
 				2DE20B6F264087FB004C597D /* BackendIntegrationTests.swift in Sources */,
 				2DE61A84264190830021CEA0 /* Constants.swift in Sources */,
