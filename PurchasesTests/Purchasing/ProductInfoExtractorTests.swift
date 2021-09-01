@@ -168,7 +168,7 @@ class ProductInfoExtractorTests: XCTestCase {
 
     func testExtractInfoFromProductExtractsSubscriptionGroup() {
         let product = MockSKProduct(mockProductIdentifier: "cool_product")
-        if #available(iOS 11.2, *) {
+        if #available(iOS 12.0, macCatalyst 13.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *) {
             let group = "mock_group"
             product.mockSubscriptionGroupIdentifier = group
             let productInfoExtractor = ProductInfoExtractor()
