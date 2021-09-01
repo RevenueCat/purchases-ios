@@ -226,13 +226,13 @@ class DeviceCacheTests: XCTestCase {
         // Here we check that the expectation has not been fulfilled
         wait(for: [assertionDidNotHappen], timeout: TimeInterval(1))
 
-        #else
+        #elseif arch(x86_64) && canImport(Darwin)
         self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
                                        offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
 
         // Only check the assertion for the valid archs.
-        expect(mockNotificationCenter.fireNotifications()).toNot(throwAssertion())
+        expect { mockNotificationCenter.fireNotifications() }.toNot(throwAssertion())
         #endif
 
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
@@ -240,8 +240,8 @@ class DeviceCacheTests: XCTestCase {
         #if arch(arm64)
         mockNotificationCenter.fireNotifications()
         wait(for: [assertionHappened], timeout: TimeInterval(1))
-        #else
-        expect(mockNotificationCenter.fireNotifications()).to(throwAssertion())
+        #elseif arch(x86_64) && canImport(Darwin)
+        expect { mockNotificationCenter.fireNotifications() }.to(throwAssertion())
         #endif
     }
 
@@ -262,12 +262,12 @@ class DeviceCacheTests: XCTestCase {
 
         // Here we check that the expectation has not been fulfilled
         wait(for: [assertionDidNotHappen], timeout: TimeInterval(1))
-        #else
+        #elseif arch(x86_64) && canImport(Darwin)
         self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
                                          offeringsCachedObject: nil,
                                          notificationCenter: mockNotificationCenter)
 
-        expect(mockNotificationCenter.fireNotifications).toNot(throwAssertion())
+        expect { mockNotificationCenter.fireNotifications }.toNot(throwAssertion())
         #endif
     }
 

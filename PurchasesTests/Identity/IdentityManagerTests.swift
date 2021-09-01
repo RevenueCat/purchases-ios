@@ -87,13 +87,13 @@ class IdentityManagerTests: XCTestCase {
         expect(self.mockBackend.invokedCreateAlias).toEventually(beTrue())
     }
 
-    #if arch(x86_64)
+    #if arch(x86_64) && canImport(Darwin)
     //  Also, Nimble's throwAssertion() matcher doesn't work for ARM64.
     //  See https://github.com/Quick/Nimble/blob/main/Sources/Nimble/Matchers/ThrowAssertion.swift#L125
     func testCreateAliasFatalErrorsIfCurrentAppUserIDIsNil() {
         self.mockBackend.invokedCreateAlias = false
         self.mockDeviceCache.stubbedAppUserID = nil
-        expect(self.identityManager.createAlias(appUserID: "cesar"){ _ in }).to(throwAssertion())
+        expect { self.identityManager.createAlias(appUserID: "cesar"){ _ in } }.to(throwAssertion())
     }
     #endif
 

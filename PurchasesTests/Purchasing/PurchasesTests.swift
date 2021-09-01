@@ -345,8 +345,8 @@ class PurchasesTests: XCTestCase {
         _ = Purchases.shared
 
         wait(for: [assertionHappened], timeout: TimeInterval(1))
-        #else
-        expect(Purchases.shared).to(throwAssertion())
+        #elseif arch(x86_64) && canImport(Darwin)
+        expect { Purchases.shared } .to(throwAssertion())
         #endif
 
         setupPurchases()
@@ -362,7 +362,7 @@ class PurchasesTests: XCTestCase {
         _ = Purchases.shared
 
         wait(for: [assertionDidNotHappen], timeout: TimeInterval(1))
-        #else
+        #elseif arch(x86_64) && canImport(Darwin)
         expect { _ = Purchases.shared }.toNot(throwAssertion())
         #endif
     }
