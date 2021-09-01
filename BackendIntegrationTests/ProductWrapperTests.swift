@@ -27,8 +27,9 @@ class ProductsWrapperTests: XCTestCase {
         testSession.clearTransactions()
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK1AndSK2WrappersAreEquivalent() async throws {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
+
         #if arch(arm64)
 
         let productIdentifiers = Set([
@@ -92,8 +93,9 @@ class ProductsWrapperTests: XCTestCase {
         expect(callbackCalled).toEventually(beTrue())
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2WrapperWrappsCorrectly() async throws {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
+
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk2Fetcher = ProductsFetcherSK2()
 
