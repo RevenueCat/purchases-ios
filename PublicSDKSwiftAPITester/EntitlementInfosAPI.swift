@@ -15,10 +15,10 @@ import Foundation
 import Purchases
 
 func checkEntitlementInfosAPI() {
-    let eis: EntitlementInfos = EntitlementInfos()
-    let all: [String: EntitlementInfo] = eis.all
-    let active: [String: EntitlementInfo] = eis.active
-    let enti: EntitlementInfo? = eis[""]
+    let eis: Purchases.EntitlementInfos = Purchases.EntitlementInfos()
+    let all: [String: Purchases.EntitlementInfo] = eis.all
+    let active: [String: Purchases.EntitlementInfo] = eis.active
+    let enti: Purchases.EntitlementInfo? = eis[""]
 
     print(eis, all, active, enti!)
 }

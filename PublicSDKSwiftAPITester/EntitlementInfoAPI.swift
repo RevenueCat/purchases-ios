@@ -13,17 +13,18 @@
 
 import Foundation
 import Purchases
+import PurchasesCoreSwift
 
 func checkEntitlementInfoAPI() {
-    let entitlementInfo = EntitlementInfo()
+    let entitlementInfo = Purchases.EntitlementInfo()
     let ident: String = entitlementInfo.identifier
     let isActive: Bool = entitlementInfo.isActive
     let willRenew: Bool = entitlementInfo.willRenew
-    let pType: PeriodType = entitlementInfo.periodType
+    let pType: Purchases.PeriodType = entitlementInfo.periodType
     let lpd = entitlementInfo.latestPurchaseDate
     let opd: Date = entitlementInfo.originalPurchaseDate
     let eDate: Date? = entitlementInfo.expirationDate
-    let store: Store = entitlementInfo.store
+    let store: Purchases.Store = entitlementInfo.store
     let pId: String = entitlementInfo.productIdentifier
     let iss: Bool = entitlementInfo.isSandbox
     let uda: Date? = entitlementInfo.unsubscribeDetectedAt
@@ -34,16 +35,16 @@ func checkEntitlementInfoAPI() {
 }
 
 func checkEntitlementInfoEnums() {
-    var store: Store = Store.appStore
-    store = Store.macAppStore
-    store = Store.playStore
-    store = Store.stripe
-    store = Store.promotional
-    store = Store.unknownStore
+    var store: Purchases.Store = Purchases.Store.appStore
+    store = Purchases.Store.macAppStore
+    store = Purchases.Store.playStore
+    store = Purchases.Store.stripe
+    store = Purchases.Store.promotional
+    store = Purchases.Store.unknownStore
 
-    var pType: PeriodType = PeriodType.intro
-    pType = PeriodType.trial
-    pType = PeriodType.normal
+    var pType: Purchases.PeriodType = Purchases.PeriodType.intro
+    pType = Purchases.PeriodType.trial
+    pType = Purchases.PeriodType.normal
 
     print(store, pType)
 }

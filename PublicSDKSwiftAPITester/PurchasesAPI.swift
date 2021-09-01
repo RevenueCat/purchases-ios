@@ -27,7 +27,8 @@ func checkPurchasesAPI() {
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: UserDefaults())
 
     // static methods
-    Purchases.setLogHandler({ _, _ in })
+    let logHandler: (Purchases.LogLevel, String) -> Void = { _, _ in }
+    Purchases.setLogHandler(logHandler)
 
     let canI: Bool = Purchases.canMakePayments()
     let version = Purchases.frameworkVersion
@@ -62,7 +63,8 @@ func checkPurchasesAPI() {
     purch.reset(piComplete)
     purch.logOut(piComplete)
 
-    purch.logIn("", { _, _, _ in })
+    let loginComplete: (Purchases.PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
+    purch.logIn("", loginComplete)
 }
 
 func checkPurchasesEnums() {

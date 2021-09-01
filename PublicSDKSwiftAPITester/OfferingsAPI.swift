@@ -15,9 +15,9 @@ import Foundation
 import Purchases
 
 func checkOfferingsAPI() {
-    let offs: Offerings = Offerings()
-    var off: Offering? = offs.current
-    let all: [String: Offering] = offs.all
+    let offs: Purchases.Offerings = Purchases.Offerings()
+    var off: Purchases.Offering? = offs.current
+    let all: [String: Purchases.Offering] = offs.all
     off = offs.offering(identifier: nil)
     off = offs.offering(identifier: "")
     off = offs[""]
