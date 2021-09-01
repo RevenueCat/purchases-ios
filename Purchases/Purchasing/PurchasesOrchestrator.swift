@@ -189,12 +189,12 @@ class PurchasesOrchestrator {
 
     }
 
-    func purchase(product: SKProduct,
+    func purchase(sk1Product: SKProduct,
                   payment: SKMutablePayment,
                   presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
                   completion: @escaping PurchaseCompletedBlock) {
         Logger.debug(String(format: "Make purchase called: %@", #function))
-        guard let productIdentifier = extractProductIdentifier(fromProduct: product, orPayment: payment) else {
+        guard let productIdentifier = extractProductIdentifier(fromProduct: sk1Product, orPayment: payment) else {
             Logger.error(Strings.purchase.could_not_purchase_product_id_not_found)
             let errorMessage = "There was a problem purchasing the product: productIdentifier was nil"
             completion(nil, nil, ErrorUtils.unknownError(message: errorMessage), false)
@@ -223,7 +223,7 @@ class PurchasesOrchestrator {
             Logger.purchase(Strings.purchase.purchasing_product(productIdentifier: productIdentifier))
         }
 
-        productsManager.cacheProduct(product)
+        productsManager.cacheProduct(sk1Product)
 
         lock.lock()
         defer {
@@ -555,7 +555,7 @@ private extension PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func purchase(sk2Package: Package, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(sk2Package: Package, completion: @escaping PurchaseCompletedBlock) {
         guard let sk2ProductDetails = sk2Package.productDetails as? SK2ProductDetails else {
             return
         }
@@ -571,13 +571,13 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    private func purchase(sk1Package: Package, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(sk1Package: Package, completion: @escaping PurchaseCompletedBlock) {
         guard let sk1ProductDetails = sk1Package.productDetails as? SK1ProductDetails else {
             return
         }
         let sk1Product = sk1ProductDetails.underlyingSK1Product
         let payment = storeKitWrapper.payment(withProduct: sk1Product)
-        purchase(product: sk1Product,
+        purchase(sk1Product: sk1Product,
                  payment: payment,
                  presentedOfferingIdentifier: sk1Package.offeringIdentifier,
                  completion: completion)
