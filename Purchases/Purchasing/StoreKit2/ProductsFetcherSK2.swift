@@ -27,6 +27,8 @@ actor ProductsFetcherSK2 {
 
     func products(identifiers: Set<String>) async throws -> Set<ProductWrapper> {
         do {
+            // todo: also cache requests, so that if a request is in flight for the same products,
+            // we don't need to make a new one
             let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
             if productsAlreadyCached.count == identifiers.count {
                 let productsAlreadyCachedSet = Set(productsAlreadyCached.values)
