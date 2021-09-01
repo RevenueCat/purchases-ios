@@ -32,8 +32,7 @@ class MockBackend: Backend {
         self.init(httpClient: MockHTTPClient(systemInfo: try! MockSystemInfo(platformFlavor: nil,
                                                                              platformFlavorVersion: nil,
                                                                              finishTransactions: false),
-                                             eTagManager: MockETagManager(),
-                                             operationDispatcher: MockOperationDispatcher()),
+                                             eTagManager: MockETagManager()),
                   apiKey: "mockAPIKey")
     }
 

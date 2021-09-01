@@ -249,8 +249,7 @@ class PurchasesTests: XCTestCase {
     let backend = MockBackend(httpClient: MockHTTPClient(systemInfo: try! MockSystemInfo(platformFlavor: nil,
                                                                                          platformFlavorVersion: nil,
                                                                                          finishTransactions: false),
-                                                         eTagManager: MockETagManager(),
-                                                         operationDispatcher: MockOperationDispatcher()),
+                                                         eTagManager: MockETagManager()),
                               apiKey: "mockAPIKey")
     let storeKitWrapper = MockStoreKitWrapper()
     let notificationCenter = MockNotificationCenter()
@@ -2353,8 +2352,9 @@ class PurchasesTests: XCTestCase {
 
         setupPurchases()
 
+        expect(self.backend.invokedPostAttributionData).toEventually(beTrue())
         for key in data.keys {
-            expect(self.backend.invokedPostAttributionDataParameters?.data?.keys.contains(key)) == true
+            expect(self.backend.invokedPostAttributionDataParameters?.data?.keys.contains(key)).to(beTrue())
         }
 
         expect(self.backend.invokedPostAttributionDataParameters?.data?.keys.contains("rc_idfa")) == true

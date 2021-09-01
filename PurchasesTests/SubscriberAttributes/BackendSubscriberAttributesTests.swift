@@ -37,9 +37,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
     let systemInfo = try! SystemInfo(platformFlavor: "Unity", platformFlavorVersion: "2.3.3", finishTransactions: true)
 
     override func setUp() {
-        let mockOperationDispatcher = MockOperationDispatcher()
         mockETagManager = MockETagManager(userDefaults: MockUserDefaults())
-        mockHTTPClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: mockETagManager, operationDispatcher: mockOperationDispatcher)
+        mockHTTPClient = MockHTTPClient(systemInfo: systemInfo, eTagManager: mockETagManager)
         self.backend = Backend(httpClient: mockHTTPClient, apiKey: "key")
         dateProvider = MockDateProvider(stubbedNow: now)
         subscriberAttribute1 = SubscriberAttribute(withKey: "a key",

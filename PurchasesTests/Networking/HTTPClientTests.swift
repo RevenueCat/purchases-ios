@@ -26,7 +26,7 @@ class HTTPClientTests: XCTestCase {
         userDefaults = MockUserDefaults()
         eTagManager = MockETagManager(userDefaults: userDefaults)
         operationDispatcher = OperationDispatcher()
-        client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
     }
 
     override func tearDown() {
@@ -406,7 +406,7 @@ class HTTPClientTests: XCTestCase {
         let systemInfo = try! SystemInfo(platformFlavor: "react-native",
                                          platformFlavorVersion: "3.2.1",
                                          finishTransactions: true)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         client.performPOSTRequest(serially: true,
                                   path: path,
                                   requestBody: Dictionary.init(),
@@ -427,7 +427,7 @@ class HTTPClientTests: XCTestCase {
         let systemInfo = try! SystemInfo(platformFlavor: "react-native",
                                          platformFlavorVersion: "1.2.3",
                                          finishTransactions: true)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         
         client.performPOSTRequest(serially: true,
                                   path: path,
@@ -447,7 +447,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         client.performPOSTRequest(serially: true,
                                   path: path,
                                   requestBody: Dictionary.init(),
@@ -466,7 +466,7 @@ class HTTPClientTests: XCTestCase {
             return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
         let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
-        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager, operationDispatcher: operationDispatcher)
+        let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         client.performPOSTRequest(serially: true,
                                   path: path,
                                   requestBody: Dictionary.init(),
@@ -614,6 +614,62 @@ class HTTPClientTests: XCTestCase {
 
         expect(firstRequestFinished).toEventually(beTrue())
         expect(secondRequestFinished).toEventually(beTrue())
+    }
+
+    func testPerformSerialRequestWaitsUntilRequestsAreDoneBeforeStartingNext() {
+        let path = "/a_random_path"
+        var firstRequestFinished = false
+        var secondRequestFinished = false
+        var thirdRequestFinished = false
+
+        stub(condition: isPath("/v1" + path)) { request in
+            let requestData = request.ohhttpStubs_httpBody!
+            let requestBodyDict = try! JSONSerialization.jsonObject(with: requestData, options: []) as! [String: Any]
+
+            let requestNumber = requestBodyDict["requestNumber"] as! Int
+            var responseTime = 0.5
+            if requestNumber == 1 {
+                expect(secondRequestFinished) == false
+                expect(thirdRequestFinished) == false
+            } else if requestNumber == 2 {
+                expect(firstRequestFinished) == true
+                expect(thirdRequestFinished) == false
+                responseTime = 0.3
+            } else if requestNumber == 3 {
+                expect(firstRequestFinished) == true
+                expect(secondRequestFinished) == true
+                responseTime = 0.1
+            }
+
+            let json = "{\"message\": \"something is great up in the cloud\"}"
+            return HTTPStubsResponse(data: json.data(using: String.Encoding.utf8)!, statusCode: 200, headers: nil)
+                .responseTime(responseTime)
+        }
+
+        self.client.performPOSTRequest(serially: true,
+                                       path: path,
+                                       requestBody: ["requestNumber": 1],
+                                       headers: [:]) { (status, data, error) in
+            firstRequestFinished = true
+        }
+
+        self.client.performPOSTRequest(serially: true,
+                                       path: path,
+                                       requestBody: ["requestNumber": 2],
+                                       headers: [:]) { (status, data, error) in
+            secondRequestFinished = true
+        }
+
+        self.client.performPOSTRequest(serially: true,
+                                       path: path,
+                                       requestBody: ["requestNumber": 3],
+                                       headers: [:]) { (status, data, error) in
+            thirdRequestFinished = true
+        }
+
+        expect(firstRequestFinished).toEventually(beTrue(), timeout: .seconds(1))
+        expect(secondRequestFinished).toEventually(beTrue(), timeout: .seconds(2))
+        expect(thirdRequestFinished).toEventually(beTrue(), timeout: .seconds(3))
     }
 
     func testPerformSerialRequestDoesntWaitForConcurrentRequestsBeforeStarting() {
