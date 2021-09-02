@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ProductWrapperTests.swift
+//  ProductDetailsTests.swift
 //
 //  Created by Andrés Boedo on 1/9/21.
 
@@ -28,7 +28,7 @@ class ProductsWrapperTests: XCTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testSK1AndSK2WrappersAreEquivalent() async throws {
+    func testSK1AndSK2DetailsAreEquivalent() async throws {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
 
         #if arch(arm64)
@@ -39,23 +39,23 @@ class ProductsWrapperTests: XCTestCase {
             "lifetime",
             ])
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
-        let sk1ProductWrappers = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
-        let sk1ProductWrappersByID = sk1ProductWrappers.reduce(into: [:]) { partialResult, wrapper in
+        let sk1ProductDetailss = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
+        let sk1ProductDetailssByID = sk1ProductDetailss.reduce(into: [:]) { partialResult, wrapper in
             partialResult[wrapper.productIdentifier] = wrapper
         }
 
         let sk2Fetcher = ProductsFetcherSK2()
-        let sk2ProductWrappers = try await sk2Fetcher.products(identifiers: productIdentifiers)
-        let sk2ProductWrappersByID = sk2ProductWrappers.reduce(into: [:]) { partialResult, wrapper in
+        let sk2ProductDetailss = try await sk2Fetcher.products(identifiers: productIdentifiers)
+        let sk2ProductDetailssByID = sk2ProductDetailss.reduce(into: [:]) { partialResult, wrapper in
             partialResult[wrapper.productIdentifier] = wrapper
         }
 
-        expect(sk1ProductWrappers.count) == productIdentifiers.count
-        expect(sk1ProductWrappers.count) == sk2ProductWrappers.count
+        expect(sk1ProductDetailss.count) == productIdentifiers.count
+        expect(sk1ProductDetailss.count) == sk2ProductDetailss.count
 
-        for sk1ProductID in sk1ProductWrappersByID.keys {
-            let sk1Product = try XCTUnwrap(sk1ProductWrappersByID[sk1ProductID])
-            let equivalentSK2Product = try XCTUnwrap(sk2ProductWrappersByID[sk1ProductID])
+        for sk1ProductID in sk1ProductDetailssByID.keys {
+            let sk1Product = try XCTUnwrap(sk1ProductDetailssByID[sk1ProductID])
+            let equivalentSK2Product = try XCTUnwrap(sk2ProductDetailssByID[sk1ProductID])
 
             expect(sk1Product.productIdentifier) == equivalentSK2Product.productIdentifier
             expect(sk1Product.localizedDescription) == equivalentSK2Product.localizedDescription
@@ -73,45 +73,45 @@ class ProductsWrapperTests: XCTestCase {
         #endif
     }
 
-    func testSk1WrapperWrappsCorrectly() throws {
+    func testSk1DetailsWrapsCorrectly() throws {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
         var callbackCalled = false
 
-        sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { productWrappers in
+        sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { productDetailss in
             callbackCalled = true
-            guard let productWrapper = productWrappers.first else { fatalError("couldn't get product!") }
+            guard let productDetails = productDetailss.first else { fatalError("couldn't get product!") }
 
-            expect(productWrapper.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
-            expect(productWrapper.localizedDescription) == "Monthly subscription with a 1-week free trial"
-            expect(productWrapper.price.description) == "4.99"
-            expect(productWrapper.localizedPriceString) == "$4.99"
-            expect(productWrapper.productIdentifier) == productIdentifier
-            expect(productWrapper.isFamilyShareable) == true
-            expect(productWrapper.localizedTitle) == "Monthly Free Trial"
+            expect(productDetails.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
+            expect(productDetails.localizedDescription) == "Monthly subscription with a 1-week free trial"
+            expect(productDetails.price.description) == "4.99"
+            expect(productDetails.localizedPriceString) == "$4.99"
+            expect(productDetails.productIdentifier) == productIdentifier
+            expect(productDetails.isFamilyShareable) == true
+            expect(productDetails.localizedTitle) == "Monthly Free Trial"
         }
 
         expect(callbackCalled).toEventually(beTrue())
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testSk2WrapperWrappsCorrectly() async throws {
+    func testSk2DetailsWrapsCorrectly() async throws {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
 
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk2Fetcher = ProductsFetcherSK2()
 
-        let productWrappers = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
+        let productDetailss = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
 
-        let productWrapper = try XCTUnwrap(productWrappers.first)
+        let productDetails = try XCTUnwrap(productDetailss.first)
 
-        expect(productWrapper.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
-        expect(productWrapper.localizedDescription) == "Monthly subscription with a 1-week free trial"
-        expect(productWrapper.price.description) == "4.99"
-        expect(productWrapper.localizedPriceString) == "$4.99"
-        expect(productWrapper.productIdentifier) == productIdentifier
-        expect(productWrapper.isFamilyShareable) == true
-        expect(productWrapper.localizedTitle) == "Monthly Free Trial"
+        expect(productDetails.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
+        expect(productDetails.localizedDescription) == "Monthly subscription with a 1-week free trial"
+        expect(productDetails.price.description) == "4.99"
+        expect(productDetails.localizedPriceString) == "$4.99"
+        expect(productDetails.productIdentifier) == productIdentifier
+        expect(productDetails.isFamilyShareable) == true
+        expect(productDetails.localizedTitle) == "Monthly Free Trial"
 
     }
 

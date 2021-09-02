@@ -56,15 +56,15 @@ class ProductsFetcherSK1: NSObject {
     }
 
     func products(withIdentifiers identifiers: Set<String>,
-                  completion: @escaping (Set<ProductWrapper>) -> Void) {
+                  completion: @escaping (Set<ProductDetails>) -> Void) {
         self.sk1Products(withIdentifiers: identifiers) { skProducts in
-            let wrappedProductsArray = skProducts.map { SK1ProductWrapper(sk1Product: $0) }
+            let wrappedProductsArray = skProducts.map { SK1ProductDetails(sk1Product: $0) }
             completion(Set(wrappedProductsArray))
         }
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func products(withIdentifiers identifiers: Set<String>) async -> Set<ProductWrapper> {
+    func products(withIdentifiers identifiers: Set<String>) async -> Set<ProductDetails> {
         return await withCheckedContinuation { continuation in
             products(withIdentifiers: identifiers) { result in
                 continuation.resume(returning: result)
