@@ -33,17 +33,27 @@ func checkEntitlementInfoAPI() {
     print(entitlementInfo!, ident, isActive, willRenew, pType, lpd, opd, eDate!, store, pId, iss, uda!, bida!, oType)
 }
 
+var store: Purchases.Store!
+var pType: Purchases.PeriodType!
 func checkEntitlementInfoEnums() {
-    var store: Purchases.Store = Purchases.Store.appStore
-    store = Purchases.Store.macAppStore
-    store = Purchases.Store.playStore
-    store = Purchases.Store.stripe
-    store = Purchases.Store.promotional
-    store = Purchases.Store.unknownStore
+    switch store! {
+    case .appStore,
+         .macAppStore,
+         .playStore,
+         .stripe,
+         .promotional,
+         .unknownStore:
+        print(store!)
+    @unknown default:
+        fatalError()
+    }
 
-    var pType: Purchases.PeriodType = Purchases.PeriodType.intro
-    pType = Purchases.PeriodType.trial
-    pType = Purchases.PeriodType.normal
-
-    print(store, pType)
+    switch pType! {
+    case .intro,
+         .trial,
+         .normal:
+        print(pType!)
+    @unknown default:
+        fatalError()
+    }
 }

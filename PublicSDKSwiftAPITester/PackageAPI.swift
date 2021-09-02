@@ -25,16 +25,20 @@ func checkPackageAPI() {
     print(pack!, ident, pType, prod, lps, lips)
 }
 
+var packageType: Purchases.PackageType!
 func checkPackageEnums() {
-    var type: Purchases.PackageType = Purchases.PackageType.unknown
-    type = Purchases.PackageType.custom
-    type = Purchases.PackageType.lifetime
-    type = Purchases.PackageType.annual
-    type = Purchases.PackageType.sixMonth
-    type = Purchases.PackageType.threeMonth
-    type = Purchases.PackageType.twoMonth
-    type = Purchases.PackageType.monthly
-    type = Purchases.PackageType.weekly
-
-    print(type)
+    switch packageType! {
+    case .custom,
+         .lifetime,
+         .annual,
+         .sixMonth,
+         .threeMonth,
+         .twoMonth,
+         .monthly,
+         .weekly,
+         .unknown:
+        print(packageType!)
+    @unknown default:
+        fatalError()
+    }
 }

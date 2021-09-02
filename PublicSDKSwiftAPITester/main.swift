@@ -13,7 +13,7 @@
 
 import Foundation
 
-checkRCAttributionNetworkEnums()
+checkAttributionNetworkEnums()
 
 checkEntitlementInfoAPI()
 checkEntitlementInfoEnums()

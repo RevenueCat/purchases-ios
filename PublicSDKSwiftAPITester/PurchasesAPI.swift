@@ -66,29 +66,37 @@ func checkPurchasesAPI() {
     purch.logIn("", loginComplete)
 }
 
+var type: Purchases.PeriodType!
+var oType: RCPurchaseOwnershipType!
+var logLevel: Purchases.LogLevel!
 func checkPurchasesEnums() {
-    var type = Purchases.PeriodType.normal
-    type = Purchases.PeriodType.intro
-    type = Purchases.PeriodType.trial
+    switch type! {
+    case .normal,
+         .intro,
+         .trial:
+        print(type!)
+    @unknown default:
+        fatalError()
+    }
 
-    var oType: RCPurchaseOwnershipType = RCPurchaseOwnershipType.purchased
-    oType = RCPurchaseOwnershipType.familyShared
-    oType = RCPurchaseOwnershipType.unknown
+    switch oType! {
+    case .purchased,
+         .familyShared,
+         .unknown:
+        print(oType!)
+    @unknown default:
+        fatalError()
+    }
 
-    var logLevel: Purchases.LogLevel = Purchases.LogLevel.info
-    logLevel = Purchases.LogLevel.warn
-    logLevel = Purchases.LogLevel.debug
-    logLevel = Purchases.LogLevel.error
-
-    print(type, oType, logLevel)
-}
-
-func checkConstants() {
-    // were these never available from swift?
-//    let versionNum: Double = PurchasesVersionNumber
-//    let versionString: String = PurchasesVersionString
-
-//    print(versionNum)
+    switch logLevel! {
+    case .info,
+         .warn,
+         .debug,
+         .error:
+        print(logLevel!)
+    @unknown default:
+        fatalError()
+    }
 }
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {

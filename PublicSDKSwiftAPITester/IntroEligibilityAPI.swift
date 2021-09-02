@@ -21,10 +21,14 @@ func checkIntroEligibilityAPI() {
     print(introE!, status)
 }
 
+var status: RCIntroEligibilityStatus!
 func checkIntroEligibilityEnums() {
-    var status = RCIntroEligibilityStatus.unknown
-    status = RCIntroEligibilityStatus.ineligible
-    status = RCIntroEligibilityStatus.eligible
-
-    print(status)
+    switch status! {
+    case .unknown,
+    .ineligible,
+    .eligible:
+        print(status!)
+    @unknown default:
+        fatalError()
+    }
 }

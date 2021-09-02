@@ -14,14 +14,18 @@
 import Foundation
 import Purchases
 
-func checkRCAttributionNetworkEnums() {
-    var aNetwork: RCAttributionNetwork = RCAttributionNetwork.appleSearchAds
-    aNetwork = RCAttributionNetwork.adjust
-    aNetwork = RCAttributionNetwork.appsFlyer
-    aNetwork = RCAttributionNetwork.branch
-    aNetwork = RCAttributionNetwork.tenjin
-    aNetwork = RCAttributionNetwork.facebook
-    aNetwork = RCAttributionNetwork.mParticle
-
-    print(aNetwork)
+var aNetwork: RCAttributionNetwork!
+func checkAttributionNetworkEnums() {
+    switch aNetwork! {
+    case .appleSearchAds,
+         .adjust,
+         .appsFlyer,
+         .branch,
+         .tenjin,
+         .facebook,
+         .mParticle:
+        print(aNetwork!)
+    @unknown default:
+        fatalError()
+    }
 }
