@@ -14,7 +14,7 @@
 import Nimble
 import StoreKitTest
 import XCTest
-@testable import Purchases
+@testable import RevenueCat
 
 class ProductsWrapperTests: XCTestCase {
 
