@@ -17,7 +17,7 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(withProductWrappers products: [String: ProductWrapper],
+    func createOfferings(withProductDetailss products: [String: ProductDetails],
                          data: [String: Any]) -> Offerings? {
         guard let offeringsData = data["offerings"] as? [[String: Any]] else {
             return nil
@@ -25,7 +25,7 @@ class OfferingsFactory {
 
         let offerings = offeringsData.reduce([String: Offering]()) { (dict, offeringData) -> [String: Offering] in
             var dict = dict
-            if let offering = createOffering(withProductWrappers: products, offeringData: offeringData) {
+            if let offering = createOffering(withProductDetailss: products, offeringData: offeringData) {
                 dict[offering.identifier] = offering
             }
             return dict
@@ -35,25 +35,25 @@ class OfferingsFactory {
         return Offerings(offerings: offerings, currentOfferingID: currentOfferingID)
     }
 
-    func createOfferings(withProducts products: [String: ProductWrapper],
+    func createOfferings(withProducts products: [String: ProductDetails],
                          data: [String: Any]) -> Offerings? {
-        let productWrappersByKey = Dictionary(uniqueKeysWithValues:
-                                                products.map { productIdentifier, productWrapper in
-            (productIdentifier, productWrapper) }
+        let productDetailssByKey = Dictionary(uniqueKeysWithValues:
+                                                products.map { productIdentifier, productDetails in
+            (productIdentifier, productDetails) }
         )
-        return self.createOfferings(withProductWrappers: productWrappersByKey, data: data)
+        return self.createOfferings(withProductDetailss: productDetailssByKey, data: data)
     }
 
     func createOffering(withProducts products: [String: SKProduct],
                         offeringData: [String: Any]) -> Offering? {
-        let productWrappersByKey = Dictionary(uniqueKeysWithValues:
+        let productDetailssByKey = Dictionary(uniqueKeysWithValues:
                                                 products.map { productIdentifier, skProduct in
-            (productIdentifier, SK1ProductWrapper(sk1Product: skProduct)) }
+            (productIdentifier, SK1ProductDetails(sk1Product: skProduct)) }
         )
-        return self.createOffering(withProductWrappers: productWrappersByKey, offeringData: offeringData)
+        return self.createOffering(withProductDetailss: productDetailssByKey, offeringData: offeringData)
     }
 
-    func createOffering(withProductWrappers products: [String: ProductWrapper],
+    func createOffering(withProductDetailss products: [String: ProductDetails],
                         offeringData: [String: Any]) -> Offering? {
         guard let offeringIdentifier = offeringData["identifier"] as? String,
               let packagesData = offeringData["packages"] as? [[String: Any]],
@@ -73,7 +73,7 @@ class OfferingsFactory {
     }
 
     func createPackage(withData data: [String: Any],
-                       products: [String: ProductWrapper],
+                       products: [String: ProductDetails],
                        offeringIdentifier: String) -> Package? {
         guard let platformProductIdentifier = data["platform_product_identifier"] as? String,
               let product = products[platformProductIdentifier],
@@ -84,7 +84,7 @@ class OfferingsFactory {
         let packageType = Package.packageType(from: identifier)
         return Package(identifier: identifier,
                        packageType: packageType,
-                       productWrapper: product,
+                       productDetails: product,
                        offeringIdentifier: offeringIdentifier)
     }
 

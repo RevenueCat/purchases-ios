@@ -905,10 +905,10 @@ public extension Purchases {
     @objc(purchasePackage:withDiscount:completionBlock:)
     func purchase(package: Package, discount: SKPaymentDiscount, completion: @escaping PurchaseCompletedBlock) {
         // todo: add support for SK2 with discounts, move to new class
-        guard let sk1ProductWrapper = package.productWrapper as? SK1ProductWrapper else {
+        guard let sk1ProductDetails = package.productDetails as? SK1ProductDetails else {
             return
         }
-        let sk1Product = sk1ProductWrapper.underlyingSK1Product
+        let sk1Product = sk1ProductDetails.underlyingSK1Product
         let payment = storeKitWrapper.payment(withProduct: sk1Product,
                                               discount: discount)
         purchase(product: sk1Product,

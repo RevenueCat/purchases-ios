@@ -149,7 +149,7 @@
 		37E3578711F5FDD5DC6458A8 /* AttributionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3521731D8DC16873F55F3 /* AttributionFetcher.swift */; };
 		37E35C8515C5E2D01B0AF5C1 /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3507939634ED5A9280544 /* Strings.swift */; };
 		42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */; };
-		6E38843A0CAFD551013D0A3F /* ProductWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* ProductWrapper.swift */; };
+		6E38843A0CAFD551013D0A3F /* ProductDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* ProductDetails.swift */; };
 		805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */; };
 		80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E80EF026970DC3008F245A /* ReceiptFetcher.swift */; };
 		9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
@@ -163,7 +163,6 @@
 		9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */; };
 		A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */; };
 		A56F9AB126990E9200AFC48F /* PurchaserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */; };
-		A83B8E48AE8E2A6238ED0B30 /* ProductsFetcherSK1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E351F0E21361EAEC078A0D /* ProductsFetcherSK1Tests.swift */; };
 		B300E4BF26D436F900B22262 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
 		B300E4C026D4371200B22262 /* SKPaymentTransactionExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591492526B994B400D32E58 /* SKPaymentTransactionExtensionsTests.swift */; };
 		B300E4C226D439B700B22262 /* IntroEligibilityCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */; };
@@ -532,7 +531,7 @@
 		F5BE447A269E4A7500254A30 /* TrackingManagerProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingManagerProxy.swift; sourceTree = "<group>"; };
 		F5BE447C269E4ADB00254A30 /* ASIdentifierManagerProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASIdentifierManagerProxy.swift; sourceTree = "<group>"; };
 		F5E4383726B8530700841CC8 /* SKPaymentTransaction+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SKPaymentTransaction+Extensions.swift"; sourceTree = "<group>"; };
-		FECF627761D375C8431EB866 /* ProductWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductWrapper.swift; sourceTree = "<group>"; };
+		FECF627761D375C8431EB866 /* ProductDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetails.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -905,7 +904,7 @@
 				2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */,
 				2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */,
 				3597020F24BF6A710010506E /* TransactionsFactory.swift */,
-				FECF627761D375C8431EB866 /* ProductWrapper.swift */,
+				FECF627761D375C8431EB866 /* ProductDetails.swift */,
 				006E105DDA8D0D0FA32D690C /* StoreKit2 */,
 				2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */,
 			);
@@ -1543,7 +1542,7 @@
 				37E3578711F5FDD5DC6458A8 /* AttributionFetcher.swift in Sources */,
 				F5714EA526D6C24D00635477 /* JSONDecoder+Extensions.swift in Sources */,
 				B3766F1E26BDA95100141450 /* IntroEligibilityResponse.swift in Sources */,
-				6E38843A0CAFD551013D0A3F /* ProductWrapper.swift in Sources */,
+				6E38843A0CAFD551013D0A3F /* ProductDetails.swift in Sources */,
 				42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */,
 				805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */,
 			);

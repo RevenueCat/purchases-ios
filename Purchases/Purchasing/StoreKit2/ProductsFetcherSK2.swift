@@ -23,9 +23,9 @@ enum ProductsManagerSK2Error: Error {
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 actor ProductsFetcherSK2 {
 
-    private var cachedProductsByIdentifier: [String: SK2ProductWrapper] = [:]
+    private var cachedProductsByIdentifier: [String: SK2ProductDetails] = [:]
 
-    func products(identifiers: Set<String>) async throws -> Set<ProductWrapper> {
+    func products(identifiers: Set<String>) async throws -> Set<ProductDetails> {
         do {
             // todo: also cache requests, so that if a request is in flight for the same products,
             // we don't need to make a new one
@@ -40,8 +40,8 @@ actor ProductsFetcherSK2 {
             #if arch(arm64)
 
             let storeKitProducts = try await StoreKit.Product.products(for: identifiers)
-            let sk2Wrappers = storeKitProducts.map { SK2ProductWrapper(sk2Product: $0) }
-            return Set(sk2Wrappers)
+            let sk2ProductDetails = storeKitProducts.map { SK2ProductDetails(sk2Product: $0) }
+            return Set(sk2ProductDetails)
             #else
             return Set()
             #endif

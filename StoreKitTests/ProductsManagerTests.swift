@@ -33,7 +33,7 @@ class ProductsManagerTests: XCTestCase {
     func testFetchProductsFromOptimalStore() throws {
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
-        var maybeReceivedProducts: Set<ProductWrapper>?
+        var maybeReceivedProducts: Set<ProductDetails>?
 
         productsManager.productsFromOptimalStore(withIdentifiers: Set([identifier]), completion: { products in
             completionCalled = true
@@ -47,9 +47,9 @@ class ProductsManagerTests: XCTestCase {
         let firstProduct = try XCTUnwrap(receivedProducts.first)
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            expect(firstProduct as? SK2ProductWrapper).toNot(beNil())
+            expect(firstProduct as? SK2ProductDetails).toNot(beNil())
         } else {
-            expect(firstProduct as? SK1ProductWrapper).toNot(beNil())
+            expect(firstProduct as? SK1ProductDetails).toNot(beNil())
         }
         expect(firstProduct.productIdentifier) == identifier
     }

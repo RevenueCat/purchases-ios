@@ -128,7 +128,7 @@ private extension OfferingsManager {
         return Set(productIdenfitiersArray)
     }
 
-    func logMissingProductsIfAppropriate(products: [String: ProductWrapper], offeringsData: [String: Any]) {
+    func logMissingProductsIfAppropriate(products: [String: ProductDetails], offeringsData: [String: Any]) {
         guard !products.isEmpty,
               !offeringsData.isEmpty else {
             return

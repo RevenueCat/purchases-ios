@@ -27,7 +27,7 @@ class ProductsManager: NSObject {
     }
 
     func productsFromOptimalStore(withIdentifiers identifiers: Set<String>,
-                                  completion: @escaping (Set<ProductWrapper>) -> Void) {
+                                  completion: @escaping (Set<ProductDetails>) -> Void) {
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             Task.init {
@@ -36,13 +36,13 @@ class ProductsManager: NSObject {
                     completion(products)
                 } catch let error {
                     Logger.error("error when fetching SK2 products: \(error.localizedDescription)")
-                    let emptySet: Set<ProductWrapper> = Set()
+                    let emptySet: Set<ProductDetails> = Set()
                     completion(emptySet)
                 }
             }
         } else {
             self.products(withIdentifiers: identifiers) { skProducts in
-                let wrappedProductsArray = skProducts.map { SK1ProductWrapper(sk1Product: $0) }
+                let wrappedProductsArray = skProducts.map { SK1ProductDetails(sk1Product: $0) }
                 completion(Set(wrappedProductsArray))
             }
         }

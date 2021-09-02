@@ -10,7 +10,7 @@ class MockOfferingsFactory: OfferingsFactory {
     var emptyOfferings = false
     var badOfferings = false
     
-    override func createOfferings(withProductWrappers products: [String: ProductWrapper],
+    override func createOfferings(withProductDetailss products: [String: ProductDetails],
                                   data: [String: Any]) -> Offerings? {
         if (emptyOfferings) {
             return Offerings(offerings: [:], currentOfferingID: "base")
@@ -20,7 +20,7 @@ class MockOfferingsFactory: OfferingsFactory {
         }
 
         let product = MockSKProduct(mockProductIdentifier: "monthly_freetrial")
-        let productWrapper = SK1ProductWrapper(sk1Product: product)
+        let productDetails = SK1ProductDetails(sk1Product: product)
         return Offerings(
             offerings: [
                 "base": Offering(
@@ -29,7 +29,7 @@ class MockOfferingsFactory: OfferingsFactory {
                     availablePackages: [
                         Package(identifier: "$rc_monthly",
                                 packageType: PackageType.monthly,
-                                productWrapper: productWrapper,
+                                productDetails: productDetails,
                                 offeringIdentifier: "base")
                     ]
                 )],

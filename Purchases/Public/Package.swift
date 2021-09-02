@@ -71,27 +71,27 @@ private extension PackageType {
 
     @objc public let identifier: String
     @objc public let packageType: PackageType
-    @objc public let productWrapper: ProductWrapper
+    @objc public let productDetails: ProductDetails
     @objc public let offeringIdentifier: String
 
     @objc public var localizedPriceString: String {
-        return productWrapper.localizedPriceString
+        return productDetails.localizedPriceString
     }
 
     @objc public var localizedIntroductoryPriceString: String {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) {
-            // todo: uncomment when product discounts are supported in product wrapper
-            // return productWrapper.localizedIntroductoryPriceString
+            // todo: uncomment when product discounts are supported in product details
+            // return productDetails.localizedIntroductoryPriceString
             return ""
         } else {
             return ""
         }
     }
 
-    init(identifier: String, packageType: PackageType, productWrapper: ProductWrapper, offeringIdentifier: String) {
+    init(identifier: String, packageType: PackageType, productDetails: ProductDetails, offeringIdentifier: String) {
         self.identifier = identifier
         self.packageType = packageType
-        self.productWrapper = productWrapper
+        self.productDetails = productDetails
         self.offeringIdentifier = offeringIdentifier
     }
 

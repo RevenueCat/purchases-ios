@@ -1809,8 +1809,8 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
         self.purchases?.offerings { (newOfferings, _) in
-            let productWrapper = newOfferings!["base"]!.monthly!.productWrapper;
-            let product = (productWrapper as! SK1ProductWrapper).underlyingSK1Product
+            let productDetails = newOfferings!["base"]!.monthly!.productDetails;
+            let product = (productDetails as! SK1ProductDetails).underlyingSK1Product
             self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
 
             }
@@ -2530,8 +2530,8 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postReceiptDataCalled).to(beTrue())
             expect(self.backend.postedReceiptData).toNot(beNil())
 
-            expect(self.backend.postedProductID).to(equal(package.productWrapper.productIdentifier))
-            expect(self.backend.postedPrice) == package.productWrapper.price as NSDecimalNumber
+            expect(self.backend.postedProductID).to(equal(package.productDetails.productIdentifier))
+            expect(self.backend.postedPrice) == package.productDetails.price as NSDecimalNumber
             expect(self.backend.postedOfferingIdentifier).to(equal("base"))
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }

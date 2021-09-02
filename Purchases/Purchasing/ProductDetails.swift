@@ -9,9 +9,9 @@
 import Foundation
 import StoreKit
 
-@objc(RCProductWrapper) public class ProductWrapper: NSObject {
+@objc(RCProductDetails) public class ProductDetails: NSObject {
     public override func isEqual(_ object: Any?) -> Bool {
-        return self.productIdentifier == (object as? ProductWrapper)?.productIdentifier
+        return self.productIdentifier == (object as? ProductDetails)?.productIdentifier
     }
 
     @objc public var localizedDescription: String { fatalError() }
@@ -51,7 +51,7 @@ import StoreKit
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-@objc(RCSK2ProductWrapper) public class SK2ProductWrapper: ProductWrapper {
+@objc(RCSK2ProductDetails) public class SK2ProductDetails: ProductDetails {
 
     // todo: remove when this gets fixed.
     // limiting to arm architecture since builds on beta 5 fail if other archs are included
@@ -81,7 +81,7 @@ import StoreKit
 
 }
 
-@objc(RCSK1ProductWrapper) public class SK1ProductWrapper: ProductWrapper {
+@objc(RCSK1ProductDetails) public class SK1ProductDetails: ProductDetails {
 
     @objc public let underlyingSK1Product: SKProduct
 
