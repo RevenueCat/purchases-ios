@@ -27,6 +27,7 @@ class ProductsWrapperTests: XCTestCase {
         testSession.clearTransactions()
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK1AndSK2WrappersAreEquivalent() async throws {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
 
@@ -93,6 +94,7 @@ class ProductsWrapperTests: XCTestCase {
         expect(callbackCalled).toEventually(beTrue())
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2WrapperWrappsCorrectly() async throws {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
 
