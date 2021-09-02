@@ -448,8 +448,8 @@
 		9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaseStrings.swift; sourceTree = "<group>"; };
 		9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestoreStrings.swift; sourceTree = "<group>"; };
 		A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesManager.swift; sourceTree = "<group>"; };
-		A56F9AAD26990A3A00AFC48F /* RCPurchaserInfoAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPurchaserInfoAPI.h; sourceTree = SOURCE_ROOT; };
-		A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPurchaserInfoAPI.m; sourceTree = SOURCE_ROOT; };
+		A56F9AAD26990A3A00AFC48F /* RCPurchaserInfoAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RCPurchaserInfoAPI.h; path = PublicSDKAPITester/RCPurchaserInfoAPI.h; sourceTree = SOURCE_ROOT; };
+		A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = RCPurchaserInfoAPI.m; path = PublicSDKAPITester/RCPurchaserInfoAPI.m; sourceTree = SOURCE_ROOT; };
 		A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaserInfo.swift; sourceTree = "<group>"; };
 		A5A92C7726C716F50038D732 /* RCPackageAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPackageAPI.h; sourceTree = "<group>"; };
 		A5A92C7826C716F50038D732 /* RCPackageAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPackageAPI.m; sourceTree = "<group>"; };
