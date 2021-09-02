@@ -3,7 +3,6 @@ import Nimble
 
 @testable import Purchases
 
-@available(iOS 12.2, *)
 class ProductInfoTests: XCTestCase {
     func testAsDictionaryConvertsProductIdentifierCorrectly() {
         let productIdentifier = "cool_product"
@@ -88,8 +87,9 @@ class ProductInfoTests: XCTestCase {
         let productInfo: ProductInfo = .createMockProductInfo(subscriptionGroup: subscriptionGroup)
         expect(productInfo.asDictionary()["subscription_group_id"] as? String) == subscriptionGroup
     }
-    
-    func testAsDictionaryConvertsDiscountsCorrectly() {
+
+    func testAsDictionaryConvertsDiscountsCorrectly() throws {
+        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else { return }
         let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
                                          price: NSDecimalNumber(decimal: 11),
                                          paymentMode: .payAsYouGo)
@@ -105,7 +105,7 @@ class ProductInfoTests: XCTestCase {
         let productInfo: ProductInfo = .createMockProductInfo(discounts: [discount1, discount2, discount3])
         
         expect(productInfo.asDictionary()["offers"] as? [[String: NSObject]]).toNot(beNil())
-        guard let receivedOffers = productInfo.asDictionary()["offers"] as? [[String: NSObject]] else { fatalError() }
+        let receivedOffers = try XCTUnwrap(productInfo.asDictionary()["offers"] as? [[String: NSObject]])
         
         expect(receivedOffers[0]["offer_identifier"] as? String) == discount1.offerIdentifier
         expect(receivedOffers[0]["price"] as? NSDecimalNumber) == discount1.price
@@ -122,6 +122,8 @@ class ProductInfoTests: XCTestCase {
     }
     
     func testCacheKey() {
+        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else { return }
+        
         let discount1 = PromotionalOffer(offerIdentifier: "offerid1",
                                          price: NSDecimalNumber(decimal: 11),
                                          paymentMode: .payAsYouGo)
