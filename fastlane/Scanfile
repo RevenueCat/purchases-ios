@@ -4,4 +4,11 @@
 # In general, you can use the options available
 # fastlane scan --help
 
-scheme("Unit Tests")
+scheme("RevenueCat")
+
+# Commenting out devices in Scanfile as of fastlane 2.191.0
+# Scan cannot handle running multiple platform type (iOS and tvOS)
+# in the same run but might in the future
+# Future version of fastlane might allow this
+
+# devices(["iPhone 6", "iPhone 12", "Apple TV"])

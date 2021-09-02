@@ -3,37 +3,64 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-@available(iOS 12.2, *)
+import StoreKit
+
+@available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *)
 class MockProductDiscount: SKProductDiscount {
 
-    var mockIdentifier: String
-
-    init(mockIdentifier: String) {
-        self.mockIdentifier = mockIdentifier
-        super.init()
+    init(identifier: String? = "offerid",
+         paymentMode: SKProductDiscount.PaymentMode = SKProductDiscount.PaymentMode.freeTrial,
+         price: NSDecimalNumber = 2.99 as NSDecimalNumber,
+         subscriptionPeriod: SKProductSubscriptionPeriod = SKProductSubscriptionPeriod(),
+         numberOfPeriods: Int = 2) {
+        self.privateIdentifier = identifier
+        self.privatePaymentMode = paymentMode
+        self.privatePrice = price
+        self.privateNumberOfPeriods = numberOfPeriods
+        self.privateSubscriptionPeriod = subscriptionPeriod
     }
 
-    override var price: NSDecimalNumber {
-        return 2.99 as NSDecimalNumber
-    }
-
-    override var priceLocale: Locale {
-        return Locale.current
-    }
-
-    override var identifier: String {
-        return self.mockIdentifier
-    }
-
+    private let privateSubscriptionPeriod: SKProductSubscriptionPeriod
     override var subscriptionPeriod: SKProductSubscriptionPeriod {
-        return SKProductSubscriptionPeriod()
+        return privateSubscriptionPeriod
     }
 
+    private let privateNumberOfPeriods: Int
     override var numberOfPeriods: Int {
-        return 2
+        return privateNumberOfPeriods
     }
 
-    override var paymentMode: SKProductDiscount.PaymentMode {
-        return SKProductDiscount.PaymentMode.freeTrial;
+    private var privateIdentifier: String?
+    public override var identifier: String? {
+        get {
+            return privateIdentifier
+        }
+        set {
+            privateIdentifier = newValue
+        }
+    }
+
+    private var privatePaymentMode: SKProductDiscount.PaymentMode
+    public override var paymentMode: SKProductDiscount.PaymentMode {
+        get {
+            return privatePaymentMode
+        }
+        set {
+            privatePaymentMode = newValue
+        }
+    }
+
+    private var privatePrice: NSDecimalNumber
+    public override var price: NSDecimalNumber {
+        get {
+            return privatePrice
+        }
+        set {
+            privatePrice = newValue
+        }
+    }
+
+    public override var priceLocale: Locale {
+        return Locale.current
     }
 }

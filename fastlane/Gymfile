@@ -4,6 +4,6 @@
 # In general, you can use the options available
 # fastlane gym --help
 
-scheme("Purchases")
+scheme("RevenueCat")
 clean(true)
 configuration("Release")

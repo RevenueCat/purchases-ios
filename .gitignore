@@ -11,7 +11,6 @@
 
 ## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
 build/
-docs/
 DerivedData/
 *.moved-aside
 *.pbxuser
@@ -34,3 +33,4 @@ builds/
 Pods/
 IntegrationTests/CarthageIntegration/Cartfile.resolved
 scan_derived_data/
+generated_docs/

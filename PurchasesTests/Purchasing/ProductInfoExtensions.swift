@@ -4,27 +4,28 @@
 //
 
 import Foundation
+@testable import RevenueCat
 
-extension RCProductInfo {
+extension ProductInfo {
     static func createMockProductInfo(productIdentifier: String = "product_id",
-                                      paymentMode: RCPaymentMode = .none,
+                                      paymentMode: ProductInfo.PaymentMode = .none,
                                       currencyCode: String = "UYU",
                                       price: NSDecimalNumber = 15.99,
                                       normalDuration: String? = nil,
                                       introDuration: String? = nil,
-                                      introDurationType: RCIntroDurationType = .none,
+                                      introDurationType: IntroDurationType = .none,
                                       introPrice: NSDecimalNumber? = nil,
                                       subscriptionGroup: String? = nil,
-                                      discounts: [RCPromotionalOffer]? = nil) -> RCProductInfo {
-        RCProductInfo(productIdentifier: productIdentifier,
-                      paymentMode: paymentMode,
-                      currencyCode: currencyCode,
-                      price: price,
-                      normalDuration: normalDuration,
-                      introDuration: introDuration,
-                      introDurationType: introDurationType,
-                      introPrice: introPrice,
-                      subscriptionGroup: subscriptionGroup,
-                      discounts: discounts)
+                                      discounts: [PromotionalOffer]? = nil) -> ProductInfo {
+        ProductInfo(productIdentifier: productIdentifier,
+                    paymentMode: paymentMode,
+                    currencyCode: currencyCode,
+                    price: price,
+                    normalDuration: normalDuration,
+                    introDuration: introDuration,
+                    introDurationType: introDurationType,
+                    introPrice: introPrice,
+                    subscriptionGroup: subscriptionGroup,
+                    discounts: discounts)
     }
 }

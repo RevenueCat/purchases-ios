@@ -3,9 +3,9 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-import Purchases
+@testable import RevenueCat
 
-class MockDateProvider: RCDateProvider {
+class MockDateProvider: DateProvider {
     var invokedNow = false
     var invokedNowCount = 0
     var stubbedNowResult: Date!

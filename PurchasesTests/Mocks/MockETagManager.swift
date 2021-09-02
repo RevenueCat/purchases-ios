@@ -1,6 +1,6 @@
 //
 //  MockETagManager.swift
-//  PurchasesCoreSwiftTests
+//  PurchasesTests
 //
 //  Created by César de la Vega on 4/20/21.
 //  Copyright © 2021 Purchases. All rights reserved.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-@testable import PurchasesCoreSwift
+@testable import RevenueCat
 
 class MockETagManager: ETagManager {
 

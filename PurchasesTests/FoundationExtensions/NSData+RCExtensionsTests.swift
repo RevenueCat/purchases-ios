@@ -3,10 +3,11 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-import Nimble
+import Foundation
 import XCTest
+import Nimble
 
-import Purchases
+@testable import RevenueCat
 
 class NSDataExtensionsTests: XCTestCase {
 
@@ -24,6 +25,38 @@ class NSDataExtensionsTests: XCTestCase {
 
         let nsData = data as NSData
 
-        expect(nsData.rc_asString()) == "e388152d6c67f4d5f7a78edf073946f158357f89a1dc74dff80a796740fd9d91"
+        expect(nsData.asString()) == "e388152d6c67f4d5f7a78edf073946f158357f89a1dc74dff80a796740fd9d91"
     }
+
+    func testAsFetchToken() {
+        let receiptFilename = "base64EncodedReceiptSampleForDataExtension"
+        let storedReceiptText = NSDataExtensionsTests.readFile(named: receiptFilename)
+        let storedReceiptData = NSDataExtensionsTests.sampleReceiptData(receiptName: receiptFilename)
+        let fetchToken = storedReceiptData.asFetchToken
+
+        expect(fetchToken).to(equal(storedReceiptText))
+        expect(storedReceiptData.asFetchToken).to(equal(storedReceiptText))
+    }
+}
+
+extension NSDataExtensionsTests {
+
+    static func sampleReceiptData(receiptName: String) -> Data {
+        let receiptText = readFile(named: receiptName)
+        guard let receiptData = Data(base64Encoded: receiptText) else { fatalError("couldn't decode file") }
+        return receiptData
+    }
+
+    static func readFile(named filename: String) -> String {
+        guard let pathString = Bundle(for: Self.self).path(forResource: filename, ofType: "txt") else {
+            fatalError("\(filename) not found")
+        }
+        do {
+            return try String(contentsOfFile: pathString, encoding: String.Encoding.utf8)
+        }
+        catch let error {
+            fatalError("couldn't read file named \(filename). Error: \(error.localizedDescription)")
+        }
+    }
+
 }

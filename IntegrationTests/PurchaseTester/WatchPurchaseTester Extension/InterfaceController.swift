@@ -11,7 +11,7 @@ import Foundation
 import Purchases
 
 class InterfaceController: WKInterfaceController {
-    private var offering : Purchases.Offering?
+    private var offering : Offering?
     
     @IBOutlet weak var expiryDateLabel: WKInterfaceLabel!
     @IBOutlet weak var purchaseDateLabel: WKInterfaceLabel!
@@ -51,7 +51,7 @@ private extension InterfaceController {
         let package = offering.availablePackages[0]
         
         proStatusLabel.setText("purchasing...")
-        Purchases.shared.purchasePackage(package) { [weak self] (trans, info, error, cancelled) in
+        Purchases.shared.purchase(package: package) { [weak self] (trans, info, error, cancelled) in
             guard let self = self else { return }
             
             if let error = error {

@@ -7,83 +7,83 @@
 //
 
 import Foundation
-import XCTest
 import Nimble
+import StoreKit
+import XCTest
 
-import Purchases
-
+@testable import RevenueCat
 
 class ISOPeriodFormatterTests: XCTestCase {
     
     func testStringFromProductSubscriptionPeriodDay() {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) {
-            let formatter = Purchases.ISOPeriodFormatter()
+            let formatter = ISOPeriodFormatter()
             
             var period = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: .day)
-            expect(formatter.string(from: period)) == "P1D"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P1D"
             
             period = SKProductSubscriptionPeriod(numberOfUnits: 10, unit: .day)
-            expect(formatter.string(from: period)) == "P10D"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P10D"
             
             period = SKProductSubscriptionPeriod(numberOfUnits: 3, unit: .day)
-            expect(formatter.string(from: period)) == "P3D"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P3D"
             
             period = SKProductSubscriptionPeriod(numberOfUnits: 8, unit: .day)
-            expect(formatter.string(from: period)) == "P8D"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P8D"
         }
     }
     
     func testStringFromProductSubscriptionPeriodMonth() {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) {
-            let formatter = Purchases.ISOPeriodFormatter()
-            
+            let formatter = ISOPeriodFormatter()
+
             var period = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: .month)
-            expect(formatter.string(from: period)) == "P1M"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P1M"
             
             period = SKProductSubscriptionPeriod(numberOfUnits: 10, unit: .month)
-            expect(formatter.string(from: period)) == "P10M"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P10M"
             
             period = SKProductSubscriptionPeriod(numberOfUnits: 3, unit: .month)
-            expect(formatter.string(from: period)) == "P3M"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P3M"
             
             period = SKProductSubscriptionPeriod(numberOfUnits: 8, unit: .month)
-            expect(formatter.string(from: period)) == "P8M"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P8M"
         }
     }
     
     func testStringFromProductSubscriptionPeriodWeek() {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) {
-            let formatter = Purchases.ISOPeriodFormatter()
+            let formatter = ISOPeriodFormatter()
             
             var period = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: .week)
-            expect(formatter.string(from: period)) == "P1W"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P1W"
             
             period = SKProductSubscriptionPeriod(numberOfUnits: 10, unit: .week)
-            expect(formatter.string(from: period)) == "P10W"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P10W"
             
             period = SKProductSubscriptionPeriod(numberOfUnits: 3, unit: .week)
-            expect(formatter.string(from: period)) == "P3W"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P3W"
             
             period = SKProductSubscriptionPeriod(numberOfUnits: 8, unit: .week)
-            expect(formatter.string(from: period)) == "P8W"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P8W"
         }
     }
     
     func testStringFromProductSubscriptionPeriodYear() {
         if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) {
-            let formatter = Purchases.ISOPeriodFormatter()
+            let formatter = ISOPeriodFormatter()
             
             var period = SKProductSubscriptionPeriod(numberOfUnits: 1, unit: .year)
-            expect(formatter.string(from: period)) == "P1Y"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P1Y"
             
             period = SKProductSubscriptionPeriod(numberOfUnits: 10, unit: .year)
-            expect(formatter.string(from: period)) == "P10Y"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P10Y"
             
             period = SKProductSubscriptionPeriod(numberOfUnits: 3, unit: .year)
-            expect(formatter.string(from: period)) == "P3Y"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P3Y"
             
             period = SKProductSubscriptionPeriod(numberOfUnits: 8, unit: .year)
-            expect(formatter.string(from: period)) == "P8Y"
+            expect(formatter.string(fromProductSubscriptionPeriod: period)) == "P8Y"
         }
     }
 }

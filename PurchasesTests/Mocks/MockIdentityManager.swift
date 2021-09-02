@@ -3,7 +3,9 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-class MockIdentityManager: RCIdentityManager {
+@testable import RevenueCat
+
+class MockIdentityManager: IdentityManager {
 
     var configurationCalled = false
     var identifyError: Error?
@@ -15,8 +17,18 @@ class MockIdentityManager: RCIdentityManager {
     var mockAppUserID: String
 
     init(mockAppUserID: String) {
+        let mockDeviceCache = MockDeviceCache()
+        let mockBackend = MockBackend()
+        let mockSystemInfo = try! MockSystemInfo(platformFlavor: nil,
+                                                 platformFlavorVersion: nil,
+                                                 finishTransactions: false)
         self.mockAppUserID = mockAppUserID
-        super.init()
+        super.init(deviceCache: mockDeviceCache,
+                   backend: mockBackend,
+                   purchaserInfoManager: MockPurchaserInfoManager(operationDispatcher: MockOperationDispatcher(),
+                                                                  deviceCache: mockDeviceCache,
+                                                                  backend: mockBackend,
+                                                                  systemInfo: mockSystemInfo))
     }
 
     override var currentAppUserID: String {
@@ -27,11 +39,11 @@ class MockIdentityManager: RCIdentityManager {
         }
     }
 
-    override func configure(withAppUserID appUserID: String?) {
+    override func configure(appUserID: String?) {
         configurationCalled = true
     }
 
-    override func createAlias(forAppUserID alias: String, completion: @escaping ((Error?) -> ())) {
+    override func createAlias(appUserID alias: String, completion: @escaping ((Error?) -> ())) {
         aliasCalled = true
         if (aliasError != nil) {
             completion(aliasError)
@@ -41,7 +53,7 @@ class MockIdentityManager: RCIdentityManager {
         }
     }
 
-    override func identifyAppUserID(_ appUserID: String, completion: @escaping ((Error?) -> ())) {
+    override func identify(appUserID: String, completion: @escaping ((Error?) -> ())) {
         identifyCalled = true
         if (identifyError != nil) {
             completion(identifyError)
@@ -59,4 +71,5 @@ class MockIdentityManager: RCIdentityManager {
     override var currentUserIsAnonymous: Bool {
         return mockIsAnonymous
     }
+
 }

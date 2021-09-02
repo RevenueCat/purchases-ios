@@ -1,24 +1,42 @@
 //
-// Created by RevenueCat on 3/2/20.
-// Copyright (c) 2020 Purchases. All rights reserved.
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  MockReceiptFetcher.swift
 //
 
-class MockReceiptFetcher: RCReceiptFetcher {
+@testable import RevenueCat
+
+class MockReceiptFetcher: ReceiptFetcher {
+
     var receiptDataCalled = false
     var shouldReturnReceipt = true
     var shouldReturnZeroBytesReceipt = false
     var receiptDataTimesCalled = 0
+    var receiptDataReceivedRefreshPolicy: ReceiptRefreshPolicy?
 
-    override func receiptData() -> Data? {
+    convenience init(requestFetcher: StoreKitRequestFetcher) {
+        self.init(requestFetcher: requestFetcher, bundle: .main)
+    }
+
+    override func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping ((Data?) -> Void)) {
+        receiptDataReceivedRefreshPolicy = refreshPolicy
         receiptDataCalled = true
         receiptDataTimesCalled += 1
         if (shouldReturnReceipt) {
             if (shouldReturnZeroBytesReceipt) {
-                return Data()
+                completion(Data())
+            } else {
+                completion(Data(1...3))
             }
-            return Data(1...3)
         } else {
-            return nil
+            completion(nil)
         }
     }
+
 }

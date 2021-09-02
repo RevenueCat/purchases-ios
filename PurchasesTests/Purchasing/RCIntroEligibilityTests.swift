@@ -1,5 +1,5 @@
 //
-//  RCIntroEligibilityTests.swift
+//  IntroEligibilityTests.swift
 //  PurchasesTests
 //
 //  Created by Andrés Boedo on 7/1/20.
@@ -8,27 +8,31 @@
 
 import XCTest
 import Nimble
-import Purchases
-@testable import PurchasesCoreSwift
 
-class RCIntroEligibilityTests: XCTestCase {
+@testable import RevenueCat
+
+class IntroEligibilityTests: XCTestCase {
     func testInitWithEligibilityStatusCodeUnknown() {
-        let introElegibility = RCIntroEligibility(eligibilityStatusCode: NSNumber(value: IntroEligibilityStatus.unknown.rawValue))
-        expect(introElegibility?.status) == RCIntroEligibilityStatus.unknown
+        let introElegibility = try! IntroEligibility(eligibilityStatusCode: NSNumber(value: IntroEligibilityStatus.unknown.rawValue))
+        expect(introElegibility.status) == IntroEligibilityStatus.unknown
     }
     
     func testInitWithEligibilityStatusCodeIneligible() {
-        let introElegibility = RCIntroEligibility(eligibilityStatusCode: NSNumber(value: IntroEligibilityStatus.ineligible.rawValue))
-        expect(introElegibility?.status) == RCIntroEligibilityStatus.ineligible
+        let introElegibility = try! IntroEligibility(eligibilityStatusCode: NSNumber(value: IntroEligibilityStatus.ineligible.rawValue))
+        expect(introElegibility.status) == IntroEligibilityStatus.ineligible
     }
 
     func testInitWithEligibilityStatusCodeEligible() {
-        let introElegibility = RCIntroEligibility(eligibilityStatusCode: NSNumber(value: IntroEligibilityStatus.eligible.rawValue))
-        expect(introElegibility?.status) == RCIntroEligibilityStatus.eligible
+        let introElegibility = try! IntroEligibility(eligibilityStatusCode: NSNumber(value: IntroEligibilityStatus.eligible.rawValue))
+        expect(introElegibility.status) == IntroEligibilityStatus.eligible
     }
     
     func testInitWithEligibilityStatusCodeFailsIfInvalid() {
-        expectToThrowException(.parameterAssert) { _ = RCIntroEligibility(eligibilityStatusCode: -1) }
-        expectToThrowException(.parameterAssert) { _ = RCIntroEligibility(eligibilityStatusCode: 3) }
+        expect(try IntroEligibility(eligibilityStatusCode: -1)).to(
+            throwError(closure: { expect($0.localizedDescription).to(equal("😿 Invalid status code: -1"))})
+        )
+        expect(try IntroEligibility(eligibilityStatusCode: 3)).to(
+            throwError(closure: { expect($0.localizedDescription).to(equal("😿 Invalid status code: 3"))})
+        )
     }
 }
