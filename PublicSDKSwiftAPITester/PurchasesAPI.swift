@@ -37,7 +37,7 @@ func checkPurchasesAPI() {
 
     let automaticAppleSearchAdsAttributionCollection: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
     let debugLogsEnabled: Bool = Purchases.debugLogsEnabled
-    let logLevel = Purchases.logLevel
+    let logLevel: Purchases.LogLevel = Purchases.logLevel
     let proxyUrl: URL? = Purchases.proxyURL
     let forceUniversalAppStore: Bool = Purchases.forceUniversalAppStore
     let simulatesAskToBuyInSandbox: Bool = Purchases.simulatesAskToBuyInSandbox

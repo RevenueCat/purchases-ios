@@ -20,7 +20,7 @@ func checkEntitlementInfoAPI() {
     let isActive: Bool = entitlementInfo.isActive
     let willRenew: Bool = entitlementInfo.willRenew
     let pType: Purchases.PeriodType = entitlementInfo.periodType
-    let lpd = entitlementInfo.latestPurchaseDate
+    let lpd: Date = entitlementInfo.latestPurchaseDate
     let opd: Date = entitlementInfo.originalPurchaseDate
     let eDate: Date? = entitlementInfo.expirationDate
     let store: Purchases.Store = entitlementInfo.store
