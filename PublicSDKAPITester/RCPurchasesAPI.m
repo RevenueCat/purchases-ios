@@ -103,10 +103,14 @@ BOOL isAnonymous;
 
     [p logIn:@"" completionBlock:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
-        
-    // RCPurchasesDelegate
+
     [p.delegate purchases:p didReceiveUpdatedPurchaserInfo:pi];
-    [p.delegate purchases:p shouldPurchasePromoProduct:skp defermentBlock:^(void (^ _Nonnull completion)(SKPaymentTransaction * _Nullable transaction, RCPurchaserInfo * _Nullable info, NSError * _Nullable error, BOOL cancelled)) {}];
+    [p.delegate purchases:p
+shouldPurchasePromoProduct:skp
+           defermentBlock:^(void (^ _Nonnull completion)(SKPaymentTransaction * _Nullable transaction,
+                                                         RCPurchaserInfo * _Nullable info,
+                                                         NSError * _Nullable error,
+                                                         BOOL cancelled)) {}];
 }
 
 + (void)checkEnums {
