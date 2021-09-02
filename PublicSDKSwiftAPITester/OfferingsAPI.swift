@@ -14,13 +14,13 @@
 import Foundation
 import Purchases
 
+var offs: Purchases.Offerings!
 func checkOfferingsAPI() {
-    let offs: Purchases.Offerings = Purchases.Offerings()
     var off: Purchases.Offering? = offs.current
     let all: [String: Purchases.Offering] = offs.all
     off = offs.offering(identifier: nil)
     off = offs.offering(identifier: "")
     off = offs[""]
 
-    print(offs, off!, all)
+    print(offs!, off!, all)
 }

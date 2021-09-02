@@ -15,7 +15,6 @@ import Foundation
 import Purchases
 
 func checkPurchasesAPI() {
-
     // initializers
     let purch = Purchases.configure(withAPIKey: "")
     Purchases.configure(withAPIKey: "", appUserID: nil)

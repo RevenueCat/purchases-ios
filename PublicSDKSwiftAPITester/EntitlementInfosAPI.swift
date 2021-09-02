@@ -14,11 +14,11 @@
 import Foundation
 import Purchases
 
+var eis: Purchases.EntitlementInfos!
 func checkEntitlementInfosAPI() {
-    let eis: Purchases.EntitlementInfos = Purchases.EntitlementInfos()
     let all: [String: Purchases.EntitlementInfo] = eis.all
     let active: [String: Purchases.EntitlementInfo] = eis.active
     let enti: Purchases.EntitlementInfo? = eis[""]
 
-    print(eis, all, active, enti!)
+    print(eis!, all, active, enti!)
 }

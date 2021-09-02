@@ -14,11 +14,11 @@
 import Foundation
 import Purchases
 
+var introE: RCIntroEligibility!
 func checkIntroEligibilityAPI() {
-    let introE: RCIntroEligibility = RCIntroEligibility()
     let status: RCIntroEligibilityStatus = introE.status
 
-    print(introE, status)
+    print(introE!, status)
 }
 
 func checkIntroEligibilityEnums() {

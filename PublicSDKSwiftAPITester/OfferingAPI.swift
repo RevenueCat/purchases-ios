@@ -14,21 +14,21 @@
 import Foundation
 import Purchases
 
+var off: Purchases.Offering!
 func checkOfferingAPI() {
-    let off: Purchases.Offering? = nil
-    let ident: String = off!.identifier
-    let sDesc: String = off!.serverDescription
-    let aPacks: [Purchases.Package] = off!.availablePackages
-    let lPack: Purchases.Package? = off!.lifetime
-    let annPack: Purchases.Package? = off!.annual
-    let smPack: Purchases.Package? = off!.sixMonth
-    let thmPack: Purchases.Package? = off!.threeMonth
-    let twmPack: Purchases.Package? = off!.twoMonth
-    let mPack: Purchases.Package? = off!.monthly
-    let wPack: Purchases.Package? = off!.weekly
-    var pPack: Purchases.Package? = off!.package(identifier: "")
-    pPack = off!.package(identifier: nil)
-    let package: Purchases.Package? = off![""]
+    let ident: String = off.identifier
+    let sDesc: String = off.serverDescription
+    let aPacks: [Purchases.Package] = off.availablePackages
+    let lPack: Purchases.Package? = off.lifetime
+    let annPack: Purchases.Package? = off.annual
+    let smPack: Purchases.Package? = off.sixMonth
+    let thmPack: Purchases.Package? = off.threeMonth
+    let twmPack: Purchases.Package? = off.twoMonth
+    let mPack: Purchases.Package? = off.monthly
+    let wPack: Purchases.Package? = off.weekly
+    var pPack: Purchases.Package? = off.package(identifier: "")
+    pPack = off.package(identifier: nil)
+    let package: Purchases.Package? = off[""]
 
     print(off!, ident, sDesc, aPacks, lPack!, annPack!, smPack!, thmPack!, twmPack!, mPack!, wPack!, pPack!, package!)
 }

@@ -15,8 +15,8 @@ import Foundation
 import Purchases
 import PurchasesCoreSwift
 
+var entitlementInfo: Purchases.EntitlementInfo!
 func checkEntitlementInfoAPI() {
-    let entitlementInfo = Purchases.EntitlementInfo()
     let ident: String = entitlementInfo.identifier
     let isActive: Bool = entitlementInfo.isActive
     let willRenew: Bool = entitlementInfo.willRenew
@@ -31,7 +31,7 @@ func checkEntitlementInfoAPI() {
     let bida: Date? = entitlementInfo.billingIssueDetectedAt
     let oType: RCPurchaseOwnershipType = entitlementInfo.ownershipType
 
-    print(entitlementInfo, ident, isActive, willRenew, pType, lpd, opd, eDate!, store, pId, iss, uda!, bida!, oType)
+    print(entitlementInfo!, ident, isActive, willRenew, pType, lpd, opd, eDate!, store, pId, iss, uda!, bida!, oType)
 }
 
 func checkEntitlementInfoEnums() {

@@ -14,15 +14,15 @@
 import Foundation
 import Purchases
 
+var pack: Purchases.Package!
 func checkPackageAPI() {
-    let pack: Purchases.Package = Purchases.Package()
     let ident: String = pack.identifier
     let pType: Purchases.PackageType = pack.packageType
     let prod: SKProduct = pack.product
     let lps: String = pack.localizedPriceString
     let lips: String = pack.localizedIntroductoryPriceString
 
-    print(pack, ident, pType, prod, lps, lips)
+    print(pack!, ident, pType, prod, lps, lips)
 }
 
 func checkPackageEnums() {
