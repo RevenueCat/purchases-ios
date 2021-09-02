@@ -1,25 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
    LastUpgradeVersion = "1300"
-   version = "1.7">
+   version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
       <BuildActionEntries>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2DC5621524EC63420031F69B"
-               BuildableName = "Purchases.framework"
-               BlueprintName = "Purchases"
-               ReferencedContainer = "container:Purchases.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
          <BuildActionEntry
             buildForTesting = "YES"
             buildForRunning = "NO"
@@ -28,10 +14,10 @@
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2DC5621D24EC63430031F69B"
-               BuildableName = "PurchasesTests.xctest"
-               BlueprintName = "PurchasesTests"
-               ReferencedContainer = "container:Purchases.xcodeproj">
+               BlueprintIdentifier = "2DE20B6B264087FB004C597D"
+               BuildableName = "StoreKitTests.xctest"
+               BlueprintName = "StoreKitTests"
+               ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -41,22 +27,16 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
-      <TestPlans>
-         <TestPlanReference
-            reference = "container:Purchases.xcodeproj/Purchases.xctestplan"
-            default = "YES">
-         </TestPlanReference>
-      </TestPlans>
       <Testables>
          <TestableReference
             skipped = "NO"
             testExecutionOrdering = "random">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2DC5621D24EC63430031F69B"
-               BuildableName = "PurchasesTests.xctest"
-               BlueprintName = "PurchasesTests"
-               ReferencedContainer = "container:Purchases.xcodeproj">
+               BlueprintIdentifier = "2DE20B6B264087FB004C597D"
+               BuildableName = "StoreKitTests.xctest"
+               BlueprintName = "StoreKitTests"
+               ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -71,6 +51,19 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "2DE20B7E26409EB7004C597D"
+            BuildableName = "StoreKitTestApp.app"
+            BlueprintName = "StoreKitTestApp"
+            ReferencedContainer = "container:RevenueCat.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "../../IntegrationTests/PurchaseTester/Configuration.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -78,15 +71,6 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2DC5621524EC63420031F69B"
-            BuildableName = "Purchases.framework"
-            BlueprintName = "Purchases"
-            ReferencedContainer = "container:Purchases.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

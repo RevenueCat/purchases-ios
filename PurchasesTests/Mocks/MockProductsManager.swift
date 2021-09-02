@@ -5,7 +5,7 @@
 
 import Foundation
 import StoreKit
-@testable import Purchases
+@testable import RevenueCat
 
 class MockProductsManager: ProductsManager {
 

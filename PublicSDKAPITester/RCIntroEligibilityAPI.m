@@ -6,7 +6,7 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-@import Purchases;
+@import RevenueCat;
 #import "RCIntroEligibilityAPI.h"
 
 @implementation RCIntroEligibilityAPI

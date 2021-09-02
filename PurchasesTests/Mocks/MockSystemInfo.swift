@@ -7,7 +7,7 @@
 //
 
 import Foundation
-@testable import Purchases
+@testable import RevenueCat
 
 
 class MockSystemInfo: SystemInfo {

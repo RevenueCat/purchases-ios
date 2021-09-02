@@ -14,7 +14,7 @@
 #import "RCPackageAPI.h"
 
 @import StoreKit;
-@import Purchases;
+@import RevenueCat;
 
 @implementation RCPackageAPI
 

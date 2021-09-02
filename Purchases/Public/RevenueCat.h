@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  Purchases.h
+//  RevenueCat.h
 //
 //  Created by Andrés Boedo on 8/18/20.
 //
@@ -15,10 +15,10 @@
 #import <Foundation/Foundation.h>
 
 //! Project version number for Purchases.
-FOUNDATION_EXPORT double PurchasesVersionNumber;
+FOUNDATION_EXPORT double RevenueCatVersionNumber;
 
 //! Project version string for Purchases.
-FOUNDATION_EXPORT const unsigned char PurchasesVersionString[];
+FOUNDATION_EXPORT const unsigned char RevenueCatVersionString[];
 
 @class RCPurchaserInfo, RCIntroEligibility, RCOfferings;
 @class SKPaymentTransaction, SKProduct, SKPaymentDiscount;

@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@testable import Purchases
+@testable import RevenueCat
 
 class ASN1ObjectIdentifierEncoder {
     func objectIdentifierPayload(_ objectIdentifier: ASN1ObjectIdentifier) -> ArraySlice<UInt8> {

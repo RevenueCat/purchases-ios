@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import Purchases
+import RevenueCat
 import Nimble
 import StoreKitTest
 

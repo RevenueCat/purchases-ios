@@ -14,7 +14,7 @@ import Foundation
 #if canImport(AppTrackingTransparency)
   import AppTrackingTransparency
 #endif
-@testable import Purchases
+@testable import RevenueCat
 
 class MockAdClientProxy: AdClientProxy {
 

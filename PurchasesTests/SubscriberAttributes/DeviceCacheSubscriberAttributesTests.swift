@@ -6,7 +6,7 @@
 import XCTest
 import Nimble
 
-@testable import Purchases
+@testable import RevenueCat
 
 class DeviceCacheSubscriberAttributesTests: XCTestCase {
 

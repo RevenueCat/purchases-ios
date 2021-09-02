@@ -14,7 +14,7 @@
 import Foundation
 import XCTest
 
-@testable import Purchases
+@testable import RevenueCat
 import Nimble
 
 

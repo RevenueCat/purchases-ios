@@ -11,7 +11,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import Purchases
+@testable import RevenueCat
 
 class MockPaymentQueue: SKPaymentQueue {
     var addedPayments: [SKPayment] = []

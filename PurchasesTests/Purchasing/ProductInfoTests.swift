@@ -1,7 +1,7 @@
 import XCTest
 import Nimble
 
-@testable import Purchases
+@testable import RevenueCat
 
 class ProductInfoTests: XCTestCase {
     func testAsDictionaryConvertsProductIdentifierCorrectly() {

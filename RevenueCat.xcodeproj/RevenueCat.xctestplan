@@ -13,10 +13,11 @@
   },
   "testTargets" : [
     {
+      "parallelizable" : true,
       "target" : {
-        "containerPath" : "container:Purchases.xcodeproj",
+        "containerPath" : "container:RevenueCat.xcodeproj",
         "identifier" : "2DC5621D24EC63430031F69B",
-        "name" : "PurchasesTests"
+        "name" : "RevenueCatTests"
       }
     }
   ],

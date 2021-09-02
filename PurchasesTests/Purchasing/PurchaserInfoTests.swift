@@ -10,7 +10,7 @@ import Foundation
 import XCTest
 import Nimble
 
-@testable import Purchases
+@testable import RevenueCat
 
 class EmptyPurchaserInfoTests: XCTestCase {
     let purchaserInfo = PurchaserInfo(data: [String : Any]())

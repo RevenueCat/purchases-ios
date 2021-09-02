@@ -2,7 +2,7 @@
 // Created by RevenueCat on 3/2/20.
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
-@testable import Purchases
+@testable import RevenueCat
 import StoreKit
 
 class MockOfferingsFactory: OfferingsFactory {

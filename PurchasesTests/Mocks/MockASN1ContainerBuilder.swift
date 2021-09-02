@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@testable import Purchases
+@testable import RevenueCat
 
 class MockASN1ContainerBuilder: ASN1ContainerBuilder {
 

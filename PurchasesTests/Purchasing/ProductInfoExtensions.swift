@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@testable import Purchases
+@testable import RevenueCat
 
 extension ProductInfo {
     static func createMockProductInfo(productIdentifier: String = "product_id",

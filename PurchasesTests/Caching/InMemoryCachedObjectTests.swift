@@ -7,7 +7,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import Purchases
+@testable import RevenueCat
 
 class InMemoryCachedObjectTests: XCTestCase {
 

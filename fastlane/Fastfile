@@ -61,7 +61,7 @@ platform :ios do
     increment_version_number(version_number: version_number_without_prerelease_modifiers)
     
     files_to_update = [
-      '../Purchases.podspec',
+      '../RevenueCat.podspec',
       '../Purchases/Misc/SystemInfo.swift',
       '../.jazzy.yaml',
       '../.version',
@@ -99,7 +99,7 @@ platform :ios do
       tag_name: "#{release_version}",
       description: changelog,
       commitish: commit_hash,
-      upload_assets: ["Purchases.framework.zip", "Purchases.xcframework.zip"],
+      upload_assets: ["RevenueCat.framework.zip", "RevenueCat.xcframework.zip"],
       is_draft: false
   )
   end
@@ -206,7 +206,7 @@ platform :ios do
 
     create_xcframework(
       destinations: platforms,
-      scheme: 'Purchases',
+      scheme: 'RevenueCat',
       xcframework_output_directory: output_directory,
       # bitcode produces issues with Catalyst when validating builds, 
       # with a message: "object not signed at all".
@@ -215,7 +215,7 @@ platform :ios do
     # sh runs from the Fastfile's location, but other commands run from the project root.
     output_directory_for_sh = "../#{output_directory}"
 
-    xcframeworks_zip_path_for_sh = "../Purchases.xcframework.zip"
+    xcframeworks_zip_path_for_sh = "../RevenueCat.xcframework.zip"
     sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", 
       output_directory_for_sh, 
       xcframeworks_zip_path_for_sh)
@@ -257,7 +257,7 @@ platform :ios do
 end
 
 def push_pods
-  pod_push(path: "Purchases.podspec", synchronous: true)
+  pod_push(path: "RevenueCat.podspec", synchronous: true)
 end
 
 def check_no_git_tag_exists(version_number)
@@ -280,12 +280,12 @@ def carthage_archive
     # We use this script as a workaround until this is fixed. 
     # https://github.com/Carthage/Carthage/releases/0.38.0
     sh("./scripts/carthage.sh", "build", "--no-skip-current")
-    sh("./scripts/carthage.sh", "archive", "Purchases")
+    sh("./scripts/carthage.sh", "archive", "RevenueCat")
   end
 end
 
 def check_pods
-  pod_lib_lint(verbose: true, podspec:'Purchases.podspec')
+  pod_lib_lint(verbose: true, podspec:'RevenueCat.podspec')
 end
 
 def increment_build_number(previous_version_number, new_version_number, file_path)
