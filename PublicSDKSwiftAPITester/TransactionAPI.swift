@@ -13,9 +13,8 @@
 
 import Foundation
 import Purchases
-import PurchasesCoreSwift
 
-var trans: PurchasesCoreSwift.Transaction!
+var trans: Purchases.Transaction!
 func checkTransactionAPI() {
 
     let rci: String = trans.revenueCatId

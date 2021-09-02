@@ -13,7 +13,6 @@
 
 import Foundation
 import Purchases
-import PurchasesCoreSwift
 
 var entitlementInfo: Purchases.EntitlementInfo!
 func checkEntitlementInfoAPI() {
