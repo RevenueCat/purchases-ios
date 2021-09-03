@@ -7,7 +7,7 @@
 //
 
 import WatchKit
-import Purchases
+import RevenueCat
 
 class ExtensionDelegate: NSObject, WKExtensionDelegate {
 

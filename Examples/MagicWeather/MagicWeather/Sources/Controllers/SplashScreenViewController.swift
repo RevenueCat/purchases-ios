@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Purchases
+import RevenueCat
 
 /*
  Use a splash screen to make sure we have access to PurchaserInfo before displaying a UI.

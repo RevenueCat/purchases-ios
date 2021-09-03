@@ -6,7 +6,7 @@
 //
 
 #import "RCIntegrationRunner.h"
-@import Purchases;
+@import RevenueCat;
 
 NS_ASSUME_NONNULL_BEGIN
 

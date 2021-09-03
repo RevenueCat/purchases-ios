@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Purchases
+import RevenueCat
 
 /*
  The app's main view controller that displays our pretend weather data.

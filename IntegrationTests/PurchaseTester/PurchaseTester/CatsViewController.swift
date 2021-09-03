@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Purchases
+import RevenueCat
 
 class CatsViewController: UIViewController {
     

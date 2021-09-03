@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Purchases
+import RevenueCat
 
 @main
 struct MagicWeatherApp: App {
