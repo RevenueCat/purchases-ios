@@ -16,12 +16,9 @@ import Foundation
 // swiftlint:disable identifier_name
 enum CodableStrings {
 
-    static func unexpectedValueError(for type: Any.Type) -> String {
-        "Found unexpected value for type: \(type)"
-    }
-    static func valueNotFoundError(for type: Any.Type) -> String {
-        "No value found for type: \(type)"
-    }
+    case unexpectedValueError(type: Any.Type)
+
+    case valueNotFoundError(type: Any.Type)
 
     case invalid_json_error(jsonData: [String: Any])
 
@@ -33,6 +30,12 @@ extension CodableStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
+
+        case .unexpectedValueError(let type):
+            return "Found unexpected value for type: \(type)"
+
+        case .valueNotFoundError(let type):
+            return "No value found for type: \(type)"
 
         case .invalid_json_error(let jsonData):
             return "The given json data was not valid: \n\(jsonData)"
