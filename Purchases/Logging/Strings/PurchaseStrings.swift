@@ -52,11 +52,14 @@ enum PurchaseStrings: CustomStringConvertible {
     static let management_url_nil_opening_default = "managementURL is nil, opening Apple's subscription management page"
 
     case requested_products_not_found(request: SKRequest)
+    case callback_not_found_for_request(request: SKRequest)
 
     var description: String {
         switch self {
         case .requested_products_not_found(let request):
             return "requested products not found for request: \(request)"
+        case .callback_not_found_for_request(let request):
+            return "callback not found for failing request: \(request)"
         }
     }
 }
