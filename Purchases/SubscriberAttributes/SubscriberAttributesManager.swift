@@ -153,7 +153,7 @@ class SubscriberAttributesManager {
 
     func handleAttributesSynced(syncingAppUserId: String, currentAppUserId: String, error: Error?) {
         if error == nil {
-            Logger.rcSuccess(String(format: Strings.attribution.attributes_sync_success, syncingAppUserId))
+            Logger.rcSuccess(Strings.attribution.attributes_sync_success(appUserID: syncingAppUserId))
             if syncingAppUserId != currentAppUserId {
                 deviceCache.deleteAttributesIfSynced(appUserID: syncingAppUserId)
             }
@@ -186,9 +186,7 @@ class SubscriberAttributesManager {
             return
         }
 
-        Logger.info(String(format: Strings.attribution.marking_attributes_synced,
-                           appUserID,
-                           attributesToSync.description))
+        Logger.info(Strings.attribution.marking_attributes_synced(appUserID: appUserID, attributes: attributesToSync))
 
         lock.lock()
         var unsyncedAttributes = unsyncedAttributesByKey(appUserID: appUserID)

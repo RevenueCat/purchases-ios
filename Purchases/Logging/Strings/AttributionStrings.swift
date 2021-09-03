@@ -21,10 +21,11 @@ enum AttributionStrings {
 
     case attributes_sync_error(details: String?, userInfo: [String: Any]?)
 
-    static let attributes_sync_success = "Subscriber attributes synced successfully for App User ID: %@"
-    static let empty_subscriber_attributes = "Called post subscriber attributes with an empty attributes dictionary!"
+    case attributes_sync_success(appUserID: String)
 
-    static let marking_attributes_synced = "Marking the following attributes as synced for App User ID: %@: %@"
+    case empty_subscriber_attributes
+
+    case marking_attributes_synced(appUserID: String, attributes: SubscriberAttributeDict)
 
     static let method_called = "%@ called"
     static let networkuserid_required_for_appsflyer = "The parameter networkUserId is REQUIRED for AppsFlyer."
@@ -68,6 +69,12 @@ extension AttributionStrings: CustomStringConvertible {
             " Pass networkUserId to addAttribution instead."
         case .attributes_sync_error(let details, let userInfo):
             return "Error when syncing subscriber attributes. Details: \(details ?? "")\n UserInfo: \(userInfo ?? [:])"
+        case .attributes_sync_success(let appUserID):
+            return "Subscriber attributes synced successfully for App User ID: \(appUserID)"
+        case .empty_subscriber_attributes:
+            return "Called post subscriber attributes with an empty attributes dictionary!"
+        case .marking_attributes_synced(let appUserID, let attributes):
+            return "Marking attributes as synced for App User ID: \(appUserID):\n attributes: \(attributes.description)"
         }
     }
 }
