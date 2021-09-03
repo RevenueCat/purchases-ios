@@ -22,7 +22,24 @@ enum CodableStrings {
     static func valueNotFoundError(for type: Any.Type) -> String {
         "No value found for type: \(type)"
     }
-    static let invalid_json_error: String = "The given data was not valid JSON\n%@"
-    static let decoding_error = "Couldn't decode data from json\n%@"
 
+    case invalid_json_error(jsonData: [String: Any])
+
+    case decoding_error(errorMessage: String)
+
+}
+
+extension CodableStrings: CustomStringConvertible {
+
+    var description: String {
+        switch self {
+
+        case .invalid_json_error(let jsonData):
+            return "The given json data was not valid: \n\(jsonData)"
+
+        case .decoding_error(let errorMessage):
+            return "Couldn't decode data from json. Error: \n\(errorMessage)"
+
+        }
+    }
 }
