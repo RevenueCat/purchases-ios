@@ -21,19 +21,20 @@ class ProductsFetcherSK1Tests: XCTestCase {
         expect(self.productsRequestFactory.invokedRequestParameters) == productIdentifiers
     }
 
-    func testProductsWithIdentifiersCallsCompletionCorrectly() {
+    func testProductsWithIdentifiersCallsCompletionCorrectly() throws {
         let productIdentifiers = Set(["1", "2", "3"])
-        var receivedProducts: Set<SKProduct>?
+        var maybeReceivedProducts: Set<SKProduct>?
         var completionCalled = false
 
         productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
             completionCalled = true
-            receivedProducts = products
+            maybeReceivedProducts = products
         }
 
         expect(completionCalled).toEventually(beTrue())
-        expect(receivedProducts?.count) == productIdentifiers.count
-        let receivedProductsSet = Set(receivedProducts!.map { $0.productIdentifier })
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        expect(receivedProducts.count) == productIdentifiers.count
+        let receivedProductsSet = Set(receivedProducts.map { $0.productIdentifier })
         expect(receivedProductsSet) == productIdentifiers
     }
 

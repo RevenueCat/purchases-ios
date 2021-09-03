@@ -67,6 +67,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
             }
             guard let completionBlocks = self.completionHandlers[requestProducts] else {
                 Logger.error("callback not found for failing request: \(request)")
+                self.productsByRequests.removeValue(forKey: request)
                 return
             }
 
@@ -94,6 +95,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
             }
             guard let completionBlocks = self.completionHandlers[products] else {
                 Logger.error("callback not found for failing request: \(request)")
+                self.productsByRequests.removeValue(forKey: request)
                 return
             }
 
