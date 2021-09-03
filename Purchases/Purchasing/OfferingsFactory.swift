@@ -17,7 +17,7 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(withProductDetailss products: [String: ProductDetails],
+    func createOfferings(withProductDetails products: [String: ProductDetails],
                          data: [String: Any]) -> Offerings? {
         guard let offeringsData = data["offerings"] as? [[String: Any]] else {
             return nil
@@ -25,7 +25,7 @@ class OfferingsFactory {
 
         let offerings = offeringsData.reduce([String: Offering]()) { (dict, offeringData) -> [String: Offering] in
             var dict = dict
-            if let offering = createOffering(withProductDetailss: products, offeringData: offeringData) {
+            if let offering = createOffering(withProductDetails: products, offeringData: offeringData) {
                 dict[offering.identifier] = offering
             }
             return dict
@@ -41,7 +41,7 @@ class OfferingsFactory {
                                                 products.map { productIdentifier, productDetails in
             (productIdentifier, productDetails) }
         )
-        return self.createOfferings(withProductDetailss: productDetailssByKey, data: data)
+        return self.createOfferings(withProductDetails: productDetailssByKey, data: data)
     }
 
     func createOffering(withProducts products: [String: SKProduct],
@@ -50,10 +50,10 @@ class OfferingsFactory {
                                                 products.map { productIdentifier, skProduct in
             (productIdentifier, SK1ProductDetails(sk1Product: skProduct)) }
         )
-        return self.createOffering(withProductDetailss: productDetailssByKey, offeringData: offeringData)
+        return self.createOffering(withProductDetails: productDetailssByKey, offeringData: offeringData)
     }
 
-    func createOffering(withProductDetailss products: [String: ProductDetails],
+    func createOffering(withProductDetails products: [String: ProductDetails],
                         offeringData: [String: Any]) -> Offering? {
         guard let offeringIdentifier = offeringData["identifier"] as? String,
               let packagesData = offeringData["packages"] as? [[String: Any]],

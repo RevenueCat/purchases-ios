@@ -49,7 +49,7 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingIsNotCreatedIfNoValidPackage() {
         let products = ["com.myproduct.bad": SK1ProductDetails(sk1Product: SKProduct())]
-        let offering = offeringsFactory.createOffering(withProductDetailss: products, offeringData: [
+        let offering = offeringsFactory.createOffering(withProductDetails: products, offeringData: [
             "identifier": "offering_a",
             "description": "This is the base offering",
             "packages": [
@@ -70,7 +70,7 @@ class OfferingsTests: XCTestCase {
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
-        let offering = offeringsFactory.createOffering(withProductDetailss: products, offeringData: [
+        let offering = offeringsFactory.createOffering(withProductDetails: products, offeringData: [
             "identifier": offeringIdentifier,
             "description": serverDescription,
             "packages": [
@@ -92,7 +92,7 @@ class OfferingsTests: XCTestCase {
     }
 
     func testListOfOfferingsIsEmptyIfNoValidOffering() {
-        let offerings = offeringsFactory.createOfferings(withProductDetailss: [:], data: [
+        let offerings = offeringsFactory.createOfferings(withProductDetails: [:], data: [
             "offerings": [
                 [
                     "identifier": "offering_a",
@@ -125,7 +125,7 @@ class OfferingsTests: XCTestCase {
             "com.myproduct.annual": SK1ProductDetails(sk1Product: MockSKProduct(mockProductIdentifier: "com.myproduct.annual")),
             "com.myproduct.monthly": SK1ProductDetails(sk1Product: MockSKProduct(mockProductIdentifier: "com.myproduct.monthly"))
         ]
-        let offerings = offeringsFactory.createOfferings(withProductDetailss: products, data: [
+        let offerings = offeringsFactory.createOfferings(withProductDetails: products, data: [
             "offerings": [
                 [
                     "identifier": "offering_a",
@@ -194,7 +194,7 @@ class OfferingsTests: XCTestCase {
             "offerings": [],
             "current_offering_id": nil
         ]
-        let offerings = offeringsFactory.createOfferings(withProductDetailss: [:], data: data as [String : Any])
+        let offerings = offeringsFactory.createOfferings(withProductDetails: [:], data: data as [String : Any])
 
         expect(offerings).toNot(beNil())
         expect(offerings!.current).to(beNil())
@@ -205,7 +205,7 @@ class OfferingsTests: XCTestCase {
             "offerings": [],
             "current_offering_id": "offering_with_broken_product"
         ] as [String : Any]
-        let offerings = offeringsFactory.createOfferings(withProductDetailss: [:], data: data as [String : Any])
+        let offerings = offeringsFactory.createOfferings(withProductDetails: [:], data: data as [String : Any])
 
         expect(offerings).toNot(beNil())
         expect(offerings!.current).to(beNil())
@@ -213,7 +213,7 @@ class OfferingsTests: XCTestCase {
 
     func testBadOfferingsDataReturnsNil() {
         let data = [:] as [String : Any]
-        let offerings = offeringsFactory.createOfferings(withProductDetailss: [:], data: data as [String : Any])
+        let offerings = offeringsFactory.createOfferings(withProductDetails: [:], data: data as [String : Any])
 
         expect(offerings).to(beNil())
     }
@@ -231,7 +231,7 @@ class OfferingsTests: XCTestCase {
         let products = [
             productIdentifier: SK1ProductDetails(sk1Product: MockSKProduct(mockProductIdentifier: productIdentifier))
         ]
-        let offerings = offeringsFactory.createOfferings(withProductDetailss: products, data: [
+        let offerings = offeringsFactory.createOfferings(withProductDetails: products, data: [
             "offerings": [
                 [
                     "identifier": "offering_a",
