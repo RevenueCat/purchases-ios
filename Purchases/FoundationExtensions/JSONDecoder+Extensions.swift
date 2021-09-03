@@ -59,12 +59,11 @@ extension JSONDecoder {
             do {
                 return try decode(type, from: maybeJsonData)
             } catch {
-                Logger.error(String(format: Strings.codable.decoding_error,
-                                    error.localizedDescription))
+                Logger.error(Strings.codable.decoding_error(errorMessage: error.localizedDescription))
                 return nil
             }
         } else {
-            Logger.error(String(format: Strings.codable.invalid_json_error, dictionary))
+            Logger.error(Strings.codable.invalid_json_error(jsonData: dictionary))
             return nil
         }
     }
