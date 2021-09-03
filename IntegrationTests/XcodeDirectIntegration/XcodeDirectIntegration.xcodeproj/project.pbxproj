@@ -16,8 +16,8 @@
 		2D6C0435254A0A550039CB92 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0429254A0A550039CB92 /* main.m */; };
 		2D6C0436254A0A550039CB92 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C042A254A0A550039CB92 /* AppDelegate.m */; };
 		2D6C0444254A0A760039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0443254A0A760039CB92 /* Dummy.swift */; };
-		2D6C046F254A0B290039CB92 /* Purchases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6C045C254A0AF10039CB92 /* Purchases.framework */; };
-		2D6C0470254A0B290039CB92 /* Purchases.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6C045C254A0AF10039CB92 /* Purchases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2D6C046F254A0B290039CB92 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6C045C254A0AF10039CB92 /* RevenueCat.framework */; };
+		2D6C0470254A0B290039CB92 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6C045C254A0AF10039CB92 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2D6C0487254A0CF20039CB92 /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C0428254A0A550039CB92 /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2DC19147255F1AFE0039389A /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19142255F1AFE0039389A /* IntegrationTests.swift */; };
 /* End PBXBuildFile section */
@@ -67,7 +67,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				2D6C0470254A0B290039CB92 /* Purchases.framework in Embed Frameworks */,
+				2D6C0470254A0B290039CB92 /* RevenueCat.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -103,7 +103,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D6C046F254A0B290039CB92 /* Purchases.framework in Frameworks */,
+				2D6C046F254A0B290039CB92 /* RevenueCat.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,7 +181,7 @@
 		2D6C0455254A0AF10039CB92 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2D6C045C254A0AF10039CB92 /* Purchases.framework */,
+				2D6C045C254A0AF10039CB92 /* RevenueCat.framework */,
 				2D6C045E254A0AF10039CB92 /* PurchasesTests.xctest */,
 			);
 			name = Products;
@@ -290,10 +290,10 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		2D6C045C254A0AF10039CB92 /* Purchases.framework */ = {
+		2D6C045C254A0AF10039CB92 /* RevenueCat.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = Purchases.framework;
+			path = RevenueCat.framework;
 			remoteRef = 2D6C045B254A0AF10039CB92 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
