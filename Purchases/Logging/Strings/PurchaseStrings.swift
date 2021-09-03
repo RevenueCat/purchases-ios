@@ -13,9 +13,10 @@
 //
 
 import Foundation
+import StoreKit
 
 // swiftlint:disable identifier_name
-enum PurchaseStrings {
+enum PurchaseStrings: CustomStringConvertible {
 
     static let cannot_purchase_product_appstore_configuration_error = "Could not purchase SKProduct. " +
         "There is a problem with your configuration in App Store Connect. " +
@@ -49,4 +50,13 @@ enum PurchaseStrings {
     static let purchases_delegate_set_to_nil = "Purchases delegate is being set to nil, " +
         "you probably don't want to do this."
     static let management_url_nil_opening_default = "managementURL is nil, opening Apple's subscription management page"
+
+    case requested_products_not_found(request: SKRequest)
+
+    var description: String {
+        switch self {
+        case .requested_products_not_found(let request):
+            return "requested products not found for request: \(request)"
+        }
+    }
 }

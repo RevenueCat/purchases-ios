@@ -90,7 +90,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
         queue.async { [self] in
             Logger.appleError(String(format: Strings.network.skproductsrequest_failed, error.localizedDescription))
             guard let products = self.productsByRequests[request] else {
-                Logger.error("requested products not found for request: \(request)")
+                Logger.error(Strings.purchase.requested_products_not_found(request: request))
                 return
             }
             guard let completionBlocks = self.completionHandlers[products] else {
