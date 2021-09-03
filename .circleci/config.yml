@@ -316,7 +316,7 @@ jobs:
           command: |
               ./carthage.sh update --no-build
               rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
-              ./carthage.sh build
+              ./carthage.sh build --use-xcframeworks
       - save_cache:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
