@@ -342,6 +342,7 @@ private extension PurchasesOrchestrator {
 extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 
     func transactionsUpdated() {
+        // todo: should isRestore here be set to observer mode?
         syncPurchases(receiptRefreshPolicy: .always, isRestore: false, maybeCompletion: nil)
     }
 }
