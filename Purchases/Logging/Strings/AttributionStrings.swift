@@ -19,7 +19,7 @@ enum AttributionStrings {
 
     case appsflyer_id_deprecated
 
-    static let attributes_sync_error = "Error when syncing subscriber attributes. Details: %@\n UserInfo:%@"
+    case attributes_sync_error(details: String?, userInfo: [String: Any]?)
 
     static let attributes_sync_success = "Subscriber attributes synced successfully for App User ID: %@"
     static let empty_subscriber_attributes = "Called post subscriber attributes with an empty attributes dictionary!"
@@ -66,6 +66,8 @@ extension AttributionStrings: CustomStringConvertible {
         case .appsflyer_id_deprecated:
             return "The parameter key rc_appsflyer_id is deprecated." +
             " Pass networkUserId to addAttribution instead."
+        case .attributes_sync_error(let details, let userInfo):
+            return "Error when syncing subscriber attributes. Details: \(details ?? "")\n UserInfo: \(userInfo ?? [:])"
         }
     }
 }
