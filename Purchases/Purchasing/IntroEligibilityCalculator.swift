@@ -63,7 +63,7 @@ class IntroEligibilityCalculator {
                 Logger.debug(String(format: Strings.purchaserInfo.checking_intro_eligibility_locally_result, result))
                 completion(result, nil)
             }
-        } catch let error {
+        } catch {
             Logger.error(
                 String(
                     format: Strings.purchaserInfo.checking_intro_eligibility_locally_error, error.localizedDescription

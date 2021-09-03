@@ -287,7 +287,7 @@ private extension HTTPClient {
             if JSONSerialization.isValidJSONObject(requestBody) {
                 do {
                     urlRequest.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-                } catch let error {
+                } catch {
                     Logger.error(String(format: Strings.network.creating_json_error,
                                         requestBody,
                                         error.localizedDescription))

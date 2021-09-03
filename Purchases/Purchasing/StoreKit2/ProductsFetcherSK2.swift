@@ -46,7 +46,7 @@ actor ProductsFetcherSK2 {
             return Set()
             #endif
 
-        } catch let error {
+        } catch {
             throw ProductsManagerSK2Error.productsRequestError(innerError: error)
         }
     }
