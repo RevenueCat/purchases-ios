@@ -26,7 +26,7 @@ class ProductsManager: NSObject {
         self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory)
     }
 
-    func productsFromOptimalStore(withIdentifiers identifiers: Set<String>,
+    func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,
                                   completion: @escaping (Set<ProductDetails>) -> Void) {
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {

@@ -88,7 +88,7 @@ private extension OfferingsManager {
     func handleOfferingsBackendResult(with data: [String: Any], completion: ReceiveOfferingsBlock?) {
         let productIdentifiers = extractProductIdentifiers(fromOfferingsData: data)
 
-        productsManager.productsFromOptimalStore(withIdentifiers: productIdentifiers) { products in
+        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: productIdentifiers) { products in
             let productsByID = products.reduce(into: [:]) { result, product in
                 result[product.productIdentifier] = product
             }

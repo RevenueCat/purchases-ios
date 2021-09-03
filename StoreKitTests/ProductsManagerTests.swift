@@ -30,12 +30,12 @@ class ProductsManagerTests: XCTestCase {
         productsManager = ProductsManager()
     }
 
-    func testFetchProductsFromOptimalStore() throws {
+    func testFetchproductsFromOptimalStoreKitVersion() throws {
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
         var maybeReceivedProducts: Set<ProductDetails>?
 
-        productsManager.productsFromOptimalStore(withIdentifiers: Set([identifier]), completion: { products in
+        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set([identifier]), completion: { products in
             completionCalled = true
             maybeReceivedProducts = products
         })
