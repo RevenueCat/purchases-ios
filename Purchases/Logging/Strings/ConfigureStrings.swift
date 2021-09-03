@@ -34,7 +34,7 @@ enum ConfigureStrings {
     case no_singleton_instance
 
     case sdk_version(sdkVersion: String)
-    
+
 }
 
 extension ConfigureStrings: CustomStringConvertible {
