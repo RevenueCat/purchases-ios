@@ -111,7 +111,7 @@ class PurchasesOrchestrator {
     }
 
     func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: [String],
-                                  completion: @escaping ([ProductDetails]) -> Void) {
+                                            completion: @escaping ([ProductDetails]) -> Void) {
         let productIdentifiersSet = Set(identifiers)
         guard !productIdentifiersSet.isEmpty else {
             operationDispatcher.dispatchOnMainThread { completion([]) }
