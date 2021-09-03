@@ -83,6 +83,10 @@ import StoreKit
 
 @objc(RCSK1ProductDetails) public class SK1ProductDetails: ProductDetails {
 
+    @objc public init(sk1Product: SKProduct) {
+        self.underlyingSK1Product = sk1Product
+    }
+
     @objc public let underlyingSK1Product: SKProduct
 
     @objc public override var localizedDescription: String { return underlyingSK1Product.localizedDescription }
@@ -99,10 +103,6 @@ import StoreKit
     @objc public override var isFamilyShareable: Bool { underlyingSK1Product.isFamilyShareable }
 
     @objc public override var localizedTitle: String { underlyingSK1Product.localizedTitle }
-
-    @objc public init(sk1Product: SKProduct) {
-        self.underlyingSK1Product = sk1Product
-    }
 
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     override public var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
