@@ -29,15 +29,15 @@ class IntroEligibilityCalculator {
     func checkTrialOrIntroductoryPriceEligibility(
         with receiptData: Data,
         productIdentifiers candidateProductIdentifiers: Set<String>,
-        completion: @escaping ([String: NSNumber], Error?) -> Void) {
+        completion: @escaping ([String: IntroEligibilityStatus], Error?) -> Void) {
         guard candidateProductIdentifiers.count > 0 else {
             completion([:], nil)
             return
         }
         Logger.debug(Strings.purchaserInfo.checking_intro_eligibility_locally)
 
-        var result: [String: NSNumber] = candidateProductIdentifiers.reduce(into: [:]) { resultDict, productId in
-            resultDict[productId] = IntroEligibilityStatus.unknown.toNSNumber()
+        var result = candidateProductIdentifiers.reduce(into: [:]) { resultDict, productId in
+            resultDict[productId] = IntroEligibilityStatus.unknown
         }
         do {
             let receipt = try receiptParser.parse(from: receiptData)
@@ -55,7 +55,7 @@ class IntroEligibilityCalculator {
                     candidateProductIdentifiers.contains($0.productIdentifier)
                 }
 
-                let eligibility: [String: NSNumber] = self.checkIntroEligibility(
+                let eligibility = self.checkIntroEligibility(
                     candidateProducts: candidateProducts,
                     purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffersOrFreeTrials)
                 result.merge(eligibility) { (_, new) in new }
@@ -77,8 +77,8 @@ class IntroEligibilityCalculator {
 private extension IntroEligibilityCalculator {
 
     func checkIntroEligibility(candidateProducts: Set<SKProduct>,
-                               purchasedProductsWithIntroOffers: Set<SKProduct>) -> [String: NSNumber] {
-        var result: [String: NSNumber] = [:]
+                               purchasedProductsWithIntroOffers: Set<SKProduct>) -> [String: IntroEligibilityStatus] {
+        var result: [String: IntroEligibilityStatus] = [:]
         for candidate in candidateProducts {
             let usedIntroForProductIdentifier = purchasedProductsWithIntroOffers
                 .contains { purchased in
@@ -89,18 +89,10 @@ private extension IntroEligibilityCalculator {
 
             let hasIntroductoryPrice = candidate.introductoryPrice != nil
             result[candidate.productIdentifier] = !hasIntroductoryPrice || usedIntroForProductIdentifier
-                ? IntroEligibilityStatus.ineligible.toNSNumber()
-                : IntroEligibilityStatus.eligible.toNSNumber()
+                ? IntroEligibilityStatus.ineligible
+                : IntroEligibilityStatus.eligible
         }
         return result
-    }
-
-}
-
-extension IntroEligibilityStatus {
-
-    func toNSNumber() -> NSNumber {
-        return self.rawValue as NSNumber
     }
 
 }

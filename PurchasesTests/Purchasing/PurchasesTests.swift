@@ -257,7 +257,7 @@ class PurchasesTests: XCTestCase {
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
     var subscriberAttributesManager: MockSubscriberAttributesManager!
-    let identityManager = MockIdentityManager(mockAppUserID: "app_user");
+    let identityManager = MockIdentityManager(mockAppUserID: "app_user")
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
@@ -267,6 +267,7 @@ class PurchasesTests: XCTestCase {
     var purchaserInfoManager: PurchaserInfoManager!
     var mockOfferingsManager: MockOfferingsManager!
     var purchasesOrchestrator: PurchasesOrchestrator!
+    var trialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
 
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -302,7 +303,11 @@ class PurchasesTests: XCTestCase {
                                                       identityManager: identityManager,
                                                       receiptParser: mockReceiptParser,
                                                       deviceCache: deviceCache)
-
+        trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
+                                                                                      introEligibilityCalculator: mockIntroEligibilityCalculator,
+                                                                                      backend: backend,
+                                                                                      identityManager: identityManager,
+                                                                                      operationDispatcher: mockOperationDispatcher)
         purchases = Purchases(appUserID: appUserId,
                               requestFetcher: requestFetcher,
                               receiptFetcher: receiptFetcher,
@@ -322,7 +327,8 @@ class PurchasesTests: XCTestCase {
                               purchaserInfoManager: purchaserInfoManager,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
-                              purchasesOrchestrator: purchasesOrchestrator)
+                              purchasesOrchestrator: purchasesOrchestrator,
+                              trialOrIntroPriceEligibilityChecker: trialOrIntroPriceEligibilityChecker)
 
         purchasesOrchestrator.maybeDelegate = purchases
         purchases!.delegate = purchasesDelegate
@@ -1534,14 +1540,8 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in
         }
-    }
 
-    func testGetEligibilitySendsAReceipt() {
-        setupPurchases()
-        purchases!.checkTrialOrIntroductoryPriceEligibility([]) { (eligibilities) in
-        }
-
-        expect(self.receiptFetcher.receiptDataCalled).to(beTrue())
+        expect(self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore).to(beTrue())
     }
 
     func testFetchVersionSendsAReceiptIfNoVersion() {
