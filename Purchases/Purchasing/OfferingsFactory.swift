@@ -37,19 +37,19 @@ class OfferingsFactory {
 
     func createOfferings(withProducts products: [String: ProductDetails],
                          data: [String: Any]) -> Offerings? {
-        let productDetailsByKey = Dictionary(uniqueKeysWithValues:
-                                                products.map { productIdentifier, productDetails in
-            (productIdentifier, productDetails) }
-        )
+        let productIdentifiersAndDetailsAsTuple = products.map { productIdentifier, productDetails in
+            (productIdentifier, productDetails)
+        }
+        let productDetailsByKey = Dictionary(uniqueKeysWithValues: productIdentifiersAndDetailsAsTuple)
         return self.createOfferings(withProductDetails: productDetailsByKey, data: data)
     }
 
     func createOffering(withProducts products: [String: SKProduct],
                         offeringData: [String: Any]) -> Offering? {
-        let productDetailsByKey = Dictionary(uniqueKeysWithValues:
-                                                products.map { productIdentifier, skProduct in
-            (productIdentifier, SK1ProductDetails(sk1Product: skProduct)) }
-        )
+        let productIdentifiersAndDetailsAsTuple = products.map { productIdentifier, skProduct in
+            (productIdentifier, SK1ProductDetails(sk1Product: skProduct))
+        }
+        let productDetailsByKey = Dictionary(uniqueKeysWithValues: productIdentifiersAndDetailsAsTuple)
         return self.createOffering(withProductDetails: productDetailsByKey, offeringData: offeringData)
     }
 
