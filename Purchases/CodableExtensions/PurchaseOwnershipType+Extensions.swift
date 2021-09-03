@@ -27,7 +27,7 @@ extension PurchaseOwnershipType: Decodable {
         case "FAMILY_SHARED":
             self = .familyShared
         default:
-            Logger.error(Strings.codable.unexpectedValueError(for: PurchaseOwnershipType.self))
+            Logger.error(Strings.codable.unexpectedValueError(type: PurchaseOwnershipType.self))
             self = .unknown
         }
     }

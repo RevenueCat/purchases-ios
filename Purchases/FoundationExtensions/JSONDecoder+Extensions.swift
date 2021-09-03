@@ -21,9 +21,9 @@ enum CodableError: Error, CustomStringConvertible {
     var description: String {
         switch self {
         case .unexpectedValue(let type):
-            return Strings.codable.unexpectedValueError(for: type)
+            return Strings.codable.unexpectedValueError(type: type).description
         case .valueNotFound(let type):
-            return Strings.codable.valueNotFoundError(for: type)
+            return Strings.codable.valueNotFoundError(type: type).description
         }
     }
 }
