@@ -256,7 +256,7 @@ private extension SubscriberAttributesManager {
     }
 
     func logAttributionMethodCalled(functionName: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, functionName))
+        Logger.debug(Strings.attribution.method_called(methodName: functionName))
     }
 
 }

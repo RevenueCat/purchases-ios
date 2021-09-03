@@ -27,28 +27,23 @@ enum AttributionStrings {
 
     case marking_attributes_synced(appUserID: String, attributes: SubscriberAttributeDict)
 
-    static let method_called = "%@ called"
-    static let networkuserid_required_for_appsflyer = "The parameter networkUserId is REQUIRED for AppsFlyer."
+    case method_called(methodName: String)
 
-    static let no_instance_configured_caching_attribution = "There is no purchase instance configured, " +
-        "caching attribution"
+    case networkuserid_required_for_appsflyer
 
-    static let instance_configured_posting_attribution = "There is a purchase instance configured, posting attribution"
+    case no_instance_configured_caching_attribution
 
-    static let search_ads_attribution_cancelled_missing_att_framework = "Tried to post Apple Search Ads Attribution, " +
-        "but ATT Framework is required on this OS and it isn't included"
+    case instance_configured_posting_attribution
 
-    static let att_framework_present_but_couldnt_call_tracking_authorization_status = "ATT Framework was found but " +
-        "it didn't respond to authorization status selector!"
+    case search_ads_attribution_cancelled_missing_att_framework
 
-    static let iad_framework_present_but_couldnt_call_request_attribution_details = "iAd Framework was found but " +
-        "it didn't respond to attribution details request!"
+    case att_framework_present_but_couldnt_call_tracking_authorization_status
 
-    static let search_ads_attribution_cancelled_missing_iad_framework = "Tried to post Apple Search Ads Attribution, " +
-        "but iAd Framework is is required for it and it isn't included"
+    case iad_framework_present_but_couldnt_call_request_attribution_details
 
-    static let search_ads_attribution_cancelled_not_authorized = "Tried to post Apple Search Ads Attribution, but " +
-        "authorization hasn't been granted. Will automatically retry if authorization gets granted."
+    case search_ads_attribution_cancelled_missing_iad_framework
+
+    case search_ads_attribution_cancelled_not_authorized
 
     static let skip_same_attributes = "Attribution data is the same as latest. Skipping."
     static let subscriber_attributes_error = "Subscriber attributes errors: %@"
@@ -67,14 +62,49 @@ extension AttributionStrings: CustomStringConvertible {
         case .appsflyer_id_deprecated:
             return "The parameter key rc_appsflyer_id is deprecated." +
             " Pass networkUserId to addAttribution instead."
+
         case .attributes_sync_error(let details, let userInfo):
             return "Error when syncing subscriber attributes. Details: \(details ?? "")\n UserInfo: \(userInfo ?? [:])"
+
         case .attributes_sync_success(let appUserID):
             return "Subscriber attributes synced successfully for App User ID: \(appUserID)"
+
         case .empty_subscriber_attributes:
             return "Called post subscriber attributes with an empty attributes dictionary!"
+
         case .marking_attributes_synced(let appUserID, let attributes):
             return "Marking attributes as synced for App User ID: \(appUserID):\n attributes: \(attributes.description)"
+
+        case .method_called(let methodName):
+            return "\(methodName) called"
+
+        case .networkuserid_required_for_appsflyer:
+            return "The parameter networkUserId is REQUIRED for AppsFlyer."
+
+        case .no_instance_configured_caching_attribution:
+            return "There is no purchase instance configured, caching attribution"
+
+        case .instance_configured_posting_attribution:
+            return "There is a purchase instance configured, posting attribution"
+
+        case .search_ads_attribution_cancelled_missing_att_framework:
+            return "Tried to post Apple Search Ads Attribution, " +
+            "but ATT Framework is required on this OS and it isn't included"
+
+        case .att_framework_present_but_couldnt_call_tracking_authorization_status:
+            return "ATT Framework was found but it didn't respond to authorization status selector!"
+
+        case .iad_framework_present_but_couldnt_call_request_attribution_details:
+            return "iAd Framework was found but it didn't respond to attribution details request!"
+
+        case .search_ads_attribution_cancelled_missing_iad_framework:
+            return "Tried to post Apple Search Ads Attribution, " +
+            "but iAd Framework is is required for it and it isn't included"
+
+        case .search_ads_attribution_cancelled_not_authorized:
+            return "Tried to post Apple Search Ads Attribution, but " +
+            "authorization hasn't been granted. Will automatically retry if authorization gets granted."
+
         }
     }
 }
