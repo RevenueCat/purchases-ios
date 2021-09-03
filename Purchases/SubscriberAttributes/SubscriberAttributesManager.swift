@@ -166,11 +166,10 @@ class SubscriberAttributesManager {
 
     func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttributeDict {
         let unsyncedAttributes = deviceCache.unsyncedAttributesByKey(appUserID: appUserID)
-        Logger.debug(String(format: Strings.attribution.unsynced_attributes_count,
-                            unsyncedAttributes.count,
-                            appUserID))
+        Logger.debug(Strings.attribution.unsynced_attributes_count(unsyncedAttributesCount: unsyncedAttributes.count,
+                                                                   appUserID: appUserID))
         if !unsyncedAttributes.isEmpty {
-            Logger.debug(String(format: Strings.attribution.unsynced_attributes, unsyncedAttributes))
+            Logger.debug(Strings.attribution.unsynced_attributes(unsyncedAttributes: unsyncedAttributes))
         }
 
         return unsyncedAttributes
@@ -241,7 +240,7 @@ private extension SubscriberAttributesManager {
 
     func storeAttributeLocally(key: String, value: String, appUserID: String) {
         let subscriberAttribute = SubscriberAttribute.init(withKey: key, value: value)
-        Logger.debug(String(format: Strings.attribution.attribute_set_locally, subscriberAttribute.description))
+        Logger.debug(Strings.attribution.attribute_set_locally(attribute: subscriberAttribute.description))
         deviceCache.store(subscriberAttribute: subscriberAttribute, appUserID: appUserID)
     }
 

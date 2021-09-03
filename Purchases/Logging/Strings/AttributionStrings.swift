@@ -46,17 +46,21 @@ enum AttributionStrings {
     case search_ads_attribution_cancelled_not_authorized
 
     case skip_same_attributes
+
     case subscriber_attributes_error(errors: [String: String]?)
-    static let unsynced_attributes_count = "Found %lu unsynced attributes for App User ID: %@"
-    static let unsynced_attributes = "Unsynced attributes: %@"
-    static let attribute_set_locally = "Attribute set locally: %@. It will be synced to the backend" +
-        "when the app backgrounds/foregrounds or when a purchase is made."
-    static let missing_advertiser_identifiers = "Attribution error: identifierForAdvertisers is missing"
-    static let missing_app_user_id = "Attribution error: can't post attribution, missing appUserId"
+
+    case unsynced_attributes_count(unsyncedAttributesCount: Int, appUserID: String)
+
+    case unsynced_attributes(unsyncedAttributes: SubscriberAttributeDict)
+
+    case attribute_set_locally(attribute: String)
+
+    case missing_advertiser_identifiers
 
 }
 
 extension AttributionStrings: CustomStringConvertible {
+
     var description: String {
         switch self {
         case .appsflyer_id_deprecated:
@@ -110,6 +114,21 @@ extension AttributionStrings: CustomStringConvertible {
 
         case .subscriber_attributes_error(let errors):
             return "Subscriber attributes errors: \((errors?.description ?? ""))"
+
+        case .unsynced_attributes_count(let unsyncedAttributesCount, let appUserID):
+            return "Found \(unsyncedAttributesCount) unsynced attributes for App User ID: \(appUserID)"
+
+        case .unsynced_attributes(let unsyncedAttributes):
+            return "Unsynced attributes: \(unsyncedAttributes)"
+
+        case .attribute_set_locally(let attribute):
+            return "Attribute set locally: \(attribute). It will be synced to the backend" +
+            "when the app backgrounds/foregrounds or when a purchase is made."
+
+        case .missing_advertiser_identifiers:
+            return "Attribution error: identifierForAdvertisers is missing"
+
         }
     }
+
 }
