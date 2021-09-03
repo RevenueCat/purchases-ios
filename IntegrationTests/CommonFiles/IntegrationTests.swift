@@ -17,7 +17,7 @@ import XCTest
 @testable import XcodeDirectIntegration
 #endif
 
-import Purchases
+import RevenueCat
 
 class IntegrationTests: XCTestCase {
 

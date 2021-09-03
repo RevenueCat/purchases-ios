@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Purchases
+import RevenueCat
 
 /*
  The app's weather tab that displays our pretend weather data.

@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Purchases
+import RevenueCat
 
 /*
  View controller to display user's details like subscription status and ID's.

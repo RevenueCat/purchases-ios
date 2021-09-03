@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import Purchases
+import RevenueCat
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {

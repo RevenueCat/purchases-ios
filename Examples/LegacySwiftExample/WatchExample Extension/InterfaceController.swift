@@ -8,7 +8,7 @@
 
 import WatchKit
 import Foundation
-import Purchases
+import RevenueCat
 
 class InterfaceController: WKInterfaceController {
     private var offering : Purchases.Offering?

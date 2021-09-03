@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Purchases
+import RevenueCat
 
 enum PayWallEdgeStyle : String {
     case square
