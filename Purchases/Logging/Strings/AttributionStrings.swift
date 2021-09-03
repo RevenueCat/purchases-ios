@@ -17,8 +17,7 @@ import Foundation
 // swiftlint:disable identifier_name
 enum AttributionStrings {
 
-    static let appsflyer_id_deprecated = "The parameter key rc_appsflyer_id is deprecated." +
-        " Pass networkUserId to addAttribution instead."
+    case appsflyer_id_deprecated
 
     static let attributes_sync_error = "Error when syncing subscriber attributes. Details: %@\n UserInfo:%@"
 
@@ -59,4 +58,14 @@ enum AttributionStrings {
     static let missing_advertiser_identifiers = "Attribution error: identifierForAdvertisers is missing"
     static let missing_app_user_id = "Attribution error: can't post attribution, missing appUserId"
 
+}
+
+extension AttributionStrings: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .appsflyer_id_deprecated:
+            return "The parameter key rc_appsflyer_id is deprecated." +
+            " Pass networkUserId to addAttribution instead."
+        }
+    }
 }
