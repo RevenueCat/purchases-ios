@@ -82,7 +82,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
 
     func requestDidFinish(_ request: SKRequest) {
         Logger.rcSuccess(Strings.network.skproductsrequest_finished)
-        request.cancel()
+        self.cancelRequestToPreventTimeoutWarnings(request)
     }
 
     func request(_ request: SKRequest, didFailWithError error: Error) {
@@ -103,7 +103,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
                 completion(Set())
             }
         }
-        request.cancel()
+        self.cancelRequestToPreventTimeoutWarnings(request)
     }
 
     func cacheProduct(_ product: SKProduct) {
@@ -123,5 +123,13 @@ private extension ProductsFetcherSK1 {
 
             self.cachedProductsByIdentifier += productsByIdentifier
         }
+    }
+
+    func cancelRequestToPreventTimeoutWarnings(_ request: SKRequest) {
+        // Even though the request has finished, we've seen instances where
+        // the request seems to live on. So we manually call `cancel` to prevent warnings in runtime.
+        // https://github.com/RevenueCat/purchases-ios/issues/250
+        // https://github.com/RevenueCat/purchases-ios/issues/391
+        request.cancel()
     }
 }
