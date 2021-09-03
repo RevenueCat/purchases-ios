@@ -13,7 +13,7 @@
 
 import Nimble
 import StoreKitTest
-@testable import Purchases
+@testable import RevenueCat
 import XCTest
 
 
