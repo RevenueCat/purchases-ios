@@ -8,7 +8,7 @@
 
 import UIKit
 import UserNotifications
-import Purchases
+import RevenueCat
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {

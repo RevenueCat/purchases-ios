@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Purchases
+import RevenueCat
 
 /* The `Package` class needs to be identifiable to work with a List */
 

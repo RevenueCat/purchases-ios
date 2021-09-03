@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Purchases
+import RevenueCat
 import StoreKit
 
 enum PayWallEdgeStyle : String {

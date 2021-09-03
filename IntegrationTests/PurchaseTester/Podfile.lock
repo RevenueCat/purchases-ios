@@ -1,16 +1,16 @@
 PODS:
-  - Purchases (3.13.0-SNAPSHOT)
+  - RevenueCat (4.0.0-beta.1)
 
 DEPENDENCIES:
-  - Purchases (from `../../`)
+  - RevenueCat (from `../../`)
 
 EXTERNAL SOURCES:
-  Purchases:
+  RevenueCat:
     :path: "../../"
 
 SPEC CHECKSUMS:
-  Purchases: 76743d41cfb64f6960a78438959c58f80065c342
+  RevenueCat: d40fad138e5d1506f8f4038dc9660be1c36f481f
 
-PODFILE CHECKSUM: 22d943618b2bd4ab6b523cc4829b24647d202c09
+PODFILE CHECKSUM: f0880c6eb8b2a5f9b4e9e9475c5cfb18b532cde0
 
-COCOAPODS: 1.10.2
+COCOAPODS: 1.11.0.beta.2

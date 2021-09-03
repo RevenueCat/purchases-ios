@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Purchases
+import RevenueCat
 
 /*
  The app's user tab to display user's details like subscription status and ID's.
