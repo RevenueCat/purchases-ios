@@ -95,8 +95,7 @@ class SystemInfo {
     static var proxyURL: URL? {
         didSet {
             if let privateProxyURLString = proxyURL?.absoluteString {
-                Logger.info(Strings.configure.configuring_purchases_proxy_url_set
-                                .replacingOccurrences(of: "%@", with: privateProxyURLString))
+                Logger.info(Strings.configure.configuring_purchases_proxy_url_set(url: privateProxyURLString))
             }
         }
     }
