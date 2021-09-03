@@ -45,8 +45,8 @@ enum AttributionStrings {
 
     case search_ads_attribution_cancelled_not_authorized
 
-    static let skip_same_attributes = "Attribution data is the same as latest. Skipping."
-    static let subscriber_attributes_error = "Subscriber attributes errors: %@"
+    case skip_same_attributes
+    case subscriber_attributes_error(errors: [String: String]?)
     static let unsynced_attributes_count = "Found %lu unsynced attributes for App User ID: %@"
     static let unsynced_attributes = "Unsynced attributes: %@"
     static let attribute_set_locally = "Attribute set locally: %@. It will be synced to the backend" +
@@ -105,6 +105,11 @@ extension AttributionStrings: CustomStringConvertible {
             return "Tried to post Apple Search Ads Attribution, but " +
             "authorization hasn't been granted. Will automatically retry if authorization gets granted."
 
+        case .skip_same_attributes:
+            return "Attribution data is the same as latest. Skipping."
+
+        case .subscriber_attributes_error(let errors):
+            return "Subscriber attributes errors: \((errors?.description ?? ""))"
         }
     }
 }
