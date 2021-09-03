@@ -30,7 +30,7 @@ class ProductsManager: NSObject {
                                             completion: @escaping (Set<ProductDetails>) -> Void) {
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            Task.init {
+            Task {
                 do {
                     let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
                     completion(products)

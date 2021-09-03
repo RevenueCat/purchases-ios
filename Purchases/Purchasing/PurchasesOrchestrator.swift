@@ -560,7 +560,7 @@ private extension PurchasesOrchestrator {
         #if arch(arm64)
 
         let sk2Product = sk2ProductDetails.underlyingSK2Product
-        Task.init {
+        Task {
             let result = try await sk2Product.purchase()
             await storeKit2Listener.handle(purchaseResult: result)
             // todo: nicer handling, improve the userCancelled case

@@ -29,7 +29,7 @@ class StoreKit2TransactionListener {
     }
 
     func listenForTransactions() {
-        self.taskHandle = Task.init {
+        self.taskHandle = Task {
             // todo: remove when this gets fixed.
             // limiting to arm architecture since builds on beta 5 fail if other archs are included
             #if arch(arm64)

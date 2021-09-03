@@ -101,7 +101,7 @@ private extension ManageSubscriptionsModalHelper {
                                       completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
 #if os(iOS)
         if #available(iOS 15.0, *) {
-            Task.init {
+            Task {
                 let result = await self.showSK2ManageSubscriptions()
                 completion(result)
             }
