@@ -52,6 +52,7 @@
 		2D6C02B92549F7E20039CB92 /* IntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 		2D6C02D72549FD6D0039CB92 /* SPMIntegration-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SPMIntegration-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C02D82549FD6D0039CB92 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
+		B384177426E2F8DE0082BBE2 /* RevenueCat-Swift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RevenueCat-Swift.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +114,7 @@
 		2D6C02422549F5920039CB92 /* CommonFiles */ = {
 			isa = PBXGroup;
 			children = (
+				B384177426E2F8DE0082BBE2 /* RevenueCat-Swift.h */,
 				2D6C02B92549F7E20039CB92 /* IntegrationTests.swift */,
 				2D6C02D82549FD6D0039CB92 /* Dummy.swift */,
 				2D6C02432549F5920039CB92 /* RCIntegrationRunner.m */,

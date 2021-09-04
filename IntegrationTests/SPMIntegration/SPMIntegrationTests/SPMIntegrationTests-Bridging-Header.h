@@ -3,3 +3,4 @@
 //
 
 #include <SPMIntegration/RCIntegrationRunner.h>
+#include "RevenueCat-Swift.h"
