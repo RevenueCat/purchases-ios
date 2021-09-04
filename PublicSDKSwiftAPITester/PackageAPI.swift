@@ -38,7 +38,5 @@ func checkPackageEnums() {
          .weekly,
          .unknown:
         print(packageType!)
-    @unknown default:
-        fatalError()
     }
 }

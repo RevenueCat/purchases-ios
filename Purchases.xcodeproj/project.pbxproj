@@ -162,7 +162,7 @@
 		9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */; };
 		A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */; };
 		A56F9AB126990E9200AFC48F /* PurchaserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */; };
-		A592DAD226D83EF70065C78B /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = A592DAD126D83EF70065C78B /* Purchases */; };
+		A58C178026E2B1FB00A17909 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = A58C177F26E2B1FB00A17909 /* Purchases */; };
 		A592DADF26D83F080065C78B /* TransactionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAD326D83F080065C78B /* TransactionAPI.swift */; };
 		A592DAE026D83F080065C78B /* IntroEligibilityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAD426D83F080065C78B /* IntroEligibilityAPI.swift */; };
 		A592DAE126D83F080065C78B /* PurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAD526D83F080065C78B /* PurchasesAPI.swift */; };
@@ -594,7 +594,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A592DAD226D83EF70065C78B /* Purchases in Frameworks */,
+				A58C178026E2B1FB00A17909 /* Purchases in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1348,7 +1348,7 @@
 			);
 			name = PublicSDKSwiftAPITester;
 			packageProductDependencies = (
-				A592DAD126D83EF70065C78B /* Purchases */,
+				A58C177F26E2B1FB00A17909 /* Purchases */,
 			);
 			productName = PublicSDKSwiftAPITester;
 			productReference = A592DAC926D83ED30065C78B /* PublicSDKSwiftAPITester */;
@@ -2317,8 +2317,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = exactVersion;
+				version = 3.12.3;
 			};
 		};
 		B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */ = {
@@ -2340,7 +2340,7 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A592DAD126D83EF70065C78B /* Purchases */ = {
+		A58C177F26E2B1FB00A17909 /* Purchases */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A592DAD026D83EF70065C78B /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = Purchases;

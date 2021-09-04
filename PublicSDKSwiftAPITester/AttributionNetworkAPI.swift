@@ -25,7 +25,5 @@ func checkAttributionNetworkEnums() {
          .facebook,
          .mParticle:
         print(aNetwork!)
-    @unknown default:
-        fatalError()
     }
 }

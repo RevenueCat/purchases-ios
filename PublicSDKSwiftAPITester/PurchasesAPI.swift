@@ -21,9 +21,12 @@ func checkPurchasesAPI() {
     Purchases.configure(withAPIKey: "", appUserID: "")
 
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
+    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
 
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: nil)
+    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: nil)
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: UserDefaults())
+    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: UserDefaults())
 
     // static methods
     let logHandler: (Purchases.LogLevel, String) -> Void = { _, _ in }
@@ -75,8 +78,6 @@ func checkPurchasesEnums() {
          .intro,
          .trial:
         print(type!)
-    @unknown default:
-        fatalError()
     }
 
     switch oType! {
@@ -84,8 +85,6 @@ func checkPurchasesEnums() {
          .familyShared,
          .unknown:
         print(oType!)
-    @unknown default:
-        fatalError()
     }
 
     switch logLevel! {
@@ -94,8 +93,6 @@ func checkPurchasesEnums() {
          .debug,
          .error:
         print(logLevel!)
-    @unknown default:
-        fatalError()
     }
 }
 

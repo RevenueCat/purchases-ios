@@ -28,7 +28,5 @@ func checkIntroEligibilityEnums() {
     .ineligible,
     .eligible:
         print(status!)
-    @unknown default:
-        fatalError()
     }
 }
