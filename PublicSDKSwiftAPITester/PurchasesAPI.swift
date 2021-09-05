@@ -96,6 +96,15 @@ func checkPurchasesEnums() {
     }
 }
 
+func checkPurchasesConstants() {
+    let errDom = Purchases.ErrorDomain
+    let backendErrDom = Purchases.RevenueCatBackendErrorDomain
+    let finKey = Purchases.FinishableKey
+    let errCodeKey = Purchases.ReadableErrorCodeKey
+
+    print(errDom, backendErrDom, finKey, errCodeKey)
+}
+
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let piComplete: Purchases.ReceivePurchaserInfoBlock = { _, _ in }
     purchases.purchaserInfo(piComplete)

@@ -161,6 +161,7 @@
 		9A65E0A52591A23500DE00B0 /* PurchaseStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */; };
 		9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */; };
 		A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */; };
+		A52C4F3A26E55DC1002A88F0 /* ErrorCodesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52C4F3926E55DC1002A88F0 /* ErrorCodesAPI.swift */; };
 		A56F9AB126990E9200AFC48F /* PurchaserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */; };
 		A58C178026E2B1FB00A17909 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = A58C177F26E2B1FB00A17909 /* Purchases */; };
 		A592DADF26D83F080065C78B /* TransactionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A592DAD326D83F080065C78B /* TransactionAPI.swift */; };
@@ -461,6 +462,7 @@
 		9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaseStrings.swift; sourceTree = "<group>"; };
 		9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestoreStrings.swift; sourceTree = "<group>"; };
 		A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesManager.swift; sourceTree = "<group>"; };
+		A52C4F3926E55DC1002A88F0 /* ErrorCodesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorCodesAPI.swift; sourceTree = "<group>"; };
 		A56F9AAD26990A3A00AFC48F /* RCPurchaserInfoAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPurchaserInfoAPI.h; sourceTree = SOURCE_ROOT; };
 		A56F9AAE26990A3A00AFC48F /* RCPurchaserInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPurchaserInfoAPI.m; sourceTree = SOURCE_ROOT; };
 		A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaserInfo.swift; sourceTree = "<group>"; };
@@ -1089,6 +1091,7 @@
 				A592DAD626D83F080065C78B /* PurchasesErrorUtilsAPI.swift */,
 				A592DAD326D83F080065C78B /* TransactionAPI.swift */,
 				A592DAEB26DD828B0065C78B /* main.swift */,
+				A52C4F3926E55DC1002A88F0 /* ErrorCodesAPI.swift */,
 			);
 			path = PublicSDKSwiftAPITester;
 			sourceTree = "<group>";
@@ -1747,6 +1750,7 @@
 			files = (
 				A592DAE326D83F080065C78B /* OfferingAPI.swift in Sources */,
 				A592DAEC26DD828B0065C78B /* main.swift in Sources */,
+				A52C4F3A26E55DC1002A88F0 /* ErrorCodesAPI.swift in Sources */,
 				A592DAE826D83F080065C78B /* OfferingsAPI.swift in Sources */,
 				A592DAE926D83F080065C78B /* EntitlementInfoAPI.swift in Sources */,
 				A592DAEA26D83F080065C78B /* EntitlementInfosAPI.swift in Sources */,

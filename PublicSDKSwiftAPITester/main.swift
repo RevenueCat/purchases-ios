@@ -20,6 +20,8 @@ checkEntitlementInfoEnums()
 
 checkEntitlementInfosAPI()
 
+checkErrorCodeEnums()
+
 checkIntroEligibilityAPI()
 checkIntroEligibilityEnums()
 
@@ -30,6 +32,7 @@ checkOfferingsAPI()
 checkPurchaserInfoAPI()
 
 checkPurchasesAPI()
+checkPurchasesConstants()
 checkPurchasesEnums()
 
 checkPurchasesErrorUtilsAPI()
