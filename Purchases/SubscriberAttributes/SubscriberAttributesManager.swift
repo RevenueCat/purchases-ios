@@ -153,25 +153,23 @@ class SubscriberAttributesManager {
 
     func handleAttributesSynced(syncingAppUserId: String, currentAppUserId: String, error: Error?) {
         if error == nil {
-            Logger.rcSuccess(String(format: Strings.attribution.attributes_sync_success, syncingAppUserId))
+            Logger.rcSuccess(Strings.attribution.attributes_sync_success(appUserID: syncingAppUserId))
             if syncingAppUserId != currentAppUserId {
                 deviceCache.deleteAttributesIfSynced(appUserID: syncingAppUserId)
             }
         } else {
             let receivedNSError = error as NSError?
-            Logger.error(String(format: Strings.attribution.attributes_sync_error,
-                                receivedNSError?.localizedDescription ?? "",
-                                receivedNSError?.userInfo ?? ""))
+            Logger.error(Strings.attribution.attributes_sync_error(details: receivedNSError?.localizedDescription,
+                                                                   userInfo: receivedNSError?.userInfo))
         }
     }
 
     func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttributeDict {
         let unsyncedAttributes = deviceCache.unsyncedAttributesByKey(appUserID: appUserID)
-        Logger.debug(String(format: Strings.attribution.unsynced_attributes_count,
-                            unsyncedAttributes.count,
-                            appUserID))
+        Logger.debug(Strings.attribution.unsynced_attributes_count(unsyncedAttributesCount: unsyncedAttributes.count,
+                                                                   appUserID: appUserID))
         if !unsyncedAttributes.isEmpty {
-            Logger.debug(String(format: Strings.attribution.unsynced_attributes, unsyncedAttributes))
+            Logger.debug(Strings.attribution.unsynced_attributes(unsyncedAttributes: unsyncedAttributes))
         }
 
         return unsyncedAttributes
@@ -187,9 +185,7 @@ class SubscriberAttributesManager {
             return
         }
 
-        Logger.info(String(format: Strings.attribution.marking_attributes_synced,
-                           appUserID,
-                           attributesToSync.description))
+        Logger.info(Strings.attribution.marking_attributes_synced(appUserID: appUserID, attributes: attributesToSync))
 
         lock.lock()
         var unsyncedAttributes = unsyncedAttributesByKey(appUserID: appUserID)
@@ -244,7 +240,7 @@ private extension SubscriberAttributesManager {
 
     func storeAttributeLocally(key: String, value: String, appUserID: String) {
         let subscriberAttribute = SubscriberAttribute.init(withKey: key, value: value)
-        Logger.debug(String(format: Strings.attribution.attribute_set_locally, subscriberAttribute.description))
+        Logger.debug(Strings.attribution.attribute_set_locally(attribute: subscriberAttribute.description))
         deviceCache.store(subscriberAttribute: subscriberAttribute, appUserID: appUserID)
     }
 
@@ -259,7 +255,7 @@ private extension SubscriberAttributesManager {
     }
 
     func logAttributionMethodCalled(functionName: String) {
-        Logger.debug(String(format: Strings.attribution.method_called, functionName))
+        Logger.debug(Strings.attribution.method_called(methodName: functionName))
     }
 
 }

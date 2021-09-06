@@ -401,8 +401,7 @@ private extension PurchasesOrchestrator {
             if !error.successfullySynced {
                 return
             }
-            let attributeErrors = (error.subscriberAttributesErrors?.debugDescription ?? "None") as NSString
-            Logger.error(String(format: Strings.attribution.subscriber_attributes_error, attributeErrors))
+            Logger.error(Strings.attribution.subscriber_attributes_error(errors: error.subscriberAttributesErrors))
         }
 
         subscriberAttributesManager.markAttributesAsSynced(subscriberAttributes, appUserID: appUserID)
