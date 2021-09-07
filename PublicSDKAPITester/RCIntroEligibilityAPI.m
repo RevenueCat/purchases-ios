@@ -20,8 +20,12 @@
 
 + (void)checkEnums {
     RCIntroEligibilityStatus s = RCIntroEligibilityStatusUnknown;
-    s = RCIntroEligibilityStatusIneligible;
-    s = RCIntroEligibilityStatusEligible;
+    switch(s) {
+        case RCIntroEligibilityStatusUnknown:
+        case RCIntroEligibilityStatusIneligible:
+        case RCIntroEligibilityStatusEligible:
+            NSLog(@"%ld", (long)s);
+    }
 }
 
 @end

@@ -111,18 +111,29 @@ BOOL isAnonymous;
 
 + (void)checkEnums {
     RCPeriodType t = RCNormal;
-    t = RCIntro;
-    t = RCTrial;
-    
+    switch(t) {
+        case RCNormal:
+        case RCIntro:
+        case RCTrial:
+            NSLog(@"%ld", (long)t);
+    }
+
     RCPurchaseOwnershipType o = RCPurchaseOwnershipTypePurchased;
-    o = RCPurchaseOwnershipTypeFamilyShared;
-    o = RCPurchaseOwnershipTypeUnknown;
+    switch(o) {
+        case RCPurchaseOwnershipTypePurchased:
+        case RCPurchaseOwnershipTypeFamilyShared:
+        case RCPurchaseOwnershipTypeUnknown:
+            NSLog(@"%ld", (long)o);
+    }
     
     RCLogLevel l = RCLogLevelInfo;
-    l = RCLogLevelWarn;
-    l = RCLogLevelDebug;
-    l = RCLogLevelError;
-    
+    switch(l) {
+        case RCLogLevelInfo:
+        case RCLogLevelWarn:
+        case RCLogLevelDebug:
+        case RCLogLevelError:
+            NSLog(@"%ld", (long)o);
+    }
 }
 
 + (void)checkConstants {

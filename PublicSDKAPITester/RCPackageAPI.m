@@ -31,14 +31,18 @@
 
 + (void)checkEnums {
     RCPackageType type = RCPackageTypeUnknown;
-    type = RCPackageTypeCustom;
-    type = RCPackageTypeLifetime;
-    type = RCPackageTypeAnnual;
-    type = RCPackageTypeSixMonth;
-    type = RCPackageTypeThreeMonth;
-    type = RCPackageTypeTwoMonth;
-    type = RCPackageTypeMonthly;
-    type = RCPackageTypeWeekly;
+    switch(type) {
+        case RCPackageTypeUnknown:
+        case RCPackageTypeCustom:
+        case RCPackageTypeLifetime:
+        case RCPackageTypeAnnual:
+        case RCPackageTypeSixMonth:
+        case RCPackageTypeThreeMonth:
+        case RCPackageTypeTwoMonth:
+        case RCPackageTypeMonthly:
+        case RCPackageTypeWeekly:
+            NSLog(@"%ld", (long)type);
+    }
 }
 
 @end
