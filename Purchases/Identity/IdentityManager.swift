@@ -19,7 +19,7 @@ class IdentityManager {
 
     var currentAppUserID: String {
         guard let appUserID = deviceCache.cachedAppUserID else {
-            fatalError(Strings.identity.null_currentappuserid)
+            fatalError(Strings.identity.null_currentappuserid.description)
         }
 
         return appUserID
@@ -50,7 +50,7 @@ class IdentityManager {
             ?? deviceCache.cachedAppUserID
             ?? deviceCache.cachedLegacyAppUserID
             ?? generateRandomID()
-        Logger.user(String(format: Strings.identity.identifying_app_user_id, appUserID))
+        Logger.user(Strings.identity.identifying_app_user_id(appUserID: appUserID))
 
         deviceCache.cache(appUserID: appUserID)
         deviceCache.cleanupSubscriberAttributes()
@@ -85,7 +85,7 @@ class IdentityManager {
     }
 
     func logOut(completion: (Error?) -> Void) {
-        Logger.info(String(format: Strings.identity.log_out_called_for_user, currentAppUserID))
+        Logger.info(Strings.identity.log_out_called_for_user(appUserID: currentAppUserID))
 
         if currentUserIsAnonymous {
             completion(ErrorUtils.logOutAnonymousUserError())
@@ -105,10 +105,10 @@ class IdentityManager {
 
     func identify(appUserID: String, completion: @escaping (Error?) -> Void) {
         if currentUserIsAnonymous {
-            Logger.user(String(format: Strings.identity.identifying_anon_id, currentAppUserID))
+            Logger.user(Strings.identity.identifying_anon_id(appUserID: currentAppUserID))
             createAlias(appUserID: appUserID, completion: completion)
         } else {
-            Logger.user(String(format: Strings.identity.changing_app_user_id, currentAppUserID, appUserID))
+            Logger.user(Strings.identity.changing_app_user_id(from: currentAppUserID, to: appUserID))
             deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: appUserID)
             completion(nil)
         }
