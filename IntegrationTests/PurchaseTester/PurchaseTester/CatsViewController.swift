@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Purchases
+import RevenueCat
 
 class CatsViewController: UIViewController {
     
@@ -29,7 +29,7 @@ class CatsViewController: UIViewController {
 
     }
     
-    func configureCatContentFor(purchaserInfo: Purchases.PurchaserInfo?) {
+    func configureCatContentFor(purchaserInfo: PurchaserInfo?) {
         
         // set the content based on the user subscription status
         if let purchaserInfo = purchaserInfo {

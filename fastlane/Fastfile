@@ -10,9 +10,6 @@
 #     https://docs.fastlane.tools/plugins/available-plugins
 #
 
-# Uncomment the line if you want fastlane to automatically update itself
-# update_fastlane
-
 default_platform(:ios)
 
 platform :ios do
@@ -42,8 +39,16 @@ platform :ios do
 
   desc "Runs all the tests"
   lane :test do
-    scan
-    snapshot
+    # Scan can't target two different platforms in devices
+    # Need to run scan multiple times
+    scan(
+      step_name: "scan - iPhone", 
+      devices: ["iPhone 6", "iPhone 12"]
+    )
+    scan(
+      step_name: "scan - Apple TV",
+      devices: ["Apple TV"]
+    )
   end
 
   desc "Increment build number"
@@ -56,9 +61,8 @@ platform :ios do
     increment_version_number(version_number: version_number_without_prerelease_modifiers)
     
     files_to_update = [
-      '../PurchasesCoreSwift.podspec',
-      '../Purchases.podspec',
-      '../Purchases/Misc/RCSystemInfo.m',
+      '../RevenueCat.podspec',
+      '../Purchases/Misc/SystemInfo.swift',
       '../.jazzy.yaml',
       '../.version',
       '../Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
@@ -95,7 +99,7 @@ platform :ios do
       tag_name: "#{release_version}",
       description: changelog,
       commitish: commit_hash,
-      upload_assets: ["Purchases.framework.zip", "Purchases.xcframework.zip"],
+      upload_assets: ["RevenueCat.framework.zip", "RevenueCat.xcframework.zip"],
       is_draft: false
   )
   end
@@ -122,6 +126,18 @@ platform :ios do
     carthage_archive
     export_xcframework
     check_no_github_release_exists(version_number)
+  end
+
+  desc "tvOS, watchOS, and macOS build"
+  lane :build_tv_watch_mac do |options|
+    check_pods
+    carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS,Mac", use_xcframeworks: true)
+  end
+
+  desc "macOS build"
+  lane :build_mac do |options|
+    check_pods
+    carthage(command: "build", no_skip_current: true, platform: "Mac", use_xcframeworks: true)
   end
 
   desc "Run the carthage archive steps to prepare for carthage distribution"
@@ -190,7 +206,7 @@ platform :ios do
 
     create_xcframework(
       destinations: platforms,
-      scheme: 'Purchases',
+      scheme: 'RevenueCat',
       xcframework_output_directory: output_directory,
       # bitcode produces issues with Catalyst when validating builds, 
       # with a message: "object not signed at all".
@@ -199,7 +215,7 @@ platform :ios do
     # sh runs from the Fastfile's location, but other commands run from the project root.
     output_directory_for_sh = "../#{output_directory}"
 
-    xcframeworks_zip_path_for_sh = "../Purchases.xcframework.zip"
+    xcframeworks_zip_path_for_sh = "../RevenueCat.xcframework.zip"
     sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", 
       output_directory_for_sh, 
       xcframeworks_zip_path_for_sh)
@@ -224,7 +240,7 @@ platform :ios do
     new_kind_line = "kind = revision;"
 
     commit_hash = last_git_commit[:commit_hash]
-    old_branch_line = "branch = main;"
+    old_branch_line = "branch = RCv4;"
     new_revision_line = "revision = #{commit_hash};"
 
     project_file_locations.each { |project_file_location|
@@ -233,11 +249,15 @@ platform :ios do
     }
   end
 
+  desc "Generate Jazzy Docs"
+  lane :generate_docs do
+    jazzy    
+  end
+
 end
 
 def push_pods
-  pod_push(path: "PurchasesCoreSwift.podspec")
-  pod_push(path: "Purchases.podspec", synchronous: true)
+  pod_push(path: "RevenueCat.podspec", synchronous: true)
 end
 
 def check_no_git_tag_exists(version_number)
@@ -260,13 +280,12 @@ def carthage_archive
     # We use this script as a workaround until this is fixed. 
     # https://github.com/Carthage/Carthage/releases/0.38.0
     sh("./scripts/carthage.sh", "build", "--no-skip-current")
-    sh("./scripts/carthage.sh", "archive", "Purchases")
+    sh("./scripts/carthage.sh", "archive", "RevenueCat")
   end
 end
 
 def check_pods
-  pod_lib_lint(verbose: true, podspec:'PurchasesCoreSwift.podspec')
-  pod_lib_lint(verbose: true, podspec:'Purchases.podspec', include_podspecs:'PurchasesCoreSwift.podspec')
+  pod_lib_lint(verbose: true, podspec:'RevenueCat.podspec')
 end
 
 def increment_build_number(previous_version_number, new_version_number, file_path)

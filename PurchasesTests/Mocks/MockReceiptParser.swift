@@ -1,17 +1,42 @@
 //
-// Created by Andrés Boedo on 8/27/20.
+// Created by Andrés Boedo on 8/11/20.
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
 import Foundation
-@testable import PurchasesCoreSwift
+@testable import RevenueCat
 
 class MockReceiptParser: ReceiptParser {
-    
-    init() {
-        super.init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder(),
-                   containerBuilder: ASN1ContainerBuilder(),
-                   receiptBuilder: AppleReceiptBuilder())
+
+    var invokedParse = false
+    var invokedParseCount = 0
+    var invokedParseParameters: Data?
+    var invokedParseParametersList = [Data]()
+    var stubbedParseError: Error?
+    var stubbedParseResult = AppleReceipt(bundleId: "com.revenuecat.test",
+                                          applicationVersion: "5.6.7",
+                                          originalApplicationVersion: "3.4.5",
+                                          opaqueValue: Data(),
+                                          sha1Hash: Data(),
+                                          creationDate: Date(),
+                                          expirationDate: nil,
+                                          inAppPurchases: [])
+
+    convenience init() {
+        self.init(objectIdentifierBuilder: ASN1ObjectIdentifierBuilder(),
+                  containerBuilder: MockASN1ContainerBuilder(),
+                  receiptBuilder: MockAppleReceiptBuilder())
+    }
+
+    override func parse(from receiptData: Data) throws -> AppleReceipt {
+        invokedParse = true
+        invokedParseCount += 1
+        invokedParseParameters = receiptData
+        invokedParseParametersList.append(receiptData)
+        if let error = stubbedParseError {
+            throw error
+        }
+        return stubbedParseResult
     }
 
     var invokedReceiptHasTransactions = false

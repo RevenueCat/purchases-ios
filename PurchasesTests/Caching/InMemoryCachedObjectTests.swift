@@ -7,57 +7,57 @@ import Foundation
 import Nimble
 import XCTest
 
-import Purchases
+@testable import RevenueCat
 
 class InMemoryCachedObjectTests: XCTestCase {
 
     // mark: isCacheStaleWithDurationInSeconds:
 
     func testIsCacheStaleIsFalseBeforeDurationExpires() {
-        let cacheDurationInSeconds: Int32 = 5
+        let cacheDurationInSeconds = 5.0
         let now = Date()
 
-        let cachedObject = RCInMemoryCachedObject<NSString>()
+        let cachedObject = InMemoryCachedObject<NSString>()
 
-        cachedObject.cacheInstance("myString")
-        expect(cachedObject.isCacheStaleWithDuration(inSeconds: cacheDurationInSeconds)) == false
+        cachedObject.cache(instance: "myString")
+        expect(cachedObject.isCacheStale(durationInSeconds: cacheDurationInSeconds)) == false
 
-        cachedObject.lastUpdatedAt = now
-        expect(cachedObject.isCacheStaleWithDuration(inSeconds: cacheDurationInSeconds)) == false
+        cachedObject.updateCacheTimestamp(date: now)
+        expect(cachedObject.isCacheStale(durationInSeconds: cacheDurationInSeconds)) == false
     }
 
     func testIsCacheStaleIsTrueAfterDurationExpires() {
-        let cacheDurationInSeconds: Int32 = 5
+        let cacheDurationInSeconds = 5.0
         let now = Date()
 
-        let cachedObject = RCInMemoryCachedObject<NSString>()
+        let cachedObject = InMemoryCachedObject<NSString>()
 
         guard let oldDate = Calendar.current.date(byAdding: .second, value: -5, to: now) else {
             fatalError("Couldn't set up date for tests")
         }
 
-        cachedObject.cacheInstance("myString")
-        cachedObject.lastUpdatedAt = oldDate
-        expect(cachedObject.isCacheStaleWithDuration(inSeconds: cacheDurationInSeconds)) == true
+        cachedObject.cache(instance: "myString")
+        cachedObject.updateCacheTimestamp(date: oldDate)
+        expect(cachedObject.isCacheStale(durationInSeconds: cacheDurationInSeconds)) == true
     }
 
 
     func testIsCacheStaleIsTrueIfTheresNothingCached() {
-        let cachedObject = RCInMemoryCachedObject<NSString>()
+        let cachedObject = InMemoryCachedObject<NSString>()
 
-        expect(cachedObject.isCacheStaleWithDuration(inSeconds: 5)) == true
+        expect(cachedObject.isCacheStale(durationInSeconds: 5)) == true
 
-        cachedObject.cacheInstance("myString")
+        cachedObject.cache(instance: "myString")
         cachedObject.clearCache()
 
-        expect(cachedObject.isCacheStaleWithDuration(inSeconds: 5)) == true
+        expect(cachedObject.isCacheStale(durationInSeconds: 5)) == true
     }
 
     // mark: clearCacheTimestamp
 
     func testClearCacheTimestampClearsCorrectly() {
-        let cachedObject = RCInMemoryCachedObject<NSString>()
-        cachedObject.cacheInstance("myString")
+        let cachedObject = InMemoryCachedObject<NSString>()
+        cachedObject.cache(instance: "myString")
         expect(cachedObject.lastUpdatedAt).toNot(beNil())
         expect(cachedObject.cachedInstance()).toNot(beNil())
 
@@ -69,8 +69,8 @@ class InMemoryCachedObjectTests: XCTestCase {
     // mark: clearCache
 
     func testClearCacheClearsCorrectly() {
-        let cachedObject = RCInMemoryCachedObject<NSString>()
-        cachedObject.cacheInstance("myString")
+        let cachedObject = InMemoryCachedObject<NSString>()
+        cachedObject.cache(instance: "myString")
 
         expect(cachedObject.lastUpdatedAt).toNot(beNil())
         expect(cachedObject.cachedInstance()).toNot(beNil())
@@ -85,15 +85,15 @@ class InMemoryCachedObjectTests: XCTestCase {
 
     func testUpdateCacheTimestampWithDateUpdatesCorrectly() {
         let myString: NSString = "something"
-        let cachedObject = RCInMemoryCachedObject<NSString>()
+        let cachedObject = InMemoryCachedObject<NSString>()
         expect(cachedObject.lastUpdatedAt).to(beNil())
         let firstDate = Date()
-        cachedObject.cacheInstance(myString)
+        cachedObject.cache(instance: myString)
 
-        cachedObject.lastUpdatedAt = firstDate
+        cachedObject.updateCacheTimestamp(date: firstDate)
 
         let secondDate = Date()
-        cachedObject.updateCacheTimestamp(with: secondDate)
+        cachedObject.updateCacheTimestamp(date: secondDate)
 
         expect(cachedObject.lastUpdatedAt) == secondDate
     }
@@ -102,18 +102,18 @@ class InMemoryCachedObjectTests: XCTestCase {
 
     func testCacheInstanceWithDateCachesInstanceCorrectly() {
         let myString: NSString = "something"
-        let cachedObject = RCInMemoryCachedObject<NSString>()
-        cachedObject.cacheInstance(myString)
+        let cachedObject = InMemoryCachedObject<NSString>()
+        cachedObject.cache(instance: myString)
 
         expect(cachedObject.cachedInstance()) == myString
     }
 
     func testCacheInstanceWithDateSetsDateCorrectly() {
         let myString: NSString = "something"
-        let cachedObject = RCInMemoryCachedObject<NSString>()
+        let cachedObject = InMemoryCachedObject<NSString>()
         expect(cachedObject.lastUpdatedAt).to(beNil())
         let newDate = Date()
-        cachedObject.cacheInstance(myString)
+        cachedObject.cache(instance: myString)
 
         expect(cachedObject.lastUpdatedAt).to(beCloseTo(newDate))
     }

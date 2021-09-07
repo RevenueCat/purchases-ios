@@ -28,14 +28,17 @@ commands:
         type: string
         default: .
     steps:
-       # Bundler
+      # Bundler
       - restore_cache:
           keys: 
             - v1-gem-cache-{{ checksum "Gemfile.lock" }}
       - run: 
           name: Bundle install
           working_directory: << parameters.directory >>
-          command: bundle install --clean --path vendor/bundle
+          command: |
+              bundle config set --local clean 'true'
+              bundle config set --local path 'vendor/bundle'
+              bundle install
       - save_cache:
           key: v1-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
@@ -109,7 +112,7 @@ commands:
 jobs:
   runtest:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -119,14 +122,38 @@ jobs:
       
       - run:
           name: Run tests
-          command: bundle exec fastlane scan
+          command: bundle exec fastlane test
           environment:
-            SCAN_SCHEME: Unit Tests
+            SCAN_SCHEME: RevenueCat
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output/report.html
           destination: test_report.html
+  buildTvWatchAndMacOS:
+    macos:
+      xcode: "12.5.1"
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - run:
+          name: Install swiftlint
+          command: brew install swiftlint
+      - install-dependencies
+      - run:
+          name: Build AppleTV, WatchOS, and macOS
+          command: bundle exec fastlane build_tv_watch_mac            
+  apitest:
+    macos:
+      xcode: "12.5.1"
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - run:
+          name: Build APITester
+          command: xcodebuild -target APITester
 
   storekit_tests:
     macos:
@@ -155,7 +182,7 @@ jobs:
 
   deployment-checks: 
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -187,28 +214,31 @@ jobs:
           
   docs-deploy:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
       - install-dependencies
       - run:
+          name: Install SourceKitten
+          command: brew install sourcekitten
+      - run:
           name: Build docs
-          command: bundle exec fastlane run jazzy
+          command: bundle exec fastlane generate_docs
       - run:
           name: Install awscli
           command: sudo python3 -m pip install awscli
       - run:
           name: Deploy to S3
-          command: aws s3 sync docs s3://purchases-docs/ios --delete --acl public-read
+          command: aws s3 sync generated_docs s3://purchases-docs/ios --delete --acl public-read
       - run:
           name: Invalidate CloudFront caches
           command: aws cloudfront create-invalidation --distribution-id EPTW7F3CB566V --paths "/*"
   
   make-release:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -221,7 +251,7 @@ jobs:
 
   prepare-next-version:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -234,7 +264,7 @@ jobs:
 
   integration-tests-cocoapods:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -255,7 +285,7 @@ jobs:
       
   integration-tests-swift-package-manager:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -267,7 +297,7 @@ jobs:
 
   integration-tests-carthage:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -286,7 +316,7 @@ jobs:
           command: |
               ./carthage.sh update --no-build
               rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
-              ./carthage.sh build
+              ./carthage.sh build --use-xcframeworks
       - save_cache:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
@@ -297,7 +327,7 @@ jobs:
 
   integration-tests-xcode-direct-integration:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -308,7 +338,7 @@ jobs:
 
   lint:
     macos:
-      xcode: "12.2.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -324,15 +354,16 @@ workflows:
     jobs:
       - lint
       - runtest
-      - storekit_tests: *release-tags-and-branches
-      - deployment-checks: *release-branches
-      - integration-tests-cocoapods: *release-tags-and-branches
-      - integration-tests-swift-package-manager: *release-tags-and-branches
-      - integration-tests-carthage: *release-tags-and-branches
-      - integration-tests-xcode-direct-integration: *release-tags-and-branches
+      - apitest
+      - buildTvWatchAndMacOS
+      - storekit_tests
+      - deployment-checks
+      - integration-tests-cocoapods
+      - integration-tests-swift-package-manager
+      - integration-tests-carthage
+      - integration-tests-xcode-direct-integration
   deploy:
     jobs:
       - make-release: *release-tags
       - prepare-next-version: *release-tags
       - docs-deploy: *release-tags
-

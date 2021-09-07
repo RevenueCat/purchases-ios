@@ -8,7 +8,7 @@
 
 import UIKit
 import UserNotifications
-import Purchases
+import RevenueCat
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -18,9 +18,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
-        Purchases.debugLogsEnabled = true
         Purchases.configure(withAPIKey: <your_public_sdk_key_here>)
 
+        Purchases.logLevel = .debug
         // set attributes to store additional, structured information for a user in RevenueCat.
         // More info: https://docs.revenuecat.com/docs/user-attributes
         Purchases.shared.setAttributes(["favorite_cat" : "garfield"])

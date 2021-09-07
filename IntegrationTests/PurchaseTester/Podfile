@@ -2,8 +2,7 @@
 target 'PurchaseTester' do
   platform :ios, '12.1'
   # Pods for PurchaseTester
-  pod 'Purchases', :path => '../../'
-  pod 'PurchasesCoreSwift', :path => '../../'
+  pod 'RevenueCat', :path => '../../'
 
 end
 
@@ -11,16 +10,6 @@ target 'WatchPurchaseTester Extension' do
   platform :watchos, '6.2'
 
   # Pods for PurchaseTester
-  pod 'Purchases', :path => '../../'
-  pod 'PurchasesCoreSwift', :path => '../../'
+  pod 'RevenueCat', :path => '../../'
 
-end
-
-
-post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
-    end
-  end
 end

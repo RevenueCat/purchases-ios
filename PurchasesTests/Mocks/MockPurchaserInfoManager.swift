@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import PurchasesCoreSwift
+@testable import RevenueCat
 
 class MockPurchaserInfoManager: PurchaserInfoManager {
     var invokedDelegateGetter = false
@@ -12,14 +12,14 @@ class MockPurchaserInfoManager: PurchaserInfoManager {
 
     var invokedFetchAndCachePurchaserInfo = false
     var invokedFetchAndCachePurchaserInfoCount = 0
-    var invokedFetchAndCachePurchaserInfoParameters: (appUserID: String, isAppBackgrounded: Bool, completion: Purchases.ReceivePurchaserInfoBlock?)?
+    var invokedFetchAndCachePurchaserInfoParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ReceivePurchaserInfoBlock?)?
     var invokedFetchAndCachePurchaserInfoParametersList = [(appUserID: String,
         isAppBackgrounded: Bool,
-        completion: Purchases.ReceivePurchaserInfoBlock?)]()
+        completion: ReceivePurchaserInfoBlock?)]()
 
-    override func fetchAndCachePurchaserInfo(withAppUserID appUserID: String,
+    override func fetchAndCachePurchaserInfo(appUserID: String,
                                              isAppBackgrounded: Bool,
-                                             completion: Purchases.ReceivePurchaserInfoBlock?) {
+                                             completion: ReceivePurchaserInfoBlock?) {
         invokedFetchAndCachePurchaserInfo = true
         invokedFetchAndCachePurchaserInfoCount += 1
         invokedFetchAndCachePurchaserInfoParameters = (appUserID, isAppBackgrounded, completion)
@@ -28,14 +28,14 @@ class MockPurchaserInfoManager: PurchaserInfoManager {
 
     var invokedFetchAndCachePurchaserInfoIfStale = false
     var invokedFetchAndCachePurchaserInfoIfStaleCount = 0
-    var invokedFetchAndCachePurchaserInfoIfStaleParameters: (appUserID: String, isAppBackgrounded: Bool, completion: Purchases.ReceivePurchaserInfoBlock?)?
+    var invokedFetchAndCachePurchaserInfoIfStaleParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ReceivePurchaserInfoBlock?)?
     var invokedFetchAndCachePurchaserInfoIfStaleParametersList = [(appUserID: String,
         isAppBackgrounded: Bool,
-        completion: Purchases.ReceivePurchaserInfoBlock?)]()
+        completion: ReceivePurchaserInfoBlock?)]()
 
-    override func fetchAndCachePurchaserInfoIfStale(withAppUserID appUserID: String,
+    override func fetchAndCachePurchaserInfoIfStale(appUserID: String,
                                                     isAppBackgrounded: Bool,
-                                                    completion: Purchases.ReceivePurchaserInfoBlock?) {
+                                                    completion: ReceivePurchaserInfoBlock?) {
         invokedFetchAndCachePurchaserInfoIfStale = true
         invokedFetchAndCachePurchaserInfoIfStaleCount += 1
         invokedFetchAndCachePurchaserInfoIfStaleParameters = (appUserID, isAppBackgrounded, completion)
@@ -47,7 +47,7 @@ class MockPurchaserInfoManager: PurchaserInfoManager {
     var invokedSendCachedPurchaserInfoIfAvailableParameters: (appUserID: String, Void)?
     var invokedSendCachedPurchaserInfoIfAvailableParametersList = [(appUserID: String, Void)]()
 
-    override func sendCachedPurchaserInfoIfAvailable(forAppUserID appUserID: String) {
+    override func sendCachedPurchaserInfoIfAvailable(appUserID: String) {
         invokedSendCachedPurchaserInfoIfAvailable = true
         invokedSendCachedPurchaserInfoIfAvailableCount += 1
         invokedSendCachedPurchaserInfoIfAvailableParameters = (appUserID, ())
@@ -56,14 +56,14 @@ class MockPurchaserInfoManager: PurchaserInfoManager {
 
     var invokedPurchaserInfo = false
     var invokedPurchaserInfoCount = 0
-    var invokedPurchaserInfoParameters: (appUserID: String, completion: Purchases.ReceivePurchaserInfoBlock?)?
-    var invokedPurchaserInfoParametersList = [(appUserID: String, completion: Purchases.ReceivePurchaserInfoBlock?)]()
+    var invokedPurchaserInfoParameters: (appUserID: String, completion: ReceivePurchaserInfoBlock?)?
+    var invokedPurchaserInfoParametersList = [(appUserID: String, completion: ReceivePurchaserInfoBlock?)]()
 
-    var stubbedPurchaserInfo: Purchases.PurchaserInfo?
+    var stubbedPurchaserInfo: PurchaserInfo?
     var stubbedError: Error?
 
-    override func purchaserInfo(withAppUserID appUserID: String,
-                                completionBlock completion: Purchases.ReceivePurchaserInfoBlock?) {
+    override func purchaserInfo(appUserID: String,
+                                completion: ReceivePurchaserInfoBlock?) {
         invokedPurchaserInfo = true
         invokedPurchaserInfoCount += 1
         invokedPurchaserInfoParameters = (appUserID, completion)
@@ -75,9 +75,9 @@ class MockPurchaserInfoManager: PurchaserInfoManager {
     var invokedCachedPurchaserInfoCount = 0
     var invokedCachedPurchaserInfoParameters: (appUserID: String, Void)?
     var invokedCachedPurchaserInfoParametersList = [(appUserID: String, Void)]()
-    var stubbedCachedPurchaserInfoResult: Purchases.PurchaserInfo!
+    var stubbedCachedPurchaserInfoResult: PurchaserInfo!
 
-    override func cachedPurchaserInfo(forAppUserID appUserID: String) -> Purchases.PurchaserInfo {
+    override func cachedPurchaserInfo(appUserID: String) -> PurchaserInfo {
         invokedCachedPurchaserInfo = true
         invokedCachedPurchaserInfoCount += 1
         invokedCachedPurchaserInfoParameters = (appUserID, ())
@@ -87,15 +87,14 @@ class MockPurchaserInfoManager: PurchaserInfoManager {
 
     var invokedCachePurchaserInfo = false
     var invokedCachePurchaserInfoCount = 0
-    var invokedCachePurchaserInfoParameters: (info: Purchases.PurchaserInfo, appUserID: String)?
-    var invokedCachePurchaserInfoParametersList = [(info: Purchases.PurchaserInfo, appUserID: String)]()
+    var invokedCachePurchaserInfoParameters: (info: PurchaserInfo, appUserID: String)?
+    var invokedCachePurchaserInfoParametersList = [(info: PurchaserInfo, appUserID: String)]()
 
-    override func cachePurchaserInfo(_ info: Purchases.PurchaserInfo,
-                                     forAppUserID appUserID: String) {
+    override func cache(purchaserInfo: PurchaserInfo, appUserID: String) {
         invokedCachePurchaserInfo = true
         invokedCachePurchaserInfoCount += 1
-        invokedCachePurchaserInfoParameters = (info, appUserID)
-        invokedCachePurchaserInfoParametersList.append((info, appUserID))
+        invokedCachePurchaserInfoParameters = (purchaserInfo, appUserID)
+        invokedCachePurchaserInfoParametersList.append((purchaserInfo, appUserID))
     }
 
     var invokedClearPurchaserInfoCache = false

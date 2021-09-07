@@ -2,15 +2,19 @@ excluded:
   - Carthage
   - Pods
   - PurchasesTests
-  - PurchasesCoreSwiftTests
   - Examples
   - IntegrationTests
   - StoreKitTests
+  - PublicSDKAPITester
   - vendor
   - scan_derived_data
-disabled_rules:
-  - trailing_comma
-identifier_name: 
+
+opt_in_rules:
+  - sorted_imports
+  - missing_docs
+
+identifier_name:
   max_length: 
     warning: 60 
     error: 80
+

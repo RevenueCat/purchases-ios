@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Purchases
+import RevenueCat
 
 /*
  An example paywall that uses the current offering.

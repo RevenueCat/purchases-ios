@@ -1,13 +1,10 @@
 clean: true
 author: RevenueCat
 author_url: https://revenuecat.com
-objc: true
 sdk: iphonesimulator
-module: Purchases
-umbrella_header: Purchases/Public/Purchases.h
-module_version: 3.13.0-SNAPSHOT
+module_version: 4.0.0-beta.1
 github_url: https://github.com/revenuecat/purchases-ios
-github_file_prefix: https://github.com/revenuecat/purchases-ios/tree/3.13.0-SNAPSHOT
-output: docs
-# Leaving this commented out. We used to specify this before, but now it's working without it
-# xcodebuild_arguments: [--objc,Purchases/Public/Purchases.h,--,-x,objective-c,-isysroot,$(xcrun --show-sdk-path),-I,$(pwd)]
+github_file_prefix: https://github.com/revenuecat/purchases-ios/tree/4.0.0-beta.1
+output: generated_docs
+include:
+  - "Purchases/Public/*/"

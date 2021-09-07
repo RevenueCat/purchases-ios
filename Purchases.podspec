@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.documentation_url = "https://docs.revenuecat.com/"
 
   s.framework      = 'StoreKit'
-  s.swift_version       = '5.0'
+  s.swift_version       = '5.5'
 
   s.ios.deployment_target = '9.0'
   s.osx.deployment_target = '10.12'
@@ -22,12 +22,7 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = '9.0'
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
-  s.dependency 'PurchasesCoreSwift', '3.13.0-SNAPSHOT'
 
-
-  s.source_files = ['Purchases/**/*.{h,m}']
-  s.public_header_files = [
-    'Purchases/Public/*.h'
-  ]
-
+  s.source_files = 'Purchases/**/*.{h,swift}'
+  
 end

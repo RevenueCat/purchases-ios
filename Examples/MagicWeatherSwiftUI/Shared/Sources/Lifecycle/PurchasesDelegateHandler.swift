@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Purchases
+import RevenueCat
 
 /*
  The class we'll use to publish PurchaserInfo data to our Magic Weather app.

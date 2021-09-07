@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,8 +17,8 @@
 		2D6C02FE2549FE2C0039CB92 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02F22549FE2C0039CB92 /* AppDelegate.m */; };
 		2D6C03212549FF4F0039CB92 /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C02F02549FE2C0039CB92 /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D6C0393254A04300039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0392254A04300039CB92 /* Dummy.swift */; };
-		2D6C03CC254A08F00039CB92 /* Purchases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6C03CB254A08F00039CB92 /* Purchases.framework */; };
 		2DC19168255F1D100039389A /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19167255F1D0F0039389A /* IntegrationTests.swift */; };
+		B33EDF7326E2D53F00F379EA /* RevenueCat.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = B33EDF7226E2D53F00F379EA /* RevenueCat.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,8 +51,9 @@
 		2D6C030A2549FE4E0039CB92 /* CarthageIntegrationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CarthageIntegrationTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C0391254A04300039CB92 /* CarthageIntegration-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CarthageIntegration-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C0392254A04300039CB92 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
-		2D6C03CB254A08F00039CB92 /* Purchases.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Purchases.framework; path = Carthage/Build/iOS/Purchases.framework; sourceTree = "<group>"; };
 		2DC19167255F1D0F0039389A /* IntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
+		B33EDF7226E2D53F00F379EA /* RevenueCat.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RevenueCat.xcframework; path = Carthage/Build/RevenueCat.xcframework; sourceTree = "<group>"; };
+		B3BE5F8326E2ABF70083A690 /* RevenueCat.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RevenueCat.framework; path = "Carthage/Build/RevenueCat.xcframework/ios-arm64_armv7/RevenueCat.framework"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,7 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D6C03CC254A08F00039CB92 /* Purchases.framework in Frameworks */,
+				B33EDF7326E2D53F00F379EA /* RevenueCat.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,7 +138,8 @@
 		2D6C03CA254A08F00039CB92 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				2D6C03CB254A08F00039CB92 /* Purchases.framework */,
+				B33EDF7226E2D53F00F379EA /* RevenueCat.xcframework */,
+				B3BE5F8326E2ABF70083A690 /* RevenueCat.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -260,13 +262,13 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/Carthage/Build/iOS/Purchases.framework",
+				"$(SRCROOT)/Carthage/Build/RevenueCat.xcframework/ios-arm64_armv7/RevenueCat.framework",
 			);
 			name = "copy Carthage frameworks";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/Purchases.framework",
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/RevenueCat.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -450,7 +452,7 @@
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
+					"$(PROJECT_DIR)/Carthage/Build/RevenueCat.xcframework/ios-arm64_armv7",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/../CommonFiles/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -480,7 +482,7 @@
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
+					"$(PROJECT_DIR)/Carthage/Build/RevenueCat.xcframework/ios-arm64_armv7",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/../CommonFiles/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;

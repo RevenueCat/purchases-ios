@@ -1,4 +1,26 @@
-## Contributing
+# Contributing
+___
+## 🛠 ObjC to Swift Migration
+Do you want to help with the ObjC to Swift migration? Awesome! We have a [project tracker](https://github.com/RevenueCat/purchases-ios/projects/3), some [milestones](https://github.com/RevenueCat/purchases-ios/milestones), lots of [issues tagged](https://github.com/RevenueCat/purchases-ios/labels/swift%20migration) for the migration. Here's how you can get going.
+
+### You can do this!
+We've tagged a number of issues as [you can do this!](https://github.com/RevenueCat/purchases-ios/labels/you%20can%20do%20this%21). These will generally not require much (or any!) working knowledge of our SDK, they are tasks like migrating a single `enum` into Swift, or a uncomplicated `model` from objc to swift.
+
+If you decide you want to help, that [you can do this!](https://github.com/RevenueCat/purchases-ios/labels/you%20can%20do%20this%21) tag is a good place to start. Now, here's how you can actually get going:
+
+- Follow the directions from [2. Create a fork/branch.](#2-create-a-forkbranch) to setup your environment.
+- Find an issue that speaks to you, and comment in it "I've got this" or something like that 😄.
+- If the issue isn't clear enough, feel free to tag in sdk team `@RevenueCat/sdk` asking for clarification.
+- Work on the issue! 
+- Use our [Swift Style Guide](SwiftStyleGuide.swift) to ensure that the style is consistent with the rest of the codebase.
+- Once you think you're done, build the `APITester` target. That target compiles a file that contains references to all public api for the `Purchases` framework. This is how we ensure our changes don't impact the public api.
+- If that builds, then follow [the final steps (Create a pull request to revenucat)](#7-create-a-pull-request-to-revenuecatmain-and-request-review)
+  - **Important:** make sure you select the `swift_migration` branch as the target for your PR's `base` instead of `main`.
+- Done!
+
+___
+## Contributing to the main project (non-Swift migration)
+
 
 #### 1. Create an issue to make sure its something that should be done.
 
@@ -42,7 +64,7 @@ This installs [Homebrew](https://brew.sh/), and then [SwiftLint](https://github.
 
 #### 5. Build something!
 
-We don't have a style guide, yet, but when coding please try to match the prevailing style of the project. This is pretty subjective, so don't get too stressed about it. If there's any issue, we'll suggest a change.
+Use our [Swift Style Guide](SwiftStyleGuide.swift) to ensure that the style is consistent with the rest of the codebase. This is pretty subjective, so don't get too stressed about it. If there's any issue, we'll suggest a change.
 
 #### 6. Write tests for your fix/new functionality.
 

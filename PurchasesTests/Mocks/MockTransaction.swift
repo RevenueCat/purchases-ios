@@ -3,6 +3,8 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
+import StoreKit
+
 class MockTransaction: SKPaymentTransaction {
 
     var mockPayment: SKPayment?

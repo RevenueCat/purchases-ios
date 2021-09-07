@@ -3,7 +3,9 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
+@testable import RevenueCat
+
+class MockSubscriberAttributesManager: SubscriberAttributesManager {
 
     var invokedSetAttributes = false
     var invokedSetAttributesCount = 0
@@ -76,12 +78,12 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
         invokedSetPushTokenStringParameters = (pushToken, appUserID)
         invokedSetPushTokenStringParametersList.append((pushToken, appUserID))
     }
-    
+
     var invokedSetAdjustID = false
     var invokedSetAdjustIDCount = 0
     var invokedSetAdjustIDParameters: (adjustID: String?, appUserID: String?)?
     var invokedSetAdjustIDParametersList = [(pushToken: String?, appUserID: String?)]()
-    
+
     override func setAdjustID(_ adjustID: String?, appUserID: String) {
         invokedSetAdjustID = true
         invokedSetAdjustIDCount += 1
@@ -213,9 +215,9 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
     var invokedUnsyncedAttributesByKeyCount = 0
     var invokedUnsyncedAttributesByKeyParameters: (appUserID: String, Void)?
     var invokedUnsyncedAttributesByKeyParametersList = [(appUserID: String, Void)]()
-    var stubbedUnsyncedAttributesByKeyResult: [String: RCSubscriberAttribute]! = [:]
+    var stubbedUnsyncedAttributesByKeyResult: [String: SubscriberAttribute]! = [:]
 
-    override func unsyncedAttributesByKey(forAppUserID appUserID: String) -> [String: RCSubscriberAttribute] {
+    override func unsyncedAttributesByKey(appUserID: String) -> [String: SubscriberAttribute] {
         invokedUnsyncedAttributesByKey = true
         invokedUnsyncedAttributesByKeyCount += 1
         invokedUnsyncedAttributesByKeyParameters = (appUserID, ())
@@ -225,10 +227,10 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
 
     var invokedMarkAttributes = false
     var invokedMarkAttributesCount = 0
-    var invokedMarkAttributesParameters: (syncedAttributes: [String: RCSubscriberAttribute], appUserID: String)?
-    var invokedMarkAttributesParametersList = [(syncedAttributes: [String: RCSubscriberAttribute], appUserID: String)]()
+    var invokedMarkAttributesParameters: (syncedAttributes: [String: SubscriberAttribute]?, appUserID: String)?
+    var invokedMarkAttributesParametersList = [(syncedAttributes: [String: SubscriberAttribute]?, appUserID: String)]()
 
-    override func markAttributes(asSynced syncedAttributes: [String: RCSubscriberAttribute],
+    override func markAttributesAsSynced(_ syncedAttributes: [String: SubscriberAttribute]?,
                                  appUserID: String) {
         invokedMarkAttributes = true
         invokedMarkAttributesCount += 1
@@ -241,18 +243,18 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
     var invokedSyncAttributesForAllUsersParameters: (currentAppUserID: String?, Void)?
     var invokedSyncAttributesForAllUsersParametersList = [(currentAppUserID: String?, Void)]()
 
-    override func syncAttributesForAllUsers(withCurrentAppUserID currentAppUserID: String) {
+    override func syncAttributesForAllUsers(currentAppUserID: String) {
         invokedSyncAttributesForAllUsers = true
         invokedSyncAttributesForAllUsersCount += 1
         invokedSyncAttributesForAllUsersParameters = (currentAppUserID, ())
         invokedSyncAttributesForAllUsersParametersList.append((currentAppUserID, ()))
     }
-    
+
     var invokedCollectDeviceIdentifiers = false
     var invokedCollectDeviceIdentifiersCount = 0
     var invokedCollectDeviceIdentifiersParameters: (appUserID: String?, Void)?
     var invokedCollectDeviceIdentifiersParametersList = [(appUserID: String?, Void)]()
-    
+
     override func collectDeviceIdentifiers(forAppUserID appUserID: String) {
         invokedCollectDeviceIdentifiers = true
         invokedCollectDeviceIdentifiersCount += 1
@@ -262,10 +264,10 @@ class MockSubscriberAttributesManager: RCSubscriberAttributesManager {
 
     var invokedConvertAttributionDataAndSet = false
     var invokedConvertAttributionDataAndSetCount = 0
-    var invokedConvertAttributionDataAndSetParameters: (attributionData: [AnyHashable: Any], network: RCAttributionNetwork, appUserID: String)?
-    var invokedConvertAttributionDataAndSetParametersList = [(attributionData: [AnyHashable: Any], network: RCAttributionNetwork, appUserID: String)]()
+    var invokedConvertAttributionDataAndSetParameters: (attributionData: [String: Any], network: AttributionNetwork, appUserID: String)?
+    var invokedConvertAttributionDataAndSetParametersList = [(attributionData: [String: Any], network: AttributionNetwork, appUserID: String)]()
 
-    override func convertAttributionDataAndSet(asSubscriberAttributes attributionData: [AnyHashable: Any], network: RCAttributionNetwork, appUserID: String) {
+    override func setAttributes(fromAttributionData attributionData: [String: Any], network: AttributionNetwork, appUserID: String) {
         invokedConvertAttributionDataAndSet = true
         invokedConvertAttributionDataAndSetCount += 1
         invokedConvertAttributionDataAndSetParameters = (attributionData, network, appUserID)

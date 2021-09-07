@@ -3,70 +3,78 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-class MockBackend: RCBackend {
+@testable import RevenueCat
+
+class MockBackend: Backend {
 
     var invokedPostReceiptData = false
     var invokedPostReceiptDataCount = 0
-    var stubbedPostReceiptPurchaserInfo: Purchases.PurchaserInfo? = nil
+    var stubbedPostReceiptPurchaserInfo: PurchaserInfo? = nil
     var stubbedPostReceiptPurchaserError: Error? = nil
     var invokedPostReceiptDataParameters: (data: Data?,
                                            appUserID: String?,
                                            isRestore: Bool,
-                                           productInfo: RCProductInfo?,
+                                           productInfo: ProductInfo?,
                                            offeringIdentifier: String?,
                                            observerMode: Bool,
-                                           subscriberAttributesByKey: [String: RCSubscriberAttribute]?,
-                                           completion: RCBackendPurchaserInfoResponseHandler?)?
+                                           subscriberAttributesByKey: [String: SubscriberAttribute]?,
+                                           completion: BackendPurchaserInfoResponseHandler?)?
     var invokedPostReceiptDataParametersList = [(data: Data?,
         appUserID: String?,
         isRestore: Bool,
-        productInfo: RCProductInfo?,
+        productInfo: ProductInfo?,
         offeringIdentifier: String?,
         observerMode: Bool,
-        subscriberAttributesByKey: [String: RCSubscriberAttribute]?,
-        completion: RCBackendPurchaserInfoResponseHandler?)]()
+        subscriberAttributesByKey: [String: SubscriberAttribute]?,
+        completion: BackendPurchaserInfoResponseHandler?)]()
 
-    override func postReceiptData(_ data: Data,
-                                  appUserID: String,
-                                  isRestore: Bool,
-                                  productInfo: RCProductInfo?,
-                                  presentedOfferingIdentifier offeringIdentifier: String?,
-                                  observerMode: Bool,
-                                  subscriberAttributes subscriberAttributesByKey: [String: RCSubscriberAttribute]?,
-                                  completion: @escaping RCBackendPurchaserInfoResponseHandler) {
+    public convenience init() {
+        self.init(httpClient: MockHTTPClient(systemInfo: try! MockSystemInfo(platformFlavor: nil,
+                                                                             platformFlavorVersion: nil,
+                                                                             finishTransactions: false),
+                                             eTagManager: MockETagManager()),
+                  apiKey: "mockAPIKey")
+    }
+
+    override func post(receiptData: Data,
+                       appUserID: String,
+                       isRestore: Bool,
+                       productInfo: ProductInfo?,
+                       presentedOfferingIdentifier offeringIdentifier: String?,
+                       observerMode: Bool,
+                       subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
+                       completion: @escaping BackendPurchaserInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
-        invokedPostReceiptDataParameters = (data,
-            appUserID,
-            isRestore,
-            productInfo,
-            offeringIdentifier,
-            observerMode,
-            subscriberAttributesByKey,
-            completion)
-        invokedPostReceiptDataParametersList.append((data,
-                                                        appUserID,
-                                                        isRestore,
-                                                        productInfo,
-                                                        offeringIdentifier,
-                                                        observerMode,
-                                                        subscriberAttributesByKey,
-                                                        completion))
+        invokedPostReceiptDataParameters = (receiptData,
+                                            appUserID,
+                                            isRestore,
+                                            productInfo,
+                                            offeringIdentifier,
+                                            observerMode,
+                                            subscriberAttributesByKey,
+                                            completion)
+        invokedPostReceiptDataParametersList.append((receiptData,
+                                                     appUserID,
+                                                     isRestore,
+                                                     productInfo,
+                                                     offeringIdentifier,
+                                                     observerMode,
+                                                     subscriberAttributesByKey,
+                                                     completion))
         completion(stubbedPostReceiptPurchaserInfo, stubbedPostReceiptPurchaserError)
     }
 
     var invokedGetSubscriberData = false
     var invokedGetSubscriberDataCount = 0
-    var invokedGetSubscriberDataParameters: (appUserID: String?, completion: RCBackendPurchaserInfoResponseHandler?)?
+    var invokedGetSubscriberDataParameters: (appUserID: String?, completion: BackendPurchaserInfoResponseHandler?)?
     var invokedGetSubscriberDataParametersList = [(appUserID: String?,
-        completion: RCBackendPurchaserInfoResponseHandler?)]()
+        completion: BackendPurchaserInfoResponseHandler?)]()
 
-    var stubbedGetSubscriberDataPurchaserInfo: Purchases.PurchaserInfo? = nil
+    var stubbedGetSubscriberDataPurchaserInfo: PurchaserInfo? = nil
     var stubbedGetSubscriberDataError: Error? = nil
 
-
-    override func getSubscriberData(withAppUserID appUserID: String,
-                                    completion: @escaping RCBackendPurchaserInfoResponseHandler) {
+    override func getSubscriberData(appUserID: String, completion: @escaping BackendPurchaserInfoResponseHandler) {
         invokedGetSubscriberData = true
         invokedGetSubscriberDataCount += 1
         invokedGetSubscriberDataParameters = (appUserID, completion)
@@ -76,16 +84,16 @@ class MockBackend: RCBackend {
 
     var invokedGetIntroEligibility = false
     var invokedGetIntroEligibilityCount = 0
-    var invokedGetIntroEligibilityParameters: (appUserID: String?, receiptData: Data?, productIdentifiers: [String]?, completion: RCIntroEligibilityResponseHandler?)?
+    var invokedGetIntroEligibilityParameters: (appUserID: String?, receiptData: Data?, productIdentifiers: [String]?, completion: IntroEligibilityResponseHandler?)?
     var invokedGetIntroEligibilityParametersList = [(appUserID: String?,
         receiptData: Data?,
         productIdentifiers: [String]?,
-        completion: RCIntroEligibilityResponseHandler?)]()
+        completion: IntroEligibilityResponseHandler?)]()
 
-    override func getIntroEligibility(forAppUserID appUserID: String,
+    override func getIntroEligibility(appUserID: String,
                                       receiptData: Data,
                                       productIdentifiers: [String],
-                                      completion: @escaping RCIntroEligibilityResponseHandler) {
+                                      completion: @escaping IntroEligibilityResponseHandler) {
         invokedGetIntroEligibility = true
         invokedGetIntroEligibilityCount += 1
         invokedGetIntroEligibilityParameters = (appUserID, receiptData, productIdentifiers, completion)
@@ -94,34 +102,35 @@ class MockBackend: RCBackend {
 
     var invokedGetOfferingsForAppUserID = false
     var invokedGetOfferingsForAppUserIDCount = 0
-    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, completion: RCOfferingsResponseHandler?)?
-    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?,
-        completion: RCOfferingsResponseHandler?)]()
+    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, completion: OfferingsResponseHandler?)?
+    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, completion: OfferingsResponseHandler?)]()
+    var stubbedGetOfferingsCompletionResult: (data: [String: Any]?, error: Error?)?
 
-    override func getOfferingsForAppUserID(_ appUserID: String,
-                                           completion: @escaping RCOfferingsResponseHandler) {
+    override func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
         invokedGetOfferingsForAppUserID = true
         invokedGetOfferingsForAppUserIDCount += 1
         invokedGetOfferingsForAppUserIDParameters = (appUserID, completion)
         invokedGetOfferingsForAppUserIDParametersList.append((appUserID, completion))
+
+        completion(stubbedGetOfferingsCompletionResult?.data, stubbedGetOfferingsCompletionResult?.error)
     }
 
     var invokedPostAttributionData = false
     var invokedPostAttributionDataCount = 0
-    var invokedPostAttributionDataParameters: (data: [AnyHashable: Any]?, network: RCAttributionNetwork, appUserID: String?)?
-    var invokedPostAttributionDataParametersList = [(data: [AnyHashable: Any]?,
-        network: RCAttributionNetwork,
+    var invokedPostAttributionDataParameters: (data: [String: Any]?, network: AttributionNetwork, appUserID: String?)?
+    var invokedPostAttributionDataParametersList = [(data: [String: Any]?,
+                                                     network: AttributionNetwork,
         appUserID: String?)]()
     var stubbedPostAttributionDataCompletionResult: (Error?, Void)?
 
-    override func postAttributionData(_ data: [AnyHashable: Any],
-                                      from network: RCAttributionNetwork,
-                                      forAppUserID appUserID: String,
-                                      completion: ((Error?) -> ())?) {
+    override func post(attributionData: [String : Any],
+                       network: AttributionNetwork,
+                       appUserID: String,
+                       completion: ((Error?) -> Void)?) {
         invokedPostAttributionData = true
         invokedPostAttributionDataCount += 1
-        invokedPostAttributionDataParameters = (data, network, appUserID)
-        invokedPostAttributionDataParametersList.append((data, network, appUserID))
+        invokedPostAttributionDataParameters = (attributionData, network, appUserID)
+        invokedPostAttributionDataParametersList.append((attributionData, network, appUserID))
         if let result = stubbedPostAttributionDataCompletionResult {
             completion?(result.0)
         }
@@ -133,9 +142,7 @@ class MockBackend: RCBackend {
     var invokedCreateAliasParametersList = [(appUserID: String?, newAppUserID: String?)]()
     var stubbedCreateAliasCompletionResult: (Error?, Void)?
 
-    override func createAlias(forAppUserID appUserID: String,
-                              withNewAppUserID newAppUserID: String,
-                              completion: ((Error?) -> ())?) {
+    override func createAlias(appUserID: String, newAppUserID: String, completion: ((Error?) -> Void)?) {
         invokedCreateAlias = true
         invokedCreateAliasCount += 1
         invokedCreateAliasParameters = (appUserID, newAppUserID)
@@ -147,45 +154,45 @@ class MockBackend: RCBackend {
 
     var invokedPostOffer = false
     var invokedPostOfferCount = 0
-    var invokedPostOfferParameters: (offerIdentifier: String?, productIdentifier: String?, subscriptionGroup: String?, data: Data?, applicationUsername: String?, completion: RCOfferSigningResponseHandler?)?
+    var invokedPostOfferParameters: (offerIdentifier: String?, productIdentifier: String?, subscriptionGroup: String?, data: Data?, applicationUsername: String?, completion: OfferSigningResponseHandler?)?
     var invokedPostOfferParametersList = [(offerIdentifier: String?,
         productIdentifier: String?,
         subscriptionGroup: String?,
         data: Data?,
         applicationUsername: String?,
-        completion: RCOfferSigningResponseHandler?)]()
+        completion: OfferSigningResponseHandler?)]()
 
-    override func postOffer(forSigning offerIdentifier: String,
-                            withProductIdentifier productIdentifier: String,
-                            subscriptionGroup: String,
-                            receiptData data: Data,
-                            appUserID applicationUsername: String,
-                            completion: @escaping RCOfferSigningResponseHandler) {
+    override func post(offerIdForSigning offerIdentifier: String,
+                       productIdentifier: String,
+                       subscriptionGroup: String?,
+                       receiptData: Data,
+                       appUserID: String,
+                       completion: @escaping OfferSigningResponseHandler) {
         invokedPostOffer = true
         invokedPostOfferCount += 1
         invokedPostOfferParameters = (offerIdentifier,
             productIdentifier,
             subscriptionGroup,
-            data,
-            applicationUsername,
+            receiptData,
+            appUserID,
             completion)
         invokedPostOfferParametersList.append((offerIdentifier,
                                                   productIdentifier,
                                                   subscriptionGroup,
-                                                  data,
-                                                  applicationUsername,
+                                                  receiptData,
+                                                  appUserID,
                                                   completion))
     }
 
     var invokedPostSubscriberAttributes = false
     var invokedPostSubscriberAttributesCount = 0
-    var invokedPostSubscriberAttributesParameters: (subscriberAttributes: [String: RCSubscriberAttribute]?, appUserID: String?)?
+    var invokedPostSubscriberAttributesParameters: (subscriberAttributes: [String: SubscriberAttribute]?, appUserID: String?)?
     var invokedPostSubscriberAttributesParametersList: [InvokedPostSubscriberAttributesParameters] = []
     var stubbedPostSubscriberAttributesCompletionResult: (Error?, Void)?
 
-    override func postSubscriberAttributes(_ subscriberAttributes: [String: RCSubscriberAttribute],
-                                           appUserID: String,
-                                           completion: ((Error?) -> ())?) {
+    override func post(subscriberAttributes: SubscriberAttributeDict,
+                       appUserID: String,
+                       completion: ((Error?) -> Void)?) {
         invokedPostSubscriberAttributes = true
         invokedPostSubscriberAttributesCount += 1
         invokedPostSubscriberAttributesParameters = (subscriberAttributes, appUserID)
@@ -200,7 +207,7 @@ class MockBackend: RCBackend {
     }
 
     struct InvokedPostSubscriberAttributesParameters: Equatable {
-        let subscriberAttributes: [String: RCSubscriberAttribute]?
+        let subscriberAttributes: [String: SubscriberAttribute]?
         let appUserID: String?
     }
 
@@ -209,11 +216,11 @@ class MockBackend: RCBackend {
     var invokedLogInCount = 0
     var invokedLogInParameters: (currentAppUserID: String, newAppUserID: String)?
     var invokedLogInParametersList = [(currentAppUserID: String, newAppUserID: String)]()
-    var stubbedLogInCompletionResult: (Purchases.PurchaserInfo?, Bool, Error?)?
+    var stubbedLogInCompletionResult: (PurchaserInfo?, Bool, Error?)?
 
-    override func logIn(withCurrentAppUserID currentAppUserID: String,
+    override func logIn(currentAppUserID: String,
                         newAppUserID: String,
-                        completion: @escaping (Purchases.PurchaserInfo?, Bool, Error?) -> ()) {
+                        completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
         invokedLogIn = true
         invokedLogInCount += 1
         invokedLogInParameters = (currentAppUserID, newAppUserID)

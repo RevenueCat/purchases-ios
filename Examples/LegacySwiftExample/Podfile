@@ -4,15 +4,13 @@
 target 'LegacySwiftExample' do
 
   # Pods for SwiftExample
-  pod 'Purchases', :path => '../../'
-  pod 'PurchasesCoreSwift', :path => '../../'
+  pod 'RevenueCat', :path => '../../'
 
 end
 
 target 'WatchExample Extension' do
 
   # Pods for SwiftExample
-  pod 'Purchases', :path => '../../'
-  pod 'PurchasesCoreSwift', :path => '../../'
+  pod 'RevenueCat', :path => '../../'
 
 end

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D2710DE2576E92500A23A49 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = 2D2710DD2576E92500A23A49 /* Purchases */; };
 		2D6C02522549F5920039CB92 /* RCIntegrationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02432549F5920039CB92 /* RCIntegrationRunner.m */; };
 		2D6C02532549F5920039CB92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D6C02452549F5920039CB92 /* Assets.xcassets */; };
 		2D6C02542549F5920039CB92 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02462549F5920039CB92 /* ViewController.m */; };
@@ -19,6 +18,7 @@
 		2D6C02C22549F98C0039CB92 /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C024C2549F5920039CB92 /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2D6C02D92549FD6D0039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02D82549FD6D0039CB92 /* Dummy.swift */; };
 		2DC19130255F195B0039389A /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C02B92549F7E20039CB92 /* IntegrationTests.swift */; };
+		B3A9296126E2AAFB00C5E699 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = B3A9296026E2AAFB00C5E699 /* RevenueCat */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +52,7 @@
 		2D6C02B92549F7E20039CB92 /* IntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
 		2D6C02D72549FD6D0039CB92 /* SPMIntegration-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SPMIntegration-Bridging-Header.h"; sourceTree = "<group>"; };
 		2D6C02D82549FD6D0039CB92 /* Dummy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
+		B384177426E2F8DE0082BBE2 /* RevenueCat-Swift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RevenueCat-Swift.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,7 +60,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D2710DE2576E92500A23A49 /* Purchases in Frameworks */,
+				B3A9296126E2AAFB00C5E699 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -113,6 +114,7 @@
 		2D6C02422549F5920039CB92 /* CommonFiles */ = {
 			isa = PBXGroup;
 			children = (
+				B384177426E2F8DE0082BBE2 /* RevenueCat-Swift.h */,
 				2D6C02B92549F7E20039CB92 /* IntegrationTests.swift */,
 				2D6C02D82549FD6D0039CB92 /* Dummy.swift */,
 				2D6C02432549F5920039CB92 /* RCIntegrationRunner.m */,
@@ -169,7 +171,7 @@
 			);
 			name = SPMIntegration;
 			packageProductDependencies = (
-				2D2710DD2576E92500A23A49 /* Purchases */,
+				B3A9296026E2AAFB00C5E699 /* RevenueCat */,
 			);
 			productName = SPMIntegration;
 			productReference = 2D6C02042549F5600039CB92 /* SPMIntegration.app */;
@@ -222,7 +224,7 @@
 			);
 			mainGroup = 2D6C01FB2549F5600039CB92;
 			packageReferences = (
-				2D2710DC2576E92500A23A49 /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				B3A9295F26E2AAFB00C5E699 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = 2D6C02052549F5600039CB92 /* Products */;
 			projectDirPath = "";
@@ -553,21 +555,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		2D2710DC2576E92500A23A49 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+		B3A9295F26E2AAFB00C5E699 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
 			requirement = {
-				branch = main;
+				branch = RCv4;
 				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		2D2710DD2576E92500A23A49 /* Purchases */ = {
+		B3A9296026E2AAFB00C5E699 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 2D2710DC2576E92500A23A49 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = Purchases;
+			package = B3A9295F26E2AAFB00C5E699 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
