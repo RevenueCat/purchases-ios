@@ -240,7 +240,7 @@ platform :ios do
     new_kind_line = "kind = revision;"
 
     commit_hash = last_git_commit[:commit_hash]
-    old_branch_line = "branch = RCv4;"
+    old_branch_line = "branch = main;"
     new_revision_line = "revision = #{commit_hash};"
 
     project_file_locations.each { |project_file_location|
