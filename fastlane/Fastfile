@@ -279,7 +279,7 @@ def carthage_archive
     # carthage can't deal with architectures for simulators and for Apple Silicon correctly.
     # We use this script as a workaround until this is fixed. 
     # https://github.com/Carthage/Carthage/releases/0.38.0
-    sh("./scripts/carthage.sh", "build", "--no-skip-current", "--use-xcframeworks")
+    sh("./scripts/carthage.sh", "build", "--no-skip-current")
     sh("./scripts/carthage.sh", "archive", "RevenueCat")
   end
 end
