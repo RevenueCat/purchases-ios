@@ -141,8 +141,8 @@ private extension HTTPClient {
             }
         }
 
-        Logger.debug(Strings.network.api_request_started(httpMethod: urlRequest.httpMethod ?? "",
-                                                         path: urlRequest.url?.path ?? ""))
+        Logger.debug(Strings.network.api_request_started(httpMethod: urlRequest.httpMethod,
+                                                         path: urlRequest.url?.path))
 
         let task = session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
             self.handleResponse(urlResponse: urlResponse,
@@ -203,7 +203,7 @@ private extension HTTPClient {
                         jsonObject = try JSONSerialization.jsonObject(with: data,
                                                                       options: .mutableContainers) as? [String: Any]
                     } catch let jsonError {
-                        Logger.error(Strings.network.parsing_json_error(error: jsonError.localizedDescription))
+                        Logger.error(Strings.network.parsing_json_error(error: jsonError))
 
                         let dataAsString = String(data: maybeData ?? Data(), encoding: .utf8) ?? ""
                         Logger.error(Strings.network.json_data_received(dataString: dataAsString))
@@ -235,8 +235,8 @@ private extension HTTPClient {
 
         if shouldBeginNextRequestWhenFinished {
             recursiveLock.lock()
-            Logger.debug(Strings.network.serial_request_done(httpMethod: currentSerialRequest?.httpMethod ?? "",
-                                                             path: currentSerialRequest?.path ?? "",
+            Logger.debug(Strings.network.serial_request_done(httpMethod: currentSerialRequest?.httpMethod,
+                                                             path: currentSerialRequest?.path,
                                                              queuedRequestsCount: queuedRequests.count))
             self.currentSerialRequest = nil
             if !self.queuedRequests.isEmpty {

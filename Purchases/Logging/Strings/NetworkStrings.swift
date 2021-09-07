@@ -19,7 +19,7 @@ enum NetworkStrings {
 
     case api_request_completed(httpMethod: String, path: String, httpCode: Int)
 
-    case api_request_started(httpMethod: String, path: String)
+    case api_request_started(httpMethod: String?, path: String?)
 
     case creating_json_error(requestBody: [String: Any], error: String)
 
@@ -27,13 +27,13 @@ enum NetworkStrings {
 
     case json_data_received(dataString: String)
 
-    case parsing_json_error(error: String)
+    case parsing_json_error(error: Error)
 
-    case serial_request_done(httpMethod: String, path: String, queuedRequestsCount: Int)
+    case serial_request_done(httpMethod: String?, path: String?, queuedRequestsCount: Int)
 
     case serial_request_queued(httpMethod: String, path: String, queuedRequestsCount: Int)
 
-    case skproductsrequest_failed(error: String)
+    case skproductsrequest_failed(error: Error)
 
     case skproductsrequest_finished
 
@@ -60,7 +60,7 @@ extension NetworkStrings: CustomStringConvertible {
             return "API request completed with status: \(httpMethod) \(path) \(httpCode)"
 
         case let .api_request_started(httpMethod, path):
-            return "API request started: \(httpMethod) \(path)"
+            return "API request started: \(httpMethod ?? "") \(path ?? "")"
 
         case let .creating_json_error(requestBody, error):
             return "Error creating request with JSON body: \(requestBody) ; error: \(error)"
@@ -72,17 +72,18 @@ extension NetworkStrings: CustomStringConvertible {
             return "Data received: \(dataString)"
 
         case .parsing_json_error(let error):
-            return "Error parsing JSON \(error)"
+            return "Error parsing JSON \(error.localizedDescription)"
 
         case let .serial_request_done(httpMethod, path, queuedRequestsCount):
-            return "Serial request done: \(httpMethod) \(path), \(queuedRequestsCount) requests left in the queue"
+            return "Serial request done: \(httpMethod ?? "") \(path ?? ""), " +
+                "\(queuedRequestsCount) requests left in the queue"
 
         case let .serial_request_queued(httpMethod, path, queuedRequestsCount):
             return "There's a request currently running and \(queuedRequestsCount) requests left in the queue, " +
                 "queueing \(httpMethod) \(path)"
 
         case .skproductsrequest_failed(let error):
-            return "SKProductsRequest failed! error: \(error)"
+            return "SKProductsRequest failed! error: \(error.localizedDescription)"
 
         case .skproductsrequest_finished:
             return "SKProductsRequest did finish"

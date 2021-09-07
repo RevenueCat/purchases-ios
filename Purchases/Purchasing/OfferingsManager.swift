@@ -107,8 +107,7 @@ private extension OfferingsManager {
     }
 
     func handleOfferingsUpdateError(_ error: Error, completion: ReceiveOfferingsBlock?) {
-        Logger.appleError(String(format: Strings.offering.fetching_offerings_error,
-                                 error.localizedDescription as CVarArg))
+        Logger.appleError(Strings.offering.fetching_offerings_error(error: error.localizedDescription))
         deviceCache.clearOfferingsCacheTimestamp()
         dispatchCompletionOnMainThreadIfPossible(completion,
                                                  offerings: nil,
@@ -138,7 +137,7 @@ private extension OfferingsManager {
         let missingProducts = Set(products.keys).intersection(productIdentifiers)
 
         if !missingProducts.isEmpty {
-            Logger.appleWarning(Strings.offering.cannot_find_product_configuration_error)
+            Logger.appleWarning(Strings.offering.cannot_find_product_configuration_error(identifiers: missingProducts))
         }
     }
 
