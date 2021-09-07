@@ -128,25 +128,21 @@ private extension HTTPClient {
         if serially && !retried {
             recursiveLock.lock()
             if currentSerialRequest != nil {
-                let logMessage = String(format: Strings.network.serial_request_queued,
-                                        queuedRequests.count,
-                                        httpMethod,
-                                        path)
-                Logger.debug(logMessage)
+                Logger.debug(Strings.network.serial_request_queued(httpMethod: httpMethod,
+                                                                   path: path,
+                                                                   queuedRequestsCount: queuedRequests.count))
                 queuedRequests.append(request)
                 recursiveLock.unlock()
                 return
             } else {
-                Logger.debug(String(format: Strings.network.starting_request, httpMethod, path))
+                Logger.debug(Strings.network.starting_request(httpMethod: httpMethod, path: path))
                 currentSerialRequest = request
                 recursiveLock.unlock()
             }
         }
 
-        let logMessage = String(format: Strings.network.api_request_started,
-                                urlRequest.httpMethod ?? "",
-                                urlRequest.url?.path ?? "")
-        Logger.debug(logMessage)
+        Logger.debug(Strings.network.api_request_started(httpMethod: urlRequest.httpMethod ?? "",
+                                                         path: urlRequest.url?.path ?? ""))
 
         let task = session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
             self.handleResponse(urlResponse: urlResponse,
@@ -196,11 +192,9 @@ private extension HTTPClient {
         if maybeNetworkError == nil {
             if let httpURLResponse = maybeURLResponse as? HTTPURLResponse {
                 statusCode = httpURLResponse.statusCode
-                let logMessage = String(format: Strings.network.api_request_completed,
-                                        request.httpMethod,
-                                        request.urlRequest.url?.path ?? "",
-                                        statusCode)
-                Logger.debug(logMessage)
+                Logger.debug(Strings.network.api_request_completed(httpMethod: request.httpMethod,
+                                                                   path: request.httpMethod,
+                                                                   httpCode: statusCode))
 
                 if statusCode == HTTPStatusCodes.notModifiedResponseCode.rawValue || maybeData == nil {
                     jsonObject = [:]
@@ -209,10 +203,10 @@ private extension HTTPClient {
                         jsonObject = try JSONSerialization.jsonObject(with: data,
                                                                       options: .mutableContainers) as? [String: Any]
                     } catch let jsonError {
-                        Logger.error(String(format: Strings.network.parsing_json_error, jsonError.localizedDescription))
+                        Logger.error(Strings.network.parsing_json_error(error: jsonError.localizedDescription))
 
                         let dataAsString = String(data: maybeData ?? Data(), encoding: .utf8) ?? ""
-                        Logger.error(String(format: Strings.network.json_data_received, dataAsString))
+                        Logger.error(Strings.network.json_data_received(dataString: dataAsString))
 
                         maybeJSONError = jsonError
                     }
@@ -224,10 +218,8 @@ private extension HTTPClient {
                                                                                   request: request.urlRequest,
                                                                                   retried: retried)
                 if maybeHTTPResponse == nil {
-                    let message = String(format: Strings.network.retrying_request,
-                                         request.httpMethod,
-                                         request.path)
-                    Logger.debug(message)
+                    Logger.debug(Strings.network.retrying_request(httpMethod: request.httpMethod,
+                                                                  path: request.path))
                     let retriedRequest = HTTPRequest(byCopyingRequest: request, retried: true)
                     self.queuedRequests.insert(retriedRequest, at: 0)
                     shouldBeginNextRequestWhenFinished = true
@@ -243,15 +235,13 @@ private extension HTTPClient {
 
         if shouldBeginNextRequestWhenFinished {
             recursiveLock.lock()
-            let logMessage = String(format: Strings.network.serial_request_done,
-                                    self.currentSerialRequest?.httpMethod ?? "",
-                                    self.currentSerialRequest?.path ?? "",
-                                    self.queuedRequests.count)
-            Logger.debug(logMessage)
+            Logger.debug(Strings.network.serial_request_done(httpMethod: currentSerialRequest?.httpMethod ?? "",
+                                                             path: currentSerialRequest?.path ?? "",
+                                                             queuedRequestsCount: queuedRequests.count))
             self.currentSerialRequest = nil
             if !self.queuedRequests.isEmpty {
                 let nextRequest = self.queuedRequests.removeFirst()
-                Logger.debug(String(format: Strings.network.starting_next_request, nextRequest.description))
+                Logger.debug(Strings.network.starting_next_request(request: nextRequest.description))
                 self.performRequest(nextRequest.httpMethod,
                                     serially: true,
                                     path: nextRequest.path,
@@ -288,13 +278,12 @@ private extension HTTPClient {
                 do {
                     urlRequest.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
                 } catch let error {
-                    Logger.error(String(format: Strings.network.creating_json_error,
-                                        requestBody,
-                                        error.localizedDescription))
+                    Logger.error(Strings.network.creating_json_error(requestBody: requestBody,
+                                                                     error: error.localizedDescription))
                     return nil
                 }
             } else {
-                Logger.error(String(format: Strings.network.creating_json_error_invalid, requestBody))
+                Logger.error(Strings.network.creating_json_error_invalid(requestBody: requestBody))
                 return nil
             }
         }

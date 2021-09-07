@@ -98,7 +98,7 @@ extension ProductsManager: SKProductsRequestDelegate {
 
     func request(_ request: SKRequest, didFailWithError error: Error) {
         queue.async { [self] in
-            Logger.appleError(String(format: Strings.network.skproductsrequest_failed, error.localizedDescription))
+            Logger.appleError(Strings.network.skproductsrequest_failed(error: error.localizedDescription))
             guard let products = self.productsByRequests[request] else {
                 Logger.error("requested products not found for request: \(request)")
                 return
