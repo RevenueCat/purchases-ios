@@ -126,17 +126,13 @@ BOOL isAnonymous;
 }
 
 + (void)checkConstants {
-// TODO convert back once everything moved into Purchases
-    double vn = PurchasesVersionNumber;
-    const unsigned char *vs = PurchasesVersionString;
-
     // breaking changes below this line
-    NSErrorDomain bed = RCBackendErrorCodeDomain;
-    NSErrorDomain ped = RCPurchasesErrorCodeDomain;
-    NSErrorUserInfoKey fk = RCErrorDetails.RCFinishableKey;
-    NSErrorUserInfoKey eck = RCErrorDetails.RCReadableErrorCodeKey;
+    NSErrorDomain bed = RCBackendErrorDomain;
+    NSErrorDomain ped = RCPurchasesErrorDomain;
+    NSErrorUserInfoKey fk = RCFinishableKey;
+    NSErrorUserInfoKey eck = RCReadableErrorCodeKey;
 
-    NSLog([NSString stringWithFormat:@"%lf", vn], vs, bed, ped, fk, eck);
+    NSLog(bed, ped, fk, eck);
 }
 
 @end

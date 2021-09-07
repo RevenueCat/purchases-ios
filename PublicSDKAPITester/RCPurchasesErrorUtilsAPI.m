@@ -29,7 +29,7 @@
     error = [RCPurchasesErrorUtils logOutAnonymousUserError];
     error = [RCPurchasesErrorUtils paymentDeferredError];
     error = [RCPurchasesErrorUtils unknownError];
-    error = [RCPurchasesErrorUtils unknownErrorWithMessage:@"🎈🐐"];
+//    error = [RCPurchasesErrorUtils unknownErrorWithMessage:@"🎈🐐"];
     NSError* underlyingSKError = [[NSError alloc] initWithDomain:SKErrorDomain code:SKErrorUnknown userInfo:@{@"key": @"value"}];
     error = [RCPurchasesErrorUtils purchasesErrorWithSKError:underlyingSKError];
     NSLog(@"%@", error.localizedDescription);
