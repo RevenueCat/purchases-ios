@@ -46,7 +46,7 @@ enum OfferingStrings {
 
     case retrieved_products(products: [SKProduct])
 
-    case list_products(inputOne: String, inputTwo: String)
+    case list_products(productIdentifier: String, product: SKProduct)
 
     case invalid_product_identifiers(identifiers: Set<String>)
 
@@ -112,8 +112,8 @@ extension OfferingStrings: CustomStringConvertible {
         case .retrieved_products(let products):
             return "Retrieved SKProducts: \(products)"
 
-        case let .list_products(inputOne, inputTwo):
-            return "\(inputOne) - \(inputTwo)"
+        case let .list_products(productIdentifier, product):
+            return "\(productIdentifier) - \(product)"
 
         case .invalid_product_identifiers(let identifiers):
             return "Invalid Product Identifiers - \(identifiers)"
