@@ -35,10 +35,13 @@ func checkPurchasesAPI() {
     let canI: Bool = Purchases.canMakePayments()
     let version = Purchases.frameworkVersion
 
+    // both should have deprecation warning
+    // 'addAttributionData(_:from:forNetworkUserId:)' is deprecated: Use the set<NetworkId> functions instead.
     Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust, forNetworkUserId: "")
     Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust, forNetworkUserId: nil)
 
     let automaticAppleSearchAdsAttributionCollection: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
+    //should have deprecation warning 'debugLogsEnabled' is deprecated: use logLevel instead
     let debugLogsEnabled: Bool = Purchases.debugLogsEnabled
     let logLevel: Purchases.LogLevel = Purchases.logLevel
     let proxyUrl: URL? = Purchases.proxyURL
@@ -60,9 +63,9 @@ func checkPurchasesAPI() {
 
     let piComplete: Purchases.ReceivePurchaserInfoBlock = { _, _ in }
     // identity
-    purch.createAlias("", piComplete)
-    purch.identify("", piComplete)
-    purch.reset(piComplete)
+    purch.createAlias("", piComplete) // should have deprecation warning 'createAlias' is deprecated: Use logIn instead.
+    purch.identify("", piComplete) // should have deprecation warning 'identify' is deprecated: Use logIn instead.
+    purch.reset(piComplete) // should have deprecation warning 'reset' is deprecated: Use logOut instead.
     purch.logOut(piComplete)
 
     let loginComplete: (Purchases.PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
@@ -131,7 +134,9 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.checkTrialOrIntroductoryPriceEligibility([String](), completionBlock: checkEligComplete)
 
     let discountComplete: Purchases.PaymentDiscountBlock = { _, _ in }
-    purchases.paymentDiscount(for: skpd, product: skp, completion: discountComplete)
+
+    purchases.paymentDiscount(for: skpd, product: skp, completion: discountComplete) // requires all labels
+
     purchases.purchaseProduct(skp, discount: skmd, purchaseProductComplete)
     purchases.purchasePackage(pack, discount: skmd, purchaseProductComplete)
     purchases.invalidatePurchaserInfoCache()
