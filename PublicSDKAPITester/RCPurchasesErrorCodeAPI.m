@@ -32,7 +32,10 @@
         case RCNetworkError:
         case RCInvalidCredentialsError:
         case RCUnexpectedBackendResponseError:
+
+        // should have deprecation error 'RCReceiptInUseByOtherSubscriberError' is deprecated: Use RCReceiptAlreadyInUseError.
         case RCReceiptInUseByOtherSubscriberError:
+            
         case RCInvalidAppUserIdError:
         case RCOperationAlreadyInProgressError:
         case RCUnknownBackendError:

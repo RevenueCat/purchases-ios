@@ -30,6 +30,7 @@
     RCPackage *m = o.monthly;
     RCPackage *w = o.weekly;
     RCPackage *p = [o packageWithIdentifier:nil];
+    p = [o packageWithIdentifier:@""];
     RCPackage *ok = [o objectForKeyedSubscript:@""];
 
     NSLog(o, i, sd, a, l, an, s, t, tm, m, w, p, ok);

@@ -17,6 +17,7 @@
     RCOffering *of = o.current;
     NSDictionary<NSString *, RCOffering *> *a = o.all;
     of = [o offeringWithIdentifier:nil];
+    of = [o offeringWithIdentifier:@""];
     of = [o objectForKeyedSubscript:@""];
 
     NSLog(o, of, a);
