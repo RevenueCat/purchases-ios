@@ -30,7 +30,7 @@ class HTTPClient {
         self.eTagManager = eTagManager
     }
 
-    func performGETRequest(serially: Bool = false,
+    func performGETRequest(serially: Bool = true,
                            path: String,
                            headers authHeaders: [String: String],
                            completionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
@@ -43,7 +43,7 @@ class HTTPClient {
                        completionHandler: completionHandler)
     }
 
-    func performPOSTRequest(serially: Bool = false,
+    func performPOSTRequest(serially: Bool = true,
                             path: String,
                             requestBody: [String: Any],
                             headers authHeaders: [String: String],
@@ -90,7 +90,7 @@ private extension HTTPClient {
 
     // swiftlint:disable function_body_length
     func performRequest(_ httpMethod: String,
-                        serially: Bool = false,
+                        serially: Bool = true,
                         path: String,
                         requestBody maybeRequestBody: [String: Any]?,
                         authHeaders: [String: String],
