@@ -172,9 +172,9 @@
 		A52AE4A426E83E1A0076D703 /* OfferingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52AE49826E83E1A0076D703 /* OfferingAPI.swift */; };
 		A52AE4A526E83E1A0076D703 /* PurchasesErrorUtilsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52AE49926E83E1A0076D703 /* PurchasesErrorUtilsAPI.swift */; };
 		A52AE4A626E83E1A0076D703 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52AE49A26E83E1A0076D703 /* EntitlementInfoAPI.swift */; };
-		A52AE4A826E83E7D0076D703 /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = A52AE4A726E83E7D0076D703 /* Purchases */; };
+		A52AE4AE26E852610076D703 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A52AE4AD26E852610076D703 /* RevenueCat */; };
+		A52AE4B026E8527A0076D703 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A52AE4AF26E8527A0076D703 /* RevenueCat */; };
 		A56F9AB126990E9200AFC48F /* PurchaserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */; };
-		A5F6039826E837C1005903EF /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = A5F6039726E837C1005903EF /* Purchases */; };
 		A5F6039B26E8388C005903EF /* RCBackendErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5F6039A26E8388C005903EF /* RCBackendErrorCodeAPI.m */; };
 		A5F6039E26E838E2005903EF /* RCPurchasesErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5F6039D26E838E2005903EF /* RCPurchasesErrorCodeAPI.m */; };
 		B300E4BF26D436F900B22262 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
@@ -604,7 +604,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A52AE4A826E83E7D0076D703 /* Purchases in Frameworks */,
+				A52AE4AE26E852610076D703 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -612,7 +612,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A5F6039826E837C1005903EF /* Purchases in Frameworks */,
+				A52AE4B026E8527A0076D703 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1346,7 +1346,7 @@
 			);
 			name = SwiftAPITester;
 			packageProductDependencies = (
-				A52AE4A726E83E7D0076D703 /* Purchases */,
+				A52AE4AD26E852610076D703 /* RevenueCat */,
 			);
 			productName = SwiftAPITester;
 			productReference = A52AE48826E83DD10076D703 /* SwiftAPITester */;
@@ -1366,7 +1366,7 @@
 			);
 			name = APITester;
 			packageProductDependencies = (
-				A5F6039726E837C1005903EF /* Purchases */,
+				A52AE4AF26E8527A0076D703 /* RevenueCat */,
 			);
 			productName = APITester;
 			productReference = B3645F4226E042F2002C490E /* APITester */;
@@ -2305,8 +2305,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
 			requirement = {
-				kind = exactVersion;
-				version = 3.12.3;
+				branch = main;
+				kind = branch;
 			};
 		};
 		B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */ = {
@@ -2328,15 +2328,15 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A52AE4A726E83E7D0076D703 /* Purchases */ = {
+		A52AE4AD26E852610076D703 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A5F6039626E837C0005903EF /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = Purchases;
+			productName = RevenueCat;
 		};
-		A5F6039726E837C1005903EF /* Purchases */ = {
+		A52AE4AF26E8527A0076D703 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A5F6039626E837C0005903EF /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = Purchases;
+			productName = RevenueCat;
 		};
 		B3D5CFC32672827D0056FA67 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
