@@ -159,8 +159,7 @@ class SubscriberAttributesManager {
             }
         } else {
             let receivedNSError = error as NSError?
-            Logger.error(Strings.attribution.attributes_sync_error(details: receivedNSError?.localizedDescription,
-                                                                   userInfo: receivedNSError?.userInfo))
+            Logger.error(Strings.attribution.attributes_sync_error(error: receivedNSError))
         }
     }
 

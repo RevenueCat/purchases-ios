@@ -17,11 +17,8 @@ import Foundation
 enum CodableStrings {
 
     case unexpectedValueError(type: Any.Type)
-
     case valueNotFoundError(type: Any.Type)
-
     case invalid_json_error(jsonData: [String: Any])
-
     case decoding_error(errorMessage: String)
 
 }
@@ -45,4 +42,5 @@ extension CodableStrings: CustomStringConvertible {
 
         }
     }
+
 }

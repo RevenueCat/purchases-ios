@@ -131,7 +131,8 @@ private extension Logger {
     }
 
     static func log(level: LogLevel, intent: LogIntent, message: String) {
-        let messageWithPrefix = "\(intent.suffix) \(message)"
+        let messageWithPrefix = "\(intent.prefix) \(message)"
         Logger.log(level: level, message: messageWithPrefix)
     }
+
 }
