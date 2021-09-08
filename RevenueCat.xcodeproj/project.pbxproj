@@ -157,7 +157,12 @@
 		9A65E0A52591A23500DE00B0 /* PurchaseStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */; };
 		9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */; };
 		A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */; };
+		A52AE48226E83D8C0076D703 /* RCBackendErrorCodeAPI.h in Sources */ = {isa = PBXBuildFile; fileRef = A5F6039926E8388C005903EF /* RCBackendErrorCodeAPI.h */; };
+		A52AE48326E83D8C0076D703 /* RCPurchasesErrorCodeAPI.h in Sources */ = {isa = PBXBuildFile; fileRef = A5F6039C26E838E2005903EF /* RCPurchasesErrorCodeAPI.h */; };
 		A56F9AB126990E9200AFC48F /* PurchaserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */; };
+		A5F6039826E837C1005903EF /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = A5F6039726E837C1005903EF /* Purchases */; };
+		A5F6039B26E8388C005903EF /* RCBackendErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5F6039A26E8388C005903EF /* RCBackendErrorCodeAPI.m */; };
+		A5F6039E26E838E2005903EF /* RCPurchasesErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5F6039D26E838E2005903EF /* RCPurchasesErrorCodeAPI.m */; };
 		B300E4BF26D436F900B22262 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
 		B300E4C026D4371200B22262 /* SKPaymentTransactionExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591492526B994B400D32E58 /* SKPaymentTransactionExtensionsTests.swift */; };
 		B300E4C226D439B700B22262 /* IntroEligibilityCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */; };
@@ -257,13 +262,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 2DE20B7E26409EB7004C597D;
 			remoteInfo = StoreKitTestApp;
-		};
-		B3645F8F26E043A1002C490E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2DC5621524EC63420031F69B;
-			remoteInfo = RevenueCat;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -449,6 +447,10 @@
 		A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaserInfo.swift; sourceTree = "<group>"; };
 		A5A92C7726C716F50038D732 /* RCPackageAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPackageAPI.h; sourceTree = "<group>"; };
 		A5A92C7826C716F50038D732 /* RCPackageAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPackageAPI.m; sourceTree = "<group>"; };
+		A5F6039926E8388C005903EF /* RCBackendErrorCodeAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCBackendErrorCodeAPI.h; sourceTree = "<group>"; };
+		A5F6039A26E8388C005903EF /* RCBackendErrorCodeAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCBackendErrorCodeAPI.m; sourceTree = "<group>"; };
+		A5F6039C26E838E2005903EF /* RCPurchasesErrorCodeAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrorCodeAPI.h; sourceTree = "<group>"; };
+		A5F6039D26E838E2005903EF /* RCPurchasesErrorCodeAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesErrorCodeAPI.m; sourceTree = "<group>"; };
 		B3083A0F269931CF007B5503 /* RCOfferingAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCOfferingAPI.h; sourceTree = "<group>"; };
 		B3083A10269931CF007B5503 /* RCOfferingAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCOfferingAPI.m; sourceTree = "<group>"; };
 		B3083A122699334C007B5503 /* Offering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Offering.swift; sourceTree = "<group>"; };
@@ -565,6 +567,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5F6039826E837C1005903EF /* Purchases in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1058,6 +1061,10 @@
 				A5A92C7826C716F50038D732 /* RCPackageAPI.m */,
 				B33CEA9C268BC39D008A3144 /* RCTransactionAPI.h */,
 				B33CEA9D268BC39D008A3144 /* RCTransactionAPI.m */,
+				A5F6039926E8388C005903EF /* RCBackendErrorCodeAPI.h */,
+				A5F6039A26E8388C005903EF /* RCBackendErrorCodeAPI.m */,
+				A5F6039C26E838E2005903EF /* RCPurchasesErrorCodeAPI.h */,
+				A5F6039D26E838E2005903EF /* RCPurchasesErrorCodeAPI.m */,
 			);
 			path = PublicSDKAPITester;
 			sourceTree = "<group>";
@@ -1269,9 +1276,11 @@
 			buildRules = (
 			);
 			dependencies = (
-				B3645F9026E043A1002C490E /* PBXTargetDependency */,
 			);
 			name = APITester;
+			packageProductDependencies = (
+				A5F6039726E837C1005903EF /* Purchases */,
+			);
 			productName = APITester;
 			productReference = B3645F4226E042F2002C490E /* APITester */;
 			productType = "com.apple.product-type.tool";
@@ -1322,6 +1331,7 @@
 			packageReferences = (
 				B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */,
 				B3D5CFBE267282760056FA67 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */,
+				A5F6039626E837C0005903EF /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
 			projectDirPath = "";
@@ -1641,6 +1651,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A52AE48226E83D8C0076D703 /* RCBackendErrorCodeAPI.h in Sources */,
+				A52AE48326E83D8C0076D703 /* RCPurchasesErrorCodeAPI.h in Sources */,
 				B3645F7826E0439A002C490E /* main.m in Sources */,
 				B3645F7926E0439A002C490E /* RCAttributionNetworkAPI.h in Sources */,
 				B3645F7A26E0439A002C490E /* RCAttributionNetworkAPI.m in Sources */,
@@ -1650,6 +1662,7 @@
 				B3645F7E26E0439A002C490E /* RCEntitlementInfosAPI.m in Sources */,
 				B3645F7F26E0439A002C490E /* RCIntroEligibilityAPI.h in Sources */,
 				B3645F8026E0439A002C490E /* RCIntroEligibilityAPI.m in Sources */,
+				A5F6039E26E838E2005903EF /* RCPurchasesErrorCodeAPI.m in Sources */,
 				B3645F8126E0439A002C490E /* RCOfferingAPI.h in Sources */,
 				B3645F8226E0439A002C490E /* RCOfferingAPI.m in Sources */,
 				B3645F8326E0439A002C490E /* RCOfferingsAPI.h in Sources */,
@@ -1663,6 +1676,7 @@
 				B3645F8B26E0439A002C490E /* RCPackageAPI.h in Sources */,
 				B3645F8C26E0439A002C490E /* RCPackageAPI.m in Sources */,
 				B3645F8D26E0439A002C490E /* RCTransactionAPI.h in Sources */,
+				A5F6039B26E8388C005903EF /* RCBackendErrorCodeAPI.m in Sources */,
 				B3645F8E26E0439A002C490E /* RCTransactionAPI.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1679,11 +1693,6 @@
 			isa = PBXTargetDependency;
 			target = 2DE20B7E26409EB7004C597D /* StoreKitTestApp */;
 			targetProxy = 2DE20B8E26409EC0004C597D /* PBXContainerItemProxy */;
-		};
-		B3645F9026E043A1002C490E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 2DC5621524EC63420031F69B /* RevenueCat */;
-			targetProxy = B3645F8F26E043A1002C490E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2137,6 +2146,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		A5F6039626E837C0005903EF /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
+			requirement = {
+				kind = exactVersion;
+				version = 3.12.3;
+			};
+		};
 		B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Quick/Nimble.git";
@@ -2156,6 +2173,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		A5F6039726E837C1005903EF /* Purchases */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A5F6039626E837C0005903EF /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = Purchases;
+		};
 		B3D5CFC32672827D0056FA67 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B3D5CFBB267282630056FA67 /* XCRemoteSwiftPackageReference "Nimble" */;

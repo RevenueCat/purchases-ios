@@ -6,21 +6,24 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-@import RevenueCat;
+@import Purchases;
 
 #import "RCAttributionNetworkAPI.h"
 
 @implementation RCAttributionNetworkAPI
 
 + (void)checkEnums {
-    NSLog(@"%zd%zd%zd%zd%zd%zd%zd",
-          RCAttributionNetworkAppleSearchAds,
-          RCAttributionNetworkAdjust,
-          RCAttributionNetworkAppsFlyer,
-          RCAttributionNetworkBranch,
-          RCAttributionNetworkTenjin,
-          RCAttributionNetworkFacebook,
-          RCAttributionNetworkMParticle);
+    RCAttributionNetwork network = RCAttributionNetworkAdjust;
+    switch(network) {
+        case RCAttributionNetworkAppleSearchAds:
+        case RCAttributionNetworkAdjust:
+        case RCAttributionNetworkAppsFlyer:
+        case RCAttributionNetworkBranch:
+        case RCAttributionNetworkTenjin:
+        case RCAttributionNetworkFacebook:
+        case RCAttributionNetworkMParticle:
+            NSLog(@"%ld", (long)network);
+    }
 }
 
 @end
