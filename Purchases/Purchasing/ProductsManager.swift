@@ -71,7 +71,7 @@ extension ProductsManager: SKProductsRequestDelegate {
 
     func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         queue.async { [self] in
-            Logger.rcSuccess(Strings.network.skproductsrequest_received_response)
+            Logger.rcSuccess(Strings.storeKit.skproductsrequest_received_response)
             guard let requestProducts = self.productsByRequests[request] else {
                 Logger.error("requested products not found for request: \(request)")
                 return
@@ -92,13 +92,13 @@ extension ProductsManager: SKProductsRequestDelegate {
     }
 
     func requestDidFinish(_ request: SKRequest) {
-        Logger.rcSuccess(Strings.network.skproductsrequest_finished)
+        Logger.rcSuccess(Strings.storeKit.skproductsrequest_finished)
         request.cancel()
     }
 
     func request(_ request: SKRequest, didFailWithError error: Error) {
         queue.async { [self] in
-            Logger.appleError(Strings.network.skproductsrequest_failed(error: error))
+            Logger.appleError(Strings.storeKit.skproductsrequest_failed(error: error))
             guard let products = self.productsByRequests[request] else {
                 Logger.error("requested products not found for request: \(request)")
                 return

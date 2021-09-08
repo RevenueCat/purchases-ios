@@ -33,12 +33,6 @@ enum NetworkStrings {
 
     case serial_request_queued(httpMethod: String, path: String, queuedRequestsCount: Int)
 
-    case skproductsrequest_failed(error: Error)
-
-    case skproductsrequest_finished
-
-    case skproductsrequest_received_response
-
     case starting_next_request(request: String)
 
     case starting_request(httpMethod: String, path: String)
@@ -81,15 +75,6 @@ extension NetworkStrings: CustomStringConvertible {
         case let .serial_request_queued(httpMethod, path, queuedRequestsCount):
             return "There's a request currently running and \(queuedRequestsCount) requests left in the queue, " +
                 "queueing \(httpMethod) \(path)"
-
-        case .skproductsrequest_failed(let error):
-            return "SKProductsRequest failed! error: \(error.localizedDescription)"
-
-        case .skproductsrequest_finished:
-            return "SKProductsRequest did finish"
-
-        case .skproductsrequest_received_response:
-            return "SKProductsRequest request received response"
 
         case .starting_next_request(let request):
             return "Starting the next request in the queue, \(request)"

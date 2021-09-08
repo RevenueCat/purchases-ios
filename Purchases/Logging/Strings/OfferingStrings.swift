@@ -36,12 +36,6 @@ enum OfferingStrings {
 
     case products_already_cached(identifiers: Set<String>)
 
-    case sk_request_failed(error: Error)
-
-    case skproductsrequest_did_finish
-
-    case skproductsrequest_received_response
-
     case vending_offerings_cache
 
     case retrieved_products(products: [SKProduct])
@@ -96,15 +90,6 @@ extension OfferingStrings: CustomStringConvertible {
         case .products_already_cached(let identifiers):
             return "Skipping products request because products were already " +
                 "cached. products: \(identifiers)"
-
-        case .sk_request_failed(let error):
-            return "SKRequest failed: \(error.localizedDescription)"
-
-        case .skproductsrequest_did_finish:
-            return "SKProductsRequest did finish"
-
-        case .skproductsrequest_received_response:
-            return "SKProductsRequest request received response"
 
         case .vending_offerings_cache:
             return "Vending Offerings from cache"
