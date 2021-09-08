@@ -559,7 +559,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
 			requirement = {
-				branch = RCv4;
+				branch = main;
 				kind = branch;
 			};
 		};
