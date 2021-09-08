@@ -31,6 +31,7 @@ func checkPurchasesAPI() {
     // static methods
     let logHandler: (Purchases.LogLevel, String) -> Void = { _, _ in }
     Purchases.setLogHandler(logHandler)
+    Purchases.setLogHandler { _, _ in }
 
     let canI: Bool = Purchases.canMakePayments()
     let version = Purchases.frameworkVersion
@@ -63,13 +64,24 @@ func checkPurchasesAPI() {
 
     let piComplete: Purchases.ReceivePurchaserInfoBlock = { _, _ in }
     // identity
-    purch.createAlias("", piComplete) // should have deprecation warning 'createAlias' is deprecated: Use logIn instead.
-    purch.identify("", piComplete) // should have deprecation warning 'identify' is deprecated: Use logIn instead.
-    purch.reset(piComplete) // should have deprecation warning 'reset' is deprecated: Use logOut instead.
+
+    // should have deprecation warning 'createAlias' is deprecated: Use logIn instead.
+    purch.createAlias("", piComplete)
+    purch.createAlias("")
+
+    // should have deprecation warning 'identify' is deprecated: Use logIn instead.
+    purch.identify("", piComplete)
+    purch.identify("") { _,_ in }
+
+    // should have deprecation warning 'reset' is deprecated: Use logOut instead.
+    purch.reset(piComplete)
+    purch.reset { _,_ in }
+
     purch.logOut(piComplete)
 
     let loginComplete: (Purchases.PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
     purch.logIn("", loginComplete)
+    purch.logIn("") { _, _, _ in }
 }
 
 var type: Purchases.PeriodType!
@@ -111,12 +123,15 @@ func checkPurchasesConstants() {
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let piComplete: Purchases.ReceivePurchaserInfoBlock = { _, _ in }
     purchases.purchaserInfo(piComplete)
+    purchases.purchaserInfo { _, _ in }
 
     let offeringsComplete: Purchases.ReceiveOfferingsBlock = { _, _ in }
     purchases.offerings(offeringsComplete)
+    purchases.offerings { _, _ in }
 
     let productsComplete: Purchases.ReceiveProductsBlock = { _ in }
     purchases.products([String](), productsComplete)
+    purchases.products([String]()) { _ in }
 
     let skp: SKProduct = SKProduct()
     let skpd: SKProductDiscount = SKProductDiscount()
@@ -125,20 +140,26 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
     let purchaseProductComplete: Purchases.PurchaseCompletedBlock = { _, _, _, _  in }
     purchases.purchaseProduct(skp, purchaseProductComplete)
+    purchases.purchaseProduct(skp) { _, _, _, _  in }
     purchases.purchasePackage(pack, purchaseProductComplete)
+    purchases.purchasePackage(pack) { _, _, _, _  in }
 
     purchases.restoreTransactions(piComplete)
     purchases.syncPurchases(piComplete)
 
     let checkEligComplete: ([String: RCIntroEligibility]) -> Void = { _ in }
     purchases.checkTrialOrIntroductoryPriceEligibility([String](), completionBlock: checkEligComplete)
+    purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { _ in }
 
     let discountComplete: Purchases.PaymentDiscountBlock = { _, _ in }
 
-    purchases.paymentDiscount(for: skpd, product: skp, completion: discountComplete) // requires all labels
+    purchases.paymentDiscount(for: skpd, product: skp, completion: discountComplete)
+    purchases.paymentDiscount(for: skpd, product: skp) { _, _ in }
 
     purchases.purchaseProduct(skp, discount: skmd, purchaseProductComplete)
+    purchases.purchaseProduct(skp, discount: skmd) { _, _, _, _  in }
     purchases.purchasePackage(pack, discount: skmd, purchaseProductComplete)
+    purchases.purchasePackage(pack, discount: skmd) { _, _, _, _  in }
     purchases.invalidatePurchaserInfoCache()
 
     // PurchasesDelegate
@@ -147,6 +168,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
     let defermentBlock: RCDeferredPromotionalPurchaseBlock = { _ in }
     purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp, defermentBlock: defermentBlock)
+    purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp) { _ in }
 }
 
 private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
