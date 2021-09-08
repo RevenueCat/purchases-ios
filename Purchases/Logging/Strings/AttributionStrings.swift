@@ -18,43 +18,24 @@ import Foundation
 enum AttributionStrings {
 
     case appsflyer_id_deprecated
-
-    case attributes_sync_error(details: String?, userInfo: [String: Any]?)
-
+    case attributes_sync_error(error: NSError?)
     case attributes_sync_success(appUserID: String)
-
     case empty_subscriber_attributes
-
     case marking_attributes_synced(appUserID: String, attributes: SubscriberAttributeDict)
-
     case method_called(methodName: String)
-
     case networkuserid_required_for_appsflyer
-
     case no_instance_configured_caching_attribution
-
     case instance_configured_posting_attribution
-
     case search_ads_attribution_cancelled_missing_att_framework
-
     case att_framework_present_but_couldnt_call_tracking_authorization_status
-
     case iad_framework_present_but_couldnt_call_request_attribution_details
-
     case search_ads_attribution_cancelled_missing_iad_framework
-
     case search_ads_attribution_cancelled_not_authorized
-
     case skip_same_attributes
-
     case subscriber_attributes_error(errors: [String: String]?)
-
     case unsynced_attributes_count(unsyncedAttributesCount: Int, appUserID: String)
-
     case unsynced_attributes(unsyncedAttributes: SubscriberAttributeDict)
-
     case attribute_set_locally(attribute: String)
-
     case missing_advertiser_identifiers
 
 }
@@ -67,8 +48,9 @@ extension AttributionStrings: CustomStringConvertible {
             return "The parameter key rc_appsflyer_id is deprecated." +
             " Pass networkUserId to addAttribution instead."
 
-        case .attributes_sync_error(let details, let userInfo):
-            return "Error when syncing subscriber attributes. Details: \(details ?? "")\n UserInfo: \(userInfo ?? [:])"
+        case .attributes_sync_error(let error):
+            return "Error when syncing subscriber attributes. Details: \(error?.localizedDescription ?? "")" +
+            " \nUserInfo: \(error?.userInfo ?? [:])"
 
         case .attributes_sync_success(let appUserID):
             return "Subscriber attributes synced successfully for App User ID: \(appUserID)"
