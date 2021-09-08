@@ -314,7 +314,7 @@ jobs:
           # install without building, then remove the tests and build, so that carthage
           # doesn't try to build the other integration tests
           command: |
-              ./carthage.sh update --no-build
+              ./carthage.sh bootstrap --no-build
               rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
               ./carthage.sh build --use-xcframeworks
       - save_cache:
