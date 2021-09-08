@@ -23,7 +23,7 @@ func checkPurchaserInfoAPI() {
 
     // should have dep. warning 'nonConsumablePurchases' is deprecated: use nonSubscriptionTransactions
     let ncp: Set<String> = purchaserInfo.nonConsumablePurchases
-    
+
     let nst: [Purchases.Transaction] = purchaserInfo.nonSubscriptionTransactions
     let oav: String? = purchaserInfo.originalApplicationVersion
     let opd: Date? = purchaserInfo.originalPurchaseDate

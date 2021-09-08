@@ -28,60 +28,18 @@ func checkPurchasesAPI() {
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: UserDefaults())
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: UserDefaults())
 
-    // static methods
-    let logHandler: (Purchases.LogLevel, String) -> Void = { _, _ in }
-    Purchases.setLogHandler(logHandler)
-    Purchases.setLogHandler { _, _ in }
-
-    let canI: Bool = Purchases.canMakePayments()
-    let version = Purchases.frameworkVersion
-
-    // both should have deprecation warning
-    // 'addAttributionData(_:from:forNetworkUserId:)' is deprecated: Use the set<NetworkId> functions instead.
-    Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust, forNetworkUserId: "")
-    Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust, forNetworkUserId: nil)
-
-    let automaticAppleSearchAdsAttributionCollection: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
-    //should have deprecation warning 'debugLogsEnabled' is deprecated: use logLevel instead
-    let debugLogsEnabled: Bool = Purchases.debugLogsEnabled
-    let logLevel: Purchases.LogLevel = Purchases.logLevel
-    let proxyUrl: URL? = Purchases.proxyURL
-    let forceUniversalAppStore: Bool = Purchases.forceUniversalAppStore
-    let simulatesAskToBuyInSandbox: Bool = Purchases.simulatesAskToBuyInSandbox
-    let sharedPurchases: Purchases = Purchases.shared
-    let isConfigured: Bool = Purchases.isConfigured
     let finishTransactions: Bool = purch.finishTransactions
     let delegate: PurchasesDelegate? = purch.delegate
     let appUserID: String = purch.appUserID
     let isAnonymous: Bool = purch.isAnonymous
 
-    print(canI, version, automaticAppleSearchAdsAttributionCollection, debugLogsEnabled, logLevel, proxyUrl!,
-          forceUniversalAppStore, simulatesAskToBuyInSandbox, sharedPurchases, isConfigured, finishTransactions,
-          delegate!, appUserID, isAnonymous)
+    print(purch.description, finishTransactions, delegate!, appUserID, isAnonymous)
 
+    checkStaticMethods()
+    checkIdentity(purchases: purch)
     checkPurchasesSubscriberAttributesAPI(purchases: purch)
     checkPurchasesPurchasingAPI(purchases: purch)
 
-    let piComplete: Purchases.ReceivePurchaserInfoBlock = { _, _ in }
-    // identity
-
-    // should have deprecation warning 'createAlias' is deprecated: Use logIn instead.
-    purch.createAlias("", piComplete)
-    purch.createAlias("")
-
-    // should have deprecation warning 'identify' is deprecated: Use logIn instead.
-    purch.identify("", piComplete)
-    purch.identify("") { _,_ in }
-
-    // should have deprecation warning 'reset' is deprecated: Use logOut instead.
-    purch.reset(piComplete)
-    purch.reset { _,_ in }
-
-    purch.logOut(piComplete)
-
-    let loginComplete: (Purchases.PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
-    purch.logIn("", loginComplete)
-    purch.logIn("") { _, _, _ in }
 }
 
 var type: Purchases.PeriodType!
@@ -118,6 +76,33 @@ func checkPurchasesConstants() {
     let errCodeKey = Purchases.ReadableErrorCodeKey
 
     print(errDom, backendErrDom, finKey, errCodeKey)
+}
+
+private func checkStaticMethods() {
+    let logHandler: (Purchases.LogLevel, String) -> Void = { _, _ in }
+    Purchases.setLogHandler(logHandler)
+    Purchases.setLogHandler { _, _ in }
+
+    let canI: Bool = Purchases.canMakePayments()
+    let version = Purchases.frameworkVersion
+
+    // both should have deprecation warning
+    // 'addAttributionData(_:from:forNetworkUserId:)' is deprecated: Use the set<NetworkId> functions instead.
+    Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust, forNetworkUserId: "")
+    Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust, forNetworkUserId: nil)
+
+    let automaticAppleSearchAdsAttributionCollection: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
+    // should have deprecation warning 'debugLogsEnabled' is deprecated: use logLevel instead
+    let debugLogsEnabled: Bool = Purchases.debugLogsEnabled
+    let logLevel: Purchases.LogLevel = Purchases.logLevel
+    let proxyUrl: URL? = Purchases.proxyURL
+    let forceUniversalAppStore: Bool = Purchases.forceUniversalAppStore
+    let simulatesAskToBuyInSandbox: Bool = Purchases.simulatesAskToBuyInSandbox
+    let sharedPurchases: Purchases = Purchases.shared
+    let isConfigured: Bool = Purchases.isConfigured
+
+    print(canI, version, automaticAppleSearchAdsAttributionCollection, debugLogsEnabled, logLevel, proxyUrl!,
+          forceUniversalAppStore, simulatesAskToBuyInSandbox, sharedPurchases, isConfigured)
 }
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
@@ -169,6 +154,28 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let defermentBlock: RCDeferredPromotionalPurchaseBlock = { _ in }
     purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp, defermentBlock: defermentBlock)
     purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp) { _ in }
+}
+
+private func checkIdentity(purchases: Purchases) {
+    let piComplete: Purchases.ReceivePurchaserInfoBlock = { _, _ in }
+
+    // should have deprecation warning 'createAlias' is deprecated: Use logIn instead.
+    purchases.createAlias("", piComplete)
+    purchases.createAlias("")
+
+    // should have deprecation warning 'identify' is deprecated: Use logIn instead.
+    purchases.identify("", piComplete)
+    purchases.identify("") { _, _ in }
+
+    // should have deprecation warning 'reset' is deprecated: Use logOut instead.
+    purchases.reset(piComplete)
+    purchases.reset { _, _ in }
+
+    purchases.logOut(piComplete)
+
+    let loginComplete: (Purchases.PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
+    purchases.logIn("", loginComplete)
+    purchases.logIn("") { _, _, _ in }
 }
 
 private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
