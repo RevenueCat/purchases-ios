@@ -93,7 +93,8 @@ private extension OfferingsManager {
                 result[product.productIdentifier] = product
             }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(withProducts: productsByID, data: data) {
+            if let createdOfferings = self.offeringsFactory.createOfferings(fromProductDetailsByID: productsByID,
+                                                                            data: data) {
                 self.logMissingProductsIfAppropriate(products: productsByID, offeringsData: data)
 
                 self.deviceCache.cache(offerings: createdOfferings)

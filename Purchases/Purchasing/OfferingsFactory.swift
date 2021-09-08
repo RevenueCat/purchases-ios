@@ -17,7 +17,7 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(withProductDetails products: [String: ProductDetails],
+    func createOfferings(fromProductDetailsByID productDetailsByIdentifier: [String: ProductDetails],
                          data: [String: Any]) -> Offerings? {
         guard let offeringsData = data["offerings"] as? [[String: Any]] else {
             return nil
@@ -25,7 +25,8 @@ class OfferingsFactory {
 
         let offerings = offeringsData.reduce([String: Offering]()) { (dict, offeringData) -> [String: Offering] in
             var dict = dict
-            if let offering = createOffering(withProductDetails: products, offeringData: offeringData) {
+            if let offering = createOffering(fromProductDetailsByIdentifier: productDetailsByIdentifier,
+                                             offeringData: offeringData) {
                 dict[offering.identifier] = offering
             }
             return dict
@@ -35,25 +36,16 @@ class OfferingsFactory {
         return Offerings(offerings: offerings, currentOfferingID: currentOfferingID)
     }
 
-    func createOfferings(withProducts products: [String: ProductDetails],
-                         data: [String: Any]) -> Offerings? {
-        let productIdentifiersAndDetailsAsTuple = products.map { productIdentifier, productDetails in
-            (productIdentifier, productDetails)
-        }
-        let productDetailsByKey = Dictionary(uniqueKeysWithValues: productIdentifiersAndDetailsAsTuple)
-        return self.createOfferings(withProductDetails: productDetailsByKey, data: data)
-    }
-
     func createOffering(withProducts products: [String: SKProduct],
                         offeringData: [String: Any]) -> Offering? {
         let productIdentifiersAndDetailsAsTuple = products.map { productIdentifier, skProduct in
             (productIdentifier, SK1ProductDetails(sk1Product: skProduct))
         }
         let productDetailsByKey = Dictionary(uniqueKeysWithValues: productIdentifiersAndDetailsAsTuple)
-        return self.createOffering(withProductDetails: productDetailsByKey, offeringData: offeringData)
+        return self.createOffering(fromProductDetailsByIdentifier: productDetailsByKey, offeringData: offeringData)
     }
 
-    func createOffering(withProductDetails products: [String: ProductDetails],
+    func createOffering(fromProductDetailsByIdentifier products: [String: ProductDetails],
                         offeringData: [String: Any]) -> Offering? {
         guard let offeringIdentifier = offeringData["identifier"] as? String,
               let packagesData = offeringData["packages"] as? [[String: Any]],
