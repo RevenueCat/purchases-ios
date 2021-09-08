@@ -15,7 +15,6 @@ import Foundation
 import Purchases
 
 var backendErrCode: Purchases.RevenueCatBackendErrorCode!
-var errCode: Purchases.ErrorCode.Code!
 func checkErrorCodeEnums() {
     switch backendErrCode! {
     case .invalidPlatform,
@@ -40,7 +39,10 @@ func checkErrorCodeEnums() {
          .invalidSubscriberAttributesBody:
         print(backendErrCode!)
     }
+}
 
+var errCode: Purchases.ErrorCode.Code!
+func checkPurchasesErrorCodeEnums() {
     switch errCode! {
     case .unknownError,
          .purchaseCancelledError,

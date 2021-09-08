@@ -35,6 +35,8 @@ checkPurchasesAPI()
 checkPurchasesConstants()
 checkPurchasesEnums()
 
+checkPurchasesErrorCodeEnums()
+
 checkPurchasesErrorUtilsAPI()
 
 checkPackageAPI()
