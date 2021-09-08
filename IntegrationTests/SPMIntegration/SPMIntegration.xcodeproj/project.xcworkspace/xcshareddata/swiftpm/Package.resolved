@@ -5,8 +5,8 @@
         "package": "RevenueCat",
         "repositoryURL": "https://github.com/RevenueCat/purchases-ios.git",
         "state": {
-          "branch": "RCv4",
-          "revision": "f55900e3a1637368a78b45fbb0d9fd7b53742c13",
+          "branch": "main",
+          "revision": "caf58d14b715bf0b510f93e5fd7cae6dab912784",
           "version": null
         }
       }
