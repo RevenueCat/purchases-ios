@@ -21,7 +21,7 @@ class OfferingsTests: XCTestCase {
         let package = offeringsFactory.createPackage(withData: [
             "identifier": "$rc_monthly",
             "platform_product_identifier": "com.myproduct.monthly"
-        ], products: [
+        ], productDetailsByID: [
             "com.myproduct.annual": SK1ProductDetails(sk1Product: SKProduct())
         ], offeringIdentifier: "offering")
 
@@ -35,7 +35,7 @@ class OfferingsTests: XCTestCase {
         let package = offeringsFactory.createPackage(withData: [
             "identifier": packageIdentifier,
             "platform_product_identifier": productIdentifier
-        ], products: [
+        ], productDetailsByID: [
             productIdentifier: SK1ProductDetails(sk1Product: product)
         ], offeringIdentifier: "offering")
 
@@ -49,7 +49,7 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingIsNotCreatedIfNoValidPackage() {
         let products = ["com.myproduct.bad": SK1ProductDetails(sk1Product: SKProduct())]
-        let offering = offeringsFactory.createOffering(fromProductDetailsByIdentifier: products, offeringData: [
+        let offering = offeringsFactory.createOffering(fromProductDetailsByID: products, offeringData: [
             "identifier": "offering_a",
             "description": "This is the base offering",
             "packages": [
@@ -70,7 +70,7 @@ class OfferingsTests: XCTestCase {
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
-        let offering = offeringsFactory.createOffering(fromProductDetailsByIdentifier: products, offeringData: [
+        let offering = offeringsFactory.createOffering(fromProductDetailsByID: products, offeringData: [
             "identifier": offeringIdentifier,
             "description": serverDescription,
             "packages": [
