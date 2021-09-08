@@ -25,8 +25,6 @@ func checkPurchasesErrorUtilsAPI() {
     error = Purchases.ErrorUtils.logOutAnonymousUserError()
     error = Purchases.ErrorUtils.paymentDeferredError()
     error = Purchases.ErrorUtils.unknownError()
-    // TODO we had this in objc, do we not in swift?
-//    error = ErrorUtils.unknownError(message: )
 
     let underlyingSKError = NSError(domain: SKErrorDomain, code: SKError.unknown.rawValue, userInfo: nil)
     error = Purchases.ErrorUtils.purchasesError(withSKError: underlyingSKError)
