@@ -39,6 +39,7 @@ enum AttributionStrings {
     case missing_advertiser_identifiers
 
 }
+
 extension AttributionStrings: CustomStringConvertible {
 
     var description: String {
