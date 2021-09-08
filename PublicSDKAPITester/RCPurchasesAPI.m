@@ -5,7 +5,7 @@
 //  Created by Joshua Liebowitz on 6/18/21.
 //
 
-@import RevenueCat;
+@import Purchases;
 @import StoreKit;
 
 #import "RCPurchasesAPI.h"
@@ -130,32 +130,38 @@ shouldPurchasePromoProduct:skp
 
 + (void)checkEnums {
     RCPeriodType t = RCNormal;
-    t = RCIntro;
-    t = RCTrial;
-    
+    switch(t) {
+        case RCNormal:
+        case RCIntro:
+        case RCTrial:
+            NSLog(@"%ld", (long)t);
+    }
+
     RCPurchaseOwnershipType o = RCPurchaseOwnershipTypePurchased;
-    o = RCPurchaseOwnershipTypeFamilyShared;
-    o = RCPurchaseOwnershipTypeUnknown;
-    
+    switch(o) {
+        case RCPurchaseOwnershipTypePurchased:
+        case RCPurchaseOwnershipTypeFamilyShared:
+        case RCPurchaseOwnershipTypeUnknown:
+            NSLog(@"%ld", (long)o);
+    }
+
     RCLogLevel l = RCLogLevelInfo;
-    l = RCLogLevelWarn;
-    l = RCLogLevelDebug;
-    l = RCLogLevelError;
-    
+    switch(l) {
+        case RCLogLevelInfo:
+        case RCLogLevelWarn:
+        case RCLogLevelDebug:
+        case RCLogLevelError:
+            NSLog(@"%ld", (long)o);
+    }
 }
 
 + (void)checkConstants {
-// TODO convert back once everything moved into Purchases
-    double vn = RevenueCatVersionNumber;
-    const unsigned char *vs = RevenueCatVersionString;
+    NSErrorDomain bed = RCBackendErrorDomain;
+    NSErrorDomain ped = RCPurchasesErrorDomain;
+    NSErrorUserInfoKey fk = RCFinishableKey;
+    NSErrorUserInfoKey eck = RCReadableErrorCodeKey;
 
-    // breaking changes below this line
-    NSErrorDomain bed = RCBackendErrorCodeDomain;
-    NSErrorDomain ped = RCPurchasesErrorCodeDomain;
-    NSErrorUserInfoKey fk = RCErrorDetails.RCFinishableKey;
-    NSErrorUserInfoKey eck = RCErrorDetails.RCReadableErrorCodeKey;
-
-    NSLog([NSString stringWithFormat:@"%lf", vn], vs, bed, ped, fk, eck);
+    NSLog(bed, ped, fk, eck);
 }
 
 @end

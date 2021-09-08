@@ -6,7 +6,7 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-@import RevenueCat;
+@import Purchases;
 
 #import "RCOfferingsAPI.h"
 

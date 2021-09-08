@@ -6,7 +6,7 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-@import RevenueCat;
+@import Purchases;
 #import "RCIntroEligibilityAPI.h"
 
 @implementation RCIntroEligibilityAPI
@@ -20,8 +20,12 @@
 
 + (void)checkEnums {
     RCIntroEligibilityStatus s = RCIntroEligibilityStatusUnknown;
-    s = RCIntroEligibilityStatusIneligible;
-    s = RCIntroEligibilityStatusEligible;
+    switch(s) {
+        case RCIntroEligibilityStatusUnknown:
+        case RCIntroEligibilityStatusIneligible:
+        case RCIntroEligibilityStatusEligible:
+            NSLog(@"%ld", (long)s);
+    }
 }
 
 @end

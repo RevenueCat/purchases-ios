@@ -8,7 +8,7 @@
 
 #import "RCPurchaserInfoAPI.h"
 
-@import RevenueCat;
+@import Purchases;
 
 @implementation RCPurchaserInfoAPI
 

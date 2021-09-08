@@ -11,7 +11,7 @@
 //
 //  Created by César de la Vega on 7/21/21.
 
-@import RevenueCat;
+@import Purchases;
 @import StoreKit;
 
 #import "RCPurchasesErrorUtilsAPI.h"
@@ -29,7 +29,7 @@
     error = [RCPurchasesErrorUtils logOutAnonymousUserError];
     error = [RCPurchasesErrorUtils paymentDeferredError];
     error = [RCPurchasesErrorUtils unknownError];
-    error = [RCPurchasesErrorUtils unknownErrorWithMessage:@"🎈🐐"];
+//    error = [RCPurchasesErrorUtils unknownErrorWithMessage:@"🎈🐐"];
     NSError* underlyingSKError = [[NSError alloc] initWithDomain:SKErrorDomain code:SKErrorUnknown userInfo:@{@"key": @"value"}];
     error = [RCPurchasesErrorUtils purchasesErrorWithSKError:underlyingSKError];
     NSLog(@"%@", error.localizedDescription);

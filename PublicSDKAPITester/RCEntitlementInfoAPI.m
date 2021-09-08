@@ -6,7 +6,7 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-@import RevenueCat;
+@import Purchases;
 
 #import "RCEntitlementInfoAPI.h"
 
@@ -33,15 +33,24 @@
 
 + (void)checkEnums {
     RCStore rs = RCAppStore;
-    rs = RCMacAppStore;
-    rs = RCPlayStore;
-    rs = RCStripe;
-    rs = RCPromotional;
-    rs = RCUnknownStore;
+    switch(rs) {
+        case RCAppStore:
+        case RCMacAppStore:
+        case RCPlayStore:
+        case RCStripe:
+        case RCPromotional:
+        case RCUnknownStore:
+            NSLog(@"%ld", (long)rs);
+    }
+
 
     RCPeriodType pr = RCIntro;
-    pr = RCTrial;
-    pr = RCNormal;
+    switch(pr) {
+        case RCIntro:
+        case RCTrial:
+        case RCNormal:
+            NSLog(@"%ld", (long)pr);
+    }
 }
 
 @end
