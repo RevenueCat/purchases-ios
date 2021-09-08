@@ -12,13 +12,13 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-import Purchases
+import RevenueCat
 
-var eis: Purchases.EntitlementInfos!
+var eis: EntitlementInfos!
 func checkEntitlementInfosAPI() {
-    let all: [String: Purchases.EntitlementInfo] = eis.all
-    let active: [String: Purchases.EntitlementInfo] = eis.active
-    let enti: Purchases.EntitlementInfo? = eis[""]
+    let all: [String: EntitlementInfo] = eis.all
+    let active: [String: EntitlementInfo] = eis.active
+    let enti: EntitlementInfo? = eis[""]
 
     print(eis!, all, active, enti!)
 }

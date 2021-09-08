@@ -12,7 +12,8 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-import Purchases
+import RevenueCat
+import StoreKit
 
 func checkPurchasesAPI() {
     // initializers
@@ -33,7 +34,7 @@ func checkPurchasesAPI() {
     let appUserID: String = purch.appUserID
     let isAnonymous: Bool = purch.isAnonymous
 
-    print(purch.description, finishTransactions, delegate!, appUserID, isAnonymous)
+    print(finishTransactions, delegate!, appUserID, isAnonymous)
 
     checkStaticMethods()
     checkIdentity(purchases: purch)
@@ -41,9 +42,9 @@ func checkPurchasesAPI() {
     checkPurchasesPurchasingAPI(purchases: purch)
 }
 
-var type: Purchases.PeriodType!
-var oType: RCPurchaseOwnershipType!
-var logLevel: Purchases.LogLevel!
+var type: PeriodType!
+var oType: PurchaseOwnershipType!
+var logLevel: LogLevel!
 func checkPurchasesEnums() {
     switch type! {
     case .normal,
@@ -69,145 +70,129 @@ func checkPurchasesEnums() {
 }
 
 func checkPurchasesConstants() {
-    let errDom = Purchases.ErrorDomain
-    let backendErrDom = Purchases.RevenueCatBackendErrorDomain
-    let finKey = Purchases.FinishableKey
-    let errCodeKey = Purchases.ReadableErrorCodeKey
+//    let errDom = errorDomain
+//    let backendErrDom = backendErrCode
+    let finKey = ErrorDetails.finishableKey
+    let errCodeKey = ErrorDetails.readableErrorCodeKey
 
-    print(errDom, backendErrDom, finKey, errCodeKey)
+//    print(errDom, backendErrDom, finKey, errCodeKey)
+    print(finKey, errCodeKey)
 }
 
 private func checkStaticMethods() {
-    let logHandler: (Purchases.LogLevel, String) -> Void = { _, _ in }
-    Purchases.setLogHandler(logHandler)
-    Purchases.setLogHandler { _, _ in }
+    let logHandler: (LogLevel, String) -> Void = { _, _ in }
+    Purchases.logHandler = logHandler
 
     let canI: Bool = Purchases.canMakePayments()
     let version = Purchases.frameworkVersion
 
     // both should have deprecation warning
-    // 'addAttributionData(_:from:forNetworkUserId:)' is deprecated: Use the set<NetworkId> functions instead.
-    Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust, forNetworkUserId: "")
-    Purchases.addAttributionData([AnyHashable: Any](), from: RCAttributionNetwork.adjust, forNetworkUserId: nil)
+    Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: "")
+    Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: nil)
 
     let automaticAppleSearchAdsAttributionCollection: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
     // should have deprecation warning 'debugLogsEnabled' is deprecated: use logLevel instead
     let debugLogsEnabled: Bool = Purchases.debugLogsEnabled
-    let logLevel: Purchases.LogLevel = Purchases.logLevel
+    let logLevel: LogLevel = Purchases.logLevel
     let proxyUrl: URL? = Purchases.proxyURL
     let forceUniversalAppStore: Bool = Purchases.forceUniversalAppStore
     let simulatesAskToBuyInSandbox: Bool = Purchases.simulatesAskToBuyInSandbox
     let sharedPurchases: Purchases = Purchases.shared
-    let isConfigured: Bool = Purchases.isConfigured
+    let isPurchasesConfigured: Bool = Purchases.isConfigured
 
     print(canI, version, automaticAppleSearchAdsAttributionCollection, debugLogsEnabled, logLevel, proxyUrl!,
-          forceUniversalAppStore, simulatesAskToBuyInSandbox, sharedPurchases, isConfigured)
+          forceUniversalAppStore, simulatesAskToBuyInSandbox, sharedPurchases, isPurchasesConfigured)
 }
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
-    let piComplete: Purchases.ReceivePurchaserInfoBlock = { _, _ in }
-    purchases.purchaserInfo(piComplete)
+    let piComplete: ReceivePurchaserInfoBlock = { _, _ in }
+    purchases.purchaserInfo(completionBlock: piComplete)
     purchases.purchaserInfo { _, _ in }
 
-    let offeringsComplete: Purchases.ReceiveOfferingsBlock = { _, _ in }
-    purchases.offerings(offeringsComplete)
+    let offeringsComplete: ReceiveOfferingsBlock = { _, _ in }
+    purchases.offerings(completionBlock: offeringsComplete)
     purchases.offerings { _, _ in }
 
-    let productsComplete: Purchases.ReceiveProductsBlock = { _ in }
-    purchases.products([String](), productsComplete)
-    purchases.products([String]()) { _ in }
+    let productsComplete: ReceiveProductsBlock = { _ in }
+    purchases.products(identifiers: [String](), completionBlock: productsComplete)
+    purchases.products(identifiers: [String]()) { _ in }
 
     let skp: SKProduct = SKProduct()
     let skpd: SKProductDiscount = SKProductDiscount()
     let skmd: SKPaymentDiscount = SKPaymentDiscount()
-    let pack: Purchases.Package = Purchases.Package()
+    let pack: Package! = nil
 
-    let purchaseProductComplete: Purchases.PurchaseCompletedBlock = { _, _, _, _  in }
-    purchases.purchaseProduct(skp, purchaseProductComplete)
-    purchases.purchaseProduct(skp) { _, _, _, _  in }
-    purchases.purchasePackage(pack, purchaseProductComplete)
-    purchases.purchasePackage(pack) { _, _, _, _  in }
+    let purchaseProductComplete: PurchaseCompletedBlock = { _, _, _, _  in }
+    purchases.purchase(product: skp, completion: purchaseProductComplete)
+    purchases.purchase(product: skp) { _, _, _, _  in }
+    purchases.purchase(package: pack, completion: purchaseProductComplete)
+    purchases.purchase(package: pack) { _, _, _, _  in }
 
-    purchases.restoreTransactions(piComplete)
-    purchases.syncPurchases(piComplete)
+    purchases.restoreTransactions(completionBlock: piComplete)
+    purchases.syncPurchases(completionBlock: piComplete)
 
-    let checkEligComplete: ([String: RCIntroEligibility]) -> Void = { _ in }
+    let checkEligComplete: ([String: IntroEligibility]) -> Void = { _ in }
     purchases.checkTrialOrIntroductoryPriceEligibility([String](), completionBlock: checkEligComplete)
     purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { _ in }
 
-    let discountComplete: Purchases.PaymentDiscountBlock = { _, _ in }
+    let discountComplete: PaymentDiscountBlock = { _, _ in }
 
-    purchases.paymentDiscount(for: skpd, product: skp, completion: discountComplete)
-    purchases.paymentDiscount(for: skpd, product: skp) { _, _ in }
+    purchases.paymentDiscount(forProductDiscount: skpd, product: skp, completion: discountComplete)
+    purchases.paymentDiscount(forProductDiscount: skpd, product: skp) { _, _ in }
 
-    purchases.purchaseProduct(skp, discount: skmd, purchaseProductComplete)
-    purchases.purchaseProduct(skp, discount: skmd) { _, _, _, _  in }
-    purchases.purchasePackage(pack, discount: skmd, purchaseProductComplete)
-    purchases.purchasePackage(pack, discount: skmd) { _, _, _, _  in }
+    purchases.purchase(product: skp, discount: skmd, completion: purchaseProductComplete)
+    purchases.purchase(product: skp, discount: skmd) { _, _, _, _  in }
+    purchases.purchase(package: pack, discount: skmd, completion: purchaseProductComplete)
+    purchases.purchase(package: pack, discount: skmd) { _, _, _, _  in }
     purchases.invalidatePurchaserInfoCache()
 
     // PurchasesDelegate
-    let purchaserInfo: Purchases.PurchaserInfo? = nil
+    let purchaserInfo: PurchaserInfo? = nil
     purchases.delegate?.purchases?(purchases, didReceiveUpdated: purchaserInfo!)
 
-    let defermentBlock: RCDeferredPromotionalPurchaseBlock = { _ in }
+    let defermentBlock: DeferredPromotionalPurchaseBlock = { _ in }
     purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp, defermentBlock: defermentBlock)
     purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp) { _ in }
 }
 
 private func checkIdentity(purchases: Purchases) {
-    let piComplete: Purchases.ReceivePurchaserInfoBlock = { _, _ in }
+    let piComplete: ReceivePurchaserInfoBlock = { _, _ in }
 
     // should have deprecation warning 'createAlias' is deprecated: Use logIn instead.
-    purchases.createAlias("", piComplete)
-    purchases.createAlias("")
+    purchases.createAlias("", completionBlock: piComplete)
+    purchases.createAlias("") { _, _ in }
 
     // should have deprecation warning 'identify' is deprecated: Use logIn instead.
-    purchases.identify("", piComplete)
+    purchases.identify("", completionBlock: piComplete)
     purchases.identify("") { _, _ in }
 
     // should have deprecation warning 'reset' is deprecated: Use logOut instead.
-    purchases.reset(piComplete)
+    purchases.reset(completionBlock: piComplete)
     purchases.reset { _, _ in }
 
-    purchases.logOut(piComplete)
+    purchases.logOut(completionBlock: piComplete)
 
-    let loginComplete: (Purchases.PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
-    purchases.logIn("", loginComplete)
-    purchases.logIn("") { _, _, _ in }
+    let loginComplete: (PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
+    purchases.logIn(appUserID: "", completionBlock: loginComplete)
+    purchases.logIn(appUserID: "") { _, _, _ in }
 }
 
 private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.setAttributes([String: String]())
     purchases.setEmail("")
-    purchases.setEmail(nil)
     purchases.setPhoneNumber("")
-    purchases.setPhoneNumber(nil)
     purchases.setDisplayName("")
-    purchases.setDisplayName(nil)
-    purchases.setPushToken("".data(using: String.Encoding.utf8))
-    purchases.setPushToken(nil)
+    purchases.setPushToken("".data(using: String.Encoding.utf8)!)
     purchases.setAdjustID("")
-    purchases.setAdjustID(nil)
     purchases.setAppsflyerID("")
-    purchases.setAppsflyerID(nil)
     purchases.setFBAnonymousID("")
-    purchases.setFBAnonymousID(nil)
     purchases.setMparticleID("")
-    purchases.setMparticleID(nil)
     purchases.setOnesignalID("")
-    purchases.setOnesignalID(nil)
     purchases.setMediaSource("")
-    purchases.setMediaSource(nil)
     purchases.setCampaign("")
-    purchases.setCampaign(nil)
     purchases.setAdGroup("")
-    purchases.setAdGroup(nil)
     purchases.setAd("")
-    purchases.setAd(nil)
     purchases.setKeyword("")
-    purchases.setKeyword(nil)
     purchases.setCreative("")
-    purchases.setCreative(nil)
-    purchases.collectDeviceIdentifiers()
+//    purchases.collectDeviceIdentifiers() // now internal
 }

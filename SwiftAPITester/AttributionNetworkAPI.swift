@@ -12,9 +12,9 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-import Purchases
+import RevenueCat
 
-var aNetwork: RCAttributionNetwork!
+var aNetwork: AttributionNetwork!
 func checkAttributionNetworkEnums() {
     switch aNetwork! {
     case .appleSearchAds,

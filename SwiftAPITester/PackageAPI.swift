@@ -12,12 +12,13 @@
 //  Created by Madeline Beyl on 8/26/21.
 
 import Foundation
-import Purchases
+import RevenueCat
+import StoreKit
 
-var pack: Purchases.Package!
+var pack: Package!
 func checkPackageAPI() {
     let ident: String = pack.identifier
-    let pType: Purchases.PackageType = pack.packageType
+    let pType: PackageType = pack.packageType
     let prod: SKProduct = pack.product
     let lps: String = pack.localizedPriceString
     let lips: String = pack.localizedIntroductoryPriceString
@@ -25,7 +26,7 @@ func checkPackageAPI() {
     print(pack!, ident, pType, prod, lps, lips)
 }
 
-var packageType: Purchases.PackageType!
+var packageType: PackageType!
 func checkPackageEnums() {
     switch packageType! {
     case .custom,

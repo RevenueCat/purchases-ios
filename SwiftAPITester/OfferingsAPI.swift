@@ -12,12 +12,12 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-import Purchases
+import RevenueCat
 
-var offs: Purchases.Offerings!
+var offs: Offerings!
 func checkOfferingsAPI() {
-    var off: Purchases.Offering? = offs.current
-    let all: [String: Purchases.Offering] = offs.all
+    var off: Offering? = offs.current
+    let all: [String: Offering] = offs.all
     off = offs.offering(identifier: nil)
     off = offs.offering(identifier: "")
     off = offs[""]

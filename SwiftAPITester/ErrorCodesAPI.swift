@@ -12,9 +12,9 @@
 //  Created by Madeline Beyl on 9/5/21.
 
 import Foundation
-import Purchases
+import RevenueCat
 
-var backendErrCode: Purchases.RevenueCatBackendErrorCode!
+var backendErrCode: BackendErrorCode!
 func checkErrorCodeEnums() {
     switch backendErrCode! {
     case .invalidPlatform,
@@ -36,12 +36,13 @@ func checkErrorCodeEnums() {
          .userIneligibleForPromoOffer,
          .invalidAppleSubscriptionKey,
          .invalidSubscriberAttributes,
-         .invalidSubscriberAttributesBody:
+         .invalidSubscriberAttributesBody,
+         .unknownError:
         print(backendErrCode!)
     }
 }
 
-var errCode: Purchases.ErrorCode.Code!
+var errCode: ErrorCode!
 func checkPurchasesErrorCodeEnums() {
     switch errCode! {
     case .unknownError,
@@ -59,7 +60,6 @@ func checkPurchasesErrorCodeEnums() {
          .unexpectedBackendResponseError,
          .receiptInUseByOtherSubscriberError,
          .invalidAppUserIdError,
-         .operationAlreadyInProgressError,
          .unknownBackendError,
          .invalidAppleSubscriptionKeyError,
          .ineligibleError,
@@ -67,7 +67,14 @@ func checkPurchasesErrorCodeEnums() {
          .paymentPendingError,
          .invalidSubscriberAttributesError,
          .logOutAnonymousUserError,
-         .configurationError:
+         .configurationError,
+         .operationAlreadyInProgressForProductError,
+         .emptySubscriberAttributes,
+         .productDiscountMissingIdentifierError,
+         .missingAppUserIDForAliasCreationError,
+         .productDiscountMissingSubscriptionGroupIdentifierError:
         print(errCode!)
+
+
     }
 }
