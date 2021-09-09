@@ -80,7 +80,7 @@ private extension ReceiptFetcher {
             return nil
         }
 
-        Logger.debug(Strings.receipt.loaded_receipt(fromURL: receiptURL))
+        Logger.debug(Strings.receipt.loaded_receipt(url: receiptURL))
 
         return data
     }

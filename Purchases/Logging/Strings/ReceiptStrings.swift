@@ -19,7 +19,7 @@ enum ReceiptStrings {
 
     case data_object_identifer_not_found_receipt
     case force_refreshing_receipt
-    case loaded_receipt(fromURL: URL)
+    case loaded_receipt(url: URL)
     case no_sandbox_receipt_intro_eligibility
     case no_sandbox_receipt_restore
     case parse_receipt_locally_error(error: Error)
