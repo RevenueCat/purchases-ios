@@ -1,5 +1,5 @@
 ## 3.12.4
-- Updated getOfferings call to be performed serially instead of concurrently.
+- Updated `getOfferings` call to be performed serially instead of concurrently.
     https://github.com/RevenueCat/purchases-ios/pull/831
 
 ## 3.12.3
