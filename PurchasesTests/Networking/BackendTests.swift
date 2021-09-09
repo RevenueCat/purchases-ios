@@ -830,6 +830,17 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count).toNot(equal(0))
         expect(offeringsData).toEventuallyNot(beNil())
     }
+
+    func testGetOfferingsCallsHTTPMethodSerially() {
+        let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [String : Any], error: nil)
+        let path = "/subscribers/" + userID + "/offerings"
+        httpClient.mock(requestPath: path, response: response)
+
+        backend?.getOfferings(appUserID: userID) { _, _ in }
+
+        expect(self.httpClient.calls.count).to(equal(1))
+        expect(self.httpClient.calls[0].serially).to(beTrue())
+    }
     
     func testGetOfferingsCachesForSameUserID() {
         let response = HTTPResponse(statusCode: 200, response: noOfferingsResponse as [String : Any], error: nil)
