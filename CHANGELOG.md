@@ -1,3 +1,8 @@
+## 4.0.0-beta.1
+- First beta for RevenueCat (previously Purchases) framework 🎉
+    100% Swift framework + ObjC support.
+    
+
 ## 3.12.3
 - Fixed a bug where checkTrialOrIntroductoryPriceEligibility would return `eligible` for products that don't have intro pricing
     https://github.com/RevenueCat/purchases-ios/pull/679
