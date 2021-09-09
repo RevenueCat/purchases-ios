@@ -154,6 +154,17 @@ jobs:
       - run:
           name: Build APITester
           command: xcodebuild -target APITester
+  swift_apitest:
+    macos:
+      xcode: "12.5.1"
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - run:
+          name: Build SwiftAPITester
+          command: xcodebuild -target SwiftAPITester
+          
 
   storekit_tests:
     macos:
@@ -355,6 +366,7 @@ workflows:
       - lint
       - runtest
       - apitest
+      - swift_apitest
       - buildTvWatchAndMacOS
       - storekit_tests: *release-tags-and-branches
       - deployment-checks: *release-branches
