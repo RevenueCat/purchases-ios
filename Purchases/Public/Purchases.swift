@@ -380,7 +380,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
      * Automatically collect subscriber attributes associated with the device identifiers
      * $idfa, $idfv, $ip
      */
-    @objc func collectDeviceIdentifiers() {
+    @objc public func collectDeviceIdentifiers() {
         subscriberAttributesManager.collectDeviceIdentifiers(forAppUserID: appUserID)
     }
 
@@ -431,7 +431,7 @@ extension Purchases {
      *
      * - Parameter email: Empty String or nil will delete the subscriber attribute.
      */
-    @objc public func setEmail(_ email: String) {
+    @objc public func setEmail(_ email: String?) {
         subscriberAttributesManager.setEmail(email, appUserID: appUserID)
     }
 
@@ -440,7 +440,7 @@ extension Purchases {
      *
      * - Parameter phoneNumber: Empty String or nil will delete the subscriber attribute.
      */
-    @objc public func setPhoneNumber(_ phoneNumber: String) {
+    @objc public func setPhoneNumber(_ phoneNumber: String?) {
         subscriberAttributesManager.setPhoneNumber(phoneNumber, appUserID: appUserID)
     }
 
@@ -449,7 +449,7 @@ extension Purchases {
      *
      * - Parameter displayName: Empty String or nil will delete the subscriber attribute.
      */
-    @objc public func setDisplayName(_ displayName: String) {
+    @objc public func setDisplayName(_ displayName: String?) {
         subscriberAttributesManager.setDisplayName(displayName, appUserID: appUserID)
     }
 
@@ -458,7 +458,7 @@ extension Purchases {
      *
      * - Parameter pushToken: nil will delete the subscriber attribute.
      */
-    @objc public func setPushToken(_ pushToken: Data) {
+    @objc public func setPushToken(_ pushToken: Data?) {
         subscriberAttributesManager.setPushToken(pushToken, appUserID: appUserID)
     }
 
@@ -468,7 +468,7 @@ extension Purchases {
      *
      * - Parameter adjustID: nil will delete the subscriber attribute
      */
-    @objc public func setAdjustID(_ adjustID: String) {
+    @objc public func setAdjustID(_ adjustID: String?) {
         subscriberAttributesManager.setAdjustID(adjustID, appUserID: appUserID)
     }
 
@@ -478,7 +478,7 @@ extension Purchases {
      *
      * - Parameter appsflyerID: nil will delete the subscriber attribute
      */
-    @objc public func setAppsflyerID(_ appsflyerID: String) {
+    @objc public func setAppsflyerID(_ appsflyerID: String?) {
         subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: appUserID)
     }
 
@@ -488,7 +488,7 @@ extension Purchases {
      *
      * - Parameter fbAnonymousID: nil will delete the subscriber attribute
      */
-    @objc public func setFBAnonymousID(_ fbAnonymousID: String) {
+    @objc public func setFBAnonymousID(_ fbAnonymousID: String?) {
         subscriberAttributesManager.setFBAnonymousID(fbAnonymousID, appUserID: appUserID)
     }
 
@@ -498,7 +498,7 @@ extension Purchases {
      *
      * - Parameter mparticleID: nil will delete the subscriber attribute
      */
-    @objc public func setMparticleID(_ mparticleID: String) {
+    @objc public func setMparticleID(_ mparticleID: String?) {
         subscriberAttributesManager.setMparticleID(mparticleID, appUserID: appUserID)
     }
 
@@ -508,7 +508,7 @@ extension Purchases {
      *
      * - Parameter onesignalID: nil will delete the subscriber attribute
      */
-    @objc public func setOnesignalID(_ onesignalID: String) {
+    @objc public func setOnesignalID(_ onesignalID: String?) {
         subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: appUserID)
     }
 
@@ -517,7 +517,7 @@ extension Purchases {
      *
      * - Parameter mediaSource: nil will delete the subscriber attribute.
      */
-    @objc public func setMediaSource(_ mediaSource: String) {
+    @objc public func setMediaSource(_ mediaSource: String?) {
         subscriberAttributesManager.setMediaSource(mediaSource, appUserID: appUserID)
     }
 
@@ -526,7 +526,7 @@ extension Purchases {
      *
      * - Parameter campaign: nil will delete the subscriber attribute.
      */
-    @objc public func setCampaign(_ campaign: String) {
+    @objc public func setCampaign(_ campaign: String?) {
         subscriberAttributesManager.setCampaign(campaign, appUserID: appUserID)
     }
 
@@ -535,7 +535,7 @@ extension Purchases {
      *
      * - Parameter adGroup: nil will delete the subscriber attribute.
      */
-    @objc public func setAdGroup(_ adGroup: String) {
+    @objc public func setAdGroup(_ adGroup: String?) {
         subscriberAttributesManager.setAdGroup(adGroup, appUserID: appUserID)
     }
 
@@ -544,7 +544,7 @@ extension Purchases {
      *
      * - Parameter installAd: nil will delete the subscriber attribute.
      */
-    @objc public func setAd(_ installAd: String) {
+    @objc public func setAd(_ installAd: String?) {
         subscriberAttributesManager.setAd(installAd, appUserID: appUserID)
     }
 
@@ -553,7 +553,7 @@ extension Purchases {
      *
      * - Parameter keyword: nil will delete the subscriber attribute.
      */
-    @objc public func setKeyword(_ keyword: String) {
+    @objc public func setKeyword(_ keyword: String?) {
         subscriberAttributesManager.setKeyword(keyword, appUserID: appUserID)
     }
 
@@ -562,7 +562,7 @@ extension Purchases {
      *
      * - Parameter creative: nil will delete the subscriber attribute.
      */
-    @objc public func setCreative(_ creative: String) {
+    @objc public func setCreative(_ creative: String?) {
         subscriberAttributesManager.setCreative(creative, appUserID: appUserID)
     }
 

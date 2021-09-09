@@ -238,7 +238,7 @@ private extension SubscriberAttributesManager {
     }
 
     func storeAttributeLocally(key: String, value: String, appUserID: String) {
-        let subscriberAttribute = SubscriberAttribute.init(withKey: key, value: value)
+        let subscriberAttribute = SubscriberAttribute(withKey: key, value: value)
         Logger.debug(Strings.attribution.attribute_set_locally(attribute: subscriberAttribute.description))
         deviceCache.store(subscriberAttribute: subscriberAttribute, appUserID: appUserID)
     }
