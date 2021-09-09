@@ -311,7 +311,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
     }
 
     [self.httpClient performRequest:@"GET"
-                           serially:NO
+                           serially:YES
                                path:path
                                body:nil
                             headers:self.headers
