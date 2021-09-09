@@ -34,7 +34,7 @@ class ReceiptParser {
             return receipt.inAppPurchases.count > 0
         }
 
-        Logger.warn(String(format: Strings.receipt.parsing_receipt_failed, #file, #function))
+        Logger.warn(Strings.receipt.parsing_receipt_failed(fileName: #file, functionName: #function))
         return true
     }
 
