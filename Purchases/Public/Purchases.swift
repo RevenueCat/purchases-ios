@@ -847,11 +847,7 @@ public extension Purchases {
      */
     @objc(purchasePackage:withCompletionBlock:)
     func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
-        let payment = storeKitWrapper.payment(withProduct: package.product)
-        purchase(product: package.product,
-                 payment: payment,
-                 presentedOfferingIdentifier: package.offeringIdentifier,
-                 completion: completion)
+        purchasesOrchestrator.purchase(package: package, completion: completion)
     }
 
     /**
@@ -902,8 +898,14 @@ public extension Purchases {
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchasePackage:withDiscount:completionBlock:)
     func purchase(package: Package, discount: SKPaymentDiscount, completion: @escaping PurchaseCompletedBlock) {
-        let payment = storeKitWrapper.payment(withProduct: package.product, discount: discount)
-        purchase(product: package.product,
+        // todo: add support for SK2 with discounts, move to new class
+        guard let sk1ProductDetails = package.productDetails as? SK1ProductDetails else {
+            return
+        }
+        let sk1Product = sk1ProductDetails.underlyingSK1Product
+        let payment = storeKitWrapper.payment(withProduct: sk1Product,
+                                              discount: discount)
+        purchase(product: sk1Product,
                  payment: payment,
                  presentedOfferingIdentifier: package.offeringIdentifier,
                  completion: completion)

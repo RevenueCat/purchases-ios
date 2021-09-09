@@ -65,7 +65,7 @@ class IntroEligibilityCalculator {
                 )
                 completion(result, nil)
             }
-        } catch let error {
+        } catch {
             Logger.error(Strings.purchaserInfo.checking_intro_eligibility_locally_error(error: error))
             completion([:], error)
             return

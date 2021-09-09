@@ -20,13 +20,13 @@
 
 + (void)checkAPI {
     RCPackage *p;
+    RCProductDetails *pw = p.productDetails;
     NSString *i = p.identifier;
     RCPackageType t = p.packageType;
-    SKProduct *prod = p.product;
     NSString *lps = p.localizedPriceString;
     NSString *lips = p.localizedIntroductoryPriceString;
 
-    NSLog(p, i, t, prod, lps, lips);
+    NSLog(p, pw, i, t, lps, lips);
 }
 
 + (void)checkEnums {

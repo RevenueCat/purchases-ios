@@ -4,36 +4,37 @@ import StoreKit
 
 @testable import RevenueCat
 
-class ProductsManagerTests: XCTestCase {
+class ProductsFetcherSK1Tests: XCTestCase {
     var productsRequestFactory: MockProductsRequestFactory!
-    var productsManager: ProductsManager!
+    var productsFetcherSK1: ProductsFetcherSK1!
 
     override func setUp() {
         super.setUp()
         productsRequestFactory = MockProductsRequestFactory()
-        productsManager = ProductsManager(productsRequestFactory: productsRequestFactory)
+        productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory)
     }
 
     func testProductsWithIdentifiersMakesRightRequest() {
         let productIdentifiers = Set(["1", "2", "3"])
-        productsManager.products(withIdentifiers: productIdentifiers) { _ in }
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { _ in }
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(1))
         expect(self.productsRequestFactory.invokedRequestParameters) == productIdentifiers
     }
 
-    func testProductsWithIdentifiersCallsCompletionCorrectly() {
+    func testProductsWithIdentifiersCallsCompletionCorrectly() throws {
         let productIdentifiers = Set(["1", "2", "3"])
-        var receivedProducts: Set<SKProduct>?
+        var maybeReceivedProducts: Set<SKProduct>?
         var completionCalled = false
 
-        productsManager.products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
             completionCalled = true
-            receivedProducts = products
+            maybeReceivedProducts = products
         }
 
         expect(completionCalled).toEventually(beTrue())
-        expect(receivedProducts?.count) == productIdentifiers.count
-        let receivedProductsSet = Set(receivedProducts!.map { $0.productIdentifier })
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        expect(receivedProducts.count) == productIdentifiers.count
+        let receivedProductsSet = Set(receivedProducts.map { $0.productIdentifier })
         expect(receivedProductsSet) == productIdentifiers
     }
 
@@ -41,10 +42,10 @@ class ProductsManagerTests: XCTestCase {
         let productIdentifiers = Set(["1", "2", "3"])
         var completionCallCount = 0
 
-        productsManager.products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
             completionCallCount += 1
 
-            self.productsManager.products(withIdentifiers: productIdentifiers) { products in
+            self.productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
                 completionCallCount += 1
             }
         }
@@ -57,8 +58,8 @@ class ProductsManagerTests: XCTestCase {
     func testProductsWithIdentifiersReturnsDoesntMakeNewRequestIfProductsAreBeingFetched() {
         let productIdentifiers = Set(["1", "2", "3"])
 
-        productsManager.products(withIdentifiers: productIdentifiers) { _ in }
-        productsManager.products(withIdentifiers: productIdentifiers) { _ in }
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { _ in }
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { _ in }
 
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(1))
         expect(self.productsRequestFactory.invokedRequestParameters) == productIdentifiers
@@ -67,15 +68,15 @@ class ProductsManagerTests: XCTestCase {
     func testProductsWithIdentifiersMakesNewRequestIfAtLeastOneNewProductRequested() {
         let firstCallProducts = Set(["1", "2", "3"])
         let secondCallProducts = Set(["1", "2", "3", "4"])
-        productsManager.products(withIdentifiers: firstCallProducts) { _ in }
-        productsManager.products(withIdentifiers: secondCallProducts) { _ in }
+        productsFetcherSK1.products(withIdentifiers: firstCallProducts) { _ in }
+        productsFetcherSK1.products(withIdentifiers: secondCallProducts) { _ in }
 
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(2))
         expect(self.productsRequestFactory.invokedRequestParametersList) == [firstCallProducts, secondCallProducts]
     }
 
     func testProductsWithIdentifiersReturnsDoesntMakeNewRequestIfProductIdentifiersEmpty() {
-        productsManager.products(withIdentifiers: []) { _ in }
+        productsFetcherSK1.products(withIdentifiers: []) { _ in }
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(0))
     }
 
@@ -89,7 +90,7 @@ class ProductsManagerTests: XCTestCase {
         var receivedProducts: Set<SKProduct>?
         var completionCalled = false
 
-        productsManager.products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
             completionCalled = true
             receivedProducts = products
         }
@@ -102,17 +103,17 @@ class ProductsManagerTests: XCTestCase {
         let mockProducts:Set<SKProduct> = Set(productIdentifiers.map {
             MockSKProduct(mockProductIdentifier: $0)
         })
-        
-        mockProducts.forEach { productsManager.cacheProduct($0) }
-        
+
+        mockProducts.forEach { productsFetcherSK1.cacheProduct($0) }
+
         var completionCallCount = 0
         var receivedProducts: Set<SKProduct>?
-        
-        productsManager.products(withIdentifiers: productIdentifiers) { products in
+
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
             completionCallCount += 1
             receivedProducts = products
         }
-        
+
         expect(completionCallCount).toEventually(equal(1))
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(0))
         expect(receivedProducts) == mockProducts
