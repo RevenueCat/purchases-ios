@@ -87,4 +87,15 @@ class DictionaryExtensionsTests: XCTestCase {
         expect(obtainedDict).to(equal(expectedDict))
     }
 
+    func testAddEntriesToDictionaryWithOperatorPlusAddsValuesCorrectly() {
+        var original = ["a": "1", "b": "1"]
+        let addedValues = ["a": "2", "b": "2", "c": "2"]
+        let expectedDict = ["a": "2", "b": "2", "c": "2"]
+
+        original += addedValues
+
+        expect(original.keys.count).to(equal(expectedDict.keys.count))
+        expect(original).to(equal(expectedDict))
+    }
+
 }

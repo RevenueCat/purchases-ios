@@ -1807,9 +1807,10 @@ class PurchasesTests: XCTestCase {
 
     func testProductInfoIsCachedForOfferings() {
         setupPurchases()
-        mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
+        mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(fromProductDetailsByID: [:], data: [:]), nil)
         self.purchases?.offerings { (newOfferings, _) in
-            let product = newOfferings!["base"]!.monthly!.product;
+            let productDetails = newOfferings!["base"]!.monthly!.productDetails;
+            let product = (productDetails as! SK1ProductDetails).underlyingSK1Product
             self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
 
             }
@@ -2508,7 +2509,7 @@ class PurchasesTests: XCTestCase {
 
     func testPostsOfferingIfPurchasingPackage() {
         setupPurchases()
-        mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
+        mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(fromProductDetailsByID: [:], data: [:]), nil)
         self.purchases!.offerings { (newOfferings, _) in
             let package = newOfferings!["base"]!.monthly!
             self.purchases!.purchase(package: package) { (tx, info, error, userCancelled) in
@@ -2529,8 +2530,8 @@ class PurchasesTests: XCTestCase {
             expect(self.backend.postReceiptDataCalled).to(beTrue())
             expect(self.backend.postedReceiptData).toNot(beNil())
 
-            expect(self.backend.postedProductID).to(equal(package.product.productIdentifier))
-            expect(self.backend.postedPrice).to(equal(package.product.price))
+            expect(self.backend.postedProductID).to(equal(package.productDetails.productIdentifier))
+            expect(self.backend.postedPrice) == package.productDetails.price as NSDecimalNumber
             expect(self.backend.postedOfferingIdentifier).to(equal("base"))
             expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
         }
@@ -2558,7 +2559,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         var receivedError: NSError? = nil
         var secondCompletionCalled = false
-        mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
+        mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(fromProductDetailsByID: [:], data: [:]), nil)
         self.purchases!.offerings { (newOfferings, _) in
             let package = newOfferings!["base"]!.monthly!
             self.purchases!.purchase(package: package) { _,_,_,_  in
