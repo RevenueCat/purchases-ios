@@ -58,7 +58,7 @@ class ProductsFetcherSK1: NSObject {
     func products(withIdentifiers identifiers: Set<String>,
                   completion: @escaping (Set<ProductDetails>) -> Void) {
         self.sk1Products(withIdentifiers: identifiers) { skProducts in
-            let wrappedProductsArray = skProducts.map { SK1ProductDetails(SK1Product: $0) }
+            let wrappedProductsArray = skProducts.map { SK1ProductDetails(sk1Product: $0) }
             completion(Set(wrappedProductsArray))
         }
     }

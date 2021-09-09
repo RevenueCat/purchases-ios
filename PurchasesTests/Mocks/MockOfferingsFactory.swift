@@ -20,7 +20,7 @@ class MockOfferingsFactory: OfferingsFactory {
         }
 
         let product = MockLegacySKProduct(mockProductIdentifier: "monthly_freetrial")
-        let productDetails = SK1ProductDetails(SK1Product: product)
+        let productDetails = SK1ProductDetails(sk1Product: product)
         return Offerings(
             offerings: [
                 "base": Offering(
