@@ -584,8 +584,8 @@
 		006E105DDA8D0D0FA32D690C /* StoreKit2 */ = {
 			isa = PBXGroup;
 			children = (
+				2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */,
 				3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */,
-				EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */,
 			);
 			path = StoreKit2;
 			sourceTree = "<group>";
@@ -646,6 +646,17 @@
 			path = LocalReceiptParsing;
 			sourceTree = "<group>";
 		};
+		2D1DB44A26EA61AB00DDE736 /* StoreKit1 */ = {
+			isa = PBXGroup;
+			children = (
+				EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */,
+				2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */,
+				2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */,
+				F5E4383626B852D700841CC8 /* StoreKitExtensions */,
+			);
+			path = StoreKit1;
+			sourceTree = "<group>";
+		};
 		2DC5621724EC63420031F69B /* Purchases */ = {
 			isa = PBXGroup;
 			children = (
@@ -660,7 +671,6 @@
 				35D832CB262A5B3400E60AC5 /* Networking */,
 				B3DDB55726854850008CCF23 /* Public */,
 				354235D524C11138008C84EE /* Purchasing */,
-				F5E4383626B852D700841CC8 /* StoreKitExtensions */,
 				354895D0267AE32D001DC5B1 /* SubscriberAttributes */,
 				2DC5621924EC63430031F69B /* Info.plist */,
 			);
@@ -889,6 +899,8 @@
 		354235D524C11138008C84EE /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
+				2D1DB44A26EA61AB00DDE736 /* StoreKit1 */,
+				006E105DDA8D0D0FA32D690C /* StoreKit2 */,
 				2D97458E24BDFCEF006245E9 /* IntroEligibilityCalculator.swift */,
 				35549322269E298B005F9AE9 /* OfferingsFactory.swift */,
 				F575858C26C088FE00C12B97 /* OfferingsManager.swift */,
@@ -901,12 +913,8 @@
 				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
 				80E80EF026970DC3008F245A /* ReceiptFetcher.swift */,
 				F5BE423F26962ACF00254A30 /* ReceiptRefreshPolicy.swift */,
-				2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */,
-				2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */,
 				3597020F24BF6A710010506E /* TransactionsFactory.swift */,
 				FECF627761D375C8431EB866 /* ProductDetails.swift */,
-				006E105DDA8D0D0FA32D690C /* StoreKit2 */,
-				2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */,
 			);
 			path = Purchasing;
 			sourceTree = "<group>";
@@ -1581,9 +1589,8 @@
 				35D83300262FAD8000E60AC5 /* ETagManagerTests.swift in Sources */,
 				351B514126D4498F00BD2BD7 /* MockBackend.swift in Sources */,
 				351B513B26D448F400BD2BD7 /* AttributionPosterTests.swift in Sources */,
-				2D9C7BB126D838C2006838BE /* ManageSubscriptionsModalHelperTests.swift in Sources */,
 				351B51B526D450E800BD2BD7 /* ProductsFetcherSK1Tests.swift in Sources */,
-				351B51B526D450E800BD2BD7 /* ProductsManagerTests.swift in Sources */,
+				351B51B526D450E800BD2BD7 /* ProductsFetcherSK1Tests.swift in Sources */,
 				2DDF41CC24F6F4C3005BC22D /* AppleReceiptBuilderTests.swift in Sources */,
 				351B51C026D450E800BD2BD7 /* PurchasesTests.swift in Sources */,
 				2DDF41CD24F6F4C3005BC22D /* ASN1ContainerBuilderTests.swift in Sources */,
