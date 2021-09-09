@@ -332,8 +332,8 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
          purchasesOrchestrator: PurchasesOrchestrator) {
 
         Logger.debug(Strings.configure.debug_enabled)
-        Logger.debug(String(format: Strings.configure.sdk_version, Self.frameworkVersion))
-        Logger.user(String(format: Strings.configure.initial_app_user_id, appUserID ?? "nil appUserID"))
+        Logger.debug(Strings.configure.sdk_version(sdkVersion: Self.frameworkVersion))
+        Logger.user(Strings.configure.initial_app_user_id(appUserID: appUserID))
 
         self.requestFetcher = requestFetcher
         self.receiptFetcher = receiptFetcher
