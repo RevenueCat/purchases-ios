@@ -56,6 +56,9 @@ class PurchasesOrchestrator {
     private let deviceCache: DeviceCache
     private let lock = NSRecursiveLock()
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    private lazy var storeKit2Listener = StoreKit2TransactionListener(delegate: self)
+
     init(productsManager: ProductsManager,
          storeKitWrapper: StoreKitWrapper,
          systemInfo: SystemInfo,
@@ -78,6 +81,9 @@ class PurchasesOrchestrator {
         self.identityManager = identityManager
         self.receiptParser = receiptParser
         self.deviceCache = deviceCache
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            storeKit2Listener.listenForTransactions()
+        }
     }
 
     func restoreTransactions(completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
@@ -98,6 +104,21 @@ class PurchasesOrchestrator {
         }
 
         productsManager.products(withIdentifiers: productIdentifiersSet) { products in
+            self.operationDispatcher.dispatchOnMainThread {
+                completion(Array(products))
+            }
+        }
+    }
+
+    func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: [String],
+                                            completion: @escaping ([ProductDetails]) -> Void) {
+        let productIdentifiersSet = Set(identifiers)
+        guard !productIdentifiersSet.isEmpty else {
+            operationDispatcher.dispatchOnMainThread { completion([]) }
+            return
+        }
+
+        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: productIdentifiersSet) { products in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(Array(products))
             }
@@ -152,6 +173,20 @@ class PurchasesOrchestrator {
                 completion(paymentDiscount, nil)
             }
         }
+    }
+
+    func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
+        // todo: clean up, move to new class along with the private funcs below
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
+           package.productDetails is SK2ProductDetails {
+            purchase(sk2Package: package, completion: completion)
+        } else {
+            guard package.productDetails is SK1ProductDetails else {
+                fatalError("could not identify StoreKit version to use!")
+            }
+            purchase(sk1Package: package, completion: completion)
+        }
+
     }
 
     func purchase(product: SKProduct,
@@ -307,6 +342,14 @@ private extension PurchasesOrchestrator {
 
 }
 
+extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
+
+    func transactionsUpdated() {
+        // todo: should isRestore here be set to observer mode?
+        syncPurchases(receiptRefreshPolicy: .always, isRestore: false, maybeCompletion: nil)
+    }
+}
+
 // MARK: Private funcs.
 private extension PurchasesOrchestrator {
 
@@ -338,7 +381,9 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func postReceipt(withTransaction transaction: SKPaymentTransaction, receiptData: Data, products: Set<SKProduct>) {
+    func postReceipt(withTransaction transaction: SKPaymentTransaction,
+                     receiptData: Data,
+                     products: Set<SKProduct>) {
         var maybeProductInfo: ProductInfo?
         var maybePresentedOfferingID: String?
         if let product = products.first {
@@ -507,6 +552,40 @@ private extension PurchasesOrchestrator {
     func preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: String) {
         deviceCache.setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: appUserID)
         deviceCache.setOfferingsCacheTimestampToNow()
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func purchase(sk2Package: Package, completion: @escaping PurchaseCompletedBlock) {
+        guard let sk2ProductDetails = sk2Package.productDetails as? SK2ProductDetails else {
+            return
+        }
+        // todo: remove when this gets fixed.
+        // limiting to arm architecture since builds on beta 5 fail if other archs are included
+        #if arch(arm64)
+
+        let sk2Product = sk2ProductDetails.underlyingSK2Product
+        Task {
+            let result = try await sk2Product.purchase()
+            await storeKit2Listener.handle(purchaseResult: result)
+            // todo: nicer handling, improve the userCancelled case
+            syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybePurchaserInfo, maybeError in
+                completion(nil, maybePurchaserInfo, maybeError, false)
+            }
+        }
+        #endif
+
+    }
+
+    private func purchase(sk1Package: Package, completion: @escaping PurchaseCompletedBlock) {
+        guard let sk1ProductDetails = sk1Package.productDetails as? SK1ProductDetails else {
+            return
+        }
+        let sk1Product = sk1ProductDetails.underlyingSK1Product
+        let payment = storeKitWrapper.payment(withProduct: sk1Product)
+        purchase(product: sk1Product,
+                 payment: payment,
+                 presentedOfferingIdentifier: sk1Package.offeringIdentifier,
+                 completion: completion)
     }
 
 }

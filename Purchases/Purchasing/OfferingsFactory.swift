@@ -17,7 +17,7 @@ import StoreKit
 
 class OfferingsFactory {
 
-    func createOfferings(withProducts products: [String: SKProduct],
+    func createOfferings(fromProductDetailsByID productDetailsByID: [String: ProductDetails],
                          data: [String: Any]) -> Offerings? {
         guard let offeringsData = data["offerings"] as? [[String: Any]] else {
             return nil
@@ -25,7 +25,8 @@ class OfferingsFactory {
 
         let offerings = offeringsData.reduce([String: Offering]()) { (dict, offeringData) -> [String: Offering] in
             var dict = dict
-            if let offering = createOffering(withProducts: products, offeringData: offeringData) {
+            if let offering = createOffering(fromProductDetailsByID: productDetailsByID,
+                                             offeringData: offeringData) {
                 dict[offering.identifier] = offering
             }
             return dict
@@ -35,7 +36,7 @@ class OfferingsFactory {
         return Offerings(offerings: offerings, currentOfferingID: currentOfferingID)
     }
 
-    func createOffering(withProducts products: [String: SKProduct],
+    func createOffering(fromProductDetailsByID productDetailsByID: [String: ProductDetails],
                         offeringData: [String: Any]) -> Offering? {
         guard let offeringIdentifier = offeringData["identifier"] as? String,
               let packagesData = offeringData["packages"] as? [[String: Any]],
@@ -44,7 +45,9 @@ class OfferingsFactory {
         }
 
         let availablePackages = packagesData.compactMap { packageData -> Package? in
-            createPackage(withData: packageData, products: products, offeringIdentifier: offeringIdentifier)
+            createPackage(withData: packageData,
+                          productDetailsByID: productDetailsByID,
+                          offeringIdentifier: offeringIdentifier)
         }
         guard !availablePackages.isEmpty else {
             return nil
@@ -55,10 +58,10 @@ class OfferingsFactory {
     }
 
     func createPackage(withData data: [String: Any],
-                       products: [String: SKProduct],
+                       productDetailsByID: [String: ProductDetails],
                        offeringIdentifier: String) -> Package? {
         guard let platformProductIdentifier = data["platform_product_identifier"] as? String,
-              let product = products[platformProductIdentifier],
+              let product = productDetailsByID[platformProductIdentifier],
               let identifier = data["identifier"] as? String else {
             return nil
         }
@@ -66,7 +69,7 @@ class OfferingsFactory {
         let packageType = Package.packageType(from: identifier)
         return Package(identifier: identifier,
                        packageType: packageType,
-                       product: product,
+                       productDetails: product,
                        offeringIdentifier: offeringIdentifier)
     }
 

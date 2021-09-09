@@ -88,12 +88,13 @@ private extension OfferingsManager {
     func handleOfferingsBackendResult(with data: [String: Any], completion: ((Offerings?, Error?) -> Void)?) {
         let productIdentifiers = extractProductIdentifiers(fromOfferingsData: data)
 
-        productsManager.products(withIdentifiers: productIdentifiers) { products in
+        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: productIdentifiers) { products in
             let productsByID = products.reduce(into: [:]) { result, product in
                 result[product.productIdentifier] = product
             }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(withProducts: productsByID, data: data) {
+            if let createdOfferings = self.offeringsFactory.createOfferings(fromProductDetailsByID: productsByID,
+                                                                            data: data) {
                 self.logMissingProductsIfAppropriate(products: productsByID, offeringsData: data)
 
                 self.deviceCache.cache(offerings: createdOfferings)
@@ -127,7 +128,7 @@ private extension OfferingsManager {
         return Set(productIdenfitiersArray)
     }
 
-    func logMissingProductsIfAppropriate(products: [String: SKProduct], offeringsData: [String: Any]) {
+    func logMissingProductsIfAppropriate(products: [String: ProductDetails], offeringsData: [String: Any]) {
         guard !products.isEmpty,
               !offeringsData.isEmpty else {
             return
