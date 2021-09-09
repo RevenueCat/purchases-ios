@@ -886,7 +886,7 @@ public extension Purchases {
         guard let sk1ProductDetails = package.productDetails as? SK1ProductDetails else {
             return
         }
-        let sk1Product = sk1ProductDetails.underlyingSK1Product
+        let sk1Product = sk1ProductDetails.underlyingLegacySKProduct
         let payment = storeKitWrapper.payment(withProduct: sk1Product,
                                               discount: discount)
         purchase(product: sk1Product,

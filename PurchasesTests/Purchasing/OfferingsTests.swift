@@ -42,7 +42,7 @@ class OfferingsTests: XCTestCase {
         expect(package).toNot(beNil())
         expect(package?.productDetails).to(beAnInstanceOf(SK1ProductDetails.self))
         let sk1ProductDetails = package!.productDetails as! SK1ProductDetails
-        expect(sk1ProductDetails.underlyingSK1Product).to(equal(product))
+        expect(sk1ProductDetails.underlyingLegacySKProduct).to(equal(product))
         expect(package?.identifier).to(equal(packageIdentifier))
         expect(package?.packageType).to(equal(PackageType.monthly))
     }

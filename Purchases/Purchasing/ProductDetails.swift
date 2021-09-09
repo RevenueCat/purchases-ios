@@ -69,25 +69,25 @@ public typealias NewSKProduct = StoreKit.Product
 @objc(RCSK2ProductDetails) public class SK2ProductDetails: ProductDetails {
 
     init(sk2Product: StoreKit.Product) {
-        self.underlyingSK2Product = sk2Product
+        self.underlyingNewSKProduct = sk2Product
     }
 
-    public let underlyingSK2Product: StoreKit.Product
+    public let underlyingNewSKProduct: StoreKit.Product
 
-    @objc public override var localizedDescription: String { underlyingSK2Product.description }
+    @objc public override var localizedDescription: String { underlyingNewSKProduct.description }
 
-    @objc public override var price: Decimal { underlyingSK2Product.price }
+    @objc public override var price: Decimal { underlyingNewSKProduct.price }
 
-    @objc public override var localizedPriceString: String { underlyingSK2Product.displayPrice }
+    @objc public override var localizedPriceString: String { underlyingNewSKProduct.displayPrice }
 
-    @objc public override var productIdentifier: String { underlyingSK2Product.id }
+    @objc public override var productIdentifier: String { underlyingNewSKProduct.id }
 
-    @objc public override var isFamilyShareable: Bool { underlyingSK2Product.isFamilyShareable }
+    @objc public override var isFamilyShareable: Bool { underlyingNewSKProduct.isFamilyShareable }
 
-    @objc public override var localizedTitle: String { underlyingSK2Product.displayName }
+    @objc public override var localizedTitle: String { underlyingNewSKProduct.displayName }
 
     @objc public override var subscriptionGroupIdentifier: String? {
-        underlyingSK2Product.subscription?.subscriptionGroupID
+        underlyingNewSKProduct.subscription?.subscriptionGroupID
     }
 
 }
@@ -95,33 +95,33 @@ public typealias NewSKProduct = StoreKit.Product
 @objc(RCSK1ProductDetails) public class SK1ProductDetails: ProductDetails {
 
     @objc public init(sk1Product: LegacySKProduct) {
-        self.underlyingSK1Product = sk1Product
+        self.underlyingLegacySKProduct = sk1Product
     }
 
-    @objc public let underlyingSK1Product: LegacySKProduct
+    @objc public let underlyingLegacySKProduct: LegacySKProduct
 
-    @objc public override var localizedDescription: String { return underlyingSK1Product.localizedDescription }
+    @objc public override var localizedDescription: String { return underlyingLegacySKProduct.localizedDescription }
 
-    @objc public override var price: Decimal { return underlyingSK1Product.price as Decimal }
+    @objc public override var price: Decimal { return underlyingLegacySKProduct.price as Decimal }
 
     @objc public override var localizedPriceString: String {
-        return formatter.string(from: underlyingSK1Product.price) ?? ""
+        return formatter.string(from: underlyingLegacySKProduct.price) ?? ""
     }
 
-    @objc public override var productIdentifier: String { return underlyingSK1Product.productIdentifier }
+    @objc public override var productIdentifier: String { return underlyingLegacySKProduct.productIdentifier }
 
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
-    @objc public override var isFamilyShareable: Bool { underlyingSK1Product.isFamilyShareable }
+    @objc public override var isFamilyShareable: Bool { underlyingLegacySKProduct.isFamilyShareable }
 
-    @objc public override var localizedTitle: String { underlyingSK1Product.localizedTitle }
+    @objc public override var localizedTitle: String { underlyingLegacySKProduct.localizedTitle }
 
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
-    override public var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
+    override public var subscriptionGroupIdentifier: String? { underlyingLegacySKProduct.subscriptionGroupIdentifier }
 
     private lazy var formatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
-        formatter.locale = underlyingSK1Product.priceLocale
+        formatter.locale = underlyingLegacySKProduct.priceLocale
         return formatter
     }()
 

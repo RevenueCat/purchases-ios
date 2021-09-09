@@ -561,7 +561,7 @@ private extension PurchasesOrchestrator {
             return
         }
 
-        let sk2Product = sk2ProductDetails.underlyingSK2Product
+        let sk2Product = sk2ProductDetails.underlyingNewSKProduct
         Task {
             let result = try await sk2Product.purchase()
             await storeKit2Listener.handle(purchaseResult: result)
@@ -576,7 +576,7 @@ private extension PurchasesOrchestrator {
         guard let sk1ProductDetails = sk1Package.productDetails as? SK1ProductDetails else {
             return
         }
-        let sk1Product = sk1ProductDetails.underlyingSK1Product
+        let sk1Product = sk1ProductDetails.underlyingLegacySKProduct
         let payment = storeKitWrapper.payment(withProduct: sk1Product)
         purchase(sk1Product: sk1Product,
                  payment: payment,

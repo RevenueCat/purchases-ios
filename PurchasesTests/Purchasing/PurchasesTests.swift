@@ -1788,7 +1788,7 @@ class PurchasesTests: XCTestCase {
         mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(fromProductDetailsByID: [:], data: [:]), nil)
         self.purchases?.offerings { (newOfferings, _) in
             let productDetails = newOfferings!["base"]!.monthly!.productDetails;
-            let product = (productDetails as! SK1ProductDetails).underlyingSK1Product
+            let product = (productDetails as! SK1ProductDetails).underlyingLegacySKProduct
             self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
 
             }
