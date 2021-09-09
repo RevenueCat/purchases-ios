@@ -172,7 +172,6 @@
 		A52AE4A426E83E1A0076D703 /* OfferingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52AE49826E83E1A0076D703 /* OfferingAPI.swift */; };
 		A52AE4A526E83E1A0076D703 /* PurchasesErrorUtilsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52AE49926E83E1A0076D703 /* PurchasesErrorUtilsAPI.swift */; };
 		A52AE4A626E83E1A0076D703 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52AE49A26E83E1A0076D703 /* EntitlementInfoAPI.swift */; };
-		A52AE4AE26E852610076D703 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A52AE4AD26E852610076D703 /* RevenueCat */; };
 		A52AE4B026E8527A0076D703 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A52AE4AF26E8527A0076D703 /* RevenueCat */; };
 		A56F9AB126990E9200AFC48F /* PurchaserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* PurchaserInfo.swift */; };
 		A5F6039B26E8388C005903EF /* RCBackendErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5F6039A26E8388C005903EF /* RCBackendErrorCodeAPI.m */; };
@@ -276,6 +275,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 2DE20B7E26409EB7004C597D;
 			remoteInfo = StoreKitTestApp;
+		};
+		A51AFD4326EA9E1600D261D0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2DC5621524EC63420031F69B;
+			remoteInfo = RevenueCat;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -604,7 +610,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A52AE4AE26E852610076D703 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1343,10 +1348,10 @@
 			buildRules = (
 			);
 			dependencies = (
+				A51AFD4426EA9E1600D261D0 /* PBXTargetDependency */,
 			);
 			name = SwiftAPITester;
 			packageProductDependencies = (
-				A52AE4AD26E852610076D703 /* RevenueCat */,
 			);
 			productName = SwiftAPITester;
 			productReference = A52AE48826E83DD10076D703 /* SwiftAPITester */;
@@ -1804,6 +1809,11 @@
 			isa = PBXTargetDependency;
 			target = 2DE20B7E26409EB7004C597D /* StoreKitTestApp */;
 			targetProxy = 2DE20B8E26409EC0004C597D /* PBXContainerItemProxy */;
+		};
+		A51AFD4426EA9E1600D261D0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2DC5621524EC63420031F69B /* RevenueCat */;
+			targetProxy = A51AFD4326EA9E1600D261D0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2328,11 +2338,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A52AE4AD26E852610076D703 /* RevenueCat */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A5F6039626E837C0005903EF /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCat;
-		};
 		A52AE4AF26E8527A0076D703 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A5F6039626E837C0005903EF /* XCRemoteSwiftPackageReference "purchases-ios" */;
