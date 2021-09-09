@@ -68,8 +68,8 @@ public typealias SK2Product = StoreKit.Product
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 @objc(RCSK2ProductDetails) public class SK2ProductDetails: ProductDetails {
 
-    init(SK2Product: StoreKit.Product) {
-        self.underlyingSK2Product = SK2Product
+    init(sk2Product: StoreKit.Product) {
+        self.underlyingSK2Product = sk2Product
     }
 
     public let underlyingSK2Product: StoreKit.Product
@@ -94,8 +94,8 @@ public typealias SK2Product = StoreKit.Product
 
 @objc(RCSK1ProductDetails) public class SK1ProductDetails: ProductDetails {
 
-    @objc public init(SK1Product: SK1Product) {
-        self.underlyingSK1Product = SK1Product
+    @objc public init(sk1Product: SK1Product) {
+        self.underlyingSK1Product = sk1Product
     }
 
     @objc public let underlyingSK1Product: SK1Product
