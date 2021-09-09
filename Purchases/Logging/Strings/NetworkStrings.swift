@@ -18,29 +18,17 @@ import Foundation
 enum NetworkStrings {
 
     case api_request_completed(httpMethod: String, path: String, httpCode: Int)
-
     case api_request_started(httpMethod: String?, path: String?)
-
     case creating_json_error(requestBody: [String: Any], error: String)
-
     case creating_json_error_invalid(requestBody: [String: Any])
-
     case json_data_received(dataString: String)
-
     case parsing_json_error(error: Error)
-
     case serial_request_done(httpMethod: String?, path: String?, queuedRequestsCount: Int)
-
     case serial_request_queued(httpMethod: String, path: String, queuedRequestsCount: Int)
-
     case starting_next_request(request: String)
-
     case starting_request(httpMethod: String, path: String)
-
     case retrying_request(httpMethod: String, path: String)
-
     case could_not_find_cached_response
-
     case could_not_find_cached_response_in_already_retried(response: String)
 
 }

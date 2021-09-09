@@ -19,35 +19,20 @@ import StoreKit
 enum OfferingStrings {
 
     case cannot_find_product_configuration_error(identifiers: Set<String>)
-
     case fetching_offerings_error(error: String)
-
     case found_existing_product_request(identifiers: Set<String>)
-
     case no_cached_offerings_fetching_from_network
-
     case no_cached_requests_and_products_starting_skproduct_request(identifiers: Set<String>)
-
     case offerings_stale_updated_from_network
-
     case offerings_stale_updating_in_background
-
     case offerings_stale_updating_in_foreground
-
     case products_already_cached(identifiers: Set<String>)
-
     case vending_offerings_cache
-
     case retrieved_products(products: [SKProduct])
-
     case list_products(productIdentifier: String, product: SKProduct)
-
     case invalid_product_identifiers(identifiers: Set<String>)
-
     case fetching_products_finished
-
     case fetching_products(identifiers: Set<String>)
-
     case completion_handlers_waiting_on_products(handlersCount: Int)
 
 }
