@@ -17,7 +17,7 @@ class MockProductResponse: SKProductsResponse {
         super.init()
     }
 
-    override var products: [SKProduct] {
+    override var products: [LegacySKProduct] {
         return self.mockProducts
     }
 }

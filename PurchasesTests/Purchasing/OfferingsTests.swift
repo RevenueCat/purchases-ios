@@ -22,7 +22,7 @@ class OfferingsTests: XCTestCase {
             "identifier": "$rc_monthly",
             "platform_product_identifier": "com.myproduct.monthly"
         ], productDetailsByID: [
-            "com.myproduct.annual": SK1ProductDetails(sk1Product: SKProduct())
+            "com.myproduct.annual": SK1ProductDetails(sk1Product: LegacySKProduct())
         ], offeringIdentifier: "offering")
 
         expect(package).to(beNil())
@@ -48,7 +48,7 @@ class OfferingsTests: XCTestCase {
     }
 
     func testOfferingIsNotCreatedIfNoValidPackage() {
-        let products = ["com.myproduct.bad": SK1ProductDetails(sk1Product: SKProduct())]
+        let products = ["com.myproduct.bad": SK1ProductDetails(sk1Product: LegacySKProduct())]
         let offering = offeringsFactory.createOffering(fromProductDetailsByID: products, offeringData: [
             "identifier": "offering_a",
             "description": "This is the base offering",

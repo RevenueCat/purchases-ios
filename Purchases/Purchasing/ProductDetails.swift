@@ -15,6 +15,13 @@
 import Foundation
 import StoreKit
 
+/// TypeAlias to the Original In-App Purchase Framework's Product type, called SKProduct
+public typealias LegacySKProduct = SKProduct
+
+/// TypeAlias to the New In-App Purchase Framework's Product type, called StoreKit.Product
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+public typealias NewSKProduct = StoreKit.Product
+
 @objc(RCProductDetails) public class ProductDetails: NSObject {
     public override func isEqual(_ object: Any?) -> Bool {
         return self.productIdentifier == (object as? ProductDetails)?.productIdentifier
@@ -87,11 +94,11 @@ import StoreKit
 
 @objc(RCSK1ProductDetails) public class SK1ProductDetails: ProductDetails {
 
-    @objc public init(sk1Product: SKProduct) {
+    @objc public init(sk1Product: LegacySKProduct) {
         self.underlyingSK1Product = sk1Product
     }
 
-    @objc public let underlyingSK1Product: SKProduct
+    @objc public let underlyingSK1Product: LegacySKProduct
 
     @objc public override var localizedDescription: String { return underlyingSK1Product.localizedDescription }
 

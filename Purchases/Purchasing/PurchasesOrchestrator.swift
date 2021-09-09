@@ -16,7 +16,8 @@ import StoreKit
 
 @objc protocol PurchasesOrchestratorDelegate {
 
-    func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: @escaping DeferredPromotionalPurchaseBlock)
+    func shouldPurchasePromoProduct(_ product: LegacySKProduct,
+                                    defermentBlock: @escaping DeferredPromotionalPurchaseBlock)
 
 }
 
@@ -96,7 +97,7 @@ class PurchasesOrchestrator {
                       maybeCompletion: maybeCompletion)
     }
 
-    func products(withIdentifiers identifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
+    func products(withIdentifiers identifiers: [String], completion: @escaping ([LegacySKProduct]) -> Void) {
         let productIdentifiersSet = Set(identifiers)
         guard !productIdentifiersSet.isEmpty else {
             operationDispatcher.dispatchOnMainThread { completion([]) }
@@ -127,7 +128,7 @@ class PurchasesOrchestrator {
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func paymentDiscount(forProductDiscount productDiscount: SKProductDiscount,
-                         product: SKProduct,
+                         product: LegacySKProduct,
                          completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
         guard let discountIdentifier = productDiscount.identifier else {
             completion(nil, ErrorUtils.productDiscountMissingIdentifierError())
@@ -189,7 +190,7 @@ class PurchasesOrchestrator {
 
     }
 
-    func purchase(sk1Product: SKProduct,
+    func purchase(sk1Product: LegacySKProduct,
                   payment: SKMutablePayment,
                   presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
                   completion: @escaping PurchaseCompletedBlock) {
@@ -265,7 +266,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          shouldAddStorePayment payment: SKPayment,
-                         for product: SKProduct) -> Bool {
+                         for product: LegacySKProduct) -> Bool {
         productsManager.cacheProduct(product)
         guard let delegate = maybeDelegate else { return false }
 
@@ -383,7 +384,7 @@ private extension PurchasesOrchestrator {
 
     func postReceipt(withTransaction transaction: SKPaymentTransaction,
                      receiptData: Data,
-                     products: Set<SKProduct>) {
+                     products: Set<LegacySKProduct>) {
         var maybeProductInfo: ProductInfo?
         var maybePresentedOfferingID: String?
         if let product = products.first {
@@ -530,10 +531,10 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    // Although both SKProduct.productIdentifier and SKPayment.productIdentifier
+    // Although both LegacySKProduct.productIdentifier and SKPayment.productIdentifier
     // are supposed to be non-null, we've seen instances where this is not true.
     // so we cast into optionals in order to check nullability, and try to fall back if possible.
-    func extractProductIdentifier(fromProduct product: SKProduct, orPayment payment: SKPayment) -> String? {
+    func extractProductIdentifier(fromProduct product: LegacySKProduct, orPayment payment: SKPayment) -> String? {
         if let identifierFromProduct = product.productIdentifier as String?,
            !identifierFromProduct.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return identifierFromProduct
