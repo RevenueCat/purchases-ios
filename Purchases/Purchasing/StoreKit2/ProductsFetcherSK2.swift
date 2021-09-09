@@ -37,7 +37,7 @@ actor ProductsFetcherSK2 {
             }
 
             let storeKitProducts = try await StoreKit.Product.products(for: identifiers)
-            let sk2ProductDetails = storeKitProducts.map { SK2ProductDetails(sk2Product: $0) }
+            let sk2ProductDetails = storeKitProducts.map { SK2ProductDetails(newSKProduct: $0) }
             return Set(sk2ProductDetails)
         } catch {
             throw ProductsManagerSK2Error.productsRequestError(innerError: error)

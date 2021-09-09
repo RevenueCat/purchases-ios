@@ -68,8 +68,8 @@ public typealias NewSKProduct = StoreKit.Product
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 @objc(RCSK2ProductDetails) public class SK2ProductDetails: ProductDetails {
 
-    init(sk2Product: StoreKit.Product) {
-        self.underlyingNewSKProduct = sk2Product
+    init(newSKProduct: StoreKit.Product) {
+        self.underlyingNewSKProduct = newSKProduct
     }
 
     public let underlyingNewSKProduct: StoreKit.Product
