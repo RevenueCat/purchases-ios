@@ -39,7 +39,6 @@ func checkPurchasesAPI() {
     checkIdentity(purchases: purch)
     checkPurchasesSubscriberAttributesAPI(purchases: purch)
     checkPurchasesPurchasingAPI(purchases: purch)
-
 }
 
 var type: Purchases.PeriodType!
