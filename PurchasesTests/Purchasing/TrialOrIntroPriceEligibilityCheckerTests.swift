@@ -36,15 +36,15 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
                                                                                   operationDispatcher: mockOperationDispatcher)
     }
 
-    func testGetEligibility() {
+    func testSK1CheckTrialOrIntroPriceEligibility() {
         setup()
-        trialOrIntroPriceEligibilityChecker!.sk1checkTrialOrIntroPriceEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckTrialOrIntroPriceEligibility([]) { (eligibilities) in
         }
     }
 
-    func testGetEligibilityFetchesAReceipt() {
+    func testSK1CheckTrialOrIntroPriceEligibilityFetchesAReceipt() {
         setup()
-        trialOrIntroPriceEligibilityChecker!.sk1checkTrialOrIntroPriceEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckTrialOrIntroPriceEligibility([]) { (eligibilities) in
         }
 
         expect(self.receiptFetcher.receiptDataCalled).to(beTrue())
@@ -56,7 +56,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
 
         var completionCalled = false
         var maybeEligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1checkTrialOrIntroPriceEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckTrialOrIntroPriceEligibility([]) { (eligibilities) in
             completionCalled = true
             maybeEligibilities = eligibilities
         }
@@ -76,7 +76,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
         mockBackend.stubbedGetIntroEligibilityCompletionResult = (["product_id": IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)], nil)
         var completionCalled = false
         var maybeEligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1checkTrialOrIntroPriceEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckTrialOrIntroPriceEligibility([]) { (eligibilities) in
             completionCalled = true
             maybeEligibilities = eligibilities
         }
@@ -96,7 +96,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
         mockBackend.stubbedGetIntroEligibilityCompletionResult = ([:], stubbedError)
         var completionCalled = false
         var maybeEligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1checkTrialOrIntroPriceEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckTrialOrIntroPriceEligibility([]) { (eligibilities) in
             completionCalled = true
             maybeEligibilities = eligibilities
         }
@@ -105,5 +105,14 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
         let receivedEligibilities = try XCTUnwrap(maybeEligibilities)
         expect(receivedEligibilities.count) == 0
     }
-    
+
+    func testSK2CheckTrialOrIntroPriceEligibility() {
+        setup()
+        // todo: finish when fetching products works
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            trialOrIntroPriceEligibilityChecker!.sk2CheckTrialOrIntroPriceEligibility([]) { (eligibilities) in
+            }
+        }
+    }
+
 }

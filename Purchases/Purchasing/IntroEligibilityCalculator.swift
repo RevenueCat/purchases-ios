@@ -79,7 +79,15 @@ private extension IntroEligibilityCalculator {
     func checkIntroEligibility(candidateProducts: Set<SKProduct>,
                                purchasedProductsWithIntroOffers: Set<SKProduct>) -> [String: IntroEligibilityStatus] {
         var result: [String: IntroEligibilityStatus] = [:]
+        var productIDs = candidateProducts.map { product in
+            product.productIdentifier
+        }
         for candidate in candidateProducts {
+            let productIdentifier = candidate.productIdentifier
+            if (candidate.subscriptionPeriod == nil) {
+                result[candidate.productIdentifier] = IntroEligibilityStatus.unknown
+                continue
+            }
             let usedIntroForProductIdentifier = purchasedProductsWithIntroOffers
                 .contains { purchased in
                     let foundByGroupId = (candidate.subscriptionGroupIdentifier != nil
