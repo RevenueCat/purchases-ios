@@ -25,7 +25,7 @@ enum LogIntent {
     case user
     case warning
 
-    var suffix: String {
+    var prefix: String {
         switch self {
         case .appleError: return "🍎‼️"
         case .info: return "ℹ️"

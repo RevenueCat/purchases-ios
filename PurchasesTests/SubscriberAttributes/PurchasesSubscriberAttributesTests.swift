@@ -244,6 +244,156 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             .currentAppUserID
     }
 
+    func testSetAndClearEmail() {
+        setupPurchases()
+        purchases.setEmail("taquitos@revenuecat.com")
+        purchases.setEmail(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetEmailParametersList[0])
+            .to(equal(("taquitos@revenuecat.com", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetEmailParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearPhone() {
+        setupPurchases()
+        purchases.setPhoneNumber("8000000000")
+        purchases.setPhoneNumber(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetPhoneNumberParametersList[0])
+            .to(equal(("8000000000", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetPhoneNumberParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearDisplayName() {
+        setupPurchases()
+        purchases.setDisplayName("taquitos")
+        purchases.setDisplayName(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetDisplayNameParametersList[0])
+            .to(equal(("taquitos", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetDisplayNameParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearPushToken() {
+        setupPurchases()
+        purchases.setPushToken("atoken".data(using: .utf8))
+        purchases.setPushToken(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParametersList[0])
+            .to(equal(("atoken".data(using: .utf8), purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearAdjustID() {
+        setupPurchases()
+        purchases.setAdjustID("adjustIt")
+        purchases.setAdjustID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetAdjustIDParametersList[0])
+            .to(equal(("adjustIt", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetAdjustIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearAppsflyerID() {
+        setupPurchases()
+        purchases.setAppsflyerID("appsFly")
+        purchases.setAppsflyerID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetAppsflyerIDParametersList[0])
+            .to(equal(("appsFly", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetAppsflyerIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearFBAnonymousID() {
+        setupPurchases()
+        purchases.setFBAnonymousID("fb")
+        purchases.setFBAnonymousID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetFBAnonymousIDParametersList[0])
+            .to(equal(("fb", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetFBAnonymousIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearMparticleID() {
+        setupPurchases()
+        purchases.setMparticleID("Mpart")
+        purchases.setMparticleID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetMparticleIDParametersList[0])
+            .to(equal(("Mpart", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetMparticleIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearOnesignalID() {
+        setupPurchases()
+        purchases.setOnesignalID("oneSig")
+        purchases.setOnesignalID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDParametersList[0])
+            .to(equal(("oneSig", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearMediaSource() {
+        setupPurchases()
+        purchases.setMediaSource("media")
+        purchases.setMediaSource(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetMediaSourceParametersList[0])
+            .to(equal(("media", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetMediaSourceParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearCampaign() {
+        setupPurchases()
+        purchases.setCampaign("testCampaign")
+        purchases.setCampaign(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetCampaignParametersList[0])
+            .to(equal(("testCampaign", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetCampaignParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearAdGroup() {
+        setupPurchases()
+        purchases.setAdGroup("anAdGroup")
+        purchases.setAdGroup(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetAdGroupParametersList[0])
+            .to(equal(("anAdGroup", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetAdGroupParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearAd() {
+        setupPurchases()
+        purchases.setAd("anAd")
+        purchases.setAd(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetAdParametersList[0])
+            .to(equal(("anAd", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetAdParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearKeyword() {
+        setupPurchases()
+        purchases.setKeyword("Akeyword")
+        purchases.setKeyword(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetKeywordParametersList[0])
+            .to(equal(("Akeyword", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetKeywordParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearCreative() {
+        setupPurchases()
+        purchases.setCreative("ImAnArtist")
+        purchases.setCreative(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetCreativeParametersList[0])
+            .to(equal(("ImAnArtist", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetCreativeParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
     func testSetDisplayNameMakesRightCalls() {
         setupPurchases()
 

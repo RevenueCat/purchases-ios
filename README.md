@@ -5,7 +5,7 @@
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://docs.revenuecat.com/docs/ios#section-install-via-carthage)
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-orange.svg)](https://docs.revenuecat.com/docs/ios#section-install-via-swift-package-manager)
 
-## Purchases.framework
+## RevenueCat.framework
 
 *Purchases* is a client for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system. It is an open source framework that provides a wrapper around `StoreKit` and the RevenueCat backend to make implementing in-app subscriptions in `Swift` or `Objective-C` easy - receipt validation and status tracking included!
 
@@ -20,7 +20,11 @@
 📝 | [Online documentation](https://docs.revenuecat.com/docs) up to date
 🔀 | [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it
 💯 | Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)
-📮 | Great support - [Help Center](https://revenuecat.zendesk.com)
+📮 | Great support - [Help Center](https://community.revenuecat.com)
 
 ## Getting Started
-For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/v3.0/docs).
+For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
+
+Or browse our iOS sample apps:
+- [MagicWeather](Examples/MagicWeather)
+- [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)

@@ -159,8 +159,7 @@ class SubscriberAttributesManager {
             }
         } else {
             let receivedNSError = error as NSError?
-            Logger.error(Strings.attribution.attributes_sync_error(details: receivedNSError?.localizedDescription,
-                                                                   userInfo: receivedNSError?.userInfo))
+            Logger.error(Strings.attribution.attributes_sync_error(error: receivedNSError))
         }
     }
 
@@ -239,7 +238,7 @@ private extension SubscriberAttributesManager {
     }
 
     func storeAttributeLocally(key: String, value: String, appUserID: String) {
-        let subscriberAttribute = SubscriberAttribute.init(withKey: key, value: value)
+        let subscriberAttribute = SubscriberAttribute(withKey: key, value: value)
         Logger.debug(Strings.attribution.attribute_set_locally(attribute: subscriberAttribute.description))
         deviceCache.store(subscriberAttribute: subscriberAttribute, appUserID: appUserID)
     }

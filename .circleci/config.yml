@@ -112,7 +112,7 @@ commands:
 jobs:
   runtest:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -132,7 +132,7 @@ jobs:
           destination: test_report.html
   buildTvWatchAndMacOS:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -146,7 +146,7 @@ jobs:
           command: bundle exec fastlane build_tv_watch_mac            
   apitest:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -157,7 +157,7 @@ jobs:
 
   storekit_tests:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -182,7 +182,7 @@ jobs:
 
   deployment-checks: 
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -214,7 +214,7 @@ jobs:
           
   docs-deploy:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -238,7 +238,7 @@ jobs:
   
   make-release:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -251,7 +251,7 @@ jobs:
 
   prepare-next-version:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -264,7 +264,7 @@ jobs:
 
   integration-tests-cocoapods:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -285,7 +285,7 @@ jobs:
       
   integration-tests-swift-package-manager:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -297,7 +297,7 @@ jobs:
 
   integration-tests-carthage:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -316,7 +316,7 @@ jobs:
           command: |
               ./carthage.sh update --no-build
               rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
-              ./carthage.sh build
+              ./carthage.sh build --use-xcframeworks
       - save_cache:
           key: carthage-cache-{{ checksum "Cartfile.resolved" }}
           paths:
@@ -327,7 +327,7 @@ jobs:
 
   integration-tests-xcode-direct-integration:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -338,7 +338,7 @@ jobs:
 
   lint:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -356,7 +356,7 @@ workflows:
       - runtest
       - apitest
       - buildTvWatchAndMacOS
-      - storekit_tests
+      - storekit_tests: *release-tags-and-branches
       - deployment-checks: *release-branches
       - integration-tests-cocoapods: *release-tags-and-branches
       - integration-tests-swift-package-manager: *release-tags-and-branches

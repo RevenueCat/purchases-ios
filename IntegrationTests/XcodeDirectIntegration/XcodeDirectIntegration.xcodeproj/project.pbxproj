@@ -16,10 +16,10 @@
 		2D6C0435254A0A550039CB92 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0429254A0A550039CB92 /* main.m */; };
 		2D6C0436254A0A550039CB92 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C042A254A0A550039CB92 /* AppDelegate.m */; };
 		2D6C0444254A0A760039CB92 /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D6C0443254A0A760039CB92 /* Dummy.swift */; };
-		2D6C046F254A0B290039CB92 /* Purchases.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6C045C254A0AF10039CB92 /* Purchases.framework */; };
-		2D6C0470254A0B290039CB92 /* Purchases.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2D6C045C254A0AF10039CB92 /* Purchases.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		2D6C0487254A0CF20039CB92 /* RCIntegrationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D6C0428254A0A550039CB92 /* RCIntegrationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2DC19147255F1AFE0039389A /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19142255F1AFE0039389A /* IntegrationTests.swift */; };
+		B35EE57326E29E06008F27D8 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3EAF56B26E29DCC00E0728D /* RevenueCat.framework */; };
+		B35EE57426E29E40008F27D8 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B3EAF56B26E29DCC00E0728D /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -30,33 +30,40 @@
 			remoteGlobalIDString = 2D6C03DE254A0A460039CB92;
 			remoteInfo = XcodeDirectIntegration;
 		};
-		2D6C045B254A0AF10039CB92 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 352629FE1F7C4B9100C04F2C;
-			remoteInfo = Purchases;
-		};
-		2D6C045D254A0AF10039CB92 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 35262A1E1F7D77E600C04F2C;
-			remoteInfo = PurchasesTests;
-		};
-		2D6C045F254A0AF10039CB92 /* PBXContainerItemProxy */ = {
+		B3EAF56A26E29DCC00E0728D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 2DC5621624EC63420031F69B;
-			remoteInfo = Purchases;
+			remoteInfo = RevenueCat;
 		};
-		2D6C0461254A0AF10039CB92 /* PBXContainerItemProxy */ = {
+		B3EAF56C26E29DCC00E0728D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 2DC5621E24EC63430031F69B;
-			remoteInfo = PurchasesTests;
+			remoteInfo = RevenueCatTests;
+		};
+		B3EAF56E26E29DCC00E0728D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2DE20B7F26409EB7004C597D;
+			remoteInfo = StoreKitTestApp;
+		};
+		B3EAF57026E29DCC00E0728D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2DE20B6C264087FB004C597D;
+			remoteInfo = StoreKitTests;
+		};
+		B3EAF57226E29DCC00E0728D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B3645F4226E042F2002C490E;
+			remoteInfo = APITester;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -67,7 +74,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				2D6C0470254A0B290039CB92 /* Purchases.framework in Embed Frameworks */,
+				B35EE57426E29E40008F27D8 /* RevenueCat.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -103,7 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D6C046F254A0B290039CB92 /* Purchases.framework in Frameworks */,
+				B35EE57326E29E06008F27D8 /* RevenueCat.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,8 +188,11 @@
 		2D6C0455254A0AF10039CB92 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2D6C045C254A0AF10039CB92 /* Purchases.framework */,
-				2D6C045E254A0AF10039CB92 /* PurchasesTests.xctest */,
+				B3EAF56B26E29DCC00E0728D /* RevenueCat.framework */,
+				B3EAF56D26E29DCC00E0728D /* RevenueCatTests.xctest */,
+				B3EAF56F26E29DCC00E0728D /* StoreKitTestApp.app */,
+				B3EAF57126E29DCC00E0728D /* StoreKitTests.xctest */,
+				B3EAF57326E29DCC00E0728D /* APITester */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -290,18 +300,39 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		2D6C045C254A0AF10039CB92 /* Purchases.framework */ = {
+		B3EAF56B26E29DCC00E0728D /* RevenueCat.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = Purchases.framework;
-			remoteRef = 2D6C045B254A0AF10039CB92 /* PBXContainerItemProxy */;
+			path = RevenueCat.framework;
+			remoteRef = B3EAF56A26E29DCC00E0728D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		2D6C045E254A0AF10039CB92 /* PurchasesTests.xctest */ = {
+		B3EAF56D26E29DCC00E0728D /* RevenueCatTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
-			path = PurchasesTests.xctest;
-			remoteRef = 2D6C045D254A0AF10039CB92 /* PBXContainerItemProxy */;
+			path = RevenueCatTests.xctest;
+			remoteRef = B3EAF56C26E29DCC00E0728D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		B3EAF56F26E29DCC00E0728D /* StoreKitTestApp.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = StoreKitTestApp.app;
+			remoteRef = B3EAF56E26E29DCC00E0728D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		B3EAF57126E29DCC00E0728D /* StoreKitTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = StoreKitTests.xctest;
+			remoteRef = B3EAF57026E29DCC00E0728D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		B3EAF57326E29DCC00E0728D /* APITester */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = APITester;
+			remoteRef = B3EAF57226E29DCC00E0728D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
