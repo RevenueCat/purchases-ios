@@ -61,11 +61,11 @@ class ProductsManager: NSObject {
     }
 
     func products(withIdentifiers identifiers: Set<String>,
-                  completion: @escaping (Set<LegacySKProduct>) -> Void) {
+                  completion: @escaping (Set<SK1Product>) -> Void) {
         return productsFetcherSK1.sk1Products(withIdentifiers: identifiers, completion: completion)
     }
 
-    func cacheProduct(_ product: LegacySKProduct) {
+    func cacheProduct(_ product: SK1Product) {
         productsFetcherSK1.cacheProduct(product)
     }
 }

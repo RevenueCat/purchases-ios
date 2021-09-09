@@ -59,11 +59,11 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     }
     
     var promoPayment: SKPayment?
-    var promoProduct: LegacySKProduct?
+    var promoProduct: SK1Product?
     var shouldAddPromo = false
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          shouldAddStorePayment payment: SKPayment,
-                         for product: LegacySKProduct) -> Bool {
+                         for product: SK1Product) -> Bool {
         promoPayment = payment
         promoProduct = product
         return shouldAddPromo
@@ -80,7 +80,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     }
 
     func testAddsPaymentsToTheQueue() {
-        let payment = SKPayment.init(product: LegacySKProduct())
+        let payment = SKPayment.init(product: SK1Product())
 
         wrapper?.add(payment)
 
@@ -88,7 +88,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     }
 
     func testCallsDelegateWhenTransactionsAreUpdated() {
-        let payment = SKPayment.init(product: LegacySKProduct())
+        let payment = SKPayment.init(product: SK1Product())
         wrapper?.add(payment)
 
         let transaction = MockTransaction()
@@ -101,7 +101,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     
     @available(iOS 11.0, tvOS 11.0, macOS 11.0, macCatalyst 14.0, *)
     func testCallsDelegateWhenPromoPurchaseIsAvailable() {
-        let product = LegacySKProduct();
+        let product = SK1Product();
         let payment = SKPayment.init(product: product)
         
         _ = wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
@@ -111,7 +111,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     
     @available(iOS 11.0, tvOS 11.0, macOS 11.0, macCatalyst 14.0, *)
     func testPromoDelegateMethodPassesBackReturnValueFromOwnDelegate() {
-        let product = LegacySKProduct();
+        let product = SK1Product();
         let payment = SKPayment.init(product: product)
         
         shouldAddPromo = (arc4random() % 2 == 0) as Bool
@@ -122,10 +122,10 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     }
 
     func testCallsDelegateOncePerTransaction() {
-        let payment1 = SKPayment.init(product: LegacySKProduct())
+        let payment1 = SKPayment.init(product: SK1Product())
         wrapper?.add(payment1)
 
-        let payment2 = SKPayment.init(product: LegacySKProduct())
+        let payment2 = SKPayment.init(product: SK1Product())
         wrapper?.add(payment2)
 
         let transaction1 = MockTransaction()
@@ -140,7 +140,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     }
 
     func testFinishesTransactions() {
-        let payment = SKPayment.init(product: LegacySKProduct())
+        let payment = SKPayment.init(product: SK1Product())
         wrapper?.add(payment)
 
         let transaction = MockTransaction()
@@ -155,9 +155,9 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
 
     func testCallsRemovedTransactionDelegateMethod() {
         let transaction1 = MockTransaction()
-        transaction1.mockPayment = SKPayment.init(product: LegacySKProduct())
+        transaction1.mockPayment = SKPayment.init(product: SK1Product())
         let transaction2 = MockTransaction()
-        transaction2.mockPayment = SKPayment.init(product: LegacySKProduct())
+        transaction2.mockPayment = SKPayment.init(product: SK1Product())
 
         wrapper?.paymentQueue(paymentQueue, removedTransactions: [transaction1, transaction2])
 

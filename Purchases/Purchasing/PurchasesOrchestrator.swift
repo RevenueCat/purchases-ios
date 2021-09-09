@@ -16,7 +16,7 @@ import StoreKit
 
 @objc protocol PurchasesOrchestratorDelegate {
 
-    func shouldPurchasePromoProduct(_ product: LegacySKProduct,
+    func shouldPurchasePromoProduct(_ product: SK1Product,
                                     defermentBlock: @escaping DeferredPromotionalPurchaseBlock)
 
 }
@@ -97,7 +97,7 @@ class PurchasesOrchestrator {
                       maybeCompletion: maybeCompletion)
     }
 
-    func products(withIdentifiers identifiers: [String], completion: @escaping ([LegacySKProduct]) -> Void) {
+    func products(withIdentifiers identifiers: [String], completion: @escaping ([SK1Product]) -> Void) {
         let productIdentifiersSet = Set(identifiers)
         guard !productIdentifiersSet.isEmpty else {
             operationDispatcher.dispatchOnMainThread { completion([]) }
@@ -128,7 +128,7 @@ class PurchasesOrchestrator {
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func paymentDiscount(forProductDiscount productDiscount: SKProductDiscount,
-                         product: LegacySKProduct,
+                         product: SK1Product,
                          completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
         guard let discountIdentifier = productDiscount.identifier else {
             completion(nil, ErrorUtils.productDiscountMissingIdentifierError())
@@ -190,12 +190,12 @@ class PurchasesOrchestrator {
 
     }
 
-    func purchase(legacySKProduct: LegacySKProduct,
+    func purchase(SK1Product: SK1Product,
                   payment: SKMutablePayment,
                   presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
                   completion: @escaping PurchaseCompletedBlock) {
         Logger.debug(String(format: "Make purchase called: %@", #function))
-        guard let productIdentifier = extractProductIdentifier(fromProduct: legacySKProduct, orPayment: payment) else {
+        guard let productIdentifier = extractProductIdentifier(fromProduct: SK1Product, orPayment: payment) else {
             Logger.error(Strings.purchase.could_not_purchase_product_id_not_found)
             let errorMessage = "There was a problem purchasing the product: productIdentifier was nil"
             completion(nil, nil, ErrorUtils.unknownError(message: errorMessage), false)
@@ -224,7 +224,7 @@ class PurchasesOrchestrator {
             Logger.purchase(Strings.purchase.purchasing_product(productIdentifier: productIdentifier))
         }
 
-        productsManager.cacheProduct(legacySKProduct)
+        productsManager.cacheProduct(SK1Product)
 
         lock.lock()
         defer {
@@ -266,7 +266,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          shouldAddStorePayment payment: SKPayment,
-                         for product: LegacySKProduct) -> Bool {
+                         for product: SK1Product) -> Bool {
         productsManager.cacheProduct(product)
         guard let delegate = maybeDelegate else { return false }
 
@@ -384,7 +384,7 @@ private extension PurchasesOrchestrator {
 
     func postReceipt(withTransaction transaction: SKPaymentTransaction,
                      receiptData: Data,
-                     products: Set<LegacySKProduct>) {
+                     products: Set<SK1Product>) {
         var maybeProductInfo: ProductInfo?
         var maybePresentedOfferingID: String?
         if let product = products.first {
@@ -531,10 +531,10 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    // Although both LegacySKProduct.productIdentifier and SKPayment.productIdentifier
+    // Although both SK1Product.productIdentifier and SKPayment.productIdentifier
     // are supposed to be non-null, we've seen instances where this is not true.
     // so we cast into optionals in order to check nullability, and try to fall back if possible.
-    func extractProductIdentifier(fromProduct product: LegacySKProduct, orPayment payment: SKPayment) -> String? {
+    func extractProductIdentifier(fromProduct product: SK1Product, orPayment payment: SKPayment) -> String? {
         if let identifierFromProduct = product.productIdentifier as String?,
            !identifierFromProduct.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return identifierFromProduct
@@ -561,9 +561,9 @@ private extension PurchasesOrchestrator {
             return
         }
 
-        let newSKProduct = sk2ProductDetails.underlyingNewSKProduct
+        let SK2Product = sk2ProductDetails.underlyingSK2Product
         Task {
-            let result = try await newSKProduct.purchase()
+            let result = try await SK2Product.purchase()
             await storeKit2Listener.handle(purchaseResult: result)
             // todo: nicer handling, improve the userCancelled case
             syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybePurchaserInfo, maybeError in
@@ -576,9 +576,9 @@ private extension PurchasesOrchestrator {
         guard let sk1ProductDetails = sk1Package.productDetails as? SK1ProductDetails else {
             return
         }
-        let legacySKProduct = sk1ProductDetails.underlyingLegacySKProduct
-        let payment = storeKitWrapper.payment(withProduct: legacySKProduct)
-        purchase(legacySKProduct: legacySKProduct,
+        let SK1Product = sk1ProductDetails.underlyingSK1Product
+        let payment = storeKitWrapper.payment(withProduct: SK1Product)
+        purchase(SK1Product: SK1Product,
                  payment: payment,
                  presentedOfferingIdentifier: sk1Package.offeringIdentifier,
                  completion: completion)

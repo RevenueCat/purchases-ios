@@ -22,7 +22,7 @@ protocol StoreKitWrapperDelegate: AnyObject {
 
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          shouldAddStorePayment payment: SKPayment,
-                         for product: LegacySKProduct) -> Bool
+                         for product: SK1Product) -> Bool
 
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String])
@@ -76,7 +76,7 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
         paymentQueue.presentCodeRedemptionSheet()
     }
 
-    func payment(withProduct product: LegacySKProduct) -> SKMutablePayment {
+    func payment(withProduct product: SK1Product) -> SKMutablePayment {
         let payment = SKMutablePayment(product: product)
 
         if #available(macOS 10.14, watchOS 6.2, macCatalyst 13.0, *) {
@@ -86,7 +86,7 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
     }
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    func payment(withProduct product: LegacySKProduct, discount: SKPaymentDiscount) -> SKMutablePayment {
+    func payment(withProduct product: SK1Product, discount: SKPaymentDiscount) -> SKMutablePayment {
         let payment = self.payment(withProduct: product)
         payment.paymentDiscount = discount
         return payment
@@ -116,7 +116,7 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
     @available(watchOS, unavailable)
     func paymentQueue(_ queue: SKPaymentQueue,
                       shouldAddStorePayment payment: SKPayment,
-                      for product: LegacySKProduct) -> Bool {
+                      for product: SK1Product) -> Bool {
         return delegate?.storeKitWrapper(self, shouldAddStorePayment: payment, for: product) ?? false
     }
 

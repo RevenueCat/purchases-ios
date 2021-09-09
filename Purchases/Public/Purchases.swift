@@ -886,10 +886,10 @@ public extension Purchases {
         guard let sk1ProductDetails = package.productDetails as? SK1ProductDetails else {
             return
         }
-        let legacySKProduct = sk1ProductDetails.underlyingLegacySKProduct
-        let payment = storeKitWrapper.payment(withProduct: legacySKProduct,
+        let SK1Product = sk1ProductDetails.underlyingSK1Product
+        let payment = storeKitWrapper.payment(withProduct: SK1Product,
                                               discount: discount)
-        purchase(product: legacySKProduct,
+        purchase(product: SK1Product,
                  payment: payment,
                  presentedOfferingIdentifier: package.offeringIdentifier,
                  completion: completion)
@@ -996,7 +996,7 @@ public extension Purchases {
                           payment: SKMutablePayment,
                           presentedOfferingIdentifier: String?,
                           completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(legacySKProduct: product,
+        purchasesOrchestrator.purchase(SK1Product: product,
                                        payment: payment,
                                        presentedOfferingIdentifier: presentedOfferingIdentifier,
                                        completion: completion)

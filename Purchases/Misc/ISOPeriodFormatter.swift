@@ -25,7 +25,7 @@ class ISOPeriodFormatter {
         return stringResult
     }
 
-    private func period(fromUnit unit: LegacySKProduct.PeriodUnit) -> String {
+    private func period(fromUnit unit: SK1Product.PeriodUnit) -> String {
         switch unit {
         case .day:
             return "D"

@@ -23,7 +23,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
 
     func testProductsWithIdentifiersCallsCompletionCorrectly() throws {
         let productIdentifiers = Set(["1", "2", "3"])
-        var maybeReceivedProducts: Set<LegacySKProduct>?
+        var maybeReceivedProducts: Set<SK1Product>?
         var completionCalled = false
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
@@ -87,7 +87,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
         failingRequest.fails = true
         productsRequestFactory.stubbedRequestResult = failingRequest
 
-        var receivedProducts: Set<LegacySKProduct>?
+        var receivedProducts: Set<SK1Product>?
         var completionCalled = false
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
@@ -100,14 +100,14 @@ class ProductsFetcherSK1Tests: XCTestCase {
     
     func testCacheProductCachesCorrectly() {
         let productIdentifiers = Set(["1", "2", "3"])
-        let mockProducts:Set<LegacySKProduct> = Set(productIdentifiers.map {
+        let mockProducts:Set<SK1Product> = Set(productIdentifiers.map {
             MockLegacySKProduct(mockProductIdentifier: $0)
         })
 
         mockProducts.forEach { productsFetcherSK1.cacheProduct($0) }
 
         var completionCallCount = 0
-        var receivedProducts: Set<LegacySKProduct>?
+        var receivedProducts: Set<SK1Product>?
 
         productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
             completionCallCount += 1

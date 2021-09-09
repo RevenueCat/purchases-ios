@@ -13,9 +13,9 @@ class MockProductsManager: ProductsManager {
     var invokedProductsCount = 0
     var invokedProductsParameters: Set<String>?
     var invokedProductsParametersList = [Set<String>]()
-    var stubbedProductsCompletionResult: Set<LegacySKProduct>?
+    var stubbedProductsCompletionResult: Set<SK1Product>?
 
-    override func products(withIdentifiers identifiers: Set<String>, completion: @escaping (Set<LegacySKProduct>) -> Void) {
+    override func products(withIdentifiers identifiers: Set<String>, completion: @escaping (Set<SK1Product>) -> Void) {
         invokedProducts = true
         invokedProductsCount += 1
         invokedProductsParameters = identifiers
@@ -23,7 +23,7 @@ class MockProductsManager: ProductsManager {
         if let result = stubbedProductsCompletionResult {
             completion(result)
         } else {
-            let products: [LegacySKProduct] = identifiers.map { (identifier) -> MockLegacySKProduct in
+            let products: [SK1Product] = identifiers.map { (identifier) -> MockLegacySKProduct in
                 let p = MockLegacySKProduct(mockProductIdentifier: identifier)
                 p.mockSubscriptionGroupIdentifier = "1234567"
                 if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
@@ -39,9 +39,9 @@ class MockProductsManager: ProductsManager {
 
     var invokedCacheProduct = false
     var invokedCacheProductCount = 0
-    var invokedCacheProductParameter: LegacySKProduct?
+    var invokedCacheProductParameter: SK1Product?
 
-    override func cacheProduct(_ product: LegacySKProduct) {
+    override func cacheProduct(_ product: SK1Product) {
         invokedCacheProduct = true
         invokedCacheProductCount += 1
         invokedCacheProductParameter = product

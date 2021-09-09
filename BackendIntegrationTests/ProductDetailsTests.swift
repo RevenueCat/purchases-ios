@@ -54,18 +54,18 @@ class ProductsWrapperTests: XCTestCase {
         expect(sk1ProductDetailss.count) == sk2ProductDetailss.count
 
         for sk1ProductID in sk1ProductDetailssByID.keys {
-            let legacySKProduct = try XCTUnwrap(sk1ProductDetailssByID[sk1ProductID])
+            let SK1Product = try XCTUnwrap(sk1ProductDetailssByID[sk1ProductID])
             let equivalentSK2Product = try XCTUnwrap(sk2ProductDetailssByID[sk1ProductID])
 
-            expect(legacySKProduct.productIdentifier) == equivalentSK2Product.productIdentifier
-            expect(legacySKProduct.localizedDescription) == equivalentSK2Product.localizedDescription
-            expect(legacySKProduct.price) == equivalentSK2Product.price
-            expect(legacySKProduct.localizedPriceString) == equivalentSK2Product.localizedPriceString
-            expect(legacySKProduct.productIdentifier) == equivalentSK2Product.productIdentifier
-            expect(legacySKProduct.isFamilyShareable) == equivalentSK2Product.isFamilyShareable
-            expect(legacySKProduct.localizedTitle) == equivalentSK2Product.localizedTitle
-            if legacySKProduct.subscriptionGroupIdentifier != nil {
-                expect(legacySKProduct.subscriptionGroupIdentifier) == equivalentSK2Product.subscriptionGroupIdentifier
+            expect(SK1Product.productIdentifier) == equivalentSK2Product.productIdentifier
+            expect(SK1Product.localizedDescription) == equivalentSK2Product.localizedDescription
+            expect(SK1Product.price) == equivalentSK2Product.price
+            expect(SK1Product.localizedPriceString) == equivalentSK2Product.localizedPriceString
+            expect(SK1Product.productIdentifier) == equivalentSK2Product.productIdentifier
+            expect(SK1Product.isFamilyShareable) == equivalentSK2Product.isFamilyShareable
+            expect(SK1Product.localizedTitle) == equivalentSK2Product.localizedTitle
+            if SK1Product.subscriptionGroupIdentifier != nil {
+                expect(SK1Product.subscriptionGroupIdentifier) == equivalentSK2Product.subscriptionGroupIdentifier
             } else {
                 expect(equivalentSK2Product.subscriptionGroupIdentifier).to(beNil())
             }

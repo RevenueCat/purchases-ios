@@ -15,12 +15,12 @@
 import Foundation
 import StoreKit
 
-/// TypeAlias to the Original In-App Purchase Framework's Product type, called SKProduct
-public typealias LegacySKProduct = SKProduct
+/// TypeAlias to StoreKit 1's Product type, called `StoreKit/SKProduct`
+public typealias SK1Product = SKProduct
 
-/// TypeAlias to the New In-App Purchase Framework's Product type, called StoreKit.Product
+/// TypeAlias to StoreKit 2's Product type, called `Storekit.Product`
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-public typealias NewSKProduct = StoreKit.Product
+public typealias SK2Product = StoreKit.Product
 
 @objc(RCProductDetails) public class ProductDetails: NSObject {
     public override func isEqual(_ object: Any?) -> Bool {
@@ -68,60 +68,60 @@ public typealias NewSKProduct = StoreKit.Product
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 @objc(RCSK2ProductDetails) public class SK2ProductDetails: ProductDetails {
 
-    init(newSKProduct: StoreKit.Product) {
-        self.underlyingNewSKProduct = newSKProduct
+    init(SK2Product: StoreKit.Product) {
+        self.underlyingSK2Product = SK2Product
     }
 
-    public let underlyingNewSKProduct: StoreKit.Product
+    public let underlyingSK2Product: StoreKit.Product
 
-    @objc public override var localizedDescription: String { underlyingNewSKProduct.description }
+    @objc public override var localizedDescription: String { underlyingSK2Product.description }
 
-    @objc public override var price: Decimal { underlyingNewSKProduct.price }
+    @objc public override var price: Decimal { underlyingSK2Product.price }
 
-    @objc public override var localizedPriceString: String { underlyingNewSKProduct.displayPrice }
+    @objc public override var localizedPriceString: String { underlyingSK2Product.displayPrice }
 
-    @objc public override var productIdentifier: String { underlyingNewSKProduct.id }
+    @objc public override var productIdentifier: String { underlyingSK2Product.id }
 
-    @objc public override var isFamilyShareable: Bool { underlyingNewSKProduct.isFamilyShareable }
+    @objc public override var isFamilyShareable: Bool { underlyingSK2Product.isFamilyShareable }
 
-    @objc public override var localizedTitle: String { underlyingNewSKProduct.displayName }
+    @objc public override var localizedTitle: String { underlyingSK2Product.displayName }
 
     @objc public override var subscriptionGroupIdentifier: String? {
-        underlyingNewSKProduct.subscription?.subscriptionGroupID
+        underlyingSK2Product.subscription?.subscriptionGroupID
     }
 
 }
 
 @objc(RCSK1ProductDetails) public class SK1ProductDetails: ProductDetails {
 
-    @objc public init(legacySKProduct: LegacySKProduct) {
-        self.underlyingLegacySKProduct = legacySKProduct
+    @objc public init(SK1Product: SK1Product) {
+        self.underlyingSK1Product = SK1Product
     }
 
-    @objc public let underlyingLegacySKProduct: LegacySKProduct
+    @objc public let underlyingSK1Product: SK1Product
 
-    @objc public override var localizedDescription: String { return underlyingLegacySKProduct.localizedDescription }
+    @objc public override var localizedDescription: String { return underlyingSK1Product.localizedDescription }
 
-    @objc public override var price: Decimal { return underlyingLegacySKProduct.price as Decimal }
+    @objc public override var price: Decimal { return underlyingSK1Product.price as Decimal }
 
     @objc public override var localizedPriceString: String {
-        return formatter.string(from: underlyingLegacySKProduct.price) ?? ""
+        return formatter.string(from: underlyingSK1Product.price) ?? ""
     }
 
-    @objc public override var productIdentifier: String { return underlyingLegacySKProduct.productIdentifier }
+    @objc public override var productIdentifier: String { return underlyingSK1Product.productIdentifier }
 
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 8.0, *)
-    @objc public override var isFamilyShareable: Bool { underlyingLegacySKProduct.isFamilyShareable }
+    @objc public override var isFamilyShareable: Bool { underlyingSK1Product.isFamilyShareable }
 
-    @objc public override var localizedTitle: String { underlyingLegacySKProduct.localizedTitle }
+    @objc public override var localizedTitle: String { underlyingSK1Product.localizedTitle }
 
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
-    override public var subscriptionGroupIdentifier: String? { underlyingLegacySKProduct.subscriptionGroupIdentifier }
+    override public var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
     private lazy var formatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
-        formatter.locale = underlyingLegacySKProduct.priceLocale
+        formatter.locale = underlyingSK1Product.priceLocale
         return formatter
     }()
 
