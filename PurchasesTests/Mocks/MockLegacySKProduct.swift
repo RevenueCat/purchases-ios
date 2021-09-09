@@ -5,7 +5,7 @@
 import StoreKit
 @testable import RevenueCat
 
-class MockSKProduct: LegacySKProduct {
+class MockLegacySKProduct: LegacySKProduct {
     var mockProductIdentifier: String
 
     init(mockProductIdentifier: String, mockSubscriptionGroupIdentifier: String? = nil) {

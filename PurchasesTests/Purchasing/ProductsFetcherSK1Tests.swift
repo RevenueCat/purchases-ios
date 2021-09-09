@@ -101,7 +101,7 @@ class ProductsFetcherSK1Tests: XCTestCase {
     func testCacheProductCachesCorrectly() {
         let productIdentifiers = Set(["1", "2", "3"])
         let mockProducts:Set<LegacySKProduct> = Set(productIdentifiers.map {
-            MockSKProduct(mockProductIdentifier: $0)
+            MockLegacySKProduct(mockProductIdentifier: $0)
         })
 
         mockProducts.forEach { productsFetcherSK1.cacheProduct($0) }

@@ -19,7 +19,7 @@ class MockOfferingsFactory: OfferingsFactory {
             return nil
         }
 
-        let product = MockSKProduct(mockProductIdentifier: "monthly_freetrial")
+        let product = MockLegacySKProduct(mockProductIdentifier: "monthly_freetrial")
         let productDetails = SK1ProductDetails(sk1Product: product)
         return Offerings(
             offerings: [
