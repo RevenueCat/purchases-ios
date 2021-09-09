@@ -112,7 +112,7 @@ commands:
 jobs:
   runtest:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -132,7 +132,7 @@ jobs:
           destination: scan-test-output
   buildTvWatchAndMacOS:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -142,7 +142,7 @@ jobs:
           command: brew install swiftlint
       - install-dependencies
       - run:
-          name: Build AppleTV, WatchOS, and macOS
+          name: Build tvOS, watchOS, and macOS
           command: bundle exec fastlane build_tv_watch_mac
 
   swift_apitest:
@@ -159,7 +159,7 @@ jobs:
 
   objc_apitest:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -171,7 +171,7 @@ jobs:
 
   storekit_tests:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -196,7 +196,7 @@ jobs:
 
   deployment-checks: 
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -228,7 +228,7 @@ jobs:
           
   docs-deploy:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -252,7 +252,7 @@ jobs:
   
   make-release:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -265,7 +265,7 @@ jobs:
 
   prepare-next-version:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -278,7 +278,7 @@ jobs:
 
   integration-tests-cocoapods:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -299,7 +299,7 @@ jobs:
       
   integration-tests-swift-package-manager:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -311,7 +311,7 @@ jobs:
 
   integration-tests-carthage:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -341,7 +341,7 @@ jobs:
 
   integration-tests-xcode-direct-integration:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -352,7 +352,7 @@ jobs:
 
   lint:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:

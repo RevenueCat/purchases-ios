@@ -56,8 +56,8 @@ class OfferingsManager {
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
                 Logger.debug(isAppBackgrounded
-                                ? Strings.offering.offerings_stale_updating_in_background
-                                : Strings.offering.offerings_stale_updating_in_foreground)
+                             ? Strings.offering.offerings_stale_updating_in_background
+                             : Strings.offering.offerings_stale_updating_in_foreground)
 
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
@@ -83,8 +83,8 @@ class OfferingsManager {
         }
     }
 
-    internal func getMissingProductIDs(productsFromStore: [String: SKProduct],
-                                       productIDsFromBackend: Set<String>) -> Set<String> {
+    func getMissingProductIDs(productsFromStore: [String: SKProduct],
+                              productIDsFromBackend: Set<String>) -> Set<String> {
         guard !productIDsFromBackend.isEmpty else {
             return []
         }
@@ -105,7 +105,7 @@ private extension OfferingsManager {
             return
         }
 
-        productsManager.products(withIdentifiers: productIdentifiers) { products in
+        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: productIdentifiers) { products in
             guard !products.isEmpty else {
                 let errorMessage = Strings.offering.configuration_error_skproducts_not_found.description
                 self.handleOfferingsUpdateError(ErrorUtils.configurationError(message: errorMessage),
@@ -117,14 +117,9 @@ private extension OfferingsManager {
                 result[product.productIdentifier] = product
             }
 
-            let missingProductIDs = self.getMissingProductIDs(productsFromStore: productsByID,
-                                                              productIDsFromBackend: productIdentifiers)
-            if !missingProductIDs.isEmpty {
-                Logger.appleWarning(
-                    Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs))
-            }
-
-            if let createdOfferings = self.offeringsFactory.createOfferings(withProducts: productsByID, data: data) {
+            if let createdOfferings = self.offeringsFactory.createOfferings(fromProductDetailsByID: productsByID,
+                                                                            data: data) {
+                self.logMissingProductsIfAppropriate(products: productsByID, offeringsData: data)
                 self.deviceCache.cache(offerings: createdOfferings)
                 self.dispatchCompletionOnMainThreadIfPossible(completion,
                                                               offerings: createdOfferings,
@@ -154,6 +149,20 @@ private extension OfferingsManager {
             .compactMap { $0["platform_product_identifier"] as? String }
 
         return Set(productIdenfitiersArray)
+    }
+
+    func logMissingProductsIfAppropriate(products: [String: ProductDetails], offeringsData: [String: Any]) {
+        guard !products.isEmpty,
+              !offeringsData.isEmpty else {
+                  return
+              }
+
+        let productIdentifiers = extractProductIdentifiers(fromOfferingsData: offeringsData)
+        let missingProducts = Set(products.keys).intersection(productIdentifiers)
+
+        if !missingProducts.isEmpty {
+            Logger.appleWarning(Strings.offering.cannot_find_product_configuration_error(identifiers: missingProducts))
+        }
     }
 
     func dispatchCompletionOnMainThreadIfPossible(_ completion: ((Offerings?, Error?) -> Void)?,
