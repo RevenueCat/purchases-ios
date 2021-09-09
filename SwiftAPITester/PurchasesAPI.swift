@@ -106,15 +106,15 @@ private func checkStaticMethods() {
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let piComplete: ReceivePurchaserInfoBlock = { _, _ in }
-    purchases.purchaserInfo(completionBlock: piComplete)
+    purchases.purchaserInfo(completion: piComplete)
     purchases.purchaserInfo { _, _ in }
 
     let offeringsComplete: ReceiveOfferingsBlock = { _, _ in }
-    purchases.offerings(completionBlock: offeringsComplete)
+    purchases.offerings(completion: offeringsComplete)
     purchases.offerings { _, _ in }
 
     let productsComplete: ReceiveProductsBlock = { _ in }
-    purchases.products(identifiers: [String](), completionBlock: productsComplete)
+    purchases.products(identifiers: [String](), completion: productsComplete)
     purchases.products(identifiers: [String]()) { _ in }
 
     let skp: SKProduct = SKProduct()
@@ -128,8 +128,8 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(package: pack, completion: purchaseProductComplete)
     purchases.purchase(package: pack) { _, _, _, _  in }
 
-    purchases.restoreTransactions(completionBlock: piComplete)
-    purchases.syncPurchases(completionBlock: piComplete)
+    purchases.restoreTransactions(completion: piComplete)
+    purchases.syncPurchases(completion: piComplete)
 
     let checkEligComplete: ([String: IntroEligibility]) -> Void = { _ in }
     purchases.checkTrialOrIntroductoryPriceEligibility([String](), completionBlock: checkEligComplete)
@@ -159,21 +159,21 @@ private func checkIdentity(purchases: Purchases) {
     let piComplete: ReceivePurchaserInfoBlock = { _, _ in }
 
     // should have deprecation warning 'createAlias' is deprecated: Use logIn instead.
-    purchases.createAlias("", completionBlock: piComplete)
+    purchases.createAlias("", completion: piComplete)
     purchases.createAlias("") { _, _ in }
 
     // should have deprecation warning 'identify' is deprecated: Use logIn instead.
-    purchases.identify("", completionBlock: piComplete)
+    purchases.identify("", completion: piComplete)
     purchases.identify("") { _, _ in }
 
     // should have deprecation warning 'reset' is deprecated: Use logOut instead.
-    purchases.reset(completionBlock: piComplete)
+    purchases.reset(completion: piComplete)
     purchases.reset { _, _ in }
 
-    purchases.logOut(completionBlock: piComplete)
+    purchases.logOut(completion: piComplete)
 
     let loginComplete: (PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
-    purchases.logIn(appUserID: "", completionBlock: loginComplete)
+    purchases.logIn(appUserID: "", completion: loginComplete)
     purchases.logIn(appUserID: "") { _, _, _ in }
 }
 
@@ -194,5 +194,5 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.setAd("")
     purchases.setKeyword("")
     purchases.setCreative("")
-//    purchases.collectDeviceIdentifiers() // now internal
+//    purchases.collectDeviceIdentifiers()
 }

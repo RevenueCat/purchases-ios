@@ -156,6 +156,7 @@
 		9A65E0A02591A23200DE00B0 /* OfferingStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E09F2591A23200DE00B0 /* OfferingStrings.swift */; };
 		9A65E0A52591A23500DE00B0 /* PurchaseStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */; };
 		9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */; };
+		A51AFD9B26EABF7E00D261D0 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A51AFD9A26EABF7E00D261D0 /* RevenueCat */; };
 		A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */; };
 		A52AE48226E83D8C0076D703 /* RCBackendErrorCodeAPI.h in Sources */ = {isa = PBXBuildFile; fileRef = A5F6039926E8388C005903EF /* RCBackendErrorCodeAPI.h */; };
 		A52AE48326E83D8C0076D703 /* RCPurchasesErrorCodeAPI.h in Sources */ = {isa = PBXBuildFile; fileRef = A5F6039C26E838E2005903EF /* RCPurchasesErrorCodeAPI.h */; };
@@ -275,13 +276,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 2DE20B7E26409EB7004C597D;
 			remoteInfo = StoreKitTestApp;
-		};
-		A51AFD4326EA9E1600D261D0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2DC5621524EC63420031F69B;
-			remoteInfo = RevenueCat;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -610,6 +604,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A51AFD9B26EABF7E00D261D0 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1348,10 +1343,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				A51AFD4426EA9E1600D261D0 /* PBXTargetDependency */,
 			);
 			name = SwiftAPITester;
 			packageProductDependencies = (
+				A51AFD9A26EABF7E00D261D0 /* RevenueCat */,
 			);
 			productName = SwiftAPITester;
 			productReference = A52AE48826E83DD10076D703 /* SwiftAPITester */;
@@ -1809,11 +1804,6 @@
 			isa = PBXTargetDependency;
 			target = 2DE20B7E26409EB7004C597D /* StoreKitTestApp */;
 			targetProxy = 2DE20B8E26409EC0004C597D /* PBXContainerItemProxy */;
-		};
-		A51AFD4426EA9E1600D261D0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 2DC5621524EC63420031F69B /* RevenueCat */;
-			targetProxy = A51AFD4326EA9E1600D261D0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2315,7 +2305,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
 			requirement = {
-				branch = main;
+				branch = "migration-fixes";
 				kind = branch;
 			};
 		};
@@ -2338,6 +2328,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		A51AFD9A26EABF7E00D261D0 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A5F6039626E837C0005903EF /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
 		A52AE4AF26E8527A0076D703 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A5F6039626E837C0005903EF /* XCRemoteSwiftPackageReference "purchases-ios" */;
