@@ -1,3 +1,7 @@
+## 3.12.4
+- Updated getOfferings call to be performed serially instead of concurrently.
+    https://github.com/RevenueCat/purchases-ios/pull/831
+
 ## 3.12.3
 - Fixed a bug where checkTrialOrIntroductoryPriceEligibility would return `eligible` for products that don't have intro pricing
     https://github.com/RevenueCat/purchases-ios/pull/679
