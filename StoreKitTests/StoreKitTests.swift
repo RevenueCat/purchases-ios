@@ -230,6 +230,7 @@ class StoreKitTests: XCTestCase {
 
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
     }
+    
 }
 
 private extension StoreKitTests {
@@ -244,10 +245,10 @@ private extension StoreKitTests {
             let monthlyPackage = offering?.monthly
             expect(monthlyPackage).toNot(beNil())
 
-            Purchases.shared.purchase(product: monthlyPackage!.product) { transaction,
-                                                                        purchaserInfo,
-                                                                        purchaseError,
-                                                                        userCancelled in
+            Purchases.shared.purchase(package: monthlyPackage!) { transaction,
+                                                                  purchaserInfo,
+                                                                  purchaseError,
+                                                                  userCancelled in
                 expect(purchaseError).to(beNil())
                 expect(purchaserInfo).toNot(beNil())
             }

@@ -101,7 +101,7 @@ private extension ManageSubscriptionsModalHelper {
                                       completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
 #if os(iOS)
         if #available(iOS 15.0, *) {
-            Task.init {
+            Task {
                 let result = await self.showSK2ManageSubscriptions()
                 completion(result)
             }
@@ -161,7 +161,7 @@ private extension ManageSubscriptionsModalHelper {
 #else
             fatalError("tried to call AppStore.showManageSubscriptions in a platform that doesn't support it!")
 #endif
-        } catch let error {
+        } catch {
             return .failure(.storeKitShowManageSubscriptionsFailed(error: error))
         }
     }

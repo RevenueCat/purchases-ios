@@ -17,116 +17,43 @@ import StoreKit
 
 class ProductsManager: NSObject {
 
-    private let productsRequestFactory: ProductsRequestFactory
-    private var cachedProductsByIdentifier: [String: SKProduct] = [:]
-    private let queue = DispatchQueue(label: "ProductsManager")
-    private var productsByRequests: [SKRequest: Set<String>] = [:]
-    private var completionHandlers: [Set<String>: [(Set<SKProduct>) -> Void]] = [:]
+    let productsFetcherSK1: ProductsFetcherSK1
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private(set) lazy var productsFetcherSK2 = ProductsFetcherSK2()
 
     init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory()) {
-        self.productsRequestFactory = productsRequestFactory
+        self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory)
+    }
+
+    func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,
+                                            completion: @escaping (Set<ProductDetails>) -> Void) {
+
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            Task {
+                do {
+                    let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
+                    completion(products)
+                } catch {
+                    Logger.error("error when fetching SK2 products: \(error.localizedDescription)")
+                    let emptySet: Set<ProductDetails> = Set()
+                    completion(emptySet)
+                }
+            }
+        } else {
+            self.products(withIdentifiers: identifiers) { skProducts in
+                let wrappedProductsArray = skProducts.map { SK1ProductDetails(sk1Product: $0) }
+                completion(Set(wrappedProductsArray))
+            }
+        }
     }
 
     func products(withIdentifiers identifiers: Set<String>,
                   completion: @escaping (Set<SKProduct>) -> Void) {
-        guard identifiers.count > 0 else {
-            completion([])
-            return
-        }
-        queue.async { [self] in
-            let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
-            if productsAlreadyCached.count == identifiers.count {
-                let productsAlreadyCachedSet = Set(productsAlreadyCached.values)
-                Logger.debug(Strings.offering.products_already_cached(identifiers: identifiers))
-                completion(productsAlreadyCachedSet)
-                return
-            }
-
-            if let existingHandlers = self.completionHandlers[identifiers] {
-                Logger.debug(Strings.offering.found_existing_product_request(identifiers: identifiers))
-                self.completionHandlers[identifiers] = existingHandlers + [completion]
-                return
-            }
-
-            Logger.debug(
-                Strings.offering.no_cached_requests_and_products_starting_skproduct_request(identifiers: identifiers)
-            )
-            let request = self.productsRequestFactory.request(productIdentifiers: identifiers)
-            request.delegate = self
-            self.completionHandlers[identifiers] = [completion]
-            self.productsByRequests[request] = identifiers
-            request.start()
-        }
+        return productsFetcherSK1.products(withIdentifiers: identifiers, completion: completion)
     }
 
     func cacheProduct(_ product: SKProduct) {
-        queue.async {
-            self.cachedProductsByIdentifier[product.productIdentifier] = product
-        }
+        productsFetcherSK1.cacheProduct(product)
     }
-
-}
-
-extension ProductsManager: SKProductsRequestDelegate {
-
-    func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
-        queue.async { [self] in
-            Logger.rcSuccess(Strings.storeKit.skproductsrequest_received_response)
-            guard let requestProducts = self.productsByRequests[request] else {
-                Logger.error("requested products not found for request: \(request)")
-                return
-            }
-            guard let completionBlocks = self.completionHandlers[requestProducts] else {
-                Logger.error("callback not found for failing request: \(request)")
-                return
-            }
-
-            self.completionHandlers.removeValue(forKey: requestProducts)
-            self.productsByRequests.removeValue(forKey: request)
-
-            self.cacheProducts(response.products)
-            for completion in completionBlocks {
-                completion(Set(response.products))
-            }
-        }
-    }
-
-    func requestDidFinish(_ request: SKRequest) {
-        Logger.rcSuccess(Strings.storeKit.skproductsrequest_finished)
-        request.cancel()
-    }
-
-    func request(_ request: SKRequest, didFailWithError error: Error) {
-        queue.async { [self] in
-            Logger.appleError(Strings.storeKit.skproductsrequest_failed(error: error))
-            guard let products = self.productsByRequests[request] else {
-                Logger.error("requested products not found for request: \(request)")
-                return
-            }
-            guard let completionBlocks = self.completionHandlers[products] else {
-                Logger.error("callback not found for failing request: \(request)")
-                return
-            }
-
-            self.completionHandlers.removeValue(forKey: products)
-            self.productsByRequests.removeValue(forKey: request)
-            for completion in completionBlocks {
-                completion(Set())
-            }
-        }
-        request.cancel()
-    }
-
-}
-
-private extension ProductsManager {
-
-    func cacheProducts(_ products: [SKProduct]) {
-        let productsByIdentifier = products.reduce(into: [:]) { resultDict, product in
-            resultDict[product.productIdentifier] = product
-        }
-
-        cachedProductsByIdentifier = cachedProductsByIdentifier.merging(productsByIdentifier)
-    }
-
 }
