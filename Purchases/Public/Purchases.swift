@@ -122,7 +122,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
     /**
      * Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
      */
-    @available(*, deprecated, message: "use Purchases.logLevel instead.")
+    @available(*, deprecated, message: "use Purchases.logLevel instead")
     @objc public static var debugLogsEnabled: Bool {
         get { logLevel == .debug }
         set { logLevel = newValue ? .debug : .info }
@@ -175,6 +175,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
     /// Current version of the Purchases framework.
     @objc public static var frameworkVersion: String { SystemInfo.frameworkVersion }
 
+    @available(*, deprecated, message: "Configure behavior through the RevenueCat dashboard instead")
     @objc public var allowSharingAppStoreAccount: Bool {
         get { purchasesOrchestrator.allowSharingAppStoreAccount }
         set { purchasesOrchestrator.allowSharingAppStoreAccount = newValue }
@@ -582,6 +583,7 @@ extension Purchases {
      * - Parameter network: Enum for the network the data is coming from, see ``AttributionNetwork`` for supported
      * networks.
      */
+    @available(*, deprecated, message: "Use the set<NetworkId> functions instead")
     @objc public static func addAttributionData(_ data: [String: Any], fromNetwork network: AttributionNetwork) {
             addAttributionData(data, fromNetwork: network, forNetworkUserId: nil)
     }
@@ -594,6 +596,7 @@ extension Purchases {
      * networks.
      * - Parameter maybeNetworkUserId: User Id that should be sent to the network. Default is the current App User Id.
      */
+    @available(*, deprecated, message: "Use the set<NetworkId> functions instead")
     @objc public static func addAttributionData(_ data: [String: Any],
                                                 fromNetwork network: AttributionNetwork,
                                                 forNetworkUserId maybeNetworkUserId: String?) {
@@ -654,6 +657,7 @@ public extension Purchases {
      * - Parameter maybeCompletionBlock: An optional completion block called when the aliasing has been successful.
      * This completion block will receive an error if there's been one.
      */
+    @available(*, deprecated, message: "use logIn instead")
     @objc func createAlias(_ alias: String, completionBlock maybeCompletionBlock: ReceivePurchaserInfoBlock?) {
         if alias == appUserID {
             purchaserInfoManager.purchaserInfo(appUserID: appUserID, completion: maybeCompletionBlock)
@@ -679,6 +683,7 @@ public extension Purchases {
      *
      * - Parameter appUserID: The appUserID that should be linked to the current user.
      */
+    @available(*, deprecated, message: "use logIn instead")
     @objc func identify(_ appUserID: String, completionBlock maybeCompletion: ReceivePurchaserInfoBlock?) {
         if appUserID == identityManager.currentAppUserID {
             purchaserInfoManager.purchaserInfo(appUserID: self.appUserID, completion: maybeCompletion)
@@ -751,6 +756,7 @@ public extension Purchases {
      * Resets the Purchases client clearing the saved appUserID.
      * This will generate a random user id and save it in the cache.
      */
+    @available(*, deprecated, message: "use logOut instead", renamed: "logOut")
     @objc func reset(completionBlock maybeCompletion: ReceivePurchaserInfoBlock?) {
         identityManager.resetAppUserID()
         updateAllCaches(completion: maybeCompletion)
