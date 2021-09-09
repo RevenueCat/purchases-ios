@@ -22,7 +22,7 @@ class OfferingsTests: XCTestCase {
             "identifier": "$rc_monthly",
             "platform_product_identifier": "com.myproduct.monthly"
         ], productDetailsByID: [
-            "com.myproduct.annual": SK1ProductDetails(sk1Product: LegacySKProduct())
+            "com.myproduct.annual": SK1ProductDetails(legacySKProduct: LegacySKProduct())
         ], offeringIdentifier: "offering")
 
         expect(package).to(beNil())
@@ -36,7 +36,7 @@ class OfferingsTests: XCTestCase {
             "identifier": packageIdentifier,
             "platform_product_identifier": productIdentifier
         ], productDetailsByID: [
-            productIdentifier: SK1ProductDetails(sk1Product: product)
+            productIdentifier: SK1ProductDetails(legacySKProduct: product)
         ], offeringIdentifier: "offering")
 
         expect(package).toNot(beNil())
@@ -48,7 +48,7 @@ class OfferingsTests: XCTestCase {
     }
 
     func testOfferingIsNotCreatedIfNoValidPackage() {
-        let products = ["com.myproduct.bad": SK1ProductDetails(sk1Product: LegacySKProduct())]
+        let products = ["com.myproduct.bad": SK1ProductDetails(legacySKProduct: LegacySKProduct())]
         let offering = offeringsFactory.createOffering(fromProductDetailsByID: products, offeringData: [
             "identifier": "offering_a",
             "description": "This is the base offering",
@@ -65,8 +65,8 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingIsCreatedIfValidPackages() {
         let products = [
-            "com.myproduct.annual": SK1ProductDetails(sk1Product: MockLegacySKProduct(mockProductIdentifier: "com.myproduct.annual")),
-            "com.myproduct.monthly": SK1ProductDetails(sk1Product: MockLegacySKProduct(mockProductIdentifier: "com.myproduct.monthly"))
+            "com.myproduct.annual": SK1ProductDetails(legacySKProduct: MockLegacySKProduct(mockProductIdentifier: "com.myproduct.annual")),
+            "com.myproduct.monthly": SK1ProductDetails(legacySKProduct: MockLegacySKProduct(mockProductIdentifier: "com.myproduct.monthly"))
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
@@ -122,8 +122,8 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingsIsCreated() {
         let products = [
-            "com.myproduct.annual": SK1ProductDetails(sk1Product: MockLegacySKProduct(mockProductIdentifier: "com.myproduct.annual")),
-            "com.myproduct.monthly": SK1ProductDetails(sk1Product: MockLegacySKProduct(mockProductIdentifier: "com.myproduct.monthly"))
+            "com.myproduct.annual": SK1ProductDetails(legacySKProduct: MockLegacySKProduct(mockProductIdentifier: "com.myproduct.annual")),
+            "com.myproduct.monthly": SK1ProductDetails(legacySKProduct: MockLegacySKProduct(mockProductIdentifier: "com.myproduct.monthly"))
         ]
         let offerings = offeringsFactory.createOfferings(fromProductDetailsByID: products, data: [
             "offerings": [
@@ -229,7 +229,7 @@ class OfferingsTests: XCTestCase {
         }
         let productIdentifier = "com.myproduct"
         let products = [
-            productIdentifier: SK1ProductDetails(sk1Product: MockLegacySKProduct(mockProductIdentifier: productIdentifier))
+            productIdentifier: SK1ProductDetails(legacySKProduct: MockLegacySKProduct(mockProductIdentifier: productIdentifier))
         ]
         let offerings = offeringsFactory.createOfferings(fromProductDetailsByID: products, data: [
             "offerings": [

@@ -190,12 +190,12 @@ class PurchasesOrchestrator {
 
     }
 
-    func purchase(sk1Product: LegacySKProduct,
+    func purchase(legacySKProduct: LegacySKProduct,
                   payment: SKMutablePayment,
                   presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
                   completion: @escaping PurchaseCompletedBlock) {
         Logger.debug(String(format: "Make purchase called: %@", #function))
-        guard let productIdentifier = extractProductIdentifier(fromProduct: sk1Product, orPayment: payment) else {
+        guard let productIdentifier = extractProductIdentifier(fromProduct: legacySKProduct, orPayment: payment) else {
             Logger.error(Strings.purchase.could_not_purchase_product_id_not_found)
             let errorMessage = "There was a problem purchasing the product: productIdentifier was nil"
             completion(nil, nil, ErrorUtils.unknownError(message: errorMessage), false)
@@ -224,7 +224,7 @@ class PurchasesOrchestrator {
             Logger.purchase(Strings.purchase.purchasing_product(productIdentifier: productIdentifier))
         }
 
-        productsManager.cacheProduct(sk1Product)
+        productsManager.cacheProduct(legacySKProduct)
 
         lock.lock()
         defer {
@@ -576,9 +576,9 @@ private extension PurchasesOrchestrator {
         guard let sk1ProductDetails = sk1Package.productDetails as? SK1ProductDetails else {
             return
         }
-        let sk1Product = sk1ProductDetails.underlyingLegacySKProduct
-        let payment = storeKitWrapper.payment(withProduct: sk1Product)
-        purchase(sk1Product: sk1Product,
+        let legacySKProduct = sk1ProductDetails.underlyingLegacySKProduct
+        let payment = storeKitWrapper.payment(withProduct: legacySKProduct)
+        purchase(legacySKProduct: legacySKProduct,
                  payment: payment,
                  presentedOfferingIdentifier: sk1Package.offeringIdentifier,
                  completion: completion)

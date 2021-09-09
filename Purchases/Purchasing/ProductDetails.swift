@@ -94,8 +94,8 @@ public typealias NewSKProduct = StoreKit.Product
 
 @objc(RCSK1ProductDetails) public class SK1ProductDetails: ProductDetails {
 
-    @objc public init(sk1Product: LegacySKProduct) {
-        self.underlyingLegacySKProduct = sk1Product
+    @objc public init(legacySKProduct: LegacySKProduct) {
+        self.underlyingLegacySKProduct = legacySKProduct
     }
 
     @objc public let underlyingLegacySKProduct: LegacySKProduct
