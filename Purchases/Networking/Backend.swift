@@ -293,7 +293,7 @@ class Backend {
             return
         }
 
-        httpClient.performGETRequest(serially: false,
+        httpClient.performGETRequest(serially: true,
                                      path: path,
                                      headers: authHeaders) { [weak self] (statusCode, response, error) in
             guard let self = self else {
