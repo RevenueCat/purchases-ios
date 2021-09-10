@@ -32,7 +32,7 @@ actor ProductsFetcherSK2 {
             let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
             if productsAlreadyCached.count == identifiers.count {
                 let productsAlreadyCachedSet = Set(productsAlreadyCached.values)
-                Logger.debug(String(format: Strings.offering.products_already_cached, identifiers))
+                Logger.debug(Strings.offering.products_already_cached(identifiers: identifiers))
                 return productsAlreadyCachedSet
             }
             // todo: remove when this gets fixed.
