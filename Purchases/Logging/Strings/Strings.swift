@@ -24,5 +24,6 @@ enum Strings {
     static let receipt = ReceiptStrings.self
     static let restore = RestoreStrings.self
     static let codable = CodableStrings.self
+    static let storeKit = StoreKitStrings.self
 
 }

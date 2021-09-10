@@ -13,35 +13,91 @@
 //
 
 import Foundation
+import StoreKit
 
 // swiftlint:disable identifier_name
 enum OfferingStrings {
 
-    static let cannot_find_product_configuration_error = "Could not find SKProduct for %@ " +
-        "\nThere is a problem with your configuration in App Store Connect. " +
-        "\nMore info here: https://errors.rev.cat/configuring-products"
-    static let completion_handlers_waiting_on_products = "%lu completion handlers waiting on products"
-    static let fetching_offerings_error = "Error fetching offerings - %@"
-    static let sk_request_failed = "SKRequest failed: %@"
-    static let fetching_products_finished = "Products request finished."
-    static let fetching_products = "Requesting products from the store with identifiers: %@"
-    static let found_existing_product_request = "Found an existing request for products: %@, appending " +
-        "to completion"
-    static let invalid_product_identifiers = "Invalid Product Identifiers - %@"
-    static let list_products = "%@ - %@"
-    static let no_cached_offerings_fetching_from_network = "No cached Offerings, fetching from network"
-    static let no_cached_requests_and_products_starting_skproduct_request = "No existing requests and " +
-        "products not cached, starting SKProducts request for: %@"
-    static let offerings_stale_updated_from_network = "Offerings updated from network."
-    static let offerings_stale_updating_in_background = "Offerings cache is stale, updating from " +
-        "network in background"
-    static let offerings_stale_updating_in_foreground = "Offerings cache is stale, updating from " +
-        "network in foreground"
-    static let products_already_cached = "Skipping products request because products were already " +
-        "cached. products: %@"
-    static let retrieved_products = "Retrieved SKProducts: "
-    static let skproductsrequest_did_finish = "SKProductsRequest did finish"
-    static let skproductsrequest_received_response = "SKProductsRequest request received response"
-    static let vending_offerings_cache = "Vending Offerings from cache"
+    case cannot_find_product_configuration_error(identifiers: Set<String>)
+    case fetching_offerings_error(error: String)
+    case found_existing_product_request(identifiers: Set<String>)
+    case no_cached_offerings_fetching_from_network
+    case no_cached_requests_and_products_starting_skproduct_request(identifiers: Set<String>)
+    case offerings_stale_updated_from_network
+    case offerings_stale_updating_in_background
+    case offerings_stale_updating_in_foreground
+    case products_already_cached(identifiers: Set<String>)
+    case vending_offerings_cache
+    case retrieved_products(products: [SKProduct])
+    case list_products(productIdentifier: String, product: SKProduct)
+    case invalid_product_identifiers(identifiers: Set<String>)
+    case fetching_products_finished
+    case fetching_products(identifiers: Set<String>)
+    case completion_handlers_waiting_on_products(handlersCount: Int)
+
+}
+
+extension OfferingStrings: CustomStringConvertible {
+
+    var description: String {
+        switch self {
+
+        case .cannot_find_product_configuration_error(let identifiers):
+            return "Could not find SKProduct for \(identifiers) " +
+                "\nThere is a problem with your configuration in App Store Connect. " +
+                "\nMore info here: https://errors.rev.cat/configuring-products"
+
+        case .fetching_offerings_error(let error):
+            return "Error fetching offerings - \(error)"
+
+        case .found_existing_product_request(let identifiers):
+            return "Found an existing request for products: \(identifiers), appending " +
+                "to completion"
+
+        case .no_cached_offerings_fetching_from_network:
+            return "No cached Offerings, fetching from network"
+
+        case .no_cached_requests_and_products_starting_skproduct_request(let identifiers):
+            return "No existing requests and " +
+                "products not cached, starting SKProducts request for: \(identifiers)"
+
+        case .offerings_stale_updated_from_network:
+            return "Offerings updated from network."
+
+        case .offerings_stale_updating_in_background:
+            return "Offerings cache is stale, updating from " +
+                "network in background"
+
+        case .offerings_stale_updating_in_foreground:
+            return "Offerings cache is stale, updating from " +
+                "network in foreground"
+
+        case .products_already_cached(let identifiers):
+            return "Skipping products request because products were already " +
+                "cached. products: \(identifiers)"
+
+        case .vending_offerings_cache:
+            return "Vending Offerings from cache"
+
+        case .retrieved_products(let products):
+            return "Retrieved SKProducts: \(products)"
+
+        case let .list_products(productIdentifier, product):
+            return "\(productIdentifier) - \(product)"
+
+        case .invalid_product_identifiers(let identifiers):
+            return "Invalid Product Identifiers - \(identifiers)"
+
+        case .fetching_products_finished:
+            return "Products request finished."
+
+        case .fetching_products(let identifiers):
+            return "Requesting products from the store with identifiers: \(identifiers)"
+
+        case .completion_handlers_waiting_on_products(let handlersCount):
+            return "\(handlersCount) completion handlers waiting on products"
+
+        }
+    }
 
 }
