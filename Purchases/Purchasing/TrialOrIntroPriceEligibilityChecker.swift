@@ -58,8 +58,8 @@ class TrialOrIntroPriceEligibilityChecker {
             if #available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *),
                let data = maybeData {
                 self.sk1ModernEligibilityHandler(maybeReceiptData: data,
-                                              productIdentifiers: productIdentifiers,
-                                              completionBlock: receiveEligibility)
+                                                 productIdentifiers: productIdentifiers,
+                                                 completionBlock: receiveEligibility)
             } else {
                 self.backend.getIntroEligibility(appUserID: self.appUserID,
                                                  receiptData: maybeData ?? Data(),
