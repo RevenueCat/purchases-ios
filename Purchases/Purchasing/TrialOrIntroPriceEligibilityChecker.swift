@@ -65,8 +65,7 @@ class TrialOrIntroPriceEligibilityChecker {
                                                  receiptData: maybeData ?? Data(),
                                                  productIdentifiers: productIdentifiers) { result, maybeError in
                     if let error = maybeError {
-                        Logger.error(String(format: Strings.purchase.unable_to_get_intro_eligibility_for_user,
-                                            error.localizedDescription))
+                        Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
                     }
                     self.operationDispatcher.dispatchOnMainThread {
                         receiveEligibility(result)
@@ -122,14 +121,12 @@ class TrialOrIntroPriceEligibilityChecker {
             .checkTrialOrIntroductoryPriceEligibility(with: data,
                                                       productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
                 if let error = maybeError {
-                    Logger.error(String(format: Strings.receipt.parse_receipt_locally_error,
-                                        error.localizedDescription))
+                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
                     self.backend.getIntroEligibility(appUserID: self.appUserID,
                                                      receiptData: data,
                                                      productIdentifiers: productIdentifiers) { result, maybeAnotherError in
                         if let intoEligibilityError = maybeAnotherError {
-                            Logger.error(String(format: Strings.purchase.unable_to_get_intro_eligibility_with_error,
-                                                intoEligibilityError.localizedDescription))
+                            Logger.error(Strings.purchase.unable_to_get_intro_eligibility_with_error(error: intoEligibilityError))
                         }
                         self.operationDispatcher.dispatchOnMainThread {
                             receiveEligibility(result)

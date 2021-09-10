@@ -40,8 +40,8 @@ enum PurchaseStrings: CustomStringConvertible {
     case management_url_nil_opening_default
 	case requested_products_not_found(request: SKRequest)
     case callback_not_found_for_request(request: SKRequest)
-    case unable_to_get_intro_eligibility_for_user(errorDescription: String)
-    case unable_to_get_intro_eligibility_with_error(errorDescription: String)
+    case unable_to_get_intro_eligibility_for_user(error: Error)
+    case unable_to_get_intro_eligibility_with_error(error: Error)
 }
 
 extension PurchaseStrings: CustomStringConvertible {
@@ -139,11 +139,11 @@ extension PurchaseStrings: CustomStringConvertible {
         case .callback_not_found_for_request(let request):
             return "callback not found for failing request: \(request)"
 
-        case unable_to_get_intro_eligibility_for_user(let errorDescription):
-            return "Unable to get intro eligibility for appUserID: \(errorDescription)"
+        case unable_to_get_intro_eligibility_for_user(let error):
+            return "Unable to get intro eligibility for appUserID: \(error.localizedDescription)"
 
-        case unable_to_get_intro_eligibility_with_error(let errorDescription):
-            return "Unable to get intro eligibility: \(errorDescription)"
+        case unable_to_get_intro_eligibility_with_error(let error):
+            return "Unable to get intro eligibility: \(error.localizedDescription)"
         }
 
     }
