@@ -231,7 +231,7 @@ jobs:
           command: sudo python3 -m pip install awscli
       - run:
           name: Deploy to S3
-          command: aws s3 sync generated_docs s3://purchases-docs/ios --delete --acl public-read
+          command: aws s3 sync generated_docs s3://purchases-docs/ios --delete
       - run:
           name: Invalidate CloudFront caches
           command: aws cloudfront create-invalidation --distribution-id EPTW7F3CB566V --paths "/*"
