@@ -147,24 +147,13 @@ jobs:
   apitest:
     macos:
       xcode: "12.5.1"
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
-    steps:
-      - checkout
-      - run:
-          name: Build APITester
-          command: xcodebuild -target APITester
-  swift_apitest:
-    macos:
-      xcode: "12.5.1"
-    working_directory: ~/purchases-ios
+    working_directory: ~/purchases-ios/APITesters
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
       - run:
           name: Build SwiftAPITester
-          command: xcodebuild -target SwiftAPITester
-          
+          command: xcodebuild -target SwiftAPITester && xcodebuild -target ObjCAPITester
 
   storekit_tests:
     macos:
