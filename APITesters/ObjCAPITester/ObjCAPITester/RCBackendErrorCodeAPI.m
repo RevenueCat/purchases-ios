@@ -19,6 +19,7 @@
 + (void)checkEnums {
     RCBackendErrorCode errCode = RCBackendStoreProblem;
     switch(errCode){
+        case RCBackendUnknownError:
         case RCBackendInvalidPlatform:
         case RCBackendStoreProblem:
         case RCBackendCannotTransferPurchase:

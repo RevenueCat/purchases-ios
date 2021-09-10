@@ -9,20 +9,19 @@
 /* Begin PBXBuildFile section */
 		A519264D26EBCEF6007D0BD1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A519264C26EBCEF6007D0BD1 /* main.m */; };
 		A519265526EBCFA6007D0BD1 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A519265426EBCFA6007D0BD1 /* RevenueCat */; };
-		A519267326EBD032007D0BD1 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519265826EBD031007D0BD1 /* RCPackageAPI.m */; };
-		A519267426EBD032007D0BD1 /* RCTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519265926EBD031007D0BD1 /* RCTransactionAPI.m */; };
-		A519267526EBD032007D0BD1 /* APITester.swift in Sources */ = {isa = PBXBuildFile; fileRef = A519265B26EBD031007D0BD1 /* APITester.swift */; };
-		A519267626EBD032007D0BD1 /* RCPurchasesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519265C26EBD031007D0BD1 /* RCPurchasesAPI.m */; };
-		A519267726EBD032007D0BD1 /* RCEntitlementInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519265E26EBD031007D0BD1 /* RCEntitlementInfoAPI.m */; };
-		A519267826EBD032007D0BD1 /* RCPurchasesErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519265F26EBD031007D0BD1 /* RCPurchasesErrorCodeAPI.m */; };
-		A519267926EBD032007D0BD1 /* RCPurchaserInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519266026EBD031007D0BD1 /* RCPurchaserInfoAPI.m */; };
-		A519267A26EBD032007D0BD1 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519266526EBD031007D0BD1 /* RCOfferingsAPI.m */; };
-		A519267B26EBD032007D0BD1 /* RCAttributionNetworkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519266626EBD031007D0BD1 /* RCAttributionNetworkAPI.m */; };
-		A519267C26EBD032007D0BD1 /* RCBackendErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519266826EBD031007D0BD1 /* RCBackendErrorCodeAPI.m */; };
-		A519267D26EBD032007D0BD1 /* RCPurchasesErrorUtilsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519266A26EBD031007D0BD1 /* RCPurchasesErrorUtilsAPI.m */; };
-		A519267E26EBD032007D0BD1 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519266B26EBD032007D0BD1 /* RCOfferingAPI.m */; };
-		A519267F26EBD032007D0BD1 /* RCEntitlementInfosAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519266F26EBD032007D0BD1 /* RCEntitlementInfosAPI.m */; };
-		A519268026EBD032007D0BD1 /* RCIntroEligibilityAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A519267226EBD032007D0BD1 /* RCIntroEligibilityAPI.m */; };
+		A5D614F926EBE84F007DDB75 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */; };
+		A5D614FA26EBE84F007DDB75 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */; };
+		A5D614FB26EBE84F007DDB75 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DF26EBE84F007DDB75 /* RCOfferingAPI.m */; };
+		A5D614FC26EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614E026EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.m */; };
+		A5D614FE26EBE84F007DDB75 /* RCEntitlementInfosAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614E926EBE84F007DDB75 /* RCEntitlementInfosAPI.m */; };
+		A5D614FF26EBE84F007DDB75 /* RCAttributionNetworkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */; };
+		A5D6150026EBE84F007DDB75 /* RCPurchasesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614ED26EBE84F007DDB75 /* RCPurchasesAPI.m */; };
+		A5D6150126EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */; };
+		A5D6150226EBE84F007DDB75 /* RCPurchaserInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F026EBE84F007DDB75 /* RCPurchaserInfoAPI.m */; };
+		A5D6150326EBE84F007DDB75 /* RCIntroEligibilityAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F226EBE84F007DDB75 /* RCIntroEligibilityAPI.m */; };
+		A5D6150426EBE84F007DDB75 /* RCTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */; };
+		A5D6150526EBE84F007DDB75 /* RCBackendErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F726EBE84F007DDB75 /* RCBackendErrorCodeAPI.m */; };
+		A5D6150626EBE84F007DDB75 /* RCEntitlementInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F826EBE84F007DDB75 /* RCEntitlementInfoAPI.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -40,35 +39,32 @@
 /* Begin PBXFileReference section */
 		A519264926EBCEF6007D0BD1 /* ObjCAPITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ObjCAPITester; sourceTree = BUILT_PRODUCTS_DIR; };
 		A519264C26EBCEF6007D0BD1 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		A519265626EBD030007D0BD1 /* ObjCAPITester-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ObjCAPITester-Bridging-Header.h"; sourceTree = "<group>"; };
-		A519265726EBD031007D0BD1 /* RCEntitlementInfoAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfoAPI.h; sourceTree = "<group>"; };
-		A519265826EBD031007D0BD1 /* RCPackageAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPackageAPI.m; sourceTree = "<group>"; };
-		A519265926EBD031007D0BD1 /* RCTransactionAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTransactionAPI.m; sourceTree = "<group>"; };
-		A519265A26EBD031007D0BD1 /* RCPurchasesErrorUtilsAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrorUtilsAPI.h; sourceTree = "<group>"; };
-		A519265B26EBD031007D0BD1 /* APITester.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APITester.swift; sourceTree = "<group>"; };
-		A519265C26EBD031007D0BD1 /* RCPurchasesAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesAPI.m; sourceTree = "<group>"; };
-		A519265D26EBD031007D0BD1 /* RCBackendErrorCodeAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCBackendErrorCodeAPI.h; sourceTree = "<group>"; };
-		A519265E26EBD031007D0BD1 /* RCEntitlementInfoAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfoAPI.m; sourceTree = "<group>"; };
-		A519265F26EBD031007D0BD1 /* RCPurchasesErrorCodeAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesErrorCodeAPI.m; sourceTree = "<group>"; };
-		A519266026EBD031007D0BD1 /* RCPurchaserInfoAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchaserInfoAPI.m; sourceTree = "<group>"; };
-		A519266126EBD031007D0BD1 /* RCAttributionNetworkAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCAttributionNetworkAPI.h; sourceTree = "<group>"; };
-		A519266226EBD031007D0BD1 /* RCTransactionAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTransactionAPI.h; sourceTree = "<group>"; };
-		A519266326EBD031007D0BD1 /* RCOfferingAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCOfferingAPI.h; sourceTree = "<group>"; };
-		A519266426EBD031007D0BD1 /* RCPurchaserInfoAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchaserInfoAPI.h; sourceTree = "<group>"; };
-		A519266526EBD031007D0BD1 /* RCOfferingsAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCOfferingsAPI.m; sourceTree = "<group>"; };
-		A519266626EBD031007D0BD1 /* RCAttributionNetworkAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCAttributionNetworkAPI.m; sourceTree = "<group>"; };
-		A519266726EBD031007D0BD1 /* RCOfferingsAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCOfferingsAPI.h; sourceTree = "<group>"; };
-		A519266826EBD031007D0BD1 /* RCBackendErrorCodeAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCBackendErrorCodeAPI.m; sourceTree = "<group>"; };
-		A519266926EBD031007D0BD1 /* RCPackageAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPackageAPI.h; sourceTree = "<group>"; };
-		A519266A26EBD031007D0BD1 /* RCPurchasesErrorUtilsAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesErrorUtilsAPI.m; sourceTree = "<group>"; };
-		A519266B26EBD032007D0BD1 /* RCOfferingAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCOfferingAPI.m; sourceTree = "<group>"; };
-		A519266C26EBD032007D0BD1 /* RCEntitlementInfosAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfosAPI.h; sourceTree = "<group>"; };
-		A519266D26EBD032007D0BD1 /* RCPurchasesErrorCodeAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrorCodeAPI.h; sourceTree = "<group>"; };
-		A519266E26EBD032007D0BD1 /* RCPurchasesAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesAPI.h; sourceTree = "<group>"; };
-		A519266F26EBD032007D0BD1 /* RCEntitlementInfosAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfosAPI.m; sourceTree = "<group>"; };
-		A519267026EBD032007D0BD1 /* APITester-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "APITester-Bridging-Header.h"; sourceTree = "<group>"; };
-		A519267126EBD032007D0BD1 /* RCIntroEligibilityAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibilityAPI.h; sourceTree = "<group>"; };
-		A519267226EBD032007D0BD1 /* RCIntroEligibilityAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIntroEligibilityAPI.m; sourceTree = "<group>"; };
+		A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCOfferingsAPI.m; sourceTree = "<group>"; };
+		A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPackageAPI.m; sourceTree = "<group>"; };
+		A5D614DF26EBE84F007DDB75 /* RCOfferingAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCOfferingAPI.m; sourceTree = "<group>"; };
+		A5D614E026EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesErrorUtilsAPI.m; sourceTree = "<group>"; };
+		A5D614E126EBE84F007DDB75 /* RCPackageAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPackageAPI.h; sourceTree = "<group>"; };
+		A5D614E326EBE84F007DDB75 /* RCIntroEligibilityAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibilityAPI.h; sourceTree = "<group>"; };
+		A5D614E426EBE84F007DDB75 /* RCOfferingAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCOfferingAPI.h; sourceTree = "<group>"; };
+		A5D614E526EBE84F007DDB75 /* RCPurchasesAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesAPI.h; sourceTree = "<group>"; };
+		A5D614E626EBE84F007DDB75 /* RCPurchaserInfoAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchaserInfoAPI.h; sourceTree = "<group>"; };
+		A5D614E726EBE84F007DDB75 /* RCTransactionAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTransactionAPI.h; sourceTree = "<group>"; };
+		A5D614E826EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrorUtilsAPI.h; sourceTree = "<group>"; };
+		A5D614E926EBE84F007DDB75 /* RCEntitlementInfosAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfosAPI.m; sourceTree = "<group>"; };
+		A5D614EA26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrorCodeAPI.h; sourceTree = "<group>"; };
+		A5D614EB26EBE84F007DDB75 /* RCEntitlementInfoAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfoAPI.h; sourceTree = "<group>"; };
+		A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCAttributionNetworkAPI.m; sourceTree = "<group>"; };
+		A5D614ED26EBE84F007DDB75 /* RCPurchasesAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesAPI.m; sourceTree = "<group>"; };
+		A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesErrorCodeAPI.m; sourceTree = "<group>"; };
+		A5D614EF26EBE84F007DDB75 /* RCEntitlementInfosAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfosAPI.h; sourceTree = "<group>"; };
+		A5D614F026EBE84F007DDB75 /* RCPurchaserInfoAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchaserInfoAPI.m; sourceTree = "<group>"; };
+		A5D614F126EBE84F007DDB75 /* RCAttributionNetworkAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCAttributionNetworkAPI.h; sourceTree = "<group>"; };
+		A5D614F226EBE84F007DDB75 /* RCIntroEligibilityAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIntroEligibilityAPI.m; sourceTree = "<group>"; };
+		A5D614F326EBE84F007DDB75 /* RCOfferingsAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCOfferingsAPI.h; sourceTree = "<group>"; };
+		A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTransactionAPI.m; sourceTree = "<group>"; };
+		A5D614F526EBE84F007DDB75 /* RCBackendErrorCodeAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCBackendErrorCodeAPI.h; sourceTree = "<group>"; };
+		A5D614F726EBE84F007DDB75 /* RCBackendErrorCodeAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCBackendErrorCodeAPI.m; sourceTree = "<group>"; };
+		A5D614F826EBE84F007DDB75 /* RCEntitlementInfoAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfoAPI.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,37 +82,8 @@
 		A519264026EBCEF6007D0BD1 = {
 			isa = PBXGroup;
 			children = (
-				A519267026EBD032007D0BD1 /* APITester-Bridging-Header.h */,
-				A519265B26EBD031007D0BD1 /* APITester.swift */,
-				A519266126EBD031007D0BD1 /* RCAttributionNetworkAPI.h */,
-				A519266626EBD031007D0BD1 /* RCAttributionNetworkAPI.m */,
-				A519265D26EBD031007D0BD1 /* RCBackendErrorCodeAPI.h */,
-				A519266826EBD031007D0BD1 /* RCBackendErrorCodeAPI.m */,
-				A519265726EBD031007D0BD1 /* RCEntitlementInfoAPI.h */,
-				A519265E26EBD031007D0BD1 /* RCEntitlementInfoAPI.m */,
-				A519266C26EBD032007D0BD1 /* RCEntitlementInfosAPI.h */,
-				A519266F26EBD032007D0BD1 /* RCEntitlementInfosAPI.m */,
-				A519267126EBD032007D0BD1 /* RCIntroEligibilityAPI.h */,
-				A519267226EBD032007D0BD1 /* RCIntroEligibilityAPI.m */,
-				A519266326EBD031007D0BD1 /* RCOfferingAPI.h */,
-				A519266B26EBD032007D0BD1 /* RCOfferingAPI.m */,
-				A519266726EBD031007D0BD1 /* RCOfferingsAPI.h */,
-				A519266526EBD031007D0BD1 /* RCOfferingsAPI.m */,
-				A519266926EBD031007D0BD1 /* RCPackageAPI.h */,
-				A519265826EBD031007D0BD1 /* RCPackageAPI.m */,
-				A519266426EBD031007D0BD1 /* RCPurchaserInfoAPI.h */,
-				A519266026EBD031007D0BD1 /* RCPurchaserInfoAPI.m */,
-				A519266E26EBD032007D0BD1 /* RCPurchasesAPI.h */,
-				A519265C26EBD031007D0BD1 /* RCPurchasesAPI.m */,
-				A519266D26EBD032007D0BD1 /* RCPurchasesErrorCodeAPI.h */,
-				A519265F26EBD031007D0BD1 /* RCPurchasesErrorCodeAPI.m */,
-				A519265A26EBD031007D0BD1 /* RCPurchasesErrorUtilsAPI.h */,
-				A519266A26EBD031007D0BD1 /* RCPurchasesErrorUtilsAPI.m */,
-				A519266226EBD031007D0BD1 /* RCTransactionAPI.h */,
-				A519265926EBD031007D0BD1 /* RCTransactionAPI.m */,
 				A519264B26EBCEF6007D0BD1 /* ObjCAPITester */,
 				A519264A26EBCEF6007D0BD1 /* Products */,
-				A519265626EBD030007D0BD1 /* ObjCAPITester-Bridging-Header.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -131,6 +98,32 @@
 		A519264B26EBCEF6007D0BD1 /* ObjCAPITester */ = {
 			isa = PBXGroup;
 			children = (
+				A5D614F126EBE84F007DDB75 /* RCAttributionNetworkAPI.h */,
+				A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */,
+				A5D614F526EBE84F007DDB75 /* RCBackendErrorCodeAPI.h */,
+				A5D614F726EBE84F007DDB75 /* RCBackendErrorCodeAPI.m */,
+				A5D614EB26EBE84F007DDB75 /* RCEntitlementInfoAPI.h */,
+				A5D614F826EBE84F007DDB75 /* RCEntitlementInfoAPI.m */,
+				A5D614EF26EBE84F007DDB75 /* RCEntitlementInfosAPI.h */,
+				A5D614E926EBE84F007DDB75 /* RCEntitlementInfosAPI.m */,
+				A5D614E326EBE84F007DDB75 /* RCIntroEligibilityAPI.h */,
+				A5D614F226EBE84F007DDB75 /* RCIntroEligibilityAPI.m */,
+				A5D614E426EBE84F007DDB75 /* RCOfferingAPI.h */,
+				A5D614DF26EBE84F007DDB75 /* RCOfferingAPI.m */,
+				A5D614F326EBE84F007DDB75 /* RCOfferingsAPI.h */,
+				A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */,
+				A5D614E126EBE84F007DDB75 /* RCPackageAPI.h */,
+				A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */,
+				A5D614E626EBE84F007DDB75 /* RCPurchaserInfoAPI.h */,
+				A5D614F026EBE84F007DDB75 /* RCPurchaserInfoAPI.m */,
+				A5D614E526EBE84F007DDB75 /* RCPurchasesAPI.h */,
+				A5D614ED26EBE84F007DDB75 /* RCPurchasesAPI.m */,
+				A5D614EA26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.h */,
+				A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */,
+				A5D614E826EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.h */,
+				A5D614E026EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.m */,
+				A5D614E726EBE84F007DDB75 /* RCTransactionAPI.h */,
+				A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */,
 				A519264C26EBCEF6007D0BD1 /* main.m */,
 			);
 			path = ObjCAPITester;
@@ -200,21 +193,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A519267E26EBD032007D0BD1 /* RCOfferingAPI.m in Sources */,
-				A519267C26EBD032007D0BD1 /* RCBackendErrorCodeAPI.m in Sources */,
-				A519267B26EBD032007D0BD1 /* RCAttributionNetworkAPI.m in Sources */,
-				A519268026EBD032007D0BD1 /* RCIntroEligibilityAPI.m in Sources */,
-				A519267326EBD032007D0BD1 /* RCPackageAPI.m in Sources */,
-				A519267426EBD032007D0BD1 /* RCTransactionAPI.m in Sources */,
-				A519267826EBD032007D0BD1 /* RCPurchasesErrorCodeAPI.m in Sources */,
+				A5D6150326EBE84F007DDB75 /* RCIntroEligibilityAPI.m in Sources */,
+				A5D6150226EBE84F007DDB75 /* RCPurchaserInfoAPI.m in Sources */,
 				A519264D26EBCEF6007D0BD1 /* main.m in Sources */,
-				A519267A26EBD032007D0BD1 /* RCOfferingsAPI.m in Sources */,
-				A519267726EBD032007D0BD1 /* RCEntitlementInfoAPI.m in Sources */,
-				A519267626EBD032007D0BD1 /* RCPurchasesAPI.m in Sources */,
-				A519267D26EBD032007D0BD1 /* RCPurchasesErrorUtilsAPI.m in Sources */,
-				A519267526EBD032007D0BD1 /* APITester.swift in Sources */,
-				A519267926EBD032007D0BD1 /* RCPurchaserInfoAPI.m in Sources */,
-				A519267F26EBD032007D0BD1 /* RCEntitlementInfosAPI.m in Sources */,
+				A5D614FB26EBE84F007DDB75 /* RCOfferingAPI.m in Sources */,
+				A5D6150526EBE84F007DDB75 /* RCBackendErrorCodeAPI.m in Sources */,
+				A5D614FF26EBE84F007DDB75 /* RCAttributionNetworkAPI.m in Sources */,
+				A5D6150626EBE84F007DDB75 /* RCEntitlementInfoAPI.m in Sources */,
+				A5D614FA26EBE84F007DDB75 /* RCPackageAPI.m in Sources */,
+				A5D6150126EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m in Sources */,
+				A5D614FC26EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.m in Sources */,
+				A5D614F926EBE84F007DDB75 /* RCOfferingsAPI.m in Sources */,
+				A5D6150426EBE84F007DDB75 /* RCTransactionAPI.m in Sources */,
+				A5D6150026EBE84F007DDB75 /* RCPurchasesAPI.m in Sources */,
+				A5D614FE26EBE84F007DDB75 /* RCEntitlementInfosAPI.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

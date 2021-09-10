@@ -152,7 +152,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build SwiftAPITester
+          name: Build APITesters
           command: xcodebuild -target SwiftAPITester && xcodebuild -target ObjCAPITester
 
   storekit_tests:
@@ -355,7 +355,6 @@ workflows:
       - lint
       - runtest
       - apitest
-      - swift_apitest
       - buildTvWatchAndMacOS
       - storekit_tests: *release-tags-and-branches
       - deployment-checks: *release-branches

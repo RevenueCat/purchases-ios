@@ -7,20 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A55F62CC26EAFFF600A1B466 /* PurchaserInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62BF26EAFFF600A1B466 /* PurchaserInfoAPI.swift */; };
-		A55F62CD26EAFFF600A1B466 /* PackageAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62C026EAFFF600A1B466 /* PackageAPI.swift */; };
-		A55F62CE26EAFFF600A1B466 /* AttributionNetworkAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62C126EAFFF600A1B466 /* AttributionNetworkAPI.swift */; };
-		A55F62CF26EAFFF600A1B466 /* PurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62C226EAFFF600A1B466 /* PurchasesAPI.swift */; };
-		A55F62D026EAFFF600A1B466 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62C326EAFFF600A1B466 /* EntitlementInfoAPI.swift */; };
-		A55F62D126EAFFF600A1B466 /* PurchasesErrorUtilsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62C426EAFFF600A1B466 /* PurchasesErrorUtilsAPI.swift */; };
-		A55F62D226EAFFF600A1B466 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62C526EAFFF600A1B466 /* main.swift */; };
-		A55F62D326EAFFF600A1B466 /* ErrorCodesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62C626EAFFF600A1B466 /* ErrorCodesAPI.swift */; };
-		A55F62D426EAFFF600A1B466 /* TransactionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62C726EAFFF600A1B466 /* TransactionAPI.swift */; };
-		A55F62D526EAFFF600A1B466 /* IntroEligibilityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62C826EAFFF600A1B466 /* IntroEligibilityAPI.swift */; };
-		A55F62D626EAFFF600A1B466 /* OfferingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62C926EAFFF600A1B466 /* OfferingsAPI.swift */; };
-		A55F62D726EAFFF600A1B466 /* OfferingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62CA26EAFFF600A1B466 /* OfferingAPI.swift */; };
-		A55F62D826EAFFF600A1B466 /* EntitlementInfosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55F62CB26EAFFF600A1B466 /* EntitlementInfosAPI.swift */; };
 		A55F62DB26EB001F00A1B466 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A55F62DA26EB001F00A1B466 /* RevenueCat */; };
+		A5D614CF26EBE7EA007DDB75 /* ErrorCodesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */; };
+		A5D614D026EBE7EA007DDB75 /* OfferingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */; };
+		A5D614D126EBE7EA007DDB75 /* PurchaserInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C426EBE7EA007DDB75 /* PurchaserInfoAPI.swift */; };
+		A5D614D226EBE7EA007DDB75 /* EntitlementInfosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */; };
+		A5D614D326EBE7EA007DDB75 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C626EBE7EA007DDB75 /* main.swift */; };
+		A5D614D426EBE7EA007DDB75 /* OfferingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C726EBE7EA007DDB75 /* OfferingAPI.swift */; };
+		A5D614D526EBE7EA007DDB75 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */; };
+		A5D614D626EBE7EA007DDB75 /* PackageAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */; };
+		A5D614D726EBE7EA007DDB75 /* AttributionNetworkAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */; };
+		A5D614D826EBE7EA007DDB75 /* TransactionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */; };
+		A5D614D926EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CC26EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift */; };
+		A5D614DA26EBE7EA007DDB75 /* IntroEligibilityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CD26EBE7EA007DDB75 /* IntroEligibilityAPI.swift */; };
+		A5D614DB26EBE7EA007DDB75 /* PurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,19 +37,19 @@
 
 /* Begin PBXFileReference section */
 		A55F62B526EAFFD200A1B466 /* SwiftAPITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SwiftAPITester; sourceTree = BUILT_PRODUCTS_DIR; };
-		A55F62BF26EAFFF600A1B466 /* PurchaserInfoAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PurchaserInfoAPI.swift; path = ../../../SwiftAPITester/PurchaserInfoAPI.swift; sourceTree = "<group>"; };
-		A55F62C026EAFFF600A1B466 /* PackageAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PackageAPI.swift; path = ../../../SwiftAPITester/PackageAPI.swift; sourceTree = "<group>"; };
-		A55F62C126EAFFF600A1B466 /* AttributionNetworkAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AttributionNetworkAPI.swift; path = ../../../SwiftAPITester/AttributionNetworkAPI.swift; sourceTree = "<group>"; };
-		A55F62C226EAFFF600A1B466 /* PurchasesAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PurchasesAPI.swift; path = ../../../SwiftAPITester/PurchasesAPI.swift; sourceTree = "<group>"; };
-		A55F62C326EAFFF600A1B466 /* EntitlementInfoAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EntitlementInfoAPI.swift; path = ../../../SwiftAPITester/EntitlementInfoAPI.swift; sourceTree = "<group>"; };
-		A55F62C426EAFFF600A1B466 /* PurchasesErrorUtilsAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PurchasesErrorUtilsAPI.swift; path = ../../../SwiftAPITester/PurchasesErrorUtilsAPI.swift; sourceTree = "<group>"; };
-		A55F62C526EAFFF600A1B466 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = main.swift; path = ../../../SwiftAPITester/main.swift; sourceTree = "<group>"; };
-		A55F62C626EAFFF600A1B466 /* ErrorCodesAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ErrorCodesAPI.swift; path = ../../../SwiftAPITester/ErrorCodesAPI.swift; sourceTree = "<group>"; };
-		A55F62C726EAFFF600A1B466 /* TransactionAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TransactionAPI.swift; path = ../../../SwiftAPITester/TransactionAPI.swift; sourceTree = "<group>"; };
-		A55F62C826EAFFF600A1B466 /* IntroEligibilityAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IntroEligibilityAPI.swift; path = ../../../SwiftAPITester/IntroEligibilityAPI.swift; sourceTree = "<group>"; };
-		A55F62C926EAFFF600A1B466 /* OfferingsAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OfferingsAPI.swift; path = ../../../SwiftAPITester/OfferingsAPI.swift; sourceTree = "<group>"; };
-		A55F62CA26EAFFF600A1B466 /* OfferingAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OfferingAPI.swift; path = ../../../SwiftAPITester/OfferingAPI.swift; sourceTree = "<group>"; };
-		A55F62CB26EAFFF600A1B466 /* EntitlementInfosAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EntitlementInfosAPI.swift; path = ../../../SwiftAPITester/EntitlementInfosAPI.swift; sourceTree = "<group>"; };
+		A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorCodesAPI.swift; sourceTree = "<group>"; };
+		A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingsAPI.swift; sourceTree = "<group>"; };
+		A5D614C426EBE7EA007DDB75 /* PurchaserInfoAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaserInfoAPI.swift; sourceTree = "<group>"; };
+		A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntitlementInfosAPI.swift; sourceTree = "<group>"; };
+		A5D614C626EBE7EA007DDB75 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		A5D614C726EBE7EA007DDB75 /* OfferingAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingAPI.swift; sourceTree = "<group>"; };
+		A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntitlementInfoAPI.swift; sourceTree = "<group>"; };
+		A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PackageAPI.swift; sourceTree = "<group>"; };
+		A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttributionNetworkAPI.swift; sourceTree = "<group>"; };
+		A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionAPI.swift; sourceTree = "<group>"; };
+		A5D614CC26EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesErrorUtilsAPI.swift; sourceTree = "<group>"; };
+		A5D614CD26EBE7EA007DDB75 /* IntroEligibilityAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntroEligibilityAPI.swift; sourceTree = "<group>"; };
+		A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesAPI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,19 +83,19 @@
 		A55F62B726EAFFD200A1B466 /* SwiftAPITester */ = {
 			isa = PBXGroup;
 			children = (
-				A55F62C126EAFFF600A1B466 /* AttributionNetworkAPI.swift */,
-				A55F62C326EAFFF600A1B466 /* EntitlementInfoAPI.swift */,
-				A55F62CB26EAFFF600A1B466 /* EntitlementInfosAPI.swift */,
-				A55F62C626EAFFF600A1B466 /* ErrorCodesAPI.swift */,
-				A55F62C826EAFFF600A1B466 /* IntroEligibilityAPI.swift */,
-				A55F62C526EAFFF600A1B466 /* main.swift */,
-				A55F62CA26EAFFF600A1B466 /* OfferingAPI.swift */,
-				A55F62C926EAFFF600A1B466 /* OfferingsAPI.swift */,
-				A55F62C026EAFFF600A1B466 /* PackageAPI.swift */,
-				A55F62BF26EAFFF600A1B466 /* PurchaserInfoAPI.swift */,
-				A55F62C226EAFFF600A1B466 /* PurchasesAPI.swift */,
-				A55F62C426EAFFF600A1B466 /* PurchasesErrorUtilsAPI.swift */,
-				A55F62C726EAFFF600A1B466 /* TransactionAPI.swift */,
+				A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */,
+				A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */,
+				A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */,
+				A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */,
+				A5D614CD26EBE7EA007DDB75 /* IntroEligibilityAPI.swift */,
+				A5D614C626EBE7EA007DDB75 /* main.swift */,
+				A5D614C726EBE7EA007DDB75 /* OfferingAPI.swift */,
+				A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */,
+				A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */,
+				A5D614C426EBE7EA007DDB75 /* PurchaserInfoAPI.swift */,
+				A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */,
+				A5D614CC26EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift */,
+				A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */,
 			);
 			path = SwiftAPITester;
 			sourceTree = "<group>";
@@ -164,19 +164,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A55F62CD26EAFFF600A1B466 /* PackageAPI.swift in Sources */,
-				A55F62CC26EAFFF600A1B466 /* PurchaserInfoAPI.swift in Sources */,
-				A55F62D626EAFFF600A1B466 /* OfferingsAPI.swift in Sources */,
-				A55F62D226EAFFF600A1B466 /* main.swift in Sources */,
-				A55F62D026EAFFF600A1B466 /* EntitlementInfoAPI.swift in Sources */,
-				A55F62D126EAFFF600A1B466 /* PurchasesErrorUtilsAPI.swift in Sources */,
-				A55F62D726EAFFF600A1B466 /* OfferingAPI.swift in Sources */,
-				A55F62D826EAFFF600A1B466 /* EntitlementInfosAPI.swift in Sources */,
-				A55F62CF26EAFFF600A1B466 /* PurchasesAPI.swift in Sources */,
-				A55F62CE26EAFFF600A1B466 /* AttributionNetworkAPI.swift in Sources */,
-				A55F62D326EAFFF600A1B466 /* ErrorCodesAPI.swift in Sources */,
-				A55F62D426EAFFF600A1B466 /* TransactionAPI.swift in Sources */,
-				A55F62D526EAFFF600A1B466 /* IntroEligibilityAPI.swift in Sources */,
+				A5D614CF26EBE7EA007DDB75 /* ErrorCodesAPI.swift in Sources */,
+				A5D614D326EBE7EA007DDB75 /* main.swift in Sources */,
+				A5D614D126EBE7EA007DDB75 /* PurchaserInfoAPI.swift in Sources */,
+				A5D614D026EBE7EA007DDB75 /* OfferingsAPI.swift in Sources */,
+				A5D614D426EBE7EA007DDB75 /* OfferingAPI.swift in Sources */,
+				A5D614D926EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift in Sources */,
+				A5D614D526EBE7EA007DDB75 /* EntitlementInfoAPI.swift in Sources */,
+				A5D614DA26EBE7EA007DDB75 /* IntroEligibilityAPI.swift in Sources */,
+				A5D614D826EBE7EA007DDB75 /* TransactionAPI.swift in Sources */,
+				A5D614DB26EBE7EA007DDB75 /* PurchasesAPI.swift in Sources */,
+				A5D614D626EBE7EA007DDB75 /* PackageAPI.swift in Sources */,
+				A5D614D726EBE7EA007DDB75 /* AttributionNetworkAPI.swift in Sources */,
+				A5D614D226EBE7EA007DDB75 /* EntitlementInfosAPI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

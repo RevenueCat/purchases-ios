@@ -46,6 +46,10 @@
         case RCInvalidSubscriberAttributesError:
         case RCLogOutAnonymousUserError:
         case RCConfigurationError:
+        case RCEmptySubscriberAttributesError:
+        case RCProductDiscountMissingIdentifierError:
+        case RCMissingAppUserIDForAliasCreationError:
+        case RCProductDiscountMissingSubscriptionGroupIdentifierError:
             NSLog(@"%ld", (long)errCode);
     }
 }
