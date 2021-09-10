@@ -982,7 +982,8 @@ public extension Purchases {
     // swiftlint:disable line_length
     func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String],
                                                   completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
-        trialOrIntroPriceEligibilityChecker.checkTrialOrIntroPriceEligibilityFromOptimalStoreKitVersion(productIdentifiers, completionBlock: receiveEligibility)
+        trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIdentifiers,
+                                                             completionBlock: receiveEligibility)
     }
 
     /**

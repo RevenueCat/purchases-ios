@@ -44,7 +44,7 @@ enum PurchaseStrings: CustomStringConvertible {
     case unable_to_get_intro_eligibility_with_error(error: Error)
 }
 
-extension PurchaseStrings: CustomStringConvertible {
+extension PurchaseStrings {
 
     var description: String {
         switch self {
@@ -139,10 +139,10 @@ extension PurchaseStrings: CustomStringConvertible {
         case .callback_not_found_for_request(let request):
             return "callback not found for failing request: \(request)"
 
-        case unable_to_get_intro_eligibility_for_user(let error):
+        case .unable_to_get_intro_eligibility_for_user(let error):
             return "Unable to get intro eligibility for appUserID: \(error.localizedDescription)"
 
-        case unable_to_get_intro_eligibility_with_error(let error):
+        case .unable_to_get_intro_eligibility_with_error(let error):
             return "Unable to get intro eligibility: \(error.localizedDescription)"
         }
 

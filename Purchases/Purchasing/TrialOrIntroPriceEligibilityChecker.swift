@@ -39,10 +39,8 @@ class TrialOrIntroPriceEligibilityChecker {
         self.productsManager = productsManager
     }
 
-    // swiftlint:disable line_length
-    func checkTrialOrIntroPriceEligibilityFromOptimalStoreKitVersion(_ productIdentifiers: [String],
-                                                                     completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
-        // swiftlint:enable line_length
+    func checkEligibility(productIdentifiers: [String],
+                          completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             sk2CheckTrialOrIntroPriceEligibility(productIdentifiers, completionBlock: receiveEligibility)
         } else {

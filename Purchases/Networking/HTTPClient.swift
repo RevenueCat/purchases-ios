@@ -278,9 +278,8 @@ private extension HTTPClient {
                 do {
                     urlRequest.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
                 } catch {
-                    Logger.error(String(format: Strings.network.creating_json_error,
-                                        requestBody,
-                                        error.localizedDescription))
+                    Logger.error(Strings.network.creating_json_error(requestBody: requestBody,
+                                                                     error: error.localizedDescription))
                     return nil
                 }
             } else {
