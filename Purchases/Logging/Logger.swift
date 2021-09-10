@@ -37,32 +37,16 @@ class Logger {
 
     private static let frameworkDescription = "Purchases"
 
-    static func debug(_ message: String) {
-        log(level: .debug, intent: .info, message: message)
-    }
-
     static func debug(_ message: CustomStringConvertible) {
         log(level: .debug, intent: .info, message: message.description)
-    }
-
-    static func info(_ message: String) {
-        log(level: .info, intent: .info, message: message)
     }
 
     static func info(_ message: CustomStringConvertible) {
         log(level: .info, intent: .info, message: message.description)
     }
 
-    static func warn(_ message: String) {
-        log(level: .warn, intent: .warning, message: message)
-    }
-
     static func warn(_ message: CustomStringConvertible) {
         log(level: .warn, intent: .warning, message: message.description)
-    }
-
-    static func error(_ message: String) {
-        log(level: .error, intent: .rcError, message: message)
     }
 
     static func error(_ message: CustomStringConvertible) {
@@ -73,48 +57,24 @@ class Logger {
 
 extension Logger {
 
-    static func appleError(_ message: String) {
-        log(level: .error, intent: .appleError, message: message)
-    }
-
     static func appleError(_ message: CustomStringConvertible) {
         log(level: .error, intent: .appleError, message: message.description)
-    }
-
-    static func appleWarning(_ message: String) {
-        log(level: .warn, intent: .appleError, message: message)
     }
 
     static func appleWarning(_ message: CustomStringConvertible) {
         log(level: .warn, intent: .appleError, message: message.description)
     }
 
-    static func purchase(_ message: String) {
-        log(level: .debug, intent: .purchase, message: message)
-    }
-
     static func purchase(_ message: CustomStringConvertible) {
         log(level: .debug, intent: .purchase, message: message.description)
-    }
-
-    static func rcPurchaseSuccess(_ message: String) {
-        log(level: .info, intent: .rcPurchaseSuccess, message: message)
     }
 
     static func rcPurchaseSuccess(_ message: CustomStringConvertible) {
         log(level: .info, intent: .rcPurchaseSuccess, message: message.description)
     }
 
-    static func rcSuccess(_ message: String) {
-        log(level: .debug, intent: .rcSuccess, message: message)
-    }
-
     static func rcSuccess(_ message: CustomStringConvertible) {
         log(level: .debug, intent: .rcSuccess, message: message.description)
-    }
-
-    static func user(_ message: String) {
-        log(level: .debug, intent: .user, message: message)
     }
 
     static func user(_ message: CustomStringConvertible) {
