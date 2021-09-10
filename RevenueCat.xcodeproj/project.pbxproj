@@ -1474,7 +1474,6 @@
 				351B514126D4498F00BD2BD7 /* MockBackend.swift in Sources */,
 				351B513B26D448F400BD2BD7 /* AttributionPosterTests.swift in Sources */,
 				351B51B526D450E800BD2BD7 /* ProductsFetcherSK1Tests.swift in Sources */,
-				351B51B526D450E800BD2BD7 /* ProductsFetcherSK1Tests.swift in Sources */,
 				2DDF41CC24F6F4C3005BC22D /* AppleReceiptBuilderTests.swift in Sources */,
 				351B51C026D450E800BD2BD7 /* PurchasesTests.swift in Sources */,
 				2DDF41CD24F6F4C3005BC22D /* ASN1ContainerBuilderTests.swift in Sources */,
