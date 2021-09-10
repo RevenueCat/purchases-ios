@@ -30,7 +30,7 @@ class ReceiptFetcher {
 
     func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping (Data?) -> Void) {
         if refreshPolicy == .always {
-            Logger.debug(String(format: Strings.receipt.force_refreshing_receipt))
+            Logger.debug(Strings.receipt.force_refreshing_receipt)
             refreshReceipt(completion)
             return
         }
@@ -80,7 +80,7 @@ private extension ReceiptFetcher {
             return nil
         }
 
-        Logger.debug(String(format: Strings.receipt.loaded_receipt, receiptURL as CVarArg))
+        Logger.debug(Strings.receipt.loaded_receipt(url: receiptURL))
 
         return data
     }

@@ -1040,8 +1040,7 @@ public extension Purchases {
             .checkTrialOrIntroductoryPriceEligibility(with: data,
                                                       productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
                 if let error = maybeError {
-                    Logger.error(String(format: Strings.receipt.parse_receipt_locally_error,
-                                        error.localizedDescription))
+                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
                     self.backend.getIntroEligibility(appUserID: self.appUserID,
                                                      receiptData: data,
                                                      productIdentifiers: productIdentifiers) { result, maybeAnotherError in
