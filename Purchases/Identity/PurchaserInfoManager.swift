@@ -48,8 +48,7 @@ class PurchaserInfoManager {
             self.backend.getSubscriberData(appUserID: appUserID) { maybePurchaserInfo, maybeError in
                 if let error = maybeError {
                     self.deviceCache.clearPurchaserInfoCacheTimestamp(appUserID: appUserID)
-                    Logger.warn(Strings.purchaserInfo.purchaserinfo_updated_from_network_error +
-                                    "\n" + error.localizedDescription)
+                    Logger.warn(Strings.purchaserInfo.purchaserinfo_updated_from_network_error(error: error))
                 } else if let info = maybePurchaserInfo {
                     self.cache(purchaserInfo: info, appUserID: appUserID)
                     Logger.rcSuccess(Strings.purchaserInfo.purchaserinfo_updated_from_network)
@@ -150,8 +149,7 @@ class PurchaserInfoManager {
                 deviceCache.cache(purchaserInfo: jsonData, appUserID: appUserID)
                 sendUpdateIfChanged(purchaserInfo: purchaserInfo)
             } catch {
-                Logger.error(String(format: Strings.purchaserInfo.error_getting_data_from_purchaserinfo_json,
-                                   error.localizedDescription))
+                Logger.error(Strings.purchaserInfo.error_getting_data_from_purchaserinfo_json(error: error))
             }
         } else {
             Logger.error(Strings.purchaserInfo.invalid_json)
