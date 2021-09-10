@@ -16,7 +16,7 @@ import StoreKitTest
 @testable import RevenueCat
 import XCTest
 
-
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class ProductsManagerTests: XCTestCase {
 
     var testSession: SKTestSession!
@@ -24,7 +24,7 @@ class ProductsManagerTests: XCTestCase {
     var productsManager: ProductsManager!
 
     override func setUpWithError() throws {
-        testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
+        testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
         testSession.disableDialogs = true
         testSession.clearTransactions()
         productsManager = ProductsManager()
@@ -46,7 +46,7 @@ class ProductsManagerTests: XCTestCase {
 
         let firstProduct = try XCTUnwrap(receivedProducts.first)
 
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *) {
             expect(firstProduct as? SK2ProductDetails).toNot(beNil())
         } else {
             expect(firstProduct as? SK1ProductDetails).toNot(beNil())
