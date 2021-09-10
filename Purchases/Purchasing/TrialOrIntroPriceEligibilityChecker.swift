@@ -55,7 +55,7 @@ class TrialOrIntroPriceEligibilityChecker {
                                               completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
         // swiftlint:enable line_length
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
-            if #available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *),
+            if #available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *),
                let data = maybeData {
                 self.sk1ModernEligibilityHandler(maybeReceiptData: data,
                                                  productIdentifiers: productIdentifiers,
@@ -113,7 +113,7 @@ class TrialOrIntroPriceEligibilityChecker {
     }
 
     // swiftlint:disable line_length
-    @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
+    @available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *)
     private func sk1ModernEligibilityHandler(maybeReceiptData data: Data,
                                              productIdentifiers: [String],
                                              completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
