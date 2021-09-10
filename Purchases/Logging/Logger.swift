@@ -14,11 +14,11 @@
 
 import Foundation
 
-@objc(RCLogLevel) public enum LogLevel: Int {
+@objc(RCLogLevel) public enum LogLevel: Int, CustomStringConvertible {
 
     case debug, info, warn, error
 
-    func description() -> String {
+    public var description: String {
         switch self {
         case .debug: return "DEBUG"
         case .info: return "INFO"
@@ -26,13 +26,14 @@ import Foundation
         case .error: return "ERROR"
         }
     }
+
 }
 
 class Logger {
 
     static var logLevel: LogLevel = .info
     static var logHandler: (LogLevel, String) -> Void = { level, message in
-        NSLog("[\(frameworkDescription)] - \(level.description()): \(message)")
+        NSLog("[\(frameworkDescription)] - \(level.description): \(message)")
     }
 
     private static let frameworkDescription = "Purchases"
