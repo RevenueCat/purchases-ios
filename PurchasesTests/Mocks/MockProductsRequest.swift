@@ -8,11 +8,11 @@ import StoreKit
 @testable import RevenueCat
 
 class MockProductResponse: SKProductsResponse {
-    var mockProducts: [MockLegacySKProduct]
+    var mockProducts: [MockSK1Product]
 
     init(productIdentifiers: Set<String>) {
         self.mockProducts = productIdentifiers.map { identifier in
-            return MockLegacySKProduct(mockProductIdentifier: identifier)
+            return MockSK1Product(mockProductIdentifier: identifier)
         }
         super.init()
     }

@@ -23,8 +23,8 @@ class MockProductsManager: ProductsManager {
         if let result = stubbedProductsCompletionResult {
             completion(result)
         } else {
-            let products: [SK1Product] = identifiers.map { (identifier) -> MockLegacySKProduct in
-                let p = MockLegacySKProduct(mockProductIdentifier: identifier)
+            let products: [SK1Product] = identifiers.map { (identifier) -> MockSK1Product in
+                let p = MockSK1Product(mockProductIdentifier: identifier)
                 p.mockSubscriptionGroupIdentifier = "1234567"
                 if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
                     let mockDiscount = MockDiscount()

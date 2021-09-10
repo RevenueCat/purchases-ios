@@ -30,7 +30,7 @@ class OfferingsTests: XCTestCase {
 
     func testPackageIsCreatedIfValidProducts() {
         let productIdentifier = "com.myproduct.monthly"
-        let product = MockLegacySKProduct(mockProductIdentifier: productIdentifier)
+        let product = MockSK1Product(mockProductIdentifier: productIdentifier)
         let packageIdentifier = "$rc_monthly"
         let package = offeringsFactory.createPackage(withData: [
             "identifier": packageIdentifier,
@@ -65,8 +65,8 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingIsCreatedIfValidPackages() {
         let products = [
-            "com.myproduct.annual": SK1ProductDetails(sk1Product: MockLegacySKProduct(mockProductIdentifier: "com.myproduct.annual")),
-            "com.myproduct.monthly": SK1ProductDetails(sk1Product: MockLegacySKProduct(mockProductIdentifier: "com.myproduct.monthly"))
+            "com.myproduct.annual": SK1ProductDetails(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.annual")),
+            "com.myproduct.monthly": SK1ProductDetails(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.monthly"))
         ]
         let offeringIdentifier = "offering_a"
         let serverDescription = "This is the base offering"
@@ -122,8 +122,8 @@ class OfferingsTests: XCTestCase {
 
     func testOfferingsIsCreated() {
         let products = [
-            "com.myproduct.annual": SK1ProductDetails(sk1Product: MockLegacySKProduct(mockProductIdentifier: "com.myproduct.annual")),
-            "com.myproduct.monthly": SK1ProductDetails(sk1Product: MockLegacySKProduct(mockProductIdentifier: "com.myproduct.monthly"))
+            "com.myproduct.annual": SK1ProductDetails(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.annual")),
+            "com.myproduct.monthly": SK1ProductDetails(sk1Product: MockSK1Product(mockProductIdentifier: "com.myproduct.monthly"))
         ]
         let offerings = offeringsFactory.createOfferings(fromProductDetailsByID: products, data: [
             "offerings": [
@@ -229,7 +229,7 @@ class OfferingsTests: XCTestCase {
         }
         let productIdentifier = "com.myproduct"
         let products = [
-            productIdentifier: SK1ProductDetails(sk1Product: MockLegacySKProduct(mockProductIdentifier: productIdentifier))
+            productIdentifier: SK1ProductDetails(sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier))
         ]
         let offerings = offeringsFactory.createOfferings(fromProductDetailsByID: products, data: [
             "offerings": [

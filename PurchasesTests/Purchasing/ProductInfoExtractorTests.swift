@@ -7,7 +7,7 @@ class ProductInfoExtractorTests: XCTestCase {
 
     func testExtractInfoFromProductExtractsProductIdentifier() {
         let productID = "cool_product"
-        let product = MockLegacySKProduct(mockProductIdentifier: productID)
+        let product = MockSK1Product(mockProductIdentifier: productID)
         let productInfoExtractor = ProductInfoExtractor()
 
         let receivedProductInfo = productInfoExtractor.extractInfo(from: product)
@@ -16,7 +16,7 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsPrice() {
-        let product = MockLegacySKProduct(mockProductIdentifier: "cool_product")
+        let product = MockSK1Product(mockProductIdentifier: "cool_product")
         let price: NSDecimalNumber = 10.99
         product.mockPrice = price
         let productInfoExtractor = ProductInfoExtractor()
@@ -27,7 +27,7 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsCurrencyCode() {
-        let product = MockLegacySKProduct(mockProductIdentifier: "cool_product")
+        let product = MockSK1Product(mockProductIdentifier: "cool_product")
         product.mockPriceLocale = Locale(identifier: "es_UY")
         let productInfoExtractor = ProductInfoExtractor()
 
@@ -41,7 +41,7 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsPaymentMode() {
-        let product = MockLegacySKProduct(mockProductIdentifier: "cool_product")
+        let product = MockSK1Product(mockProductIdentifier: "cool_product")
 
         if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
             let mockDiscount = MockDiscount()
@@ -63,7 +63,7 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsIntroPrice() {
-        let product = MockLegacySKProduct(mockProductIdentifier: "cool_product")
+        let product = MockSK1Product(mockProductIdentifier: "cool_product")
 
         if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
             let mockDiscount = MockDiscount()
@@ -85,7 +85,7 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsNormalDuration() {
-        let product = MockLegacySKProduct(mockProductIdentifier: "cool_product")
+        let product = MockSK1Product(mockProductIdentifier: "cool_product")
 
         if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
             product.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 2, unit: .month)
@@ -104,7 +104,7 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductDoesNotExtractNormalDurationIfSubscriptionPeriodIsZero() {
-        let product = MockLegacySKProduct(mockProductIdentifier: "cool_product")
+        let product = MockSK1Product(mockProductIdentifier: "cool_product")
 
         if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
             product.mockSubscriptionPeriod = SKProductSubscriptionPeriod(numberOfUnits: 0, unit: .month)
@@ -123,7 +123,7 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsIntroDuration() {
-        let product = MockLegacySKProduct(mockProductIdentifier: "cool_product")
+        let product = MockSK1Product(mockProductIdentifier: "cool_product")
 
         if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
             let mockDiscount = MockDiscount()
@@ -145,7 +145,7 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsIntroDurationType() {
-        let product = MockLegacySKProduct(mockProductIdentifier: "cool_product")
+        let product = MockSK1Product(mockProductIdentifier: "cool_product")
 
         if #available(iOS 11.2, macOS 10.14.4, tvOS 11.2, *) {
             let mockDiscount = MockDiscount()
@@ -167,7 +167,7 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsSubscriptionGroup() {
-        let product = MockLegacySKProduct(mockProductIdentifier: "cool_product")
+        let product = MockSK1Product(mockProductIdentifier: "cool_product")
         if #available(iOS 12.0, macCatalyst 13.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *) {
             let group = "mock_group"
             product.mockSubscriptionGroupIdentifier = group
@@ -186,7 +186,7 @@ class ProductInfoExtractorTests: XCTestCase {
     }
 
     func testExtractInfoFromProductExtractsDiscounts() {
-        let product = MockLegacySKProduct(mockProductIdentifier: "cool_product")
+        let product = MockSK1Product(mockProductIdentifier: "cool_product")
 
         if #available(iOS 12.2, tvOS 12.2, macOS 10.13.2, *) {
             let mockDiscount = MockDiscount()

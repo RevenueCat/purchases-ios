@@ -32,7 +32,7 @@ class SKPaymentTransactionExtensionsTests: XCTestCase {
     
     func testProductIdentifierFromAnyTransaction() {
         let expectedProductIdentifier = "com.product.id1"
-        let product = MockLegacySKProduct(mockProductIdentifier: expectedProductIdentifier)
+        let product = MockSK1Product(mockProductIdentifier: expectedProductIdentifier)
         let payment = SKPayment(product: product)
         let transaction = MockTransaction()
         transaction.mockPayment = payment

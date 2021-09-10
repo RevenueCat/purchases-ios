@@ -194,7 +194,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
 
         let productId = "mySuperProduct"
-        let mockProduct = MockLegacySKProduct(mockProductIdentifier: productId)
+        let mockProduct = MockSK1Product(mockProductIdentifier: productId)
         let payment = wrapper.payment(withProduct: mockProduct)
         expect(payment.productIdentifier) == productId
     }
@@ -203,7 +203,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     func testPaymentWithProductSetsSimulatesAskToBuyInSandbox() {
         guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
 
-        let mockProduct = MockLegacySKProduct(mockProductIdentifier: "mySuperProduct")
+        let mockProduct = MockSK1Product(mockProductIdentifier: "mySuperProduct")
 
         StoreKitWrapper.simulatesAskToBuyInSandbox = false
         let payment1 = wrapper.payment(withProduct: mockProduct)
@@ -221,7 +221,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
             let productId = "mySuperProduct"
             let discountId = "mySuperDiscount"
 
-            let mockProduct = MockLegacySKProduct(mockProductIdentifier: productId)
+            let mockProduct = MockSK1Product(mockProductIdentifier: productId)
             let mockDiscount = MockPaymentDiscount(mockIdentifier: discountId)
             let payment = wrapper.payment(withProduct: mockProduct, discount: mockDiscount)
             expect(payment.productIdentifier) == productId
@@ -233,7 +233,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         if #available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *) {
             guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
 
-            let mockProduct = MockLegacySKProduct(mockProductIdentifier: "mySuperProduct")
+            let mockProduct = MockSK1Product(mockProductIdentifier: "mySuperProduct")
             let mockDiscount = MockPaymentDiscount(mockIdentifier: "mySuperDiscount")
 
             StoreKitWrapper.simulatesAskToBuyInSandbox = false
