@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DE20B6B264087FB004C597D"
                BuildableName = "BackendIntegrationTests.xctest"
-               BlueprintName = "BackendIntegrationTests"
+               BlueprintName = "StoreKitTests"
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -35,7 +35,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DE20B6B264087FB004C597D"
                BuildableName = "BackendIntegrationTests.xctest"
-               BlueprintName = "BackendIntegrationTests"
+               BlueprintName = "StoreKitTests"
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -71,15 +71,6 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2DE20B7E26409EB7004C597D"
-            BuildableName = "StoreKitTestApp.app"
-            BlueprintName = "StoreKitTestApp"
-            ReferencedContainer = "container:RevenueCat.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

@@ -338,7 +338,7 @@
 		2DDF41E524F6F5DC005BC22D /* MockSKProduct.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockSKProduct.swift; sourceTree = "<group>"; };
 		2DDF41E724F6F61B005BC22D /* MockSKDiscount.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockSKDiscount.swift; sourceTree = "<group>"; };
 		2DDF41E924F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SKProductSubscriptionDurationExtensions.swift; sourceTree = "<group>"; };
-		2DE20B6C264087FB004C597D /* BackendIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BackendIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DE20B6C264087FB004C597D /* StoreKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StoreKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DE20B6E264087FB004C597D /* BackendIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendIntegrationTests.swift; sourceTree = "<group>"; };
 		2DE20B70264087FB004C597D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2DE20B7526408806004C597D /* StoreKitTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKitTest.framework; path = Developer/Library/Frameworks/StoreKitTest.framework; sourceTree = SDKROOT; };
@@ -875,7 +875,7 @@
 			children = (
 				2DC5621624EC63420031F69B /* RevenueCat.framework */,
 				2DC5621E24EC63430031F69B /* RevenueCatTests.xctest */,
-				2DE20B6C264087FB004C597D /* BackendIntegrationTests.xctest */,
+				2DE20B6C264087FB004C597D /* StoreKitTests.xctest */,
 				2DE20B7F26409EB7004C597D /* StoreKitTestApp.app */,
 				B3645F4226E042F2002C490E /* APITester */,
 			);
@@ -1263,9 +1263,9 @@
 			productReference = 2DC5621E24EC63430031F69B /* RevenueCatTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		2DE20B6B264087FB004C597D /* BackendIntegrationTests */ = {
+		2DE20B6B264087FB004C597D /* StoreKitTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2DE20B73264087FB004C597D /* Build configuration list for PBXNativeTarget "BackendIntegrationTests" */;
+			buildConfigurationList = 2DE20B73264087FB004C597D /* Build configuration list for PBXNativeTarget "StoreKitTests" */;
 			buildPhases = (
 				2DE20B68264087FB004C597D /* Sources */,
 				2DE20B69264087FB004C597D /* Frameworks */,
@@ -1276,12 +1276,12 @@
 			dependencies = (
 				2DE20B8F26409EC0004C597D /* PBXTargetDependency */,
 			);
-			name = BackendIntegrationTests;
+			name = StoreKitTests;
 			packageProductDependencies = (
 				B3D5CFC9267282860056FA67 /* Nimble */,
 			);
 			productName = BackendIntegrationTests;
-			productReference = 2DE20B6C264087FB004C597D /* BackendIntegrationTests.xctest */;
+			productReference = 2DE20B6C264087FB004C597D /* StoreKitTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		2DE20B7E26409EB7004C597D /* StoreKitTestApp */ = {
@@ -1373,7 +1373,7 @@
 				2DC5621524EC63420031F69B /* RevenueCat */,
 				2DC5621D24EC63430031F69B /* RevenueCatTests */,
 				2DE20B7E26409EB7004C597D /* StoreKitTestApp */,
-				2DE20B6B264087FB004C597D /* BackendIntegrationTests */,
+				2DE20B6B264087FB004C597D /* StoreKitTests */,
 				B3645F4126E042F2002C490E /* APITester */,
 			);
 		};
@@ -2152,7 +2152,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2DE20B73264087FB004C597D /* Build configuration list for PBXNativeTarget "BackendIntegrationTests" */ = {
+		2DE20B73264087FB004C597D /* Build configuration list for PBXNativeTarget "StoreKitTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2DE20B71264087FB004C597D /* Debug */,
