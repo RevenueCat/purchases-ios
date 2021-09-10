@@ -14,6 +14,7 @@
 import Nimble
 import XCTest
 @testable import RevenueCat
+import StoreKit
 
 class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
 
@@ -21,6 +22,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
     var trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
     var mockBackend: MockBackend!
+    var mockProductsManager: MockProductsManager!
 
     func setup() {
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher())
@@ -28,12 +30,13 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
         mockBackend = MockBackend()
         let mockOperationDispatcher = MockOperationDispatcher()
         let identityManager = MockIdentityManager(mockAppUserID: "app_user")
-
+        let mockProductsManager = MockProductsManager()
         trialOrIntroPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
                                                                                   introEligibilityCalculator: mockIntroEligibilityCalculator,
                                                                                   backend: mockBackend,
                                                                                   identityManager: identityManager,
-                                                                                  operationDispatcher: mockOperationDispatcher)
+                                                                                  operationDispatcher: mockOperationDispatcher,
+                                                                                  productsManager: mockProductsManager)
     }
 
     func testSK1CheckTrialOrIntroPriceEligibility() {

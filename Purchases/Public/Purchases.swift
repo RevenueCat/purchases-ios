@@ -292,7 +292,8 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
                                                                            introEligibilityCalculator: introCalculator,
                                                                            backend: backend,
                                                                            identityManager: identityManager,
-                                                                           operationDispatcher: operationDispatcher)
+                                                                           operationDispatcher: operationDispatcher,
+                                                                           productsManager: productsManager)
         self.init(appUserID: appUserID,
                   requestFetcher: fetcher,
                   receiptFetcher: receiptFetcher,

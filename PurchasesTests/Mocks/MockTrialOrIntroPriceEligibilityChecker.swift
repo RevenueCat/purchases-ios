@@ -20,7 +20,8 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
                   introEligibilityCalculator: MockIntroEligibilityCalculator(),
                   backend: MockBackend(),
                   identityManager: MockIdentityManager(mockAppUserID: "app_user"),
-                  operationDispatcher: MockOperationDispatcher())
+                  operationDispatcher: MockOperationDispatcher(),
+                  productsManager: MockProductsManager())
     }
 
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = false

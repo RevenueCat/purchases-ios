@@ -23,17 +23,20 @@ class TrialOrIntroPriceEligibilityChecker {
     private let backend: Backend
     private let identityManager: IdentityManager
     private let operationDispatcher: OperationDispatcher
+    private let productsManager: ProductsManager
 
     init(receiptFetcher: ReceiptFetcher,
          introEligibilityCalculator: IntroEligibilityCalculator,
          backend: Backend,
          identityManager: IdentityManager,
-         operationDispatcher: OperationDispatcher) {
+         operationDispatcher: OperationDispatcher,
+         productsManager: ProductsManager) {
         self.receiptFetcher = receiptFetcher
         self.introEligibilityCalculator = introEligibilityCalculator
         self.backend = backend
         self.identityManager = identityManager
         self.operationDispatcher = operationDispatcher
+        self.productsManager = productsManager
     }
 
     // swiftlint:disable line_length
@@ -78,14 +81,20 @@ class TrialOrIntroPriceEligibilityChecker {
     func sk2CheckTrialOrIntroPriceEligibility(_ productIdentifiers: [String],
                                               completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
         // swiftlint:enable line_length
-        Task {
-            do {
-                let products = try await Product.products(for: productIdentifiers)
+        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set(productIdentifiers)) { products in
+            Task {
                 var introDict = productIdentifiers.reduce(into: [:]) { resultDict, productId in
                     resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
                 }
                 for product in products {
-                    let maybeIsEligible = await product.subscription?.isEligibleForIntroOffer
+                    guard let sk2ProductDetails = product as? SK2ProductDetails else {
+                        continue
+                    }
+                    // TODO: remove when this gets fixed.
+                    // limiting to arm architecture since builds on beta 5 fail if other archs are included
+                    #if arch(arm64)
+                    let maybeIsEligible = await sk2ProductDetails.isEligibleForIntroOffer()
+
                     let eligibilityStatus: IntroEligibilityStatus
 
                     if let isEligible = maybeIsEligible {
@@ -94,25 +103,20 @@ class TrialOrIntroPriceEligibilityChecker {
                         eligibilityStatus = .unknown
                     }
 
-                    introDict[product.id] = IntroEligibility(eligibilityStatus: eligibilityStatus)
+                    introDict[sk2ProductDetails.productIdentifier] =
+                        IntroEligibility(eligibilityStatus: eligibilityStatus)
+                    #endif
                 }
                 receiveEligibility(introDict)
-            } catch let error {
-                Logger.error(String(format: Strings.purchase.unable_to_get_intro_eligibility_with_error,
-                                    error.localizedDescription))
-                let unknownEligibilities = [IntroEligibility](repeating: IntroEligibility(eligibilityStatus: .unknown),
-                                                              count: productIdentifiers.count)
-                let productIdentifiersToEligibility = zip(productIdentifiers, unknownEligibilities)
-                receiveEligibility(Dictionary(uniqueKeysWithValues: productIdentifiersToEligibility))
             }
         }
     }
 
+    // swiftlint:disable line_length
     @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
     private func sk1ModernEligibilityHandler(maybeReceiptData data: Data,
-                                          productIdentifiers: [String],
-                                          completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
-        // swiftlint:disable line_length
+                                             productIdentifiers: [String],
+                                             completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
         introEligibilityCalculator
             .checkTrialOrIntroductoryPriceEligibility(with: data,
                                                       productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in

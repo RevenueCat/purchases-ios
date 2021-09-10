@@ -119,7 +119,7 @@ class IntroEligibilityCalculatorTests: XCTestCase {
 
     func testCheckTrialOrIntroductoryPriceEligibilityForProductWithoutIntroTrialReturnsIneligible() {
         var receivedError: Error? = nil
-        var receivedEligibility: [String: NSNumber]? = nil
+        var receivedEligibility: [String: IntroEligibilityStatus]? = nil
         var completionCalled = false
 
         let receipt = mockReceipt()
@@ -143,7 +143,7 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).to(beNil())
         expect(receivedEligibility) == [
-            "com.revenuecat.product1": IntroEligibilityStatus.ineligible.toNSNumber()
+            "com.revenuecat.product1": IntroEligibilityStatus.ineligible
         ]
     }
 }

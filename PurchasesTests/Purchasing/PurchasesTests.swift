@@ -307,7 +307,8 @@ class PurchasesTests: XCTestCase {
                                                                                       introEligibilityCalculator: mockIntroEligibilityCalculator,
                                                                                       backend: backend,
                                                                                       identityManager: identityManager,
-                                                                                      operationDispatcher: mockOperationDispatcher)
+                                                                                      operationDispatcher: mockOperationDispatcher,
+                                                                                      productsManager: mockProductsManager)
         purchases = Purchases(appUserID: appUserId,
                               requestFetcher: requestFetcher,
                               receiptFetcher: receiptFetcher,

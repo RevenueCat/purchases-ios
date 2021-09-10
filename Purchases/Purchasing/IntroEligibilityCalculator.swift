@@ -79,9 +79,9 @@ private extension IntroEligibilityCalculator {
     func checkIntroEligibility(candidateProducts: Set<SKProduct>,
                                purchasedProductsWithIntroOffers: Set<SKProduct>) -> [String: IntroEligibilityStatus] {
         var result: [String: IntroEligibilityStatus] = [:]
-        
+
         for candidate in candidateProducts {
-            if (candidate.subscriptionPeriod == nil) {
+            guard candidate.subscriptionPeriod != nil else {
                 result[candidate.productIdentifier] = IntroEligibilityStatus.unknown
                 continue
             }
