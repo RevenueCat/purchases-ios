@@ -57,7 +57,11 @@ class ETagManager {
                 return storedResponse
             }
             if retried {
-                Logger.warn(Strings.network.could_not_find_cached_response_in_already_retried(response: resultFromBackend.description))
+                Logger.warn(
+                    Strings.network.could_not_find_cached_response_in_already_retried(
+                        response: resultFromBackend.description
+                    )
+                )
                 return resultFromBackend
             }
             return nil
