@@ -8,7 +8,7 @@ func resolveTargets() -> [Target] {
     let baseTargets: [Target] = [
         .target(name: "RevenueCat",
                 path: ".",
-                exclude: ["Purchases/Info.plist", "Purchases/RequiresXcode13"],
+                exclude: ["Purchases/Info.plist", "RequiresXcode13"],
                 sources: ["Purchases"]
         )
         // Note: publicHeadersPath: "Purchases/Public" doesn't actually pick up .h headers in Swift projects.
