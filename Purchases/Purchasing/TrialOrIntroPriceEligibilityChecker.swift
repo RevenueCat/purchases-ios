@@ -90,7 +90,7 @@ class TrialOrIntroPriceEligibilityChecker {
                     guard let sk2ProductDetails = product as? SK2ProductDetails else {
                         continue
                     }
-                    // TODO: remove when this gets fixed.
+                    // todo: remove when this gets fixed.
                     // limiting to arm architecture since builds on beta 5 fail if other archs are included
                     #if arch(arm64)
                     let sk2Product = sk2ProductDetails.underlyingSK2Product
