@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -139,7 +139,7 @@
 				};
 			};
 			buildConfigurationList = A55F62B026EAFFD200A1B466 /* Build configuration list for PBXProject "SwiftAPITester" */;
-			compatibilityVersion = "Xcode 13.0";
+			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -348,7 +348,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
 			requirement = {
-				branch = "migration-fixes";
+				branch = main;
 				kind = branch;
 			};
 		};
