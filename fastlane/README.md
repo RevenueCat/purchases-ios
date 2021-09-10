@@ -95,7 +95,7 @@ Export XCFramework
 ```
 fastlane ios storekit_tests
 ```
-Run StoreKitTests
+Run BackendIntegrationTests
 ### ios update_swift_package_commit
 ```
 fastlane ios update_swift_package_commit

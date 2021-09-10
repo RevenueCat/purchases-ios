@@ -93,7 +93,7 @@ Export XCFramework
 ```
 fastlane ios storekit_tests
 ```
-Run StoreKitTests
+Run BackendIntegrationTests
 
 ----
 

@@ -1,6 +1,6 @@
 //
 //  Constants.swift
-//  StoreKitTests
+//  BackendIntegrationTests
 //
 //  Created by Andrés Boedo on 5/4/21.
 //  Copyright © 2021 Purchases. All rights reserved.
@@ -13,6 +13,6 @@ struct Constants {
     // Server URL for the tests. If set to empty string, we'll use the default URL.
     static let proxyURL = "REVENUECAT_PROXY_URL"
 
-    static let userDefaultsSuiteName = "StoreKitTests"
+    static let userDefaultsSuiteName = "BackendIntegrationTests"
     static let storeKitConfigFileName = "Configuration"
 }
