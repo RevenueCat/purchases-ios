@@ -93,7 +93,8 @@ class TrialOrIntroPriceEligibilityChecker {
                     // TODO: remove when this gets fixed.
                     // limiting to arm architecture since builds on beta 5 fail if other archs are included
                     #if arch(arm64)
-                    let maybeIsEligible = await sk2ProductDetails.isEligibleForIntroOffer()
+                    let sk2Product = sk2ProductDetails.underlyingSK2Product
+                    let maybeIsEligible = await sk2Product.subscription?.isEligibleForIntroOffer
 
                     let eligibilityStatus: IntroEligibilityStatus
 
