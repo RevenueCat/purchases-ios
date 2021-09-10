@@ -206,7 +206,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
 
     fileprivate static let initLock = NSLock()
 
-    static var notConfiguredAssertionFunction: () -> Void = { fatalError(Strings.purchase.purchases_nil) }
+    static var notConfiguredAssertionFunction: () -> Void = { fatalError(Strings.purchase.purchases_nil.description) }
 
     convenience init(apiKey: String, appUserID: String?) {
         self.init(apiKey: apiKey,
