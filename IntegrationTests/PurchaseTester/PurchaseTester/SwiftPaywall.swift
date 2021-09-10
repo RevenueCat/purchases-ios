@@ -272,8 +272,8 @@ class SwiftPaywall: UIViewController {
     
     private func shouldShowDiscount(package: Package?) -> (Bool, Package?) {
         return (showDiscountPercentage == true
-            && mostAffordablePackages.count > 1
-            && mostAffordablePackages.first?.product.productIdentifier == package?.product.productIdentifier, mostAffordablePackages.last)
+                && mostAffordablePackages.count > 1
+                && mostAffordablePackages.first?.productDetails.productIdentifier == package?.productDetails.productIdentifier, mostAffordablePackages.last)
     }
     
     private var mostAffordablePackages : [Package] {
@@ -530,7 +530,7 @@ extension SwiftPaywall: UICollectionViewDelegate, UICollectionViewDataSource, UI
             productDeselectedColor: productDeselectedColor)
         
         // Should this package be selected
-        if !didChangePackage && mostAffordablePackages.first?.product.productIdentifier == package?.product.productIdentifier {
+        if !didChangePackage && mostAffordablePackages.first?.productDetails.productIdentifier == package?.productDetails.productIdentifier {
             collectionView.selectItem(at: indexPath, animated: true, scrollPosition: [])
             collectionView.delegate?.collectionView?(collectionView, didSelectItemAt: indexPath)
             cell.isSelected = true
@@ -543,52 +543,52 @@ extension SwiftPaywall: UICollectionViewDelegate, UICollectionViewDataSource, UI
         
         didChangePackage = true
         
-        if #available(iOS 11.2, *) {
-            if let introPrice = offering?.availablePackages[indexPath.row].product.introductoryPrice, introPrice.price == 0 {
-
-                var trialLength = ""
-                var cancelDate : Date?
-                var cancelString = "end of trial"
-                let numUnits = introPrice.subscriptionPeriod.numberOfUnits
-                
-                switch introPrice.subscriptionPeriod.unit {
-                case .day:
-                    trialLength = "\(numUnits)-day"
-                    cancelDate = Calendar.current.date(byAdding: .day, value: numUnits-1, to: Date())
-                case .week:
-                    trialLength = "\(numUnits*7)-day"
-                    cancelDate = Calendar.current.date(byAdding: .day, value: 7*numUnits-1, to: Date())
-                case .month:
-                    trialLength = "\(numUnits)-month"
-                    cancelDate = Calendar.current.date(byAdding: .month, value: numUnits, to: Date())
-                    cancelDate = Calendar.current.date(byAdding: .day, value: -1, to: cancelDate ?? Date())
-                case .year:
-                    trialLength = "\(numUnits)-year"
-                    cancelDate = Calendar.current.date(byAdding: .year, value: numUnits, to: Date())
-                    cancelDate = Calendar.current.date(byAdding: .day, value: -1, to: cancelDate ?? Date())
-                @unknown default:
-                    fatalError()
-                }
-                
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "MMMM d"
-                if let cancelDate = cancelDate {
-                    cancelString = dateFormatter.string(from: cancelDate)
-                }
-                
-                let dateAttributes = [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 14)]
-                let baseText = NSMutableAttributedString(string: "Includes \(trialLength) free trial. Cancel before ")
-                let cancelAttributedText = NSAttributedString(string: cancelString, attributes: dateAttributes)
-                let and = NSAttributedString(string: " and nothing will be billed.")
-                
-                baseText.append(cancelAttributedText)
-                baseText.append(and)
-
-                freeTrialLabel.attributedText = baseText
-            } else {
-                freeTrialLabel.text = nil
-            }
-        }
+//        if #available(iOS 11.2, *) {
+//            if let introPrice = offering?.availablePackages[indexPath.row].product.introductoryPrice, introPrice.price == 0 {
+//
+//                var trialLength = ""
+//                var cancelDate : Date?
+//                var cancelString = "end of trial"
+//                let numUnits = introPrice.subscriptionPeriod.numberOfUnits
+//
+//                switch introPrice.subscriptionPeriod.unit {
+//                case .day:
+//                    trialLength = "\(numUnits)-day"
+//                    cancelDate = Calendar.current.date(byAdding: .day, value: numUnits-1, to: Date())
+//                case .week:
+//                    trialLength = "\(numUnits*7)-day"
+//                    cancelDate = Calendar.current.date(byAdding: .day, value: 7*numUnits-1, to: Date())
+//                case .month:
+//                    trialLength = "\(numUnits)-month"
+//                    cancelDate = Calendar.current.date(byAdding: .month, value: numUnits, to: Date())
+//                    cancelDate = Calendar.current.date(byAdding: .day, value: -1, to: cancelDate ?? Date())
+//                case .year:
+//                    trialLength = "\(numUnits)-year"
+//                    cancelDate = Calendar.current.date(byAdding: .year, value: numUnits, to: Date())
+//                    cancelDate = Calendar.current.date(byAdding: .day, value: -1, to: cancelDate ?? Date())
+//                @unknown default:
+//                    fatalError()
+//                }
+//
+//                let dateFormatter = DateFormatter()
+//                dateFormatter.dateFormat = "MMMM d"
+//                if let cancelDate = cancelDate {
+//                    cancelString = dateFormatter.string(from: cancelDate)
+//                }
+//
+//                let dateAttributes = [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 14)]
+//                let baseText = NSMutableAttributedString(string: "Includes \(trialLength) free trial. Cancel before ")
+//                let cancelAttributedText = NSAttributedString(string: cancelString, attributes: dateAttributes)
+//                let and = NSAttributedString(string: " and nothing will be billed.")
+//
+//                baseText.append(cancelAttributedText)
+//                baseText.append(and)
+//
+//                freeTrialLabel.attributedText = baseText
+//            } else {
+//                freeTrialLabel.text = nil
+//            }
+//        }
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -674,7 +674,7 @@ private class PackageCell : UICollectionViewCell {
     }()
     
     let discountFormatter = NumberFormatter()
-    let priceFormatter = NumberFormatter()
+    var maybePriceFormatter: NumberFormatter? = nil
     var highlightColor : UIColor?
     var secondaryColor : UIColor?
     
@@ -703,6 +703,14 @@ private class PackageCell : UICollectionViewCell {
         }
     }
     
+    fileprivate func setMonthlyPriceLabel(_ package: Package, numberOfMonths: Int) {
+        if let priceFormatter = maybePriceFormatter,
+           let sk1ProductDetails = package.productDetails as? SK1ProductDetails {
+            let monthlyPrice = sk1ProductDetails.underlyingSK1Product.price.dividing(by: Decimal(numberOfMonths) as NSDecimalNumber)
+            monthlyPriceLabel.text = "\(priceFormatter.string(from: monthlyPrice) ?? "") / mo"
+        }
+    }
+
     func setupWith(
         package: Package?,
         discount: (Bool, Package?),
@@ -741,8 +749,12 @@ private class PackageCell : UICollectionViewCell {
             discountLabel.text = "SAVE \(discountFormatter.string(from: discountBetween(highest: discount, current: package)) ?? "")"
         }
         
-        priceFormatter.numberStyle = .currency
-        priceFormatter.locale = package.product.priceLocale
+        if let sk1ProductDetails = package.productDetails as? SK1ProductDetails {
+            maybePriceFormatter = NumberFormatter()
+            maybePriceFormatter?.numberStyle = .currency
+            maybePriceFormatter?.locale = sk1ProductDetails.underlyingSK1Product.priceLocale
+        }
+
         
         priceLabel.text = package.localizedPriceString
         
@@ -753,16 +765,16 @@ private class PackageCell : UICollectionViewCell {
             discountLabel.isHidden = true
         case .annual:
             durationLabel.text = "1\nYEAR"
-            monthlyPriceLabel.text = "\(priceFormatter.string(from: package.product.price.dividing(by: 12.0)) ?? "") / mo"
+            setMonthlyPriceLabel(package, numberOfMonths: 12)
         case .sixMonth:
             durationLabel.text = "6\nMONTHS"
-            monthlyPriceLabel.text = "\(priceFormatter.string(from: package.product.price.dividing(by: 6.0)) ?? "") / mo"
+            setMonthlyPriceLabel(package, numberOfMonths: 6)
         case .threeMonth:
             durationLabel.text = "3\nMONTHS"
-            monthlyPriceLabel.text = "\(priceFormatter.string(from: package.product.price.dividing(by: 3.0)) ?? "") / mo"
+            setMonthlyPriceLabel(package, numberOfMonths: 3)
         case .twoMonth:
             durationLabel.text = "2\nMONTHS"
-            monthlyPriceLabel.text = "\(priceFormatter.string(from: package.product.price.dividing(by: 2.0)) ?? "") / mo"
+            setMonthlyPriceLabel(package, numberOfMonths: 2)
         case .monthly:
             durationLabel.text = "1\nMONTH"
             monthlyPriceLabel.text = "\(package.localizedPriceString) / mo"
@@ -777,43 +789,43 @@ private class PackageCell : UICollectionViewCell {
     }
     
     func discountBetween(highest: Package, current: Package) -> NSNumber {
-        let highestAnnualCost : NSNumber!
+        let highestAnnualCost : Decimal!
         switch highest.packageType {
         case .annual:
-            highestAnnualCost = highest.product.price
+            highestAnnualCost = highest.productDetails.price
         case .sixMonth:
-            highestAnnualCost = highest.product.price.multiplying(by: 2.0)
+            highestAnnualCost = highest.productDetails.price * 2.0
         case .threeMonth:
-            highestAnnualCost = highest.product.price.multiplying(by: 4.0)
+            highestAnnualCost = highest.productDetails.price * 4.0
         case .twoMonth:
-            highestAnnualCost = highest.product.price.multiplying(by: 6.0)
+            highestAnnualCost = highest.productDetails.price * 6.0
         case .monthly:
-            highestAnnualCost = highest.product.price.multiplying(by: 12.0)
+            highestAnnualCost = highest.productDetails.price * 12.0
         case .weekly:
-            highestAnnualCost = highest.product.price.multiplying(by: 52.0)
+            highestAnnualCost = highest.productDetails.price * 52.0
         case .lifetime, .custom, .unknown:
             return 0.0
         }
         
-        let currentAnnualCost : NSNumber!
+        let currentAnnualCost : Decimal!
         switch current.packageType {
         case .annual:
-            currentAnnualCost = current.product.price
+            currentAnnualCost = current.productDetails.price
         case .sixMonth:
-            currentAnnualCost = current.product.price.multiplying(by: 2.0)
+            currentAnnualCost = current.productDetails.price * 2.0
         case .threeMonth:
-            currentAnnualCost = current.product.price.multiplying(by: 4.0)
+            currentAnnualCost = current.productDetails.price * 4.0
         case .twoMonth:
-            currentAnnualCost = current.product.price.multiplying(by: 6.0)
+            currentAnnualCost = current.productDetails.price * 6.0
         case .monthly:
-            currentAnnualCost = current.product.price.multiplying(by: 12.0)
+            currentAnnualCost = current.productDetails.price * 12.0
         case .weekly:
-            currentAnnualCost = current.product.price.multiplying(by: 52.0)
+            currentAnnualCost = current.productDetails.price * 52.0
         case .lifetime, .custom, .unknown:
             return 0.0
         }
         
-        return NSNumber(value: (highestAnnualCost.doubleValue - currentAnnualCost.doubleValue) / highestAnnualCost.doubleValue)
+        return NSNumber(nonretainedObject: (highestAnnualCost - currentAnnualCost) / highestAnnualCost)
     }
     
     func buildSubviews() {
@@ -867,20 +879,20 @@ private class PackageCell : UICollectionViewCell {
 
 fileprivate extension Package {
     
-    func annualCost() -> Double {
+    func annualCost() -> Decimal {
         switch self.packageType {
         case .annual:
-            return self.product.price.doubleValue
+            return self.productDetails.price
         case .sixMonth:
-            return self.product.price.doubleValue * 2
+            return self.productDetails.price * 2
         case .threeMonth:
-            return self.product.price.doubleValue * 4
+            return self.productDetails.price * 4
         case .twoMonth:
-            return self.product.price.doubleValue * 6
+            return self.productDetails.price * 6
         case .monthly:
-            return self.product.price.doubleValue * 12
+            return self.productDetails.price * 12
         case .weekly:
-            return self.product.price.doubleValue * 52
+            return self.productDetails.price * 52
         case .lifetime, .custom, .unknown:
             return 0.0
         }
