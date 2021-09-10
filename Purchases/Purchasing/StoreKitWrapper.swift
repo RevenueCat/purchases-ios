@@ -63,11 +63,7 @@ class StoreKitWrapper: NSObject, SKPaymentTransactionObserver {
     }
 
     func finishTransaction(_ transaction: SKPaymentTransaction) {
-        Logger.purchase(String(format: Strings.purchase.finishing_transaction,
-                               transaction.payment.productIdentifier,
-                               transaction.transactionIdentifier ?? "",
-                               transaction.original?.transactionIdentifier ?? ""))
-
+        Logger.purchase(Strings.purchase.finishing_transaction(transaction: transaction))
         paymentQueue.finishTransaction(transaction)
     }
 
@@ -102,12 +98,7 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
-            Logger.debug(String(format: Strings.purchase.paymentqueue_updatedtransaction,
-                                transaction.payment.productIdentifier,
-                                transaction.transactionIdentifier ?? "",
-                                transaction.error?.localizedDescription ?? "",
-                                transaction.original?.transactionIdentifier ?? "",
-                                transaction.transactionState.rawValue))
+            Logger.debug(Strings.purchase.paymentqueue_updatedtransaction(transaction: transaction))
             delegate?.storeKitWrapper(self, updatedTransaction: transaction)
         }
     }
@@ -115,13 +106,7 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
     // Sent when transactions are removed from the queue (via finishTransaction:).
     func paymentQueue(_ queue: SKPaymentQueue, removedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
-            Logger.debug(String(format: Strings.purchase.paymentqueue_removedtransaction,
-                                transaction.payment.productIdentifier,
-                                transaction.transactionIdentifier ?? "",
-                                transaction.original?.transactionIdentifier ?? "",
-                                transaction.error?.localizedDescription ?? "",
-                                (transaction.error as NSError?)?.userInfo ?? "",
-                                transaction.transactionState.rawValue))
+            Logger.debug(Strings.purchase.paymentqueue_removedtransaction(transaction: transaction))
             delegate?.storeKitWrapper(self, removedTransaction: transaction)
         }
     }
@@ -139,8 +124,11 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
     func paymentQueue(_ queue: SKPaymentQueue,
                       didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
-        Logger.debug(String(format: Strings.purchase.paymentqueue_revoked_entitlements_for_product_identifiers,
-                            productIdentifiers))
+        Logger.debug(
+            Strings.purchase.paymentqueue_revoked_entitlements_for_product_identifiers(
+                productIdentifiers: productIdentifiers
+            )
+        )
         delegate?.storeKitWrapper(self, didRevokeEntitlementsForProductIdentifiers: productIdentifiers)
     }
 

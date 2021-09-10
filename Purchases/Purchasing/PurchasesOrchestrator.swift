@@ -174,15 +174,18 @@ class PurchasesOrchestrator {
         preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: appUserID)
 
         if let presentedOfferingIdentifier = maybePresentedOfferingIdentifier {
-            Logger.purchase(String(format: Strings.purchase.purchasing_product_from_package,
-                                   productIdentifier,
-                                   presentedOfferingIdentifier))
+            Logger.purchase(
+                Strings.purchase.purchasing_product_from_package(
+                    productIdentifier: productIdentifier,
+                    offeringIdentifier: presentedOfferingIdentifier
+                )
+            )
             lock.lock()
             presentedOfferingIDsByProductID[productIdentifier] = presentedOfferingIdentifier
             lock.unlock()
 
         } else {
-            Logger.purchase(String(format: Strings.purchase.purchasing_product, productIdentifier))
+            Logger.purchase(Strings.purchase.purchasing_product(productIdentifier: productIdentifier))
         }
 
         productsManager.cacheProduct(product)
@@ -242,7 +245,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String]) {
-        Logger.debug(String(format: Strings.purchase.entitlements_revoked_syncing_purchases, productIdentifiers))
+        Logger.debug(Strings.purchase.entitlements_revoked_syncing_purchases(productIdentifiers: productIdentifiers))
         syncPurchases { _, _ in
             Logger.debug(Strings.purchase.purchases_synced)
         }

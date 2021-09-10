@@ -60,15 +60,13 @@ class IntroEligibilityCalculator {
                     purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffersOrFreeTrials)
                 result.merge(eligibility) { (_, new) in new }
 
-                Logger.debug(String(format: Strings.purchaserInfo.checking_intro_eligibility_locally_result, result))
+                Logger.debug(
+                    Strings.purchaserInfo.checking_intro_eligibility_locally_result(productIdentifiers: result)
+                )
                 completion(result, nil)
             }
         } catch let error {
-            Logger.error(
-                String(
-                    format: Strings.purchaserInfo.checking_intro_eligibility_locally_error, error.localizedDescription
-                )
-            )
+            Logger.error(Strings.purchaserInfo.checking_intro_eligibility_locally_error(error: error))
             completion([:], error)
             return
         }
