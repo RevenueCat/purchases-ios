@@ -132,15 +132,15 @@ class TrialOrIntroPriceEligibilityChecker {
                             receiveEligibility(result)
                         }
                     }
-                } else {
-                    var convertedEligibility: [String: IntroEligibility] = [:]
-                    for (key, value) in receivedEligibility {
-                        let introEligibility = IntroEligibility(eligibilityStatus: value)
-                        convertedEligibility[key] = introEligibility
-                    }
-                    self.operationDispatcher.dispatchOnMainThread {
-                        receiveEligibility(convertedEligibility)
-                    }
+                    return
+                }
+                var convertedEligibility: [String: IntroEligibility] = [:]
+                for (key, value) in receivedEligibility {
+                    let introEligibility = IntroEligibility(eligibilityStatus: value)
+                    convertedEligibility[key] = introEligibility
+                }
+                self.operationDispatcher.dispatchOnMainThread {
+                    receiveEligibility(convertedEligibility)
                 }
             }
         // swiftlint:enable line_length
