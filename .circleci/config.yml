@@ -143,17 +143,29 @@ jobs:
       - install-dependencies
       - run:
           name: Build AppleTV, WatchOS, and macOS
-          command: bundle exec fastlane build_tv_watch_mac            
-  apitest:
+          command: bundle exec fastlane build_tv_watch_mac
+
+  swift_apitest:
     macos:
       xcode: "12.5.1"
-    working_directory: ~/purchases-ios/APITesters
+    working_directory: ~/purchases-ios/APITesters/SwiftAPITester
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
       - run:
           name: Build APITesters
-          command: xcodebuild -target SwiftAPITester && xcodebuild -target ObjCAPITester
+          command: xcodebuild -target SwiftAPITester
+
+  objc_apitest:
+    macos:
+      xcode: "12.5.1"
+    working_directory: ~/purchases-ios/APITesters/ObjCAPITester
+    shell: /bin/bash --login -o pipefail
+    steps:
+      - checkout
+      - run:
+          name: Build APITesters
+          command: xcodebuild -target ObjCAPITester
 
   storekit_tests:
     macos:
@@ -354,7 +366,8 @@ workflows:
     jobs:
       - lint
       - runtest
-      - apitest
+      - swift_apitest
+      - objc_apitest
       - buildTvWatchAndMacOS
       - storekit_tests: *release-tags-and-branches
       - deployment-checks: *release-branches

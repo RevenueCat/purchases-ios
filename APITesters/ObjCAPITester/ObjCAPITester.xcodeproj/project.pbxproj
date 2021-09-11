@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A519264D26EBCEF6007D0BD1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A519264C26EBCEF6007D0BD1 /* main.m */; };
-		A519265526EBCFA6007D0BD1 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A519265426EBCFA6007D0BD1 /* RevenueCat */; };
+		A52A8A3C26EC2AEC00F06846 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A52A8A3B26EC2AEC00F06846 /* RevenueCat */; };
 		A5D614F926EBE84F007DDB75 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */; };
 		A5D614FA26EBE84F007DDB75 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */; };
 		A5D614FB26EBE84F007DDB75 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DF26EBE84F007DDB75 /* RCOfferingAPI.m */; };
@@ -72,7 +72,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A519265526EBCFA6007D0BD1 /* RevenueCat in Frameworks */,
+				A52A8A3C26EC2AEC00F06846 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,6 +84,7 @@
 			children = (
 				A519264B26EBCEF6007D0BD1 /* ObjCAPITester */,
 				A519264A26EBCEF6007D0BD1 /* Products */,
+				A52A8A3A26EC2AEC00F06846 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -129,6 +130,13 @@
 			path = ObjCAPITester;
 			sourceTree = "<group>";
 		};
+		A52A8A3A26EC2AEC00F06846 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -146,7 +154,7 @@
 			);
 			name = ObjCAPITester;
 			packageProductDependencies = (
-				A519265426EBCFA6007D0BD1 /* RevenueCat */,
+				A52A8A3B26EC2AEC00F06846 /* RevenueCat */,
 			);
 			productName = ObjCAPITester;
 			productReference = A519264926EBCEF6007D0BD1 /* ObjCAPITester */;
@@ -389,14 +397,14 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
 			requirement = {
-				branch = "migration-fixes";
+				branch = main;
 				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A519265426EBCFA6007D0BD1 /* RevenueCat */ = {
+		A52A8A3B26EC2AEC00F06846 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A519265326EBCFA6007D0BD1 /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = RevenueCat;
