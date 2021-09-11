@@ -542,53 +542,56 @@ extension SwiftPaywall: UICollectionViewDelegate, UICollectionViewDataSource, UI
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
         didChangePackage = true
-        
-//        if #available(iOS 11.2, *) {
-//            if let introPrice = offering?.availablePackages[indexPath.row].product.introductoryPrice, introPrice.price == 0 {
-//
-//                var trialLength = ""
-//                var cancelDate : Date?
-//                var cancelString = "end of trial"
-//                let numUnits = introPrice.subscriptionPeriod.numberOfUnits
-//
-//                switch introPrice.subscriptionPeriod.unit {
-//                case .day:
-//                    trialLength = "\(numUnits)-day"
-//                    cancelDate = Calendar.current.date(byAdding: .day, value: numUnits-1, to: Date())
-//                case .week:
-//                    trialLength = "\(numUnits*7)-day"
-//                    cancelDate = Calendar.current.date(byAdding: .day, value: 7*numUnits-1, to: Date())
-//                case .month:
-//                    trialLength = "\(numUnits)-month"
-//                    cancelDate = Calendar.current.date(byAdding: .month, value: numUnits, to: Date())
-//                    cancelDate = Calendar.current.date(byAdding: .day, value: -1, to: cancelDate ?? Date())
-//                case .year:
-//                    trialLength = "\(numUnits)-year"
-//                    cancelDate = Calendar.current.date(byAdding: .year, value: numUnits, to: Date())
-//                    cancelDate = Calendar.current.date(byAdding: .day, value: -1, to: cancelDate ?? Date())
-//                @unknown default:
-//                    fatalError()
-//                }
-//
-//                let dateFormatter = DateFormatter()
-//                dateFormatter.dateFormat = "MMMM d"
-//                if let cancelDate = cancelDate {
-//                    cancelString = dateFormatter.string(from: cancelDate)
-//                }
-//
-//                let dateAttributes = [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 14)]
-//                let baseText = NSMutableAttributedString(string: "Includes \(trialLength) free trial. Cancel before ")
-//                let cancelAttributedText = NSAttributedString(string: cancelString, attributes: dateAttributes)
-//                let and = NSAttributedString(string: " and nothing will be billed.")
-//
-//                baseText.append(cancelAttributedText)
-//                baseText.append(and)
-//
-//                freeTrialLabel.attributedText = baseText
-//            } else {
-//                freeTrialLabel.text = nil
-//            }
-//        }
+
+        if #available(iOS 11.2, *) {
+            // todo: remove this check when sk2 products support introductory price
+            // https://github.com/RevenueCat/purchases-ios/issues/848
+            if let sk1ProductDetails = offering?.availablePackages[indexPath.row].productDetails as? SK1ProductDetails,
+               let introPrice = sk1ProductDetails.underlyingSK1Product.introductoryPrice, introPrice.price == 0 {
+
+                var trialLength = ""
+                var cancelDate : Date?
+                var cancelString = "end of trial"
+                let numUnits = introPrice.subscriptionPeriod.numberOfUnits
+
+                switch introPrice.subscriptionPeriod.unit {
+                case .day:
+                    trialLength = "\(numUnits)-day"
+                    cancelDate = Calendar.current.date(byAdding: .day, value: numUnits-1, to: Date())
+                case .week:
+                    trialLength = "\(numUnits*7)-day"
+                    cancelDate = Calendar.current.date(byAdding: .day, value: 7*numUnits-1, to: Date())
+                case .month:
+                    trialLength = "\(numUnits)-month"
+                    cancelDate = Calendar.current.date(byAdding: .month, value: numUnits, to: Date())
+                    cancelDate = Calendar.current.date(byAdding: .day, value: -1, to: cancelDate ?? Date())
+                case .year:
+                    trialLength = "\(numUnits)-year"
+                    cancelDate = Calendar.current.date(byAdding: .year, value: numUnits, to: Date())
+                    cancelDate = Calendar.current.date(byAdding: .day, value: -1, to: cancelDate ?? Date())
+                @unknown default:
+                    fatalError()
+                }
+
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "MMMM d"
+                if let cancelDate = cancelDate {
+                    cancelString = dateFormatter.string(from: cancelDate)
+                }
+
+                let dateAttributes = [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 14)]
+                let baseText = NSMutableAttributedString(string: "Includes \(trialLength) free trial. Cancel before ")
+                let cancelAttributedText = NSAttributedString(string: cancelString, attributes: dateAttributes)
+                let and = NSAttributedString(string: " and nothing will be billed.")
+
+                baseText.append(cancelAttributedText)
+                baseText.append(and)
+
+                freeTrialLabel.attributedText = baseText
+            } else {
+                freeTrialLabel.text = nil
+            }
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
