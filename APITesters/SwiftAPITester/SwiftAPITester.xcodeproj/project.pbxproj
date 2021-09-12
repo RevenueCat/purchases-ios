@@ -348,7 +348,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
 			requirement = {
-				branch = main;
+				branch = "migration-fixes";
 				kind = branch;
 			};
 		};
