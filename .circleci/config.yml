@@ -148,7 +148,7 @@ jobs:
   swift_apitest:
     macos:
       xcode: "12.5.1"
-    working_directory: ~/purchases-ios/APITesters/SwiftAPITester
+    working_directory: ~/purchases-ios/APITestersSwiftAPITester
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
@@ -159,7 +159,7 @@ jobs:
   objc_apitest:
     macos:
       xcode: "12.5.1"
-    working_directory: ~/purchases-ios/APITesters/ObjCAPITester
+    working_directory: ~/purchases-ios/APITesters.ObjCAPITester
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout

@@ -74,7 +74,5 @@ func checkPurchasesErrorCodeEnums() {
          .missingAppUserIDForAliasCreationError,
          .productDiscountMissingSubscriptionGroupIdentifierError:
         print(errCode!)
-
-
     }
 }
