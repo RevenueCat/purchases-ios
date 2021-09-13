@@ -28,7 +28,7 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount = 0
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters: (productIdentifiers: [String], Void)?
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList = [(productIdentifiers: [String], Void)]()
-    var stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult: ([String: IntroEligibility], Void)?
+    var stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
     override func checkEligibility(productIdentifiers: [String],
                                    completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
@@ -36,42 +36,37 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
         invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount += 1
         invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters = (productIdentifiers, ())
         invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList.append((productIdentifiers, ()))
-        if let result = stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult {
-            receiveEligibility(result.0)
-        }
+        receiveEligibility(stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult)
     }
 
     var invokedSk1checkTrialOrIntroPriceEligibility = false
     var invokedSk1checkTrialOrIntroPriceEligibilityCount = 0
     var invokedSk1checkTrialOrIntroPriceEligibilityParameters: (productIdentifiers: [String], Void)?
     var invokedSk1checkTrialOrIntroPriceEligibilityParametersList = [(productIdentifiers: [String], Void)]()
-    var stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityResult: ([String: IntroEligibility], Void)?
+    var stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
     override func sk1CheckTrialOrIntroPriceEligibility(_ productIdentifiers: [String],
-        completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+                                                       completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
         invokedSk1checkTrialOrIntroPriceEligibility = true
         invokedSk1checkTrialOrIntroPriceEligibilityCount += 1
         invokedSk1checkTrialOrIntroPriceEligibilityParameters = (productIdentifiers, ())
         invokedSk1checkTrialOrIntroPriceEligibilityParametersList.append((productIdentifiers, ()))
-        if let result = stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityResult {
-            receiveEligibility(result.0)
-        }
+        receiveEligibility(stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityResult)
     }
 
     var invokedSk2checkTrialOrIntroPriceEligibility = false
     var invokedSk2checkTrialOrIntroPriceEligibilityCount = 0
     var invokedSk2checkTrialOrIntroPriceEligibilityParameters: (productIdentifiers: [String], Void)?
     var invokedSk2checkTrialOrIntroPriceEligibilityParametersList = [(productIdentifiers: [String], Void)]()
-    var stubbedSk2checkTrialOrIntroPriceEligibilityReceiveEligibilityResult: ([String: IntroEligibility], Void)?
+    var stubbedSk2checkTrialOrIntroPriceEligibilityReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
-    override func sk2CheckTrialOrIntroPriceEligibility(_ productIdentifiers: [String],
-        completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    override func sk2CheckTrialOrIntroPriceEligibility(_ productIdentifiers: [String]) async -> [String : IntroEligibility] {
         invokedSk2checkTrialOrIntroPriceEligibility = true
         invokedSk2checkTrialOrIntroPriceEligibilityCount += 1
         invokedSk2checkTrialOrIntroPriceEligibilityParameters = (productIdentifiers, ())
         invokedSk2checkTrialOrIntroPriceEligibilityParametersList.append((productIdentifiers, ()))
-        if let result = stubbedSk2checkTrialOrIntroPriceEligibilityReceiveEligibilityResult {
-            receiveEligibility(result.0)
-        }
+
+        return stubbedSk2checkTrialOrIntroPriceEligibilityReceiveEligibilityResult
     }
 }

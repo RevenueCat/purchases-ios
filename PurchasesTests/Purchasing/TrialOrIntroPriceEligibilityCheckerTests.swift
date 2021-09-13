@@ -109,13 +109,4 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
         expect(receivedEligibilities.count) == 0
     }
 
-    func testSK2CheckTrialOrIntroPriceEligibility() {
-        setup()
-        // todo: finish when fetching products works
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            trialOrIntroPriceEligibilityChecker!.sk2CheckTrialOrIntroPriceEligibility([]) { (eligibilities) in
-            }
-        }
-    }
-
 }

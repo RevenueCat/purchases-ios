@@ -42,7 +42,10 @@ class TrialOrIntroPriceEligibilityChecker {
     func checkEligibility(productIdentifiers: [String],
                           completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            sk2CheckTrialOrIntroPriceEligibility(productIdentifiers, completionBlock: receiveEligibility)
+            Task {
+                let eligibility = await sk2CheckTrialOrIntroPriceEligibility(productIdentifiers)
+                receiveEligibility(eligibility)
+            }
         } else {
             sk1CheckTrialOrIntroPriceEligibility(productIdentifiers, completionBlock: receiveEligibility)
         }
@@ -69,43 +72,6 @@ class TrialOrIntroPriceEligibilityChecker {
                         receiveEligibility(result)
                     }
                 }
-            }
-        }
-    }
-
-    // swiftlint:disable line_length
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2CheckTrialOrIntroPriceEligibility(_ productIdentifiers: [String],
-                                              completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
-        // swiftlint:enable line_length
-        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set(productIdentifiers)) { products in
-            Task {
-                var introDict = productIdentifiers.reduce(into: [:]) { resultDict, productId in
-                    resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
-                }
-                for product in products {
-                    guard let sk2ProductDetails = product as? SK2ProductDetails else {
-                        continue
-                    }
-                    // todo: remove when this gets fixed.
-                    // limiting to arm architecture since builds on beta 5 fail if other archs are included
-                    #if arch(arm64)
-                    let sk2Product = sk2ProductDetails.underlyingSK2Product
-                    let maybeIsEligible = await sk2Product.subscription?.isEligibleForIntroOffer
-
-                    let eligibilityStatus: IntroEligibilityStatus
-
-                    if let isEligible = maybeIsEligible {
-                        eligibilityStatus = isEligible ? .eligible : .ineligible
-                    } else {
-                        eligibilityStatus = .unknown
-                    }
-
-                    introDict[sk2ProductDetails.productIdentifier] =
-                        IntroEligibility(eligibilityStatus: eligibilityStatus)
-                    #endif
-                }
-                receiveEligibility(introDict)
             }
         }
     }
@@ -142,6 +108,36 @@ class TrialOrIntroPriceEligibilityChecker {
                 }
             }
         // swiftlint:enable line_length
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func sk2CheckTrialOrIntroPriceEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
+        let identifiers = Set(productIdentifiers)
+        var introDict = productIdentifiers.reduce(into: [:]) { resultDict, productId in
+            resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
+        }
+        let products = await productsManager.products(withIdentifiers: identifiers)
+        for product in products {
+            guard let sk2ProductDetails = product as? SK2ProductDetails else {
+                continue
+            }
+            #if arch(arm64)
+            let sk2Product = sk2ProductDetails.underlyingSK2Product
+            let maybeIsEligible = await sk2Product.subscription?.isEligibleForIntroOffer
+
+            let eligibilityStatus: IntroEligibilityStatus
+
+            if let isEligible = maybeIsEligible {
+                eligibilityStatus = isEligible ? .eligible : .ineligible
+            } else {
+                eligibilityStatus = .unknown
+            }
+
+            introDict[sk2ProductDetails.productIdentifier] =
+                IntroEligibility(eligibilityStatus: eligibilityStatus)
+            #endif
+        }
+        return introDict
     }
 
 }
