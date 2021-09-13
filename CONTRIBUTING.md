@@ -38,7 +38,7 @@ There are certain project specific issues that are commonly misinterpreted as bu
 - [Invalid Play Store credentials errors](https://support.revenuecat.com/hc/en-us/articles/360046398913)
 - [Unable to connect to the App Store (STORE_PROBLEM) errors](https://support.revenuecat.com/hc/en-us/articles/360046399333)
 
-For support I'd recommend our [online community](https://spectrum.chat/revenuecat), [StackOverflow](https://stackoverflow.com/tags/revenuecat/) and/or [Help Center](https://support.revenuecat.com/hc/en-us) 👍
+For support I'd recommend our [online community](https://community.revenuecat.com), [StackOverflow](https://stackoverflow.com/tags/revenuecat/) and/or [Help Center](https://support.revenuecat.com/hc/en-us) 👍
 
 If you have a clearly defined bug (with a [Minimal, Complete, and Reproducible example](https://stackoverflow.com/help/minimal-reproducible-example)) that is not specific to your project, follow the steps in the GitHub Issue template to file it with RevenueCat without removing any of the steps. For SDK-related bugs, make sure they can be reproduced on a physical device, not a simulator (there are simulator-specific problems that prevent purchases from working).
 
