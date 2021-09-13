@@ -599,8 +599,8 @@ extension Purchases {
     @available(*, deprecated, message: "Use the set<NetworkId> functions instead")
     @objc(addAttributionData:fromNetwork:forNetworkUserId:)
     public static func addAttributionData(_ data: [String: Any],
-                                                from network: AttributionNetwork,
-                                                forNetworkUserId maybeNetworkUserId: String?) {
+                                          from network: AttributionNetwork,
+                                          forNetworkUserId maybeNetworkUserId: String?) {
         if Self.isConfigured {
             shared.post(attributionData: data, fromNetwork: network, forNetworkUserId: maybeNetworkUserId)
         } else {
