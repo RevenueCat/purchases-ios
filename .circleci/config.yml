@@ -148,24 +148,24 @@ jobs:
   swift_apitest:
     macos:
       xcode: "12.5.1"
-    working_directory: ~/purchases-ios/APITestersSwiftAPITester
+    working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
       - run:
-          name: Build APITesters
-          command: xcodebuild -target SwiftAPITester
+          name: Build SwiftAPITester
+          command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme SwiftAPITester
 
   objc_apitest:
     macos:
       xcode: "12.5.1"
-    working_directory: ~/purchases-ios/APITesters.ObjCAPITester
+    working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
       - run:
-          name: Build APITesters
-          command: xcodebuild -target ObjCAPITester
+          name: Build ObjCAPITester
+          command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme ObjCAPITester
 
   storekit_tests:
     macos:
