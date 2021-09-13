@@ -32,7 +32,7 @@ class StoreKit2TransactionListener {
         self.taskHandle = Task {
             // todo: remove when this gets fixed.
             // limiting to arm architecture since builds on beta 5 fail if other archs are included
-            #if arch(arm64)
+            #if !arch(arm)
             for await result in StoreKit.Transaction.updates {
                 await handle(transactionResult: result)
             }
@@ -42,7 +42,7 @@ class StoreKit2TransactionListener {
 
     // todo: remove when this gets fixed.
     // limiting to arm architecture since builds on beta 5 fail if other archs are included
-    #if arch(arm64)
+    #if !arch(arm)
     func handle(purchaseResult: StoreKit.Product.PurchaseResult) async {
         switch purchaseResult {
         case .success(let verificationResult):
@@ -66,7 +66,7 @@ private extension StoreKit2TransactionListener {
 
     // todo: remove when this gets fixed.
     // limiting to arm architecture since builds on beta 5 fail if other archs are included
-    #if arch(arm64)
+    #if !arch(arm)
     func handle(transactionResult: VerificationResult<StoreKit.Transaction>) async {
         switch transactionResult {
         case .unverified(let unverifiedTransaction, let verificationError):

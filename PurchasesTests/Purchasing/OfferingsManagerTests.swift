@@ -142,7 +142,7 @@ extension OfferingsManagerTests {
 
         // when
         offeringsManager.offerings(appUserID: MockData.anyAppUserID, completion: nil)
-
+        
         // then
         expect(self.mockDeviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
         expect(self.mockBackend.invokedGetOfferingsForAppUserIDCount).toEventually(equal(expectedCallCount))

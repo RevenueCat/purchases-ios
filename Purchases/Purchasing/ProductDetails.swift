@@ -63,7 +63,7 @@ import StoreKit
 
     // todo: remove when this gets fixed.
     // limiting to arm architecture since builds on beta 5 fail if other archs are included
-    #if arch(arm64)
+    #if !arch(arm)
     init(sk2Product: StoreKit.Product) {
         self.underlyingSK2Product = sk2Product
     }

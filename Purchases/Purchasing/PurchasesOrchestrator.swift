@@ -561,7 +561,7 @@ private extension PurchasesOrchestrator {
         }
         // todo: remove when this gets fixed.
         // limiting to arm architecture since builds on beta 5 fail if other archs are included
-        #if arch(arm64)
+        #if !arch(arm)
 
         let sk2Product = sk2ProductDetails.underlyingSK2Product
         Task {

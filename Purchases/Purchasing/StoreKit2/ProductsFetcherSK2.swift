@@ -37,7 +37,7 @@ actor ProductsFetcherSK2 {
             }
             // todo: remove when this gets fixed.
             // limiting to arm architecture since builds on beta 5 fail if other archs are included
-            #if arch(arm64)
+            #if !arch(arm)
 
             let storeKitProducts = try await StoreKit.Product.products(for: identifiers)
             let sk2ProductDetails = storeKitProducts.map { SK2ProductDetails(sk2Product: $0) }
