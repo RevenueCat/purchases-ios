@@ -58,7 +58,7 @@ class Backend {
         }
 
         let path = "/subscribers/\(appUserID)/alias"
-        Logger.user(String(format: Strings.identity.creating_alias, appUserID, newAppUserID))
+        Logger.user(Strings.identity.creating_alias(userA: appUserID, userB: newAppUserID))
         httpClient.performPOSTRequest(serially: true,
                                       path: path,
                                       requestBody: ["new_app_user_id": newAppUserID],
@@ -293,7 +293,7 @@ class Backend {
             return
         }
 
-        httpClient.performGETRequest(serially: false,
+        httpClient.performGETRequest(serially: true,
                                      path: path,
                                      headers: authHeaders) { [weak self] (statusCode, response, error) in
             guard let self = self else {

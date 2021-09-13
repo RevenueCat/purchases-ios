@@ -24,18 +24,18 @@ import StoreKit
 public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
 
 /**
- Completion block for  ``Purchases/checkTrialOrIntroductoryPriceEligibility(_:completionBlock:)``
+ Completion block for  ``Purchases/checkTrialOrIntroductoryPriceEligibility(_:completion:)``
  */
 public typealias ReceiveIntroEligibilityBlock = ([String: IntroEligibility]) -> Void
 
 /**
- Completion block for ``Purchases/offerings(completionBlock:)``
+ Completion block for ``Purchases/offerings(completion:)``
  */
 
 public typealias ReceiveOfferingsBlock = (Offerings?, Error?) -> Void
 
 /**
- Completion block for ``Purchases/products(identifiers:completionBlock:)``
+ Completion block for ``Purchases/products(identifiers:completion:)``
  */
 public typealias ReceiveProductsBlock = ([SKProduct]) -> Void
 
@@ -122,7 +122,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
     /**
      * Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
      */
-    @available(*, deprecated, message: "use Purchases.logLevel instead.")
+    @available(*, deprecated, message: "use Purchases.logLevel instead")
     @objc public static var debugLogsEnabled: Bool {
         get { logLevel == .debug }
         set { logLevel = newValue ? .debug : .info }
@@ -175,6 +175,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
     /// Current version of the Purchases framework.
     @objc public static var frameworkVersion: String { SystemInfo.frameworkVersion }
 
+    @available(*, deprecated, message: "Configure behavior through the RevenueCat dashboard instead")
     @objc public var allowSharingAppStoreAccount: Bool {
         get { purchasesOrchestrator.allowSharingAppStoreAccount }
         set { purchasesOrchestrator.allowSharingAppStoreAccount = newValue }
@@ -206,7 +207,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
 
     fileprivate static let initLock = NSLock()
 
-    static var notConfiguredAssertionFunction: () -> Void = { fatalError(Strings.purchase.purchases_nil) }
+    static var notConfiguredAssertionFunction: () -> Void = { fatalError(Strings.purchase.purchases_nil.description) }
 
     convenience init(apiKey: String, appUserID: String?) {
         self.init(apiKey: apiKey,
@@ -332,8 +333,8 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
          purchasesOrchestrator: PurchasesOrchestrator) {
 
         Logger.debug(Strings.configure.debug_enabled)
-        Logger.debug(String(format: Strings.configure.sdk_version, Self.frameworkVersion))
-        Logger.user(String(format: Strings.configure.initial_app_user_id, appUserID ?? "nil appUserID"))
+        Logger.debug(Strings.configure.sdk_version(sdkVersion: Self.frameworkVersion))
+        Logger.user(Strings.configure.initial_app_user_id(appUserID: appUserID))
 
         self.requestFetcher = requestFetcher
         self.receiptFetcher = receiptFetcher
@@ -380,7 +381,7 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
      * Automatically collect subscriber attributes associated with the device identifiers
      * $idfa, $idfv, $ip
      */
-    @objc func collectDeviceIdentifiers() {
+    @objc public func collectDeviceIdentifiers() {
         subscriberAttributesManager.collectDeviceIdentifiers(forAppUserID: appUserID)
     }
 
@@ -431,7 +432,7 @@ extension Purchases {
      *
      * - Parameter email: Empty String or nil will delete the subscriber attribute.
      */
-    @objc public func setEmail(_ email: String) {
+    @objc public func setEmail(_ email: String?) {
         subscriberAttributesManager.setEmail(email, appUserID: appUserID)
     }
 
@@ -440,7 +441,7 @@ extension Purchases {
      *
      * - Parameter phoneNumber: Empty String or nil will delete the subscriber attribute.
      */
-    @objc public func setPhoneNumber(_ phoneNumber: String) {
+    @objc public func setPhoneNumber(_ phoneNumber: String?) {
         subscriberAttributesManager.setPhoneNumber(phoneNumber, appUserID: appUserID)
     }
 
@@ -449,7 +450,7 @@ extension Purchases {
      *
      * - Parameter displayName: Empty String or nil will delete the subscriber attribute.
      */
-    @objc public func setDisplayName(_ displayName: String) {
+    @objc public func setDisplayName(_ displayName: String?) {
         subscriberAttributesManager.setDisplayName(displayName, appUserID: appUserID)
     }
 
@@ -458,7 +459,7 @@ extension Purchases {
      *
      * - Parameter pushToken: nil will delete the subscriber attribute.
      */
-    @objc public func setPushToken(_ pushToken: Data) {
+    @objc public func setPushToken(_ pushToken: Data?) {
         subscriberAttributesManager.setPushToken(pushToken, appUserID: appUserID)
     }
 
@@ -468,7 +469,7 @@ extension Purchases {
      *
      * - Parameter adjustID: nil will delete the subscriber attribute
      */
-    @objc public func setAdjustID(_ adjustID: String) {
+    @objc public func setAdjustID(_ adjustID: String?) {
         subscriberAttributesManager.setAdjustID(adjustID, appUserID: appUserID)
     }
 
@@ -478,7 +479,7 @@ extension Purchases {
      *
      * - Parameter appsflyerID: nil will delete the subscriber attribute
      */
-    @objc public func setAppsflyerID(_ appsflyerID: String) {
+    @objc public func setAppsflyerID(_ appsflyerID: String?) {
         subscriberAttributesManager.setAppsflyerID(appsflyerID, appUserID: appUserID)
     }
 
@@ -488,7 +489,7 @@ extension Purchases {
      *
      * - Parameter fbAnonymousID: nil will delete the subscriber attribute
      */
-    @objc public func setFBAnonymousID(_ fbAnonymousID: String) {
+    @objc public func setFBAnonymousID(_ fbAnonymousID: String?) {
         subscriberAttributesManager.setFBAnonymousID(fbAnonymousID, appUserID: appUserID)
     }
 
@@ -498,7 +499,7 @@ extension Purchases {
      *
      * - Parameter mparticleID: nil will delete the subscriber attribute
      */
-    @objc public func setMparticleID(_ mparticleID: String) {
+    @objc public func setMparticleID(_ mparticleID: String?) {
         subscriberAttributesManager.setMparticleID(mparticleID, appUserID: appUserID)
     }
 
@@ -508,7 +509,7 @@ extension Purchases {
      *
      * - Parameter onesignalID: nil will delete the subscriber attribute
      */
-    @objc public func setOnesignalID(_ onesignalID: String) {
+    @objc public func setOnesignalID(_ onesignalID: String?) {
         subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: appUserID)
     }
 
@@ -517,7 +518,7 @@ extension Purchases {
      *
      * - Parameter mediaSource: nil will delete the subscriber attribute.
      */
-    @objc public func setMediaSource(_ mediaSource: String) {
+    @objc public func setMediaSource(_ mediaSource: String?) {
         subscriberAttributesManager.setMediaSource(mediaSource, appUserID: appUserID)
     }
 
@@ -526,7 +527,7 @@ extension Purchases {
      *
      * - Parameter campaign: nil will delete the subscriber attribute.
      */
-    @objc public func setCampaign(_ campaign: String) {
+    @objc public func setCampaign(_ campaign: String?) {
         subscriberAttributesManager.setCampaign(campaign, appUserID: appUserID)
     }
 
@@ -535,7 +536,7 @@ extension Purchases {
      *
      * - Parameter adGroup: nil will delete the subscriber attribute.
      */
-    @objc public func setAdGroup(_ adGroup: String) {
+    @objc public func setAdGroup(_ adGroup: String?) {
         subscriberAttributesManager.setAdGroup(adGroup, appUserID: appUserID)
     }
 
@@ -544,7 +545,7 @@ extension Purchases {
      *
      * - Parameter installAd: nil will delete the subscriber attribute.
      */
-    @objc public func setAd(_ installAd: String) {
+    @objc public func setAd(_ installAd: String?) {
         subscriberAttributesManager.setAd(installAd, appUserID: appUserID)
     }
 
@@ -553,7 +554,7 @@ extension Purchases {
      *
      * - Parameter keyword: nil will delete the subscriber attribute.
      */
-    @objc public func setKeyword(_ keyword: String) {
+    @objc public func setKeyword(_ keyword: String?) {
         subscriberAttributesManager.setKeyword(keyword, appUserID: appUserID)
     }
 
@@ -562,7 +563,7 @@ extension Purchases {
      *
      * - Parameter creative: nil will delete the subscriber attribute.
      */
-    @objc public func setCreative(_ creative: String) {
+    @objc public func setCreative(_ creative: String?) {
         subscriberAttributesManager.setCreative(creative, appUserID: appUserID)
     }
 
@@ -582,8 +583,9 @@ extension Purchases {
      * - Parameter network: Enum for the network the data is coming from, see ``AttributionNetwork`` for supported
      * networks.
      */
+    @available(*, deprecated, message: "Use the set<NetworkId> functions instead")
     @objc public static func addAttributionData(_ data: [String: Any], fromNetwork network: AttributionNetwork) {
-            addAttributionData(data, fromNetwork: network, forNetworkUserId: nil)
+            addAttributionData(data, from: network, forNetworkUserId: nil)
     }
 
     /**
@@ -594,8 +596,10 @@ extension Purchases {
      * networks.
      * - Parameter maybeNetworkUserId: User Id that should be sent to the network. Default is the current App User Id.
      */
-    @objc public static func addAttributionData(_ data: [String: Any],
-                                                fromNetwork network: AttributionNetwork,
+    @available(*, deprecated, message: "Use the set<NetworkId> functions instead")
+    @objc(addAttributionData:fromNetwork:forNetworkUserId:)
+    public static func addAttributionData(_ data: [String: Any],
+                                                from network: AttributionNetwork,
                                                 forNetworkUserId maybeNetworkUserId: String?) {
         if Self.isConfigured {
             shared.post(attributionData: data, fromNetwork: network, forNetworkUserId: maybeNetworkUserId)
@@ -604,20 +608,6 @@ extension Purchases {
                                     fromNetwork: network,
                                     forNetworkUserId: maybeNetworkUserId)
         }
-    }
-
-    /**
-     * Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
-     *
-     * - Parameter data: Dictionary provided by the network. See https://docs.revenuecat.com/docs/attribution
-     * - Parameter network: Enum for the network the data is coming from, see ``AttributionNetwork`` for supported
-     * networks.
-     * - Parameter networkUserId: User Id that should be sent to the network. Default is the current App User Id.
-     */
-    public static func addAttributionData(_ data: [String: Any],
-                                          from network: AttributionNetwork,
-                                          forNetworkUserId networkUserId: String?) {
-        addAttributionData(data, fromNetwork: network, forNetworkUserId: networkUserId)
     }
 
     private func post(attributionData data: [String: Any],
@@ -651,16 +641,18 @@ public extension Purchases {
      * This function will alias two appUserIDs together.
      *
      * - Parameter alias: The new appUserID that should be linked to the currently identified appUserID
-     * - Parameter maybeCompletionBlock: An optional completion block called when the aliasing has been successful.
+     * - Parameter maybeCompletion: An optional completion block called when the aliasing has been successful.
      * This completion block will receive an error if there's been one.
      */
-    @objc func createAlias(_ alias: String, completionBlock maybeCompletionBlock: ReceivePurchaserInfoBlock?) {
+    @available(*, deprecated, message: "use logIn instead")
+    @objc(createAlias:completionBlock:)
+    func createAlias(_ alias: String, _ maybeCompletion: ReceivePurchaserInfoBlock?) {
         if alias == appUserID {
-            purchaserInfoManager.purchaserInfo(appUserID: appUserID, completion: maybeCompletionBlock)
+            purchaserInfoManager.purchaserInfo(appUserID: appUserID, completion: maybeCompletion)
         } else {
             identityManager.createAlias(appUserID: alias) { maybeError in
                 guard maybeError == nil else {
-                    if let completion = maybeCompletionBlock {
+                    if let completion = maybeCompletion {
                         self.operationDispatcher.dispatchOnMainThread {
                             completion(nil, maybeError)
                         }
@@ -668,7 +660,7 @@ public extension Purchases {
                     return
                 }
 
-                self.updateAllCaches(completion: maybeCompletionBlock)
+                self.updateAllCaches(completion: maybeCompletion)
             }
         }
     }
@@ -679,7 +671,9 @@ public extension Purchases {
      *
      * - Parameter appUserID: The appUserID that should be linked to the current user.
      */
-    @objc func identify(_ appUserID: String, completionBlock maybeCompletion: ReceivePurchaserInfoBlock?) {
+    @available(*, deprecated, message: "use logIn instead")
+    @objc(identify:completionBlock:)
+    func identify(_ appUserID: String, _ maybeCompletion: ReceivePurchaserInfoBlock?) {
         if appUserID == identityManager.currentAppUserID {
             purchaserInfoManager.purchaserInfo(appUserID: self.appUserID, completion: maybeCompletion)
         } else {
@@ -707,7 +701,7 @@ public extension Purchases {
      * See https://docs.revenuecat.com/docs/user-ids
      */
     @objc(logIn:completionBlock:)
-    func logIn(appUserID: String, completionBlock completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
+    func logIn(_ appUserID: String, _ completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
         identityManager.logIn(appUserID: appUserID) { purchaserInfo, created, maybeError in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(purchaserInfo, created, maybeError)
@@ -732,7 +726,8 @@ public extension Purchases {
      * If this method is called and the current user is anonymous, it will return an error.
      * See https://docs.revenuecat.com/docs/user-ids
      */
-    @objc func logOut(completionBlock maybeCompletion: ReceivePurchaserInfoBlock?) {
+    @objc(logOutWithCompletionBlock:)
+    func logOut(_ maybeCompletion: ReceivePurchaserInfoBlock?) {
         identityManager.logOut { maybeError in
             guard maybeError == nil else {
                 if let completion = maybeCompletion {
@@ -751,7 +746,9 @@ public extension Purchases {
      * Resets the Purchases client clearing the saved appUserID.
      * This will generate a random user id and save it in the cache.
      */
-    @objc func reset(completionBlock maybeCompletion: ReceivePurchaserInfoBlock?) {
+    @available(*, deprecated, message: "use logOut instead", renamed: "logOut")
+    @objc(resetWithCompletionBlock:)
+    func reset(_ maybeCompletion: ReceivePurchaserInfoBlock?) {
         identityManager.resetAppUserID()
         updateAllCaches(completion: maybeCompletion)
     }
@@ -767,7 +764,8 @@ public extension Purchases {
      * - Parameter completion: A completion block called when offerings are available.
      * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
      */
-    @objc func offerings(completionBlock completion: @escaping ReceiveOfferingsBlock) {
+    @objc(offeringsWithCompletionBlock:)
+    func offerings(_ completion: @escaping ReceiveOfferingsBlock) {
         offeringsManager.offerings(appUserID: appUserID, completion: completion)
     }
 
@@ -782,13 +780,14 @@ public extension Purchases {
      * - Parameter completion: A completion block called when purchaser info is available and not stale.
      * Called immediately if ``PurchaserInfo`` is cached. Purchaser info can be nil * if an error occurred.
      */
-    @objc func purchaserInfo(completionBlock completion: @escaping ReceivePurchaserInfoBlock) {
+    @objc(purchaserInfoWithCompletionBlock:)
+    func purchaserInfo(_ completion: @escaping ReceivePurchaserInfoBlock) {
         purchaserInfoManager.purchaserInfo(appUserID: appUserID, completion: completion)
     }
 
     /**
      * Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.
-     * Use this method if you aren't using `-offeringsWithCompletionBlock:`.
+     * Use this method if you aren't using `offerings(completion:)`.
      * You should use offerings though.
      *
      * - Note: `completion` may be called without `SKProduct`s that you are expecting. This is usually caused by
@@ -797,15 +796,16 @@ public extension Purchases {
      * application agreements.
      * If you're having trouble see: https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard
      *
-     * - Parameter identifiers: A set of product identifiers for in app purchases setup via AppStoreConnect:
+     * - Parameter productIdentifiers: A set of product identifiers for in app purchases setup via AppStoreConnect:
      * https://appstoreconnect.apple.com/
      * This should be either hard coded in your application, from a file, or from a custom endpoint if you want
      * to be able to deploy new IAPs without an app update.
      * - Parameter completion: An @escaping callback that is called with the loaded products.
      * If the fetch fails for any reason it will return an empty array.
      */
-    @objc func products(identifiers: [String], completionBlock completion: @escaping ([SKProduct]) -> Void) {
-        purchasesOrchestrator.products(withIdentifiers: identifiers, completion: completion)
+    @objc(productsWithIdentifiers:completionBlock:)
+    func products(_ productIdentifiers: [String], _ completion: @escaping ([SKProduct]) -> Void) {
+        purchasesOrchestrator.products(withIdentifiers: productIdentifiers, completion: completion)
     }
 
     /**
@@ -829,7 +829,7 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `YES`.
      */
     @objc(purchaseProduct:withCompletionBlock:)
-    func purchase(product: SKProduct, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(product: SKProduct, _ completion: @escaping PurchaseCompletedBlock) {
         let payment: SKMutablePayment = storeKitWrapper.payment(withProduct: product)
         purchase(product: product, payment: payment, presentedOfferingIdentifier: nil, completion: completion)
     }
@@ -852,7 +852,7 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @objc(purchasePackage:withCompletionBlock:)
-    func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(package: Package, _ completion: @escaping PurchaseCompletedBlock) {
         let payment = storeKitWrapper.payment(withProduct: package.product)
         purchase(product: package.product,
                  payment: payment,
@@ -927,10 +927,11 @@ public extension Purchases {
      *
      * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
-     * won't be able to restore them. Use restoreTransactionsWithCompletionBlock to cover those cases.
+     * won't be able to restore them. Use `restoreTransactions(completion:)` to cover those cases.
      */
-    @objc func syncPurchases(completionBlock completion: ReceivePurchaserInfoBlock?) {
-        purchasesOrchestrator.syncPurchases(completion: completion)
+    @objc(syncPurchasesWithCompletionBlock:)
+    func syncPurchases(_ maybeCompletion: ReceivePurchaserInfoBlock?) {
+        purchasesOrchestrator.syncPurchases(completion: maybeCompletion)
     }
 
     /**
@@ -944,10 +945,11 @@ public extension Purchases {
      *
      * - Note: This may force your users to enter the App Store password so should only be performed on request of
      * the user. Typically with a button in settings or near your purchase UI. Use
-     * ``Purchases/syncPurchases(completionBlock:)`` if you need to restore transactions programmatically.
+     * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
      */
-    @objc func restoreTransactions(completionBlock completion: ReceivePurchaserInfoBlock? = nil) {
-        purchasesOrchestrator.restoreTransactions(completion: completion)
+    @objc(restoreTransactionsWithCompletionBlock:)
+    func restoreTransactions(_ maybeCompletion: ReceivePurchaserInfoBlock? = nil) {
+        purchasesOrchestrator.restoreTransactions(completion: maybeCompletion)
     }
 
     /**
@@ -964,17 +966,17 @@ public extension Purchases {
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
      * - Parameter receiveEligibility: A block that receives a dictionary of product_id -> ``IntroEligibility``.
      */
-    @objc
+    @objc(checkTrialOrIntroductoryPriceEligibility:completionBlock:)
     // swiftlint:disable line_length
     func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String],
-                                                  completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+                                                  completion receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
     // swiftlint:enable line_length
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
             if #available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *),
                let data = maybeData {
                 self.modernEligibilityHandler(maybeReceiptData: data,
                                               productIdentifiers: productIdentifiers,
-                                              completionBlock: receiveEligibility)
+                                              completion: receiveEligibility)
             } else {
                 self.backend.getIntroEligibility(appUserID: self.appUserID,
                                                  receiptData: maybeData ?? Data(),
@@ -1034,14 +1036,13 @@ public extension Purchases {
     @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
     private func modernEligibilityHandler(maybeReceiptData data: Data,
                                           productIdentifiers: [String],
-                                          completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+                                          completion receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
         // swiftlint:disable line_length
         introEligibilityCalculator
             .checkTrialOrIntroductoryPriceEligibility(with: data,
                                                       productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
                 if let error = maybeError {
-                    Logger.error(String(format: Strings.receipt.parse_receipt_locally_error,
-                                        error.localizedDescription))
+                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
                     self.backend.getIntroEligibility(appUserID: self.appUserID,
                                                      receiptData: data,
                                                      productIdentifiers: productIdentifiers) { result, maybeAnotherError in
@@ -1093,7 +1094,7 @@ public extension Purchases {
      *
      * - Note: Use this initializer if your app does not have an account system.
      * `Purchases` will generate a unique identifier for the current device and persist it to `NSUserDefaults`.
-     * This also affects the behavior of ``Purchases/restoreTransactions(completionBlock:)``.
+     * This also affects the behavior of ``Purchases/restoreTransactions(completion:)``.
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *

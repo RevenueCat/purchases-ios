@@ -37,19 +37,19 @@ class ProductsManager: NSObject {
             let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
             if productsAlreadyCached.count == identifiers.count {
                 let productsAlreadyCachedSet = Set(productsAlreadyCached.values)
-                Logger.debug(String(format: Strings.offering.products_already_cached, identifiers))
+                Logger.debug(Strings.offering.products_already_cached(identifiers: identifiers))
                 completion(productsAlreadyCachedSet)
                 return
             }
 
             if let existingHandlers = self.completionHandlers[identifiers] {
-                Logger.debug(String(format: Strings.offering.found_existing_product_request, identifiers))
+                Logger.debug(Strings.offering.found_existing_product_request(identifiers: identifiers))
                 self.completionHandlers[identifiers] = existingHandlers + [completion]
                 return
             }
 
             Logger.debug(
-                String(format: Strings.offering.no_cached_requests_and_products_starting_skproduct_request, identifiers)
+                Strings.offering.no_cached_requests_and_products_starting_skproduct_request(identifiers: identifiers)
             )
             let request = self.productsRequestFactory.request(productIdentifiers: identifiers)
             request.delegate = self
@@ -71,7 +71,7 @@ extension ProductsManager: SKProductsRequestDelegate {
 
     func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         queue.async { [self] in
-            Logger.rcSuccess(Strings.network.skproductsrequest_received_response)
+            Logger.rcSuccess(Strings.storeKit.skproductsrequest_received_response)
             guard let requestProducts = self.productsByRequests[request] else {
                 Logger.error("requested products not found for request: \(request)")
                 return
@@ -92,13 +92,13 @@ extension ProductsManager: SKProductsRequestDelegate {
     }
 
     func requestDidFinish(_ request: SKRequest) {
-        Logger.rcSuccess(Strings.network.skproductsrequest_finished)
+        Logger.rcSuccess(Strings.storeKit.skproductsrequest_finished)
         request.cancel()
     }
 
     func request(_ request: SKRequest, didFailWithError error: Error) {
         queue.async { [self] in
-            Logger.appleError(String(format: Strings.network.skproductsrequest_failed, error.localizedDescription))
+            Logger.appleError(Strings.storeKit.skproductsrequest_failed(error: error))
             guard let products = self.productsByRequests[request] else {
                 Logger.error("requested products not found for request: \(request)")
                 return
