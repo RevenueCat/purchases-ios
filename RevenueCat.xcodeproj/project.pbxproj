@@ -27,6 +27,8 @@
 		2D4D6AF624F7193700B656BE /* verifyReceiptSample1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2DDE559A24C8B5E300DCB087 /* verifyReceiptSample1.txt */; };
 		2D4D6AF724F7193700B656BE /* base64encodedreceiptsample1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2DDE559B24C8B5E300DCB087 /* base64encodedreceiptsample1.txt */; };
 		2D4E926526990AB1000E10B0 /* StoreKitWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */; };
+		2D735F7D26EFF189004E82A7 /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2DE20B7926408921004C597D /* Configuration.storekit */; };
+		2D735F7E26EFF198004E82A7 /* UnitTestsConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2D43017726EBFD7100BAB891 /* UnitTestsConfiguration.storekit */; };
 		2D991ACA268BA56900085481 /* StoreKitRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */; };
 		2D9C7BB326D838FC006838BE /* UIApplication+RCExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9C7BB226D838FC006838BE /* UIApplication+RCExtensions.swift */; };
 		2D9F4A5526C30CA800B07B43 /* PurchasesOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */; };
@@ -72,7 +74,6 @@
 		2DDF41EA24F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E924F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift */; };
 		2DE20B6F264087FB004C597D /* BackendIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE20B6E264087FB004C597D /* BackendIntegrationTests.swift */; };
 		2DE20B7626408807004C597D /* StoreKitTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DE20B7526408806004C597D /* StoreKitTest.framework */; };
-		2DE20B7A26408921004C597D /* Configuration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2DE20B7926408921004C597D /* Configuration.storekit */; };
 		2DE20B8226409EB7004C597D /* BackendIntegrationTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE20B8126409EB7004C597D /* BackendIntegrationTestApp.swift */; };
 		2DE20B8426409EB7004C597D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE20B8326409EB7004C597D /* ContentView.swift */; };
 		2DE20B8626409EB8004C597D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DE20B8526409EB8004C597D /* Assets.xcassets */; };
@@ -1477,7 +1478,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2DE20B7A26408921004C597D /* Configuration.storekit in Resources */,
+				2D735F7D26EFF189004E82A7 /* Configuration.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1495,6 +1496,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2DEAC2E926EFE470006914ED /* LaunchScreen.storyboard in Resources */,
+				2D735F7E26EFF198004E82A7 /* UnitTestsConfiguration.storekit in Resources */,
 				2DEAC2E626EFE470006914ED /* Assets.xcassets in Resources */,
 				2DEAC2E426EFE46E006914ED /* Main.storyboard in Resources */,
 			);
@@ -1951,7 +1953,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = PurchasesTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1985,7 +1987,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = PurchasesTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2121,7 +2123,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = UnitTestsHostApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -2149,7 +2151,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = UnitTestsHostApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
