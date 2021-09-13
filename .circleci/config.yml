@@ -52,6 +52,10 @@ commands:
       directory:
         type: string
     steps:
+      - run:
+          name: Open simulator
+          command: xcrun instruments -w "iPhone 12 (15.0) [" || true
+
       - run: 
           name: Replace API key
           command: bundle exec fastlane replace_api_key_integration_tests
