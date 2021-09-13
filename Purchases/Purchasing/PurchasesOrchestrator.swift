@@ -559,9 +559,6 @@ private extension PurchasesOrchestrator {
         guard let sk2ProductDetails = sk2Package.productDetails as? SK2ProductDetails else {
             return
         }
-        // todo: remove when this gets fixed.
-        // limiting to arm architecture since builds on beta 5 fail if other archs are included
-        #if !arch(arm)
 
         let sk2Product = sk2ProductDetails.underlyingSK2Product
         Task {
@@ -572,8 +569,6 @@ private extension PurchasesOrchestrator {
                 completion(nil, maybePurchaserInfo, maybeError, false)
             }
         }
-        #endif
-
     }
 
     private func purchase(sk1Package: Package, completion: @escaping PurchaseCompletedBlock) {

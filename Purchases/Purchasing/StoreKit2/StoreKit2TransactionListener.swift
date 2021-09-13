@@ -30,19 +30,12 @@ class StoreKit2TransactionListener {
 
     func listenForTransactions() {
         self.taskHandle = Task {
-            // todo: remove when this gets fixed.
-            // limiting to arm architecture since builds on beta 5 fail if other archs are included
-            #if !arch(arm)
             for await result in StoreKit.Transaction.updates {
                 await handle(transactionResult: result)
             }
-            #endif
         }
     }
 
-    // todo: remove when this gets fixed.
-    // limiting to arm architecture since builds on beta 5 fail if other archs are included
-    #if !arch(arm)
     func handle(purchaseResult: StoreKit.Product.PurchaseResult) async {
         switch purchaseResult {
         case .success(let verificationResult):
@@ -58,15 +51,11 @@ class StoreKit2TransactionListener {
             Logger.info("")
         }
     }
-    #endif
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension StoreKit2TransactionListener {
 
-    // todo: remove when this gets fixed.
-    // limiting to arm architecture since builds on beta 5 fail if other archs are included
-    #if !arch(arm)
     func handle(transactionResult: VerificationResult<StoreKit.Transaction>) async {
         switch transactionResult {
         case .unverified(let unverifiedTransaction, let verificationError):
@@ -88,6 +77,5 @@ private extension StoreKit2TransactionListener {
         await transaction.finish()
         delegate?.transactionsUpdated()
     }
-    #endif
 
 }
