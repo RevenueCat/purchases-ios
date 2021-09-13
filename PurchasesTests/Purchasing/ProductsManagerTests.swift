@@ -24,6 +24,9 @@ class ProductsManagerTests: XCTestCase {
     var productsManager: ProductsManager!
 
     override func setUpWithError() throws {
+        guard #available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
         testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
         testSession.disableDialogs = true
         testSession.clearTransactions()
@@ -31,6 +34,9 @@ class ProductsManagerTests: XCTestCase {
     }
 
     func testFetchProductsFromOptimalStoreKitVersion() throws {
+        guard #available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
         var maybeReceivedProducts: Set<ProductDetails>?
