@@ -8,7 +8,7 @@
 
 #import "RCPurchaserInfoAPI.h"
 
-@import Purchases;
+@import RevenueCat;
 
 @implementation RCPurchaserInfoAPI
 
@@ -19,10 +19,7 @@
     NSSet<NSString *> *as = pi.activeSubscriptions;
     NSSet<NSString *> *appis = pi.allPurchasedProductIdentifiers;
     NSDate *led = pi.latestExpirationDate;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     NSSet<NSString *> *ncp = pi.nonConsumablePurchases;
-#pragma clang diagnostic pop
     NSArray<RCTransaction *> *nst = pi.nonSubscriptionTransactions;
     NSString *oav = pi.originalApplicationVersion;
     NSDate *opd = pi.originalPurchaseDate;

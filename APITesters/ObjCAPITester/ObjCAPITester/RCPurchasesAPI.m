@@ -5,7 +5,7 @@
 //  Created by Joshua Liebowitz on 6/18/21.
 //
 
-@import Purchases;
+@import RevenueCat;
 @import StoreKit;
 
 #import "RCPurchasesAPI.h"
@@ -84,35 +84,20 @@ BOOL isAnonymous;
 
     NSDictionary<NSString *, NSString *> *attributes = nil;
     [p setAttributes: attributes];
-    [p setEmail: nil];
     [p setEmail: @""];
-    [p setPhoneNumber: nil];
     [p setPhoneNumber: @""];
-    [p setDisplayName: nil];
     [p setDisplayName: @""];
-    [p setPushToken: nil];
     [p setPushToken: [@"" dataUsingEncoding: NSUTF8StringEncoding]];
-    [p setAdjustID: nil];
     [p setAdjustID: @""];
-    [p setAppsflyerID: nil];
     [p setAppsflyerID: @""];
-    [p setFBAnonymousID: nil];
     [p setFBAnonymousID: @""];
-    [p setMparticleID: nil];
     [p setMparticleID: @""];
-    [p setOnesignalID: nil];
     [p setOnesignalID: @""];
-    [p setMediaSource: nil];
     [p setMediaSource: @""];
-    [p setCampaign: nil];
     [p setCampaign: @""];
-    [p setAdGroup: nil];
     [p setAdGroup: @""];
-    [p setAd: nil];
     [p setAd: @""];
-    [p setKeyword: nil];
     [p setKeyword: @""];
-    [p setCreative: nil];
     [p setCreative: @""];
     [p collectDeviceIdentifiers];
     
@@ -177,10 +162,10 @@ shouldPurchasePromoProduct:skp
 }
 
 + (void)checkConstants {
-    NSErrorDomain bed = RCBackendErrorDomain;
-    NSErrorDomain ped = RCPurchasesErrorDomain;
-    NSErrorUserInfoKey fk = RCFinishableKey;
-    NSErrorUserInfoKey eck = RCReadableErrorCodeKey;
+    NSErrorDomain bed = RCBackendErrorCodeDomain;
+    NSErrorDomain ped = RCPurchasesErrorCodeDomain;
+    NSErrorUserInfoKey fk = RCErrorDetails.RCFinishableKey;
+    NSErrorUserInfoKey eck = RCErrorDetails.RCReadableErrorCodeKey;
 
     NSLog(bed, ped, fk, eck);
 }
