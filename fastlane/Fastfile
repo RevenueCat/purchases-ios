@@ -225,7 +225,7 @@ platform :ios do
   end
 
   desc "Run BackendIntegrationTests"
-  lane :backend_integration_tests_tests do |options|
+  lane :backend_integration_tests do |options|
     replace_api_key_integration_tests
     scan(scheme: "BackendIntegrationTests", derived_data_path: "scan_derived_data")
   end
