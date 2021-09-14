@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DE20B6B264087FB004C597D"
-               BuildableName = "StoreKitTests.xctest"
-               BlueprintName = "StoreKitTests"
+               BuildableName = "BackendIntegrationTestsHostApp.xctest"
+               BlueprintName = "BackendIntegrationTests"
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -34,8 +34,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DE20B6B264087FB004C597D"
-               BuildableName = "StoreKitTests.xctest"
-               BlueprintName = "StoreKitTests"
+               BuildableName = "BackendIntegrationTestsHostApp.xctest"
+               BlueprintName = "BackendIntegrationTests"
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -56,8 +56,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2DE20B7E26409EB7004C597D"
-            BuildableName = "StoreKitTestApp.app"
-            BlueprintName = "StoreKitTestApp"
+            BuildableName = "BackendIntegrationTestsHostApp2.app"
+            BlueprintName = "BackendIntegrationTestsHostApp"
             ReferencedContainer = "container:RevenueCat.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -71,6 +71,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "2DE20B7E26409EB7004C597D"
+            BuildableName = "BackendIntegrationTestsHostApp2.app"
+            BlueprintName = "BackendIntegrationTestsHostApp"
+            ReferencedContainer = "container:RevenueCat.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
