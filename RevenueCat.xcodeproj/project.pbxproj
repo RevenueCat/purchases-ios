@@ -262,6 +262,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		2D803F6A26F150190069D717 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2DC5621524EC63420031F69B;
+			remoteInfo = RevenueCat;
+		};
+		2D803F6C26F150200069D717 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2DC5621524EC63420031F69B;
+			remoteInfo = RevenueCat;
+		};
 		2DAC5F7626F13C9800C5258F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
@@ -276,26 +290,12 @@
 			remoteGlobalIDString = 2DC5621524EC63420031F69B;
 			remoteInfo = Purchases;
 		};
-		2DC74BE226EC026D00F052EB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2DE20B7E26409EB7004C597D;
-			remoteInfo = StoreKitTestApp;
-		};
 		2DE20B8E26409EC0004C597D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 2DE20B7E26409EB7004C597D;
 			remoteInfo = StoreKitTestApp;
-		};
-		2DEAC2EE26EFE49B006914ED /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2DEAC2D926EFE46E006914ED;
-			remoteInfo = UnitTestsHostApp;
 		};
 		B3645F8F26E043A1002C490E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1311,6 +1311,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				2D803F6B26F150190069D717 /* PBXTargetDependency */,
 				2DAC5F7726F13C9800C5258F /* PBXTargetDependency */,
 			);
 			name = StoreKitUnitTests;
@@ -1355,8 +1356,6 @@
 			);
 			dependencies = (
 				2DC5622124EC63430031F69B /* PBXTargetDependency */,
-				2DC74BE326EC026D00F052EB /* PBXTargetDependency */,
-				2DEAC2EF26EFE49B006914ED /* PBXTargetDependency */,
 			);
 			name = RevenueCatTests;
 			packageProductDependencies = (
@@ -1379,6 +1378,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				2D803F6D26F150200069D717 /* PBXTargetDependency */,
 				2DE20B8F26409EC0004C597D /* PBXTargetDependency */,
 			);
 			name = BackendIntegrationTests;
@@ -1889,6 +1889,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		2D803F6B26F150190069D717 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2DC5621524EC63420031F69B /* RevenueCat */;
+			targetProxy = 2D803F6A26F150190069D717 /* PBXContainerItemProxy */;
+		};
+		2D803F6D26F150200069D717 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2DC5621524EC63420031F69B /* RevenueCat */;
+			targetProxy = 2D803F6C26F150200069D717 /* PBXContainerItemProxy */;
+		};
 		2DAC5F7726F13C9800C5258F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 2DEAC2D926EFE46E006914ED /* UnitTestsHostApp */;
@@ -1899,20 +1909,10 @@
 			target = 2DC5621524EC63420031F69B /* RevenueCat */;
 			targetProxy = 2DC5622024EC63430031F69B /* PBXContainerItemProxy */;
 		};
-		2DC74BE326EC026D00F052EB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 2DE20B7E26409EB7004C597D /* BackendIntegrationTestsHostApp */;
-			targetProxy = 2DC74BE226EC026D00F052EB /* PBXContainerItemProxy */;
-		};
 		2DE20B8F26409EC0004C597D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 2DE20B7E26409EB7004C597D /* BackendIntegrationTestsHostApp */;
 			targetProxy = 2DE20B8E26409EC0004C597D /* PBXContainerItemProxy */;
-		};
-		2DEAC2EF26EFE49B006914ED /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 2DEAC2D926EFE46E006914ED /* UnitTestsHostApp */;
-			targetProxy = 2DEAC2EE26EFE49B006914ED /* PBXContainerItemProxy */;
 		};
 		B3645F9026E043A1002C490E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2077,6 +2077,7 @@
 		2DC5622B24EC63430031F69B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -2095,8 +2096,9 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos macosx appletvsimulator appletvos";
+				SDKROOT = "";
+				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -2110,6 +2112,7 @@
 		2DC5622C24EC63430031F69B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -2127,8 +2130,9 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.PurchasesTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos macosx appletvsimulator appletvos";
+				SDKROOT = "";
+				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,6";
