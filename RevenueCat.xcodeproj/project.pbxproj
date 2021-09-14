@@ -31,6 +31,7 @@
 		2D803F6426F144AA0069D717 /* ProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3125B347EB31B67FE7B497A /* ProductsManagerTests.swift */; };
 		2D803F6626F144BF0069D717 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = 2D803F6526F144BF0069D717 /* Nimble */; };
 		2D803F6826F144C40069D717 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = 2D803F6726F144C40069D717 /* Nimble */; };
+		2D803F6926F149E70069D717 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
 		2D991ACA268BA56900085481 /* StoreKitRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */; };
 		2D9C7BB326D838FC006838BE /* UIApplication+RCExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9C7BB226D838FC006838BE /* UIApplication+RCExtensions.swift */; };
 		2D9F4A5526C30CA800B07B43 /* PurchasesOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */; };
@@ -585,6 +586,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2D803F6926F149E70069D717 /* RevenueCat.framework in Frameworks */,
 				2D803F6826F144C40069D717 /* Nimble in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
