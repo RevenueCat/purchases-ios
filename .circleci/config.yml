@@ -176,7 +176,7 @@ jobs:
       - checkout
       - run:
           name: Open simulator
-          command: xcrun instruments -w "iPhone 11 Pro (14.5) [" || true
+          command: xcrun instruments -w "iPhone 11 Pro (15.0) [" || true
       
       - install-dependencies
       
@@ -184,7 +184,7 @@ jobs:
           name: Run backend_integration Tests
           command: bundle exec fastlane backend_integration_tests
           environment:
-            SCAN_DEVICE: iPhone 11 Pro (14.5)
+            SCAN_DEVICE: iPhone 11 Pro (15.0)
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
