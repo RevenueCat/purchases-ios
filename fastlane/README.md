@@ -91,9 +91,9 @@ Prepare next version
 fastlane ios export_xcframework
 ```
 Export XCFramework
-### ios backend_integration_tests_tests
+### ios backend_integration_tests
 ```
-fastlane ios backend_integration_tests_tests
+fastlane ios backend_integration_tests
 ```
 Run BackendIntegrationTests
 ### ios update_swift_package_commit
