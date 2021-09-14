@@ -2030,7 +2030,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BackendIntegrationTests.app/BackendIntegrationTests";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BackendIntegrationTestsHostApp.app/BackendIntegrationTestsHostApp";
 				TVOS_DEPLOYMENT_TARGET = 14.1;
 				WATCHOS_DEPLOYMENT_TARGET = 7.1;
 			};
@@ -2055,7 +2055,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BackendIntegrationTests.app/BackendIntegrationTests";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BackendIntegrationTestsHostApp.app/BackendIntegrationTestsHostApp";
 				TVOS_DEPLOYMENT_TARGET = 14.1;
 				WATCHOS_DEPLOYMENT_TARGET = 7.1;
 			};
