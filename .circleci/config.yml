@@ -56,6 +56,14 @@ commands:
           name: Open simulator
           command: xcrun instruments -w "iPhone 12 (15.0) [" || true
 
+      - run:
+          name: Open simulator
+          command: xcrun instruments -w "iPhone 6 (14.5) [" || true
+ 
+      - run:
+          name: Open simulator
+          command: xcrun instruments -w "Apple TV (15.0) [" || true
+
       - run: 
           name: Replace API key
           command: bundle exec fastlane replace_api_key_integration_tests
