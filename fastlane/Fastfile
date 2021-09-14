@@ -43,11 +43,13 @@ platform :ios do
     # Need to run scan multiple times
     scan(
       step_name: "scan - iPhone", 
-      devices: ["iPhone 8 (14.5)", "iPhone 12"]
+      devices: ["iPhone 8 (14.5)", "iPhone 12"],
+      scheme: "UnitTests"
     )
     scan(
       step_name: "scan - Apple TV",
-      devices: ["Apple TV"]
+      devices: ["Apple TV"],
+      scheme: "RevenueCat"
     )
   end
 
@@ -223,7 +225,7 @@ platform :ios do
   end
 
   desc "Run BackendIntegrationTests"
-  lane :storekit_tests do |options|
+  lane :backend_integration_tests_tests do |options|
     replace_api_key_integration_tests
     scan(scheme: "BackendIntegrationTests", derived_data_path: "scan_derived_data")
   end
