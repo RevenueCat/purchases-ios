@@ -38,6 +38,16 @@
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "2DAC5F7126F13C9800C5258F"
+               BuildableName = "StoreKitUnitTests.xctest"
+               BlueprintName = "StoreKitUnitTests"
+               ReferencedContainer = "container:RevenueCat.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -61,7 +71,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../PurchasesTests/UnitTestsConfiguration.storekit">
+         identifier = "../../StoreKitUnitTests/UnitTestsConfiguration.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
