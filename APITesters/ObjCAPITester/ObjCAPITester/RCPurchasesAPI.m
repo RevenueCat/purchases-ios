@@ -116,29 +116,29 @@ BOOL isAnonymous;
     [p setCreative: @""];
     [p collectDeviceIdentifiers];
     
-    [p purchaserInfoWithCompletionBlock:^(RCPurchaserInfo *info, NSError *error) {}];
-    [p offeringsWithCompletionBlock:^(RCOfferings *info, NSError *error) {}];
-    [p productsWithIdentifiers:@[@""] completionBlock:^(NSArray<SKProduct *> *products) { }];
-    [p purchaseProduct:skp withCompletionBlock:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *error, BOOL userCancelled) { }];
-    [p purchasePackage:pack withCompletionBlock:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
-    [p restoreTransactionsWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) {}];
-    [p syncPurchasesWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) {}];
-    [p checkTrialOrIntroductoryPriceEligibility:@[@""] completionBlock:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
+    [p purchaserInfoWithCompletion:^(RCPurchaserInfo *info, NSError *error) {}];
+    [p offeringsWithCompletion:^(RCOfferings *info, NSError *error) {}];
+    [p productsWithIdentifiers:@[@""] completion:^(NSArray<SKProduct *> *products) { }];
+    [p purchaseProduct:skp withCompletion:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *error, BOOL userCancelled) { }];
+    [p purchasePackage:pack withCompletion:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p restoreTransactionsWithCompletion:^(RCPurchaserInfo *i, NSError *e) {}];
+    [p syncPurchasesWithCompletion:^(RCPurchaserInfo *i, NSError *e) {}];
+    [p checkTrialOrIntroductoryPriceEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
     [p paymentDiscountForProductDiscount:skpd product:skp completion:^(SKPaymentDiscount *d, NSError *e) { }];
-    [p purchaseProduct:skp withDiscount:skmd completionBlock:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
-    [p purchasePackage:pack withDiscount:skmd completionBlock:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchaseProduct:skp withDiscount:skmd completion:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchasePackage:pack withDiscount:skmd completion:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
 
-    // should have deprecation warning 'createAlias:completionBlock:' is deprecated: Use logIn instead.
-    [p createAlias:@"" completionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
+    // should have deprecation warning 'createAlias:completion:' is deprecated: Use logIn instead.
+    [p createAlias:@"" completion:^(RCPurchaserInfo *i, NSError *e) { }];
 
-    // should have deprecation warning 'identify:completionBlock:' is deprecated: Use logIn instead.
-    [p identify:@"" completionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
+    // should have deprecation warning 'identify:completion:' is deprecated: Use logIn instead.
+    [p identify:@"" completion:^(RCPurchaserInfo *i, NSError *e) { }];
 
-    // should have deprecation warning 'resetWithCompletionBlock:' is deprecated: Use logOut instead.
-    [p resetWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
+    // should have deprecation warning 'resetWithCompletion:' is deprecated: Use logOut instead.
+    [p resetWithCompletion:^(RCPurchaserInfo *i, NSError *e) { }];
 
-    [p logIn:@"" completionBlock:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
-    [p logOutWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
+    [p logIn:@"" completion:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
+    [p logOutWithCompletion:^(RCPurchaserInfo *i, NSError *e) { }];
 
     [p.delegate purchases:p didReceiveUpdatedPurchaserInfo:pi];
     [p.delegate purchases:p
