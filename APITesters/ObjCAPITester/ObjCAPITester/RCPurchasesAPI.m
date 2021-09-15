@@ -5,7 +5,7 @@
 //  Created by Joshua Liebowitz on 6/18/21.
 //
 
-@import Purchases;
+@import RevenueCat;
 @import StoreKit;
 
 #import "RCPurchasesAPI.h"
@@ -177,10 +177,10 @@ shouldPurchasePromoProduct:skp
 }
 
 + (void)checkConstants {
-    NSErrorDomain bed = RCBackendErrorDomain;
-    NSErrorDomain ped = RCPurchasesErrorDomain;
-    NSErrorUserInfoKey fk = RCFinishableKey;
-    NSErrorUserInfoKey eck = RCReadableErrorCodeKey;
+    NSErrorDomain bed = RCBackendErrorCodeDomain;
+    NSErrorDomain ped = RCPurchasesErrorCodeDomain;
+    NSErrorUserInfoKey fk = RCErrorDetails.RCFinishableKey;
+    NSErrorUserInfoKey eck = RCErrorDetails.RCReadableErrorCodeKey;
 
     NSLog(bed, ped, fk, eck);
 }

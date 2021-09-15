@@ -42,7 +42,7 @@ int main(int argc, const char * argv[]) {
 
         [RCPackageAPI checkAPI];
         [RCPackageAPI checkEnums];
-        
+
         [RCPurchaserInfoAPI checkAPI];
 
         [RCPurchasesAPI checkAPI];
