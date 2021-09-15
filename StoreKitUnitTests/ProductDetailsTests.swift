@@ -12,17 +12,17 @@
 //  Created by Andrés Boedo on 1/9/21.
 
 import Nimble
+@testable import RevenueCat
 import StoreKitTest
 import XCTest
-@testable import RevenueCat
 
-class ProductsWrapperTests: XCTestCase {
+class ProductDetailsTests: XCTestCase {
 
     var testSession: SKTestSession!
     var userDefaults: UserDefaults!
 
     override func setUpWithError() throws {
-        testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
+        testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
         testSession.disableDialogs = true
         testSession.clearTransactions()
     }
@@ -31,12 +31,10 @@ class ProductsWrapperTests: XCTestCase {
     func testSK1AndSK2DetailsAreEquivalent() async throws {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
 
-        #if arch(arm64)
-
         let productIdentifiers = Set([
             "com.revenuecat.monthly_4.99.1_week_intro",
             "com.revenuecat.annual_39.99.2_week_intro",
-            "lifetime",
+            "lifetime"
             ])
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
         let sk1ProductDetailss = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
@@ -70,7 +68,6 @@ class ProductsWrapperTests: XCTestCase {
                 expect(equivalentSK2Product.subscriptionGroupIdentifier).to(beNil())
             }
         }
-        #endif
     }
 
     func testSk1DetailsWrapsCorrectly() throws {
