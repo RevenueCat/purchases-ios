@@ -18,26 +18,6 @@ import StoreKit
 
 // MARK: Block definitions
 // NOTE: Any changes here must be reflected in RevenueCat.h for ObjC compatibility.
-/**
- Completion block for calls that send back a ``PurchaserInfo``
- */
-public typealias ReceivePurchaserInfoBlock = (PurchaserInfo?, Error?) -> Void
-
-/**
- Completion block for  ``Purchases/checkTrialOrIntroductoryPriceEligibility(_:completion:)``
- */
-public typealias ReceiveIntroEligibilityBlock = ([String: IntroEligibility]) -> Void
-
-/**
- Completion block for ``Purchases/offerings(completion:)``
- */
-
-public typealias ReceiveOfferingsBlock = (Offerings?, Error?) -> Void
-
-/**
- Completion block for ``Purchases/products(identifiers:completion:)``
- */
-public typealias ReceiveProductsBlock = ([SKProduct]) -> Void
 
 /**
  Completion block for ``Purchases/purchase(product:completion:)``
@@ -48,12 +28,6 @@ public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, PurchaserInfo?
  Deferred block for ``Purchases/shouldPurchasePromoProduct(_:defermentBlock:)``
  */
 public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
-
-/**
- * Deferred block for ``Purchases/paymentDiscount(forProductDiscount:product:completion:)``
- */
-@available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
 
 /**
  * `Purchases` is the entry point for RevenueCat.framework. It should be instantiated as soon as your app has a unique
@@ -646,7 +620,7 @@ public extension Purchases {
      */
     @available(*, deprecated, message: "use logIn instead")
     @objc(createAlias:completion:)
-    func createAlias(_ alias: String, _ completion: ReceivePurchaserInfoBlock?) {
+    func createAlias(_ alias: String, _ completion: ((PurchaserInfo?, Error?) -> Void)?) {
         if alias == appUserID {
             purchaserInfoManager.purchaserInfo(appUserID: appUserID, completion: completion)
         } else {
@@ -675,7 +649,7 @@ public extension Purchases {
      */
     @available(*, deprecated, message: "use logIn instead")
     @objc(identify:completion:)
-    func identify(_ appUserID: String, _ completion: ReceivePurchaserInfoBlock?) {
+    func identify(_ appUserID: String, _ completion: ((PurchaserInfo?, Error?) -> Void)?) {
         if appUserID == identityManager.currentAppUserID {
             purchaserInfoManager.purchaserInfo(appUserID: self.appUserID, completion: completion)
         } else {
@@ -729,7 +703,7 @@ public extension Purchases {
      * See https://docs.revenuecat.com/docs/user-ids
      */
     @objc(logOutWithCompletion:)
-    func logOut(_ completion: ReceivePurchaserInfoBlock?) {
+    func logOut(_ completion: ((PurchaserInfo?, Error?) -> Void)?) {
         identityManager.logOut { maybeError in
             guard maybeError == nil else {
                 if let completion = completion {
@@ -750,7 +724,7 @@ public extension Purchases {
      */
     @available(*, deprecated, message: "use logOut instead", renamed: "logOut")
     @objc(resetWithCompletion:)
-    func reset(_ completion: ReceivePurchaserInfoBlock?) {
+    func reset(_ completion: ((PurchaserInfo?, Error?) -> Void)?) {
         identityManager.resetAppUserID()
         updateAllCaches(completion: completion)
     }
@@ -767,7 +741,7 @@ public extension Purchases {
      * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
      */
     @objc(offeringsWithCompletion:)
-    func offerings(_ completion: @escaping ReceiveOfferingsBlock) {
+    func offerings(_ completion: @escaping (Offerings?, Error?) -> Void) {
         offeringsManager.offerings(appUserID: appUserID, completion: completion)
     }
 
@@ -783,7 +757,7 @@ public extension Purchases {
      * Called immediately if ``PurchaserInfo`` is cached. Purchaser info can be nil * if an error occurred.
      */
     @objc(purchaserInfoWithCompletion:)
-    func purchaserInfo(_ completion: @escaping ReceivePurchaserInfoBlock) {
+    func purchaserInfo(_ completion: @escaping (PurchaserInfo?, Error?) -> Void) {
         purchaserInfoManager.purchaserInfo(appUserID: appUserID, completion: completion)
     }
 
@@ -932,7 +906,7 @@ public extension Purchases {
      * won't be able to restore them. Use `restoreTransactions(completion:)` to cover those cases.
      */
     @objc(syncPurchasesWithCompletion:)
-    func syncPurchases(_ completion: ReceivePurchaserInfoBlock?) {
+    func syncPurchases(_ completion: ((PurchaserInfo?, Error?) -> Void)?) {
         purchasesOrchestrator.syncPurchases(completion: completion)
     }
 
@@ -950,7 +924,7 @@ public extension Purchases {
      * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
      */
     @objc(restoreTransactionsWithCompletion:)
-    func restoreTransactions(_ completion: ReceivePurchaserInfoBlock? = nil) {
+    func restoreTransactions(_ completion: ((PurchaserInfo?, Error?) -> Void)? = nil) {
         purchasesOrchestrator.restoreTransactions(completion: completion)
     }
 
@@ -971,7 +945,7 @@ public extension Purchases {
     @objc(checkTrialOrIntroductoryPriceEligibility:completion:)
     // swiftlint:disable line_length
     func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String],
-                                                  completion receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+                                                  completion receiveEligibility: @escaping ([String: IntroEligibility]) -> Void) {
     // swiftlint:enable line_length
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
             if #available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *),
@@ -1031,15 +1005,15 @@ public extension Purchases {
     @objc(paymentDiscountForProductDiscount:product:completion:)
     func paymentDiscount(forProductDiscount discount: SKProductDiscount,
                          product: SKProduct,
-                         completion: @escaping PaymentDiscountBlock) {
+                         completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
         purchasesOrchestrator.paymentDiscount(forProductDiscount: discount, product: product, completion: completion)
     }
 
+    // swiftlint:disable line_length
     @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
     private func modernEligibilityHandler(maybeReceiptData data: Data,
                                           productIdentifiers: [String],
-                                          completion receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
-        // swiftlint:disable line_length
+                                          completion receiveEligibility: @escaping ([String: IntroEligibility]) -> Void) {
         introEligibilityCalculator
             .checkTrialOrIntroductoryPriceEligibility(with: data,
                                                       productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
@@ -1282,7 +1256,7 @@ private extension Purchases {
         }
     }
 
-    func updateAllCaches(completion: ReceivePurchaserInfoBlock?) {
+    func updateAllCaches(completion: ((PurchaserInfo?, Error?) -> Void)?) {
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             self.purchaserInfoManager.fetchAndCachePurchaserInfo(appUserID: self.appUserID,
                                                                  isAppBackgrounded: isAppBackgrounded,
