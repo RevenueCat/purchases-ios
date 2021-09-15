@@ -105,16 +105,8 @@ private func checkStaticMethods() {
 }
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
-    let piComplete: ReceivePurchaserInfoBlock = { _, _ in }
-    purchases.purchaserInfo(piComplete)
     purchases.purchaserInfo { _, _ in }
-
-    let offeringsComplete: ReceiveOfferingsBlock = { _, _ in }
-    purchases.offerings(offeringsComplete)
     purchases.offerings { _, _ in }
-
-    let productsComplete: ReceiveProductsBlock = { _ in }
-    purchases.products([String](), productsComplete)
     purchases.products([String]()) { _ in }
 
     let skp: SKProduct = SKProduct()
@@ -122,27 +114,17 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let skmd: SKPaymentDiscount = SKPaymentDiscount()
     let pack: Package! = nil
 
-    let purchaseProductComplete: PurchaseCompletedBlock = { _, _, _, _  in }
-    purchases.purchase(product: skp, purchaseProductComplete)
     purchases.purchase(product: skp) { _, _, _, _  in }
-    purchases.purchase(package: pack, purchaseProductComplete)
     purchases.purchase(package: pack) { _, _, _, _  in }
-
-    purchases.restoreTransactions(piComplete)
-    purchases.syncPurchases(piComplete)
+    purchases.syncPurchases { _, _ in }
 
     let checkEligComplete: ([String: IntroEligibility]) -> Void = { _ in }
     purchases.checkTrialOrIntroductoryPriceEligibility([String](), completion: checkEligComplete)
     purchases.checkTrialOrIntroductoryPriceEligibility([String]()) { _ in }
 
-    let discountComplete: PaymentDiscountBlock = { _, _ in }
-
-    purchases.paymentDiscount(forProductDiscount: skpd, product: skp, completion: discountComplete)
     purchases.paymentDiscount(forProductDiscount: skpd, product: skp) { _, _ in }
 
-    purchases.purchase(product: skp, discount: skmd, completion: purchaseProductComplete)
     purchases.purchase(product: skp, discount: skmd) { _, _, _, _  in }
-    purchases.purchase(package: pack, discount: skmd, completion: purchaseProductComplete)
     purchases.purchase(package: pack, discount: skmd) { _, _, _, _  in }
     purchases.invalidatePurchaserInfoCache()
 
@@ -156,21 +138,16 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 }
 
 private func checkIdentity(purchases: Purchases) {
-    let piComplete: ReceivePurchaserInfoBlock = { _, _ in }
-
     // should have deprecation warning 'createAlias' is deprecated: Use logIn instead.
-    purchases.createAlias("", piComplete)
     purchases.createAlias("") { _, _ in }
 
     // should have deprecation warning 'identify' is deprecated: Use logIn instead.
-    purchases.identify("", piComplete)
     purchases.identify("") { _, _ in }
 
     // should have deprecation warning 'reset' is deprecated: Use logOut instead.
-    purchases.reset(piComplete)
     purchases.reset { _, _ in }
 
-    purchases.logOut(piComplete)
+    purchases.logOut { _, _ in }
 
     let loginComplete: (PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
     purchases.logIn("", loginComplete)
