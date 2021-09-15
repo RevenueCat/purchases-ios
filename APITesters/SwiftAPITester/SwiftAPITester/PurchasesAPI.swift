@@ -42,15 +42,15 @@ func checkPurchasesAPI() {
     checkPurchasesPurchasingAPI(purchases: purch)
 }
 
-var type: PeriodType!
+var periodType: PeriodType!
 var oType: PurchaseOwnershipType!
 var logLevel: LogLevel!
 func checkPurchasesEnums() {
-    switch type! {
+    switch periodType! {
     case .normal,
          .intro,
          .trial:
-        print(type!)
+        print(periodType!)
     }
 
     switch oType! {

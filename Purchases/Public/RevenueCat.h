@@ -32,25 +32,25 @@ NS_SWIFT_UNAVAILABLE("Use ReceivePurchaserInfoBlock instead.");
 
 
 /**
- Completion block for `-[RCPurchases checkTrialOrIntroductoryPriceEligibility:completionBlock:]`
+ Completion block for `-[RCPurchases checkTrialOrIntroductoryPriceEligibility:completion:]`
  */
 typedef void (^RCReceiveIntroEligibilityBlock)(NSDictionary<NSString *, RCIntroEligibility *> *)
 NS_SWIFT_UNAVAILABLE("Use ReceiveIntroEligibilityBlock instead.");
 
 /**
- Completion block for `-[RCPurchases offeringsWithCompletionBlock:]`
+ Completion block for `-[RCPurchases offeringsWithCompletion:]`
  */
 typedef void (^RCReceiveOfferingsBlock)(RCOfferings * _Nullable, NSError * _Nullable)
 NS_SWIFT_UNAVAILABLE("Use ReceiveOfferingsBlock instead.");
 
 /**
- Completion block for `-[RCPurchases productsWithIdentifiers:completionBlock:]`
+ Completion block for `-[RCPurchases productsWithIdentifiers:completion:]`
  */
 typedef void (^RCReceiveProductsBlock)(NSArray<SKProduct *> *)
 NS_SWIFT_UNAVAILABLE("Use ReceiveProductsBlock instead.");
 
 /**
- Completion block for `-[RCPurchases purchaseProduct:withCompletionBlock:]`
+ Completion block for `-[RCPurchases purchaseProduct:withCompletion:]`
  */
 typedef void (^RCPurchaseCompletedBlock)(SKPaymentTransaction * _Nullable,
                                          RCPurchaserInfo * _Nullable,

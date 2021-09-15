@@ -594,19 +594,19 @@ extension Purchases {
      * - Parameter data: Dictionary provided by the network. See https://docs.revenuecat.com/docs/attribution
      * - Parameter network: Enum for the network the data is coming from, see ``AttributionNetwork`` for supported
      * networks.
-     * - Parameter maybeNetworkUserId: User Id that should be sent to the network. Default is the current App User Id.
+     * - Parameter networkUserId: User Id that should be sent to the network. Default is the current App User Id.
      */
     @available(*, deprecated, message: "Use the set<NetworkId> functions instead")
     @objc(addAttributionData:fromNetwork:forNetworkUserId:)
     public static func addAttributionData(_ data: [String: Any],
                                           from network: AttributionNetwork,
-                                          forNetworkUserId maybeNetworkUserId: String?) {
+                                          forNetworkUserId networkUserId: String?) {
         if Self.isConfigured {
-            shared.post(attributionData: data, fromNetwork: network, forNetworkUserId: maybeNetworkUserId)
+            shared.post(attributionData: data, fromNetwork: network, forNetworkUserId: networkUserId)
         } else {
             AttributionPoster.store(postponedAttributionData: data,
                                     fromNetwork: network,
-                                    forNetworkUserId: maybeNetworkUserId)
+                                    forNetworkUserId: networkUserId)
         }
     }
 
@@ -641,18 +641,18 @@ public extension Purchases {
      * This function will alias two appUserIDs together.
      *
      * - Parameter alias: The new appUserID that should be linked to the currently identified appUserID
-     * - Parameter maybeCompletion: An optional completion block called when the aliasing has been successful.
+     * - Parameter completion: An optional completion block called when the aliasing has been successful.
      * This completion block will receive an error if there's been one.
      */
     @available(*, deprecated, message: "use logIn instead")
-    @objc(createAlias:completionBlock:)
-    func createAlias(_ alias: String, _ maybeCompletion: ReceivePurchaserInfoBlock?) {
+    @objc(createAlias:completion:)
+    func createAlias(_ alias: String, _ completion: ReceivePurchaserInfoBlock?) {
         if alias == appUserID {
-            purchaserInfoManager.purchaserInfo(appUserID: appUserID, completion: maybeCompletion)
+            purchaserInfoManager.purchaserInfo(appUserID: appUserID, completion: completion)
         } else {
             identityManager.createAlias(appUserID: alias) { maybeError in
                 guard maybeError == nil else {
-                    if let completion = maybeCompletion {
+                    if let completion = completion {
                         self.operationDispatcher.dispatchOnMainThread {
                             completion(nil, maybeError)
                         }
@@ -660,7 +660,7 @@ public extension Purchases {
                     return
                 }
 
-                self.updateAllCaches(completion: maybeCompletion)
+                self.updateAllCaches(completion: completion)
             }
         }
     }
@@ -670,23 +670,25 @@ public extension Purchases {
      * logout to identify a new user without calling configure.
      *
      * - Parameter appUserID: The appUserID that should be linked to the current user.
+     * - Parameter completion: An optional completion block called when the identify call has completed.
+     * This completion block will receive an error if there's been one.
      */
     @available(*, deprecated, message: "use logIn instead")
-    @objc(identify:completionBlock:)
-    func identify(_ appUserID: String, _ maybeCompletion: ReceivePurchaserInfoBlock?) {
+    @objc(identify:completion:)
+    func identify(_ appUserID: String, _ completion: ReceivePurchaserInfoBlock?) {
         if appUserID == identityManager.currentAppUserID {
-            purchaserInfoManager.purchaserInfo(appUserID: self.appUserID, completion: maybeCompletion)
+            purchaserInfoManager.purchaserInfo(appUserID: self.appUserID, completion: completion)
         } else {
             identityManager.identify(appUserID: appUserID) { maybeError in
                 guard maybeError == nil else {
-                    if let completion = maybeCompletion {
+                    if let completion = completion {
                         self.operationDispatcher.dispatchOnMainThread {
                             completion(nil, maybeError)
                         }
                     }
                     return
                 }
-                self.updateAllCaches(completion: maybeCompletion)
+                self.updateAllCaches(completion: completion)
             }
         }
     }
@@ -700,7 +702,7 @@ public extension Purchases {
      * indicating whether the user was created for the first time in the RevenueCat backend.
      * See https://docs.revenuecat.com/docs/user-ids
      */
-    @objc(logIn:completionBlock:)
+    @objc(logIn:completion:)
     func logIn(_ appUserID: String, _ completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
         identityManager.logIn(appUserID: appUserID) { purchaserInfo, created, maybeError in
             self.operationDispatcher.dispatchOnMainThread {
@@ -726,11 +728,11 @@ public extension Purchases {
      * If this method is called and the current user is anonymous, it will return an error.
      * See https://docs.revenuecat.com/docs/user-ids
      */
-    @objc(logOutWithCompletionBlock:)
-    func logOut(_ maybeCompletion: ReceivePurchaserInfoBlock?) {
+    @objc(logOutWithCompletion:)
+    func logOut(_ completion: ReceivePurchaserInfoBlock?) {
         identityManager.logOut { maybeError in
             guard maybeError == nil else {
-                if let completion = maybeCompletion {
+                if let completion = completion {
                     self.operationDispatcher.dispatchOnMainThread {
                         completion(nil, maybeError)
                     }
@@ -738,7 +740,7 @@ public extension Purchases {
                 return
             }
 
-            self.updateAllCaches(completion: maybeCompletion)
+            self.updateAllCaches(completion: completion)
         }
     }
 
@@ -747,10 +749,10 @@ public extension Purchases {
      * This will generate a random user id and save it in the cache.
      */
     @available(*, deprecated, message: "use logOut instead", renamed: "logOut")
-    @objc(resetWithCompletionBlock:)
-    func reset(_ maybeCompletion: ReceivePurchaserInfoBlock?) {
+    @objc(resetWithCompletion:)
+    func reset(_ completion: ReceivePurchaserInfoBlock?) {
         identityManager.resetAppUserID()
-        updateAllCaches(completion: maybeCompletion)
+        updateAllCaches(completion: completion)
     }
 
     /**
@@ -764,7 +766,7 @@ public extension Purchases {
      * - Parameter completion: A completion block called when offerings are available.
      * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
      */
-    @objc(offeringsWithCompletionBlock:)
+    @objc(offeringsWithCompletion:)
     func offerings(_ completion: @escaping ReceiveOfferingsBlock) {
         offeringsManager.offerings(appUserID: appUserID, completion: completion)
     }
@@ -780,7 +782,7 @@ public extension Purchases {
      * - Parameter completion: A completion block called when purchaser info is available and not stale.
      * Called immediately if ``PurchaserInfo`` is cached. Purchaser info can be nil * if an error occurred.
      */
-    @objc(purchaserInfoWithCompletionBlock:)
+    @objc(purchaserInfoWithCompletion:)
     func purchaserInfo(_ completion: @escaping ReceivePurchaserInfoBlock) {
         purchaserInfoManager.purchaserInfo(appUserID: appUserID, completion: completion)
     }
@@ -803,7 +805,7 @@ public extension Purchases {
      * - Parameter completion: An @escaping callback that is called with the loaded products.
      * If the fetch fails for any reason it will return an empty array.
      */
-    @objc(productsWithIdentifiers:completionBlock:)
+    @objc(productsWithIdentifiers:completion:)
     func products(_ productIdentifiers: [String], _ completion: @escaping ([SKProduct]) -> Void) {
         purchasesOrchestrator.products(withIdentifiers: productIdentifiers, completion: completion)
     }
@@ -828,7 +830,7 @@ public extension Purchases {
      *
      * If the user cancelled, `userCancelled` will be `YES`.
      */
-    @objc(purchaseProduct:withCompletionBlock:)
+    @objc(purchaseProduct:withCompletion:)
     func purchase(product: SKProduct, _ completion: @escaping PurchaseCompletedBlock) {
         let payment: SKMutablePayment = storeKitWrapper.payment(withProduct: product)
         purchase(product: product, payment: payment, presentedOfferingIdentifier: nil, completion: completion)
@@ -851,7 +853,7 @@ public extension Purchases {
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @objc(purchasePackage:withCompletionBlock:)
+    @objc(purchasePackage:withCompletion:)
     func purchase(package: Package, _ completion: @escaping PurchaseCompletedBlock) {
         let payment = storeKitWrapper.payment(withProduct: package.product)
         purchase(product: package.product,
@@ -882,7 +884,7 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    @objc(purchaseProduct:withDiscount:completionBlock:)
+    @objc(purchaseProduct:withDiscount:completion:)
     func purchase(product: SKProduct, discount: SKPaymentDiscount, completion: @escaping PurchaseCompletedBlock) {
         let payment = storeKitWrapper.payment(withProduct: product, discount: discount)
         purchase(product: product, payment: payment, presentedOfferingIdentifier: nil, completion: completion)
@@ -906,7 +908,7 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    @objc(purchasePackage:withDiscount:completionBlock:)
+    @objc(purchasePackage:withDiscount:completion:)
     func purchase(package: Package, discount: SKPaymentDiscount, completion: @escaping PurchaseCompletedBlock) {
         let payment = storeKitWrapper.payment(withProduct: package.product, discount: discount)
         purchase(product: package.product,
@@ -929,9 +931,9 @@ public extension Purchases {
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
      * won't be able to restore them. Use `restoreTransactions(completion:)` to cover those cases.
      */
-    @objc(syncPurchasesWithCompletionBlock:)
-    func syncPurchases(_ maybeCompletion: ReceivePurchaserInfoBlock?) {
-        purchasesOrchestrator.syncPurchases(completion: maybeCompletion)
+    @objc(syncPurchasesWithCompletion:)
+    func syncPurchases(_ completion: ReceivePurchaserInfoBlock?) {
+        purchasesOrchestrator.syncPurchases(completion: completion)
     }
 
     /**
@@ -947,9 +949,9 @@ public extension Purchases {
      * the user. Typically with a button in settings or near your purchase UI. Use
      * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
      */
-    @objc(restoreTransactionsWithCompletionBlock:)
-    func restoreTransactions(_ maybeCompletion: ReceivePurchaserInfoBlock? = nil) {
-        purchasesOrchestrator.restoreTransactions(completion: maybeCompletion)
+    @objc(restoreTransactionsWithCompletion:)
+    func restoreTransactions(_ completion: ReceivePurchaserInfoBlock? = nil) {
+        purchasesOrchestrator.restoreTransactions(completion: completion)
     }
 
     /**
@@ -966,7 +968,7 @@ public extension Purchases {
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
      * - Parameter receiveEligibility: A block that receives a dictionary of product_id -> ``IntroEligibility``.
      */
-    @objc(checkTrialOrIntroductoryPriceEligibility:completionBlock:)
+    @objc(checkTrialOrIntroductoryPriceEligibility:completion:)
     // swiftlint:disable line_length
     func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String],
                                                   completion receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
