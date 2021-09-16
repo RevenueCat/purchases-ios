@@ -53,18 +53,6 @@ private extension IntroEligibilityStatus {
         }
     }
 
-    init(statusCode: Int) throws {
-        switch statusCode {
-        case 0:
-            self = .unknown
-        case 1:
-            self = .ineligible
-        case 2:
-            self = .eligible
-        default:
-            throw IntroEligibilityStatusError.invalidStatusCode(statusCode)
-        }
-    }
 }
 
 /**
@@ -90,10 +78,6 @@ private extension IntroEligibilityStatus {
 
     init(eligibilityStatus status: IntroEligibilityStatus) {
         self.status = status
-    }
-
-    init(eligibilityStatusCode statusCode: NSNumber) throws {
-        self.status = try IntroEligibilityStatus(statusCode: statusCode.intValue)
     }
 
     @objc private override init() {
