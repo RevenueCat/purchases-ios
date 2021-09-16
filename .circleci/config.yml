@@ -71,7 +71,7 @@ commands:
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
-          command: bundle exec fastlane scan
+          command: bundle exec fastlane test
 
       - store_test_results:
           path: fastlane/test_output
@@ -131,7 +131,21 @@ jobs:
       - checkout
       
       - install-dependencies
-      
+      - run:
+          name: Install command line tools
+          command: xcode-select --install
+      - run:
+          name: Open simulator
+          command: xcrun instruments -w "iPhone 12 (15.0) [" || true
+
+      - run:
+          name: Open simulator
+          command: xcrun instruments -w "iPhone SE (14.5) [" || true
+ 
+      - run:
+          name: Open simulator
+          command: xcrun instruments -w "Apple TV (15.0) [" || true
+
       - run:
           name: Run tests
           command: bundle exec fastlane test
