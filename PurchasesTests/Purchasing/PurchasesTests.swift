@@ -335,36 +335,13 @@ class PurchasesTests: XCTestCase {
     }
 
     func testUsingSharedInstanceWithoutInitializingThrowsAssertion() {
-        #if arch(x86_64) && canImport(Darwin)
-        expect { Purchases.shared } .to(throwAssertion())
+        let expectedMessage = "Purchases has not been configured. Please call Purchases.configure()"
+        expectFatalError(expectedMessage: expectedMessage) { _ = Purchases.shared }
+    }
 
-        #else
-        let assertionHappened = expectation(description: "Assertion happened")
-        Purchases.notConfiguredAssertionFunction = {
-            assertionHappened.fulfill()
-        }
-
-        _ = Purchases.shared
-
-        wait(for: [assertionHappened], timeout: TimeInterval(1))
-        #endif
-
+    func testUsingSharedInstanceAfterInitializingDoesntThrowAssertion() {
         setupPurchases()
-
-        #if arch(x86_64) && canImport(Darwin)
-        expect { _ = Purchases.shared }.toNot(throwAssertion())
-        #else
-        // Create an inverted expectation. So, it'll fail if fulfilled.
-        let assertionDidNotHappen = expectation(description: "Assertion did not happen")
-        assertionDidNotHappen.isInverted = true
-        Purchases.notConfiguredAssertionFunction = {
-            assertionDidNotHappen.fulfill()
-        }
-
-        _ = Purchases.shared
-
-        wait(for: [assertionDidNotHappen], timeout: TimeInterval(1))
-        #endif
+        expectNoFatalError { _ = Purchases.shared }
     }
 
     func testIsConfiguredReturnsCorrectvalue() {

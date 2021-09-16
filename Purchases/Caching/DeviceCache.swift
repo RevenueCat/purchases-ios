@@ -34,7 +34,6 @@ class DeviceCache {
     private let notificationCenter: NotificationCenter
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
     private var appUserIDHasBeenSet: Bool = false
-    private let appUserIdDeletedAssertionFunction: (String) -> Void
 
     convenience init(userDefaults: UserDefaults = UserDefaults.standard) {
         self.init(userDefaults: userDefaults, offeringsCachedObject: nil, notificationCenter: nil)
@@ -42,13 +41,11 @@ class DeviceCache {
 
     init(userDefaults: UserDefaults = UserDefaults.standard,
          offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject(),
-         notificationCenter: NotificationCenter? = NotificationCenter.default,
-         appUserIdDeletedAssertionFunction: @escaping (String) -> Void = { fatalError($0) }) {
+         notificationCenter: NotificationCenter? = NotificationCenter.default) {
 
         self.offeringsCachedObject = offeringsCachedObject ?? InMemoryCachedObject()
         self.notificationCenter = notificationCenter ?? NotificationCenter.default
         self.userDefaults = userDefaults
-        self.appUserIdDeletedAssertionFunction = appUserIdDeletedAssertionFunction
         self.appUserIDHasBeenSet = userDefaults.string(forKey: CacheKeys.appUserDefaults) != nil
 
         self.notificationCenter.addObserver(self,
@@ -64,7 +61,7 @@ class DeviceCache {
         }
 
         if appUserIDHasBeenSet && threadUnsafeCachedAppUserID == nil {
-            appUserIdDeletedAssertionFunction(
+            fatalError(
                 """
                 [Purchases] - Cached appUserID has been deleted from user defaults.
                 This leaves the SDK in an undetermined state. Please make sure that RevenueCat
