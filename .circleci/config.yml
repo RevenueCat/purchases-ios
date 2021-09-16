@@ -138,7 +138,7 @@ jobs:
 
       - run:
           name: Open simulator
-          command: xcrun instruments -w "iPhone SE (14.5) [" || true
+          command: xcrun instruments -w "iPhone 8 (14.5) [" || true
  
       - run:
           name: Open simulator
