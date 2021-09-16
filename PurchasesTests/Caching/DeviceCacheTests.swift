@@ -208,67 +208,29 @@ class DeviceCacheTests: XCTestCase {
         let mockNotificationCenter = MockNotificationCenter()
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = "Rage Against the Machine"
 
-        #if arch(x86_64) && canImport(Darwin)
         self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
                                        offeringsCachedObject: nil,
                                        notificationCenter: mockNotificationCenter)
 
-        // Only check the assertion for the valid archs.
-        expect { mockNotificationCenter.fireNotifications() }.toNot(throwAssertion())
-
-        #else
-        let assertionHappened = expectation(description: "Assertion happened")
-
-        // Create an inverted expectation. So, it'll fail if fulfilled.
-        let assertionDidNotHappen = expectation(description: "Assertion did not happen")
-        assertionDidNotHappen.isInverted = true
-
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
-                                       offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter,
-                                       appUserIdDeletedAssertionFunction: { _ in
-                                        assertionDidNotHappen.fulfill()
-                                        assertionHappened.fulfill()
-                                       })
-
-        // Here we check that the expectation has not been fulfilled
-        wait(for: [assertionDidNotHappen], timeout: TimeInterval(1))
-        #endif
+        expectNoFatalError { mockNotificationCenter.fireNotifications() }
 
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
 
-        #if arch(x86_64) && canImport(Darwin)
-        expect { mockNotificationCenter.fireNotifications() }.to(throwAssertion())
-        #else
-        mockNotificationCenter.fireNotifications()
-        wait(for: [assertionHappened], timeout: TimeInterval(1))
-        #endif
+        let expectedMessage = "[Purchases] - Cached appUserID has been deleted from user defaults.\n" +
+        "This leaves the SDK in an undetermined state. Please make sure that RevenueCat\n" +
+        "entries in user defaults don\'t get deleted by anything other than the SDK.\n" +
+        "More info: https://rev.cat/userdefaults-crash"
+        expectFatalError(expectedMessage: expectedMessage) { mockNotificationCenter.fireNotifications() }
     }
 
     func testDoesntCrashIfOtherSettingIsDeletedAndAppUserIDHadntBeenSet() {
         let mockNotificationCenter = MockNotificationCenter()
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
-        #if arch(x86_64) && canImport(Darwin)
-        self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
-                                         offeringsCachedObject: nil,
-                                         notificationCenter: mockNotificationCenter)
-
-        expect { mockNotificationCenter.fireNotifications }.toNot(throwAssertion())
-        #else
-        // Create an inverted expectation. So, it'll fail if fulfilled.
-        let assertionDidNotHappen = expectation(description: "Assertion did not happen")
-        assertionDidNotHappen.isInverted = true
-
         self.deviceCache = DeviceCache(userDefaults: mockUserDefaults,
                                        offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter,
-                                       appUserIdDeletedAssertionFunction: { _ in
-                                        assertionDidNotHappen.fulfill()
-                                       })
+                                       notificationCenter: mockNotificationCenter)
 
-        // Here we check that the expectation has not been fulfilled
-        wait(for: [assertionDidNotHappen], timeout: TimeInterval(1))
-        #endif
+        expectNoFatalError() { mockNotificationCenter.fireNotifications() }
     }
 
     func testNewDeviceCacheInstanceWithExistingValidPurchaserInfoCacheIsntStale() {
