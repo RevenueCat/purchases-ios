@@ -66,15 +66,11 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
 
     @objc(sharedPurchases)
     public static var shared: Purchases {
-        if let purchases = purchases {
-            return purchases
+        guard let purchases = purchases else {
+            fatalError(Strings.purchase.purchases_nil.description)
         }
 
-        notConfiguredAssertionFunction()
-
-        // This will only be returned during testing. #hack for ARM64 testing fatalError()
-        // See https://github.com/Quick/Nimble/blob/main/Sources/Nimble/Matchers/ThrowAssertion.swift#L87
-        return PurchasesTestStandIn(apiKey: "StandIn", appUserID: nil)
+        return purchases
     }
     private static var purchases: Purchases?
 
@@ -205,8 +201,6 @@ public typealias PaymentDiscountBlock = (SKPaymentDiscount?, Error?) -> Void
     private let systemInfo: SystemInfo
 
     fileprivate static let initLock = NSLock()
-
-    static var notConfiguredAssertionFunction: () -> Void = { fatalError(Strings.purchase.purchases_nil.description) }
 
     convenience init(apiKey: String, appUserID: String?) {
         self.init(apiKey: apiKey,

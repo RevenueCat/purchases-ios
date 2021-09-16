@@ -337,9 +337,10 @@ class PurchasesTests: XCTestCase {
     func testUsingSharedInstanceWithoutInitializingThrowsAssertion() {
         let expectedMessage = "Purchases has not been configured. Please call Purchases.configure()"
         expectFatalError(expectedMessage: expectedMessage) { _ = Purchases.shared }
+    }
 
+    func testUsingSharedInstanceAfterInitializingDoesntThrowAssertion() {
         setupPurchases()
-
         expectNoFatalError { _ = Purchases.shared }
     }
 
