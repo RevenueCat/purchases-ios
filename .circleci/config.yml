@@ -52,17 +52,6 @@ commands:
       directory:
         type: string
     steps:
-      - run:
-          name: Open simulator
-          command: xcrun instruments -w "iPhone 12 (15.0) [" || true
-
-      - run:
-          name: Open simulator
-          command: xcrun instruments -w "iPhone 8 (14.5) [" || true
- 
-      - run:
-          name: Open simulator
-          command: xcrun instruments -w "Apple TV (15.0) [" || true
 
       - run: 
           name: Replace API key
@@ -133,18 +122,6 @@ jobs:
       - install-dependencies
       
       - run:
-          name: Open simulator
-          command: xcrun instruments -w "iPhone 12 (15.0) [" || true
-
-      - run:
-          name: Open simulator
-          command: xcrun instruments -w "iPhone 8 (14.5) [" || true
- 
-      - run:
-          name: Open simulator
-          command: xcrun instruments -w "Apple TV (15.0) [" || true
-
-      - run:
           name: Run tests
           command: bundle exec fastlane test
           environment:
@@ -186,10 +163,6 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - run:
-          name: Open simulator
-          command: xcrun instruments -w "iPhone 11 Pro (15.0) [" || true
-      
       - install-dependencies
       
       - run:
