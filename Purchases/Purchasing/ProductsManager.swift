@@ -55,7 +55,6 @@ class ProductsManager: NSObject {
         do {
             let productDetails = try await productsFetcherSK2.products(identifiers: identifiers)
             return Set(productDetails)
-
         } catch {
             Logger.error("Error when fetching SK2 products: \(error.localizedDescription)")
             let emptySet: Set<SK2ProductDetails> = Set()
