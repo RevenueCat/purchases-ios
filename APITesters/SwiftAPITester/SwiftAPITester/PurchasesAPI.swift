@@ -147,7 +147,7 @@ private func checkIdentity(purchases: Purchases) {
     purchases.logOut { _, _ in }
 
     let loginComplete: (PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
-    purchases.logIn("", loginComplete)
+    purchases.logIn("", completion: loginComplete)
     purchases.logIn("") { _, _, _ in }
 }
 
