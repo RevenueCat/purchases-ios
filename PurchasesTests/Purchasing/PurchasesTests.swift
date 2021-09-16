@@ -1273,7 +1273,7 @@ class PurchasesTests: XCTestCase {
 
     func testSyncPurchasesPostsTheReceipt() {
         setupPurchases()
-        purchases!.syncPurchases(nil)
+        purchases!.syncPurchases(completion: nil)
         expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
 
@@ -1297,7 +1297,7 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = false
 
         setupPurchases()
-        purchases!.syncPurchases(nil)
+        purchases!.syncPurchases(completion: nil)
 
         expect(self.backend.postReceiptDataCalled) == false
     }
@@ -1306,7 +1306,7 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = false
 
         setupPurchases()
-        purchases!.syncPurchases(nil)
+        purchases!.syncPurchases(completion: nil)
 
         expect(self.backend.postReceiptDataCalled) == true
     }
@@ -1331,7 +1331,7 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
 
         setupPurchases()
-        purchases!.syncPurchases(nil)
+        purchases!.syncPurchases(completion: nil)
 
         expect(self.backend.postReceiptDataCalled) == true
     }
@@ -1340,7 +1340,7 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
 
         setupPurchases()
-        purchases!.syncPurchases(nil)
+        purchases!.syncPurchases(completion: nil)
 
         expect(self.backend.postReceiptDataCalled) == true
     }
@@ -1348,7 +1348,7 @@ class PurchasesTests: XCTestCase {
     func testSyncPurchasesDoesntRefreshTheReceiptIfNotEmpty() {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = true
-        purchases!.syncPurchases(nil)
+        purchases!.syncPurchases(completion: nil)
 
         expect(self.receiptFetcher.receiptDataTimesCalled) == 1
         expect(self.requestFetcher.refreshReceiptCalled) == false
@@ -1357,7 +1357,7 @@ class PurchasesTests: XCTestCase {
     func testSyncPurchasesDoesntRefreshTheReceiptIfEmpty() {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = false
-        purchases!.syncPurchases(nil)
+        purchases!.syncPurchases(completion: nil)
 
         expect(self.receiptFetcher.receiptDataTimesCalled) == 1
         expect(self.requestFetcher.refreshReceiptCalled) == false
@@ -1367,11 +1367,11 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
 
         purchases.allowSharingAppStoreAccount = false
-        purchases!.syncPurchases(nil)
+        purchases!.syncPurchases(completion: nil)
         expect(self.backend.postedIsRestore!) == false
 
         purchases.allowSharingAppStoreAccount = true
-        purchases!.syncPurchases(nil)
+        purchases!.syncPurchases(completion: nil)
         expect(self.backend.postedIsRestore!) == true
     }
 
@@ -1379,11 +1379,11 @@ class PurchasesTests: XCTestCase {
         setupAnonPurchases()
 
         purchases.allowSharingAppStoreAccount = false
-        purchases!.syncPurchases(nil)
+        purchases!.syncPurchases(completion: nil)
         expect(self.backend.postedIsRestore!) == false
 
         purchases.allowSharingAppStoreAccount = true
-        purchases!.syncPurchases(nil)
+        purchases!.syncPurchases(completion: nil)
         expect(self.backend.postedIsRestore!) == true
     }
 

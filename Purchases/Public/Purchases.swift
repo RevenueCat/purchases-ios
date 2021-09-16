@@ -618,7 +618,7 @@ public extension Purchases {
      * - Parameter completion: An optional completion block called when the aliasing has been successful.
      * This completion block will receive an error if there's been one.
      */
-    @available(*, deprecated, message: "use logIn instead")
+    @available(*, deprecated, message: "use logIn instead", renamed: "logIn")
     @objc(createAlias:completion:)
     func createAlias(_ alias: String, _ completion: ((PurchaserInfo?, Error?) -> Void)?) {
         if alias == appUserID {
@@ -677,7 +677,7 @@ public extension Purchases {
      * See https://docs.revenuecat.com/docs/user-ids
      */
     @objc(logIn:completion:)
-    func logIn(_ appUserID: String, _ completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
+    func logIn(_ appUserID: String, completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
         identityManager.logIn(appUserID: appUserID) { purchaserInfo, created, maybeError in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(purchaserInfo, created, maybeError)
@@ -702,8 +702,7 @@ public extension Purchases {
      * If this method is called and the current user is anonymous, it will return an error.
      * See https://docs.revenuecat.com/docs/user-ids
      */
-    @objc(logOutWithCompletion:)
-    func logOut(_ completion: ((PurchaserInfo?, Error?) -> Void)?) {
+    @objc func logOut(completion: ((PurchaserInfo?, Error?) -> Void)?) {
         identityManager.logOut { maybeError in
             guard maybeError == nil else {
                 if let completion = completion {
@@ -723,8 +722,7 @@ public extension Purchases {
      * This will generate a random user id and save it in the cache.
      */
     @available(*, deprecated, message: "use logOut instead", renamed: "logOut")
-    @objc(resetWithCompletion:)
-    func reset(_ completion: ((PurchaserInfo?, Error?) -> Void)?) {
+    @objc func reset(completion: ((PurchaserInfo?, Error?) -> Void)?) {
         identityManager.resetAppUserID()
         updateAllCaches(completion: completion)
     }
@@ -740,8 +738,7 @@ public extension Purchases {
      * - Parameter completion: A completion block called when offerings are available.
      * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
      */
-    @objc(offeringsWithCompletion:)
-    func offerings(_ completion: @escaping (Offerings?, Error?) -> Void) {
+    @objc func offerings(completion: @escaping (Offerings?, Error?) -> Void) {
         offeringsManager.offerings(appUserID: appUserID, completion: completion)
     }
 
@@ -756,8 +753,7 @@ public extension Purchases {
      * - Parameter completion: A completion block called when purchaser info is available and not stale.
      * Called immediately if ``PurchaserInfo`` is cached. Purchaser info can be nil * if an error occurred.
      */
-    @objc(purchaserInfoWithCompletion:)
-    func purchaserInfo(_ completion: @escaping (PurchaserInfo?, Error?) -> Void) {
+    @objc func purchaserInfo(completion: @escaping (PurchaserInfo?, Error?) -> Void) {
         purchaserInfoManager.purchaserInfo(appUserID: appUserID, completion: completion)
     }
 
@@ -780,7 +776,7 @@ public extension Purchases {
      * If the fetch fails for any reason it will return an empty array.
      */
     @objc(productsWithIdentifiers:completion:)
-    func products(_ productIdentifiers: [String], _ completion: @escaping ([SKProduct]) -> Void) {
+    func products(_ productIdentifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
         purchasesOrchestrator.products(withIdentifiers: productIdentifiers, completion: completion)
     }
 
@@ -905,8 +901,7 @@ public extension Purchases {
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
      * won't be able to restore them. Use `restoreTransactions(completion:)` to cover those cases.
      */
-    @objc(syncPurchasesWithCompletion:)
-    func syncPurchases(_ completion: ((PurchaserInfo?, Error?) -> Void)?) {
+    @objc func syncPurchases(completion: ((PurchaserInfo?, Error?) -> Void)?) {
         purchasesOrchestrator.syncPurchases(completion: completion)
     }
 
@@ -923,8 +918,7 @@ public extension Purchases {
      * the user. Typically with a button in settings or near your purchase UI. Use
      * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
      */
-    @objc(restoreTransactionsWithCompletion:)
-    func restoreTransactions(_ completion: ((PurchaserInfo?, Error?) -> Void)? = nil) {
+    @objc func restoreTransactions(completion: ((PurchaserInfo?, Error?) -> Void)? = nil) {
         purchasesOrchestrator.restoreTransactions(completion: completion)
     }
 
