@@ -940,19 +940,17 @@ public extension Purchases {
      * version of iOS so that the subscription group can be collected by the SDK.
      *
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
-     * - Parameter receiveEligibility: A block that receives a dictionary of product_id -> ``IntroEligibility``.
+     * - Parameter completion: A block that receives a dictionary of product_id -> ``IntroEligibility``.
      */
     @objc(checkTrialOrIntroductoryPriceEligibility:completion:)
-    // swiftlint:disable line_length
     func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String],
-                                                  completion receiveEligibility: @escaping ([String: IntroEligibility]) -> Void) {
-    // swiftlint:enable line_length
+                                                  completion: @escaping ([String: IntroEligibility]) -> Void) {
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
             if #available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *),
                let data = maybeData {
                 self.modernEligibilityHandler(maybeReceiptData: data,
                                               productIdentifiers: productIdentifiers,
-                                              completion: receiveEligibility)
+                                              completion: completion)
             } else {
                 self.backend.getIntroEligibility(appUserID: self.appUserID,
                                                  receiptData: maybeData ?? Data(),
@@ -962,7 +960,7 @@ public extension Purchases {
                                             error.localizedDescription))
                     }
                     self.operationDispatcher.dispatchOnMainThread {
-                        receiveEligibility(result)
+                        completion(result)
                     }
                 }
             }

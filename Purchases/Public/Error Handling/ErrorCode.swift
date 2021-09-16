@@ -51,6 +51,8 @@ import Foundation
 
 }
 
+extension ErrorCode: CaseIterable { }
+
 extension ErrorCode {
 
     var description: String {

@@ -70,12 +70,9 @@ func checkPurchasesEnums() {
 }
 
 func checkPurchasesConstants() {
-//    let errDom = errorDomain
-//    let backendErrDom = backendErrCode
     let finKey = ErrorDetails.finishableKey
     let errCodeKey = ErrorDetails.readableErrorCodeKey
 
-//    print(errDom, backendErrDom, finKey, errCodeKey)
     print(finKey, errCodeKey)
 }
 
@@ -171,5 +168,5 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.setAd("")
     purchases.setKeyword("")
     purchases.setCreative("")
-//    purchases.collectDeviceIdentifiers()
+    purchases.collectDeviceIdentifiers()
 }
