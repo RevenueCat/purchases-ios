@@ -41,13 +41,13 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
 
     func testSK1CheckTrialOrIntroPriceEligibility() {
         setup()
-        trialOrIntroPriceEligibilityChecker!.sk1CheckTrialOrIntroPriceEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (eligibilities) in
         }
     }
 
     func testSK1CheckTrialOrIntroPriceEligibilityFetchesAReceipt() {
         setup()
-        trialOrIntroPriceEligibilityChecker!.sk1CheckTrialOrIntroPriceEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (eligibilities) in
         }
 
         expect(self.receiptFetcher.receiptDataCalled).to(beTrue())
@@ -59,7 +59,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
 
         var completionCalled = false
         var maybeEligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckTrialOrIntroPriceEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (eligibilities) in
             completionCalled = true
             maybeEligibilities = eligibilities
         }
@@ -79,7 +79,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
         mockBackend.stubbedGetIntroEligibilityCompletionResult = (["product_id": IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)], nil)
         var completionCalled = false
         var maybeEligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckTrialOrIntroPriceEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (eligibilities) in
             completionCalled = true
             maybeEligibilities = eligibilities
         }
@@ -99,7 +99,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
         mockBackend.stubbedGetIntroEligibilityCompletionResult = ([:], stubbedError)
         var completionCalled = false
         var maybeEligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckTrialOrIntroPriceEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (eligibilities) in
             completionCalled = true
             maybeEligibilities = eligibilities
         }

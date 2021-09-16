@@ -26,10 +26,9 @@ class IntroEligibilityCalculator {
     }
 
     @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
-    func checkTrialOrIntroductoryPriceEligibility(
-        with receiptData: Data,
-        productIdentifiers candidateProductIdentifiers: Set<String>,
-        completion: @escaping ([String: IntroEligibilityStatus], Error?) -> Void) {
+    func checkEligibility(with receiptData: Data,
+                          productIdentifiers candidateProductIdentifiers: Set<String>,
+                          completion: @escaping ([String: IntroEligibilityStatus], Error?) -> Void) {
         guard candidateProductIdentifiers.count > 0 else {
             completion([:], nil)
             return
@@ -55,7 +54,7 @@ class IntroEligibilityCalculator {
                     candidateProductIdentifiers.contains($0.productIdentifier)
                 }
 
-                let eligibility = self.checkIntroEligibility(
+                let eligibility = self.checkEligibility(
                     candidateProducts: candidateProducts,
                     purchasedProductsWithIntroOffers: purchasedProductsWithIntroOffersOrFreeTrials)
                 result.merge(eligibility) { (_, new) in new }
@@ -76,8 +75,8 @@ class IntroEligibilityCalculator {
 @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
 private extension IntroEligibilityCalculator {
 
-    func checkIntroEligibility(candidateProducts: Set<SKProduct>,
-                               purchasedProductsWithIntroOffers: Set<SKProduct>) -> [String: IntroEligibilityStatus] {
+    func checkEligibility(candidateProducts: Set<SKProduct>,
+                          purchasedProductsWithIntroOffers: Set<SKProduct>) -> [String: IntroEligibilityStatus] {
         var result: [String: IntroEligibilityStatus] = [:]
 
         for candidate in candidateProducts {

@@ -43,24 +43,22 @@ class TrialOrIntroPriceEligibilityChecker {
                           completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             Task {
-                let eligibility = await sk2CheckTrialOrIntroPriceEligibility(productIdentifiers)
+                let eligibility = await sk2CheckEligibility(productIdentifiers)
                 receiveEligibility(eligibility)
             }
         } else {
-            sk1CheckTrialOrIntroPriceEligibility(productIdentifiers, completionBlock: receiveEligibility)
+            sk1CheckEligibility(productIdentifiers, completionBlock: receiveEligibility)
         }
     }
 
-    // swiftlint:disable line_length
-    func sk1CheckTrialOrIntroPriceEligibility(_ productIdentifiers: [String],
-                                              completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
-        // swiftlint:enable line_length
+    func sk1CheckEligibility(_ productIdentifiers: [String],
+                             completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
             if #available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *),
                let data = maybeData {
-                self.sk1ModernEligibilityHandler(maybeReceiptData: data,
-                                                 productIdentifiers: productIdentifiers,
-                                                 completionBlock: receiveEligibility)
+                self.sk1CheckEligibility(with: data,
+                                         productIdentifiers: productIdentifiers,
+                                         completionBlock: receiveEligibility)
             } else {
                 self.backend.getIntroEligibility(appUserID: self.appUserID,
                                                  receiptData: maybeData ?? Data(),
@@ -76,26 +74,28 @@ class TrialOrIntroPriceEligibilityChecker {
         }
     }
 
-    // swiftlint:disable line_length
     @available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *)
-    private func sk1ModernEligibilityHandler(maybeReceiptData data: Data,
-                                             productIdentifiers: [String],
-                                             completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+    private func sk1CheckEligibility(with receiptData: Data,
+                                     productIdentifiers: [String],
+                                     completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
         introEligibilityCalculator
-            .checkTrialOrIntroductoryPriceEligibility(with: data,
-                                                      productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
+            .checkEligibility(with: receiptData,
+                              productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
                 if let error = maybeError {
                     Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
-                    self.backend.getIntroEligibility(appUserID: self.appUserID,
-                                                     receiptData: data,
-                                                     productIdentifiers: productIdentifiers) { result, maybeAnotherError in
-                        if let intoEligibilityError = maybeAnotherError {
-                            Logger.error(Strings.purchase.unable_to_get_intro_eligibility_with_error(error: intoEligibilityError))
+                    self.backend
+                        .getIntroEligibility(appUserID: self.appUserID,
+                                             receiptData: receiptData,
+                                             productIdentifiers: productIdentifiers) { result, maybeAnotherError in
+                            if let intoEligibilityError = maybeAnotherError {
+                                let errorMessage =
+                                Strings.purchase.unable_to_get_intro_eligibility_with_error(error: intoEligibilityError)
+                                Logger.error(errorMessage)
+                            }
+                            self.operationDispatcher.dispatchOnMainThread {
+                                receiveEligibility(result)
+                            }
                         }
-                        self.operationDispatcher.dispatchOnMainThread {
-                            receiveEligibility(result)
-                        }
-                    }
                     return
                 }
                 var convertedEligibility: [String: IntroEligibility] = [:]
@@ -107,21 +107,17 @@ class TrialOrIntroPriceEligibilityChecker {
                     receiveEligibility(convertedEligibility)
                 }
             }
-        // swiftlint:enable line_length
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2CheckTrialOrIntroPriceEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
+    func sk2CheckEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
         let identifiers = Set(productIdentifiers)
         var introDict = productIdentifiers.reduce(into: [:]) { resultDict, productId in
             resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
         }
         let products = await productsManager.sk2ProductDetails(withIdentifiers: identifiers)
-        for product in products {
-            guard let sk2ProductDetails = product as? SK2ProductDetails else {
-                continue
-            }
-            #if arch(arm64)
+        for sk2ProductDetails in products {
+#if arch(arm64)
             let sk2Product = sk2ProductDetails.underlyingSK2Product
             let maybeIsEligible = await sk2Product.subscription?.isEligibleForIntroOffer
 
@@ -134,8 +130,8 @@ class TrialOrIntroPriceEligibilityChecker {
             }
 
             introDict[sk2ProductDetails.productIdentifier] =
-                IntroEligibility(eligibilityStatus: eligibilityStatus)
-            #endif
+            IntroEligibility(eligibilityStatus: eligibilityStatus)
+#endif
         }
         return introDict
     }
