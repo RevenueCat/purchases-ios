@@ -1,9 +1,15 @@
 //
-//  Product.swift
-//  Product
+// Copyright RevenueCat Inc. All Rights Reserved.
 //
-//  Created by Andrés Boedo on 7/16/21.
-//  Copyright © 2021 Purchases. All rights reserved.
+// Licensed under the MIT License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// opensource.org/licenses/MIT
+//
+// ProductDetails.swift
+//
+// Created by Andrés Boedo on 7/16/21.
 //
 
 import Foundation
@@ -38,11 +44,13 @@ import StoreKit
     //
 
     // todo: add subscription period
+    // https://github.com/RevenueCat/purchases-ios/issues/849
     //    @available(iOS 11.2, *)
     //    var subscriptionPeriod: SKProductSubscriptionPeriod? { get }
     //
 
     // todo: add product discounts
+    // https://github.com/RevenueCat/purchases-ios/issues/848
     //    @available(iOS 11.2, *)
     //    var introductoryPrice: SKProductDiscount? { get }
     //    //

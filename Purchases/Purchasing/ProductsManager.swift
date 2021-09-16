@@ -31,20 +31,34 @@ class ProductsManager: NSObject {
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             Task {
-                do {
-                    let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
-                    completion(products)
-                } catch {
-                    Logger.error("error when fetching SK2 products: \(error.localizedDescription)")
-                    let emptySet: Set<ProductDetails> = Set()
-                    completion(emptySet)
-                }
+                return await self.sk2ProductDetails(withIdentifiers: identifiers)
             }
         } else {
             self.products(withIdentifiers: identifiers) { skProducts in
                 let wrappedProductsArray = skProducts.map { SK1ProductDetails(sk1Product: $0) }
                 completion(Set(wrappedProductsArray))
             }
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>) async -> Set<ProductDetails> {
+        return await withCheckedContinuation { continuation in
+            productsFromOptimalStoreKitVersion(withIdentifiers: identifiers) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func sk2ProductDetails(withIdentifiers identifiers: Set<String>) async -> Set<SK2ProductDetails> {
+        do {
+            let productDetails = try await productsFetcherSK2.products(identifiers: identifiers)
+            return Set(productDetails)
+        } catch {
+            Logger.error("Error when fetching SK2 products: \(error.localizedDescription)")
+            let emptySet: Set<SK2ProductDetails> = Set()
+            return emptySet
         }
     }
 

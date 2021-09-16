@@ -16,7 +16,7 @@ import Foundation
 import StoreKit
 
 // swiftlint:disable identifier_name
-enum PurchaseStrings {
+enum PurchaseStrings: CustomStringConvertible {
 
     case cannot_purchase_product_appstore_configuration_error
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
@@ -40,10 +40,11 @@ enum PurchaseStrings {
     case management_url_nil_opening_default
 	case requested_products_not_found(request: SKRequest)
     case callback_not_found_for_request(request: SKRequest)
-
+    case unable_to_get_intro_eligibility_for_user(error: Error)
+    case unable_to_get_intro_eligibility_with_error(error: Error)
 }
 
-extension PurchaseStrings: CustomStringConvertible {
+extension PurchaseStrings {
 
     var description: String {
         switch self {
@@ -138,6 +139,11 @@ extension PurchaseStrings: CustomStringConvertible {
         case .callback_not_found_for_request(let request):
             return "callback not found for failing request: \(request)"
 
+        case .unable_to_get_intro_eligibility_for_user(let error):
+            return "Unable to get intro eligibility for appUserID: \(error.localizedDescription)"
+
+        case .unable_to_get_intro_eligibility_with_error(let error):
+            return "Unable to get intro eligibility: \(error.localizedDescription)"
         }
 
     }

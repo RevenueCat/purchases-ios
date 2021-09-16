@@ -18,7 +18,7 @@ import Foundation
 enum CustomerInfoStrings {
 
     case checking_intro_eligibility_locally_error(error: Error)
-    case checking_intro_eligibility_locally_result(productIdentifiers: [String: NSNumber])
+    case checking_intro_eligibility_locally_result(productIdentifiers: [String: IntroEligibilityStatus])
     case checking_intro_eligibility_locally
     case invalidating_purchaserinfo_cache
     case no_cached_purchaserinfo

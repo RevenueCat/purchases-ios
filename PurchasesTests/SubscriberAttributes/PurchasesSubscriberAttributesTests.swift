@@ -121,6 +121,13 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                           identityManager: mockIdentityManager,
                                                           receiptParser: mockReceiptParser,
                                                           deviceCache: mockDeviceCache)
+        let trialOrIntroductoryPriceEligibilityChecker =
+        TrialOrIntroPriceEligibilityChecker(receiptFetcher: mockReceiptFetcher,
+                                            introEligibilityCalculator: mockIntroEligibilityCalculator,
+                                            backend: mockBackend,
+                                            identityManager: mockIdentityManager,
+                                            operationDispatcher: mockOperationDispatcher,
+                                            productsManager: mockProductsManager)
         purchases = Purchases(appUserID: mockIdentityManager.currentAppUserID,
                               requestFetcher: mockRequestFetcher,
                               receiptFetcher: mockReceiptFetcher,
@@ -140,7 +147,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               customerInfoManager: customerInfoManager,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
-                              purchasesOrchestrator: purchasesOrchestrator)
+                              purchasesOrchestrator: purchasesOrchestrator,
+                              trialOrIntroPriceEligibilityChecker: trialOrIntroductoryPriceEligibilityChecker)
         purchasesOrchestrator.maybeDelegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
