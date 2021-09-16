@@ -13,6 +13,8 @@
 		2CD72948268A828400BFC976 /* Locale+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD72947268A828400BFC976 /* Locale+Extensions.swift */; };
 		2D11F5E1250FF886005A70E8 /* AttributionStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */; };
 		2D1C3F3926B9D8B800112626 /* MockBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1C3F3826B9D8B800112626 /* MockBundle.swift */; };
+		2D22BF6526F3CB31001AE2F9 /* FatalErrorUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6426F3CB31001AE2F9 /* FatalErrorUtil.swift */; };
+		2D22BF6826F3CC6D001AE2F9 /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		2D3BFAD126DEA45C00370B11 /* MockSKProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E524F6F5DC005BC22D /* MockSKProduct.swift */; };
 		2D3BFAD226DEA46600370B11 /* MockProductsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35B08709090FBBFB16EBD /* MockProductsRequest.swift */; };
 		2D3BFAD326DEA47100370B11 /* MockSKDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E724F6F61B005BC22D /* MockSKDiscount.swift */; };
@@ -287,6 +289,8 @@
 		2CD72947268A828400BFC976 /* Locale+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Locale+Extensions.swift"; sourceTree = "<group>"; };
 		2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionStrings.swift; sourceTree = "<group>"; };
 		2D1C3F3826B9D8B800112626 /* MockBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBundle.swift; sourceTree = "<group>"; };
+		2D22BF6426F3CB31001AE2F9 /* FatalErrorUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FatalErrorUtil.swift; sourceTree = "<group>"; };
+		2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestCase+Extensions.swift"; sourceTree = "<group>"; };
 		2D4E926426990AB1000E10B0 /* StoreKitWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWrapper.swift; sourceTree = "<group>"; };
 		2D5BB46A24C8E8ED00E27537 /* ReceiptParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptParser.swift; sourceTree = "<group>"; };
 		2D84458826B9CD270033B5A3 /* ReceiptFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcherTests.swift; sourceTree = "<group>"; };
@@ -692,6 +696,7 @@
 				2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */,
 				B35042CA26D0457E00905B95 /* PurchasesTestStandIn.swift */,
 				B3AA6237268B926F00894871 /* SystemInfo.swift */,
+				2D22BF6426F3CB31001AE2F9 /* FatalErrorUtil.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -850,6 +855,7 @@
 			children = (
 				37E35B9AC7A350CA2437049D /* ISOPeriodFormatterTests.swift */,
 				37E35EEE7783629CDE41B70C /* SystemInfoTests.swift */,
+				2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -1467,6 +1473,7 @@
 				A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */,
 				B3E26A4A26BE0A8E003ACCF3 /* Error+Extensions.swift in Sources */,
 				B35042C426CDB79A00905B95 /* Purchases.swift in Sources */,
+				2D22BF6526F3CB31001AE2F9 /* FatalErrorUtil.swift in Sources */,
 				B3B5FBBF269E081E00104A0C /* InMemoryCachedObject.swift in Sources */,
 				9A65E0802591977900DE00B0 /* ReceiptStrings.swift in Sources */,
 				B3DDB55926854865008CCF23 /* PurchaseOwnershipType.swift in Sources */,
@@ -1578,6 +1585,7 @@
 				2DDF41E324F6F527005BC22D /* MockASN1ContainerBuilder.swift in Sources */,
 				2DDF41DA24F6F4DB005BC22D /* ReceiptParserTests.swift in Sources */,
 				351B519F26D4508A00BD2BD7 /* DeviceCacheTests.swift in Sources */,
+				2D22BF6826F3CC6D001AE2F9 /* XCTestCase+Extensions.swift in Sources */,
 				351B51B626D450E800BD2BD7 /* ReceiptFetcherTests.swift in Sources */,
 				351B51A726D450D400BD2BD7 /* SystemInfoTests.swift in Sources */,
 				351B515626D44B2300BD2BD7 /* MockNotificationCenter.swift in Sources */,
