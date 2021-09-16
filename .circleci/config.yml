@@ -131,9 +131,7 @@ jobs:
       - checkout
       
       - install-dependencies
-      - run:
-          name: Install command line tools
-          command: xcode-select --install
+      
       - run:
           name: Open simulator
           command: xcrun instruments -w "iPhone 12 (15.0) [" || true
