@@ -31,7 +31,7 @@ class ProductsManager: NSObject {
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             Task {
-                return await self.products(withIdentifiers: identifiers)
+                return await self.sk2ProductDetails(withIdentifiers: identifiers)
             }
         } else {
             self.products(withIdentifiers: identifiers) { skProducts in
@@ -51,14 +51,14 @@ class ProductsManager: NSObject {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func products(withIdentifiers identifiers: Set<String>) async -> Set<ProductDetails> {
+    func sk2ProductDetails(withIdentifiers identifiers: Set<String>) async -> Set<SK2ProductDetails> {
         do {
             let productDetails = try await productsFetcherSK2.products(identifiers: identifiers)
             return Set(productDetails)
 
         } catch {
             Logger.error("Error when fetching SK2 products: \(error.localizedDescription)")
-            let emptySet: Set<ProductDetails> = Set()
+            let emptySet: Set<SK2ProductDetails> = Set()
             return emptySet
         }
     }

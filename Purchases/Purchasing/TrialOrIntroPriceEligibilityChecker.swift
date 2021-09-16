@@ -116,7 +116,7 @@ class TrialOrIntroPriceEligibilityChecker {
         var introDict = productIdentifiers.reduce(into: [:]) { resultDict, productId in
             resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
         }
-        let products = await productsManager.products(withIdentifiers: identifiers)
+        let products = await productsManager.sk2ProductDetails(withIdentifiers: identifiers)
         for product in products {
             guard let sk2ProductDetails = product as? SK2ProductDetails else {
                 continue

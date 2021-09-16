@@ -25,7 +25,7 @@ actor ProductsFetcherSK2 {
 
     private var cachedProductsByIdentifier: [String: SK2ProductDetails] = [:]
 
-    func products(identifiers: Set<String>) async throws -> Set<ProductDetails> {
+    func products(identifiers: Set<String>) async throws -> Set<SK2ProductDetails> {
         do {
             // todo: also cache requests, so that if a request is in flight for the same products,
             // we don't need to make a new one
