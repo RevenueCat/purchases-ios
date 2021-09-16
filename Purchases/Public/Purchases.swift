@@ -166,6 +166,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
     private let productsManager: ProductsManager
+    private let trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker
     private let purchaserInfoManager: PurchaserInfoManager
     private let purchasesOrchestrator: PurchasesOrchestrator
     private let receiptFetcher: ReceiptFetcher
@@ -256,6 +257,12 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                           identityManager: identityManager,
                                                           receiptParser: receiptParser,
                                                           deviceCache: deviceCache)
+        let trialOrIntroPriceChecker = TrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
+                                                                           introEligibilityCalculator: introCalculator,
+                                                                           backend: backend,
+                                                                           identityManager: identityManager,
+                                                                           operationDispatcher: operationDispatcher,
+                                                                           productsManager: productsManager)
         self.init(appUserID: appUserID,
                   requestFetcher: fetcher,
                   receiptFetcher: receiptFetcher,
@@ -275,7 +282,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                   purchaserInfoManager: purchaserInfoManager,
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
-                  purchasesOrchestrator: purchasesOrchestrator)
+                  purchasesOrchestrator: purchasesOrchestrator,
+                  trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker)
     }
     // swiftlint:enable function_body_length
 
@@ -298,7 +306,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
          purchaserInfoManager: PurchaserInfoManager,
          productsManager: ProductsManager,
          offeringsManager: OfferingsManager,
-         purchasesOrchestrator: PurchasesOrchestrator) {
+         purchasesOrchestrator: PurchasesOrchestrator,
+         trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker
+    ) {
 
         Logger.debug(Strings.configure.debug_enabled)
         Logger.debug(Strings.configure.sdk_version(sdkVersion: Self.frameworkVersion))
@@ -323,6 +333,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.purchasesOrchestrator = purchasesOrchestrator
+        self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
 
         super.init()
 
@@ -871,6 +882,7 @@ public extension Purchases {
     @objc(purchasePackage:withDiscount:completion:)
     func purchase(package: Package, discount: SKPaymentDiscount, completion: @escaping PurchaseCompletedBlock) {
         // todo: add support for SK2 with discounts, move to new class
+        // https://github.com/RevenueCat/purchases-ios/issues/848
         guard let sk1ProductDetails = package.productDetails as? SK1ProductDetails else {
             return
         }
@@ -934,27 +946,9 @@ public extension Purchases {
      */
     @objc(checkTrialOrIntroductoryPriceEligibility:completion:)
     func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String],
-                                                  completion: @escaping ([String: IntroEligibility]) -> Void) {
-        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
-            if #available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *),
-               let data = maybeData {
-                self.modernEligibilityHandler(maybeReceiptData: data,
-                                              productIdentifiers: productIdentifiers,
-                                              completion: completion)
-            } else {
-                self.backend.getIntroEligibility(appUserID: self.appUserID,
-                                                 receiptData: maybeData ?? Data(),
-                                                 productIdentifiers: productIdentifiers) { result, maybeError in
-                    if let error = maybeError {
-                        Logger.error(String(format: "Unable to getIntroEligibilityForAppUserID: %@",
-                                            error.localizedDescription))
-                    }
-                    self.operationDispatcher.dispatchOnMainThread {
-                        completion(result)
-                    }
-                }
-            }
-        }
+                                                  completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+        trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIdentifiers,
+                                                             completionBlock: receiveEligibility)
     }
 
     /**
@@ -995,46 +989,6 @@ public extension Purchases {
                          product: SKProduct,
                          completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
         purchasesOrchestrator.paymentDiscount(forProductDiscount: discount, product: product, completion: completion)
-    }
-
-    // swiftlint:disable line_length
-    @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
-    private func modernEligibilityHandler(maybeReceiptData data: Data,
-                                          productIdentifiers: [String],
-                                          completion receiveEligibility: @escaping ([String: IntroEligibility]) -> Void) {
-        introEligibilityCalculator
-            .checkTrialOrIntroductoryPriceEligibility(with: data,
-                                                      productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
-                if let error = maybeError {
-                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
-                    self.backend.getIntroEligibility(appUserID: self.appUserID,
-                                                     receiptData: data,
-                                                     productIdentifiers: productIdentifiers) { result, maybeAnotherError in
-                        if let intoEligibilityError = maybeAnotherError {
-                            Logger.error(String(format: "Unable to getIntroEligibilityForAppUserID: %@",
-                                                intoEligibilityError.localizedDescription))
-                        }
-                        self.operationDispatcher.dispatchOnMainThread {
-                            receiveEligibility(result)
-                        }
-                    }
-                } else {
-                    var convertedEligibility: [String: IntroEligibility] = [:]
-                    for (key, value) in receivedEligibility {
-                        do {
-                            let introEligibility = try IntroEligibility(eligibilityStatusCode: value)
-                            convertedEligibility[key] = introEligibility
-                        } catch {
-                            Logger.error(String(format: "Unable to create an RCIntroEligibility: %@",
-                                                error.localizedDescription))
-                        }
-                    }
-                    self.operationDispatcher.dispatchOnMainThread {
-                        receiveEligibility(convertedEligibility)
-                    }
-                }
-            }
-        // swiftlint:enable line_length
     }
 
     private func purchase(product: SKProduct,
