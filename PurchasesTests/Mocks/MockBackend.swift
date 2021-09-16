@@ -89,6 +89,7 @@ class MockBackend: Backend {
         receiptData: Data?,
         productIdentifiers: [String]?,
         completion: IntroEligibilityResponseHandler?)]()
+    var stubbedGetIntroEligibilityCompletionResult: (eligibilities: [String: IntroEligibility], error: Error?)?
 
     override func getIntroEligibility(appUserID: String,
                                       receiptData: Data,
@@ -98,6 +99,7 @@ class MockBackend: Backend {
         invokedGetIntroEligibilityCount += 1
         invokedGetIntroEligibilityParameters = (appUserID, receiptData, productIdentifiers, completion)
         invokedGetIntroEligibilityParametersList.append((appUserID, receiptData, productIdentifiers, completion))
+        completion(stubbedGetIntroEligibilityCompletionResult?.eligibilities ?? [:], stubbedGetIntroEligibilityCompletionResult?.error)
     }
 
     var invokedGetOfferingsForAppUserID = false
