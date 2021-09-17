@@ -1,6 +1,6 @@
 //
-//  StoreKitTests.swift
-//  StoreKitTests
+//  BackendIntegrationTests.swift
+//  BackendIntegrationTests
 //
 //  Created by Andrés Boedo on 5/3/21.
 //  Copyright © 2021 Purchases. All rights reserved.
@@ -26,7 +26,7 @@ class TestPurchaseDelegate: NSObject, PurchasesDelegate {
     }
 }
 
-class StoreKitTests: XCTestCase {
+class BackendIntegrationTests: XCTestCase {
 
     var testSession: SKTestSession!
     var userDefaults: UserDefaults!
@@ -233,7 +233,7 @@ class StoreKitTests: XCTestCase {
     
 }
 
-private extension StoreKitTests {
+private extension BackendIntegrationTests {
 
     func purchaseMonthlyOffering(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
         Purchases.shared.offerings { offerings, error in

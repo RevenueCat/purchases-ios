@@ -8,15 +8,15 @@
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
-            buildForRunning = "NO"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "NO">
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2DE20B6B264087FB004C597D"
-               BuildableName = "StoreKitTests.xctest"
-               BlueprintName = "StoreKitTests"
+               BlueprintIdentifier = "2DEAC2D926EFE46E006914ED"
+               BuildableName = "UnitTestsHostApp.app"
+               BlueprintName = "UnitTestsHostApp"
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -29,13 +29,22 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
          <TestableReference
-            skipped = "NO"
-            testExecutionOrdering = "random">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2DE20B6B264087FB004C597D"
-               BuildableName = "StoreKitTests.xctest"
-               BlueprintName = "StoreKitTests"
+               BlueprintIdentifier = "2DC5621D24EC63430031F69B"
+               BuildableName = "RevenueCatTests.xctest"
+               BlueprintName = "RevenueCatTests"
+               ReferencedContainer = "container:RevenueCat.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "2DAC5F7126F13C9800C5258F"
+               BuildableName = "StoreKitUnitTests.xctest"
+               BlueprintName = "StoreKitUnitTests"
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -55,14 +64,14 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2DE20B7E26409EB7004C597D"
-            BuildableName = "StoreKitTestApp.app"
-            BlueprintName = "StoreKitTestApp"
+            BlueprintIdentifier = "2DEAC2D926EFE46E006914ED"
+            BuildableName = "UnitTestsHostApp.app"
+            BlueprintName = "UnitTestsHostApp"
             ReferencedContainer = "container:RevenueCat.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../IntegrationTests/PurchaseTester/Configuration.storekit">
+         identifier = "../../StoreKitUnitTests/UnitTestsConfiguration.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
@@ -71,6 +80,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "2DEAC2D926EFE46E006914ED"
+            BuildableName = "UnitTestsHostApp.app"
+            BlueprintName = "UnitTestsHostApp"
+            ReferencedContainer = "container:RevenueCat.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
