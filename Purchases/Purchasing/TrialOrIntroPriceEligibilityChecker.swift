@@ -117,7 +117,6 @@ class TrialOrIntroPriceEligibilityChecker {
         }
         let products = await productsManager.sk2ProductDetails(withIdentifiers: identifiers)
         for sk2ProductDetails in products {
-#if arch(arm64)
             let sk2Product = sk2ProductDetails.underlyingSK2Product
             let maybeIsEligible = await sk2Product.subscription?.isEligibleForIntroOffer
 
@@ -131,7 +130,6 @@ class TrialOrIntroPriceEligibilityChecker {
 
             introDict[sk2ProductDetails.productIdentifier] =
             IntroEligibility(eligibilityStatus: eligibilityStatus)
-#endif
         }
         return introDict
     }
