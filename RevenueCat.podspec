@@ -16,7 +16,11 @@ Pod::Spec.new do |s|
   s.framework      = 'StoreKit'
   s.swift_version       = '5.5'
 
-  s.ios.deployment_target = '9.0'
+  # todo: deployment_target set to 12.0 instead of 9.0 temporarily for iOS due to a known issue in 
+  # Xcode-beta 5, where swift libraries fail to build for iOS targets that use armv7.
+  # See issue 74120874 in the release notes:
+  # https://developer.apple.com/documentation/xcode-release-notes/xcode-13-beta-release-notes
+  s.ios.deployment_target = '12.0'
   s.osx.deployment_target = '10.12'
   s.watchos.deployment_target = '6.2'
   s.tvos.deployment_target = '9.0'

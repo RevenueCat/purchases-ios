@@ -28,7 +28,7 @@ class MockBundle: Bundle {
             return Bundle(for: type(of: self))
                 .url(forResource: mockAppStoreReceiptFileName, withExtension: "txt")
         case .emptyReceipt:
-            return Bundle.main.appStoreReceiptURL
+            return URL(string: "")
         case .nilURL:
             return nil
         }

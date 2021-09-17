@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  StoreKitTestApp
+//  BackendIntegrationTestApp
 //
 //  Created by Andrés Boedo on 5/3/21.
 //  Copyright © 2021 Purchases. All rights reserved.

@@ -45,6 +45,7 @@ platform :ios do
     scan(
       step_name: "scan - iPhone", 
       devices: ["iPhone 8", "iPhone 12"],
+      scheme: "UnitTests",
       output_types: '',
       fail_build: false,
       result_bundle: true
@@ -54,6 +55,7 @@ platform :ios do
     scan(
       step_name: "scan - Apple TV",
       devices: ["Apple TV"],
+      scheme: "RevenueCat",
       output_types: '',
       fail_build: false,
       result_bundle: true
@@ -164,10 +166,10 @@ platform :ios do
 
   desc "replace API KEY for integration tests"
   lane :replace_api_key_integration_tests do
-    replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../StoreKitTests/Constants.swift')
+    replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../BackendIntegrationTests/Constants.swift')
     replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../IntegrationTests/CommonFiles/RCIntegrationRunner.m')
 
-    replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../StoreKitTests/Constants.swift', allow_empty: true)
+    replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../BackendIntegrationTests/Constants.swift', allow_empty: true)
     replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m', allow_empty: true)
   end
 
@@ -233,10 +235,10 @@ platform :ios do
 
   end
 
-  desc "Run StoreKitTests"
-  lane :storekit_tests do |options|
+  desc "Run BackendIntegrationTests"
+  lane :backend_integration_tests do |options|
     replace_api_key_integration_tests
-    scan(scheme: "StoreKitTests", derived_data_path: "scan_derived_data")
+    scan(scheme: "BackendIntegrationTests", derived_data_path: "scan_derived_data")
   end
 
   desc "Update swift package commit"
