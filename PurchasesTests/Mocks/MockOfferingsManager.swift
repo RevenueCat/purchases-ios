@@ -18,11 +18,11 @@ class MockOfferingsManager: OfferingsManager {
 
     var invokedOfferings = false
     var invokedOfferingsCount = 0
-    var invokedOfferingsParameters: (appUserID: String, completion: ReceiveOfferingsBlock?)?
-    var invokedOfferingsParametersList = [(appUserID: String, completion: ReceiveOfferingsBlock?)]()
+    var invokedOfferingsParameters: (appUserID: String, completion: ((Offerings?, Error?) -> Void)?)?
+    var invokedOfferingsParametersList = [(appUserID: String, completion: ((Offerings?, Error?) -> Void)?)]()
     var stubbedOfferingsCompletionResult: (offerings: Offerings?, error: Error?)?
     
-    override func offerings(appUserID: String, completion: ReceiveOfferingsBlock?) {
+    override func offerings(appUserID: String, completion: ((Offerings?, Error?) -> Void)?) {
         invokedOfferings = true
         invokedOfferingsCount += 1
         invokedOfferingsParameters = (appUserID, completion)
@@ -33,11 +33,11 @@ class MockOfferingsManager: OfferingsManager {
 
     var invokedUpdateOfferingsCache = false
     var invokedUpdateOfferingsCacheCount = 0
-    var invokedUpdateOfferingsCacheParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ReceiveOfferingsBlock?)?
-    var invokedUpdateOfferingsCachesParametersList = [(appUserID: String, isAppBackgrounded: Bool,  completion: ReceiveOfferingsBlock?)]()
+    var invokedUpdateOfferingsCacheParameters: (appUserID: String, isAppBackgrounded: Bool, completion: ((Offerings?, Error?) -> Void)?)?
+    var invokedUpdateOfferingsCachesParametersList = [(appUserID: String, isAppBackgrounded: Bool,  completion: ((Offerings?, Error?) -> Void)?)]()
     var stubbedUpdateOfferingsCompletionResult: (offerings: Offerings?, error: Error?)?
 
-    override func updateOfferingsCache(appUserID: String, isAppBackgrounded: Bool, completion: ReceiveOfferingsBlock?) {
+    override func updateOfferingsCache(appUserID: String, isAppBackgrounded: Bool, completion: ((Offerings?, Error?) -> Void)?) {
         invokedUpdateOfferingsCache = true
         invokedUpdateOfferingsCacheCount += 1
         invokedUpdateOfferingsCacheParameters = (appUserID, isAppBackgrounded, completion)

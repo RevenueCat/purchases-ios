@@ -37,7 +37,7 @@ class OfferingsManager {
         self.productsManager = productsManager
     }
 
-    func offerings(appUserID: String, completion: ReceiveOfferingsBlock?) {
+    func offerings(appUserID: String, completion: ((Offerings?, Error?) -> Void)?) {
         guard let cachedOfferings = deviceCache.cachedOfferings else {
             Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
             systemInfo.isApplicationBackgrounded { isAppBackgrounded in
@@ -68,7 +68,7 @@ class OfferingsManager {
         }
     }
 
-    func updateOfferingsCache(appUserID: String, isAppBackgrounded: Bool, completion: ReceiveOfferingsBlock?) {
+    func updateOfferingsCache(appUserID: String, isAppBackgrounded: Bool, completion: ((Offerings?, Error?) -> Void)?) {
         deviceCache.setOfferingsCacheTimestampToNow()
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
             self.backend.getOfferings(appUserID: appUserID) { maybeData, maybeError in
@@ -85,7 +85,7 @@ class OfferingsManager {
 
 private extension OfferingsManager {
 
-    func handleOfferingsBackendResult(with data: [String: Any], completion: ReceiveOfferingsBlock?) {
+    func handleOfferingsBackendResult(with data: [String: Any], completion: ((Offerings?, Error?) -> Void)?) {
         let productIdentifiers = extractProductIdentifiers(fromOfferingsData: data)
 
         productsManager.products(withIdentifiers: productIdentifiers) { products in
@@ -106,7 +106,7 @@ private extension OfferingsManager {
         }
     }
 
-    func handleOfferingsUpdateError(_ error: Error, completion: ReceiveOfferingsBlock?) {
+    func handleOfferingsUpdateError(_ error: Error, completion: ((Offerings?, Error?) -> Void)?) {
         Logger.appleError(Strings.offering.fetching_offerings_error(error: error.localizedDescription))
         deviceCache.clearOfferingsCacheTimestamp()
         dispatchCompletionOnMainThreadIfPossible(completion,
@@ -141,7 +141,7 @@ private extension OfferingsManager {
         }
     }
 
-    func dispatchCompletionOnMainThreadIfPossible(_ completion: ReceiveOfferingsBlock?,
+    func dispatchCompletionOnMainThreadIfPossible(_ completion: ((Offerings?, Error?) -> Void)?,
                                                   offerings: Offerings?,
                                                   error: Error?) {
         if let completion = completion {

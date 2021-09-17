@@ -467,7 +467,7 @@ private extension PurchasesOrchestrator {
     func handleReceiptPost(withPurchaserInfo maybePurchaserInfo: PurchaserInfo?,
                            error maybeError: Error?,
                            subscriberAttributes: SubscriberAttributeDict,
-                           completion maybeCompletion: ReceivePurchaserInfoBlock?) {
+                           completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
         operationDispatcher.dispatchOnMainThread {
             if let purchaserInfo = maybePurchaserInfo {
                 self.purchaserInfoManager.cache(purchaserInfo: purchaserInfo, appUserID: self.appUserID)

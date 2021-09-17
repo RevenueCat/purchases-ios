@@ -71,7 +71,7 @@ import Foundation
     Returns the purchase date for the version of the application when the user bought the app.
     Use this for grandfathering users when migrating to subscriptions.
 
-    Note: This can be `nil`, see ``Purchases/restoreTransactions(completionBlock:)``
+    Note: This can be `nil`, see ``Purchases/restoreTransactions(completion:)``
      */
     @objc public let originalPurchaseDate: Date?
 
@@ -81,7 +81,7 @@ import Foundation
      * (in macOS) in the Info.plist file when the purchase was originally made. Use this for grandfathering users
      * when migrating to subscriptions.
      *
-     * - Note: This can be nil, see -`Purchases.restoreTransactions(completionBlock:)`
+     * - Note: This can be nil, see -`Purchases.restoreTransactions(completion:)`
      */
     @objc public let originalApplicationVersion: String?
 

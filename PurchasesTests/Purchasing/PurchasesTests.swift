@@ -574,7 +574,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         var products: [SKProduct]?
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
-        purchases!.products(identifiers: productIdentifiers) { (newProducts) in
+        purchases!.products(productIdentifiers) { (newProducts) in
             products = newProducts
         }
 
@@ -613,7 +613,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         var completionCalled = false
         mockProductsManager.resetMock()
-        self.purchases.products(identifiers: []) { _ in
+        self.purchases.products([]) { _ in
             completionCalled = true
         }
         expect(completionCalled).toEventually(beTrue())
@@ -766,7 +766,7 @@ class PurchasesTests: XCTestCase {
     func testSendsProductInfoIfProductIsCached() {
         setupPurchases()
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
-        purchases!.products(identifiers: productIdentifiers) { (newProducts) in
+        purchases!.products(productIdentifiers) { (newProducts) in
             let product = newProducts[0];
             self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
 
@@ -1250,7 +1250,7 @@ class PurchasesTests: XCTestCase {
 
     func testSyncPurchasesPostsTheReceipt() {
         setupPurchases()
-        purchases!.syncPurchases(completionBlock: nil)
+        purchases!.syncPurchases(completion: nil)
         expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
 
@@ -1274,7 +1274,7 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = false
 
         setupPurchases()
-        purchases!.syncPurchases(completionBlock: nil)
+        purchases!.syncPurchases(completion: nil)
 
         expect(self.backend.postReceiptDataCalled) == false
     }
@@ -1283,7 +1283,7 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = false
 
         setupPurchases()
-        purchases!.syncPurchases(completionBlock: nil)
+        purchases!.syncPurchases(completion: nil)
 
         expect(self.backend.postReceiptDataCalled) == true
     }
@@ -1308,7 +1308,7 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
 
         setupPurchases()
-        purchases!.syncPurchases(completionBlock: nil)
+        purchases!.syncPurchases(completion: nil)
 
         expect(self.backend.postReceiptDataCalled) == true
     }
@@ -1317,7 +1317,7 @@ class PurchasesTests: XCTestCase {
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
 
         setupPurchases()
-        purchases!.syncPurchases(completionBlock: nil)
+        purchases!.syncPurchases(completion: nil)
 
         expect(self.backend.postReceiptDataCalled) == true
     }
@@ -1325,7 +1325,7 @@ class PurchasesTests: XCTestCase {
     func testSyncPurchasesDoesntRefreshTheReceiptIfNotEmpty() {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = true
-        purchases!.syncPurchases(completionBlock: nil)
+        purchases!.syncPurchases(completion: nil)
 
         expect(self.receiptFetcher.receiptDataTimesCalled) == 1
         expect(self.requestFetcher.refreshReceiptCalled) == false
@@ -1334,7 +1334,7 @@ class PurchasesTests: XCTestCase {
     func testSyncPurchasesDoesntRefreshTheReceiptIfEmpty() {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = false
-        purchases!.syncPurchases(completionBlock: nil)
+        purchases!.syncPurchases(completion: nil)
 
         expect(self.receiptFetcher.receiptDataTimesCalled) == 1
         expect(self.requestFetcher.refreshReceiptCalled) == false
@@ -1344,11 +1344,11 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
 
         purchases.allowSharingAppStoreAccount = false
-        purchases!.syncPurchases(completionBlock: nil)
+        purchases!.syncPurchases(completion: nil)
         expect(self.backend.postedIsRestore!) == false
 
         purchases.allowSharingAppStoreAccount = true
-        purchases!.syncPurchases(completionBlock: nil)
+        purchases!.syncPurchases(completion: nil)
         expect(self.backend.postedIsRestore!) == true
     }
 
@@ -1356,11 +1356,11 @@ class PurchasesTests: XCTestCase {
         setupAnonPurchases()
 
         purchases.allowSharingAppStoreAccount = false
-        purchases!.syncPurchases(completionBlock: nil)
+        purchases!.syncPurchases(completion: nil)
         expect(self.backend.postedIsRestore!) == false
 
         purchases.allowSharingAppStoreAccount = true
-        purchases!.syncPurchases(completionBlock: nil)
+        purchases!.syncPurchases(completion: nil)
         expect(self.backend.postedIsRestore!) == true
     }
 
@@ -2326,7 +2326,7 @@ class PurchasesTests: XCTestCase {
     func testAttributionDataSendsNetworkAppUserId() {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
 
-        Purchases.addAttributionData(data, fromNetwork: AttributionNetwork.appleSearchAds, forNetworkUserId: "newuser")
+        Purchases.addAttributionData(data, from: AttributionNetwork.appleSearchAds, forNetworkUserId: "newuser")
 
         setupPurchases()
 

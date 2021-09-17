@@ -7,15 +7,18 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RevenueCat.h
+//  RCBackendErrorCodeAPI.h
 //
-//  Created by Andrés Boedo on 8/18/20.
-//
+//  Created by Madeline Beyl on 9/7/21.
 
 #import <Foundation/Foundation.h>
 
-//! Project version number for Purchases.
-FOUNDATION_EXPORT double RevenueCatVersionNumber;
+NS_ASSUME_NONNULL_BEGIN
 
-//! Project version string for Purchases.
-FOUNDATION_EXPORT const unsigned char RevenueCatVersionString[];
+@interface RCBackendErrorCodeAPI : NSObject
+
++ (void)checkEnums;
+
+@end
+
+NS_ASSUME_NONNULL_END

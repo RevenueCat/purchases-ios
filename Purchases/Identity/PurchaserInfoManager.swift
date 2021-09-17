@@ -42,7 +42,7 @@ class PurchaserInfoManager {
 
     func fetchAndCachePurchaserInfo(appUserID: String,
                                     isAppBackgrounded: Bool,
-                                    completion maybeCompletion: ReceivePurchaserInfoBlock?) {
+                                    completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
         deviceCache.setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: appUserID)
         operationDispatcher.dispatchOnWorkerThread(withRandomDelay: isAppBackgrounded) {
             self.backend.getSubscriberData(appUserID: appUserID) { maybePurchaserInfo, maybeError in
@@ -66,7 +66,7 @@ class PurchaserInfoManager {
 
     func fetchAndCachePurchaserInfoIfStale(appUserID: String,
                                            isAppBackgrounded: Bool,
-                                           completion: ReceivePurchaserInfoBlock?) {
+                                           completion: ((PurchaserInfo?, Error?) -> Void)?) {
         let maybeCachedPurchaserInfo = cachedPurchaserInfo(appUserID: appUserID)
         let isCacheStale = deviceCache.isPurchaserInfoCacheStale(appUserID: appUserID,
                                                                  isAppBackgrounded: isAppBackgrounded)
@@ -95,7 +95,7 @@ class PurchaserInfoManager {
         sendUpdateIfChanged(purchaserInfo: info)
     }
 
-    func purchaserInfo(appUserID: String, completion maybeCompletion: ReceivePurchaserInfoBlock?) {
+    func purchaserInfo(appUserID: String, completion maybeCompletion: ((PurchaserInfo?, Error?) -> Void)?) {
         let maybeInfoFromCache = cachedPurchaserInfo(appUserID: appUserID)
         var completionCalled = false
 

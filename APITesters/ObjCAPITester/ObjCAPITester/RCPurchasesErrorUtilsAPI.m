@@ -22,7 +22,9 @@
     NSError *underlying = [[NSError alloc] initWithDomain:@"NetworkErrorDomain" code:28 userInfo:@{@"key": @"value"}];
     NSError *error = [RCPurchasesErrorUtils networkErrorWithUnderlyingError:underlying];
     error = [RCPurchasesErrorUtils backendErrorWithBackendCode:@12345 backendMessage:@"un mensaje"];
+    error = [RCPurchasesErrorUtils backendErrorWithBackendCode:@12345 backendMessage:nil];
     error = [RCPurchasesErrorUtils backendErrorWithBackendCode:@12345 backendMessage:@"un mensaje" finishable:YES];
+    error = [RCPurchasesErrorUtils backendErrorWithBackendCode:@12345 backendMessage:nil finishable:YES];
     error = [RCPurchasesErrorUtils unexpectedBackendResponseError];
     error = [RCPurchasesErrorUtils missingReceiptFileError];
     error = [RCPurchasesErrorUtils missingAppUserIDError];

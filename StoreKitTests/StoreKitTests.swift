@@ -82,7 +82,7 @@ class StoreKitTests: XCTestCase {
             let anonUserID = Purchases.shared.appUserID
             let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
 
-            Purchases.shared.logIn(appUserID: identifiedUserID) { identifiedPurchaserInfo, created, error in
+            Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
                 expect(error).to(beNil())
 
                 expect(created).to(beTrue())
@@ -100,7 +100,7 @@ class StoreKitTests: XCTestCase {
         expect(self.purchasesDelegate.purchaserInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
 
         // log in to create the user, then log out
-        Purchases.shared.logIn(appUserID: existingUserID) { logInPurchaserInfo, created, logInError in
+        Purchases.shared.logIn(existingUserID) { logInPurchaserInfo, created, logInError in
             Purchases.shared.logOut() { loggedOutPurchaserInfo, logOutError in
                 completionCalled = true
             }
@@ -114,7 +114,7 @@ class StoreKitTests: XCTestCase {
 
         completionCalled = false
 
-        Purchases.shared.logIn(appUserID: existingUserID) { purchaserInfo, created, logInError in
+        Purchases.shared.logIn(existingUserID) { purchaserInfo, created, logInError in
             completionCalled = true
             self.assertNoPurchases(purchaserInfo)
             expect(created).to(beFalse())
@@ -134,7 +134,7 @@ class StoreKitTests: XCTestCase {
         let existingUserID = UUID().uuidString
         expect(self.purchasesDelegate.purchaserInfoUpdateCount).toEventually(equal(1), timeout: .seconds(10))
 
-        Purchases.shared.logIn(appUserID: existingUserID) { logInPurchaserInfo, created, logInError in
+        Purchases.shared.logIn(existingUserID) { logInPurchaserInfo, created, logInError in
             self.purchaseMonthlyOffering()
             completionCalled = true
         }
@@ -165,11 +165,11 @@ class StoreKitTests: XCTestCase {
         let identifiedUserID = "\(#function)_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
 
         var completionCalled = false
-        Purchases.shared.logIn(appUserID: identifiedUserID) { identifiedPurchaserInfo, created, error in
+        Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
             expect(error).to(beNil())
             expect(created).to(beTrue())
             Purchases.shared.logOut { loggedOutPurchaserInfo, logOutError in
-                Purchases.shared.logIn(appUserID: identifiedUserID) { identifiedPurchaserInfo, created, error in
+                Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
                     expect(error).to(beNil())
                     expect(created).to(beFalse())
                     completionCalled = true
@@ -186,7 +186,7 @@ class StoreKitTests: XCTestCase {
         let userID1 = UUID().uuidString
         let userID2 = UUID().uuidString
 
-        Purchases.shared.logIn(appUserID: userID1) { identifiedPurchaserInfo, created, error in
+        Purchases.shared.logIn(userID1) { identifiedPurchaserInfo, created, error in
             self.purchaseMonthlyOffering()
         }
 
@@ -194,7 +194,7 @@ class StoreKitTests: XCTestCase {
 
         testSession.clearTransactions()
 
-        Purchases.shared.logIn(appUserID: userID2) { identifiedPurchaserInfo, created, error in
+        Purchases.shared.logIn(userID2) { identifiedPurchaserInfo, created, error in
             self.assertNoPurchases(identifiedPurchaserInfo)
             expect(error).to(beNil())
         }
@@ -210,7 +210,7 @@ class StoreKitTests: XCTestCase {
         let anonUserID = Purchases.shared.appUserID
         let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
 
-        Purchases.shared.logIn(appUserID: identifiedUserID) { identifiedPurchaserInfo, created, error in
+        Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
             expect(error).to(beNil())
 
             expect(created).to(beTrue())
@@ -253,7 +253,7 @@ private extension StoreKitTests {
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
-                Purchases.shared.syncPurchases(completionBlock: completion)
+                Purchases.shared.syncPurchases(completion)
             }
         }
     }

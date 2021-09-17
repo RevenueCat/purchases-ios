@@ -34,24 +34,40 @@ BOOL isAnonymous;
     // [p presentCodeRedemptionSheet];
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
     [RCPurchases configureWithAPIKey:@"" appUserID:@""];
+    [RCPurchases configureWithAPIKey:@"" appUserID:nil];
     [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false];
+    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false];
     [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:nil];
+    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:nil];
+    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
+    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
     
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];
     canI = [RCPurchases canMakePayments];
     version = [RCPurchases frameworkVersion];
+
+    // all should have deprecation warning:
+    // 'addAttributionData:fromNetwork:' is deprecated: Use the set<NetworkId> functions instead.
     [RCPurchases addAttributionData:@{} fromNetwork:RCAttributionNetworkBranch];
     [RCPurchases addAttributionData:@{} fromNetwork:RCAttributionNetworkBranch forNetworkUserId:@""];
+    [RCPurchases addAttributionData:@{} fromNetwork:RCAttributionNetworkBranch forNetworkUserId:nil];
         
     automaticAppleSearchAdsAttributionCollection = [RCPurchases automaticAppleSearchAdsAttributionCollection];
+
+    // should have deprecation warning 'debugLogsEnabled' is deprecated: use logLevel instead
     debugLogsEnabled = [RCPurchases debugLogsEnabled];
+
     logLevel = [RCPurchases logLevel];
     proxyURL = [RCPurchases proxyURL];
     forceUniversalAppStore = [RCPurchases forceUniversalAppStore];
     simulatesAskToBuyInSandbox = [RCPurchases simulatesAskToBuyInSandbox];
     sharedPurchases = [RCPurchases sharedPurchases];
     isConfigured = [RCPurchases isConfigured];
+
+    // should have deprecation warning:
+    // 'allowSharingAppStoreAccount' is deprecated: Configure behavior through the RevenueCat dashboard instead.
     allowSharingAppStoreAccount = [p allowSharingAppStoreAccount];
+
     finishTransactions = [p finishTransactions];
     delegate = [p delegate];
     appUserID = [p appUserID];
@@ -100,24 +116,29 @@ BOOL isAnonymous;
     [p setCreative: @""];
     [p collectDeviceIdentifiers];
     
-    [p purchaserInfoWithCompletionBlock:^(RCPurchaserInfo *info, NSError *error) {}];
-    [p offeringsWithCompletionBlock:^(RCOfferings *info, NSError *error) {}];
-    [p productsWithIdentifiers:@[@""] completionBlock:^(NSArray<SKProduct *> *products) { }];
-    [p purchaseProduct:skp withCompletionBlock:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *error, BOOL userCancelled) { }];
-    [p purchasePackage:pack withCompletionBlock:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
-    [p restoreTransactionsWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) {}];
-    [p syncPurchasesWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) {}];
-    [p checkTrialOrIntroductoryPriceEligibility:@[@""] completionBlock:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
+    [p purchaserInfoWithCompletion:^(RCPurchaserInfo *info, NSError *error) {}];
+    [p offeringsWithCompletion:^(RCOfferings *info, NSError *error) {}];
+    [p productsWithIdentifiers:@[@""] completion:^(NSArray<SKProduct *> *products) { }];
+    [p purchaseProduct:skp withCompletion:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *error, BOOL userCancelled) { }];
+    [p purchasePackage:pack withCompletion:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p restoreTransactionsWithCompletion:^(RCPurchaserInfo *i, NSError *e) {}];
+    [p syncPurchasesWithCompletion:^(RCPurchaserInfo *i, NSError *e) {}];
+    [p checkTrialOrIntroductoryPriceEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
     [p paymentDiscountForProductDiscount:skpd product:skp completion:^(SKPaymentDiscount *d, NSError *e) { }];
-    [p purchaseProduct:skp withDiscount:skmd completionBlock:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
-    [p purchasePackage:pack withDiscount:skmd completionBlock:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
-    
-    [p createAlias:@"" completionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
-    [p identify:@"" completionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
-    [p resetWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
+    [p purchaseProduct:skp withDiscount:skmd completion:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchasePackage:pack withDiscount:skmd completion:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
 
-    [p logIn:@"" completionBlock:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
-    [p logOutWithCompletionBlock:^(RCPurchaserInfo *i, NSError *e) { }];
+    // should have deprecation warning 'createAlias:completion:' is deprecated: Use logIn instead.
+    [p createAlias:@"" completion:^(RCPurchaserInfo *i, NSError *e) { }];
+
+    // should have deprecation warning 'identify:completion:' is deprecated: Use logIn instead.
+    [p identify:@"" completion:^(RCPurchaserInfo *i, NSError *e) { }];
+
+    // should have deprecation warning 'resetWithCompletion:' is deprecated: Use logOut instead.
+    [p resetWithCompletion:^(RCPurchaserInfo *i, NSError *e) { }];
+
+    [p logIn:@"" completion:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
+    [p logOutWithCompletion:^(RCPurchaserInfo *i, NSError *e) { }];
 
     [p.delegate purchases:p didReceiveUpdatedPurchaserInfo:pi];
     [p.delegate purchases:p
@@ -130,32 +151,38 @@ shouldPurchasePromoProduct:skp
 
 + (void)checkEnums {
     RCPeriodType t = RCNormal;
-    t = RCIntro;
-    t = RCTrial;
-    
+    switch(t) {
+        case RCNormal:
+        case RCIntro:
+        case RCTrial:
+            NSLog(@"%ld", (long)t);
+    }
+
     RCPurchaseOwnershipType o = RCPurchaseOwnershipTypePurchased;
-    o = RCPurchaseOwnershipTypeFamilyShared;
-    o = RCPurchaseOwnershipTypeUnknown;
-    
+    switch(o) {
+        case RCPurchaseOwnershipTypePurchased:
+        case RCPurchaseOwnershipTypeFamilyShared:
+        case RCPurchaseOwnershipTypeUnknown:
+            NSLog(@"%ld", (long)o);
+    }
+
     RCLogLevel l = RCLogLevelInfo;
-    l = RCLogLevelWarn;
-    l = RCLogLevelDebug;
-    l = RCLogLevelError;
-    
+    switch(l) {
+        case RCLogLevelInfo:
+        case RCLogLevelWarn:
+        case RCLogLevelDebug:
+        case RCLogLevelError:
+            NSLog(@"%ld", (long)o);
+    }
 }
 
 + (void)checkConstants {
-// TODO convert back once everything moved into Purchases
-    double vn = RevenueCatVersionNumber;
-    const unsigned char *vs = RevenueCatVersionString;
-
-    // breaking changes below this line
     NSErrorDomain bed = RCBackendErrorCodeDomain;
     NSErrorDomain ped = RCPurchasesErrorCodeDomain;
     NSErrorUserInfoKey fk = RCErrorDetails.RCFinishableKey;
     NSErrorUserInfoKey eck = RCErrorDetails.RCReadableErrorCodeKey;
 
-    NSLog([NSString stringWithFormat:@"%lf", vn], vs, bed, ped, fk, eck);
+    NSLog(bed, ped, fk, eck);
 }
 
 @end
