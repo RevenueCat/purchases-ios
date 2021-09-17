@@ -31,7 +31,8 @@ class ProductsManager: NSObject {
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             Task {
-                return await self.sk2ProductDetails(withIdentifiers: identifiers)
+                let productDetails = await self.sk2ProductDetails(withIdentifiers: identifiers)
+                completion(productDetails)
             }
         } else {
             self.products(withIdentifiers: identifiers) { skProducts in
