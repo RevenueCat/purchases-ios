@@ -75,9 +75,9 @@ class ProductDetailsTests: XCTestCase {
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
         var callbackCalled = false
 
-        sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { productDetailss in
+        sk1Fetcher.products(withIdentifiers: Set([productIdentifier])) { productDetailsSet in
             callbackCalled = true
-            guard let productDetails = productDetailss.first else { fatalError("couldn't get product!") }
+            guard let productDetails = productDetailsSet.first else { fatalError("couldn't get product!") }
 
             expect(productDetails.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
             expect(productDetails.localizedDescription) == "Monthly subscription with a 1-week free trial"
@@ -98,9 +98,9 @@ class ProductDetailsTests: XCTestCase {
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk2Fetcher = ProductsFetcherSK2()
 
-        let productDetailss = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
+        let productDetailsSet = try await sk2Fetcher.products(identifiers: Set([productIdentifier]))
 
-        let productDetails = try XCTUnwrap(productDetailss.first)
+        let productDetails = try XCTUnwrap(productDetailsSet.first)
 
         expect(productDetails.productIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
         expect(productDetails.localizedDescription) == "Monthly subscription with a 1-week free trial"
