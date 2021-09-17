@@ -37,23 +37,23 @@ class ProductDetailsTests: XCTestCase {
             "lifetime"
             ])
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
-        let sk1ProductDetailss = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
-        let sk1ProductDetailssByID = sk1ProductDetailss.reduce(into: [:]) { partialResult, wrapper in
+        let sk1ProductDetails = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
+        let sk1ProductDetailsByID = sk1ProductDetails.reduce(into: [:]) { partialResult, wrapper in
             partialResult[wrapper.productIdentifier] = wrapper
         }
 
         let sk2Fetcher = ProductsFetcherSK2()
-        let sk2ProductDetailss = try await sk2Fetcher.products(identifiers: productIdentifiers)
-        let sk2ProductDetailssByID = sk2ProductDetailss.reduce(into: [:]) { partialResult, wrapper in
+        let sk2ProductDetails = try await sk2Fetcher.products(identifiers: productIdentifiers)
+        let sk2ProductDetailsByID = sk2ProductDetails.reduce(into: [:]) { partialResult, wrapper in
             partialResult[wrapper.productIdentifier] = wrapper
         }
 
-        expect(sk1ProductDetailss.count) == productIdentifiers.count
-        expect(sk1ProductDetailss.count) == sk2ProductDetailss.count
+        expect(sk1ProductDetails.count) == productIdentifiers.count
+        expect(sk1ProductDetails.count) == sk2ProductDetails.count
 
-        for sk1ProductID in sk1ProductDetailssByID.keys {
-            let sk1Product = try XCTUnwrap(sk1ProductDetailssByID[sk1ProductID])
-            let equivalentSK2Product = try XCTUnwrap(sk2ProductDetailssByID[sk1ProductID])
+        for sk1ProductID in sk1ProductDetailsByID.keys {
+            let sk1Product = try XCTUnwrap(sk1ProductDetailsByID[sk1ProductID])
+            let equivalentSK2Product = try XCTUnwrap(sk2ProductDetailsByID[sk1ProductID])
 
             expect(sk1Product.productIdentifier) == equivalentSK2Product.productIdentifier
             expect(sk1Product.localizedDescription) == equivalentSK2Product.localizedDescription

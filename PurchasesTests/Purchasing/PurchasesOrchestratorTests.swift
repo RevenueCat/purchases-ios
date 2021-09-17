@@ -34,7 +34,6 @@ class PurchasesOrchestratorTests: XCTestCase {
 
     override func setUp() {
 
-
         productsManager = MockProductsManager()
         storeKitWrapper = MockStoreKitWrapper()
         systemInfo = try! MockSystemInfo(platformFlavor: "xyz",
