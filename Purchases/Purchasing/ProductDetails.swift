@@ -61,9 +61,6 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 @objc(RCSK2ProductDetails) public class SK2ProductDetails: ProductDetails {
 
-    // todo: remove when this gets fixed.
-    // limiting to arm architecture since builds on beta 5 fail if other archs are included
-    #if arch(arm64)
     init(sk2Product: StoreKit.Product) {
         self.underlyingSK2Product = sk2Product
     }
@@ -85,7 +82,6 @@ import StoreKit
     @objc public override var subscriptionGroupIdentifier: String? {
         underlyingSK2Product.subscription?.subscriptionGroupID
     }
-    #endif
 
 }
 

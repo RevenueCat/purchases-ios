@@ -16,7 +16,7 @@ import Foundation
 import StoreKit
 
 // swiftlint:disable identifier_name
-enum PurchaseStrings: CustomStringConvertible {
+enum PurchaseStrings {
 
     case cannot_purchase_product_appstore_configuration_error
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
@@ -42,9 +42,10 @@ enum PurchaseStrings: CustomStringConvertible {
     case callback_not_found_for_request(request: SKRequest)
     case unable_to_get_intro_eligibility_for_user(error: Error)
     case unable_to_get_intro_eligibility_with_error(error: Error)
+
 }
 
-extension PurchaseStrings {
+extension PurchaseStrings: CustomStringConvertible {
 
     var description: String {
         switch self {

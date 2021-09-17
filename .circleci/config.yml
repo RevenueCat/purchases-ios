@@ -52,6 +52,7 @@ commands:
       directory:
         type: string
     steps:
+
       - run: 
           name: Replace API key
           command: bundle exec fastlane replace_api_key_integration_tests
@@ -59,7 +60,7 @@ commands:
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
-          command: bundle exec fastlane scan
+          command: bundle exec fastlane test
 
       - store_test_results:
           path: fastlane/test_output
@@ -167,24 +168,20 @@ jobs:
           name: Build ObjCAPITester
           command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme ObjCAPITester
 
-  storekit_tests:
+  backend_integration_tests:
     macos:
       xcode: "13.0.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - run:
-          name: Open simulator
-          command: xcrun instruments -w "iPhone 11 Pro (14.5) [" || true
-      
       - install-dependencies
       
       - run:
-          name: Run StoreKit Tests
-          command: bundle exec fastlane storekit_tests
+          name: Run backend_integration Tests
+          command: bundle exec fastlane backend_integration_tests
           environment:
-            SCAN_DEVICE: iPhone 11 Pro (14.5)
+            SCAN_DEVICE: iPhone 11 Pro (15.0)
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -369,7 +366,7 @@ workflows:
       - swift_apitest
       - objc_apitest
       - buildTvWatchAndMacOS
-      - storekit_tests: *release-tags-and-branches
+      - backend_integration_tests
       - deployment-checks: *release-branches
       - integration-tests-cocoapods: *release-tags-and-branches
       - integration-tests-swift-package-manager: *release-tags-and-branches
