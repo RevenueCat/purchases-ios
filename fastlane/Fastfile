@@ -44,12 +44,14 @@ platform :ios do
     scan(
       step_name: "scan - iPhone", 
       devices: ["iPhone 8", "iPhone 12"],
-      scheme: "UnitTests"
+      scheme: "UnitTests",
+      prelaunch_simulator: true
     )
     scan(
       step_name: "scan - Apple TV",
       devices: ["Apple TV"],
-      scheme: "RevenueCat"
+      scheme: "RevenueCat",
+      prelaunch_simulator: true
     )
   end
 
