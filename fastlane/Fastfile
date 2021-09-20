@@ -39,6 +39,10 @@ platform :ios do
 
   desc "Runs all the tests"
   lane :test do
+    puts 'sleeping for 5 minutes so the simulators have time to boot up. The sadness.'
+    sleep(5 * 60)
+    puts '5 minutes elapsed. Time to get back to work'
+    
     # Scan can't target two different platforms in devices
     # Need to run scan multiple times
     scan(
