@@ -88,7 +88,7 @@ class ProductDetailsTests: XCTestCase {
             expect(productDetails.localizedTitle) == "Monthly Free Trial"
         }
 
-        expect(callbackCalled).toEventually(beTrue())
+        expect(callbackCalled).toEventually(beTrue(), timeout: .seconds(5))
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
