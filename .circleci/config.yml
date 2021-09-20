@@ -124,11 +124,10 @@ jobs:
       - run:
           name: Run tests
           command: bundle exec fastlane test
-      - store_test_results:
-          path: fastlane/test_output
       - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
+          path: fastlane/test_output
+      - store_test_results:
+          path: fastlane/test_output/scan
   buildTvWatchAndMacOS:
     macos:
       xcode: "13.0.0"
