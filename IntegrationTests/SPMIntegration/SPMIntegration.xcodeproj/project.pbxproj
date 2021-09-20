@@ -438,6 +438,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SPMIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "match Development com.revenuecat.SPMIntegration";
 				SWIFT_OBJC_BRIDGING_HEADER = "SPMIntegration-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
