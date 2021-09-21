@@ -977,6 +977,36 @@ class BackendTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
     }
 
+    func testCreateAliasCachesForSameUserIDs() {
+        let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
+        httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
+
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: {_ in })
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: {_ in })
+
+        expect(self.httpClient.calls.count).to(equal(1))
+    }
+
+    func testCreateAliasDoesntCacheForDifferentNewUserID() {
+        let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
+        httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
+
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: {_ in })
+        backend?.createAlias(appUserID: userID, newAppUserID: "another_new_alias", completion: {_ in })
+
+        expect(self.httpClient.calls.count).to(equal(2))
+    }
+
+    func testCreateAliasDoesntCacheForDifferentCurrentUserID() {
+        let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
+        httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
+
+        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: {_ in })
+        backend?.createAlias(appUserID: "skajfdh", newAppUserID: "new_alias", completion: {_ in })
+
+        expect(self.httpClient.calls.count).to(equal(2))
+    }
+
     func testNetworkErrorIsForwardedForPurchaserInfoCalls() {
         let response = HTTPResponse(statusCode: 200,
                                     response: nil,
@@ -1739,6 +1769,51 @@ class BackendTests: XCTestCase {
         expect(receivedCreated) == false
         expect(receivedPurchaserInfo) == PurchaserInfo(data: mockPurchaserInfoDict)
         expect(receivedError).to(beNil())
+    }
+
+
+    func testLoginCachesForSameUserIDs() {
+        let newAppUserID = "new id"
+
+        let currentAppUserID = "old id"
+        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockPurchaserInfoDict)
+
+        backend?.logIn(currentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { _,_,_  in }
+        backend?.logIn(currentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { _,_,_  in }
+
+        expect(self.httpClient.calls.count).to(equal(1))
+    }
+
+    func testLoginDoesntCacheForDifferentNewUserID() {
+        let newAppUserID = "new id"
+        let secondNewAppUserID = "new id 2"
+
+        let currentAppUserID = "old id"
+        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockPurchaserInfoDict)
+
+        backend?.logIn(currentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { _,_,_  in }
+        backend?.logIn(currentAppUserID: currentAppUserID,
+                       newAppUserID: secondNewAppUserID) { _,_,_  in }
+
+        expect(self.httpClient.calls.count).to(equal(2))
+    }
+
+    func testLoginDoesntCacheForDifferentCurrentUserID() {
+        let newAppUserID = "new id"
+
+        let currentAppUserID = "old id"
+        let currentAppUserID2 = "old id 2"
+        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockPurchaserInfoDict)
+
+        backend?.logIn(currentAppUserID: currentAppUserID,
+                       newAppUserID: newAppUserID) { _,_,_  in }
+        backend?.logIn(currentAppUserID: currentAppUserID2,
+                       newAppUserID: newAppUserID) { _,_,_  in }
+
+        expect(self.httpClient.calls.count).to(equal(2))
     }
 }
 
