@@ -68,4 +68,31 @@ class PurchasesOrchestratorTests: XCTestCase {
                                              receiptParser: receiptParser,
                                              deviceCache: deviceCache)
     }
+
+    func testPurchaseSK2PackageReturnsErrorIfSK1Package() {
+        let sk1Product = MockSK1Product(mockProductIdentifier: "com.revenuecat.test", mockSubscriptionGroupIdentifier: "subs_group")
+        let productDetails = SK1ProductDetails(sk1Product: sk1Product)
+        let package = Package(identifier: "package", packageType: .monthly, productDetails: productDetails, offeringIdentifier: "offering")
+
+        purchasesOrchestrator.purchase(package: package) {
+            
+        }
+    }
+
+    func testPurchaseSK2PackageTriggersAPurchase() {
+
+    }
+
+    func testPurchaseSK2PackageHandlesPurchaseResult() {
+
+    }
+
+    func testPurchaseSK2PackageSendsReceiptToBackendIfSuccessful() {
+
+    }
+
+    func testPurchaseSK2PackageSkipsIfUserCancelled() {
+
+    }
+
 }

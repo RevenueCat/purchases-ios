@@ -556,19 +556,34 @@ private extension PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func purchase(sk2Package: Package, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(sk2Package: Package) async -> Result<(PurchaserInfo, Bool), Error> {
         guard let sk2ProductDetails = sk2Package.productDetails as? SK2ProductDetails else {
-            return
+            // todo: use custom error
+            return .failure(ErrorUtils.unexpectedBackendResponseError())
         }
 
         let sk2Product = sk2ProductDetails.underlyingSK2Product
-        Task {
+        do {
             let result = try await sk2Product.purchase()
             await storeKit2Listener.handle(purchaseResult: result)
             // todo: nicer handling, improve the userCancelled case
-            syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybeCustomerInfo, maybeError in
-                completion(nil, maybeCustomerInfo, maybeError, false)
+            let userCancelled = false
+
+            return await withCheckedContinuation { continuation in
+                syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybeCustomerInfo, maybeError in
+                    if let error = maybeError {
+                        continuation.resume(returning: .failure(error))
+                        return
+                    }
+                    guard let customerInfo = maybeCustomerInfo else {
+                        continuation.resume(returning: .failure(ErrorUtils.unexpectedBackendResponseError()))
+                    }
+
+                    continuation.resume(returning: .success((customerInfo, userCancelled)))
+                }
             }
+        } catch {
+            return .failure(error)
         }
     }
 
