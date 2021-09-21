@@ -78,7 +78,6 @@
 			isa = PBXGroup;
 			children = (
 				2D6C02422549F5920039CB92 /* CommonFiles */,
-				2D6C02062549F5600039CB92 /* SPMIntegration */,
 				2D6C02222549F5620039CB92 /* SPMIntegrationTests */,
 				2D6C02052549F5600039CB92 /* Products */,
 				2D6C02682549F5D40039CB92 /* Frameworks */,
@@ -93,13 +92,6 @@
 				2D6C021F2549F5620039CB92 /* SPMIntegrationTests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		2D6C02062549F5600039CB92 /* SPMIntegration */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = SPMIntegration;
 			sourceTree = "<group>";
 		};
 		2D6C02222549F5620039CB92 /* SPMIntegrationTests */ = {
