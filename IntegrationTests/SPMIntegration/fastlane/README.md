@@ -59,6 +59,16 @@ Create sandbox account
 fastlane ios deployment_checks
 ```
 Deployment checks
+### ios build_tv_watch_mac
+```
+fastlane ios build_tv_watch_mac
+```
+tvOS, watchOS, and macOS build
+### ios build_mac
+```
+fastlane ios build_mac
+```
+macOS build
 ### ios carthage_archive
 ```
 fastlane ios carthage_archive
@@ -94,6 +104,16 @@ Export XCFramework
 fastlane ios storekit_tests
 ```
 Run StoreKitTests
+### ios update_swift_package_commit
+```
+fastlane ios update_swift_package_commit
+```
+Update swift package commit
+### ios generate_docs
+```
+fastlane ios generate_docs
+```
+Generate Jazzy Docs
 
 ----
 
