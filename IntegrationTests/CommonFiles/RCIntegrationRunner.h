@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)start;
 
-- (void)purchaserInfoWithCompletionBlock:(void (^)(RCPurchaserInfo * _Nullable, NSError * _Nullable))completion
+- (void)purchaserInfoWithCompletion:(void (^)(RCPurchaserInfo * _Nullable, NSError * _Nullable))completion
 NS_SWIFT_NAME(purchaserInfo(_:));
 
 @end
