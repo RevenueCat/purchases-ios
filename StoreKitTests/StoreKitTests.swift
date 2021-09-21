@@ -253,7 +253,7 @@ private extension StoreKitTests {
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
-                Purchases.shared.syncPurchases(completion)
+                Purchases.shared.syncPurchases(completion: completion)
             }
         }
     }

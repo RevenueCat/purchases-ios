@@ -26,9 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
                            appUserID:@"integrationTest"];
 }
 
-- (void)purchaserInfoWithCompletionBlock:(RCReceivePurchaserInfoBlock)completion
+- (void)purchaserInfoWithCompletion:(RCReceivePurchaserInfoBlock)completion
 NS_SWIFT_NAME(purchaserInfo(_:)) {
-    [RCPurchases.sharedPurchases purchaserInfoWithCompletionBlock:completion];
+    [RCPurchases.sharedPurchases purchaserInfoWithCompletion:completion];
 }
 
 @end
