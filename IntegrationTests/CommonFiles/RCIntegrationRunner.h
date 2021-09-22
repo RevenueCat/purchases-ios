@@ -8,8 +8,6 @@
 #import <Foundation/Foundation.h>
 @class RCPurchaserInfo;
 
-typedef void (^RCReceivePurchaserInfoBlock) (RCPurchaserInfo * _Nullable, NSError * _Nullable);
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface RCIntegrationRunner : NSObject
