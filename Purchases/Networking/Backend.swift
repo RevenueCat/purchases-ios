@@ -18,6 +18,8 @@ typealias BackendPurchaserInfoResponseHandler = (PurchaserInfo?, Error?) -> Void
 typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], Error?) -> Void
 typealias OfferingsResponseHandler = ([String: Any]?, Error?) -> Void
 typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumber?, Error?) -> Void
+typealias PostRequestResponseHandler = (Error?) -> Void
+typealias IdentifyResponseHandler = (PurchaserInfo?, Bool, Error?) -> Void
 
 // swiftlint:disable type_body_length file_length
 class Backend {
@@ -29,10 +31,12 @@ class Backend {
     private let httpClient: HTTPClient
     private let apiKey: String
 
-    // callbackQueue controls access to both offeringsCallbacksCache and purchaserInfoCallbacksCache
+    // callbackQueue controls access to callbackCaches
     private let callbackQueue = DispatchQueue(label: "Backend callbackQueue")
     private var offeringsCallbacksCache: [String: [OfferingsResponseHandler]]
     private var purchaserInfoCallbacksCache: [String: [BackendPurchaserInfoResponseHandler]]
+    private var createAliasCallbacksCache: [String: [PostRequestResponseHandler?]]
+    private var identifyCallbacksCache: [String: [IdentifyResponseHandler]]
 
     private var authHeaders: [String: String] { return ["Authorization": "Bearer \(self.apiKey)"] }
 
@@ -49,22 +53,32 @@ class Backend {
         self.apiKey = apiKey
         self.offeringsCallbacksCache = [:]
         self.purchaserInfoCallbacksCache = [:]
+        self.createAliasCallbacksCache = [:]
+        self.identifyCallbacksCache = [:]
     }
 
-    func createAlias(appUserID: String, newAppUserID: String, completion: ((Error?) -> Void)?) {
+    func createAlias(appUserID: String, newAppUserID: String, completion: PostRequestResponseHandler?) {
         guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
             completion?(ErrorUtils.missingAppUserIDError())
             return
         }
 
-        let path = "/subscribers/\(appUserID)/alias"
+        let cacheKey = appUserID + newAppUserID
+        if add(createAliasCallback: completion, key: cacheKey) == .addedToExistingInFlightList {
+            return
+        }
+
         Logger.user(Strings.identity.creating_alias(userA: appUserID, userB: newAppUserID))
         httpClient.performPOSTRequest(serially: true,
-                                      path: path,
+                                      path: "/subscribers/\(appUserID)/alias",
                                       requestBody: ["new_app_user_id": newAppUserID],
                                       headers: authHeaders) { statusCode, response, error in
-            self.handle(response: response, statusCode: statusCode, error: error, completion: completion)
+
+            for callback in self.getCreateAliasCallbacksAndClearCache(forKey: cacheKey) {
+                self.handle(response: response, statusCode: statusCode, error: error, completion: callback)
+            }
         }
+
     }
 
     func clearCaches() {
@@ -224,7 +238,7 @@ class Backend {
     func post(attributionData: [String: Any],
               network: AttributionNetwork,
               appUserID: String,
-              completion: ((Error?) -> Void)?) {
+              completion: PostRequestResponseHandler?) {
         guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
             completion?(ErrorUtils.missingAppUserIDError())
             return
@@ -242,7 +256,7 @@ class Backend {
 
     func post(subscriberAttributes: SubscriberAttributeDict,
               appUserID: String,
-              completion: ((Error?) -> Void)?) {
+              completion: PostRequestResponseHandler?) {
         guard subscriberAttributes.count > 0 else {
             Logger.warn(Strings.attribution.empty_subscriber_attributes)
             completion?(ErrorCode.emptySubscriberAttributes)
@@ -261,7 +275,7 @@ class Backend {
                                       path: path,
                                       requestBody: ["attributes": attributesInBackendFormat],
                                       headers: authHeaders) { statusCode, response, error in
-            self.handleSubscribedAttributesResult(statusCode: statusCode,
+            self.handleSubscriberAttributesResult(statusCode: statusCode,
                                                   response: response,
                                                   error: error,
                                                   completion: completion)
@@ -270,15 +284,21 @@ class Backend {
 
     func logIn(currentAppUserID: String,
                newAppUserID: String,
-               completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
+               completion: @escaping IdentifyResponseHandler) {
+
+        let cacheKey = currentAppUserID + newAppUserID
+        if add(identifyCallback: completion, key: cacheKey) == .addedToExistingInFlightList {
+            return
+        }
 
         let requestBody = ["app_user_id": currentAppUserID, "new_app_user_id": newAppUserID]
         httpClient.performPOSTRequest(serially: true,
                                       path: "/subscribers/identify",
                                       requestBody: requestBody,
                                       headers: authHeaders) { statusCode, response, error in
-
-            self.handleLogin(response: response, statusCode: statusCode, error: error, completion: completion)
+            for callback in self.getIdentifyCallbacksAndClearCache(forKey: cacheKey) {
+                self.handleLogin(response: response, statusCode: statusCode, error: error, completion: callback)
+            }
         }
     }
 
@@ -426,7 +446,7 @@ private extension Backend {
     func handleLogin(response: [String: Any]?,
                      statusCode: Int,
                      error: Error?,
-                     completion: (PurchaserInfo?, Bool, Error?) -> Void ) {
+                     completion: IdentifyResponseHandler) {
         if let error = error {
             completion(nil, false, ErrorUtils.networkError(withUnderlyingError: error))
             return
@@ -473,10 +493,10 @@ private extension Backend {
         return resultDict
     }
 
-    func handleSubscribedAttributesResult(statusCode: Int,
+    func handleSubscriberAttributesResult(statusCode: Int,
                                           response: [String: Any]?,
                                           error: Error?,
-                                          completion: ((Error?) -> Void)?) {
+                                          completion: PostRequestResponseHandler?) {
         guard let completion = completion else {
             return
         }
@@ -501,7 +521,7 @@ private extension Backend {
 
     }
 
-    func handle(response: [String: Any]?, statusCode: Int, error: Error?, completion: ((Error?) -> Void)?) {
+    func handle(response: [String: Any]?, statusCode: Int, error: Error?, completion: PostRequestResponseHandler?) {
         if let error = error {
             completion?(ErrorUtils.networkError(withUnderlyingError: error))
             return
@@ -632,6 +652,32 @@ private extension Backend {
         }
     }
 
+    func add(createAliasCallback: PostRequestResponseHandler?, key: String) -> CallbackCacheStatus {
+        return callbackQueue.sync { [self] in
+            var callbacksForKey = createAliasCallbacksCache[key] ?? []
+            let cacheStatus: CallbackCacheStatus = !callbacksForKey.isEmpty
+                ? .addedToExistingInFlightList
+                : .firstCallbackAddedToList
+
+            callbacksForKey.append(createAliasCallback)
+            createAliasCallbacksCache[key] = callbacksForKey
+            return cacheStatus
+        }
+    }
+
+    func add(identifyCallback: @escaping IdentifyResponseHandler, key: String) -> CallbackCacheStatus {
+        return callbackQueue.sync { [self] in
+            var callbacksForKey = identifyCallbacksCache[key] ?? []
+            let cacheStatus: CallbackCacheStatus = !callbacksForKey.isEmpty
+                ? .addedToExistingInFlightList
+                : .firstCallbackAddedToList
+
+            callbacksForKey.append(identifyCallback)
+            identifyCallbacksCache[key] = callbacksForKey
+            return cacheStatus
+        }
+    }
+
     func getOfferingsCallbacksAndClearCache(forKey key: String) -> [OfferingsResponseHandler] {
         return callbackQueue.sync { [self] in
             let callbacks = offeringsCallbacksCache.removeValue(forKey: key)
@@ -643,6 +689,22 @@ private extension Backend {
     func getPurchaserInfoCallbacksAndClearCache(forKey key: String) -> [BackendPurchaserInfoResponseHandler] {
         return callbackQueue.sync { [self] in
             let callbacks = purchaserInfoCallbacksCache.removeValue(forKey: key)
+            assert(callbacks != nil)
+            return callbacks ?? []
+        }
+    }
+
+    func getCreateAliasCallbacksAndClearCache(forKey key: String) -> [PostRequestResponseHandler?] {
+        return callbackQueue.sync { [self] in
+            let callbacks = createAliasCallbacksCache.removeValue(forKey: key)
+            assert(callbacks != nil)
+            return callbacks ?? []
+        }
+    }
+
+    func getIdentifyCallbacksAndClearCache(forKey key: String) -> [IdentifyResponseHandler] {
+        return callbackQueue.sync { [self] in
+            let callbacks = identifyCallbacksCache.removeValue(forKey: key)
             assert(callbacks != nil)
             return callbacks ?? []
         }
