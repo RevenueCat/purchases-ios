@@ -63,7 +63,7 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 	<tbody>
 		<tr>
 			<td>Purchases.Offering</td>
-			<td>RCOperationAlreadyInProgressForProductError</td>
+			<td>Offering</td>
 		</tr>
 		<tr>
 			<td>Purchases.RevenueCatBackendErrorCode</td>
