@@ -18,7 +18,7 @@ Swift Package Manager (SPM) integration is currently not working as expected. If
 
 **Purchases** is the currently supported, production-ready, open source framework that provides a wrapper around `StoreKit` and the RevenueCat backend to make implementing in-app subscriptions in `Swift` or `Objective-C` easy - receipt validation and status tracking included! 
 
-**RevenueCat** is our next big release (what we've been calling Purchases V4). It is a rename of `Purchases` to `RevenueCat`, but also now 100% Swift. It contains all the same functionality (and almost exactly the same API) as `Purchases` with the addition of `StoreKit2` support. It's not a brand-new framework, but rather, a migration of the ObjC bits over to Swift with improved nullability, various bug fixes, and some new features. It's nearly production-ready, but still in Beta while we continue to work on the `StoreKit2` bits and iron out any remaining bugs folks find.
+**RevenueCat** is our next big release (what we've been calling Purchases V4). It is a rename of `Purchases` to `RevenueCat`, and now, 100% Swift. It contains all the same functionality (and almost exactly the same API) as `Purchases`. It's not a brand-new framework, but rather, a migration of the ObjC bits over to Swift with improved nullability, various bug fixes, and some new features. We're also going to be adding in `StoreKit2` support before we 🚢 it, too! The framework is nearly production-ready, but we're going to keep it in beta while we continue to work on the `StoreKit2` bits and iron out any remaining bugs folks find. Keep an eye out over the next few releases if you're excited to try out the `StoreKit2` integration- we'll announce when we add it to the beta 😄
 
 ## Features
 |   | RevenueCat |
