@@ -63,15 +63,14 @@ class Backend {
             return
         }
 
-        let path = "/subscribers/\(appUserID)/alias"
-        let cacheKey = path + newAppUserID
+        let cacheKey = appUserID + newAppUserID
         if add(createAliasCallback: completion, key: cacheKey) == .addedToExistingInFlightList {
             return
         }
 
         Logger.user(Strings.identity.creating_alias(userA: appUserID, userB: newAppUserID))
         httpClient.performPOSTRequest(serially: true,
-                                      path: path,
+                                      path: "/subscribers/\(appUserID)/alias",
                                       requestBody: ["new_app_user_id": newAppUserID],
                                       headers: authHeaders) { statusCode, response, error in
 
@@ -287,15 +286,14 @@ class Backend {
                newAppUserID: String,
                completion: @escaping IdentifyResponseHandler) {
 
-        let path = "/subscribers/identify"
-        let cacheKey = path + currentAppUserID + newAppUserID
+        let cacheKey = currentAppUserID + newAppUserID
         if add(identifyCallback: completion, key: cacheKey) == .addedToExistingInFlightList {
             return
         }
 
         let requestBody = ["app_user_id": currentAppUserID, "new_app_user_id": newAppUserID]
         httpClient.performPOSTRequest(serially: true,
-                                      path: path,
+                                      path: "/subscribers/identify",
                                       requestBody: requestBody,
                                       headers: authHeaders) { statusCode, response, error in
             for callback in self.getIdentityCallbacksAndClearCache(forKey: cacheKey) {
