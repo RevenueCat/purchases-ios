@@ -998,11 +998,17 @@ class BackendTests: XCTestCase {
     }
 
     func testCreateAliasDoesntCacheForDifferentCurrentUserID() {
-        let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
+        let newAppUserID = "new_alias"
+        let currentAppUserID1 = userID
+        let currentAppUserID2 = userID + "2"
 
-        backend?.createAlias(appUserID: userID, newAppUserID: "new_alias", completion: {_ in })
-        backend?.createAlias(appUserID: "skajfdh", newAppUserID: "new_alias", completion: {_ in })
+        let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
+
+        httpClient.mock(requestPath: "/subscribers/" + currentAppUserID1 + "/alias", response: response)
+        backend?.createAlias(appUserID: currentAppUserID1, newAppUserID: newAppUserID, completion: {_ in })
+
+        httpClient.mock(requestPath: "/subscribers/" + currentAppUserID2 + "/alias", response: response)
+        backend?.createAlias(appUserID: currentAppUserID2, newAppUserID: newAppUserID, completion: {_ in })
 
         expect(self.httpClient.calls.count).to(equal(2))
     }

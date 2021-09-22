@@ -18,9 +18,7 @@ typealias BackendPurchaserInfoResponseHandler = (PurchaserInfo?, Error?) -> Void
 typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], Error?) -> Void
 typealias OfferingsResponseHandler = ([String: Any]?, Error?) -> Void
 typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumber?, Error?) -> Void
-
-//TODO is there a better name for this? PostResponseHandler?
-typealias SimpleResponseHandler = (Error?) -> Void
+typealias PostRequestResponseHandler = (Error?) -> Void
 typealias IdentifyResponseHandler = (PurchaserInfo?, Bool, Error?) -> Void
 
 // swiftlint:disable type_body_length file_length
@@ -33,11 +31,11 @@ class Backend {
     private let httpClient: HTTPClient
     private let apiKey: String
 
-    // callbackQueue controls access to both callbackCaches
+    // callbackQueue controls access to callbackCaches
     private let callbackQueue = DispatchQueue(label: "Backend callbackQueue")
     private var offeringsCallbacksCache: [String: [OfferingsResponseHandler]]
     private var purchaserInfoCallbacksCache: [String: [BackendPurchaserInfoResponseHandler]]
-    private var createAliasCallbacksCache: [String: [SimpleResponseHandler?]]
+    private var createAliasCallbacksCache: [String: [PostRequestResponseHandler?]]
     private var identifyCallbacksCache: [String: [IdentifyResponseHandler]]
 
     private var authHeaders: [String: String] { return ["Authorization": "Bearer \(self.apiKey)"] }
@@ -59,7 +57,7 @@ class Backend {
         self.identifyCallbacksCache = [:]
     }
 
-    func createAlias(appUserID: String, newAppUserID: String, completion: SimpleResponseHandler?) {
+    func createAlias(appUserID: String, newAppUserID: String, completion: PostRequestResponseHandler?) {
         guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
             completion?(ErrorUtils.missingAppUserIDError())
             return
@@ -241,7 +239,7 @@ class Backend {
     func post(attributionData: [String: Any],
               network: AttributionNetwork,
               appUserID: String,
-              completion: ((Error?) -> Void)?) {
+              completion: PostRequestResponseHandler?) {
         guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
             completion?(ErrorUtils.missingAppUserIDError())
             return
@@ -259,7 +257,7 @@ class Backend {
 
     func post(subscriberAttributes: SubscriberAttributeDict,
               appUserID: String,
-              completion: ((Error?) -> Void)?) {
+              completion: PostRequestResponseHandler?) {
         guard subscriberAttributes.count > 0 else {
             Logger.warn(Strings.attribution.empty_subscriber_attributes)
             completion?(ErrorCode.emptySubscriberAttributes)
@@ -278,7 +276,7 @@ class Backend {
                                       path: path,
                                       requestBody: ["attributes": attributesInBackendFormat],
                                       headers: authHeaders) { statusCode, response, error in
-            self.handleSubscribedAttributesResult(statusCode: statusCode,
+            self.handleSubscriberAttributesResult(statusCode: statusCode,
                                                   response: response,
                                                   error: error,
                                                   completion: completion)
@@ -497,10 +495,10 @@ private extension Backend {
         return resultDict
     }
 
-    func handleSubscribedAttributesResult(statusCode: Int,
+    func handleSubscriberAttributesResult(statusCode: Int,
                                           response: [String: Any]?,
                                           error: Error?,
-                                          completion: ((Error?) -> Void)?) {
+                                          completion: PostRequestResponseHandler?) {
         guard let completion = completion else {
             return
         }
@@ -525,7 +523,7 @@ private extension Backend {
 
     }
 
-    func handle(response: [String: Any]?, statusCode: Int, error: Error?, completion: SimpleResponseHandler?) {
+    func handle(response: [String: Any]?, statusCode: Int, error: Error?, completion: PostRequestResponseHandler?) {
         if let error = error {
             completion?(ErrorUtils.networkError(withUnderlyingError: error))
             return
@@ -629,7 +627,6 @@ private extension Backend {
     }
 
     // MARK: Callback cache management
-    // TODO make these functions generic
 
     func add(callback: @escaping BackendPurchaserInfoResponseHandler, key: String) -> CallbackCacheStatus {
         return callbackQueue.sync { [self] in
@@ -657,7 +654,7 @@ private extension Backend {
         }
     }
 
-    func add(createAliasCallback: ((Error?) -> Void)?, key: String) -> CallbackCacheStatus {
+    func add(createAliasCallback: PostRequestResponseHandler?, key: String) -> CallbackCacheStatus {
         return callbackQueue.sync { [self] in
             var callbacksForKey = createAliasCallbacksCache[key] ?? []
             let cacheStatus: CallbackCacheStatus = !callbacksForKey.isEmpty
@@ -699,7 +696,7 @@ private extension Backend {
         }
     }
 
-    func getCreateAliasCallbacksAndClearCache(forKey key: String) -> [SimpleResponseHandler?] {
+    func getCreateAliasCallbacksAndClearCache(forKey key: String) -> [PostRequestResponseHandler?] {
         return callbackQueue.sync { [self] in
             let callbacks = createAliasCallbacksCache.removeValue(forKey: key)
             assert(callbacks != nil)
