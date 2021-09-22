@@ -296,7 +296,7 @@ class Backend {
                                       path: "/subscribers/identify",
                                       requestBody: requestBody,
                                       headers: authHeaders) { statusCode, response, error in
-            for callback in self.getIdentityCallbacksAndClearCache(forKey: cacheKey) {
+            for callback in self.getIdentifyCallbacksAndClearCache(forKey: cacheKey) {
                 self.handleLogin(response: response, statusCode: statusCode, error: error, completion: callback)
             }
         }
@@ -702,7 +702,7 @@ private extension Backend {
         }
     }
 
-    func getIdentityCallbacksAndClearCache(forKey key: String) -> [IdentifyResponseHandler] {
+    func getIdentifyCallbacksAndClearCache(forKey key: String) -> [IdentifyResponseHandler] {
         return callbackQueue.sync { [self] in
             let callbacks = identifyCallbacksCache.removeValue(forKey: key)
             assert(callbacks != nil)

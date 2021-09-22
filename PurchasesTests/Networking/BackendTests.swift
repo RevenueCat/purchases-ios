@@ -1807,7 +1807,6 @@ class BackendTests: XCTestCase {
         expect(receivedError).to(beNil())
     }
 
-
     func testLoginCachesForSameUserIDs() {
         let newAppUserID = "new id"
 
@@ -1869,7 +1868,6 @@ class BackendTests: XCTestCase {
                        newAppUserID: newAppUserID) { _,_,_  in
             completion2Called = true
         }
-
 
         expect(self.httpClient.calls.count).to(equal(1))
         expect(completion1Called).toEventually(beTrue())
