@@ -132,7 +132,7 @@ private extension OfferingsManager {
     func logMissingProductsIfAppropriate(products: [String: SKProduct],
                                          productIdentifiers: Set<String>,
                                          offeringsData: [String: Any]) {
-        guard !products.isEmpty,
+        guard !productIdentifiers.isEmpty,
               !offeringsData.isEmpty else {
             return
         }
