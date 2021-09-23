@@ -94,7 +94,9 @@ private extension OfferingsManager {
             }
 
             if let createdOfferings = self.offeringsFactory.createOfferings(withProducts: productsByID, data: data) {
-                self.logMissingProductsIfAppropriate(products: productsByID, offeringsData: data)
+                self.logMissingProductsIfAppropriate(products: productsByID,
+                                                     productIdentifiers: productIdentifiers,
+                                                     offeringsData: data)
 
                 self.deviceCache.cache(offerings: createdOfferings)
                 self.dispatchCompletionOnMainThreadIfPossible(completion,
@@ -127,17 +129,20 @@ private extension OfferingsManager {
         return Set(productIdenfitiersArray)
     }
 
-    func logMissingProductsIfAppropriate(products: [String: SKProduct], offeringsData: [String: Any]) {
+    func logMissingProductsIfAppropriate(products: [String: SKProduct],
+                                         productIdentifiers: Set<String>,
+                                         offeringsData: [String: Any]) {
         guard !products.isEmpty,
               !offeringsData.isEmpty else {
             return
         }
 
-        let productIdentifiers = extractProductIdentifiers(fromOfferingsData: offeringsData)
-        let missingProducts = Set(products.keys).intersection(productIdentifiers)
+        var mutableProductIdentifiers = Set(productIdentifiers)
+        mutableProductIdentifiers.subtract(Set(products.keys))
 
-        if !missingProducts.isEmpty {
-            Logger.appleWarning(Strings.offering.cannot_find_product_configuration_error(identifiers: missingProducts))
+        if !mutableProductIdentifiers.isEmpty {
+            Logger.appleWarning(
+                Strings.offering.cannot_find_product_configuration_error(identifiers: mutableProductIdentifiers))
         }
     }
 
