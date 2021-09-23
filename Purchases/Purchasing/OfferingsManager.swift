@@ -93,11 +93,10 @@ private extension OfferingsManager {
                 result[product.productIdentifier] = product
             }
 
-            if let createdOfferings = self.offeringsFactory.createOfferings(withProducts: productsByID, data: data) {
-                self.logMissingProductsIfAppropriate(products: productsByID,
-                                                     productIdentifiers: productIdentifiers,
-                                                     offeringsData: data)
+            self.logMissingProductsIfAppropriate(products: productsByID,
+                                                 productIdentifiers: productIdentifiers)
 
+            if let createdOfferings = self.offeringsFactory.createOfferings(withProducts: productsByID, data: data) {
                 self.deviceCache.cache(offerings: createdOfferings)
                 self.dispatchCompletionOnMainThreadIfPossible(completion,
                                                               offerings: createdOfferings,
@@ -130,10 +129,8 @@ private extension OfferingsManager {
     }
 
     func logMissingProductsIfAppropriate(products: [String: SKProduct],
-                                         productIdentifiers: Set<String>,
-                                         offeringsData: [String: Any]) {
-        guard !productIdentifiers.isEmpty,
-              !offeringsData.isEmpty else {
+                                         productIdentifiers: Set<String>) {
+        guard !productIdentifiers.isEmpty else {
             return
         }
 
