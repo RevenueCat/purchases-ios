@@ -16,16 +16,7 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-class ProductDetailsTests: XCTestCase {
-
-    var testSession: SKTestSession!
-    var userDefaults: UserDefaults!
-
-    override func setUpWithError() throws {
-        testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
-        testSession.disableDialogs = true
-        testSession.clearTransactions()
-    }
+class ProductDetailsTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK1AndSK2DetailsAreEquivalent() async throws {

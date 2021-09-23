@@ -17,19 +17,12 @@ import StoreKitTest
 import XCTest
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
-class ProductsManagerTests: XCTestCase {
+class ProductsManagerTests: StoreKitConfigTestCase {
 
-    var testSession: SKTestSession!
-    var userDefaults: UserDefaults!
     var productsManager: ProductsManager!
 
     override func setUpWithError() throws {
-        guard #available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-        testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
-        testSession.disableDialogs = true
-        testSession.clearTransactions()
+        try super.setUpWithError()
         productsManager = ProductsManager()
     }
 

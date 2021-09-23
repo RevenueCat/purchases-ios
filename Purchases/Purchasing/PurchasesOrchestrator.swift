@@ -58,7 +58,7 @@ class PurchasesOrchestrator {
     private let lock = NSRecursiveLock()
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    private lazy var storeKit2Listener = StoreKit2TransactionListener(delegate: self)
+    lazy var storeKit2Listener = StoreKit2TransactionListener(delegate: self)
 
     init(productsManager: ProductsManager,
          storeKitWrapper: StoreKitWrapper,
@@ -182,12 +182,14 @@ class PurchasesOrchestrator {
            package.productDetails is SK2ProductDetails {
             Task {
                 let result = await purchase(sk2Package: package)
-                switch result {
-                case .failure(let error):
-                    completion(nil, nil, error, false)
-                case .success(let (purchaserInfo, userCancelled)):
-                    // todo: change API and send transaction
-                    completion(nil, purchaserInfo, nil, userCancelled)
+                DispatchQueue.main.async {
+                    switch result {
+                    case .failure(let error):
+                        completion(nil, nil, error, false)
+                    case .success(let (purchaserInfo, userCancelled)):
+                        // todo: change API and send transaction
+                        completion(nil, purchaserInfo, nil, userCancelled)
+                    }
                 }
             }
         } else {

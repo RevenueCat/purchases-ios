@@ -17,7 +17,7 @@ import StoreKit
 @testable import RevenueCat
 import XCTest
 
-class PurchasesOrchestratorTests: XCTestCase {
+class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     var productsManager: MockProductsManager!
     var storeKitWrapper: MockStoreKitWrapper!
@@ -33,7 +33,8 @@ class PurchasesOrchestratorTests: XCTestCase {
 
     var orchestrator: PurchasesOrchestrator!
 
-    override func setUp() {
+    override func setUpWithError() throws {
+        try super.setUpWithError()
 
         productsManager = MockProductsManager()
         storeKitWrapper = MockStoreKitWrapper()
@@ -68,38 +69,45 @@ class PurchasesOrchestratorTests: XCTestCase {
                                              identityManager: identityManager,
                                              receiptParser: receiptParser,
                                              deviceCache: deviceCache)
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            orchestrator.storeKit2Listener = MockStoreKit2Listener()
+        }
     }
     
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testPurchaseSK2PackageTriggersAPurchase() async throws {
+    func testPurchaseSK2PackageReturnsCorrectValues() async throws {
+
         guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        let sk2Product = try! await StoreKit.Product.products(for: ["com.revenuecat.monthly_4.99.1_week_intro"]).first!
+        purchaserInfoManager.stubbedCachedPurchaserInfoResult = mockPurchaserInfo
+        backend.stubbedPostReceiptPurchaserInfo = mockPurchaserInfo
+
+        let sk2Product = try! await fetchSk2Product()
         let productDetails = SK2ProductDetails(sk2Product: sk2Product)
-        let package = Package(identifier: "package", packageType: .monthly, productDetails: productDetails, offeringIdentifier: "offering")
-        var completionCalled = false
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              productDetails: productDetails,
+                              offeringIdentifier: "offering")
 
-        var receivedTransaction: SKPaymentTransaction?
-        var receivedPurchaserInfo: PurchaserInfo?
-        var receivedError: Error?
-        var receivedUserCancelled: Bool?
-        orchestrator.purchase(package: package) { maybeTransaction, maybePurchaserInfo, maybeError, userCancelled in
-            completionCalled = true
-
-            receivedTransaction = maybeTransaction
-            receivedPurchaserInfo = maybePurchaserInfo
-            receivedError = maybeError
-            receivedUserCancelled = userCancelled
+        let (transaction, purchaserInfo, error, userCancelled) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(package: package) { transaction, purchaserInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, purchaserInfo, error, userCancelled))
+            }
         }
 
-        expect(completionCalled).toEventually(beTrue())
-        let nonOptionalReceivedError = try XCTUnwrap(receivedError)
-        expect((nonOptionalReceivedError as NSError).code) == ErrorCode.unexpectedBackendResponseError.rawValue
-        expect(receivedUserCancelled) == false
-        expect(receivedTransaction).to(beNil())
-        expect(receivedPurchaserInfo).to(beNil())
+        expect(transaction).to(beNil())
+        expect(userCancelled) == false
+        expect(error).to(beNil())
+        expect(purchaserInfo) == PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])
     }
 
     func testPurchaseSK2PackageHandlesPurchaseResult() {
@@ -112,6 +120,27 @@ class PurchasesOrchestratorTests: XCTestCase {
 
     func testPurchaseSK2PackageSkipsIfUserCancelled() {
 
+    }
+
+}
+
+private extension PurchasesOrchestratorTests {
+
+    @MainActor
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func fetchSk2Product() async throws -> SK2Product {
+        return try! await StoreKit.Product.products(for: ["com.revenuecat.monthly_4.99.1_week_intro"]).first!
+    }
+
+    var mockPurchaserInfo: PurchaserInfo {
+        PurchaserInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "",
+                "subscriptions": [:],
+                "other_purchases": [:]
+            ]])!
     }
 
 }
