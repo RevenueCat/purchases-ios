@@ -73,7 +73,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { _ in
         }
 
-        expect(self.receiptFetcher.receiptDataCalled).to(beTrue())
+        expect(self.receiptFetcher.receiptDataCalled) == true
     }
 
     func testSK1EligibilityIsCalculatedFromReceiptData() throws {
