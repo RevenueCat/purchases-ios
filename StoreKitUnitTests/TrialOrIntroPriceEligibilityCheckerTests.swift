@@ -112,6 +112,8 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
         let receivedEligibilities = try XCTUnwrap(maybeEligibilities)
         expect(receivedEligibilities.count) == 1
+
+        expect(self.mockBackend.invokedGetIntroEligibilityCount) == 1
     }
 
     func testSK1ErrorFetchingFromBackendAfterErrorCalculatingEligibility() throws {
