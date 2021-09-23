@@ -137,12 +137,11 @@ private extension OfferingsManager {
             return
         }
 
-        var mutableProductIdentifiers = Set(productIdentifiers)
-        mutableProductIdentifiers.subtract(Set(products.keys))
+        let missingProductIdentifiers = productIdentifiers.subtracting(Set(products.keys))
 
-        if !mutableProductIdentifiers.isEmpty {
+        if !missingProductIdentifiers.isEmpty {
             Logger.appleWarning(
-                Strings.offering.cannot_find_product_configuration_error(identifiers: mutableProductIdentifiers))
+                Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIdentifiers))
         }
     }
 
