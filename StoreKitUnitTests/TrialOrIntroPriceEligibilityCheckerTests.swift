@@ -52,7 +52,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
         mockBackend = MockBackend()
         let mockOperationDispatcher = MockOperationDispatcher()
         let identityManager = MockIdentityManager(mockAppUserID: "app_user")
-        let mockProductsManager = MockProductsManager()
+        let mockProductsManager = PartialMockProductsManager()
         trialOrIntroPriceEligibilityChecker =
         TrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
                                             introEligibilityCalculator: mockIntroEligibilityCalculator,

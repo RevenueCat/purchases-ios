@@ -165,6 +165,7 @@
 		354895D4267AE4B4001DC5B1 /* AttributionKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D3267AE4B4001DC5B1 /* AttributionKey.swift */; };
 		354895D6267BEDE3001DC5B1 /* SpecialSubscriberAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D5267BEDE3001DC5B1 /* SpecialSubscriberAttributes.swift */; };
 		35549323269E298B005F9AE9 /* OfferingsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35549322269E298B005F9AE9 /* OfferingsFactory.swift */; };
+		359E3ABF26FBE8CD0094617C /* PartialMockProductsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359E3ABE26FBE8CD0094617C /* PartialMockProductsManager.swift */; };
 		359E8E3F26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359E8E3E26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift */; };
 		35D0E5D026A5886C0099EAD8 /* ErrorUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */; };
 		35D832CD262A5B7500E60AC5 /* ETagManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D832CC262A5B7500E60AC5 /* ETagManager.swift */; };
@@ -404,6 +405,7 @@
 		357C9BC022725CFA006BC624 /* iAd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = iAd.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/iAd.framework; sourceTree = DEVELOPER_DIR; };
 		3597020F24BF6A710010506E /* TransactionsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactory.swift; sourceTree = "<group>"; };
 		3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactoryTests.swift; sourceTree = "<group>"; };
+		359E3ABE26FBE8CD0094617C /* PartialMockProductsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartialMockProductsManager.swift; sourceTree = "<group>"; };
 		359E8E3E26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityChecker.swift; sourceTree = "<group>"; };
 		35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorUtils.swift; sourceTree = "<group>"; };
 		35D832CC262A5B7500E60AC5 /* ETagManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETagManager.swift; sourceTree = "<group>"; };
@@ -668,6 +670,7 @@
 		2DAC5F7326F13C9800C5258F /* StoreKitUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				359E3ABD26FBE8AB0094617C /* Mocks */,
 				35E1CE1F26E022C20008560A /* TrialOrIntroPriceEligibilityCheckerTests.swift */,
 				2D69384426DFF93300FCDBC0 /* ProductDetailsTests.swift */,
 				2D9C5EC926F2805C0057FC45 /* ProductsManagerTests.swift */,
@@ -884,7 +887,6 @@
 				2DC5621724EC63420031F69B /* Purchases */,
 				2DC5622224EC63430031F69B /* PurchasesTests */,
 				2DAC5F7326F13C9800C5258F /* StoreKitUnitTests */,
-				B387F46B2683FD730028701F /* PublicSDKAPITester */,
 				2DE20B6D264087FB004C597D /* BackendIntegrationTests */,
 				2DE20B8026409EB7004C597D /* BackendIntegrationTestApp */,
 				2DEAC2DB26EFE46E006914ED /* UnitTestsHostApp */,
@@ -902,7 +904,6 @@
 				2DC5621E24EC63430031F69B /* RevenueCatTests.xctest */,
 				2DE20B6C264087FB004C597D /* BackendIntegrationTests.xctest */,
 				2DE20B7F26409EB7004C597D /* BackendIntegrationTestsHostApp.app */,
-				B3645F4226E042F2002C490E /* APITester */,
 				2DEAC2DA26EFE46E006914ED /* UnitTestsHostApp.app */,
 				2DAC5F7226F13C9800C5258F /* StoreKitUnitTests.xctest */,
 			);
@@ -976,7 +977,6 @@
 				F5BE4244269676E200254A30 /* StoreKitRequestFetcherTests.swift */,
 				37E352F86A0A8EB05BAD77C4 /* StoreKitWrapperTests.swift */,
 				3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */,
-				35E1CE1F26E022C20008560A /* TrialOrIntroPriceEligibilityCheckerTests.swift */,
 				2D8FC8AB26E01AE70049A85C /* PurchasesOrchestratorTests.swift */,
 			);
 			path = Purchasing;
@@ -992,6 +992,14 @@
 				A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */,
 			);
 			path = SubscriberAttributes;
+			sourceTree = "<group>";
+		};
+		359E3ABD26FBE8AB0094617C /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				359E3ABE26FBE8CD0094617C /* PartialMockProductsManager.swift */,
+			);
+			path = Mocks;
 			sourceTree = "<group>";
 		};
 		35D832CB262A5B3400E60AC5 /* Networking */ = {
@@ -1330,7 +1338,6 @@
 			buildConfigurationList = 2DEAC2ED26EFE470006914ED /* Build configuration list for PBXNativeTarget "UnitTestsHostApp" */;
 			buildPhases = (
 				2DEAC2D626EFE46E006914ED /* Sources */,
-				2DEAC2D726EFE46E006914ED /* Frameworks */,
 				2DEAC2D826EFE46E006914ED /* Resources */,
 			);
 			buildRules = (
@@ -1378,9 +1385,6 @@
 					2DEAC2D926EFE46E006914ED = {
 						CreatedOnToolsVersion = 12.5.1;
 					};
-					B3645F4126E042F2002C490E = {
-						CreatedOnToolsVersion = 13.0;
-					};
 				};
 			};
 			buildConfigurationList = 352629F81F7C4B9100C04F2C /* Build configuration list for PBXProject "RevenueCat" */;
@@ -1404,7 +1408,6 @@
 				2DC5621D24EC63430031F69B /* RevenueCatTests */,
 				2DE20B7E26409EB7004C597D /* BackendIntegrationTestsHostApp */,
 				2DE20B6B264087FB004C597D /* BackendIntegrationTests */,
-				B3645F4126E042F2002C490E /* APITester */,
 				2DEAC2D926EFE46E006914ED /* UnitTestsHostApp */,
 				2DAC5F7126F13C9800C5258F /* StoreKitUnitTests */,
 			);
@@ -1525,6 +1528,7 @@
 				3543913F26F911B100E669DF /* MockSystemInfo.swift in Sources */,
 				3543913D26F9102800E669DF /* MockIdentityManager.swift in Sources */,
 				3543913826F90FE100E669DF /* MockIntroEligibilityCalculator.swift in Sources */,
+				359E3ABF26FBE8CD0094617C /* PartialMockProductsManager.swift in Sources */,
 				3543914126F911CC00E669DF /* MockDeviceCache.swift in Sources */,
 				3543913C26F9101600E669DF /* MockOperationDispatcher.swift in Sources */,
 				3543913626F90D6A00E669DF /* TrialOrIntroPriceEligibilityCheckerTests.swift in Sources */,

@@ -1,13 +1,21 @@
 //
-// Created by Andrés Boedo on 8/11/20.
-// Copyright (c) 2020 Purchases. All rights reserved.
+//  Copyright RevenueCat Inc. All Rights Reserved.
 //
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  PartialMockProductsManager.swift
+//
+//  Created by César de la Vega on 9/22/21.
 
 import Foundation
 import StoreKit
 @testable import RevenueCat
 
-class MockProductsManager: ProductsManager {
+class PartialMockProductsManager: ProductsManager {
 
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiers = false
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiersCount = 0
@@ -25,48 +33,19 @@ class MockProductsManager: ProductsManager {
             completion(result.0)
         } else {
             let products: [SK1Product] = identifiers.map { (identifier) -> MockSK1Product in
-                let p = MockSK1Product(mockProductIdentifier: identifier)
-                p.mockSubscriptionGroupIdentifier = "1234567"
+                let sk1Product = MockSK1Product(mockProductIdentifier: identifier)
+                sk1Product.mockSubscriptionGroupIdentifier = "1234567"
                 if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
                     let mockDiscount = MockDiscount()
                     mockDiscount.mockIdentifier = "discount_id"
-                    p.mockDiscount = mockDiscount
+                    sk1Product.mockDiscount = mockDiscount
                 }
-                return p
+                return sk1Product
             }
             let result = Set(products).map { SK1ProductDetails(sk1Product: $0) }
 
             completion(Set(result))
         }
-    }
-
-    var invokedProductsFromOptimalStoreKitVersion = false
-    var invokedProductsFromOptimalStoreKitVersionCount = 0
-    var invokedProductsFromOptimalStoreKitVersionParameters: (identifiers: Set<String>, Void)?
-    var invokedProductsFromOptimalStoreKitVersionParametersList = [(identifiers: Set<String>, Void)]()
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    override func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>) async -> Set<ProductDetails> {
-        invokedProductsFromOptimalStoreKitVersion = true
-        invokedProductsFromOptimalStoreKitVersionCount += 1
-        invokedProductsFromOptimalStoreKitVersionParameters = (identifiers, ())
-        invokedProductsFromOptimalStoreKitVersionParametersList.append((identifiers, ()))
-        let result = stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult?.0 ?? Set<ProductDetails>()
-        return result
-    }
-
-    var invokedSk2ProductDetails = false
-    var invokedSk2ProductDetailsCount = 0
-    var invokedSk2ProductDetailsParameters: (identifiers: Set<String>, Void)?
-    var invokedSk2ProductDetailsParametersList = [(identifiers: Set<String>, Void)]()
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    override func sk2ProductDetails(withIdentifiers identifiers: Set<String>) async -> Set<SK2ProductDetails> {
-        invokedSk2ProductDetails = true
-        invokedSk2ProductDetailsCount += 1
-        invokedSk2ProductDetailsParameters = (identifiers, ())
-        invokedSk2ProductDetailsParametersList.append((identifiers, ()))
-        return Set()
     }
 
     var invokedProducts = false
@@ -84,14 +63,14 @@ class MockProductsManager: ProductsManager {
             completion(result)
         } else {
             let products: [SK1Product] = identifiers.map { (identifier) -> MockSK1Product in
-                let p = MockSK1Product(mockProductIdentifier: identifier)
-                p.mockSubscriptionGroupIdentifier = "1234567"
+                let sk1Product = MockSK1Product(mockProductIdentifier: identifier)
+                sk1Product.mockSubscriptionGroupIdentifier = "1234567"
                 if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
                     let mockDiscount = MockDiscount()
                     mockDiscount.mockIdentifier = "discount_id"
-                    p.mockDiscount = mockDiscount
+                    sk1Product.mockDiscount = mockDiscount
                 }
-                return p
+                return sk1Product
             }
             completion(Set(products))
         }
