@@ -180,7 +180,16 @@ class PurchasesOrchestrator {
         // todo: clean up, move to new class along with the private funcs below
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            package.productDetails is SK2ProductDetails {
-            purchase(sk2Package: package, completion: completion)
+            Task {
+                let result = await purchase(sk2Package: package)
+                switch result {
+                case .failure(let error):
+                    completion(nil, nil, error, false)
+                case .success(let (purchaserInfo, userCancelled)):
+                    // todo: change API and send transaction
+                    completion(nil, purchaserInfo, nil, userCancelled)
+                }
+            }
         } else {
             guard package.productDetails is SK1ProductDetails else {
                 fatalError("could not identify StoreKit version to use!")
@@ -577,6 +586,7 @@ private extension PurchasesOrchestrator {
                     }
                     guard let customerInfo = maybeCustomerInfo else {
                         continuation.resume(returning: .failure(ErrorUtils.unexpectedBackendResponseError()))
+                        return
                     }
 
                     continuation.resume(returning: .success((customerInfo, userCancelled)))

@@ -12,9 +12,10 @@
 //  Created by Andrés Boedo on 1/9/21.
 
 import Foundation
-import XCTest
-
+import Nimble
+import StoreKit
 @testable import RevenueCat
+import XCTest
 
 class PurchasesOrchestratorTests: XCTestCase {
 
@@ -68,19 +69,37 @@ class PurchasesOrchestratorTests: XCTestCase {
                                              receiptParser: receiptParser,
                                              deviceCache: deviceCache)
     }
-
-    func testPurchaseSK2PackageReturnsErrorIfSK1Package() {
-        let sk1Product = MockSK1Product(mockProductIdentifier: "com.revenuecat.test", mockSubscriptionGroupIdentifier: "subs_group")
-        let productDetails = SK1ProductDetails(sk1Product: sk1Product)
-        let package = Package(identifier: "package", packageType: .monthly, productDetails: productDetails, offeringIdentifier: "offering")
-
-        purchasesOrchestrator.purchase(package: package) {
-            
+    
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSK2PackageTriggersAPurchase() async throws {
+        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
         }
-    }
 
-    func testPurchaseSK2PackageTriggersAPurchase() {
+        let sk2Product = try! await StoreKit.Product.products(for: ["com.revenuecat.monthly_4.99.1_week_intro"]).first!
+        let productDetails = SK2ProductDetails(sk2Product: sk2Product)
+        let package = Package(identifier: "package", packageType: .monthly, productDetails: productDetails, offeringIdentifier: "offering")
+        var completionCalled = false
 
+        var receivedTransaction: SKPaymentTransaction?
+        var receivedPurchaserInfo: PurchaserInfo?
+        var receivedError: Error?
+        var receivedUserCancelled: Bool?
+        orchestrator.purchase(package: package) { maybeTransaction, maybePurchaserInfo, maybeError, userCancelled in
+            completionCalled = true
+
+            receivedTransaction = maybeTransaction
+            receivedPurchaserInfo = maybePurchaserInfo
+            receivedError = maybeError
+            receivedUserCancelled = userCancelled
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        let nonOptionalReceivedError = try XCTUnwrap(receivedError)
+        expect((nonOptionalReceivedError as NSError).code) == ErrorCode.unexpectedBackendResponseError.rawValue
+        expect(receivedUserCancelled) == false
+        expect(receivedTransaction).to(beNil())
+        expect(receivedPurchaserInfo).to(beNil())
     }
 
     func testPurchaseSK2PackageHandlesPurchaseResult() {
