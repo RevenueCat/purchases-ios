@@ -62,7 +62,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
                                             productsManager: mockProductsManager)
     }
 
-    func testSK1CheckTrialOrIntroPriceEligibility() {
+    func testSK1CheckTrialOrIntroPriceEligibilityDoesntCrash() {
         setupSK1()
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { _ in
         }
