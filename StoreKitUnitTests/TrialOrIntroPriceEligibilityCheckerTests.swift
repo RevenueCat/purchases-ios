@@ -100,11 +100,12 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
                                    userInfo: [:])
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroductoryPriceEligibilityResult = ([:], stubbedError)
 
-        let stubbedEligibility = ["product_id": IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
+        let productId = "product_id"
+        let stubbedEligibility = [productId: IntroEligibility(eligibilityStatus: IntroEligibilityStatus.eligible)]
         mockBackend.stubbedGetIntroEligibilityCompletionResult = (stubbedEligibility, nil)
         var completionCalled = false
         var maybeEligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (eligibilities) in
             completionCalled = true
             maybeEligibilities = eligibilities
         }
@@ -112,12 +113,15 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
         let receivedEligibilities = try XCTUnwrap(maybeEligibilities)
         expect(receivedEligibilities.count) == 1
+        expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.eligible
 
         expect(self.mockBackend.invokedGetIntroEligibilityCount) == 1
     }
 
     func testSK1ErrorFetchingFromBackendAfterErrorCalculatingEligibility() throws {
         setupSK1()
+        let productId = "product_id"
+
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
@@ -126,14 +130,15 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
         mockBackend.stubbedGetIntroEligibilityCompletionResult = ([:], stubbedError)
         var completionCalled = false
         var maybeEligibilities: [String: IntroEligibility]?
-        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { (eligibilities) in
+        trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([productId]) { (eligibilities) in
             completionCalled = true
             maybeEligibilities = eligibilities
         }
 
         expect(completionCalled).toEventually(beTrue())
         let receivedEligibilities = try XCTUnwrap(maybeEligibilities)
-        expect(receivedEligibilities.count) == 0
+        expect(receivedEligibilities.count) == 1
+        expect(receivedEligibilities[productId]?.status) == IntroEligibilityStatus.unknown
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

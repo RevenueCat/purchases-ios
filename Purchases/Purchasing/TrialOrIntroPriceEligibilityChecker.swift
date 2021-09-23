@@ -60,16 +60,9 @@ class TrialOrIntroPriceEligibilityChecker {
                                          productIdentifiers: productIdentifiers,
                                          completionBlock: receiveEligibility)
             } else {
-                self.backend.getIntroEligibility(appUserID: self.appUserID,
-                                                 receiptData: maybeData ?? Data(),
-                                                 productIdentifiers: productIdentifiers) { result, maybeError in
-                    if let error = maybeError {
-                        Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
-                    }
-                    self.operationDispatcher.dispatchOnMainThread {
-                        receiveEligibility(result)
-                    }
-                }
+                self.fetchIntroEligibilityFromBackend(with: maybeData ?? Data(),
+                                                      productIdentifiers: productIdentifiers,
+                                                      completionBlock: receiveEligibility)
             }
         }
     }
@@ -83,19 +76,9 @@ class TrialOrIntroPriceEligibilityChecker {
                               productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
                 if let error = maybeError {
                     Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
-                    self.backend
-                        .getIntroEligibility(appUserID: self.appUserID,
-                                             receiptData: receiptData,
-                                             productIdentifiers: productIdentifiers) { result, maybeAnotherError in
-                            if let intoEligibilityError = maybeAnotherError {
-                                let errorMessage =
-                                Strings.purchase.unable_to_get_intro_eligibility_with_error(error: intoEligibilityError)
-                                Logger.error(errorMessage)
-                            }
-                            self.operationDispatcher.dispatchOnMainThread {
-                                receiveEligibility(result)
-                            }
-                        }
+                    self.fetchIntroEligibilityFromBackend(with: receiptData,
+                                                          productIdentifiers: productIdentifiers,
+                                                          completionBlock: receiveEligibility)
                     return
                 }
                 var convertedEligibility: [String: IntroEligibility] = [:]
@@ -107,6 +90,26 @@ class TrialOrIntroPriceEligibilityChecker {
                     receiveEligibility(convertedEligibility)
                 }
             }
+    }
+
+    fileprivate func fetchIntroEligibilityFromBackend(with receiptData: Data,
+                                                      productIdentifiers: [String],
+                                                      completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+        self.backend.getIntroEligibility(appUserID: self.appUserID,
+                                         receiptData: receiptData,
+                                         productIdentifiers: productIdentifiers) { backendResult, maybeError in
+            var result = backendResult
+            if let error = maybeError {
+                Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
+                let resultWithUnknowns = productIdentifiers.reduce(into: [:]) { resultDict, productId in
+                    resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
+                }
+                result = resultWithUnknowns
+            }
+            self.operationDispatcher.dispatchOnMainThread {
+                receiveEligibility(result)
+            }
+        }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
