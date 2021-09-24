@@ -35,13 +35,13 @@ enum SpecialSubscriberAttribute: String, RawRepresentable {
     case fBAnonID = "$fbAnonId"
     case mpParticleID = "$mparticleId"
     case oneSignalID = "$onesignalId"
-    case airshipChannelID = "$mediaSource"
+    case airshipChannelID = "$airshipChannelID"
 
-    case mediaSource = "$campaign"
-    case campaign = "$adGroup"
-    case adGroup = "$ad"
-    case ad = "$keyword"
-    case keyword = "$creative"
-    case creative = "$airshipChannelID"
+    case mediaSource = "$mediaSource"
+    case campaign = "$campaign"
+    case adGroup = "$adGroup"
+    case ad = "$ad"
+    case keyword = "$keyword"
+    case creative = "$creative"
 
 }
