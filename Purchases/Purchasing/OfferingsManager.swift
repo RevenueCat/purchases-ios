@@ -81,6 +81,15 @@ class OfferingsManager {
         }
     }
 
+    internal func getMissingProductIDs(productsFromStore: [String: SKProduct],
+                                       productIDsFromRC: Set<String>) -> Set<String> {
+        guard !productIDsFromRC.isEmpty else {
+            return []
+        }
+
+        return productIDsFromRC.subtracting(productsFromStore.keys)
+    }
+
 }
 
 private extension OfferingsManager {
@@ -93,8 +102,12 @@ private extension OfferingsManager {
                 result[product.productIdentifier] = product
             }
 
-            self.logMissingProductIDsIfAppropriate(productsFromStore: productsByID,
-                                                   productIDsFromRC: productIdentifiers)
+            let missingProductIDs = self.getMissingProductIDs(productsFromStore: productsByID,
+                                                                           productIDsFromRC: productIdentifiers)
+            if !missingProductIDs.isEmpty {
+                Logger.appleWarning(
+                    Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs))
+            }
 
             if let createdOfferings = self.offeringsFactory.createOfferings(withProducts: productsByID, data: data) {
                 self.deviceCache.cache(offerings: createdOfferings)
@@ -126,20 +139,6 @@ private extension OfferingsManager {
             .compactMap { $0["platform_product_identifier"] as? String }
 
         return Set(productIdenfitiersArray)
-    }
-
-    func logMissingProductIDsIfAppropriate(productsFromStore: [String: SKProduct],
-                                           productIDsFromRC: Set<String>) {
-        guard !productIDsFromRC.isEmpty else {
-            return
-        }
-
-        let missingProductIdentifiers = productIDsFromRC.subtracting(productsFromStore.keys)
-
-        if !missingProductIdentifiers.isEmpty {
-            Logger.appleWarning(
-                Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIdentifiers))
-        }
     }
 
     func dispatchCompletionOnMainThreadIfPossible(_ completion: ((Offerings?, Error?) -> Void)?,

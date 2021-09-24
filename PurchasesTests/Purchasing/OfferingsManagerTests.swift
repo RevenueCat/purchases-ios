@@ -149,6 +149,18 @@ extension OfferingsManagerTests {
         expect(self.mockDeviceCache.cacheOfferingsCount).toEventually(equal(expectedCallCount))
     }
 
+    func testGetMissingProductIDs() {
+        let productIDs: Set<String> = ["a", "b", "c"]
+        let skProducts = ["a" : SKProduct(), "b" : SKProduct()]
+
+        expect(self.offeringsManager.getMissingProductIDs(productsFromStore: [:],
+                                                          productIDsFromRC: productIDs)).to(equal(productIDs))
+        expect(self.offeringsManager.getMissingProductIDs(productsFromStore: skProducts,
+                                                          productIDsFromRC: [])).to(equal([]))
+        expect(self.offeringsManager.getMissingProductIDs(productsFromStore: skProducts,
+                                                          productIDsFromRC:productIDs)).to(equal(["c"]))
+    }
+
 }
 
 private extension OfferingsManagerTests {
