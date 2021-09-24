@@ -485,7 +485,7 @@ extension Purchases {
      * Subscriber attribute associated with the Airship Channel ID for the user
      * Required for the RevenueCat Airship integration
      *
-     * - Parameter onesignalID: nil will delete the subscriber attribute
+     * - Parameter airshipChannelID: nil will delete the subscriber attribute
      */
     @objc public func setAirshipChannelID(_ airshipChannelID: String?) {
         subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: appUserID)
