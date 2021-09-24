@@ -15,30 +15,64 @@
 import Foundation
 
 // swiftlint:disable identifier_name
-struct SpecialSubscriberAttributes {
+enum SpecialSubscriberAttribute {
 
-    static let email = "$email"
-    static let phoneNumber = "$phoneNumber"
-    static let displayName = "$displayName"
-    static let pushToken = "$apnsTokens"
+    case email
+    case phoneNumber
+    case displayName
+    case pushToken
 
-    static let idfa = "$idfa"
-    static let idfv = "$idfv"
-    static let gpsAdId = "$gpsAdId"
+    case idfa
+    case idfv
+    case gpsAdId
 
-    static let ip = "$ip"
+    case ip
 
-    static let adjustID = "$adjustId"
-    static let appsFlyerID = "$appsflyerId"
-    static let fBAnonID = "$fbAnonId"
-    static let mpParticleID = "$mparticleId"
-    static let oneSignalID = "$onesignalId"
+    case adjustID
+    case appsFlyerID
+    case fBAnonID
+    case mpParticleID
+    case oneSignalID
+    case airshipChannelID
 
-    static let mediaSource = "$mediaSource"
-    static let campaign = "$campaign"
-    static let adGroup = "$adGroup"
-    static let ad = "$ad"
-    static let keyword = "$keyword"
-    static let creative = "$creative"
+    case mediaSource
+    case campaign
+    case adGroup
+    case ad
+    case keyword
+    case creative
+
+    var key: String { description }
+
+}
+
+extension SpecialSubscriberAttribute: CustomStringConvertible {
+
+    var description: String {
+
+        switch self {
+        case .email: return "$email"
+        case .phoneNumber: return "$phoneNumber"
+        case .displayName: return "$displayName"
+        case .pushToken: return "$apnsTokens"
+        case .idfa: return "$idfa"
+        case .idfv: return "$idfv"
+        case .gpsAdId: return "$gpsAdId"
+        case .ip: return "$ip"
+        case .adjustID: return "$adjustId"
+        case .appsFlyerID: return "$appsflyerId"
+        case .fBAnonID: return "$fbAnonId"
+        case .mpParticleID: return "$mparticleId"
+        case .oneSignalID: return "$onesignalId"
+        case .mediaSource: return "$mediaSource"
+        case .campaign: return "$campaign"
+        case .adGroup: return "$adGroup"
+        case .ad: return "$ad"
+        case .keyword: return "$keyword"
+        case .creative: return "$creative"
+        case .airshipChannelID: return "$airshipChannelID"
+
+        }
+    }
 
 }
