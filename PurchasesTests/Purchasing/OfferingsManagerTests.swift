@@ -154,11 +154,11 @@ extension OfferingsManagerTests {
         let skProducts = ["a" : SKProduct(), "b" : SKProduct()]
 
         expect(self.offeringsManager.getMissingProductIDs(productsFromStore: [:],
-                                                          productIDsFromRC: productIDs)).to(equal(productIDs))
+                                                          productIDsFromBackend: productIDs)).to(equal(productIDs))
         expect(self.offeringsManager.getMissingProductIDs(productsFromStore: skProducts,
-                                                          productIDsFromRC: [])).to(equal([]))
+                                                          productIDsFromBackend: [])).to(equal([]))
         expect(self.offeringsManager.getMissingProductIDs(productsFromStore: skProducts,
-                                                          productIDsFromRC:productIDs)).to(equal(["c"]))
+                                                          productIDsFromBackend:productIDs)).to(equal(["c"]))
     }
 
 }

@@ -82,12 +82,12 @@ class OfferingsManager {
     }
 
     internal func getMissingProductIDs(productsFromStore: [String: SKProduct],
-                                       productIDsFromRC: Set<String>) -> Set<String> {
-        guard !productIDsFromRC.isEmpty else {
+                                       productIDsFromBackend: Set<String>) -> Set<String> {
+        guard !productIDsFromBackend.isEmpty else {
             return []
         }
 
-        return productIDsFromRC.subtracting(productsFromStore.keys)
+        return productIDsFromBackend.subtracting(productsFromStore.keys)
     }
 
 }
@@ -103,7 +103,7 @@ private extension OfferingsManager {
             }
 
             let missingProductIDs = self.getMissingProductIDs(productsFromStore: productsByID,
-                                                                           productIDsFromRC: productIdentifiers)
+                                                                           productIDsFromBackend: productIdentifiers)
             if !missingProductIDs.isEmpty {
                 Logger.appleWarning(
                     Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs))
