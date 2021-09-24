@@ -88,6 +88,8 @@ class ProductDetailsTests: XCTestCase {
             expect(productDetails.productIdentifier) == productIdentifier
             expect(productDetails.isFamilyShareable) == true
             expect(productDetails.localizedTitle) == "Monthly Free Trial"
+            // open the StoreKit Config file as source code to see the expected value
+            expect(productDetails.subscriptionGroupIdentifier) == "7096FF06"
         }
 
         expect(callbackCalled).toEventually(beTrue(), timeout: .seconds(5))
@@ -111,7 +113,8 @@ class ProductDetailsTests: XCTestCase {
         expect(productDetails.productIdentifier) == productIdentifier
         expect(productDetails.isFamilyShareable) == true
         expect(productDetails.localizedTitle) == "Monthly Free Trial"
-
+        // open the StoreKit Config file as source code to see the expected value
+        expect(productDetails.subscriptionGroupIdentifier) == "7096FF06"
     }
 
 }
