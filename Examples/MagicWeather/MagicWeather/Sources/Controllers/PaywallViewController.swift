@@ -5,6 +5,7 @@
 //  Created by Cody Kerns on 12/22/20.
 //
 
+import StoreKit
 import UIKit
 import RevenueCat
 
@@ -16,7 +17,7 @@ import RevenueCat
 class PaywallViewController: UITableViewController {
 
     /// - Store the offering being displayed
-    var offering: Purchases.Offering?
+    var offering: RevenueCat.Offering?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -80,7 +81,7 @@ class PaywallViewController: UITableViewController {
         
         /// - Find the package being selected, and purchase it
         if let package = self.offering?.availablePackages[indexPath.row] {
-            Purchases.shared.purchasePackage(package) { (transaction, purchaserInfo, error, userCancelled) in
+            Purchases.shared.purchase(package: package) { (transaction, purchaserInfo, error, userCancelled) in
                 if let error = error {
                     self.present(UIAlertController.errorAlert(message: error.localizedDescription), animated: true, completion: nil)
                 } else {

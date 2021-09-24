@@ -21,8 +21,8 @@
 		5582ECDE2587EF8500ACB34B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5582ECDC2587EF8500ACB34B /* Main.storyboard */; };
 		5582ECE02587EF8800ACB34B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5582ECDF2587EF8800ACB34B /* Assets.xcassets */; };
 		5582ECE32587EF8800ACB34B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5582ECE12587EF8800ACB34B /* LaunchScreen.storyboard */; };
-		5582ECED2587EFC800ACB34B /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = 5582ECEC2587EFC800ACB34B /* Purchases */; };
 		5582ECFA2587F29600ACB34B /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5582ECF92587F29600ACB34B /* Constants.swift */; };
+		8380C26626FE001500922AB1 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 8380C26526FE001500922AB1 /* RevenueCat */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,7 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5582ECED2587EFC800ACB34B /* Purchases in Frameworks */,
+				8380C26626FE001500922AB1 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,6 +72,7 @@
 				5539DF392593E6D90073FB19 /* README.md */,
 				5582ECD52587EF8500ACB34B /* MagicWeather */,
 				5582ECD42587EF8500ACB34B /* Products */,
+				8380C26426FE001500922AB1 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -154,6 +155,13 @@
 			path = Helpers;
 			sourceTree = "<group>";
 		};
+		8380C26426FE001500922AB1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -171,7 +179,7 @@
 			);
 			name = MagicWeather;
 			packageProductDependencies = (
-				5582ECEC2587EFC800ACB34B /* Purchases */,
+				8380C26526FE001500922AB1 /* RevenueCat */,
 			);
 			productName = "Magic Weather";
 			productReference = 5582ECD32587EF8500ACB34B /* MagicWeather.app */;
@@ -389,7 +397,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = MagicWeather/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -409,7 +417,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = MagicWeather/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -458,10 +466,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		5582ECEC2587EFC800ACB34B /* Purchases */ = {
+		8380C26526FE001500922AB1 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 5582ECEB2587EFC800ACB34B /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = Purchases;
+			productName = RevenueCat;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
