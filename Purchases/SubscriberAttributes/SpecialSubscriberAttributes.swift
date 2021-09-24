@@ -15,64 +15,33 @@
 import Foundation
 
 // swiftlint:disable identifier_name
-enum SpecialSubscriberAttribute {
+enum SpecialSubscriberAttribute: String, RawRepresentable {
 
-    case email
-    case phoneNumber
-    case displayName
-    case pushToken
+    var key: String { rawValue }
 
-    case idfa
-    case idfv
-    case gpsAdId
+    case email = "$email"
+    case phoneNumber = "$phoneNumber"
+    case displayName = "$displayName"
+    case pushToken = "$apnsTokens"
 
-    case ip
+    case idfa = "$idfa"
+    case idfv = "$idfv"
+    case gpsAdId = "$gpsAdId"
 
-    case adjustID
-    case appsFlyerID
-    case fBAnonID
-    case mpParticleID
-    case oneSignalID
-    case airshipChannelID
+    case ip = "$ip"
 
-    case mediaSource
-    case campaign
-    case adGroup
-    case ad
-    case keyword
-    case creative
+    case adjustID = "$adjustId"
+    case appsFlyerID = "$appsflyerId"
+    case fBAnonID = "$fbAnonId"
+    case mpParticleID = "$mparticleId"
+    case oneSignalID = "$onesignalId"
+    case airshipChannelID = "$mediaSource"
 
-    var key: String { description }
-
-}
-
-extension SpecialSubscriberAttribute: CustomStringConvertible {
-
-    var description: String {
-
-        switch self {
-        case .email: return "$email"
-        case .phoneNumber: return "$phoneNumber"
-        case .displayName: return "$displayName"
-        case .pushToken: return "$apnsTokens"
-        case .idfa: return "$idfa"
-        case .idfv: return "$idfv"
-        case .gpsAdId: return "$gpsAdId"
-        case .ip: return "$ip"
-        case .adjustID: return "$adjustId"
-        case .appsFlyerID: return "$appsflyerId"
-        case .fBAnonID: return "$fbAnonId"
-        case .mpParticleID: return "$mparticleId"
-        case .oneSignalID: return "$onesignalId"
-        case .mediaSource: return "$mediaSource"
-        case .campaign: return "$campaign"
-        case .adGroup: return "$adGroup"
-        case .ad: return "$ad"
-        case .keyword: return "$keyword"
-        case .creative: return "$creative"
-        case .airshipChannelID: return "$airshipChannelID"
-
-        }
-    }
+    case mediaSource = "$campaign"
+    case campaign = "$adGroup"
+    case adGroup = "$ad"
+    case ad = "$keyword"
+    case keyword = "$creative"
+    case creative = "$airshipChannelID"
 
 }
