@@ -60,7 +60,7 @@ commands:
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
-          command: bundle exec fastlane test
+          command: bundle exec fastlane test wait_for_simulator:true
 
       - store_test_results:
           path: fastlane/test_output
@@ -118,19 +118,21 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      
+      - run:
+          name: pre-warm simulator
+          command:  |
+              open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID "iPhone 8"
+              open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID "iPhone 12"
+              open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID "Apple TV"
       - install-dependencies
       
       - run:
           name: Run tests
-          command: bundle exec fastlane test
-          environment:
-            SCAN_SCHEME: RevenueCat
-      - store_test_results:
-          path: fastlane/test_output
+          command: bundle exec fastlane test wait_for_simulator:true
       - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
+          path: fastlane/test_output
+      - store_test_results:
+          path: fastlane/test_output/scan
   buildTvWatchAndMacOS:
     macos:
       xcode: "13.0.0"

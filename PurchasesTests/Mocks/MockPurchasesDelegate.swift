@@ -17,12 +17,12 @@ public class MockPurchasesDelegate: NSObject, PurchasesDelegate {
         self.purchaserInfo = purchaserInfo
     }
 
-    var promoProduct: SKProduct?
+    var promoProduct: SK1Product?
     var makeDeferredPurchase: DeferredPromotionalPurchaseBlock?
 
 
     public func purchases(_ purchases: Purchases,
-                          shouldPurchasePromoProduct product: SKProduct,
+                          shouldPurchasePromoProduct product: SK1Product,
                           defermentBlock makeDeferredPurchase: @escaping (@escaping PurchaseCompletedBlock) -> Void) {
         promoProduct = product
         self.makeDeferredPurchase = makeDeferredPurchase

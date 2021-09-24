@@ -21,7 +21,7 @@ class TestPurchaseDelegate: NSObject, PurchasesDelegate {
     }
 
     func purchases(_ purchases: Purchases,
-                   shouldPurchasePromoProduct product: SKProduct,
+                   shouldPurchasePromoProduct product: SK1Product,
                    defermentBlock makeDeferredPurchase: @escaping DeferredPromotionalPurchaseBlock) {
     }
 }
