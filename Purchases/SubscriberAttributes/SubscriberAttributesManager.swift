@@ -60,39 +60,27 @@ class SubscriberAttributesManager {
     }
 
     func setAdjustID(_ maybeAdjustID: String?, appUserID: String) {
-        setAttributionID(networkID: maybeAdjustID,
-                         network: .adjustID,
-                         appUserID: appUserID)
+        setAttributionID(networkID: maybeAdjustID, network: .adjustID, appUserID: appUserID)
     }
 
     func setAppsflyerID(_ maybeAppsflyerID: String?, appUserID: String) {
-        setAttributionID(networkID: maybeAppsflyerID,
-                         network: .appsFlyerID,
-                         appUserID: appUserID)
+        setAttributionID(networkID: maybeAppsflyerID, network: .appsFlyerID, appUserID: appUserID)
     }
 
     func setFBAnonymousID(_ maybeFBAnonymousID: String?, appUserID: String) {
-        setAttributionID(networkID: maybeFBAnonymousID,
-                         network: .fBAnonID,
-                         appUserID: appUserID)
+        setAttributionID(networkID: maybeFBAnonymousID, network: .fBAnonID, appUserID: appUserID)
     }
 
     func setMparticleID(_ maybeMparticleID: String?, appUserID: String) {
-        setAttributionID(networkID: maybeMparticleID,
-                         network: .mpParticleID,
-                         appUserID: appUserID)
+        setAttributionID(networkID: maybeMparticleID, network: .mpParticleID, appUserID: appUserID)
     }
 
     func setOnesignalID(_ maybeOnesignalID: String?, appUserID: String) {
-        setAttributionID(networkID: maybeOnesignalID,
-                         network: .oneSignalID,
-                         appUserID: appUserID)
+        setAttributionID(networkID: maybeOnesignalID, network: .oneSignalID, appUserID: appUserID)
     }
 
     func setAirshipChannelID(_ maybeAirshipChannelID: String?, appUserID: String) {
-        setAttributionID(networkID: maybeAirshipChannelID,
-                         network: .airshipChannelID,
-                         appUserID: appUserID)
+        setAttributionID(networkID: maybeAirshipChannelID, network: .airshipChannelID, appUserID: appUserID)
     }
 
     func setMediaSource(_ maybeMediaSource: String?, appUserID: String) {
