@@ -61,37 +61,37 @@ class SubscriberAttributesManager {
 
     func setAdjustID(_ maybeAdjustID: String?, appUserID: String) {
         setAttributionID(networkID: maybeAdjustID,
-                         networkKey: .adjustID,
+                         network: .adjustID,
                          appUserID: appUserID)
     }
 
     func setAppsflyerID(_ maybeAppsflyerID: String?, appUserID: String) {
         setAttributionID(networkID: maybeAppsflyerID,
-                         networkKey: .appsFlyerID,
+                         network: .appsFlyerID,
                          appUserID: appUserID)
     }
 
     func setFBAnonymousID(_ maybeFBAnonymousID: String?, appUserID: String) {
         setAttributionID(networkID: maybeFBAnonymousID,
-                         networkKey: .fBAnonID,
+                         network: .fBAnonID,
                          appUserID: appUserID)
     }
 
     func setMparticleID(_ maybeMparticleID: String?, appUserID: String) {
         setAttributionID(networkID: maybeMparticleID,
-                         networkKey: .mpParticleID,
+                         network: .mpParticleID,
                          appUserID: appUserID)
     }
 
     func setOnesignalID(_ maybeOnesignalID: String?, appUserID: String) {
         setAttributionID(networkID: maybeOnesignalID,
-                         networkKey: .oneSignalID,
+                         network: .oneSignalID,
                          appUserID: appUserID)
     }
 
     func setAirshipChannelID(_ maybeAirshipChannelID: String?, appUserID: String) {
         setAttributionID(networkID: maybeAirshipChannelID,
-                         networkKey: .airshipChannelID,
+                         network: .airshipChannelID,
                          appUserID: appUserID)
     }
 
@@ -242,9 +242,9 @@ private extension SubscriberAttributesManager {
         return maybeAttribute?.value
     }
 
-    func setAttributionID(networkID: String?, networkKey: SpecialSubscriberAttribute, appUserID: String) {
+    func setAttributionID(networkID: String?, network: SpecialSubscriberAttribute, appUserID: String) {
         collectDeviceIdentifiers(forAppUserID: appUserID)
-        setAttribute(key: networkKey.key, value: networkID, appUserID: appUserID)
+        setAttribute(key: network.key, value: networkID, appUserID: appUserID)
     }
 
 }
