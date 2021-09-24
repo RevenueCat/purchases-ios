@@ -60,27 +60,27 @@ class SubscriberAttributesManager {
     }
 
     func setAdjustID(_ maybeAdjustID: String?, appUserID: String) {
-        setAttributionID(networkID: maybeAdjustID, network: .adjustID, appUserID: appUserID)
+        setAttributionID(forNetwork: .adjustID, id: maybeAdjustID, appUserID: appUserID)
     }
 
     func setAppsflyerID(_ maybeAppsflyerID: String?, appUserID: String) {
-        setAttributionID(networkID: maybeAppsflyerID, network: .appsFlyerID, appUserID: appUserID)
+        setAttributionID(forNetwork: .appsFlyerID, id: maybeAppsflyerID, appUserID: appUserID)
     }
 
     func setFBAnonymousID(_ maybeFBAnonymousID: String?, appUserID: String) {
-        setAttributionID(networkID: maybeFBAnonymousID, network: .fBAnonID, appUserID: appUserID)
+        setAttributionID(forNetwork: .fBAnonID, id: maybeFBAnonymousID, appUserID: appUserID)
     }
 
     func setMparticleID(_ maybeMparticleID: String?, appUserID: String) {
-        setAttributionID(networkID: maybeMparticleID, network: .mpParticleID, appUserID: appUserID)
+        setAttributionID(forNetwork: .mpParticleID, id: maybeMparticleID, appUserID: appUserID)
     }
 
     func setOnesignalID(_ maybeOnesignalID: String?, appUserID: String) {
-        setAttributionID(networkID: maybeOnesignalID, network: .oneSignalID, appUserID: appUserID)
+        setAttributionID(forNetwork: .oneSignalID, id: maybeOnesignalID, appUserID: appUserID)
     }
 
     func setAirshipChannelID(_ maybeAirshipChannelID: String?, appUserID: String) {
-        setAttributionID(networkID: maybeAirshipChannelID, network: .airshipChannelID, appUserID: appUserID)
+        setAttributionID(forNetwork: .airshipChannelID, id: maybeAirshipChannelID, appUserID: appUserID)
     }
 
     func setMediaSource(_ maybeMediaSource: String?, appUserID: String) {
@@ -230,9 +230,9 @@ private extension SubscriberAttributesManager {
         return maybeAttribute?.value
     }
 
-    func setAttributionID(networkID: String?, network: SpecialSubscriberAttribute, appUserID: String) {
+    fileprivate func setAttributionID(forNetwork network: SpecialSubscriberAttribute, id: String?, appUserID: String) {
         collectDeviceIdentifiers(forAppUserID: appUserID)
-        setAttribute(key: network.key, value: networkID, appUserID: appUserID)
+        setAttribute(key: network.key, value: id, appUserID: appUserID)
     }
 
 }
