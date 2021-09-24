@@ -32,105 +32,88 @@ class SubscriberAttributesManager {
     }
 
     func setAttributes(_ attributes: [String: String], appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
+        Logger.debug(Strings.attribution.setting_attributes(attributes: Array(attributes.keys)))
         for (key, value) in attributes {
             setAttribute(key: key, value: value, appUserID: appUserID)
         }
     }
 
     func setEmail(_ maybeEmail: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setSpecialAttribute(.email, value: maybeEmail, appUserID: appUserID)
     }
 
     func setPhoneNumber(_ maybePhoneNumber: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setSpecialAttribute(.phoneNumber, value: maybePhoneNumber, appUserID: appUserID)
     }
 
     func setDisplayName(_ maybeDisplayName: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setSpecialAttribute(.displayName, value: maybeDisplayName, appUserID: appUserID)
     }
 
     func setPushToken(_ maybePushToken: Data?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         let maybePushTokenString = maybePushToken?.asString
         setPushTokenString(maybePushTokenString, appUserID: appUserID)
     }
 
     func setPushTokenString(_ maybePushTokenString: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setSpecialAttribute(.pushToken, value: maybePushTokenString, appUserID: appUserID)
     }
 
     func setAdjustID(_ maybeAdjustID: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setAttributionID(networkID: maybeAdjustID,
                          networkKey: .adjustID,
                          appUserID: appUserID)
     }
 
     func setAppsflyerID(_ maybeAppsflyerID: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setAttributionID(networkID: maybeAppsflyerID,
                          networkKey: .appsFlyerID,
                          appUserID: appUserID)
     }
 
     func setFBAnonymousID(_ maybeFBAnonymousID: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setAttributionID(networkID: maybeFBAnonymousID,
                          networkKey: .fBAnonID,
                          appUserID: appUserID)
     }
 
     func setMparticleID(_ maybeMparticleID: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setAttributionID(networkID: maybeMparticleID,
                          networkKey: .mpParticleID,
                          appUserID: appUserID)
     }
 
     func setOnesignalID(_ maybeOnesignalID: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setAttributionID(networkID: maybeOnesignalID,
                          networkKey: .oneSignalID,
                          appUserID: appUserID)
     }
 
     func setMediaSource(_ maybeMediaSource: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setSpecialAttribute(.mediaSource, value: maybeMediaSource, appUserID: appUserID)
     }
 
     func setCampaign(_ maybeCampaign: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setSpecialAttribute(.campaign, value: maybeCampaign, appUserID: appUserID)
     }
 
     func setAdGroup(_ maybeAdGroup: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setSpecialAttribute(.adGroup, value: maybeAdGroup, appUserID: appUserID)
     }
 
     func setAd(_ maybeAd: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setSpecialAttribute(.ad, value: maybeAd, appUserID: appUserID)
     }
 
     func setKeyword(_ maybeKeyword: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setSpecialAttribute(.keyword, value: maybeKeyword, appUserID: appUserID)
     }
 
     func setCreative(_ maybeCreative: String?, appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         setSpecialAttribute(.creative, value: maybeCreative, appUserID: appUserID)
     }
 
     func collectDeviceIdentifiers(forAppUserID appUserID: String) {
-        logAttributionMethodCalled(functionName: #function)
         let identifierForAdvertisers = attributionFetcher.identifierForAdvertisers
         let identifierForVendor = attributionFetcher.identifierForVendor
 
@@ -220,6 +203,7 @@ private extension SubscriberAttributesManager {
     }
 
     func setSpecialAttribute(_ specialAttribute: SpecialSubscriberAttribute, value: String?, appUserID: String) {
+        Logger.debug(Strings.attribution.setting_special_attribute(specialAttribute))
         setAttribute(key: specialAttribute.key, value: value, appUserID: appUserID)
     }
 
@@ -255,10 +239,6 @@ private extension SubscriberAttributesManager {
     func setAttributionID(networkID: String?, networkKey: SpecialSubscriberAttribute, appUserID: String) {
         collectDeviceIdentifiers(forAppUserID: appUserID)
         setAttribute(key: networkKey.key, value: networkID, appUserID: appUserID)
-    }
-
-    func logAttributionMethodCalled(functionName: String) {
-        Logger.debug(Strings.attribution.method_called(methodName: functionName))
     }
 
 }
