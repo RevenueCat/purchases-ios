@@ -15,7 +15,7 @@
 import Foundation
 
 // swiftlint:disable identifier_name
-enum SpecialSubscriberAttribute: String, RawRepresentable {
+enum SpecialSubscriberAttribute: String {
 
     var key: String { rawValue }
 
