@@ -60,27 +60,27 @@ class SubscriberAttributesManager {
     }
 
     func setAdjustID(_ maybeAdjustID: String?, appUserID: String) {
-        setAttributionID(maybeAdjustID, forNetwork: .adjustID, appUserID: appUserID)
+        setAttributionID(maybeAdjustID, forNetworkID: .adjustID, appUserID: appUserID)
     }
 
     func setAppsflyerID(_ maybeAppsflyerID: String?, appUserID: String) {
-        setAttributionID(maybeAppsflyerID, forNetwork: .appsFlyerID, appUserID: appUserID)
+        setAttributionID(maybeAppsflyerID, forNetworkID: .appsFlyerID, appUserID: appUserID)
     }
 
     func setFBAnonymousID(_ maybeFBAnonymousID: String?, appUserID: String) {
-        setAttributionID(maybeFBAnonymousID, forNetwork: .fBAnonID, appUserID: appUserID)
+        setAttributionID(maybeFBAnonymousID, forNetworkID: .fBAnonID, appUserID: appUserID)
     }
 
     func setMparticleID(_ maybeMparticleID: String?, appUserID: String) {
-        setAttributionID(maybeMparticleID, forNetwork: .mpParticleID, appUserID: appUserID)
+        setAttributionID(maybeMparticleID, forNetworkID: .mpParticleID, appUserID: appUserID)
     }
 
     func setOnesignalID(_ maybeOnesignalID: String?, appUserID: String) {
-        setAttributionID(maybeOnesignalID, forNetwork: .oneSignalID, appUserID: appUserID)
+        setAttributionID(maybeOnesignalID, forNetworkID: .oneSignalID, appUserID: appUserID)
     }
 
     func setAirshipChannelID(_ maybeAirshipChannelID: String?, appUserID: String) {
-        setAttributionID(maybeAirshipChannelID, forNetwork: .airshipChannelID, appUserID: appUserID)
+        setAttributionID(maybeAirshipChannelID, forNetworkID: .airshipChannelID, appUserID: appUserID)
     }
 
     func setMediaSource(_ maybeMediaSource: String?, appUserID: String) {
@@ -231,10 +231,10 @@ private extension SubscriberAttributesManager {
     }
 
     func setAttributionID(_ attributionID: String?,
-                          forNetwork network: SpecialSubscriberAttribute,
+                          forNetworkID networkID: SpecialSubscriberAttribute,
                           appUserID: String) {
         collectDeviceIdentifiers(forAppUserID: appUserID)
-        setAttribute(key: network.key, value: attributionID, appUserID: appUserID)
+        setAttribute(key: networkID.key, value: attributionID, appUserID: appUserID)
     }
 
 }
