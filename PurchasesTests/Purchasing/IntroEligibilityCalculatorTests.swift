@@ -64,7 +64,7 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         let receiptIdentifiers = receipt.purchasedIntroOfferOrFreeTrialProductIdentifiers()
 
         mockProductsManager.stubbedProductsCompletionResult = Set(["a", "b"].map {
-            MockSKProduct(mockProductIdentifier: $0)
+            MockSK1Product(mockProductIdentifier: $0)
         })
 
         let candidateIdentifiers = Set(["a", "b", "c"])
@@ -86,10 +86,10 @@ class IntroEligibilityCalculatorTests: XCTestCase {
         let receipt = mockReceipt()
         mockReceiptParser.stubbedParseResult = receipt
 
-        let product1 = MockSKProduct(mockProductIdentifier: "com.revenuecat.product1",
+        let product1 = MockSK1Product(mockProductIdentifier: "com.revenuecat.product1",
                                      mockSubscriptionGroupIdentifier: "group1")
         product1.mockDiscount = MockDiscount()
-        let product2 = MockSKProduct(mockProductIdentifier: "com.revenuecat.product2",
+        let product2 = MockSK1Product(mockProductIdentifier: "com.revenuecat.product2",
                                      mockSubscriptionGroupIdentifier: "group2")
         product2.mockDiscount = MockDiscount()
 
@@ -122,7 +122,7 @@ class IntroEligibilityCalculatorTests: XCTestCase {
 
         let receipt = mockReceipt()
         mockReceiptParser.stubbedParseResult = receipt
-        let mockProduct = MockSKProduct(mockProductIdentifier: "com.revenuecat.product1",
+        let mockProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.product1",
                                         mockSubscriptionGroupIdentifier: "group1")
         mockProduct.mockDiscount = nil
         mockProductsManager.stubbedProductsCompletionResult = Set([mockProduct])

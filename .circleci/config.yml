@@ -60,7 +60,7 @@ commands:
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
-          command: bundle exec fastlane test
+          command: bundle exec fastlane test wait_for_simulator:true
 
       - store_test_results:
           path: fastlane/test_output
@@ -123,11 +123,7 @@ jobs:
       
       - run:
           name: Run tests
-          command: bundle exec fastlane test
-          environment:
-            SCAN_SCHEME: RevenueCat
-      - store_test_results:
-          path: fastlane/test_output
+          command: bundle exec fastlane test wait_for_simulator:true
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output

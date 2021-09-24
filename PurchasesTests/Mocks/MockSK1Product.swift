@@ -3,8 +3,9 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 import StoreKit
+@testable import RevenueCat
 
-class MockSKProduct: SKProduct {
+class MockSK1Product: SK1Product {
     var mockProductIdentifier: String
 
     init(mockProductIdentifier: String, mockSubscriptionGroupIdentifier: String? = nil) {

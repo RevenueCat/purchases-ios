@@ -16,17 +16,17 @@ class ProductsFetcherSK1Tests: XCTestCase {
 
     func testProductsWithIdentifiersMakesRightRequest() {
         let productIdentifiers = Set(["1", "2", "3"])
-        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { _ in }
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in }
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(1))
         expect(self.productsRequestFactory.invokedRequestParameters) == productIdentifiers
     }
 
     func testProductsWithIdentifiersCallsCompletionCorrectly() throws {
         let productIdentifiers = Set(["1", "2", "3"])
-        var maybeReceivedProducts: Set<SKProduct>?
+        var maybeReceivedProducts: Set<SK1Product>?
         var completionCalled = false
 
-        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
             completionCalled = true
             maybeReceivedProducts = products
         }
@@ -42,10 +42,10 @@ class ProductsFetcherSK1Tests: XCTestCase {
         let productIdentifiers = Set(["1", "2", "3"])
         var completionCallCount = 0
 
-        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
             completionCallCount += 1
 
-            self.productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
+            self.productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
                 completionCallCount += 1
             }
         }
@@ -58,8 +58,8 @@ class ProductsFetcherSK1Tests: XCTestCase {
     func testProductsWithIdentifiersReturnsDoesntMakeNewRequestIfProductsAreBeingFetched() {
         let productIdentifiers = Set(["1", "2", "3"])
 
-        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { _ in }
-        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { _ in }
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in }
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in }
 
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(1))
         expect(self.productsRequestFactory.invokedRequestParameters) == productIdentifiers
@@ -68,15 +68,15 @@ class ProductsFetcherSK1Tests: XCTestCase {
     func testProductsWithIdentifiersMakesNewRequestIfAtLeastOneNewProductRequested() {
         let firstCallProducts = Set(["1", "2", "3"])
         let secondCallProducts = Set(["1", "2", "3", "4"])
-        productsFetcherSK1.products(withIdentifiers: firstCallProducts) { _ in }
-        productsFetcherSK1.products(withIdentifiers: secondCallProducts) { _ in }
+        productsFetcherSK1.sk1Products(withIdentifiers: firstCallProducts) { _ in }
+        productsFetcherSK1.sk1Products(withIdentifiers: secondCallProducts) { _ in }
 
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(2))
         expect(self.productsRequestFactory.invokedRequestParametersList) == [firstCallProducts, secondCallProducts]
     }
 
     func testProductsWithIdentifiersReturnsDoesntMakeNewRequestIfProductIdentifiersEmpty() {
-        productsFetcherSK1.products(withIdentifiers: []) { _ in }
+        productsFetcherSK1.sk1Products(withIdentifiers: []) { _ in }
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(0))
     }
 
@@ -87,10 +87,10 @@ class ProductsFetcherSK1Tests: XCTestCase {
         failingRequest.fails = true
         productsRequestFactory.stubbedRequestResult = failingRequest
 
-        var receivedProducts: Set<SKProduct>?
+        var receivedProducts: Set<SK1Product>?
         var completionCalled = false
 
-        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
             completionCalled = true
             receivedProducts = products
         }
@@ -100,16 +100,16 @@ class ProductsFetcherSK1Tests: XCTestCase {
     
     func testCacheProductCachesCorrectly() {
         let productIdentifiers = Set(["1", "2", "3"])
-        let mockProducts:Set<SKProduct> = Set(productIdentifiers.map {
-            MockSKProduct(mockProductIdentifier: $0)
+        let mockProducts:Set<SK1Product> = Set(productIdentifiers.map {
+            MockSK1Product(mockProductIdentifier: $0)
         })
 
         mockProducts.forEach { productsFetcherSK1.cacheProduct($0) }
 
         var completionCallCount = 0
-        var receivedProducts: Set<SKProduct>?
+        var receivedProducts: Set<SK1Product>?
 
-        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
             completionCallCount += 1
             receivedProducts = products
         }

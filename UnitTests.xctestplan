@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "6EE88B1C-2739-4847-85D2-D560E881945B",
+      "id" : "0F20159C-1CBD-47B2-BA13-2AFF518106DE",
       "name" : "Configuration 1",
       "options" : {
 
@@ -10,15 +10,26 @@
   ],
   "defaultOptions" : {
     "codeCoverage" : false,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:RevenueCat.xcodeproj",
+      "identifier" : "2DEAC2D926EFE46E006914ED",
+      "name" : "UnitTestsHostApp"
+    },
     "testExecutionOrdering" : "random"
   },
   "testTargets" : [
     {
-      "parallelizable" : true,
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
         "identifier" : "2DC5621D24EC63430031F69B",
         "name" : "RevenueCatTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "2DAC5F7126F13C9800C5258F",
+        "name" : "StoreKitUnitTests"
       }
     }
   ],

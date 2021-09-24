@@ -59,11 +59,11 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     }
     
     var promoPayment: SKPayment?
-    var promoProduct: SKProduct?
+    var promoProduct: SK1Product?
     var shouldAddPromo = false
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          shouldAddStorePayment payment: SKPayment,
-                         for product: SKProduct) -> Bool {
+                         for product: SK1Product) -> Bool {
         promoPayment = payment
         promoProduct = product
         return shouldAddPromo
@@ -80,7 +80,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     }
 
     func testAddsPaymentsToTheQueue() {
-        let payment = SKPayment.init(product: SKProduct.init())
+        let payment = SKPayment.init(product: SK1Product())
 
         wrapper?.add(payment)
 
@@ -88,7 +88,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     }
 
     func testCallsDelegateWhenTransactionsAreUpdated() {
-        let payment = SKPayment.init(product: SKProduct.init())
+        let payment = SKPayment.init(product: SK1Product())
         wrapper?.add(payment)
 
         let transaction = MockTransaction()
@@ -101,7 +101,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     
     @available(iOS 11.0, tvOS 11.0, macOS 11.0, macCatalyst 14.0, *)
     func testCallsDelegateWhenPromoPurchaseIsAvailable() {
-        let product = SKProduct.init();
+        let product = SK1Product();
         let payment = SKPayment.init(product: product)
         
         _ = wrapper?.paymentQueue(paymentQueue, shouldAddStorePayment: payment, for: product)
@@ -111,7 +111,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     
     @available(iOS 11.0, tvOS 11.0, macOS 11.0, macCatalyst 14.0, *)
     func testPromoDelegateMethodPassesBackReturnValueFromOwnDelegate() {
-        let product = SKProduct.init();
+        let product = SK1Product();
         let payment = SKPayment.init(product: product)
         
         shouldAddPromo = (arc4random() % 2 == 0) as Bool
@@ -122,10 +122,10 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     }
 
     func testCallsDelegateOncePerTransaction() {
-        let payment1 = SKPayment.init(product: SKProduct.init())
+        let payment1 = SKPayment.init(product: SK1Product())
         wrapper?.add(payment1)
 
-        let payment2 = SKPayment.init(product: SKProduct.init())
+        let payment2 = SKPayment.init(product: SK1Product())
         wrapper?.add(payment2)
 
         let transaction1 = MockTransaction()
@@ -140,7 +140,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     }
 
     func testFinishesTransactions() {
-        let payment = SKPayment.init(product: SKProduct.init())
+        let payment = SKPayment.init(product: SK1Product())
         wrapper?.add(payment)
 
         let transaction = MockTransaction()
@@ -155,9 +155,9 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
 
     func testCallsRemovedTransactionDelegateMethod() {
         let transaction1 = MockTransaction()
-        transaction1.mockPayment = SKPayment.init(product: SKProduct.init())
+        transaction1.mockPayment = SKPayment.init(product: SK1Product())
         let transaction2 = MockTransaction()
-        transaction2.mockPayment = SKPayment.init(product: SKProduct.init())
+        transaction2.mockPayment = SKPayment.init(product: SK1Product())
 
         wrapper?.paymentQueue(paymentQueue, removedTransactions: [transaction1, transaction2])
 
@@ -194,7 +194,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
 
         let productId = "mySuperProduct"
-        let mockProduct = MockSKProduct(mockProductIdentifier: productId)
+        let mockProduct = MockSK1Product(mockProductIdentifier: productId)
         let payment = wrapper.payment(withProduct: mockProduct)
         expect(payment.productIdentifier) == productId
     }
@@ -203,7 +203,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
     func testPaymentWithProductSetsSimulatesAskToBuyInSandbox() {
         guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
 
-        let mockProduct = MockSKProduct(mockProductIdentifier: "mySuperProduct")
+        let mockProduct = MockSK1Product(mockProductIdentifier: "mySuperProduct")
 
         StoreKitWrapper.simulatesAskToBuyInSandbox = false
         let payment1 = wrapper.payment(withProduct: mockProduct)
@@ -221,7 +221,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
             let productId = "mySuperProduct"
             let discountId = "mySuperDiscount"
 
-            let mockProduct = MockSKProduct(mockProductIdentifier: productId)
+            let mockProduct = MockSK1Product(mockProductIdentifier: productId)
             let mockDiscount = MockPaymentDiscount(mockIdentifier: discountId)
             let payment = wrapper.payment(withProduct: mockProduct, discount: mockDiscount)
             expect(payment.productIdentifier) == productId
@@ -233,7 +233,7 @@ class StoreKitWrapperTests: XCTestCase, StoreKitWrapperDelegate {
         if #available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *) {
             guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
 
-            let mockProduct = MockSKProduct(mockProductIdentifier: "mySuperProduct")
+            let mockProduct = MockSK1Product(mockProductIdentifier: "mySuperProduct")
             let mockDiscount = MockPaymentDiscount(mockIdentifier: "mySuperDiscount")
 
             StoreKitWrapper.simulatesAskToBuyInSandbox = false

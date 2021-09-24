@@ -16,7 +16,8 @@ import StoreKit
 
 @objc protocol PurchasesOrchestratorDelegate {
 
-    func shouldPurchasePromoProduct(_ product: SKProduct, defermentBlock: @escaping DeferredPromotionalPurchaseBlock)
+    func shouldPurchasePromoProduct(_ product: SK1Product,
+                                    defermentBlock: @escaping DeferredPromotionalPurchaseBlock)
 
 }
 
@@ -96,7 +97,7 @@ class PurchasesOrchestrator {
                       maybeCompletion: maybeCompletion)
     }
 
-    func products(withIdentifiers identifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
+    func products(withIdentifiers identifiers: [String], completion: @escaping ([SK1Product]) -> Void) {
         let productIdentifiersSet = Set(identifiers)
         guard !productIdentifiersSet.isEmpty else {
             operationDispatcher.dispatchOnMainThread { completion([]) }
@@ -127,7 +128,7 @@ class PurchasesOrchestrator {
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func paymentDiscount(forProductDiscount productDiscount: SKProductDiscount,
-                         product: SKProduct,
+                         product: SK1Product,
                          completion: @escaping (SKPaymentDiscount?, Error?) -> Void) {
         guard let discountIdentifier = productDiscount.identifier else {
             completion(nil, ErrorUtils.productDiscountMissingIdentifierError())
@@ -189,12 +190,12 @@ class PurchasesOrchestrator {
 
     }
 
-    func purchase(product: SKProduct,
+    func purchase(sk1Product: SK1Product,
                   payment: SKMutablePayment,
                   presentedOfferingIdentifier maybePresentedOfferingIdentifier: String?,
                   completion: @escaping PurchaseCompletedBlock) {
         Logger.debug(String(format: "Make purchase called: %@", #function))
-        guard let productIdentifier = extractProductIdentifier(fromProduct: product, orPayment: payment) else {
+        guard let productIdentifier = extractProductIdentifier(fromProduct: sk1Product, orPayment: payment) else {
             Logger.error(Strings.purchase.could_not_purchase_product_id_not_found)
             let errorMessage = "There was a problem purchasing the product: productIdentifier was nil"
             completion(nil, nil, ErrorUtils.unknownError(message: errorMessage), false)
@@ -223,7 +224,7 @@ class PurchasesOrchestrator {
             Logger.purchase(Strings.purchase.purchasing_product(productIdentifier: productIdentifier))
         }
 
-        productsManager.cacheProduct(product)
+        productsManager.cacheProduct(sk1Product)
 
         lock.lock()
         defer {
@@ -265,7 +266,7 @@ extension PurchasesOrchestrator: StoreKitWrapperDelegate {
 
     func storeKitWrapper(_ storeKitWrapper: StoreKitWrapper,
                          shouldAddStorePayment payment: SKPayment,
-                         for product: SKProduct) -> Bool {
+                         for product: SK1Product) -> Bool {
         productsManager.cacheProduct(product)
         guard let delegate = maybeDelegate else { return false }
 
@@ -383,7 +384,7 @@ private extension PurchasesOrchestrator {
 
     func postReceipt(withTransaction transaction: SKPaymentTransaction,
                      receiptData: Data,
-                     products: Set<SKProduct>) {
+                     products: Set<SK1Product>) {
         var maybeProductInfo: ProductInfo?
         var maybePresentedOfferingID: String?
         if let product = products.first {
@@ -532,10 +533,10 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    // Although both SKProduct.productIdentifier and SKPayment.productIdentifier
+    // Although both SK1Product.productIdentifier and SKPayment.productIdentifier
     // are supposed to be non-null, we've seen instances where this is not true.
     // so we cast into optionals in order to check nullability, and try to fall back if possible.
-    func extractProductIdentifier(fromProduct product: SKProduct, orPayment payment: SKPayment) -> String? {
+    func extractProductIdentifier(fromProduct product: SK1Product, orPayment payment: SKPayment) -> String? {
         if let identifierFromProduct = product.productIdentifier as String?,
            !identifierFromProduct.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return identifierFromProduct
@@ -557,7 +558,7 @@ private extension PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func purchase(sk2Package: Package, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(sk2Package: Package, completion: @escaping PurchaseCompletedBlock) {
         guard let sk2ProductDetails = sk2Package.productDetails as? SK2ProductDetails else {
             return
         }
@@ -573,13 +574,13 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    private func purchase(sk1Package: Package, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(sk1Package: Package, completion: @escaping PurchaseCompletedBlock) {
         guard let sk1ProductDetails = sk1Package.productDetails as? SK1ProductDetails else {
             return
         }
         let sk1Product = sk1ProductDetails.underlyingSK1Product
         let payment = storeKitWrapper.payment(withProduct: sk1Product)
-        purchase(product: sk1Product,
+        purchase(sk1Product: sk1Product,
                  payment: payment,
                  presentedOfferingIdentifier: sk1Package.offeringIdentifier,
                  completion: completion)

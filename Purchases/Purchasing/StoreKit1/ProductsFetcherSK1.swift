@@ -17,17 +17,17 @@ import StoreKit
 class ProductsFetcherSK1: NSObject {
     private let productsRequestFactory: ProductsRequestFactory
 
-    private var cachedProductsByIdentifier: [String: SKProduct] = [:]
+    private var cachedProductsByIdentifier: [String: SK1Product] = [:]
     private let queue = DispatchQueue(label: "ProductsFetcherSK1")
     private var productsByRequests: [SKRequest: Set<String>] = [:]
-    private var completionHandlers: [Set<String>: [(Set<SKProduct>) -> Void]] = [:]
+    private var completionHandlers: [Set<String>: [(Set<SK1Product>) -> Void]] = [:]
 
     init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory()) {
         self.productsRequestFactory = productsRequestFactory
     }
 
-    func products(withIdentifiers identifiers: Set<String>,
-                  completion: @escaping (Set<SKProduct>) -> Void) {
+    func sk1Products(withIdentifiers identifiers: Set<String>,
+                     completion: @escaping (Set<SK1Product>) -> Void) {
 
         queue.async { [self] in
             let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
@@ -54,6 +54,24 @@ class ProductsFetcherSK1: NSObject {
             request.start()
         }
     }
+
+    func products(withIdentifiers identifiers: Set<String>,
+                  completion: @escaping (Set<ProductDetails>) -> Void) {
+        self.sk1Products(withIdentifiers: identifiers) { skProducts in
+            let wrappedProductsArray = skProducts.map { SK1ProductDetails(sk1Product: $0) }
+            completion(Set(wrappedProductsArray))
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func products(withIdentifiers identifiers: Set<String>) async -> Set<ProductDetails> {
+        return await withCheckedContinuation { continuation in
+            products(withIdentifiers: identifiers) { result in
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
 }
 
 extension ProductsFetcherSK1: SKProductsRequestDelegate {
@@ -108,7 +126,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
         self.cancelRequestToPreventTimeoutWarnings(request)
     }
 
-    func cacheProduct(_ product: SKProduct) {
+    func cacheProduct(_ product: SK1Product) {
         queue.async {
             self.cachedProductsByIdentifier[product.productIdentifier] = product
         }
@@ -117,7 +135,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
 
 private extension ProductsFetcherSK1 {
 
-    func cacheProducts(_ products: [SKProduct]) {
+    func cacheProducts(_ products: [SK1Product]) {
         queue.async {
             let productsByIdentifier = products.reduce(into: [:]) { resultDict, product in
                 resultDict[product.productIdentifier] = product
