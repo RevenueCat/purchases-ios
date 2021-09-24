@@ -47,9 +47,14 @@ struct MyStruct {
     // public properties, then internal, then private.
     /// mercury is used for ...
     public let mercury = false
+    // don't use `maybe` for public properties, since it might be confusing to developers
+    // unfamiliar with our naming convention
+    /// maybeVenus is used for ...
+    public var saturn: String?
+
     // use `maybe` prefix for optionals
     /// maybeVenus is used for ...
-    public var maybeVenus: String?
+    internal var maybeVenus: String?
 
     /// eath is used for ...
     public static var Earth = "earth"
