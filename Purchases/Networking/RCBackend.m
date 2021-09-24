@@ -109,7 +109,6 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
     if (completion == nil || [completion isKindOfClass:NSNull.class]) return;
 
     if (error != nil) {
-        // TODO check completion nil?
         completion([RCPurchasesErrorUtils networkErrorWithUnderlyingError:error]);
         return;
     }
@@ -344,7 +343,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
                forAppUserID:(NSString *)appUserID
-                 completion:(nullable void (^)(NSError * _Nullable error))completion {
+                 completion:(nullable PostRequestResponseHandler)completion {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attribution", escapedAppUserID];
 

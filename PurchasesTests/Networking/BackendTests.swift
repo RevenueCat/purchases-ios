@@ -1574,8 +1574,8 @@ class BackendTests: XCTestCase {
         }
 
         expect(self.httpClient.calls.count).to(equal(1))
-//        expect(completion1Called).toEventually(beTrue())
-//        expect(completion2Called).toEventually(beTrue())
+        expect(completion1Called).toEventually(beTrue())
+        expect(completion2Called).toEventually(beTrue())
     }
 
     func testLoginPassesNetworkErrorIfCouldntCommunicate() {
