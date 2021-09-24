@@ -97,7 +97,9 @@ class ProductDetailsTests: XCTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2DetailsWrapsCorrectly() async throws {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
 
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk2Fetcher = ProductsFetcherSK2()
