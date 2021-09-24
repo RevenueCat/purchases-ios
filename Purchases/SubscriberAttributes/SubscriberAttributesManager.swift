@@ -89,6 +89,12 @@ class SubscriberAttributesManager {
                          appUserID: appUserID)
     }
 
+    func setAirshipChannelID(_ maybeAirshipChannelID: String?, appUserID: String) {
+        setAttributionID(networkID: maybeAirshipChannelID,
+                         networkKey: .airshipChannelID,
+                         appUserID: appUserID)
+    }
+
     func setMediaSource(_ maybeMediaSource: String?, appUserID: String) {
         setSpecialAttribute(.mediaSource, value: maybeMediaSource, appUserID: appUserID)
     }
