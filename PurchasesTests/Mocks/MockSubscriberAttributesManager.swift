@@ -139,16 +139,16 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetOnesignalIDParametersList.append((onesignalID, appUserID))
     }
 
-    var invokedAirshipChannel = false
-    var invokedAirshipChannelCount = 0
-    var invokedAirshipChannelParameters: (airshipChannelID: String?, appUserID: String?)?
-    var invokedAirshipChannelParametersList = [(airshipChannelID: String?, appUserID: String?)]()
+    var invokedSetAirshipChannelID = false
+    var invokedSetAirshipChannelIDCount = 0
+    var invokedSetAirshipChannelIDParameters: (airshipChannelID: String?, appUserID: String?)?
+    var invokedSetAirshipChannelIDParametersList = [(airshipChannelID: String?, appUserID: String?)]()
 
     override func setAirshipChannelID(_ airshipChannelID: String?, appUserID: String) {
-        invokedAirshipChannel = true
-        invokedAirshipChannelCount += 1
-        invokedAirshipChannelParameters = (airshipChannelID, appUserID)
-        invokedAirshipChannelParametersList.append((airshipChannelID, appUserID))
+        invokedSetAirshipChannelID = true
+        invokedSetAirshipChannelIDCount += 1
+        invokedSetAirshipChannelIDParameters = (airshipChannelID, appUserID)
+        invokedSetAirshipChannelIDParametersList.append((airshipChannelID, appUserID))
     }
 
     var invokedSetMediaSource = false
