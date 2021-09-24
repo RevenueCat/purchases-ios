@@ -1,3 +1,6 @@
+## 3.12.5
+- Cache callbacks for `createAlias` and `identify` to avoid sending multiple calls with same parameters at the same time
+
 ## 3.12.4
 - Updated `getOfferings` call to be performed serially instead of concurrently.
     https://github.com/RevenueCat/purchases-ios/pull/831
