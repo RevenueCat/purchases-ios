@@ -1006,7 +1006,7 @@ public extension Purchases {
                           payment: SKMutablePayment,
                           presentedOfferingIdentifier: String?,
                           completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(product: product,
+        purchasesOrchestrator.purchase(sk1Product: product,
                                        payment: payment,
                                        presentedOfferingIdentifier: presentedOfferingIdentifier,
                                        completion: completion)

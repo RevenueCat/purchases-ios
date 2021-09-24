@@ -46,8 +46,8 @@
           },
           "localizations" : [
             {
-              "description" : "",
-              "displayName" : "",
+              "description" : "Monthly subscription with a 1-week free trial",
+              "displayName" : "Monthly Free Trial",
               "locale" : "en_US"
             }
           ],
