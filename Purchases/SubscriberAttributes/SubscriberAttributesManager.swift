@@ -234,7 +234,7 @@ private extension SubscriberAttributesManager {
                           forNetworkID networkID: ReservedSubscriberAttribute,
                           appUserID: String) {
         collectDeviceIdentifiers(forAppUserID: appUserID)
-        setAttribute(key: networkID.key, value: attributionID, appUserID: appUserID)
+        setReservedAttribute(networkID, value: attributionID, appUserID: appUserID)
     }
 
 }
