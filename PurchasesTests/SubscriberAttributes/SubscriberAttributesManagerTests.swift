@@ -917,30 +917,31 @@ class SubscriberAttributesManagerTests: XCTestCase {
     }
     // endregion
     // region OnesignalID
-    func testSetAirshipChannelID() {
+    func testSetAirshipChannelID() throws {
         let airshipChannelID = "airshipChannelID"
+
         self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
         expect(self.mockDeviceCache.invokedStoreCount) == 4
-        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
-            fatalError("no attributes received")
-        }
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
+
         expect(receivedAttribute.key) == "$airshipChannelID"
         expect(receivedAttribute.value) == airshipChannelID
         expect(receivedAttribute.isSynced) == false
     }
 
-    func testSetAirshipChannelIDSetsEmptyIfNil() {
+    func testSetAirshipChannelIDSetsEmptyIfNil() throws {
         let airshipChannelID = "airshipChannelID"
-        self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
 
+        self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
         self.subscriberAttributesManager.setAirshipChannelID(nil, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 8
-        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
-            fatalError("no attributes received")
-        }
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
+
         expect(receivedAttribute.key) == "$airshipChannelID"
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
@@ -949,15 +950,14 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetAirshipChannelIDSkipsIfSameValue() {
         let airshipChannelID = "airshipChannelID"
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$airshipChannelID",value: airshipChannelID)
-
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$airshipChannelID",
+                                                                                    value: airshipChannelID)
         self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
-
 
         expect(self.mockDeviceCache.invokedStoreCount) == 3
     }
 
-    func testSetAirshipChannelIDOverwritesIfNewValue() {
+    func testSetAirshipChannelIDOverwritesIfNewValue() throws {
         let oldSyncTime = Date()
         let airshipChannelID = "airshipChannelID"
 
@@ -969,10 +969,10 @@ class SubscriberAttributesManagerTests: XCTestCase {
         self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
 
         expect(self.mockDeviceCache.invokedStoreCount) == 4
-        guard let invokedParams = self.mockDeviceCache.invokedStoreParameters else {
-            fatalError("no attributes received")
-        }
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
+
         expect(receivedAttribute.key) == "$airshipChannelID"
         expect(receivedAttribute.value) == airshipChannelID
         expect(receivedAttribute.isSynced) == false
