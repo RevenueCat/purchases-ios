@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  SpecialSubscriberAttributes.swift
+//  ReservedSubscriberAttributes.swift
 //
 //  Created by César de la Vega on 6/17/21.
 //
@@ -15,7 +15,7 @@
 import Foundation
 
 // swiftlint:disable identifier_name
-enum SpecialSubscriberAttribute: String {
+enum ReservedSubscriberAttribute: String {
 
     var key: String { rawValue }
 

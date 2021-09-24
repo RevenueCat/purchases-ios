@@ -39,15 +39,15 @@ class SubscriberAttributesManager {
     }
 
     func setEmail(_ maybeEmail: String?, appUserID: String) {
-        setSpecialAttribute(.email, value: maybeEmail, appUserID: appUserID)
+        setReservedAttribute(.email, value: maybeEmail, appUserID: appUserID)
     }
 
     func setPhoneNumber(_ maybePhoneNumber: String?, appUserID: String) {
-        setSpecialAttribute(.phoneNumber, value: maybePhoneNumber, appUserID: appUserID)
+        setReservedAttribute(.phoneNumber, value: maybePhoneNumber, appUserID: appUserID)
     }
 
     func setDisplayName(_ maybeDisplayName: String?, appUserID: String) {
-        setSpecialAttribute(.displayName, value: maybeDisplayName, appUserID: appUserID)
+        setReservedAttribute(.displayName, value: maybeDisplayName, appUserID: appUserID)
     }
 
     func setPushToken(_ maybePushToken: Data?, appUserID: String) {
@@ -56,7 +56,7 @@ class SubscriberAttributesManager {
     }
 
     func setPushTokenString(_ maybePushTokenString: String?, appUserID: String) {
-        setSpecialAttribute(.pushToken, value: maybePushTokenString, appUserID: appUserID)
+        setReservedAttribute(.pushToken, value: maybePushTokenString, appUserID: appUserID)
     }
 
     func setAdjustID(_ maybeAdjustID: String?, appUserID: String) {
@@ -84,36 +84,36 @@ class SubscriberAttributesManager {
     }
 
     func setMediaSource(_ maybeMediaSource: String?, appUserID: String) {
-        setSpecialAttribute(.mediaSource, value: maybeMediaSource, appUserID: appUserID)
+        setReservedAttribute(.mediaSource, value: maybeMediaSource, appUserID: appUserID)
     }
 
     func setCampaign(_ maybeCampaign: String?, appUserID: String) {
-        setSpecialAttribute(.campaign, value: maybeCampaign, appUserID: appUserID)
+        setReservedAttribute(.campaign, value: maybeCampaign, appUserID: appUserID)
     }
 
     func setAdGroup(_ maybeAdGroup: String?, appUserID: String) {
-        setSpecialAttribute(.adGroup, value: maybeAdGroup, appUserID: appUserID)
+        setReservedAttribute(.adGroup, value: maybeAdGroup, appUserID: appUserID)
     }
 
     func setAd(_ maybeAd: String?, appUserID: String) {
-        setSpecialAttribute(.ad, value: maybeAd, appUserID: appUserID)
+        setReservedAttribute(.ad, value: maybeAd, appUserID: appUserID)
     }
 
     func setKeyword(_ maybeKeyword: String?, appUserID: String) {
-        setSpecialAttribute(.keyword, value: maybeKeyword, appUserID: appUserID)
+        setReservedAttribute(.keyword, value: maybeKeyword, appUserID: appUserID)
     }
 
     func setCreative(_ maybeCreative: String?, appUserID: String) {
-        setSpecialAttribute(.creative, value: maybeCreative, appUserID: appUserID)
+        setReservedAttribute(.creative, value: maybeCreative, appUserID: appUserID)
     }
 
     func collectDeviceIdentifiers(forAppUserID appUserID: String) {
         let identifierForAdvertisers = attributionFetcher.identifierForAdvertisers
         let identifierForVendor = attributionFetcher.identifierForVendor
 
-        setSpecialAttribute(.idfa, value: identifierForAdvertisers, appUserID: appUserID)
-        setSpecialAttribute(.idfv, value: identifierForVendor, appUserID: appUserID)
-        setSpecialAttribute(.ip, value: "true", appUserID: appUserID)
+        setReservedAttribute(.idfa, value: identifierForAdvertisers, appUserID: appUserID)
+        setReservedAttribute(.idfv, value: identifierForVendor, appUserID: appUserID)
+        setReservedAttribute(.ip, value: "true", appUserID: appUserID)
     }
 
     func syncAttributesForAllUsers(currentAppUserID: String) {
@@ -196,9 +196,9 @@ private extension SubscriberAttributesManager {
         }
     }
 
-    func setSpecialAttribute(_ specialAttribute: SpecialSubscriberAttribute, value: String?, appUserID: String) {
-        Logger.debug(Strings.attribution.setting_special_attribute(specialAttribute))
-        setAttribute(key: specialAttribute.key, value: value, appUserID: appUserID)
+    func setReservedAttribute(_ reservedAttribute: ReservedSubscriberAttribute, value: String?, appUserID: String) {
+        Logger.debug(Strings.attribution.setting_reserved_attribute(reservedAttribute))
+        setAttribute(key: reservedAttribute.key, value: value, appUserID: appUserID)
     }
 
     func setAttribute(key: String, value: String?, appUserID: String) {
@@ -231,7 +231,7 @@ private extension SubscriberAttributesManager {
     }
 
     func setAttributionID(_ attributionID: String?,
-                          forNetworkID networkID: SpecialSubscriberAttribute,
+                          forNetworkID networkID: ReservedSubscriberAttribute,
                           appUserID: String) {
         collectDeviceIdentifiers(forAppUserID: appUserID)
         setAttribute(key: networkID.key, value: attributionID, appUserID: appUserID)

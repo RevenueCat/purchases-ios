@@ -26,11 +26,11 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.adjustID.key: AttributionKey.Adjust.id.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.Adjust.network.rawValue,
-            SpecialSubscriberAttribute.campaign.key: AttributionKey.Adjust.campaign.rawValue,
-            SpecialSubscriberAttribute.adGroup.key: AttributionKey.Adjust.adGroup.rawValue,
-            SpecialSubscriberAttribute.creative.key: AttributionKey.Adjust.creative.rawValue
+            ReservedSubscriberAttribute.adjustID.key: AttributionKey.Adjust.id.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.Adjust.network.rawValue,
+            ReservedSubscriberAttribute.campaign.key: AttributionKey.Adjust.campaign.rawValue,
+            ReservedSubscriberAttribute.adGroup.key: AttributionKey.Adjust.adGroup.rawValue,
+            ReservedSubscriberAttribute.creative.key: AttributionKey.Adjust.creative.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: adjustData, expectedMapping: expectedMapping)
     }
@@ -50,11 +50,11 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.adjustID.key: AttributionKey.Adjust.id.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.Adjust.network.rawValue,
-            SpecialSubscriberAttribute.campaign.key: AttributionKey.Adjust.campaign.rawValue,
-            SpecialSubscriberAttribute.adGroup.key: AttributionKey.Adjust.adGroup.rawValue,
-            SpecialSubscriberAttribute.creative.key: AttributionKey.Adjust.creative.rawValue
+            ReservedSubscriberAttribute.adjustID.key: AttributionKey.Adjust.id.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.Adjust.network.rawValue,
+            ReservedSubscriberAttribute.campaign.key: AttributionKey.Adjust.campaign.rawValue,
+            ReservedSubscriberAttribute.adGroup.key: AttributionKey.Adjust.adGroup.rawValue,
+            ReservedSubscriberAttribute.creative.key: AttributionKey.Adjust.creative.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: adjustData, expectedMapping: expectedMapping)
     }
@@ -64,7 +64,7 @@ class AttributionDataMigratorTests: XCTestCase {
         let converted = attributionDataMigrator.convertToSubscriberAttributes(
                 attributionData: adjustData, network: AttributionNetwork.adjust.rawValue)
         expect(converted.count) != 0
-        expect(converted[SpecialSubscriberAttribute.adjustID.key]).to(beNil())
+        expect(converted[ReservedSubscriberAttribute.adjustID.key]).to(beNil())
     }
 
     func testAdjustAttributionConversionDiscardsRCNetworkIDCorrectly() {
@@ -72,7 +72,7 @@ class AttributionDataMigratorTests: XCTestCase {
         let converted = attributionDataMigrator.convertToSubscriberAttributes(
                 attributionData: adjustData, network: AttributionNetwork.adjust.rawValue)
         expect(converted.count) != 0
-        expect(converted[SpecialSubscriberAttribute.adjustID.key]).to(beNil())
+        expect(converted[ReservedSubscriberAttribute.adjustID.key]).to(beNil())
     }
 
     func testAdjustAttributionConversionWorksIfStandardKeysAreNotPassed() {
@@ -91,13 +91,13 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue,
-            SpecialSubscriberAttribute.campaign.key: AttributionKey.AppsFlyer.campaign.rawValue,
-            SpecialSubscriberAttribute.adGroup.key: AttributionKey.AppsFlyer.adSet.rawValue,
-            SpecialSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue,
-            SpecialSubscriberAttribute.keyword.key: AttributionKey.AppsFlyer.adKeywords.rawValue,
-            SpecialSubscriberAttribute.creative.key: AttributionKey.AppsFlyer.adId.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue,
+            ReservedSubscriberAttribute.campaign.key: AttributionKey.AppsFlyer.campaign.rawValue,
+            ReservedSubscriberAttribute.adGroup.key: AttributionKey.AppsFlyer.adSet.rawValue,
+            ReservedSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue,
+            ReservedSubscriberAttribute.keyword.key: AttributionKey.AppsFlyer.adKeywords.rawValue,
+            ReservedSubscriberAttribute.creative.key: AttributionKey.AppsFlyer.adId.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -118,13 +118,13 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue,
-            SpecialSubscriberAttribute.campaign.key: AttributionKey.AppsFlyer.campaign.rawValue,
-            SpecialSubscriberAttribute.adGroup.key: AttributionKey.AppsFlyer.adSet.rawValue,
-            SpecialSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue,
-            SpecialSubscriberAttribute.keyword.key: AttributionKey.AppsFlyer.adKeywords.rawValue,
-            SpecialSubscriberAttribute.creative.key: AttributionKey.AppsFlyer.adId.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue,
+            ReservedSubscriberAttribute.campaign.key: AttributionKey.AppsFlyer.campaign.rawValue,
+            ReservedSubscriberAttribute.adGroup.key: AttributionKey.AppsFlyer.adSet.rawValue,
+            ReservedSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue,
+            ReservedSubscriberAttribute.keyword.key: AttributionKey.AppsFlyer.adKeywords.rawValue,
+            ReservedSubscriberAttribute.creative.key: AttributionKey.AppsFlyer.adId.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -134,7 +134,7 @@ class AttributionDataMigratorTests: XCTestCase {
         let converted = attributionDataMigrator.convertToSubscriberAttributes(
                 attributionData: appsFlyerData, network: AttributionNetwork.appsFlyer.rawValue)
         expect(converted.count) != 0
-        expect(converted[SpecialSubscriberAttribute.appsFlyerID.key]).to(beNil())
+        expect(converted[ReservedSubscriberAttribute.appsFlyerID.key]).to(beNil())
     }
 
     func testAppsFlyerAttributionConversionUsesRCNetworkIDIfNoAppsFlyerID() {
@@ -144,13 +144,13 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.networkID.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue,
-            SpecialSubscriberAttribute.campaign.key: AttributionKey.AppsFlyer.campaign.rawValue,
-            SpecialSubscriberAttribute.adGroup.key: AttributionKey.AppsFlyer.adSet.rawValue,
-            SpecialSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue,
-            SpecialSubscriberAttribute.keyword.key: AttributionKey.AppsFlyer.adKeywords.rawValue,
-            SpecialSubscriberAttribute.creative.key: AttributionKey.AppsFlyer.adId.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.networkID.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue,
+            ReservedSubscriberAttribute.campaign.key: AttributionKey.AppsFlyer.campaign.rawValue,
+            ReservedSubscriberAttribute.adGroup.key: AttributionKey.AppsFlyer.adSet.rawValue,
+            ReservedSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue,
+            ReservedSubscriberAttribute.keyword.key: AttributionKey.AppsFlyer.adKeywords.rawValue,
+            ReservedSubscriberAttribute.creative.key: AttributionKey.AppsFlyer.adId.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -172,8 +172,8 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.mediaSource.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.mediaSource.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -185,8 +185,8 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.mediaSource.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.mediaSource.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -198,8 +198,8 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -211,8 +211,8 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -224,8 +224,8 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -237,8 +237,8 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.adGroup.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.adGroup.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -250,8 +250,8 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.adGroup.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.adGroup.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -263,8 +263,8 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -276,8 +276,8 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -289,8 +289,8 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -315,13 +315,13 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue,
-            SpecialSubscriberAttribute.campaign.key: AttributionKey.AppsFlyer.campaign.rawValue,
-            SpecialSubscriberAttribute.adGroup.key: AttributionKey.AppsFlyer.adSet.rawValue,
-            SpecialSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue,
-            SpecialSubscriberAttribute.keyword.key: AttributionKey.AppsFlyer.adKeywords.rawValue,
-            SpecialSubscriberAttribute.creative.key: AttributionKey.AppsFlyer.adId.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.AppsFlyer.id.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue,
+            ReservedSubscriberAttribute.campaign.key: AttributionKey.AppsFlyer.campaign.rawValue,
+            ReservedSubscriberAttribute.adGroup.key: AttributionKey.AppsFlyer.adSet.rawValue,
+            ReservedSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue,
+            ReservedSubscriberAttribute.keyword.key: AttributionKey.AppsFlyer.adKeywords.rawValue,
+            ReservedSubscriberAttribute.creative.key: AttributionKey.AppsFlyer.adId.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -346,13 +346,13 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.networkID.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue,
-            SpecialSubscriberAttribute.campaign.key: AttributionKey.AppsFlyer.campaign.rawValue,
-            SpecialSubscriberAttribute.adGroup.key: AttributionKey.AppsFlyer.adSet.rawValue,
-            SpecialSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue,
-            SpecialSubscriberAttribute.keyword.key: AttributionKey.AppsFlyer.adKeywords.rawValue,
-            SpecialSubscriberAttribute.creative.key: AttributionKey.AppsFlyer.adId.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.networkID.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue,
+            ReservedSubscriberAttribute.campaign.key: AttributionKey.AppsFlyer.campaign.rawValue,
+            ReservedSubscriberAttribute.adGroup.key: AttributionKey.AppsFlyer.adSet.rawValue,
+            ReservedSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue,
+            ReservedSubscriberAttribute.keyword.key: AttributionKey.AppsFlyer.adKeywords.rawValue,
+            ReservedSubscriberAttribute.creative.key: AttributionKey.AppsFlyer.adId.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -377,13 +377,13 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.appsFlyerID.key: AttributionKey.networkID.rawValue,
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue,
-            SpecialSubscriberAttribute.campaign.key: AttributionKey.AppsFlyer.campaign.rawValue,
-            SpecialSubscriberAttribute.adGroup.key: AttributionKey.AppsFlyer.adSet.rawValue,
-            SpecialSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue,
-            SpecialSubscriberAttribute.keyword.key: AttributionKey.AppsFlyer.adKeywords.rawValue,
-            SpecialSubscriberAttribute.creative.key: AttributionKey.AppsFlyer.adId.rawValue
+            ReservedSubscriberAttribute.appsFlyerID.key: AttributionKey.networkID.rawValue,
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.AppsFlyer.channel.rawValue,
+            ReservedSubscriberAttribute.campaign.key: AttributionKey.AppsFlyer.campaign.rawValue,
+            ReservedSubscriberAttribute.adGroup.key: AttributionKey.AppsFlyer.adSet.rawValue,
+            ReservedSubscriberAttribute.ad.key: AttributionKey.AppsFlyer.ad.rawValue,
+            ReservedSubscriberAttribute.keyword.key: AttributionKey.AppsFlyer.adKeywords.rawValue,
+            ReservedSubscriberAttribute.creative.key: AttributionKey.AppsFlyer.adId.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: appsFlyerData, expectedMapping: expectedMapping)
     }
@@ -395,8 +395,8 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.mediaSource.key: AttributionKey.Branch.channel.rawValue,
-            SpecialSubscriberAttribute.campaign.key: AttributionKey.Branch.campaign.rawValue
+            ReservedSubscriberAttribute.mediaSource.key: AttributionKey.Branch.channel.rawValue,
+            ReservedSubscriberAttribute.campaign.key: AttributionKey.Branch.campaign.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: branchData, expectedMapping: expectedMapping)
     }
@@ -468,7 +468,7 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.mpParticleID.key: AttributionKey.MParticle.id.rawValue
+            ReservedSubscriberAttribute.mpParticleID.key: AttributionKey.MParticle.id.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: mparticleData, expectedMapping: expectedMapping)
     }
@@ -488,7 +488,7 @@ class AttributionDataMigratorTests: XCTestCase {
         expect(converted.count) != 0
         checkCommonAttributes(in: converted)
         let expectedMapping = [
-            SpecialSubscriberAttribute.mpParticleID.key: AttributionKey.networkID.rawValue
+            ReservedSubscriberAttribute.mpParticleID.key: AttributionKey.networkID.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: mparticleData, expectedMapping: expectedMapping)
     }
@@ -498,7 +498,7 @@ class AttributionDataMigratorTests: XCTestCase {
         let converted = attributionDataMigrator.convertToSubscriberAttributes(
                 attributionData: mparticleData, network: AttributionNetwork.mParticle.rawValue)
         expect(converted.count) != 0
-        expect(converted[SpecialSubscriberAttribute.mpParticleID.key]).to(beNil())
+        expect(converted[ReservedSubscriberAttribute.mpParticleID.key]).to(beNil())
     }
 
     func testMParticleAttributionConversionUsesMParticleIDIfNoRCNetworkID() {
@@ -507,7 +507,7 @@ class AttributionDataMigratorTests: XCTestCase {
                 attributionData: mparticleData, network: AttributionNetwork.mParticle.rawValue)
         expect(converted.count) != 0
         let expectedMapping = [
-            SpecialSubscriberAttribute.mpParticleID.key: AttributionKey.MParticle.id.rawValue
+            ReservedSubscriberAttribute.mpParticleID.key: AttributionKey.MParticle.id.rawValue
         ]
         checkConvertedAttributes(converted: converted, original: mparticleData, expectedMapping: expectedMapping)
     }
@@ -543,27 +543,27 @@ private extension AttributionDataMigratorTests {
                                ip: KeyPresence = .defaultValue) {
         switch idfa {
         case .defaultValue:
-            expect((converted[SpecialSubscriberAttribute.idfa.key] as! String)) == AttributionDataMigratorTests.defaultIdfa
+            expect((converted[ReservedSubscriberAttribute.idfa.key] as! String)) == AttributionDataMigratorTests.defaultIdfa
         case .nsNull:
-            expect(converted[SpecialSubscriberAttribute.idfa.key]).to(beAKindOf(NSNull.self))
+            expect(converted[ReservedSubscriberAttribute.idfa.key]).to(beAKindOf(NSNull.self))
         case .notPresent:
-            expect(converted[SpecialSubscriberAttribute.idfa.key]).to(beNil())
+            expect(converted[ReservedSubscriberAttribute.idfa.key]).to(beNil())
         }
         switch idfv {
         case .defaultValue:
-            expect((converted[SpecialSubscriberAttribute.idfv.key] as! String)) == AttributionDataMigratorTests.defaultIdfv
+            expect((converted[ReservedSubscriberAttribute.idfv.key] as! String)) == AttributionDataMigratorTests.defaultIdfv
         case .nsNull:
-            expect(converted[SpecialSubscriberAttribute.idfv.key]).to(beAKindOf(NSNull.self))
+            expect(converted[ReservedSubscriberAttribute.idfv.key]).to(beAKindOf(NSNull.self))
         case .notPresent:
-            expect(converted[SpecialSubscriberAttribute.idfv.key]).to(beNil())
+            expect(converted[ReservedSubscriberAttribute.idfv.key]).to(beNil())
         }
         switch ip {
         case .defaultValue:
-            expect((converted[SpecialSubscriberAttribute.ip.key] as! String)) == AttributionDataMigratorTests.defaultIp
+            expect((converted[ReservedSubscriberAttribute.ip.key] as! String)) == AttributionDataMigratorTests.defaultIp
         case .nsNull:
-            expect(converted[SpecialSubscriberAttribute.ip.key]).to(beAKindOf(NSNull.self))
+            expect(converted[ReservedSubscriberAttribute.ip.key]).to(beAKindOf(NSNull.self))
         case .notPresent:
-            expect(converted[SpecialSubscriberAttribute.ip.key]).to(beNil())
+            expect(converted[ReservedSubscriberAttribute.ip.key]).to(beNil())
         }
     }
 
