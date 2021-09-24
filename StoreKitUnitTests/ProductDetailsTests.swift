@@ -35,7 +35,7 @@ class ProductDetailsTests: XCTestCase {
             "com.revenuecat.monthly_4.99.1_week_intro",
             "com.revenuecat.annual_39.99.2_week_intro",
             "lifetime"
-            ])
+        ])
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
         let sk1ProductDetails = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
         let sk1ProductDetailsByID = sk1ProductDetails.reduce(into: [:]) { partialResult, wrapper in
