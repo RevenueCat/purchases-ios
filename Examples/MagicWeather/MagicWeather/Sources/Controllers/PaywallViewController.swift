@@ -17,7 +17,7 @@ import RevenueCat
 class PaywallViewController: UITableViewController {
 
     /// - Store the offering being displayed
-    var offering: RevenueCat.Offering?
+    var offering: Offering?
     
     override func viewDidLoad() {
         super.viewDidLoad()
