@@ -12,24 +12,24 @@
 //  Created by César de la Vega on 9/22/21.
 
 import Foundation
-import StoreKit
 @testable import RevenueCat
+import StoreKit
 
 class PartialMockProductsManager: ProductsManager {
 
     var invokedProductsFromOptimalStoreKitVersionWithIdentifiers = false
-    var invokedProductsFromOptimalStoreKitVersionWithIdentifiersCount = 0
-    var invokedProductsFromOptimalStoreKitVersionWithIdentifiersParameters: (identifiers: Set<String>, Void)?
-    var invokedProductsFromOptimalStoreKitVersionWithIdentifiersParametersList = [(identifiers: Set<String>, Void)]()
-    var stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult: (Set<ProductDetails>, Void)?
+    var invokedProductsFromOptimalStoreKitVersionCount = 0
+    var invokedProductsFromOptimalStoreKitVersionParameters: (identifiers: Set<String>, Void)?
+    var invokedProductsFromOptimalStoreKitVersionParametersList = [(identifiers: Set<String>, Void)]()
+    var stubbedProductsFromOptimalStoreKitVersionCompletionResult: (Set<ProductDetails>, Void)?
 
     override func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,
-        completion: @escaping (Set<ProductDetails>) -> Void) {
+                                                     completion: @escaping (Set<ProductDetails>) -> Void) {
         invokedProductsFromOptimalStoreKitVersionWithIdentifiers = true
-        invokedProductsFromOptimalStoreKitVersionWithIdentifiersCount += 1
-        invokedProductsFromOptimalStoreKitVersionWithIdentifiersParameters = (identifiers, ())
-        invokedProductsFromOptimalStoreKitVersionWithIdentifiersParametersList.append((identifiers, ()))
-        if let result = stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult {
+        invokedProductsFromOptimalStoreKitVersionCount += 1
+        invokedProductsFromOptimalStoreKitVersionParameters = (identifiers, ())
+        invokedProductsFromOptimalStoreKitVersionParametersList.append((identifiers, ()))
+        if let result = stubbedProductsFromOptimalStoreKitVersionCompletionResult {
             completion(result.0)
         } else {
             let products: [SK1Product] = identifiers.map { (identifier) -> MockSK1Product in

@@ -92,9 +92,11 @@ class TrialOrIntroPriceEligibilityChecker {
             }
     }
 
+    // swiftlint:disable line_length
     fileprivate func fetchIntroEligibilityFromBackend(with receiptData: Data,
                                                       productIdentifiers: [String],
                                                       completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+        // swiftlint:enable line_length
         self.backend.getIntroEligibility(appUserID: self.appUserID,
                                          receiptData: receiptData,
                                          productIdentifiers: productIdentifiers) { backendResult, maybeError in
