@@ -22,7 +22,8 @@ enum AttributionStrings {
     case attributes_sync_success(appUserID: String)
     case empty_subscriber_attributes
     case marking_attributes_synced(appUserID: String, attributes: SubscriberAttributeDict)
-    case method_called(methodName: String)
+    case setting_reserved_attribute(_ reservedAttribute: ReservedSubscriberAttribute)
+    case setting_attributes(attributes: [String])
     case networkuserid_required_for_appsflyer
     case no_instance_configured_caching_attribution
     case instance_configured_posting_attribution
@@ -61,8 +62,11 @@ extension AttributionStrings: CustomStringConvertible {
         case .marking_attributes_synced(let appUserID, let attributes):
             return "Marking attributes as synced for App User ID: \(appUserID):\n attributes: \(attributes.description)"
 
-        case .method_called(let methodName):
-            return "\(methodName) called"
+        case .setting_reserved_attribute(let reservedAttribute):
+            return "setting reserved attribute: \(reservedAttribute.key)"
+
+        case .setting_attributes(let attributes):
+            return "setting values for attributes: \(attributes)"
 
         case .networkuserid_required_for_appsflyer:
             return "The parameter networkUserId is REQUIRED for AppsFlyer."

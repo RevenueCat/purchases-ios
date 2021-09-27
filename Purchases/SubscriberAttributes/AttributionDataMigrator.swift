@@ -21,16 +21,16 @@ class AttributionDataMigrator {
         let attributionData = attributionData.removingNSNullValues()
         var convertedAttribution: [String: String] = [:]
         if let value = attributionData[AttributionKey.idfa.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.idfa] = value
+            convertedAttribution[ReservedSubscriberAttribute.idfa.key] = value
         }
         if let value = attributionData[AttributionKey.idfv.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.idfv] = value
+            convertedAttribution[ReservedSubscriberAttribute.idfv.key] = value
         }
         if let value = attributionData[AttributionKey.ip.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.ip] = value
+            convertedAttribution[ReservedSubscriberAttribute.ip.key] = value
         }
         if let value = attributionData[AttributionKey.gpsAdId.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.gpsAdId] = value
+            convertedAttribution[ReservedSubscriberAttribute.gpsAdId.key] = value
         }
 
         let networkSpecificSubscriberAttributes = convertNetworkSpecificSubscriberAttributes(for: network,
@@ -70,10 +70,10 @@ private extension AttributionDataMigrator {
     func convertMParticleAttribution(_ data: [String: Any]) -> [String: String] {
         var convertedAttribution: [String: String] = [:]
         if let value = data[AttributionKey.MParticle.id.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.mpParticleID] = value
+            convertedAttribution[ReservedSubscriberAttribute.mpParticleID.key] = value
         }
         if let value = data[AttributionKey.networkID.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.mpParticleID] = value
+            convertedAttribution[ReservedSubscriberAttribute.mpParticleID.key] = value
         }
         return convertedAttribution
     }
@@ -81,10 +81,10 @@ private extension AttributionDataMigrator {
     func convertBranchAttribution(_ data: [String: Any]) -> [String: String] {
         var convertedAttribution: [String: String] = [:]
         if let value = data[AttributionKey.Branch.channel.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.mediaSource] = value
+            convertedAttribution[ReservedSubscriberAttribute.mediaSource.key] = value
         }
         if let value = data[AttributionKey.Branch.campaign.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.campaign] = value
+            convertedAttribution[ReservedSubscriberAttribute.campaign.key] = value
         }
         return convertedAttribution
     }
@@ -103,34 +103,34 @@ private extension AttributionDataMigrator {
         var convertedAttribution: [String: String] = [:]
 
         if let value = fixedData[AttributionKey.networkID.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.appsFlyerID] = value
+            convertedAttribution[ReservedSubscriberAttribute.appsFlyerID.key] = value
         }
         if let value = fixedData[AttributionKey.AppsFlyer.id.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.appsFlyerID] = value
+            convertedAttribution[ReservedSubscriberAttribute.appsFlyerID.key] = value
         }
         if let value = fixedData[AttributionKey.AppsFlyer.mediaSource.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.mediaSource] = value
+            convertedAttribution[ReservedSubscriberAttribute.mediaSource.key] = value
         }
         if let value = fixedData[AttributionKey.AppsFlyer.channel.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.mediaSource] = value
+            convertedAttribution[ReservedSubscriberAttribute.mediaSource.key] = value
         }
         if let value = fixedData[AttributionKey.AppsFlyer.campaign.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.campaign] = value
+            convertedAttribution[ReservedSubscriberAttribute.campaign.key] = value
         }
         if let value = fixedData[AttributionKey.AppsFlyer.adSet.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.adGroup] = value
+            convertedAttribution[ReservedSubscriberAttribute.adGroup.key] = value
         }
         if let value = fixedData[AttributionKey.AppsFlyer.adGroup.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.ad] = value
+            convertedAttribution[ReservedSubscriberAttribute.ad.key] = value
         }
         if let value = fixedData[AttributionKey.AppsFlyer.ad.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.ad] = value
+            convertedAttribution[ReservedSubscriberAttribute.ad.key] = value
         }
         if let value = fixedData[AttributionKey.AppsFlyer.adKeywords.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.keyword] = value
+            convertedAttribution[ReservedSubscriberAttribute.keyword.key] = value
         }
         if let value = fixedData[AttributionKey.AppsFlyer.adId.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.creative] = value
+            convertedAttribution[ReservedSubscriberAttribute.creative.key] = value
         }
 
         return convertedAttribution
@@ -139,19 +139,19 @@ private extension AttributionDataMigrator {
     func convertAdjustAttribution(_ data: [String: Any]) -> [String: String] {
         var convertedAttribution: [String: String] = [:]
         if let value = data[AttributionKey.Adjust.id.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.adjustID] = value
+            convertedAttribution[ReservedSubscriberAttribute.adjustID.key] = value
         }
         if let value = data[AttributionKey.Adjust.network.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.mediaSource] = value
+            convertedAttribution[ReservedSubscriberAttribute.mediaSource.key] = value
         }
         if let value = data[AttributionKey.Adjust.campaign.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.campaign] = value
+            convertedAttribution[ReservedSubscriberAttribute.campaign.key] = value
         }
         if let value = data[AttributionKey.Adjust.adGroup.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.adGroup] = value
+            convertedAttribution[ReservedSubscriberAttribute.adGroup.key] = value
         }
         if let value = data[AttributionKey.Adjust.creative.rawValue] as? String {
-            convertedAttribution[SpecialSubscriberAttributes.creative] = value
+            convertedAttribution[ReservedSubscriberAttribute.creative.key] = value
         }
         return convertedAttribution
     }

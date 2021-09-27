@@ -472,13 +472,23 @@ extension Purchases {
     }
 
     /**
-     * Subscriber attribute associated with the OneSignal Player Id for the user
+     * Subscriber attribute associated with the OneSignal Player ID for the user
      * Required for the RevenueCat OneSignal integration
      *
      * - Parameter onesignalID: nil will delete the subscriber attribute
      */
     @objc public func setOnesignalID(_ onesignalID: String?) {
         subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: appUserID)
+    }
+
+    /**
+     * Subscriber attribute associated with the Airship Channel ID for the user
+     * Required for the RevenueCat Airship integration
+     *
+     * - Parameter airshipChannelID: nil will delete the subscriber attribute
+     */
+    @objc public func setAirshipChannelID(_ airshipChannelID: String?) {
+        subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: appUserID)
     }
 
     /**
