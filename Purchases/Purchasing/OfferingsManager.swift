@@ -96,6 +96,10 @@ private extension OfferingsManager {
 
     func handleOfferingsBackendResult(with data: [String: Any], completion: ((Offerings?, Error?) -> Void)?) {
         let productIdentifiers = extractProductIdentifiers(fromOfferingsData: data)
+        guard !productIdentifiers.isEmpty else {
+            self.handleOfferingsUpdateError(ErrorUtils.configurationError(), completion: completion)
+            return
+        }
 
         productsManager.products(withIdentifiers: productIdentifiers) { products in
             let productsByID = products.reduce(into: [:]) { result, product in
