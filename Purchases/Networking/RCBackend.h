@@ -37,8 +37,6 @@ typedef void(^RCOfferSigningResponseHandler)(NSString * _Nullable signature,
                                              NSNumber * _Nullable timestamp,
                                              NSError * _Nullable error);
 
-typedef void(^PostRequestResponseHandler)(NSError * _Nullable error);
-
 typedef void(^IdentifyResponseHandler)(RCPurchaserInfo * _Nullable purchaserInfo,
                                        BOOL created,
                                        NSError * _Nullable error);

@@ -104,7 +104,7 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
 - (void)handleResponse:(nullable NSDictionary *)response
             statusCode:(NSInteger)statusCode
                  error:(nullable NSError *)error
-            completion:(nullable PostRequestResponseHandler)completion {
+            completion:(nullable void (^)(NSError * _Nullable error))completion {
 
     if (completion == nil || [completion isKindOfClass:NSNull.class]) return;
 
@@ -121,7 +121,6 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
     }
 
     completion(responseError);
-
 }
 
 - (NSString *)escapedAppUserID:(NSString *)appUserID {
@@ -343,7 +342,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 - (void)postAttributionData:(NSDictionary *)data
                 fromNetwork:(RCAttributionNetwork)network
                forAppUserID:(NSString *)appUserID
-                 completion:(nullable PostRequestResponseHandler)completion {
+                 completion:(nullable void(^)(NSError * _Nullable error))completion {
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     NSString *path = [NSString stringWithFormat:@"/subscribers/%@/attribution", escapedAppUserID];
 
@@ -364,7 +363,20 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                      newAppUserID:(NSString *)newAppUserID
                        completion:(IdentifyResponseHandler)completion {
     NSParameterAssert(currentAppUserID);
+    NSString *escapedAppUserID = [self escapedAppUserID:currentAppUserID];
+    if (!escapedAppUserID || [escapedAppUserID isEqualToString:@""]) {
+        RCWarnLog(@"%@", RCStrings.identity.logging_in_with_initial_appuserid_nil);
+        completion(nil, NO, RCPurchasesErrorUtils.missingAppUserIDError);
+        return;
+    }
+
     NSParameterAssert(newAppUserID);
+    if (!newAppUserID || [newAppUserID isEqualToString:@""]) {
+        RCWarnLog(@"%@", RCStrings.identity.logging_in_with_nil_appuserid);
+        completion(nil, NO, RCPurchasesErrorUtils.missingAppUserIDError);
+        return;
+    }
+
     NSString *path = @"/subscribers/identify";
     NSString *cacheKey = [path stringByAppendingString:[currentAppUserID stringByAppendingString:newAppUserID]];
 
@@ -381,12 +393,12 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                                }
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
-                    for (IdentifyResponseHandler callback in [self getCallbacksAndClearForKey:cacheKey]) {
-                        [self handleLoginWithResponse:response
+                      for (IdentifyResponseHandler callback in [self getCallbacksAndClearForKey:cacheKey]) {
+                          [self handleLoginWithResponse:response
                                            statusCode:status
                                                 error:error
                                            completion:callback];
-                    }
+                      }
                   }];
 }
 
@@ -425,11 +437,23 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 
 - (void)createAliasForAppUserID:(NSString *)appUserID
                withNewAppUserID:(NSString *)newAppUserID
-                     completion:(nullable PostRequestResponseHandler)completion {
+                     completion:(nullable void (^)(NSError * _Nullable error))completion {
+    NSParameterAssert(appUserID);
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     if (!escapedAppUserID || [escapedAppUserID isEqualToString:@""]) {
-        RCWarnLog(@"called createAlias with an empty appUserID!");
-        completion(RCPurchasesErrorUtils.missingAppUserIDError);
+        RCWarnLog(@"%@", RCStrings.identity.creating_alias_failed_null_currentappuserid);
+        if (completion != nil && ![completion isKindOfClass:NSNull.class]) {
+            completion(RCPurchasesErrorUtils.missingAppUserIDError);
+        }
+        return;
+    }
+
+    NSParameterAssert(newAppUserID);
+    if (!newAppUserID || [newAppUserID isEqualToString:@""]) {
+        RCWarnLog(@"%@", RCStrings.identity.creating_alias_with_nil_appuserid);
+        if (completion != nil && ![completion isKindOfClass:NSNull.class]) {
+            completion(RCPurchasesErrorUtils.missingAppUserIDError);
+        }
         return;
     }
 
@@ -448,7 +472,7 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
                                }
                             headers:self.headers
                   completionHandler:^(NSInteger status, NSDictionary *_Nullable response, NSError *_Nullable error) {
-                    for (PostRequestResponseHandler callback in [self getCallbacksAndClearForKey:cacheKey]) {
+                    for (void (^callback)(NSError * _Nullable error) in [self getCallbacksAndClearForKey:cacheKey]) {
                         [self handleResponse:response statusCode:status error:error completion:callback];
                     }
                   }];

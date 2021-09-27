@@ -17,6 +17,8 @@ import Foundation
         "is nil. This might happen if the cache in UserDefaults is unintentionally cleared." }
     @objc public var logging_in_with_nil_appuserid: String { "The appUserID passed to logIn is nil or empty. " +
         "Can't log in. This method should only be called with non-nil and non-empty values." }
+    @objc public var creating_alias_with_nil_appuserid: String { "The appUserID passed to createAlias is nil or " +
+        " empty. Can't create alias. This method should only be called with non-nil and non-empty values." }
     @objc public var logging_in_with_same_appuserid: String { "The appUserID passed to logIn is the same as the one " +
     "already cached. No action will be taken."}
     @objc public var creating_alias_success: String { "Alias created" }
