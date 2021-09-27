@@ -103,10 +103,15 @@ private extension OfferingsManager {
             }
 
             let missingProductIDs = self.getMissingProductIDs(productsFromStore: productsByID,
-                                                                           productIDsFromBackend: productIdentifiers)
+                                                              productIDsFromBackend: productIdentifiers)
             if !missingProductIDs.isEmpty {
                 Logger.appleWarning(
                     Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs))
+            }
+
+            guard !products.isEmpty else {
+                self.handleOfferingsUpdateError(ErrorUtils.configurationError(), completion: completion)
+                return
             }
 
             if let createdOfferings = self.offeringsFactory.createOfferings(withProducts: productsByID, data: data) {
