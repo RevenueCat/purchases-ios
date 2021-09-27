@@ -100,6 +100,28 @@ extension OfferingsManagerTests {
         expect(obtainedOfferings).to(beNil())
     }
 
+    func testOfferingsForAppUserIDReturnsConfigurationErrorIfBackendReturnsEmpty() throws {
+        // given
+        mockBackend.stubbedGetOfferingsCompletionResult = ([:], nil)
+        mockOfferingsFactory.emptyOfferings = true
+
+        // when
+        var obtainedOfferings: Offerings?
+        var completionCalled = false
+        var obtainedError: Error?
+        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { maybeOfferings, maybeError in
+            obtainedOfferings = maybeOfferings
+            completionCalled = true
+            obtainedError = maybeError
+        }
+
+        // then
+        expect(completionCalled).toEventually(beTrue())
+        expect(obtainedOfferings).to(beNil())
+        let error = try XCTUnwrap(obtainedError)
+        expect((error as NSError).code) == (ErrorUtils.configurationError() as NSError).code
+    }
+
     func testOfferingsForAppUserIDReturnsNilIfBackendReturnsNilDataAndNilOfferings() {
         // given
         mockBackend.stubbedGetOfferingsCompletionResult = (nil, nil)
@@ -117,7 +139,6 @@ extension OfferingsManagerTests {
         expect(completionCalled).toEventually(beTrue())
         expect(obtainedOfferings).to(beNil())
     }
-
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendErrorIfBadBackendRequest() {
         // given
