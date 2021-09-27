@@ -25,7 +25,7 @@ class MockIdentityManager: IdentityManager {
         self.mockAppUserID = mockAppUserID
         super.init(deviceCache: mockDeviceCache,
                    backend: mockBackend,
-                   purchaserInfoManager: MockPurchaserInfoManager(operationDispatcher: MockOperationDispatcher(),
+                   customerInfoManager: MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
                                                                   deviceCache: mockDeviceCache,
                                                                   backend: mockBackend,
                                                                   systemInfo: mockSystemInfo))

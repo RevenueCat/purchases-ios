@@ -504,7 +504,7 @@ class BackendTests: XCTestCase {
         checkCall(expectedValue: 2)
     }
 
-    func testForwards500ErrorsCorrectlyForPurchaserInfoCalls() {
+    func testForwards500ErrorsCorrectlyForCustomerInfoCalls() {
         let response = HTTPResponse(statusCode: 501, response: serverErrorResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
@@ -561,7 +561,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
-        var purchaserInfo: PurchaserInfo?
+        var purchaserInfo: CustomerInfo?
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -570,8 +570,8 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
-                      completion: { (newPurchaserInfo, newError) in
-            purchaserInfo = newPurchaserInfo
+                      completion: { (newCustomerInfo, newError) in
+            purchaserInfo = newCustomerInfo
         })
 
         expect(purchaserInfo).toEventuallyNot(beNil())
@@ -604,7 +604,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID, response: response)
 
-        var subscriberInfo: PurchaserInfo?
+        var subscriberInfo: CustomerInfo?
 
         backend?.getSubscriberData(appUserID: userID, completion: { (newSubscriberInfo, newError) in
             subscriberInfo = newSubscriberInfo
@@ -621,7 +621,7 @@ class BackendTests: XCTestCase {
         httpClient.mock(requestPath: "/subscribers/" + encodeableUserID,
                         response: HTTPResponse(statusCode: 404, response: nil, error: nil))
 
-        var subscriberInfo: PurchaserInfo?
+        var subscriberInfo: CustomerInfo?
 
         backend?.getSubscriberData(appUserID: encodeableUserID, completion: { (newSubscriberInfo, newError) in
             subscriberInfo = newSubscriberInfo
@@ -1043,7 +1043,7 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count).to(equal(2))
     }
 
-    func testNetworkErrorIsForwardedForPurchaserInfoCalls() {
+    func testNetworkErrorIsForwardedForCustomerInfoCalls() {
         let response = HTTPResponse(statusCode: 200,
                                     response: nil,
                                     error: NSError(domain: NSURLErrorDomain, code: -1009))
@@ -1592,7 +1592,7 @@ class BackendTests: XCTestCase {
         var completionCalled = false
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
@@ -1621,22 +1621,22 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
         var receivedError: Error?
-        var receivedPurchaserInfo: PurchaserInfo?
+        var receivedCustomerInfo: CustomerInfo?
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
             receivedError = error
-            receivedPurchaserInfo = purchaserInfo
+            receivedCustomerInfo = purchaserInfo
             receivedCreated = created
         }
 
         expect(completionCalled).toEventually(beTrue())
         expect(receivedCreated) == false
-        expect(receivedPurchaserInfo).to(beNil())
+        expect(receivedCustomerInfo).to(beNil())
 
         expect(receivedError).toNot(beNil())
         let receivedNSError = receivedError! as NSError
@@ -1656,22 +1656,22 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
         var receivedError: Error?
-        var receivedPurchaserInfo: PurchaserInfo?
+        var receivedCustomerInfo: CustomerInfo?
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
             receivedError = error
-            receivedPurchaserInfo = purchaserInfo
+            receivedCustomerInfo = purchaserInfo
             receivedCreated = created
         }
 
         expect(completionCalled).toEventually(beTrue())
         expect(receivedCreated) == false
-        expect(receivedPurchaserInfo).to(beNil())
+        expect(receivedCustomerInfo).to(beNil())
 
         expect(receivedError).toNot(beNil())
         let receivedNSError = receivedError! as NSError
@@ -1690,22 +1690,22 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
         var receivedError: Error?
-        var receivedPurchaserInfo: PurchaserInfo?
+        var receivedCustomerInfo: CustomerInfo?
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
             receivedError = error
-            receivedPurchaserInfo = purchaserInfo
+            receivedCustomerInfo = purchaserInfo
             receivedCreated = created
         }
 
         expect(completionCalled).toEventually(beTrue())
         expect(receivedCreated) == false
-        expect(receivedPurchaserInfo).to(beNil())
+        expect(receivedCustomerInfo).to(beNil())
 
         expect(receivedError).toNot(beNil())
         let receivedNSError = receivedError! as NSError
@@ -1719,7 +1719,7 @@ class BackendTests: XCTestCase {
         expect(underlyingError?.localizedDescription) == underlyingErrorMessage
     }
 
-    func testLoginCallsCompletionWithErrorIfPurchaserInfoNil() {
+    func testLoginCallsCompletionWithErrorIfCustomerInfoNil() {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
@@ -1727,83 +1727,83 @@ class BackendTests: XCTestCase {
 
         var completionCalled = false
         var receivedError: Error?
-        var receivedPurchaserInfo: PurchaserInfo?
+        var receivedCustomerInfo: CustomerInfo?
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
             receivedError = error
-            receivedPurchaserInfo = purchaserInfo
+            receivedCustomerInfo = purchaserInfo
             receivedCreated = created
         }
 
         expect(completionCalled).toEventually(beTrue())
         expect(receivedCreated) == false
-        expect(receivedPurchaserInfo).to(beNil())
+        expect(receivedCustomerInfo).to(beNil())
 
         expect(receivedError).toNot(beNil())
         let receivedNSError = receivedError! as NSError
         expect(receivedNSError.code) == ErrorCode.unexpectedBackendResponseError.rawValue
     }
 
-    func testLoginCallsCompletionWithPurchaserInfoAndCreatedFalseIf201() {
+    func testLoginCallsCompletionWithCustomerInfoAndCreatedFalseIf201() {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
-        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockPurchaserInfoDict)
+        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
 
         var completionCalled = false
         var receivedError: Error?
-        var receivedPurchaserInfo: PurchaserInfo?
+        var receivedCustomerInfo: CustomerInfo?
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
             receivedError = error
-            receivedPurchaserInfo = purchaserInfo
+            receivedCustomerInfo = purchaserInfo
             receivedCreated = created
         }
 
         expect(completionCalled).toEventually(beTrue())
 
         expect(receivedCreated) == true
-        expect(receivedPurchaserInfo) == PurchaserInfo(data: mockPurchaserInfoDict)
+        expect(receivedCustomerInfo) == CustomerInfo(data: mockCustomerInfoDict)
         expect(receivedError).to(beNil())
     }
 
-    func testLoginCallsCompletionWithPurchaserInfoAndCreatedFalseIf200() {
+    func testLoginCallsCompletionWithCustomerInfoAndCreatedFalseIf200() {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
         let _ = mockLoginRequest(appUserID: currentAppUserID,
                                  statusCode: 200,
-                                 response: mockPurchaserInfoDict)
+                                 response: mockCustomerInfoDict)
 
         var completionCalled = false
         var receivedError: Error?
-        var receivedPurchaserInfo: PurchaserInfo?
+        var receivedCustomerInfo: CustomerInfo?
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: PurchaserInfo?,
+                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
             receivedError = error
-            receivedPurchaserInfo = purchaserInfo
+            receivedCustomerInfo = purchaserInfo
             receivedCreated = created
         }
 
         expect(completionCalled).toEventually(beTrue())
 
         expect(receivedCreated) == false
-        expect(receivedPurchaserInfo) == PurchaserInfo(data: mockPurchaserInfoDict)
+        expect(receivedCustomerInfo) == CustomerInfo(data: mockCustomerInfoDict)
         expect(receivedError).to(beNil())
     }
 
@@ -1811,7 +1811,7 @@ class BackendTests: XCTestCase {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
-        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockPurchaserInfoDict)
+        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
 
         backend?.logIn(currentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { _,_,_  in }
@@ -1826,7 +1826,7 @@ class BackendTests: XCTestCase {
         let secondNewAppUserID = "new id 2"
 
         let currentAppUserID = "old id"
-        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockPurchaserInfoDict)
+        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
 
         backend?.logIn(currentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { _,_,_  in }
@@ -1841,7 +1841,7 @@ class BackendTests: XCTestCase {
 
         let currentAppUserID = "old id"
         let currentAppUserID2 = "old id 2"
-        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockPurchaserInfoDict)
+        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
 
         backend?.logIn(currentAppUserID: currentAppUserID,
                        newAppUserID: newAppUserID) { _,_,_  in }
@@ -1855,7 +1855,7 @@ class BackendTests: XCTestCase {
         let newAppUserID = "new id"
 
         let currentAppUserID = "old id"
-        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockPurchaserInfoDict)
+        let _ = mockLoginRequest(appUserID: currentAppUserID, statusCode: 201, response: mockCustomerInfoDict)
 
         var completion1Called = false
         var completion2Called = false
@@ -1887,7 +1887,7 @@ private extension BackendTests {
         return requestPath
     }
     
-    var mockPurchaserInfoDict: [String: Any] { [
+    var mockCustomerInfoDict: [String: Any] { [
         "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
             "subscriptions": [],

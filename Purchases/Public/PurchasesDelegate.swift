@@ -20,7 +20,7 @@ import StoreKit
  * or promotional product purchases.
  *
  * - Note: Delegate methods can be called at any time after the `delegate` is set, not just in response to
- *  `purchaserInfo:` calls. Ensure your app is capable of handling these calls at anytime if `delegate` is set.
+ *  `customerInfo:` calls. Ensure your app is capable of handling these calls at anytime if `delegate` is set.
  */
 @objc(RCPurchasesDelegate) public protocol PurchasesDelegate: NSObjectProtocol {
 
@@ -28,10 +28,10 @@ import StoreKit
      * Called whenever ``Purchases`` receives updated purchaser info. This may happen periodically
      * throughout the life of the app if new information becomes available (e.g. UIApplicationDidBecomeActive).*
      * - Parameter purchases: Related ``Purchases`` object
-     * - Parameter purchaserInfo: Updated ``PurchaserInfo``
+     * - Parameter customerInfo: Updated ``CustomerInfo``
      */
-    @objc(purchases:didReceiveUpdatedPurchaserInfo:)
-    optional func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo)
+    @objc(purchases:didReceiveUpdatedCustomerInfo:)
+    optional func purchases(_ purchases: Purchases, didReceiveUpdated customerInfo: CustomerInfo)
 
     /**
      * Called when a user initiates a promotional in-app purchase from the App Store.

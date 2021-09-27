@@ -88,10 +88,10 @@ class DeviceCache {
         writeCache {
             self.userDefaults.removeObject(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
             self.userDefaults.removeObject(
-                forKey: CacheKeyBases.purchaserInfoAppUserDefaults + oldAppUserID)
+                forKey: CacheKeyBases.customerInfoAppUserDefaults + oldAppUserID)
 
-            // Clear PurchaserInfo cache timestamp for oldAppUserID.
-            self.userDefaults.removeObject(forKey: CacheKeyBases.purchaserInfoLastUpdated + oldAppUserID)
+            // Clear CustomerInfo cache timestamp for oldAppUserID.
+            self.userDefaults.removeObject(forKey: CacheKeyBases.customerInfoLastUpdated + oldAppUserID)
 
             // Clear offerings cache.
             self.offeringsCachedObject.clearCache()
@@ -109,22 +109,22 @@ class DeviceCache {
         }
     }
 
-    // MARK: - purchaserInfo
-    func cachedPurchaserInfoData(appUserID: String) -> Data? {
-        return userDefaults.data(forKey: CacheKeyBases.purchaserInfoAppUserDefaults + appUserID)
+    // MARK: - customerInfo
+    func cachedCustomerInfoData(appUserID: String) -> Data? {
+        return userDefaults.data(forKey: CacheKeyBases.customerInfoAppUserDefaults + appUserID)
     }
 
-    func cache(purchaserInfo: Data, appUserID: String) {
+    func cache(customerInfo: Data, appUserID: String) {
         writeCache {
-            self.userDefaults.set(purchaserInfo, forKey: CacheKeyBases.purchaserInfoAppUserDefaults + appUserID)
-            self.threadUnsafeSetPurchaserInfoCacheTimestampToNow(appUserID: appUserID)
+            self.userDefaults.set(customerInfo, forKey: CacheKeyBases.customerInfoAppUserDefaults + appUserID)
+            self.threadUnsafeSetCustomerInfoCacheTimestampToNow(appUserID: appUserID)
         }
 
     }
 
-    func isPurchaserInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
+    func isCustomerInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
         return readCache {
-            guard let cachesLastUpdated = self.threadUnsafePurchaserInfoLastUpdated(appUserID: appUserID) else {
+            guard let cachesLastUpdated = self.threadUnsafeCustomerInfoLastUpdated(appUserID: appUserID) else {
                 return true
             }
 
@@ -135,28 +135,28 @@ class DeviceCache {
         }
     }
 
-    func clearPurchaserInfoCacheTimestamp(appUserID: String) {
+    func clearCustomerInfoCacheTimestamp(appUserID: String) {
         writeCache {
-            self.threadUnsafeClearPurchaserInfoCacheTimestamp(appUserID: appUserID)
+            self.threadUnsafeClearCustomerInfoCacheTimestamp(appUserID: appUserID)
         }
     }
 
-    func setPurchaserInfoCache(timestamp: Date, appUserID: String) {
+    func setCustomerInfoCache(timestamp: Date, appUserID: String) {
         writeCache {
-            self.threadUnsafeSetPurchaserInfoCache(timestamp: timestamp, appUserID: appUserID)
+            self.threadUnsafeSetCustomerInfoCache(timestamp: timestamp, appUserID: appUserID)
         }
     }
 
-    func clearPurchaserInfoCache(appUserID: String) {
+    func clearCustomerInfoCache(appUserID: String) {
         writeCache {
-            self.threadUnsafeClearPurchaserInfoCacheTimestamp(appUserID: appUserID)
-            self.userDefaults.removeObject(forKey: CacheKeyBases.purchaserInfoAppUserDefaults + appUserID)
+            self.threadUnsafeClearCustomerInfoCacheTimestamp(appUserID: appUserID)
+            self.userDefaults.removeObject(forKey: CacheKeyBases.customerInfoAppUserDefaults + appUserID)
         }
     }
 
-    func setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: String) {
+    func setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: String) {
         writeCache {
-            self.threadUnsafeSetPurchaserInfoCacheTimestampToNow(appUserID: appUserID)
+            self.threadUnsafeSetCustomerInfoCacheTimestampToNow(appUserID: appUserID)
         }
     }
 
@@ -334,8 +334,8 @@ class DeviceCache {
     fileprivate struct CacheKeyBases {
 
         static let keyBase = "com.revenuecat.userdefaults."
-        static let purchaserInfoAppUserDefaults = "\(keyBase)purchaserInfo."
-        static let purchaserInfoLastUpdated = "\(keyBase)purchaserInfoLastUpdated."
+        static let customerInfoAppUserDefaults = "\(keyBase)purchaserInfo."
+        static let customerInfoLastUpdated = "\(keyBase)purchaserInfoLastUpdated."
         static let legacySubscriberAttributes = "\(keyBase)subscriberAttributes."
         static let attributionDataDefaults = "\(keyBase)attribution."
 
@@ -364,12 +364,12 @@ private extension DeviceCache {
         return attributes
     }
 
-    func threadUnsafePurchaserInfoLastUpdated(appUserID: String) -> Date? {
-        return userDefaults.object(forKey: CacheKeyBases.purchaserInfoLastUpdated + appUserID) as? Date
+    func threadUnsafeCustomerInfoLastUpdated(appUserID: String) -> Date? {
+        return userDefaults.object(forKey: CacheKeyBases.customerInfoLastUpdated + appUserID) as? Date
     }
 
-    func threadUnsafeClearPurchaserInfoCacheTimestamp(appUserID: String) {
-        userDefaults.removeObject(forKey: CacheKeyBases.purchaserInfoLastUpdated + appUserID)
+    func threadUnsafeClearCustomerInfoCacheTimestamp(appUserID: String) {
+        userDefaults.removeObject(forKey: CacheKeyBases.customerInfoLastUpdated + appUserID)
     }
 
     func threadUnsafeUnsyncedAttributesByKey(appUserID: String) -> [String: SubscriberAttribute] {
@@ -381,12 +381,12 @@ private extension DeviceCache {
         return unsyncedAttributesByKey
     }
 
-    func threadUnsafeSetPurchaserInfoCache(timestamp: Date, appUserID: String) {
-        userDefaults.setValue(timestamp, forKey: CacheKeyBases.purchaserInfoLastUpdated + appUserID)
+    func threadUnsafeSetCustomerInfoCache(timestamp: Date, appUserID: String) {
+        userDefaults.setValue(timestamp, forKey: CacheKeyBases.customerInfoLastUpdated + appUserID)
     }
 
-    func threadUnsafeSetPurchaserInfoCacheTimestampToNow(appUserID: String) {
-        threadUnsafeSetPurchaserInfoCache(timestamp: Date(), appUserID: appUserID)
+    func threadUnsafeSetCustomerInfoCacheTimestampToNow(appUserID: String) {
+        threadUnsafeSetCustomerInfoCache(timestamp: Date(), appUserID: appUserID)
     }
 
     func threadUnsafeSubscriberAttributes(appUserID: String) -> [String: Any] {

@@ -22,7 +22,7 @@ import StoreKit
 /**
  Completion block for ``Purchases/purchase(product:completion:)``
  */
-public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, PurchaserInfo?, Error?, Bool) -> Void
+public typealias PurchaseCompletedBlock = (SKPaymentTransaction?, CustomerInfo?, Error?, Bool) -> Void
 
 /**
  Deferred block for ``Purchases/shouldPurchasePromoProduct(_:defermentBlock:)``
@@ -67,8 +67,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
             }
 
             privateDelegate = newValue
-            purchaserInfoManager.delegate = self
-            purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(appUserID: appUserID)
+            customerInfoManager.delegate = self
+            customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
             Logger.debug(Strings.configure.delegate_set)
         }
     }
@@ -166,7 +166,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
     private let productsManager: ProductsManager
-    private let purchaserInfoManager: PurchaserInfoManager
+    private let customerInfoManager: CustomerInfoManager
     private let purchasesOrchestrator: PurchasesOrchestrator
     private let receiptFetcher: ReceiptFetcher
     private let receiptParser: ReceiptParser
@@ -218,13 +218,13 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         let deviceCache = DeviceCache(userDefaults: userDefaults)
         let introCalculator = IntroEligibilityCalculator()
         let receiptParser = ReceiptParser()
-        let purchaserInfoManager = PurchaserInfoManager(operationDispatcher: operationDispatcher,
+        let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,
                                                         deviceCache: deviceCache,
                                                         backend: backend,
                                                         systemInfo: systemInfo)
         let identityManager = IdentityManager(deviceCache: deviceCache,
                                               backend: backend,
-                                              purchaserInfoManager: purchaserInfoManager)
+                                              customerInfoManager: customerInfoManager)
         let attributionTypeFactory = AttributionTypeFactory()
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let attributionDataMigrator = AttributionDataMigrator()
@@ -251,7 +251,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                           subscriberAttributesManager: subscriberAttributesManager,
                                                           operationDispatcher: operationDispatcher,
                                                           receiptFetcher: receiptFetcher,
-                                                          purchaserInfoManager: purchaserInfoManager,
+                                                          customerInfoManager: customerInfoManager,
                                                           backend: backend,
                                                           identityManager: identityManager,
                                                           receiptParser: receiptParser,
@@ -272,7 +272,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                   operationDispatcher: operationDispatcher,
                   introEligibilityCalculator: introCalculator,
                   receiptParser: receiptParser,
-                  purchaserInfoManager: purchaserInfoManager,
+                  customerInfoManager: customerInfoManager,
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
                   purchasesOrchestrator: purchasesOrchestrator)
@@ -295,7 +295,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
          operationDispatcher: OperationDispatcher,
          introEligibilityCalculator: IntroEligibilityCalculator,
          receiptParser: ReceiptParser,
-         purchaserInfoManager: PurchaserInfoManager,
+         customerInfoManager: CustomerInfoManager,
          productsManager: ProductsManager,
          offeringsManager: OfferingsManager,
          purchasesOrchestrator: PurchasesOrchestrator) {
@@ -319,7 +319,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         self.operationDispatcher = operationDispatcher
         self.introEligibilityCalculator = introEligibilityCalculator
         self.receiptParser = receiptParser
-        self.purchaserInfoManager = purchaserInfoManager
+        self.customerInfoManager = customerInfoManager
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.purchasesOrchestrator = purchasesOrchestrator
@@ -331,7 +331,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
         systemInfo.isApplicationBackgrounded { isBackgrounded in
             if isBackgrounded {
-                self.purchaserInfoManager.sendCachedPurchaserInfoIfAvailable(appUserID: self.appUserID)
+                self.customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: self.appUserID)
             } else {
                 self.operationDispatcher.dispatchOnWorkerThread {
                     self.updateAllCaches(completion: nil)
@@ -356,7 +356,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     deinit {
         notificationCenter.removeObserver(self)
         storeKitWrapper.delegate = nil
-        purchaserInfoManager.delegate = nil
+        customerInfoManager.delegate = nil
         privateDelegate = nil
         Self.automaticAppleSearchAdsAttributionCollection = false
         Self.proxyURL = nil
@@ -624,9 +624,9 @@ public extension Purchases {
      */
     @available(*, deprecated, message: "use logIn instead", renamed: "logIn")
     @objc(createAlias:completion:)
-    func createAlias(_ alias: String, _ completion: ((PurchaserInfo?, Error?) -> Void)?) {
+    func createAlias(_ alias: String, _ completion: ((CustomerInfo?, Error?) -> Void)?) {
         if alias == appUserID {
-            purchaserInfoManager.purchaserInfo(appUserID: appUserID, completion: completion)
+            customerInfoManager.customerInfo(appUserID: appUserID, completion: completion)
         } else {
             identityManager.createAlias(appUserID: alias) { maybeError in
                 guard maybeError == nil else {
@@ -653,9 +653,9 @@ public extension Purchases {
      */
     @available(*, deprecated, message: "use logIn instead")
     @objc(identify:completion:)
-    func identify(_ appUserID: String, _ completion: ((PurchaserInfo?, Error?) -> Void)?) {
+    func identify(_ appUserID: String, _ completion: ((CustomerInfo?, Error?) -> Void)?) {
         if appUserID == identityManager.currentAppUserID {
-            purchaserInfoManager.purchaserInfo(appUserID: self.appUserID, completion: completion)
+            customerInfoManager.customerInfo(appUserID: self.appUserID, completion: completion)
         } else {
             identityManager.identify(appUserID: appUserID) { maybeError in
                 guard maybeError == nil else {
@@ -676,15 +676,15 @@ public extension Purchases {
      *
      * - Parameter appUserID: The appUserID that should be linked to the current user.
      *
-     * The callback will be called with the latest PurchaserInfo for the user, as well as a boolean
+     * The callback will be called with the latest CustomerInfo for the user, as well as a boolean
      * indicating whether the user was created for the first time in the RevenueCat backend.
      * See https://docs.revenuecat.com/docs/user-ids
      */
     @objc(logIn:completion:)
-    func logIn(_ appUserID: String, completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
-        identityManager.logIn(appUserID: appUserID) { purchaserInfo, created, maybeError in
+    func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, Error?) -> Void) {
+        identityManager.logIn(appUserID: appUserID) { customerInfo, created, maybeError in
             self.operationDispatcher.dispatchOnMainThread {
-                completion(purchaserInfo, created, maybeError)
+                completion(customerInfo, created, maybeError)
             }
 
             guard maybeError == nil else {
@@ -706,7 +706,7 @@ public extension Purchases {
      * If this method is called and the current user is anonymous, it will return an error.
      * See https://docs.revenuecat.com/docs/user-ids
      */
-    @objc func logOut(completion: ((PurchaserInfo?, Error?) -> Void)?) {
+    @objc func logOut(completion: ((CustomerInfo?, Error?) -> Void)?) {
         identityManager.logOut { maybeError in
             guard maybeError == nil else {
                 if let completion = completion {
@@ -726,7 +726,7 @@ public extension Purchases {
      * This will generate a random user id and save it in the cache.
      */
     @available(*, deprecated, message: "use logOut instead", renamed: "logOut")
-    @objc func reset(completion: ((PurchaserInfo?, Error?) -> Void)?) {
+    @objc func reset(completion: ((CustomerInfo?, Error?) -> Void)?) {
         identityManager.resetAppUserID()
         updateAllCaches(completion: completion)
     }
@@ -754,11 +754,11 @@ public extension Purchases {
     /**
      * Get latest available purchaser info.
      *
-     * - Parameter completion: A completion block called when purchaser info is available and not stale.
-     * Called immediately if ``PurchaserInfo`` is cached. Purchaser info can be nil * if an error occurred.
+     * - Parameter completion: A completion block called when customer info is available and not stale.
+     * Called immediately if ``CustomerInfo`` is cached. Customer info can be nil * if an error occurred.
      */
-    @objc func purchaserInfo(completion: @escaping (PurchaserInfo?, Error?) -> Void) {
-        purchaserInfoManager.purchaserInfo(appUserID: appUserID, completion: completion)
+    @objc func customerInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
+        customerInfoManager.customerInfo(appUserID: appUserID, completion: completion)
     }
 
     /**
@@ -798,7 +798,7 @@ public extension Purchases {
      * - Parameter product: The `SKProduct` the user intends to purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``PurchaserInfo``.
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
      *
      * If the purchase was not successful, there will be an `NSError`.
      *
@@ -821,7 +821,7 @@ public extension Purchases {
      * - Parameter package: The ``Package`` the user intends to purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``PurchaserInfo``.
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
      *
      * If the purchase was not successful, there will be an `Error`.
      *
@@ -853,7 +853,7 @@ public extension Purchases {
      * - Parameter discount: The `SKPaymentDiscount` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``PurchaserInfo``.
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
      * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
@@ -877,7 +877,7 @@ public extension Purchases {
      * - Parameter discount: The `SKPaymentDiscount` to apply to the purchase
      * - Parameter completion: A completion block that is called when the purchase completes.
      *
-     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``PurchaserInfo``.
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a ``CustomerInfo``.
      * If the purchase was not successful, there will be an `Error`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
@@ -905,7 +905,7 @@ public extension Purchases {
      * on the device does not contain subscriptions, but the user has made subscription purchases, this method
      * won't be able to restore them. Use `restoreTransactions(completion:)` to cover those cases.
      */
-    @objc func syncPurchases(completion: ((PurchaserInfo?, Error?) -> Void)?) {
+    @objc func syncPurchases(completion: ((CustomerInfo?, Error?) -> Void)?) {
         purchasesOrchestrator.syncPurchases(completion: completion)
     }
 
@@ -922,7 +922,7 @@ public extension Purchases {
      * the user. Typically with a button in settings or near your purchase UI. Use
      * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
      */
-    @objc func restoreTransactions(completion: ((PurchaserInfo?, Error?) -> Void)? = nil) {
+    @objc func restoreTransactions(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
         purchasesOrchestrator.restoreTransactions(completion: completion)
     }
 
@@ -975,8 +975,8 @@ public extension Purchases {
      * This is useful for cases where purchaser information might have been updated outside of the app, like if a
      * promotional subscription is granted through the RevenueCat dashboard.
      */
-    @objc func invalidatePurchaserInfoCache() {
-        purchaserInfoManager.clearPurchaserInfoCache(forAppUserID: appUserID)
+    @objc func invalidateCustomerInfoCache() {
+        customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
     }
 
     #if os(iOS)
@@ -1171,10 +1171,10 @@ public extension Purchases {
 }
 
 // MARK: Delegate implementation
-extension Purchases: PurchaserInfoManagerDelegate {
+extension Purchases: CustomerInfoManagerDelegate {
 
-    public func purchaserInfoManagerDidReceiveUpdated(purchaserInfo: PurchaserInfo) {
-        delegate?.purchases?(self, didReceiveUpdated: purchaserInfo)
+    public func customerInfoManagerDidReceiveUpdated(customerInfo: CustomerInfo) {
+        delegate?.purchases?(self, didReceiveUpdated: customerInfo)
     }
 
 }
@@ -1238,9 +1238,9 @@ private extension Purchases {
 
     func updateAllCachesIfNeeded() {
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.purchaserInfoManager.fetchAndCachePurchaserInfoIfStale(appUserID: self.appUserID,
-                                                                        isAppBackgrounded: isAppBackgrounded,
-                                                                        completion: nil)
+            self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
+                                                                      isAppBackgrounded: isAppBackgrounded,
+                                                                      completion: nil)
             guard self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) else {
                 return
             }
@@ -1252,11 +1252,11 @@ private extension Purchases {
         }
     }
 
-    func updateAllCaches(completion: ((PurchaserInfo?, Error?) -> Void)?) {
+    func updateAllCaches(completion: ((CustomerInfo?, Error?) -> Void)?) {
         systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.purchaserInfoManager.fetchAndCachePurchaserInfo(appUserID: self.appUserID,
-                                                                 isAppBackgrounded: isAppBackgrounded,
-                                                                 completion: completion)
+            self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
+                                                               isAppBackgrounded: isAppBackgrounded,
+                                                               completion: completion)
             self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
                                                        isAppBackgrounded: isAppBackgrounded,
                                                        completion: nil)

@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PurchaserInfoStrings.swift
+//  CustomerInfoStrings.swift
 //
 //  Created by Tina Nguyen on 12/11/20.
 //
@@ -15,7 +15,7 @@
 import Foundation
 
 // swiftlint:disable identifier_name
-enum PurchaserInfoStrings {
+enum CustomerInfoStrings {
 
     case checking_intro_eligibility_locally_error(error: Error)
     case checking_intro_eligibility_locally_result(productIdentifiers: [String: NSNumber])
@@ -34,7 +34,7 @@ enum PurchaserInfoStrings {
 
 }
 
-extension PurchaserInfoStrings: CustomStringConvertible {
+extension CustomerInfoStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
@@ -49,33 +49,33 @@ extension PurchaserInfoStrings: CustomStringConvertible {
             return "Attempting to check intro eligibility locally"
 
         case .invalidating_purchaserinfo_cache:
-            return "Invalidating PurchaserInfo cache."
+            return "Invalidating CustomerInfo cache."
 
         case .no_cached_purchaserinfo:
-            return "No cached PurchaserInfo, fetching from network."
+            return "No cached CustomerInfo, fetching from network."
 
         case .purchaserinfo_stale_updating_in_background:
-            return "PurchaserInfo cache is stale, " +
+            return "CustomerInfo cache is stale, " +
                 "updating from network in background."
 
         case .purchaserinfo_stale_updating_in_foreground:
-            return "PurchaserInfo cache is stale, " +
+            return "CustomerInfo cache is stale, " +
                 "updating from network in foreground."
 
         case .purchaserinfo_updated_from_network:
-            return "PurchaserInfo updated from network."
+            return "CustomerInfo updated from network."
 
         case .purchaserinfo_updated_from_network_error(let error):
-            return "Attempt to update PurchaserInfo from network failed.\n\(error.localizedDescription)"
+            return "Attempt to update CustomerInfo from network failed.\n\(error.localizedDescription)"
 
         case .sending_latest_purchaserinfo_to_delegate:
-            return "Sending latest PurchaserInfo to delegate."
+            return "Sending latest CustomerInfo to delegate."
 
         case .sending_updated_purchaserinfo_to_delegate:
-            return "Sending updated PurchaserInfo to delegate."
+            return "Sending updated CustomerInfo to delegate."
 
         case .vending_cache:
-            return "Vending PurchaserInfo from cache."
+            return "Vending CustomerInfo from cache."
 
         case .error_getting_data_from_purchaserinfo_json(let error):
             return "Couldn't get data from purchaserInfo.jsonObject\n\(error.localizedDescription)"

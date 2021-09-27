@@ -41,33 +41,33 @@ class MockDeviceCache: DeviceCache {
     }
 
     // MARK: purchaserInfo
-    var cachePurchaserInfoCount = 0
-    var cachedPurchaserInfoCount = 0
-    var clearPurchaserInfoCacheTimestampCount = 0
-    var setPurchaserInfoCacheTimestampToNowCount = 0
-    var stubbedIsPurchaserInfoCacheStale = false
-    var cachedPurchaserInfo = [String: Data]()
+    var cacheCustomerInfoCount = 0
+    var cachedCustomerInfoCount = 0
+    var clearCustomerInfoCacheTimestampCount = 0
+    var setCustomerInfoCacheTimestampToNowCount = 0
+    var stubbedIsCustomerInfoCacheStale = false
+    var cachedCustomerInfo = [String: Data]()
 
-    override func cache(purchaserInfo: Data, appUserID: String) {
-        cachePurchaserInfoCount += 1
-        cachedPurchaserInfo[appUserID] = purchaserInfo as Data?
+    override func cache(customerInfo purchaserInfo: Data, appUserID: String) {
+        cacheCustomerInfoCount += 1
+        cachedCustomerInfo[appUserID] = purchaserInfo as Data?
     }
 
-    override func cachedPurchaserInfoData(appUserID: String) -> Data? {
-        cachedPurchaserInfoCount += 1
-        return cachedPurchaserInfo[appUserID];
+    override func cachedCustomerInfoData(appUserID: String) -> Data? {
+        cachedCustomerInfoCount += 1
+        return cachedCustomerInfo[appUserID];
     }
 
-    override func isPurchaserInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
-        return stubbedIsPurchaserInfoCacheStale
+    override func isCustomerInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
+        return stubbedIsCustomerInfoCacheStale
     }
 
-    override func clearPurchaserInfoCacheTimestamp(appUserID: String) {
-        clearPurchaserInfoCacheTimestampCount += 1
+    override func clearCustomerInfoCacheTimestamp(appUserID: String) {
+        clearCustomerInfoCacheTimestampCount += 1
     }
 
-    override func setCacheTimestampToNowToPreventConcurrentPurchaserInfoUpdates(appUserID: String) {
-        setPurchaserInfoCacheTimestampToNowCount += 1
+    override func setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: String) {
+        setCustomerInfoCacheTimestampToNowCount += 1
     }
 
     // MARK: offerings
@@ -197,17 +197,17 @@ class MockDeviceCache: DeviceCache {
         invokedDeleteAttributesIfSyncedParametersList.append(appUserID)
     }
 
-    var invokedClearPurchaserInfoCache = false
-    var invokedClearPurchaserInfoCacheCount = 0
-    var invokedClearPurchaserInfoCacheParameters: (appUserID: String, Void)?
-    var invokedClearPurchaserInfoCacheParametersList = [(appUserID: String, Void)]()
+    var invokedClearCustomerInfoCache = false
+    var invokedClearCustomerInfoCacheCount = 0
+    var invokedClearCustomerInfoCacheParameters: (appUserID: String, Void)?
+    var invokedClearCustomerInfoCacheParametersList = [(appUserID: String, Void)]()
 
-    override func clearPurchaserInfoCache(appUserID: String) {
-        cachedPurchaserInfo.removeValue(forKey: appUserID)
-        invokedClearPurchaserInfoCache = true
-        invokedClearPurchaserInfoCacheCount += 1
-        invokedClearPurchaserInfoCacheParameters = (appUserID, ())
-        invokedClearPurchaserInfoCacheParametersList.append((appUserID, ()))
+    override func clearCustomerInfoCache(appUserID: String) {
+        cachedCustomerInfo.removeValue(forKey: appUserID)
+        invokedClearCustomerInfoCache = true
+        invokedClearCustomerInfoCacheCount += 1
+        invokedClearCustomerInfoCacheParameters = (appUserID, ())
+        invokedClearCustomerInfoCacheParametersList.append((appUserID, ()))
     }
 
     var invokedClearLatestNetworkAndAdvertisingIdsSent = false

@@ -7,14 +7,14 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PurchaserInfo.swift
+//  CustomerInfo.swift
 //
 //  Created by Madeline Beyl on 7/9/21.
 //
 
 import Foundation
 
-@objc(RCPurchaserInfo) public class PurchaserInfo: NSObject {
+@objc(RCCustomerInfo) public class CustomerInfo: NSObject {
 
     /// ``EntitlementInfos`` attached to this purchaser info.
     @objc public let entitlements: EntitlementInfos
@@ -48,7 +48,7 @@ import Foundation
     @objc public let nonSubscriptionTransactions: [Transaction]
 
     /**
-     Returns the fetch date of this Purchaser info.
+     Returns the fetch date of this CustomerInfo.
      */
     @objc public let requestDate: Date
 
@@ -114,7 +114,7 @@ import Foundation
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? PurchaserInfo else {
+        guard let other = object as? CustomerInfo else {
             return false
         }
 
@@ -136,7 +136,7 @@ import Foundation
         let allEntitlementsDescription = self.entitlements.all.mapValues { $0.description }
 
         return """
-            <\(String(describing: PurchaserInfo.self)):
+            <\(String(describing: CustomerInfo.self)):
             originalApplicationVersion=\(self.originalApplicationVersion ?? ""),
             latestExpirationDate=\(String(describing: self.latestExpirationDate)),
             activeEntitlements=\(activeEntitlementsDescription),
@@ -196,7 +196,7 @@ import Foundation
 
     func jsonObject() -> [String: Any] {
         return originalData.merging(
-            ["schema_version": PurchaserInfo.currentSchemaVersion],
+            ["schema_version": CustomerInfo.currentSchemaVersion],
             strategy: .keepOriginalValue
         )
     }
@@ -273,7 +273,7 @@ import Foundation
 
 }
 
-private extension PurchaserInfo {
+private extension CustomerInfo {
 
     func activeKeys(dates: [String: Date?]) -> Set<String> {
         return Set(dates.keys.filter {

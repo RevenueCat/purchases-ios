@@ -9,10 +9,10 @@ import StoreKit
 
 public class MockPurchasesDelegate: NSObject, PurchasesDelegate {
 
-    var purchaserInfo: PurchaserInfo?
+    var purchaserInfo: CustomerInfo?
     var purchaserInfoReceivedCount = 0
 
-    public func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) {
+    public func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: CustomerInfo) {
         purchaserInfoReceivedCount += 1
         self.purchaserInfo = purchaserInfo
     }

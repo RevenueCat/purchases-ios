@@ -43,8 +43,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
 
     let purchasesDelegate = MockPurchasesDelegate()
-    var purchaserInfoManager: PurchaserInfoManager!
-    let emptyPurchaserInfoData: [String: Any] = [
+    var purchaserInfoManager: CustomerInfoManager!
+    let emptyCustomerInfoData: [String: Any] = [
     "request_date": "2019-08-16T10:30:42Z",
     "subscriber": [
         "first_seen": "2019-07-17T00:05:54Z",
@@ -88,7 +88,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                        backend: mockBackend,
                                                        attributionFetcher: mockAttributionFetcher,
                                                        subscriberAttributesManager: mockSubscriberAttributesManager)
-        self.purchaserInfoManager = PurchaserInfoManager(operationDispatcher: mockOperationDispatcher,
+        self.purchaserInfoManager = CustomerInfoManager(operationDispatcher: mockOperationDispatcher,
                                                          deviceCache: mockDeviceCache,
                                                          backend: mockBackend,
                                                          systemInfo: systemInfo)
@@ -116,7 +116,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                           subscriberAttributesManager: mockSubscriberAttributesManager,
                                                           operationDispatcher: mockOperationDispatcher,
                                                           receiptFetcher: mockReceiptFetcher,
-                                                          purchaserInfoManager: purchaserInfoManager,
+                                                          customerInfoManager: purchaserInfoManager,
                                                           backend: mockBackend,
                                                           identityManager: mockIdentityManager,
                                                           receiptParser: mockReceiptParser,
@@ -137,7 +137,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               operationDispatcher: mockOperationDispatcher,
                               introEligibilityCalculator: mockIntroEligibilityCalculator,
                               receiptParser: mockReceiptParser,
-                              purchaserInfoManager: purchaserInfoManager,
+                              customerInfoManager: purchaserInfoManager,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
                               purchasesOrchestrator: purchasesOrchestrator)
@@ -186,8 +186,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
     }
 
-    func testSubscriberAttributesSyncIsPerformedAfterPurchaserInfoSync() {
-        mockBackend.stubbedGetSubscriberDataPurchaserInfo = PurchaserInfo(data: [
+    func testSubscriberAttributesSyncIsPerformedAfterCustomerInfoSync() {
+        mockBackend.stubbedGetSubscriberDataCustomerInfo = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -202,15 +202,15 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         setupPurchases()
 
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
-        expect(self.mockDeviceCache.cachePurchaserInfoCount) == 1
-        expect(self.mockDeviceCache.cachedPurchaserInfo.count) == 1
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+        expect(self.mockDeviceCache.cachedCustomerInfo.count) == 1
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
 
         self.mockNotificationCenter.fireNotifications()
 
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
-        expect(self.mockDeviceCache.cachePurchaserInfoCount) == 1
-        expect(self.mockDeviceCache.cachedPurchaserInfo.count) == 1
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+        expect(self.mockDeviceCache.cachedCustomerInfo.count) == 1
     }
 
     // Mark: Set attributes
@@ -577,7 +577,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
-        self.mockBackend.stubbedPostReceiptPurchaserInfo = PurchaserInfo(data: emptyPurchaserInfoData)
+        self.mockBackend.stubbedPostReceiptCustomerInfo = CustomerInfo(data: emptyCustomerInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)

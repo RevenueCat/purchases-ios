@@ -34,7 +34,7 @@ class IntroEligibilityCalculator {
             completion([:], nil)
             return
         }
-        Logger.debug(Strings.purchaserInfo.checking_intro_eligibility_locally)
+        Logger.debug(Strings.customerInfo.checking_intro_eligibility_locally)
 
         var result: [String: NSNumber] = candidateProductIdentifiers.reduce(into: [:]) { resultDict, productId in
             resultDict[productId] = IntroEligibilityStatus.unknown.toNSNumber()
@@ -61,12 +61,12 @@ class IntroEligibilityCalculator {
                 result.merge(eligibility) { (_, new) in new }
 
                 Logger.debug(
-                    Strings.purchaserInfo.checking_intro_eligibility_locally_result(productIdentifiers: result)
+                    Strings.customerInfo.checking_intro_eligibility_locally_result(productIdentifiers: result)
                 )
                 completion(result, nil)
             }
         } catch let error {
-            Logger.error(Strings.purchaserInfo.checking_intro_eligibility_locally_error(error: error))
+            Logger.error(Strings.customerInfo.checking_intro_eligibility_locally_error(error: error))
             completion([:], error)
             return
         }

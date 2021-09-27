@@ -1,5 +1,5 @@
 //
-//  PurchaserInfoHelperTests.swift
+//  CustomerInfoHelperTests.swift
 //  PurchasesTests
 //
 //  Created by RevenueCat.

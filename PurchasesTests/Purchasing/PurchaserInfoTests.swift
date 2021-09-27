@@ -1,5 +1,5 @@
 //
-//  PurchaserInfoTests.swift
+//  CustomerInfoTests.swift
 //  PurchasesTests
 //
 //  Created by RevenueCat.
@@ -12,15 +12,15 @@ import Nimble
 
 @testable import RevenueCat
 
-class EmptyPurchaserInfoTests: XCTestCase {
-    let purchaserInfo = PurchaserInfo(data: [String : Any]())
+class EmptyCustomerInfoTests: XCTestCase {
+    let purchaserInfo = CustomerInfo(data: [String : Any]())
 
     func testEmptyDataYieldsANilInfo() {
         expect(self.purchaserInfo).to(beNil())
     }
 }
 
-class BasicPurchaserInfoTests: XCTestCase {
+class BasicCustomerInfoTests: XCTestCase {
     let validSubscriberResponse = [
         "request_date": "2018-10-19T02:40:36Z",
         "request_date_ms": Int64(1563379533946),
@@ -80,12 +80,12 @@ class BasicPurchaserInfoTests: XCTestCase {
                 "\"product_b\": {\"expires_date\": \"2018-05-27T05:24:50Z\",\"period_type\": \"normal\"}" +
             "}}}";
 
-    var purchaserInfo: PurchaserInfo?
+    var purchaserInfo: CustomerInfo?
 
     override func setUp() {
         super.setUp()
 
-        purchaserInfo = PurchaserInfo(data: validSubscriberResponse)
+        purchaserInfo = CustomerInfo(data: validSubscriberResponse)
     }
 
     func testParsesSubscriptions() {
@@ -131,7 +131,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
 
     func testOriginalApplicationVersionNilIfNotPresent() {
-        let purchaserInfo = PurchaserInfo(data: [
+        let purchaserInfo = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -143,7 +143,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
 
     func testOriginalApplicationVersionNilIfNull() {
-        let purchaserInfo = PurchaserInfo(data: [
+        let purchaserInfo = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -156,7 +156,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
 
     func testOriginalApplicationVersion() {
-        let purchaserInfo = PurchaserInfo(data: [
+        let purchaserInfo = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -169,7 +169,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
 
     func testOriginalPurchaseDate() {
-        let purchaserInfo = PurchaserInfo(data: [
+        let purchaserInfo = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -184,7 +184,7 @@ class BasicPurchaserInfoTests: XCTestCase {
 
 
     func testManagementURLNullIfNotPresent() {
-        let purchaserInfo = PurchaserInfo(data: [
+        let purchaserInfo = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -196,7 +196,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
 
     func testManagementURLIsPresentWithValidURL() {
-        let purchaserInfo = PurchaserInfo(data: [
+        let purchaserInfo = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -210,7 +210,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
 
     func testManagementURLIsNullWithInvalidURL() {
-        var purchaserInfo = PurchaserInfo(data: [
+        var purchaserInfo = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "management_url": "this isnt' a URL!",
@@ -221,7 +221,7 @@ class BasicPurchaserInfoTests: XCTestCase {
             ]])
         expect(purchaserInfo!.managementURL).to(beNil())
 
-        purchaserInfo = PurchaserInfo(data: [
+        purchaserInfo = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "management_url": 68546984,
@@ -236,13 +236,13 @@ class BasicPurchaserInfoTests: XCTestCase {
 
     func testPreservesOriginalJSONSerializableObject() {
         let json = purchaserInfo?.jsonObject()
-        let newInfo = PurchaserInfo(data: json!)
+        let newInfo = CustomerInfo(data: json!)
         expect(newInfo).toNot(beNil())
     }
 
     func testTwoProductJson() {
         let json = try! JSONSerialization.jsonObject(with: validTwoProductsJSON.data(using: String.Encoding.utf8)!, options: [])
-        let info = PurchaserInfo(data: json as! [String : Any])
+        let info = CustomerInfo(data: json as! [String : Any])
         expect(info?.latestExpirationDate).toNot(beNil())
     }
 
@@ -339,7 +339,7 @@ class BasicPurchaserInfoTests: XCTestCase {
                 ]
             ]
         ] as [String : Any]
-        let purchaserInfoWithoutRequestData = PurchaserInfo(data: response)
+        let purchaserInfoWithoutRequestData = CustomerInfo(data: response)
 
         let entitlements: [String : EntitlementInfo] = purchaserInfoWithoutRequestData!.entitlements.active
         expect(entitlements["pro"]).toNot(beNil());
@@ -383,13 +383,13 @@ class BasicPurchaserInfoTests: XCTestCase {
                 ]
             ]
         ] as [String : Any]
-        let purchaserInfoWithoutRequestData = PurchaserInfo(data: response)
+        let purchaserInfoWithoutRequestData = CustomerInfo(data: response)
         let purchaseDate = purchaserInfoWithoutRequestData!.purchaseDate(forEntitlement: "pro")
         expect(purchaseDate).to(beNil())
     }
     
     func testEmptyInfosEqual() {
-        let info1 = PurchaserInfo(data: [
+        let info1 = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -397,7 +397,7 @@ class BasicPurchaserInfoTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        let info2 = PurchaserInfo(data: [
+        let info2 = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -409,7 +409,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testDifferentFetchDatesStillEqual() {
-        let info1 = PurchaserInfo(data: [
+        let info1 = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -417,7 +417,7 @@ class BasicPurchaserInfoTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
-        let info2 = PurchaserInfo(data: [
+        let info2 = CustomerInfo(data: [
             "request_date": "2018-11-19T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -429,7 +429,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testDifferentActiveEntitlementsNotEqual() {
-        let info1 = PurchaserInfo(data: [
+        let info1 = CustomerInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -446,7 +446,7 @@ class BasicPurchaserInfoTests: XCTestCase {
                     ]
                 ]
             ]])
-        let info2 = PurchaserInfo(data: [
+        let info2 = CustomerInfo(data: [
             "request_date": "2018-11-19T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -468,7 +468,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testDifferentEntitlementsNotEqual() {
-        let info1 = PurchaserInfo(data: [
+        let info1 = CustomerInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -494,7 +494,7 @@ class BasicPurchaserInfoTests: XCTestCase {
                     ]
                 ]
             ]])
-        let info2 = PurchaserInfo(data: [
+        let info2 = CustomerInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -524,7 +524,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testSameEntitlementsDifferentRequestDateEqual() {
-        let info1 = PurchaserInfo(data: [
+        let info1 = CustomerInfo(data: [
             "request_date": "2018-12-21T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -550,7 +550,7 @@ class BasicPurchaserInfoTests: XCTestCase {
                     ]
                 ]
             ]])
-        let info2 = PurchaserInfo(data: [
+        let info2 = CustomerInfo(data: [
             "request_date": "2018-12-20T02:40:36Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -580,7 +580,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testInitFailsIfNoRequestDate() {
-        let info = PurchaserInfo(data: [
+        let info = CustomerInfo(data: [
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "management_url": "https://apple.com/manage_subscription",
@@ -592,7 +592,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testInitFailsIfNoSubscriberOriginalAppUserId() {
-        let info = PurchaserInfo(data: [
+        let info = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -604,14 +604,14 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testInitFailsIfNoSubscriber() {
-        let info = PurchaserInfo(data: [
+        let info = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
            ])
         expect(info).to(beNil());
     }
 
     func testInitFailsIfNoSubscriberFirstSeen() {
-        let info = PurchaserInfo(data: [
+        let info = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "management_url": "https://apple.com/manage_subscription",
@@ -623,7 +623,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testInitFailsIfMalformedRequestDate() {
-        let info = PurchaserInfo(data: [
+        let info = CustomerInfo(data: [
             "request_date": "2019-08-110:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -636,7 +636,7 @@ class BasicPurchaserInfoTests: XCTestCase {
     }
     
     func testInitFailsIfMalformedFirstSeenDate() {
-        let info = PurchaserInfo(data: [
+        let info = CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -687,7 +687,7 @@ class BasicPurchaserInfoTests: XCTestCase {
             ]
         ] as [String : Any]
 
-        let info = PurchaserInfo(data: response)
+        let info = CustomerInfo(data: response)
         XCTAssertEqual(Set(["onemonth_freetrial", "twomonth_freetrial"]), info!.activeSubscriptions)
 
     }
@@ -732,7 +732,7 @@ class BasicPurchaserInfoTests: XCTestCase {
             ]
         ] as [String : Any]
 
-        let info = PurchaserInfo(data: response)
+        let info = CustomerInfo(data: response)
         XCTAssertEqual(Set(["onemonth_freetrial", "twomonth_freetrial", "threemonth_freetrial"]),
                        info!.allPurchasedProductIdentifiers)
     }
