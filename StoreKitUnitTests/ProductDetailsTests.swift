@@ -29,13 +29,15 @@ class ProductDetailsTests: XCTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK1AndSK2DetailsAreEquivalent() async throws {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
 
         let productIdentifiers = Set([
             "com.revenuecat.monthly_4.99.1_week_intro",
             "com.revenuecat.annual_39.99.2_week_intro",
             "lifetime"
-            ])
+        ])
         let sk1Fetcher = ProductsFetcherSK1(productsRequestFactory: ProductsRequestFactory())
         let sk1ProductDetails = await sk1Fetcher.products(withIdentifiers: productIdentifiers)
         let sk1ProductDetailsByID = sk1ProductDetails.reduce(into: [:]) { partialResult, wrapper in
@@ -86,6 +88,8 @@ class ProductDetailsTests: XCTestCase {
             expect(productDetails.productIdentifier) == productIdentifier
             expect(productDetails.isFamilyShareable) == true
             expect(productDetails.localizedTitle) == "Monthly Free Trial"
+            // open the StoreKit Config file as source code to see the expected value
+            expect(productDetails.subscriptionGroupIdentifier) == "7096FF06"
         }
 
         expect(callbackCalled).toEventually(beTrue(), timeout: .seconds(5))
@@ -93,7 +97,9 @@ class ProductDetailsTests: XCTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2DetailsWrapsCorrectly() async throws {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
 
         let productIdentifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let sk2Fetcher = ProductsFetcherSK2()
@@ -109,7 +115,8 @@ class ProductDetailsTests: XCTestCase {
         expect(productDetails.productIdentifier) == productIdentifier
         expect(productDetails.isFamilyShareable) == true
         expect(productDetails.localizedTitle) == "Monthly Free Trial"
-
+        // open the StoreKit Config file as source code to see the expected value
+        expect(productDetails.subscriptionGroupIdentifier) == "7096FF06"
     }
 
 }
