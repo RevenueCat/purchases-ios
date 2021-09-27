@@ -949,8 +949,8 @@ public extension Purchases {
         _ productIdentifiers: [String],
         completionBlock receiveEligibility: @escaping ([String: IntroEligibility]) -> Void) {
             trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIdentifiers,
-                                                             completionBlock: receiveEligibility)
-    }
+                                                                 completionBlock: receiveEligibility)
+        }
 
     /**
      * Invalidates the cache for purchaser information.
