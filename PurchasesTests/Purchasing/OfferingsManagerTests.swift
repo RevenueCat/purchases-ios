@@ -100,6 +100,25 @@ extension OfferingsManagerTests {
         expect(obtainedOfferings).to(beNil())
     }
 
+    func testOfferingsForAppUserIDReturnsNilIfBackendReturnsNilDataAndNilOfferings() {
+        // given
+        mockBackend.stubbedGetOfferingsCompletionResult = (nil, nil)
+        mockOfferingsFactory.emptyOfferings = true
+
+        // when
+        var obtainedOfferings: Offerings?
+        var completionCalled = false
+        offeringsManager.offerings(appUserID: MockData.anyAppUserID) { offerings, _ in
+            obtainedOfferings = offerings
+            completionCalled = true
+        }
+
+        // then
+        expect(completionCalled).toEventually(beTrue())
+        expect(obtainedOfferings).to(beNil())
+    }
+
+
     func testOfferingsForAppUserIDReturnsUnexpectedBackendErrorIfBadBackendRequest() {
         // given
         mockBackend.stubbedGetOfferingsCompletionResult = (nil, MockData.unexpectedBackendResponseError)
