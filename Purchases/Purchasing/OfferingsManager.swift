@@ -74,9 +74,11 @@ class OfferingsManager {
             self.backend.getOfferings(appUserID: appUserID) { maybeData, maybeError in
                 if let data = maybeData {
                     self.handleOfferingsBackendResult(with: data, completion: completion)
-                } else if let error = maybeError {
-                    self.handleOfferingsUpdateError(error, completion: completion)
+                    return
                 }
+
+                let error = maybeError ?? ErrorUtils.unexpectedBackendResponseError()
+                self.handleOfferingsUpdateError(error, completion: completion)
             }
         }
     }
