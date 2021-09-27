@@ -898,16 +898,6 @@ class BackendTests: XCTestCase {
         expect(self.httpClient.calls.count).to(equal(2))
     }
 
-    func testCreateAliasCachesWhenCallbackNil() {
-        let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
-        httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
-
-        backend?.createAlias(forAppUserID: userID, withNewAppUserID: "new_alias", completion: nil)
-        backend?.createAlias(forAppUserID: userID, withNewAppUserID: "new_alias", completion: { _ in })
-
-        expect(self.httpClient.calls.count).to(equal(1))
-    }
-
     func testCreateAliasCallsAllCompletionBlocksInCache() {
         let response = HTTPResponse(statusCode: 200, response: nil, error: nil)
         httpClient.mock(requestPath: "/subscribers/" + userID + "/alias", response: response)
@@ -915,7 +905,6 @@ class BackendTests: XCTestCase {
         var completion1Called = false
         var completion2Called = false
 
-        backend?.createAlias(forAppUserID: userID, withNewAppUserID: "new_alias", completion: nil)
         backend?.createAlias(forAppUserID: userID, withNewAppUserID: "new_alias", completion: { (error) in
             completion1Called = true
         })
