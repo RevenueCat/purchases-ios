@@ -138,11 +138,7 @@ NSString *const RCAttributeErrorsResponseKey = @"attributes_error_response";
             self.callbacksCache[key] = callbacks;
         }
 
-        if (completion == nil) {
-            [callbacks addObject:[NSNull null]];
-        } else {
-            [callbacks addObject:[completion copy]];
-        }
+        [callbacks addObject:[completion copy]];
 
         BOOL requestAlreadyInFlight = !cacheMiss;
         return requestAlreadyInFlight;
@@ -437,23 +433,19 @@ presentedOfferingIdentifier:(nullable NSString *)offeringIdentifier
 
 - (void)createAliasForAppUserID:(NSString *)appUserID
                withNewAppUserID:(NSString *)newAppUserID
-                     completion:(nullable void (^)(NSError * _Nullable error))completion {
+                     completion:(void (^)(NSError * _Nullable error))completion {
     NSParameterAssert(appUserID);
     NSString *escapedAppUserID = [self escapedAppUserID:appUserID];
     if (!escapedAppUserID || [escapedAppUserID isEqualToString:@""]) {
         RCWarnLog(@"%@", RCStrings.identity.creating_alias_failed_null_currentappuserid);
-        if (completion != nil && ![completion isKindOfClass:NSNull.class]) {
-            completion(RCPurchasesErrorUtils.missingAppUserIDError);
-        }
+        completion(RCPurchasesErrorUtils.missingAppUserIDError);
         return;
     }
 
     NSParameterAssert(newAppUserID);
     if (!newAppUserID || [newAppUserID isEqualToString:@""]) {
         RCWarnLog(@"%@", RCStrings.identity.creating_alias_with_nil_appuserid);
-        if (completion != nil && ![completion isKindOfClass:NSNull.class]) {
-            completion(RCPurchasesErrorUtils.missingAppUserIDError);
-        }
+        completion(RCPurchasesErrorUtils.missingAppUserIDError);
         return;
     }
 
