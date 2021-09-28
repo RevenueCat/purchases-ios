@@ -30,9 +30,9 @@ class IntegrationTests: XCTestCase {
         integrationRunner.start()
         let expectation = XCTestExpectation(description: "get purchaserInfo")
 
-        integrationRunner.purchaserInfo { (purchaserInfo, error) in
+        integrationRunner.customerInfo { (customerInfo, error) in
             XCTAssert(error == nil)
-            XCTAssert(purchaserInfo != nil)
+            XCTAssert(customerInfo != nil)
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 10.0)
