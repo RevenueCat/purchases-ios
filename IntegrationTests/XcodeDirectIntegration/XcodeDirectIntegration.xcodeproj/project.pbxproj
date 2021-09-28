@@ -58,13 +58,6 @@
 			remoteGlobalIDString = 2DE20B6C264087FB004C597D;
 			remoteInfo = StoreKitTests;
 		};
-		B3EAF57226E29DCC00E0728D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2D6C0454254A0AF10039CB92 /* RevenueCat.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = B3645F4226E042F2002C490E;
-			remoteInfo = APITester;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -192,7 +185,6 @@
 				B3EAF56D26E29DCC00E0728D /* RevenueCatTests.xctest */,
 				B3EAF56F26E29DCC00E0728D /* StoreKitTestApp.app */,
 				B3EAF57126E29DCC00E0728D /* StoreKitTests.xctest */,
-				B3EAF57326E29DCC00E0728D /* APITester */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -326,13 +318,6 @@
 			fileType = wrapper.cfbundle;
 			path = StoreKitTests.xctest;
 			remoteRef = B3EAF57026E29DCC00E0728D /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		B3EAF57326E29DCC00E0728D /* APITester */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = APITester;
-			remoteRef = B3EAF57226E29DCC00E0728D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -527,7 +512,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = "$(SRCROOT)/../CommonFiles/Info.plist";
@@ -538,7 +523,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "match Development com.revenuecat.XcodeDirectIntegration";
+				PROVISIONING_PROFILE_SPECIFIER = "match AdHoc com.revenuecat.XcodeDirectIntegration";
 				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectIntegration/XcodeDirectIntegration-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -563,7 +548,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.XcodeDirectIntegration 1604090134";
+				PROVISIONING_PROFILE_SPECIFIER = "match AdHoc com.revenuecat.XcodeDirectIntegration";
 				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectIntegration/XcodeDirectIntegration-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
