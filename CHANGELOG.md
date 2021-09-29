@@ -19,6 +19,14 @@
     100% Swift framework + ObjC support.
 - See our [RevenueCat V4 API update doc](docs/V4_API_Updates.md) for API updates.
 
+## 3.12.5
+- Cache callbacks for `createAlias` and `identify` to avoid sending multiple calls with same parameters at the same time
+    https://github.com/RevenueCat/purchases-ios/pull/874
+
+## 3.12.4
+- Updated `getOfferings` call to be performed serially instead of concurrently.
+    https://github.com/RevenueCat/purchases-ios/pull/831
+
 ## 3.12.3
 - Fixed a bug where checkTrialOrIntroductoryPriceEligibility would return `eligible` for products that don't have intro pricing
     https://github.com/RevenueCat/purchases-ios/pull/679
