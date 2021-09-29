@@ -36,4 +36,24 @@ import Foundation
     @objc public var skproductsrequest_did_finish: String { "SKProductsRequest did finish" }
     @objc public var skproductsrequest_received_response: String { "SKProductsRequest request received response" }
     @objc public var vending_offerings_cache: String { "Vending Offerings from cache" }
+
+    @objc public var configuration_error_skproducts_not_found: String {
+        "There's a problem with your configuration. None of the products registered in the RevenueCat " +
+        "dashboard could be fetched from App Store Connect (or the StoreKit Configuration file " +
+        "if one is being used). \nMore information: https://rev.cat/why-are-offerings-empty"
+    }
+
+    @objc public var configuration_error_no_products_for_offering: String {
+        "There's a problem with your configuration. There are no products registered in the RevenueCat " +
+        "dashboard for your offerings. To configure products, follow the instructions in " +
+        "https://rev.cat/how-to-configure-offerings. \nMore information: https://rev.cat/why-are-offerings-empty"
+    }
+
+    @objc public var offering_empty: String {
+        "There's a problem with your configuration. No packages could be found for offering with  " +
+        "identifier %@. This could be due to Products not being configured correctly in the " +
+        "RevenueCat dashboard, App Store Connect (or the StoreKit Configuration file " +
+        "if one is being used). \nTo configure products, follow the instructions in " +
+        "https://rev.cat/how-to-configure-offerings. \nMore information: https://rev.cat/why-are-offerings-empty"
+    }
 }

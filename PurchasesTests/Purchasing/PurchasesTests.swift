@@ -1654,7 +1654,7 @@ class PurchasesTests: XCTestCase {
 
     func testBadBackendResponseForOfferings() {
         self.backend.badOfferingsResponse = true
-        self.offeringsFactory.badOfferings = true
+        self.offeringsFactory.nilOfferings = true
         setupPurchases()
 
         var receivedError: NSError?

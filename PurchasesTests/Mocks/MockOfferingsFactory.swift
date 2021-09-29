@@ -6,14 +6,14 @@
 class MockOfferingsFactory: RCOfferingsFactory {
 
     var emptyOfferings = false
-    var badOfferings = false
+    var nilOfferings = false
 
     override func createOfferings(withProducts products: [String: SKProduct],
                                   data: [AnyHashable: Any]) -> Purchases.Offerings? {
         if (emptyOfferings) {
             return Purchases.Offerings(offerings: [:], currentOfferingID: "base")
         }
-        if (badOfferings) {
+        if (nilOfferings) {
             return nil
         }
         return Purchases.Offerings(
