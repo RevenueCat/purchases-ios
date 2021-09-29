@@ -133,6 +133,7 @@ class PurchasesTests: XCTestCase {
         var failOfferings = false
         var badOfferingsResponse = false
         var gotOfferings = 0
+        var maybeStubbedGetOfferingsCompletionResult: (data: [String: Any]?, error: Error?)?
 
         override func getOfferingsForAppUserID(_ appUserID: String, completion: @escaping RCOfferingsResponseHandler) {
             gotOfferings += 1
@@ -142,6 +143,11 @@ class PurchasesTests: XCTestCase {
             }
             if (badOfferingsResponse) {
                 completion([:], nil)
+                return
+            }
+
+            if let stubbedResult = maybeStubbedGetOfferingsCompletionResult {
+                completion(stubbedResult.0, stubbedResult.1)
                 return
             }
 
@@ -2593,6 +2599,51 @@ class PurchasesTests: XCTestCase {
         expect(Logger.logLevel) == .info
     }
 
+    func testOfferingsForAppUserIDReturnsConfigurationErrorIfBackendReturnsEmpty() throws {
+        setupPurchases()
+        // given
+        backend.maybeStubbedGetOfferingsCompletionResult = ([:], nil)
+        offeringsFactory.emptyOfferings = true
+
+        // when
+        var obtainedOfferings: Purchases.Offerings?
+        var completionCalled = false
+        var obtainedError: Error?
+
+        purchases.offerings() { maybeOfferings, maybeError in
+            obtainedOfferings = maybeOfferings
+            completionCalled = true
+            obtainedError = maybeError
+        }
+
+        // then
+        expect(completionCalled).toEventually(beTrue())
+        expect(obtainedOfferings).to(beNil())
+        let error = try XCTUnwrap(obtainedError)
+        expect((error as NSError).code) == Purchases.ErrorCode.configurationError.rawValue
+    }
+
+    func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsEmpty() throws {
+        // given
+        backend.maybeStubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
+        storeKitWrapper.stubbedProductsCompletionResult = Set()
+
+        // when
+        var obtainedOfferings: Purchases.Offerings?
+        var completionCalled = false
+        var obtainedError: Error?
+        purchases.offerings() { maybeOfferings, maybeError in
+            obtainedOfferings = maybeOfferings
+            completionCalled = true
+            obtainedError = maybeError
+        }
+
+        // then
+        expect(completionCalled).toEventually(beTrue())
+        expect(obtainedOfferings).to(beNil())
+        let error = try XCTUnwrap(obtainedError)
+        expect((error as NSError).code) == Purchases.ErrorCode.configurationError.rawValue
+    }
 
     private func verifyUpdatedCaches(newAppUserID: String) {
         let expectedCallCount = 2
@@ -2604,6 +2655,26 @@ class PurchasesTests: XCTestCase {
         expect(self.deviceCache.setOfferingsCacheTimestampToNowCount).toEventually(equal(expectedCallCount))
         expect(self.backend.gotOfferings).toEventually(equal(expectedCallCount))
         expect(self.deviceCache.cachedOfferingsCount).toEventually(equal(expectedCallCount))
+    }
+
+}
+
+private extension PurchasesTests {
+
+    enum MockData {
+        static let anyBackendOfferingsData: [String: Any] = [
+            "offerings": [
+                [
+                    "identifier": "base",
+                    "description": "This is the base offering",
+                    "packages": [
+                        ["identifier": "$rc_monthly",
+                         "platform_product_identifier": "monthly_freetrial"]
+                    ]
+                ]
+            ],
+            "current_offering_id": "base"
+        ]
     }
 
 }

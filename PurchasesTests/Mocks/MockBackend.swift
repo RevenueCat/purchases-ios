@@ -64,7 +64,6 @@ class MockBackend: RCBackend {
     var stubbedGetSubscriberDataPurchaserInfo: Purchases.PurchaserInfo? = nil
     var stubbedGetSubscriberDataError: Error? = nil
 
-
     override func getSubscriberData(withAppUserID appUserID: String,
                                     completion: @escaping RCBackendPurchaserInfoResponseHandler) {
         invokedGetSubscriberData = true
