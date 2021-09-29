@@ -30,6 +30,11 @@ class OfferingsFactory {
             }
             return dict
         }
+
+        guard !offerings.isEmpty else {
+            return nil
+        }
+
         let currentOfferingID = data["current_offering_id"] as? String
 
         return Offerings(offerings: offerings, currentOfferingID: currentOfferingID)

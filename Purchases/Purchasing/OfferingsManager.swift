@@ -106,6 +106,13 @@ private extension OfferingsManager {
         }
 
         productsManager.products(withIdentifiers: productIdentifiers) { products in
+            guard !products.isEmpty else {
+                let errorMessage = Strings.offering.configuration_error_skproducts_not_found.description
+                self.handleOfferingsUpdateError(ErrorUtils.configurationError(message: errorMessage),
+                                                completion: completion)
+                return
+            }
+
             let productsByID = products.reduce(into: [:]) { result, product in
                 result[product.productIdentifier] = product
             }
@@ -115,13 +122,6 @@ private extension OfferingsManager {
             if !missingProductIDs.isEmpty {
                 Logger.appleWarning(
                     Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs))
-            }
-
-            guard !products.isEmpty else {
-                let errorMessage = Strings.offering.configuration_error_skproducts_not_found.description
-                self.handleOfferingsUpdateError(ErrorUtils.configurationError(message: errorMessage),
-                                                completion: completion)
-                return
             }
 
             if let createdOfferings = self.offeringsFactory.createOfferings(withProducts: productsByID, data: data) {
