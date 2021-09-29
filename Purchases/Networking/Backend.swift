@@ -315,24 +315,24 @@ class Backend {
 
         httpClient.performGETRequest(serially: true,
                                      path: path,
-                                     headers: authHeaders) { [weak self] (statusCode, response, error) in
+                                     headers: authHeaders) { [weak self] (statusCode, maybeResponse, maybeError) in
             guard let self = self else {
                 return
             }
 
-            if error == nil && statusCode < HTTPStatusCodes.redirect.rawValue {
+            if maybeError == nil && statusCode < HTTPStatusCodes.redirect.rawValue {
                 for callback in self.getOfferingsCallbacksAndClearCache(forKey: path) {
-                    callback(response, nil)
+                    callback(maybeResponse, nil)
                 }
                 return
             }
 
             let errorForCallbacks: Error
-            if let error = error {
+            if let error = maybeError {
                 errorForCallbacks = ErrorUtils.networkError(withUnderlyingError: error)
             } else if statusCode > HTTPStatusCodes.redirect.rawValue {
-                let backendCode = self.maybeNumberFromError(code: response?["code"])
-                let backendMessage = response?["message"] as? String
+                let backendCode = self.maybeNumberFromError(code: maybeResponse?["code"])
+                let backendMessage = maybeResponse?["message"] as? String
                 errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode as NSNumber?,
                                                             backendMessage: backendMessage)
             } else {

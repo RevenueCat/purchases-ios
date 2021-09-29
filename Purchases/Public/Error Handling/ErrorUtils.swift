@@ -174,6 +174,16 @@ import StoreKit
     }
 
     /**
+     * Constructs an Error with the ``ErrorCode/configurationError`` code.
+     *
+     * - Note: This error is used when the configuration in App Store Connect doesn't match the configuration
+     * in the RevenueCat dashboard.
+     */
+    @objc public static func configurationError(message: String? = nil) -> Error {
+        return error(with: ErrorCode.configurationError, message: message)
+    }
+
+    /**
      * Maps an `SKError` to a Error with a ``ErrorCode``. Adds a underlying error in the `NSError.userInfo` dictionary.
      *
      * - Parameter skError: The originating `SKError`.

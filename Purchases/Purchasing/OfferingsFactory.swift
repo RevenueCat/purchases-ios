@@ -27,9 +27,17 @@ class OfferingsFactory {
             var dict = dict
             if let offering = createOffering(withProducts: products, offeringData: offeringData) {
                 dict[offering.identifier] = offering
+                if offering.availablePackages.isEmpty {
+                    Logger.warn(Strings.offering.offering_empty(offeringIdentifier: offering.identifier))
+                }
             }
             return dict
         }
+
+        guard !offerings.isEmpty else {
+            return nil
+        }
+
         let currentOfferingID = data["current_offering_id"] as? String
 
         return Offerings(offerings: offerings, currentOfferingID: currentOfferingID)
