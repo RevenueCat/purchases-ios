@@ -108,6 +108,13 @@ NS_SWIFT_NAME(Purchases.ErrorUtils)
  */
 + (NSError *)purchasesErrorWithSKError:(NSError *)skError;
 
+/**
+ * Constructs an Error with the ``ErrorCode/configurationError`` code.
+ * - Note: This error is used when the configuration in App Store Connect doesn't match the configuration
+ *  in the RevenueCat dashboard.
+ */
++ (NSError *)configurationErrorWithMessage:(nullable NSString *)message;
+
 @end
 
 NS_ASSUME_NONNULL_END

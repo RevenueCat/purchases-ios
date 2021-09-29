@@ -372,6 +372,10 @@ static RCPurchasesErrorCode RCPurchasesErrorCodeFromSKError(NSError *skError) {
     return [self errorWithCode:RCLogOutAnonymousUserError];
 }
 
++ (NSError *)configurationErrorWithMessage:(nullable NSString *)message {
+    return [self errorWithCode:RCConfigurationError message:message underlyingError:nil];
+}
+
 + (NSError *)purchasesErrorWithSKError:(NSError *)skError {
 
     RCPurchasesErrorCode errorCode = RCPurchasesErrorCodeFromSKError(skError);
