@@ -106,7 +106,7 @@ extension OfferingStrings: CustomStringConvertible {
 
         case .configuration_error_no_products_for_offering:
             return "Three's a problem with your configuration. There are no products registered in the RevenueCat " +
-            "dashboard for this offering. To configure products, follow the instructions in " +
+            "dashboard for your offerings. To configure products, follow the instructions in " +
             "https://rev.cat/how-to-configure-offerings. \nMore information: https://rev.cat/why-are-offerings-empty"
 
         }
