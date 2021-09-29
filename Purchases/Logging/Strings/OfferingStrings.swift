@@ -36,6 +36,7 @@ enum OfferingStrings {
     case completion_handlers_waiting_on_products(handlersCount: Int)
     case configuration_error_skproducts_not_found
     case configuration_error_no_products_for_offering
+    case offering_empty(offeringIdentifier: String)
 
 }
 
@@ -107,6 +108,13 @@ extension OfferingStrings: CustomStringConvertible {
         case .configuration_error_no_products_for_offering:
             return "Three's a problem with your configuration. There are no products registered in the RevenueCat " +
             "dashboard for your offerings. To configure products, follow the instructions in " +
+            "https://rev.cat/how-to-configure-offerings. \nMore information: https://rev.cat/why-are-offerings-empty"
+
+        case .offering_empty(let offeringIdentifier):
+            return "Three's a problem with your configuration. No packages could be found for offering with  " +
+            "identifier \(offeringIdentifier). This could be due to Products not being configured correctly in the " +
+            "RevenueCat dashboard, App Store Connect (or the StoreKit Configuration file " +
+            "if one is being used). \nTo configure products, follow the instructions in " +
             "https://rev.cat/how-to-configure-offerings. \nMore information: https://rev.cat/why-are-offerings-empty"
 
         }
