@@ -99,7 +99,9 @@ private extension OfferingsManager {
     func handleOfferingsBackendResult(with data: [String: Any], completion: ((Offerings?, Error?) -> Void)?) {
         let productIdentifiers = extractProductIdentifiers(fromOfferingsData: data)
         guard !productIdentifiers.isEmpty else {
-            self.handleOfferingsUpdateError(ErrorUtils.configurationError(), completion: completion)
+            let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
+            self.handleOfferingsUpdateError(ErrorUtils.configurationError(message: errorMessage),
+                                            completion: completion)
             return
         }
 
@@ -116,7 +118,9 @@ private extension OfferingsManager {
             }
 
             guard !products.isEmpty else {
-                self.handleOfferingsUpdateError(ErrorUtils.configurationError(), completion: completion)
+                let errorMessage = Strings.offering.configuration_error_skproducts_not_found.description
+                self.handleOfferingsUpdateError(ErrorUtils.configurationError(message: errorMessage),
+                                                completion: completion)
                 return
             }
 

@@ -179,8 +179,8 @@ import StoreKit
      * - Note: This error is used when the configuration in App Store Connect doesn't match the configuration
      * in the RevenueCat dashboard.
      */
-    @objc public static func configurationError() -> Error {
-        return error(with: ErrorCode.configurationError)
+    @objc public static func configurationError(message: String? = nil) -> Error {
+        return error(with: ErrorCode.configurationError, message: message)
     }
 
     /**
