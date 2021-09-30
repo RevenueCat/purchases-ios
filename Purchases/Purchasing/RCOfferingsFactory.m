@@ -39,7 +39,9 @@
                 }
             }
         }
-        
+        if (offerings.count == 0) {
+            return nil;
+        }
         return [[RCOfferings alloc] initWithOfferings:[NSDictionary dictionaryWithDictionary:offerings] currentOfferingID:currentOfferingID];
     }
     return nil;
