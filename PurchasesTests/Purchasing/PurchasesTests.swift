@@ -142,7 +142,7 @@ class PurchasesTests: XCTestCase {
                 return
             }
             if (badOfferingsResponse) {
-                completion([:], nil)
+                completion(nil, nil)
                 return
             }
 
@@ -1658,7 +1658,7 @@ class PurchasesTests: XCTestCase {
         expect(offerings).toEventually(beNil());
     }
 
-    func testBadBackendResponseForOfferings() {
+    func testBadBackendResponseForOfferingsReturnsUnexpectedBackendResponseError() {
         self.backend.badOfferingsResponse = true
         self.offeringsFactory.nilOfferings = true
         setupPurchases()
@@ -1673,18 +1673,21 @@ class PurchasesTests: XCTestCase {
         expect(receivedError?.code).to(be(Purchases.ErrorCode.unexpectedBackendResponseError.rawValue))
     }
 
-    func testMissingProductDetailsReturnsNil() {
-        requestFetcher.failProducts = true
+    func testMissingProductDetailsReturnsNil() throws {
+        requestFetcher.returnEmptyProducts = true
         offeringsFactory.emptyOfferings = true
         setupPurchases()
 
-        var offerings: Purchases.Offerings?
-        self.purchases?.offerings({ (newOfferings, _) in
-            offerings = newOfferings
+        var maybeReceivedOfferings: Purchases.Offerings?
+        var maybeReceivedError: Error?
+        self.purchases?.offerings({ offerings, error in
+            maybeReceivedOfferings = offerings
+            maybeReceivedError = error
         })
 
-        expect(offerings).toEventuallyNot(beNil());
-        expect(offerings!["base"]).toEventually(beNil())
+        expect(maybeReceivedError).toEventuallyNot(beNil())
+        let error = try XCTUnwrap(maybeReceivedError)
+        expect(maybeReceivedOfferings).to(beNil())
     }
 
     func testAddAttributionAlwaysAddsAdIdsEmptyDict() {
@@ -2383,7 +2386,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testProductIsRemovedButPresentInTheQueuedTransaction() {
-        self.requestFetcher.failProducts = true
+        self.requestFetcher.returnEmptyProducts = true
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "product")
 
@@ -2601,9 +2604,9 @@ class PurchasesTests: XCTestCase {
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfBackendReturnsEmpty() throws {
         // given
-        setupPurchases()
         backend.maybeStubbedGetOfferingsCompletionResult = ([:], nil)
         offeringsFactory.emptyOfferings = true
+        setupPurchases()
 
         // when
         var obtainedOfferings: Purchases.Offerings?
@@ -2625,9 +2628,9 @@ class PurchasesTests: XCTestCase {
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsEmpty() throws {
         // given
-        setupPurchases()
         backend.maybeStubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
-        requestFetcher.failProducts = true
+        requestFetcher.returnEmptyProducts = true
+        setupPurchases()
 
         // when
         var obtainedOfferings: Purchases.Offerings?
@@ -2648,9 +2651,9 @@ class PurchasesTests: XCTestCase {
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendResponseIfOfferingsFactoryCantCreateOfferings() throws {
         // given
-        setupPurchases()
         backend.maybeStubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
         offeringsFactory.nilOfferings = true
+        setupPurchases()
 
         // when
         var obtainedOfferings: Purchases.Offerings?
@@ -2671,9 +2674,9 @@ class PurchasesTests: XCTestCase {
 
     func testOfferingsForAppUserIDReturnsNilUnexpectedBackendResponseIfBackendReturnsNilDataAndNilOfferings() throws {
         // given
-        setupPurchases()
         backend.maybeStubbedGetOfferingsCompletionResult = (nil, nil)
         offeringsFactory.emptyOfferings = true
+        setupPurchases()
 
         // when
         var maybeObtainedOfferings: Purchases.Offerings?
@@ -2694,10 +2697,10 @@ class PurchasesTests: XCTestCase {
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendErrorIfBadBackendRequest() throws {
         // given
-        setupPurchases()
         backend.maybeStubbedGetOfferingsCompletionResult = (nil, MockData.unexpectedBackendResponseError)
         offeringsFactory.nilOfferings = true
-
+        setupPurchases()
+        
         // when
         var maybeObtainedError: Error?
         var completionCalled = false

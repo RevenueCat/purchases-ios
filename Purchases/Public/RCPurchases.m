@@ -986,7 +986,22 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         [productIdentifiers addObject:productIdentifier];
     }];
 
-    [self productsWithIdentifiers:productIdentifiers.allObjects completionBlock:^(NSArray<SKProduct *> *_Nonnull products) {
+    if (productIdentifiers.count == 0) {
+        NSString *errorMessage = RCStrings.offering.configuration_error_no_products_for_offering;
+        [self handleOfferingsUpdateError:[RCPurchasesErrorUtils configurationErrorWithMessage:errorMessage]
+                              completion:completion];
+        return;
+    }
+
+    [self productsWithIdentifiers:productIdentifiers.allObjects
+                  completionBlock:^(NSArray<SKProduct *> *_Nonnull products) {
+
+        if (products.count == 0) {
+            NSString *errorMessage = RCStrings.offering.configuration_error_skproducts_not_found;
+            [self handleOfferingsUpdateError:[RCPurchasesErrorUtils configurationErrorWithMessage:errorMessage]
+                                  completion:completion];
+            return;
+        }
 
         NSMutableDictionary *productsById = [NSMutableDictionary new];
         for (SKProduct *p in products) {

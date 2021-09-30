@@ -5,11 +5,11 @@
 
 class MockRequestFetcher: RCStoreKitRequestFetcher {
     var refreshReceiptCalled = false
-    var failProducts = false
+    var returnEmptyProducts = false
     var requestedProducts: Set<String?>?
 
     override func fetchProducts(_ identifiers: Set<String>, completion: @escaping RCFetchProductsCompletionHandler) {
-        if (failProducts) {
+        if (returnEmptyProducts) {
             completion([SKProduct]())
             return
         }
