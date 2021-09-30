@@ -1174,7 +1174,7 @@ public extension Purchases {
 extension Purchases: CustomerInfoManagerDelegate {
 
     public func customerInfoManagerDidReceiveUpdated(customerInfo: CustomerInfo) {
-        delegate?.purchases?(self, didReceiveUpdated: customerInfo)
+        delegate?.purchases?(self, receivedUpdated: customerInfo)
     }
 
 }

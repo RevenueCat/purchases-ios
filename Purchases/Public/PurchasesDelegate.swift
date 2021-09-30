@@ -25,13 +25,21 @@ import StoreKit
 @objc(RCPurchasesDelegate) public protocol PurchasesDelegate: NSObjectProtocol {
 
     /**
+     * - Note: Deprecated, use purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) or
+     * objc: purchases:receivedUpdatedCustomerInfo:
+     */
+    @available(swift, deprecated: 5, obsoleted: 5, renamed: "purchases(_:receivedUpdated:)")
+    @objc(purchases:didReceiveUpdatedPurchaserInfo:)
+    optional func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: CustomerInfo)
+
+    /**
      * Called whenever ``Purchases`` receives updated purchaser info. This may happen periodically
      * throughout the life of the app if new information becomes available (e.g. UIApplicationDidBecomeActive).*
      * - Parameter purchases: Related ``Purchases`` object
      * - Parameter customerInfo: Updated ``CustomerInfo``
      */
-    @objc(purchases:didReceiveUpdatedCustomerInfo:)
-    optional func purchases(_ purchases: Purchases, didReceiveUpdated customerInfo: CustomerInfo)
+    @objc(purchases:receivedUpdatedCustomerInfo:)
+    optional func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo)
 
     /**
      * Called when a user initiates a promotional in-app purchase from the App Store.

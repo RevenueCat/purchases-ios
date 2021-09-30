@@ -48,7 +48,7 @@ class MockDeviceCache: DeviceCache {
     var stubbedIsCustomerInfoCacheStale = false
     var cachedCustomerInfo = [String: Data]()
 
-    override func cache(customerInfo customerInfo: Data, appUserID: String) {
+    override func cache(customerInfo: Data, appUserID: String) {
         cacheCustomerInfoCount += 1
         cachedCustomerInfo[appUserID] = customerInfo as Data?
     }
