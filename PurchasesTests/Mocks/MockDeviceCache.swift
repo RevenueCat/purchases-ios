@@ -40,7 +40,7 @@ class MockDeviceCache: DeviceCache {
         userIDStoredInCache = appUserID
     }
 
-    // MARK: purchaserInfo
+    // MARK: customerInfo
     var cacheCustomerInfoCount = 0
     var cachedCustomerInfoCount = 0
     var clearCustomerInfoCacheTimestampCount = 0
@@ -48,9 +48,9 @@ class MockDeviceCache: DeviceCache {
     var stubbedIsCustomerInfoCacheStale = false
     var cachedCustomerInfo = [String: Data]()
 
-    override func cache(customerInfo purchaserInfo: Data, appUserID: String) {
+    override func cache(customerInfo customerInfo: Data, appUserID: String) {
         cacheCustomerInfoCount += 1
-        cachedCustomerInfo[appUserID] = purchaserInfo as Data?
+        cachedCustomerInfo[appUserID] = customerInfo as Data?
     }
 
     override func cachedCustomerInfoData(appUserID: String) -> Data? {

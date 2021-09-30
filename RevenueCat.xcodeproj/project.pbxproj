@@ -120,7 +120,7 @@
 		351B51BB26D450E800BD2BD7 /* ProductInfoExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3548189DA008320B3FC98 /* ProductInfoExtractorTests.swift */; };
 		351B51BC26D450E800BD2BD7 /* OfferingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357C2D977BBB081216B5F /* OfferingsTests.swift */; };
 		351B51BD26D450E800BD2BD7 /* EntitlementInfosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3582920E16E065502E5FC /* EntitlementInfosTests.swift */; };
-		351B51BE26D450E800BD2BD7 /* PurchaserInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E359D8F304C83184560135 /* PurchaserInfoTests.swift */; };
+		351B51BE26D450E800BD2BD7 /* CustomerInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E359D8F304C83184560135 /* CustomerInfoTests.swift */; };
 		351B51BF26D450E800BD2BD7 /* StoreKitRequestFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5BE4244269676E200254A30 /* StoreKitRequestFetcherTests.swift */; };
 		351B51C026D450E800BD2BD7 /* PurchasesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35DE5707E845DA3FF51BC /* PurchasesTests.swift */; };
 		351B51C126D450E800BD2BD7 /* OfferingsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F575859126C08E3F00C12B97 /* OfferingsManagerTests.swift */; };
@@ -375,7 +375,7 @@
 		37E3582920E16E065502E5FC /* EntitlementInfosTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntitlementInfosTests.swift; sourceTree = "<group>"; };
 		37E3583675928C01D92E3166 /* ProductInfoExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProductInfoExtensions.swift; sourceTree = "<group>"; };
 		37E358BF58C99AC39073B96C /* BackendTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackendTests.swift; sourceTree = "<group>"; };
-		37E359D8F304C83184560135 /* PurchaserInfoTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaserInfoTests.swift; sourceTree = "<group>"; };
+		37E359D8F304C83184560135 /* CustomerInfoTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerInfoTests.swift; sourceTree = "<group>"; };
 		37E35ABEE9FD79CCA64E4F8B /* NSData+RCExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSData+RCExtensionsTests.swift"; sourceTree = "<group>"; };
 		37E35B08709090FBBFB16EBD /* MockProductsRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockProductsRequest.swift; sourceTree = "<group>"; };
 		37E35B9AC7A350CA2437049D /* ISOPeriodFormatterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ISOPeriodFormatterTests.swift; sourceTree = "<group>"; };
@@ -822,6 +822,7 @@
 		354235D624C11160008C84EE /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
+				37E359D8F304C83184560135 /* CustomerInfoTests.swift */,
 				37E3582920E16E065502E5FC /* EntitlementInfosTests.swift */,
 				B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */,
 				37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */,
@@ -831,7 +832,6 @@
 				37E3548189DA008320B3FC98 /* ProductInfoExtractorTests.swift */,
 				37E350E57B0A393455A72B40 /* ProductInfoTests.swift */,
 				37E351F0E21361EAEC078A0D /* ProductsManagerTests.swift */,
-				37E359D8F304C83184560135 /* PurchaserInfoTests.swift */,
 				37E35DE5707E845DA3FF51BC /* PurchasesTests.swift */,
 				2DD02D5624AD0B0500419CD9 /* RCIntroEligibilityTests.swift */,
 				2D84458826B9CD270033B5A3 /* ReceiptFetcherTests.swift */,
@@ -1459,7 +1459,7 @@
 				351B515626D44B2300BD2BD7 /* MockNotificationCenter.swift in Sources */,
 				351B515226D44AF000BD2BD7 /* MockReceiptFetcher.swift in Sources */,
 				351B51C226D450E800BD2BD7 /* ProductInfoTests.swift in Sources */,
-				351B51BE26D450E800BD2BD7 /* PurchaserInfoTests.swift in Sources */,
+				351B51BE26D450E800BD2BD7 /* CustomerInfoTests.swift in Sources */,
 				35272E1B26D0029300F22C3B /* DeviceCacheSubscriberAttributesTests.swift in Sources */,
 				351B516126D44BEB00BD2BD7 /* IdentityManagerTests.swift in Sources */,
 				351B51C126D450E800BD2BD7 /* OfferingsManagerTests.swift in Sources */,

@@ -244,7 +244,7 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 		</tr>
 		<tr>
 			<td>logIn(_ appUserId, _ completion)</td>
-			<td>login(appUserId:completion)</td>
+			<td>logIn(appUserId:completion)</td>
 		</tr>
 		<tr>
 			<td>purchaserInfo(_ completion)</td>

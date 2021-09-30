@@ -43,7 +43,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
 
     let purchasesDelegate = MockPurchasesDelegate()
-    var purchaserInfoManager: CustomerInfoManager!
+    var customerInfoManager: CustomerInfoManager!
     let emptyCustomerInfoData: [String: Any] = [
     "request_date": "2019-08-16T10:30:42Z",
     "subscriber": [
@@ -88,7 +88,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                        backend: mockBackend,
                                                        attributionFetcher: mockAttributionFetcher,
                                                        subscriberAttributesManager: mockSubscriberAttributesManager)
-        self.purchaserInfoManager = CustomerInfoManager(operationDispatcher: mockOperationDispatcher,
+        self.customerInfoManager = CustomerInfoManager(operationDispatcher: mockOperationDispatcher,
                                                          deviceCache: mockDeviceCache,
                                                          backend: mockBackend,
                                                          systemInfo: systemInfo)
@@ -116,7 +116,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                           subscriberAttributesManager: mockSubscriberAttributesManager,
                                                           operationDispatcher: mockOperationDispatcher,
                                                           receiptFetcher: mockReceiptFetcher,
-                                                          customerInfoManager: purchaserInfoManager,
+                                                          customerInfoManager: customerInfoManager,
                                                           backend: mockBackend,
                                                           identityManager: mockIdentityManager,
                                                           receiptParser: mockReceiptParser,
@@ -137,7 +137,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                               operationDispatcher: mockOperationDispatcher,
                               introEligibilityCalculator: mockIntroEligibilityCalculator,
                               receiptParser: mockReceiptParser,
-                              customerInfoManager: purchaserInfoManager,
+                              customerInfoManager: customerInfoManager,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
                               purchasesOrchestrator: purchasesOrchestrator)

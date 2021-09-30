@@ -138,7 +138,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled = true
         })
 
@@ -181,7 +181,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -192,7 +192,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -216,7 +216,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -227,7 +227,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -251,7 +251,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -262,7 +262,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -286,7 +286,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
         let productInfo: ProductInfo = .createMockProductInfo(currencyCode: "USD")
@@ -298,7 +298,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -322,7 +322,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: "offering_a",
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -333,7 +333,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: "offering_b",
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -391,7 +391,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: offeringIdentifier,
                       observerMode: false,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
     completionCalled = true
 })
 
@@ -443,7 +443,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled = true
         })
 
@@ -466,7 +466,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
                         completionCalled = true
                 })
 
@@ -517,7 +517,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, newError) in
+                      completion: { (customerInfo, newError) in
             error = newError as NSError?
             underlyingError = error?.userInfo[NSUnderlyingErrorKey] as! NSError?
         })
@@ -544,7 +544,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, newError) in
+                      completion: { (customerInfo, newError) in
             error = newError
         })
 
@@ -561,7 +561,7 @@ class BackendTests: XCTestCase {
         let response = HTTPResponse(statusCode: 200, response: validSubscriberResponse, error: nil)
         httpClient.mock(requestPath: "/receipts", response: response)
 
-        var purchaserInfo: CustomerInfo?
+        var customerInfo: CustomerInfo?
 
         backend?.post(receiptData: receiptData,
                       appUserID: userID,
@@ -571,12 +571,12 @@ class BackendTests: XCTestCase {
                       observerMode: false,
                       subscriberAttributes: nil,
                       completion: { (newCustomerInfo, newError) in
-            purchaserInfo = newCustomerInfo
+            customerInfo = newCustomerInfo
         })
 
-        expect(purchaserInfo).toEventuallyNot(beNil())
-        if purchaserInfo != nil {
-            let expiration = purchaserInfo!.expirationDate(forProductIdentifier: "onemonth_freetrial")
+        expect(customerInfo).toEventuallyNot(beNil())
+        if customerInfo != nil {
+            let expiration = customerInfo!.expirationDate(forProductIdentifier: "onemonth_freetrial")
             expect(expiration).toNot(beNil())
         }
     }
@@ -1057,7 +1057,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             receivedError = error as NSError?
             receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
         })
@@ -1208,7 +1208,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -1221,7 +1221,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -1255,7 +1255,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: nil,
                       observerMode: false,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled = true
         })
 
@@ -1564,7 +1564,7 @@ class BackendTests: XCTestCase {
                       productInfo: nil,
                       presentedOfferingIdentifier: nil,
                       observerMode: observerMode,
-                      subscriberAttributes: nil, completion: { (purchaserInfo, error) in
+                      subscriberAttributes: nil, completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -1577,7 +1577,7 @@ class BackendTests: XCTestCase {
                       presentedOfferingIdentifier: "offering_a",
                       observerMode: observerMode,
                       subscriberAttributes: nil,
-                      completion: { (purchaserInfo, error) in
+                      completion: { (customerInfo, error) in
             completionCalled += 1
         })
 
@@ -1592,7 +1592,7 @@ class BackendTests: XCTestCase {
         var completionCalled = false
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
+                       newAppUserID: newAppUserID) { (customerInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
@@ -1625,12 +1625,12 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
+                       newAppUserID: newAppUserID) { (customerInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
             receivedError = error
-            receivedCustomerInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
 
@@ -1660,12 +1660,12 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
+                       newAppUserID: newAppUserID) { (customerInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
             receivedError = error
-            receivedCustomerInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
 
@@ -1694,12 +1694,12 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
+                       newAppUserID: newAppUserID) { (customerInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
             receivedError = error
-            receivedCustomerInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
 
@@ -1731,12 +1731,12 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
+                       newAppUserID: newAppUserID) { (customerInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
             receivedError = error
-            receivedCustomerInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
 
@@ -1761,12 +1761,12 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
+                       newAppUserID: newAppUserID) { (customerInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
             receivedError = error
-            receivedCustomerInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
 
@@ -1791,12 +1791,12 @@ class BackendTests: XCTestCase {
         var receivedCreated: Bool?
 
         backend?.logIn(currentAppUserID: currentAppUserID,
-                       newAppUserID: newAppUserID) { (purchaserInfo: CustomerInfo?,
+                       newAppUserID: newAppUserID) { (customerInfo: CustomerInfo?,
                                                       created: Bool,
                                                       error: Error?) in
             completionCalled = true
             receivedError = error
-            receivedCustomerInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedCreated = created
         }
 

@@ -186,10 +186,10 @@ class IdentityManagerTests: XCTestCase {
         var receivedCreated: Bool = false
         var receivedCustomerInfo: CustomerInfo?
         var receivedError: Error?
-        identityManager.logIn(appUserID: ""){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: ""){ customerInfo, created, error in
             completionCalled = true
             receivedCreated = created
-            receivedCustomerInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedError = error
         }
 
@@ -208,7 +208,7 @@ class IdentityManagerTests: XCTestCase {
         var completionCalled: Bool = false
         let appUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = appUserID
-        identityManager.logIn(appUserID: appUserID){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: appUserID){ customerInfo, created, error in
             completionCalled = true
         }
 
@@ -231,10 +231,10 @@ class IdentityManagerTests: XCTestCase {
                                    userInfo: [:])
 
         self.mockCustomerInfoManager.stubbedError = stubbedError
-        identityManager.logIn(appUserID: appUserID){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: appUserID){ customerInfo, created, error in
             completionCalled = true
             receivedCreated = created
-            receivedCustomerInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedError = error as NSError?
         }
 
@@ -259,10 +259,10 @@ class IdentityManagerTests: XCTestCase {
 
         self.mockBackend.stubbedLogInCompletionResult = (mockCustomerInfo, true, nil)
 
-        identityManager.logIn(appUserID: newAppUserID){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: newAppUserID){ customerInfo, created, error in
             completionCalled = true
             receivedCreated = created
-            receivedCustomerInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedError = error as NSError?
         }
 
@@ -292,10 +292,10 @@ class IdentityManagerTests: XCTestCase {
 
         self.mockCustomerInfoManager.stubbedError = stubbedError
 
-        identityManager.logIn(appUserID: newAppUserID){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: newAppUserID){ customerInfo, created, error in
             completionCalled = true
             receivedCreated = created
-            receivedCustomerInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedError = error as NSError?
         }
 
@@ -320,7 +320,7 @@ class IdentityManagerTests: XCTestCase {
 
         self.mockBackend.stubbedLogInCompletionResult = (mockCustomerInfo, true, nil)
 
-        identityManager.logIn(appUserID: newAppUserID){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: newAppUserID){ customerInfo, created, error in
             completionCalled = true
         }
 
@@ -337,7 +337,7 @@ class IdentityManagerTests: XCTestCase {
 
         self.mockBackend.stubbedLogInCompletionResult = (mockCustomerInfo, true, nil)
 
-        identityManager.logIn(appUserID: newAppUserID){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: newAppUserID){ customerInfo, created, error in
             completionCalled = true
         }
 
