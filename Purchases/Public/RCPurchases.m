@@ -968,13 +968,14 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.deviceCache setOfferingsCacheTimestampToNow];
     [self.operationDispatcher dispatchOnWorkerThreadWithRandomDelay:isAppBackgrounded block:^{
         [self.backend getOfferingsForAppUserID:self.appUserID
-                                    completion:^(NSDictionary *data, NSError *error) {
-                                        if (error != nil) {
-                                            [self handleOfferingsUpdateError:error completion:completion];
-                                            return;
-                                        }
-                                        [self handleOfferingsBackendResultWithData:data completion:completion];
-                                    }];
+                                    completion:^(NSDictionary *maybeData, NSError *maybeError) {
+            if (maybeData != nil) {
+                [self handleOfferingsBackendResultWithData:maybeData completion:completion];
+                return;
+            }
+            NSError *error = maybeError ? : RCPurchasesErrorUtils.unexpectedBackendResponseError;
+            [self handleOfferingsUpdateError:error completion:completion];
+        }];
     }];
 
 }
