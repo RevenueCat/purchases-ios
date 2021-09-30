@@ -2600,8 +2600,8 @@ class PurchasesTests: XCTestCase {
     }
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfBackendReturnsEmpty() throws {
-        setupPurchases()
         // given
+        setupPurchases()
         backend.maybeStubbedGetOfferingsCompletionResult = ([:], nil)
         offeringsFactory.emptyOfferings = true
 
@@ -2624,8 +2624,8 @@ class PurchasesTests: XCTestCase {
     }
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfProductsRequestsReturnsEmpty() throws {
-        setupPurchases()
         // given
+        setupPurchases()
         backend.maybeStubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
         requestFetcher.failProducts = true
 
@@ -2647,8 +2647,8 @@ class PurchasesTests: XCTestCase {
     }
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendResponseIfOfferingsFactoryCantCreateOfferings() throws {
-        setupPurchases()
         // given
+        setupPurchases()
         backend.maybeStubbedGetOfferingsCompletionResult = (MockData.anyBackendOfferingsData, nil)
         offeringsFactory.nilOfferings = true
 
@@ -2667,6 +2667,49 @@ class PurchasesTests: XCTestCase {
         expect(obtainedOfferings).to(beNil())
         let error = try XCTUnwrap(obtainedError)
         expect((error as NSError).code) == Purchases.ErrorCode.unexpectedBackendResponseError.rawValue
+    }
+
+    func testOfferingsForAppUserIDReturnsNilUnexpectedBackendResponseIfBackendReturnsNilDataAndNilOfferings() throws {
+        // given
+        setupPurchases()
+        backend.maybeStubbedGetOfferingsCompletionResult = (nil, nil)
+        offeringsFactory.emptyOfferings = true
+
+        // when
+        var maybeObtainedOfferings: Purchases.Offerings?
+        var completionCalled = false
+        var maybeObtainedError: Error?
+        purchases.offerings { maybeOfferings, maybeError in
+            maybeObtainedOfferings = maybeOfferings
+            completionCalled = true
+            maybeObtainedError = maybeError
+        }
+
+        // then
+        expect(completionCalled).toEventually(beTrue())
+        expect(maybeObtainedOfferings).to(beNil())
+        let obtainedError = try XCTUnwrap(maybeObtainedError)
+        expect((obtainedError as NSError).code) == Purchases.ErrorCode.unexpectedBackendResponseError.rawValue
+    }
+
+    func testOfferingsForAppUserIDReturnsUnexpectedBackendErrorIfBadBackendRequest() throws {
+        // given
+        setupPurchases()
+        backend.maybeStubbedGetOfferingsCompletionResult = (nil, MockData.unexpectedBackendResponseError)
+        offeringsFactory.nilOfferings = true
+
+        // when
+        var maybeObtainedError: Error?
+        var completionCalled = false
+        purchases.offerings { _, error in
+            maybeObtainedError = error
+            completionCalled = true
+        }
+
+        // then
+        expect(completionCalled).toEventually(beTrue())
+        let obtainedError = try XCTUnwrap(maybeObtainedError)
+        expect((obtainedError as NSError).code) == Purchases.ErrorCode.unexpectedBackendResponseError.rawValue
     }
 
     private func verifyUpdatedCaches(newAppUserID: String) {
@@ -2699,6 +2742,11 @@ private extension PurchasesTests {
             ],
             "current_offering_id": "base"
         ]
+        static let unexpectedBackendResponseError = NSError(
+            domain: Purchases.ErrorDomain,
+            code: Purchases.ErrorCode.unexpectedBackendResponseError.rawValue,
+            userInfo: nil
+        )
     }
 
 }
