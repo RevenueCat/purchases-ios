@@ -31,12 +31,12 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     var stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
     override func checkEligibility(productIdentifiers: [String],
-                                   completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+                                   completion: @escaping ReceiveIntroEligibilityBlock) {
         invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = true
         invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount += 1
         invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters = (productIdentifiers, ())
         invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList.append((productIdentifiers, ()))
-        receiveEligibility(stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult)
+        completion(stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult)
     }
 
     var invokedSk1checkTrialOrIntroPriceEligibility = false
@@ -46,12 +46,12 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     var stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
     override func sk1CheckEligibility(_ productIdentifiers: [String],
-                                      completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+                                      completion: @escaping ReceiveIntroEligibilityBlock) {
         invokedSk1checkTrialOrIntroPriceEligibility = true
         invokedSk1checkTrialOrIntroPriceEligibilityCount += 1
         invokedSk1checkTrialOrIntroPriceEligibilityParameters = (productIdentifiers, ())
         invokedSk1checkTrialOrIntroPriceEligibilityParametersList.append((productIdentifiers, ()))
-        receiveEligibility(stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityResult)
+        completion(stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityResult)
     }
 
     var invokedSk2checkTrialOrIntroPriceEligibility = false
