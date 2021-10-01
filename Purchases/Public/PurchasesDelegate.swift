@@ -28,7 +28,11 @@ import StoreKit
      * - Note: Deprecated, use purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) or
      * objc: purchases:receivedUpdatedCustomerInfo:
      */
-    @available(swift, deprecated: 5, obsoleted: 5, renamed: "purchases(_:receivedUpdated:)")
+    @available(swift, obsoleted: 1, renamed: "purchases(_:receivedUpdated:)")
+    @available(iOS, obsoleted: 1)
+    @available(macOS, obsoleted: 1)
+    @available(tvOS, obsoleted: 1)
+    @available(watchOS, obsoleted: 1)
     @objc(purchases:didReceiveUpdatedPurchaserInfo:)
     optional func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: CustomerInfo)
 
