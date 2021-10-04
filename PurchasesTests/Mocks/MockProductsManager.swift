@@ -16,7 +16,7 @@ class MockProductsManager: ProductsManager {
     var stubbedProductsFromOptimalStoreKitVersionWithIdentifiersCompletionResult: (Set<ProductDetails>, Void)?
 
     override func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,
-        completion: @escaping (Set<ProductDetails>) -> Void) {
+                                                     completion: @escaping (Set<ProductDetails>) -> Void) {
         invokedProductsFromOptimalStoreKitVersionWithIdentifiers = true
         invokedProductsFromOptimalStoreKitVersionWithIdentifiersCount += 1
         invokedProductsFromOptimalStoreKitVersionWithIdentifiersParameters = (identifiers, ())

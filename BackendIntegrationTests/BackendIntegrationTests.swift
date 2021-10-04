@@ -230,6 +230,69 @@ class BackendIntegrationTests: XCTestCase {
 
         expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
     }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testEligibleForIntroBeforePurchaseAndIneligibleAfter() throws {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+        configurePurchases()
+        
+        var maybeProductID: String?
+        var completionCalled = false
+        var maybeReceivedEligibility: [String: IntroEligibility]?
+        
+        Purchases.shared.offerings { offerings, error in
+            maybeProductID = offerings?.current?.monthly?.productDetails.productIdentifier
+            completionCalled = true
+        }
+        
+        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        completionCalled = false
+        
+        let productID = try XCTUnwrap(maybeProductID)
+        
+        Purchases.shared.checkTrialOrIntroductoryPriceEligibility([productID]) { receivedEligibility in
+            completionCalled = true
+            maybeReceivedEligibility = receivedEligibility
+        }
+        
+        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        completionCalled = false
+        
+        var receivedEligibility = try XCTUnwrap(maybeReceivedEligibility)
+        expect(receivedEligibility[productID]?.status) == .eligible
+        
+        purchaseMonthlyOffering { [self] purchaserInfo, error in
+            expect(purchaserInfo?.entitlements.all.count) == 1
+            let entitlements = self.purchasesDelegate.purchaserInfo?.entitlements
+            expect(entitlements?["premium"]?.isActive) == true
+            
+            let anonUserID = Purchases.shared.appUserID
+            let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
+            
+            Purchases.shared.logIn(identifiedUserID) { identifiedPurchaserInfo, created, error in
+                expect(error).to(beNil())
+                
+                expect(created).to(beTrue())
+                expect(identifiedPurchaserInfo?.entitlements["premium"]?.isActive) == true
+                completionCalled = true
+            }
+        }
+        
+        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        completionCalled = false
+        
+        Purchases.shared.checkTrialOrIntroductoryPriceEligibility([productID]) { receivedEligibility in
+            completionCalled = true
+            maybeReceivedEligibility = receivedEligibility
+        }
+        
+        expect(completionCalled).toEventually(beTrue(), timeout: .seconds(10))
+        
+        receivedEligibility = try XCTUnwrap(maybeReceivedEligibility)
+        expect(receivedEligibility[productID]?.status) == .ineligible
+    }
     
 }
 

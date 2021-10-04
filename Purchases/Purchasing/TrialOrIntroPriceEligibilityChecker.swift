@@ -40,73 +40,31 @@ class TrialOrIntroPriceEligibilityChecker {
     }
 
     func checkEligibility(productIdentifiers: [String],
-                          completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+                          completion: @escaping ReceiveIntroEligibilityBlock) {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             Task {
                 let eligibility = await sk2CheckEligibility(productIdentifiers)
-                receiveEligibility(eligibility)
+                completion(eligibility)
             }
         } else {
-            sk1CheckEligibility(productIdentifiers, completionBlock: receiveEligibility)
+            sk1CheckEligibility(productIdentifiers, completion: completion)
         }
     }
 
     func sk1CheckEligibility(_ productIdentifiers: [String],
-                             completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
+                             completion: @escaping ReceiveIntroEligibilityBlock) {
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
             if #available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *),
                let data = maybeData {
                 self.sk1CheckEligibility(with: data,
                                          productIdentifiers: productIdentifiers,
-                                         completionBlock: receiveEligibility)
+                                         completion: completion)
             } else {
-                self.backend.getIntroEligibility(appUserID: self.appUserID,
-                                                 receiptData: maybeData ?? Data(),
-                                                 productIdentifiers: productIdentifiers) { result, maybeError in
-                    if let error = maybeError {
-                        Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
-                    }
-                    self.operationDispatcher.dispatchOnMainThread {
-                        receiveEligibility(result)
-                    }
-                }
+                self.fetchIntroEligibilityFromBackend(with: maybeData ?? Data(),
+                                                      productIdentifiers: productIdentifiers,
+                                                      completion: completion)
             }
         }
-    }
-
-    @available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *)
-    private func sk1CheckEligibility(with receiptData: Data,
-                                     productIdentifiers: [String],
-                                     completionBlock receiveEligibility: @escaping ReceiveIntroEligibilityBlock) {
-        introEligibilityCalculator
-            .checkEligibility(with: receiptData,
-                              productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
-                if let error = maybeError {
-                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
-                    self.backend
-                        .getIntroEligibility(appUserID: self.appUserID,
-                                             receiptData: receiptData,
-                                             productIdentifiers: productIdentifiers) { result, maybeAnotherError in
-                            if let intoEligibilityError = maybeAnotherError {
-                                let errorMessage =
-                                Strings.purchase.unable_to_get_intro_eligibility_with_error(error: intoEligibilityError)
-                                Logger.error(errorMessage)
-                            }
-                            self.operationDispatcher.dispatchOnMainThread {
-                                receiveEligibility(result)
-                            }
-                        }
-                    return
-                }
-                var convertedEligibility: [String: IntroEligibility] = [:]
-                for (key, value) in receivedEligibility {
-                    let introEligibility = IntroEligibility(eligibilityStatus: value)
-                    convertedEligibility[key] = introEligibility
-                }
-                self.operationDispatcher.dispatchOnMainThread {
-                    receiveEligibility(convertedEligibility)
-                }
-            }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -132,6 +90,55 @@ class TrialOrIntroPriceEligibilityChecker {
             IntroEligibility(eligibilityStatus: eligibilityStatus)
         }
         return introDict
+    }
+
+}
+
+fileprivate extension TrialOrIntroPriceEligibilityChecker {
+
+    @available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *)
+    func sk1CheckEligibility(with receiptData: Data,
+                             productIdentifiers: [String],
+                             completion: @escaping ReceiveIntroEligibilityBlock) {
+        introEligibilityCalculator
+            .checkEligibility(with: receiptData,
+                              productIdentifiers: Set(productIdentifiers)) { receivedEligibility, maybeError in
+                if let error = maybeError {
+                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
+                    self.fetchIntroEligibilityFromBackend(with: receiptData,
+                                                          productIdentifiers: productIdentifiers,
+                                                          completion: completion)
+                    return
+                }
+                var convertedEligibility: [String: IntroEligibility] = [:]
+                for (key, value) in receivedEligibility {
+                    let introEligibility = IntroEligibility(eligibilityStatus: value)
+                    convertedEligibility[key] = introEligibility
+                }
+                self.operationDispatcher.dispatchOnMainThread {
+                    completion(convertedEligibility)
+                }
+            }
+    }
+
+    func fetchIntroEligibilityFromBackend(with receiptData: Data,
+                                          productIdentifiers: [String],
+                                          completion: @escaping ReceiveIntroEligibilityBlock) {
+        self.backend.getIntroEligibility(appUserID: self.appUserID,
+                                         receiptData: receiptData,
+                                         productIdentifiers: productIdentifiers) { backendResult, maybeError in
+            var result = backendResult
+            if let error = maybeError {
+                Logger.error(Strings.purchase.unable_to_get_intro_eligibility_for_user(error: error))
+                let resultWithUnknowns = productIdentifiers.reduce(into: [:]) { resultDict, productId in
+                    resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
+                }
+                result = resultWithUnknowns
+            }
+            self.operationDispatcher.dispatchOnMainThread {
+                completion(result)
+            }
+        }
     }
 
 }
