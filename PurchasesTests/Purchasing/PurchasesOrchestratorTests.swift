@@ -110,16 +110,88 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             ]])
     }
 
-    func testPurchaseSK2PackageHandlesPurchaseResult() {
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSK2PackageHandlesPurchaseResult() async throws {
+        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
 
+        purchaserInfoManager.stubbedCachedPurchaserInfoResult = mockPurchaserInfo
+        backend.stubbedPostReceiptPurchaserInfo = mockPurchaserInfo
+
+        let sk2Product = try! await fetchSk2Product()
+        let productDetails = SK2ProductDetails(sk2Product: sk2Product)
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              productDetails: productDetails,
+                              offeringIdentifier: "offering")
+
+        let _ = await withCheckedContinuation { continuation in
+            orchestrator.purchase(package: package) { transaction, purchaserInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, purchaserInfo, error, userCancelled))
+            }
+        }
+
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2Listener)
+        expect(mockListener.invokedHandle) == true
     }
 
-    func testPurchaseSK2PackageSendsReceiptToBackendIfSuccessful() {
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSK2PackageSendsReceiptToBackendIfSuccessful() async throws {
+        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
 
+        purchaserInfoManager.stubbedCachedPurchaserInfoResult = mockPurchaserInfo
+        backend.stubbedPostReceiptPurchaserInfo = mockPurchaserInfo
+
+        let sk2Product = try! await fetchSk2Product()
+        let productDetails = SK2ProductDetails(sk2Product: sk2Product)
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              productDetails: productDetails,
+                              offeringIdentifier: "offering")
+
+        let _ = await withCheckedContinuation { continuation in
+            orchestrator.purchase(package: package) { transaction, purchaserInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, purchaserInfo, error, userCancelled))
+            }
+        }
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
     }
 
-    func testPurchaseSK2PackageSkipsIfUserCancelled() {
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSK2PackageSkipsIfUserCancelled() async throws {
+        testSession.failTransactionsEnabled = true
 
+        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
+        purchaserInfoManager.stubbedCachedPurchaserInfoResult = mockPurchaserInfo
+        backend.stubbedPostReceiptPurchaserInfo = mockPurchaserInfo
+
+        let sk2Product = try! await fetchSk2Product()
+        let productDetails = SK2ProductDetails(sk2Product: sk2Product)
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              productDetails: productDetails,
+                              offeringIdentifier: "offering")
+
+        let (transaction, purchaserInfo, error, userCancelled) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(package: package) { transaction, purchaserInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, purchaserInfo, error, userCancelled))
+            }
+        }
+
+        expect(transaction).to(beNil())
+        expect(userCancelled) == false
+        expect(purchaserInfo).to(beNil())
+        expect(error).toNot(beNil())
+        expect(self.backend.invokedPostReceiptData) == false
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2Listener)
+        expect(mockListener.invokedHandle) == false
     }
 
 }
