@@ -69,10 +69,15 @@ public typealias SK2Product = StoreKit.Product
 @objc(RCSK2ProductDetails) public class SK2ProductDetails: ProductDetails {
 
     init(sk2Product: StoreKit.Product) {
-        self.underlyingSK2Product = sk2Product
+        self._underlyingSK2Product = sk2Product
     }
 
-    public let underlyingSK2Product: StoreKit.Product
+    private var _underlyingSK2Product: Any
+    public var underlyingSK2Product: SK2Product {
+        // swiftlint:disable:next force_cast
+        get { _underlyingSK2Product as! SK2Product }
+        set { _underlyingSK2Product = newValue }
+    }
 
     @objc public override var localizedDescription: String { underlyingSK2Product.description }
 
