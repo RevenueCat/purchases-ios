@@ -210,7 +210,7 @@ import Foundation
         return parseExpirationDates(transactionsByProductId: subscriptionTransactionsByProductId)
     }()
     private lazy var purchaseDatesByProductId: [String: Date?] = {
-        return parseExpirationDates(transactionsByProductId: allPurchases)
+        return parsePurchaseDates(transactionsByProductId: allPurchases)
     }()
 
     private struct SubscriberData {
