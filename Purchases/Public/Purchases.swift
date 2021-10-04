@@ -955,12 +955,11 @@ public extension Purchases {
      * - Parameter completion: A block that receives a dictionary of product_id -> ``IntroEligibility``.
      */
     @objc(checkTrialOrIntroductoryPriceEligibility:completion:)
-    func checkTrialOrIntroductoryPriceEligibility(
-        _ productIdentifiers: [String],
-        completionBlock receiveEligibility: @escaping ([String: IntroEligibility]) -> Void) {
+    func checkTrialOrIntroductoryPriceEligibility(_ productIdentifiers: [String],
+                                                  completion: @escaping ([String: IntroEligibility]) -> Void) {
             trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIdentifiers,
-                                                             completionBlock: receiveEligibility)
-    }
+                                                                 completion: completion)
+        }
 
     /**
      * Invalidates the cache for purchaser information.
