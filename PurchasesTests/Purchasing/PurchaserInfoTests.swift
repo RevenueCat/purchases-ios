@@ -500,7 +500,7 @@ class BasicPurchaserInfoTests: XCTestCase {
                     "pro" : [
                         "product_identifier": "monthly_freetrial",
                         "expires_date" : "2018-12-19T02:40:36Z",
-                        "purchase_date": "2011-07-26T23:30:41Z"
+                        "purchase_date": "2018-07-26T23:30:41Z"
                     ]
                 ]
             ]])
