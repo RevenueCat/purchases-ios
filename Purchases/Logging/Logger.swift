@@ -33,7 +33,7 @@ class Logger {
 
     static var logLevel: LogLevel = .info
     static var logHandler: (LogLevel, String) -> Void = { level, message in
-        NSLog("[\(frameworkDescription)] - \(level.description): \(message)")
+        NSLog("%@", "[\(frameworkDescription)] - \(level.description): \(message)")
     }
 
     private static let frameworkDescription = "Purchases"
