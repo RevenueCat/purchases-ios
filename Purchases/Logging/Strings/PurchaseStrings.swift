@@ -41,7 +41,6 @@ enum PurchaseStrings {
     case requested_products_not_found(request: SKRequest)
     case callback_not_found_for_request(request: SKRequest)
     case unable_to_get_intro_eligibility_for_user(error: Error)
-    case unable_to_get_intro_eligibility_with_error(error: Error)
 
 }
 
@@ -142,9 +141,6 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case .unable_to_get_intro_eligibility_for_user(let error):
             return "Unable to get intro eligibility for appUserID: \(error.localizedDescription)"
-
-        case .unable_to_get_intro_eligibility_with_error(let error):
-            return "Unable to get intro eligibility: \(error.localizedDescription)"
         }
 
     }
