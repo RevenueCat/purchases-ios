@@ -74,9 +74,11 @@ class OfferingsManager {
             self.backend.getOfferings(appUserID: appUserID) { maybeData, maybeError in
                 if let data = maybeData {
                     self.handleOfferingsBackendResult(with: data, completion: completion)
-                } else if let error = maybeError {
-                    self.handleOfferingsUpdateError(error, completion: completion)
+                    return
                 }
+
+                let error = maybeError ?? ErrorUtils.unexpectedBackendResponseError()
+                self.handleOfferingsUpdateError(error, completion: completion)
             }
         }
     }
@@ -96,14 +98,27 @@ private extension OfferingsManager {
 
     func handleOfferingsBackendResult(with data: [String: Any], completion: ((Offerings?, Error?) -> Void)?) {
         let productIdentifiers = extractProductIdentifiers(fromOfferingsData: data)
+        guard !productIdentifiers.isEmpty else {
+            let errorMessage = Strings.offering.configuration_error_no_products_for_offering.description
+            self.handleOfferingsUpdateError(ErrorUtils.configurationError(message: errorMessage),
+                                            completion: completion)
+            return
+        }
 
         productsManager.products(withIdentifiers: productIdentifiers) { products in
+            guard !products.isEmpty else {
+                let errorMessage = Strings.offering.configuration_error_skproducts_not_found.description
+                self.handleOfferingsUpdateError(ErrorUtils.configurationError(message: errorMessage),
+                                                completion: completion)
+                return
+            }
+
             let productsByID = products.reduce(into: [:]) { result, product in
                 result[product.productIdentifier] = product
             }
 
             let missingProductIDs = self.getMissingProductIDs(productsFromStore: productsByID,
-                                                                           productIDsFromBackend: productIdentifiers)
+                                                              productIDsFromBackend: productIdentifiers)
             if !missingProductIDs.isEmpty {
                 Logger.appleWarning(
                     Strings.offering.cannot_find_product_configuration_error(identifiers: missingProductIDs))

@@ -926,7 +926,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
 
-        expect(receivedAttribute.key) == "$airshipChannelID"
+        expect(receivedAttribute.key) == "$airshipChannelId"
         expect(receivedAttribute.value) == airshipChannelID
         expect(receivedAttribute.isSynced) == false
     }
@@ -942,7 +942,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
 
-        expect(receivedAttribute.key) == "$airshipChannelID"
+        expect(receivedAttribute.key) == "$airshipChannelId"
         expect(receivedAttribute.value) == ""
         expect(receivedAttribute.isSynced) == false
     }
@@ -950,7 +950,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
     func testSetAirshipChannelIDSkipsIfSameValue() {
         let airshipChannelID = "airshipChannelID"
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$airshipChannelID",
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$airshipChannelId",
                                                                                     value: airshipChannelID)
         self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
 
@@ -961,7 +961,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let oldSyncTime = Date()
         let airshipChannelID = "airshipChannelID"
 
-        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$airshipChannelID",
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "$airshipChannelId",
                                                                                     value: "old_id",
                                                                                     isSynced: true,
                                                                                     setTime: oldSyncTime)
@@ -973,7 +973,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
         let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
         let receivedAttribute = invokedParams.attribute
 
-        expect(receivedAttribute.key) == "$airshipChannelID"
+        expect(receivedAttribute.key) == "$airshipChannelId"
         expect(receivedAttribute.value) == airshipChannelID
         expect(receivedAttribute.isSynced) == false
         expect(receivedAttribute.setTime) > oldSyncTime

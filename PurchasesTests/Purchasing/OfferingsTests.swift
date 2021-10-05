@@ -89,7 +89,7 @@ class OfferingsTests: XCTestCase {
         expect(offering?.sixMonth).to(beNil())
     }
 
-    func testListOfOfferingsIsEmptyIfNoValidOffering() {
+    func testListOfOfferingsIsNilIfNoValidOffering() {
         let offerings = offeringsFactory.createOfferings(withProducts: [:], data: [
             "offerings": [
                 [
@@ -112,10 +112,7 @@ class OfferingsTests: XCTestCase {
             "current_offering_id": "offering_a"
         ])
 
-        expect(offerings).toNot(beNil())
-        expect(offerings?.current).to(beNil())
-        expect(offerings?["offering_a"]).to(beNil())
-        expect(offerings?["offering_b"]).to(beNil())
+        expect(offerings).to(beNil())
     }
 
     func testOfferingsIsCreated() {
@@ -187,26 +184,38 @@ class OfferingsTests: XCTestCase {
         testPackageType(packageType: PackageType.unknown)
     }
 
-    func testNoOfferings() {
+    func testOfferingsIsNilIfNoOfferingCanBeCreated() throws {
         let data = [
             "offerings": [],
             "current_offering_id": nil
         ]
-        let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [String : Any])
+        let maybeOfferings = offeringsFactory.createOfferings(withProducts: [:], data: data as [String : Any])
 
-        expect(offerings).toNot(beNil())
-        expect(offerings!.current).to(beNil())
+        expect(maybeOfferings).to(beNil())
     }
 
-    func testCurrentOfferingWithBrokenProduct() {
+    func testCurrentOfferingWithBrokenProductReturnsNilForCurrentOfferingButContainsOtherOfferings() throws {
+        let products = [
+            "com.myproduct.annual": MockSKProduct(mockProductIdentifier: "com.myproduct.annual"),
+        ]
+
         let data = [
-            "offerings": [],
+            "offerings": [
+                [
+                    "identifier": "offering_a",
+                    "description": "This is the base offering",
+                    "packages": [
+                        ["identifier": "$rc_six_month",
+                         "platform_product_identifier": "com.myproduct.annual"]
+                    ]
+                ]
+            ],
             "current_offering_id": "offering_with_broken_product"
         ] as [String : Any]
-        let offerings = offeringsFactory.createOfferings(withProducts: [:], data: data as [String : Any])
+        let maybeOfferings = offeringsFactory.createOfferings(withProducts: products, data: data as [String : Any])
 
-        expect(offerings).toNot(beNil())
-        expect(offerings!.current).to(beNil())
+        let offerings = try XCTUnwrap(maybeOfferings)
+        expect(offerings.current).to(beNil())
     }
 
     func testBadOfferingsDataReturnsNil() {

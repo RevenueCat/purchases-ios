@@ -8,14 +8,14 @@ import StoreKit
 class MockOfferingsFactory: OfferingsFactory {
 
     var emptyOfferings = false
-    var badOfferings = false
+    var nilOfferings = false
 
     override func createOfferings(withProducts products: [String: SKProduct],
                                   data: [String: Any]) -> Offerings? {
         if (emptyOfferings) {
             return Offerings(offerings: [:], currentOfferingID: "base")
         }
-        if (badOfferings) {
+        if (nilOfferings) {
             return nil
         }
         return Offerings(

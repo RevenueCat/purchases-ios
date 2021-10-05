@@ -21,7 +21,7 @@ class EmptyCustomerInfoTests: XCTestCase {
 }
 
 class BasicCustomerInfoTests: XCTestCase {
-    let validSubscriberResponse = [
+    let validSubscriberResponse: [String: Any] = [
         "request_date": "2018-10-19T02:40:36Z",
         "request_date_ms": Int64(1563379533946),
         "subscriber": [
@@ -42,10 +42,13 @@ class BasicCustomerInfoTests: XCTestCase {
             "subscriptions": [
                 "onemonth_freetrial": [
                     "expires_date": "2100-08-30T02:40:36Z",
-                    "period_type": "normal"
+                    "period_type": "normal",
+                    "is_sandbox": false
                 ],
                 "threemonth_freetrial": [
-                    "expires_date": "1990-08-30T02:40:36Z"
+                    "period_type": "normal",
+                    "purchase_date": "2018-05-20T06:24:50Z",
+                    "expires_date": "2018-08-30T02:40:36Z"
                 ]
             ],
             "entitlements": [
@@ -66,7 +69,7 @@ class BasicCustomerInfoTests: XCTestCase {
                 ],
             ]
         ]
-    ] as [String : Any]
+    ]
 
     let validTwoProductsJSON = "{" +
             "\"request_date\": \"2018-05-20T06:24:50Z\"," +
@@ -92,8 +95,9 @@ class BasicCustomerInfoTests: XCTestCase {
         expect(self.customerInfo).toNot(beNil())
     }
 
-    func testParsesExpirationDate() {
-        let expireDate = customerInfo!.expirationDate(forProductIdentifier: "onemonth_freetrial")!
+    func testParsesExpirationDate() throws {
+        let customerInfo = try XCTUnwrap(self.customerInfo)
+        let expireDate = try XCTUnwrap(customerInfo.expirationDate(forProductIdentifier: "onemonth_freetrial"))
         expect(expireDate.timeIntervalSince1970).to(equal(4123276836))
     }
 
@@ -346,9 +350,16 @@ class BasicCustomerInfoTests: XCTestCase {
         expect(entitlements["old_pro"]).to(beNil());
     }
 
-    func testPurchaseDate() {
-        let purchaseDate = self.customerInfo!.purchaseDate(forEntitlement: "pro")
+    func testPurchaseDateForEntitlement() throws {
+        let customerInfo = try XCTUnwrap(self.customerInfo)
+        let purchaseDate = customerInfo.purchaseDate(forEntitlement: "pro")
         expect(purchaseDate).to(equal(Date(timeIntervalSinceReferenceDate: 562288673)))
+    }
+
+    func testPurchaseDateForProductIdentifier() throws {
+        let customerInfo = try XCTUnwrap(self.customerInfo)
+        let purchaseDate = try XCTUnwrap(customerInfo.purchaseDate(forProductIdentifier: "threemonth_freetrial"))
+        expect(purchaseDate) == Date(timeIntervalSince1970: 1526797490)
     }
 
     func testPurchaseDateEmpty() {
