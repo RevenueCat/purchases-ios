@@ -20,7 +20,30 @@ Swift Package Manager (SPM) integration is currently not working as expected. If
 
 **RevenueCat** is our next big release (what we've been calling Purchases V4). It is a rename of `Purchases` to `RevenueCat`, and now, 100% Swift. It contains all the same functionality (and almost exactly the same API) as `Purchases`. It's not a brand-new framework, but rather, a migration of the ObjC bits over to Swift with improved nullability, various bug fixes, and some new features. We're also going to be adding in `StoreKit2` support before we 🚢 it, too! The framework is nearly production-ready, but we're going to keep it in beta while we continue to work on the `StoreKit2` bits and iron out any remaining bugs folks find. Keep an eye out over the next few releases if you're excited to try out the `StoreKit2` integration- we'll announce when we add it to the beta 😄
 
-## Features
+### ⚠️ Beta build warning
+Are you here because you saw a build warning about being on the Beta?
+
+If you're cool being in the beta, there's nothing more for you to do 🎉
+If you think you've made a mistake:
+
+### Getting out of the beta 😿
+#### Swift package manager
+
+- You need to update the package's repo rules to use `3.0.0 < 4.0.0`
+
+#### Cocoapods
+
+- You need to use `Purchases` pod instead of `RevenueCat`
+
+#### Carthage
+
+- You need to use `github "RevenueCat/purchases-ios" ~> 3.12` in your `Cartfile`
+
+#### Direct Integration
+
+- You'll want to checkout one of the `3.x`[Purchases.framework tags](https://github.com/RevenueCat/purchases-ios/tags).
+
+## RevenueCat SDK Features
 |   | RevenueCat |
 | --- | --- |
 ✅ | Server-side receipt validation

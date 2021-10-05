@@ -62,6 +62,7 @@ platform :ios do
     
     files_to_update = [
       '../RevenueCat.podspec',
+      '../Purchases/Public/Purchases.swift',
       '../Purchases/Misc/SystemInfo.swift',
       '../.jazzy.yaml',
       '../.version',

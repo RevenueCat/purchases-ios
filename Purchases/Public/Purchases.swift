@@ -17,8 +17,6 @@ import Foundation
 import StoreKit
 
 // MARK: Block definitions
-// NOTE: Any changes here must be reflected in RevenueCat.h for ObjC compatibility.
-
 /**
  Completion block for ``Purchases/purchase(product:completion:)``
  */
@@ -38,6 +36,12 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
  */
 @objc(RCPurchases) public class Purchases: NSObject {
 
+#warning(
+    """
+    You're using a beta release (4.0.0-beta.3). If that's not intentional, you'll want to point to one of the \
+    3.x release tags, or a specific branch instead of `main` see https://rev.cat/v4rmd for more information.
+    """
+    )
     @objc(sharedPurchases)
     public static var shared: Purchases {
         guard let purchases = purchases else {
