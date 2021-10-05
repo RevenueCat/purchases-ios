@@ -699,6 +699,7 @@
 			isa = PBXGroup;
 			children = (
 				359E3ABD26FBE8AB0094617C /* Mocks */,
+				2D8FC8AB26E01AE70049A85C /* PurchasesOrchestratorTests.swift */,
 				35E1CE1F26E022C20008560A /* TrialOrIntroPriceEligibilityCheckerTests.swift */,
 				2D69384426DFF93300FCDBC0 /* ProductDetailsTests.swift */,
 				2D9C5EC926F2805C0057FC45 /* ProductsManagerTests.swift */,
@@ -1010,7 +1011,6 @@
 				F5BE4244269676E200254A30 /* StoreKitRequestFetcherTests.swift */,
 				37E352F86A0A8EB05BAD77C4 /* StoreKitWrapperTests.swift */,
 				3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */,
-				2D8FC8AB26E01AE70049A85C /* PurchasesOrchestratorTests.swift */,
 			);
 			path = Purchasing;
 			sourceTree = "<group>";

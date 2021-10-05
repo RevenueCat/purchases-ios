@@ -13,8 +13,8 @@
 
 import Foundation
 import Nimble
-import StoreKit
 @testable import RevenueCat
+import StoreKit
 import XCTest
 
 class PurchasesOrchestratorTests: StoreKitConfigTestCase {
@@ -38,7 +38,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         productsManager = MockProductsManager()
         storeKitWrapper = MockStoreKitWrapper()
-        systemInfo = try! MockSystemInfo(platformFlavor: "xyz",
+        systemInfo = try MockSystemInfo(platformFlavor: "xyz",
                                          platformFlavorVersion: "1.2.3",
                                          finishTransactions: true)
         operationDispatcher = MockOperationDispatcher()
@@ -197,7 +197,9 @@ private extension PurchasesOrchestratorTests {
     @MainActor
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func fetchSk2Product() async throws -> SK2Product {
-        return try! await StoreKit.Product.products(for: ["com.revenuecat.monthly_4.99.1_week_intro"]).first!
+        let products: [Any] = try await StoreKit.Product.products(for: ["com.revenuecat.monthly_4.99.1_week_intro"])
+        let firstProduct = try XCTUnwrap(products.first)
+        return try XCTUnwrap(firstProduct as? SK2Product)
     }
 
     @MainActor
@@ -205,8 +207,8 @@ private extension PurchasesOrchestratorTests {
     func fetchSk2ProductDetails() async throws -> SK2ProductDetails {
         // can't store SK2ProductDetails directly because it causes linking issues on older OS versions
         // https://openradar.appspot.com/radar?id=4970535809187840
-        let sk2Product: Any = try! await fetchSk2Product()
-        return SK2ProductDetails(sk2Product: sk2Product as! SK2Product)
+        let sk2Product: Any = try await fetchSk2Product()
+        return try SK2ProductDetails(sk2Product: try XCTUnwrap(sk2Product as? SK2Product))
     }
 
     var mockPurchaserInfo: PurchaserInfo {
