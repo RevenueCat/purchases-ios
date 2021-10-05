@@ -286,7 +286,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                 presentedOfferingIdentifier: nil,
                                 observerMode: false,
                                 subscriberAttributes: subscriberAttributesByKey,
-                                completion: { (purchaserInfo, error) in
+                                completion: { (customerInfo, error) in
                                     completionCallCount += 1
                                 })
 
@@ -323,7 +323,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                 presentedOfferingIdentifier: nil,
                                 observerMode: false,
                                 subscriberAttributes: nil,
-                                completion: { (purchaserInfo, error) in
+                                completion: { (customerInfo, error) in
                                      completionCallCount += 1
                                 })
 
@@ -361,7 +361,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                 presentedOfferingIdentifier: nil,
                                 observerMode: false,
                                 subscriberAttributes: subscriberAttributesByKey,
-                                completion: { (purchaserInfo, error) in
+                                completion: { (customerInfo, error) in
                                     completionCallCount += 1
                                     receivedError = error as NSError?
                                 })
@@ -398,7 +398,7 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                 presentedOfferingIdentifier: nil,
                                 observerMode: false,
                                 subscriberAttributes: subscriberAttributesByKey,
-                                completion: { (purchaserInfo, error) in
+                                completion: { (customerInfo, error) in
                                     completionCallCount += 1
                                     receivedError = error as NSError?
                                 })

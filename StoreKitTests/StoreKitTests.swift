@@ -12,10 +12,10 @@ import Nimble
 import StoreKitTest
 
 class TestPurchaseDelegate: NSObject, PurchasesDelegate {
-    var purchaserInfo: PurchaserInfo?
+    var purchaserInfo: CustomerInfo?
     var purchaserInfoUpdateCount = 0
 
-    func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) {
+    func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: CustomerInfo) {
         self.purchaserInfo = purchaserInfo
         purchaserInfoUpdateCount += 1
     }
@@ -234,7 +234,7 @@ class StoreKitTests: XCTestCase {
 
 private extension StoreKitTests {
 
-    func purchaseMonthlyOffering(completion: ((PurchaserInfo?, Error?) -> Void)? = nil) {
+    func purchaseMonthlyOffering(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
         Purchases.shared.offerings { offerings, error in
             expect(error).to(beNil())
 
@@ -273,7 +273,7 @@ private extension StoreKitTests {
             .toEventually(equal(1), timeout: .seconds(10))
     }
 
-    func assertNoPurchases(_ purchaserInfo: PurchaserInfo?) {
+    func assertNoPurchases(_ purchaserInfo: CustomerInfo?) {
         expect(purchaserInfo?.entitlements.all.count) == 0
     }
 }

@@ -13,14 +13,14 @@ class IdentityManagerTests: XCTestCase {
     private var identityManager: IdentityManager!
     private var mockDeviceCache: MockDeviceCache!
     private let mockBackend = MockBackend()
-    private let mockPurchaserInfoManager = MockPurchaserInfoManager(operationDispatcher: MockOperationDispatcher(),
+    private let mockCustomerInfoManager = MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
                                                                     deviceCache: MockDeviceCache(),
                                                                     backend: MockBackend(),
                                                                     systemInfo: try! MockSystemInfo(platformFlavor: nil,
                                                                                                platformFlavorVersion: nil,
                                                                                                finishTransactions: false))
 
-    let mockPurchaserInfo = PurchaserInfo(data: [
+    let mockCustomerInfo = CustomerInfo(data: [
         "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
             "first_seen": "2019-07-17T00:05:54Z",
@@ -34,7 +34,7 @@ class IdentityManagerTests: XCTestCase {
         self.mockDeviceCache = MockDeviceCache()
         self.identityManager = IdentityManager(deviceCache: mockDeviceCache,
                                                backend: mockBackend,
-                                               purchaserInfoManager: mockPurchaserInfoManager)
+                                               customerInfoManager: mockCustomerInfoManager)
     }
 
     func testConfigureWithAnonymousUserIDGeneratesAnAppUserID() {
@@ -184,19 +184,19 @@ class IdentityManagerTests: XCTestCase {
     func testLogInFailsIfEmptyAppUserID() {
         var completionCalled: Bool = false
         var receivedCreated: Bool = false
-        var receivedPurchaserInfo: PurchaserInfo?
+        var receivedCustomerInfo: CustomerInfo?
         var receivedError: Error?
-        identityManager.logIn(appUserID: ""){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: ""){ customerInfo, created, error in
             completionCalled = true
             receivedCreated = created
-            receivedPurchaserInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedError = error
         }
 
         expect(completionCalled).toEventually(beTrue())
 
         expect(receivedCreated) == false
-        expect(receivedPurchaserInfo).to(beNil())
+        expect(receivedCustomerInfo).to(beNil())
         expect(receivedError).toNot(beNil())
 
         let receivedNSError = (receivedError! as NSError)
@@ -204,48 +204,48 @@ class IdentityManagerTests: XCTestCase {
     }
 
 
-    func testLogInWithSameAppUserIDFetchesPurchaserInfo() {
+    func testLogInWithSameAppUserIDFetchesCustomerInfo() {
         var completionCalled: Bool = false
         let appUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = appUserID
-        identityManager.logIn(appUserID: appUserID){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: appUserID){ customerInfo, created, error in
             completionCalled = true
         }
 
         expect(completionCalled).toEventually(beTrue())
 
         expect(self.mockBackend.invokedLogInCount) == 0
-        expect(self.mockPurchaserInfoManager.invokedPurchaserInfoCount) == 1
+        expect(self.mockCustomerInfoManager.invokedCustomerInfoCount) == 1
     }
 
-    func testLogInWithSameAppUserIDPassesBackendPurchaserInfoErrors() {
+    func testLogInWithSameAppUserIDPassesBackendCustomerInfoErrors() {
         var completionCalled: Bool = false
         let appUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = appUserID
         var receivedCreated: Bool = true
-        var receivedPurchaserInfo: PurchaserInfo?
+        var receivedCustomerInfo: CustomerInfo?
         var receivedError: NSError?
 
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
 
-        self.mockPurchaserInfoManager.stubbedError = stubbedError
-        identityManager.logIn(appUserID: appUserID){ purchaserInfo, created, error in
+        self.mockCustomerInfoManager.stubbedError = stubbedError
+        identityManager.logIn(appUserID: appUserID){ customerInfo, created, error in
             completionCalled = true
             receivedCreated = created
-            receivedPurchaserInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedError = error as NSError?
         }
 
         expect(completionCalled).toEventually(beTrue())
 
         expect(receivedCreated) == false
-        expect(receivedPurchaserInfo).to(beNil())
+        expect(receivedCustomerInfo).to(beNil())
         expect(receivedError) == stubbedError
 
         expect(self.mockBackend.invokedLogInCount) == 0
-        expect(self.mockPurchaserInfoManager.invokedPurchaserInfoCount) == 1
+        expect(self.mockCustomerInfoManager.invokedCustomerInfoCount) == 1
     }
 
     func testLogInCallsBackendLogin() {
@@ -254,26 +254,26 @@ class IdentityManagerTests: XCTestCase {
         let newAppUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = oldAppUserID
         var receivedCreated: Bool = false
-        var receivedPurchaserInfo: PurchaserInfo?
+        var receivedCustomerInfo: CustomerInfo?
         var receivedError: NSError?
 
-        self.mockBackend.stubbedLogInCompletionResult = (mockPurchaserInfo, true, nil)
+        self.mockBackend.stubbedLogInCompletionResult = (mockCustomerInfo, true, nil)
 
-        identityManager.logIn(appUserID: newAppUserID){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: newAppUserID){ customerInfo, created, error in
             completionCalled = true
             receivedCreated = created
-            receivedPurchaserInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedError = error as NSError?
         }
 
         expect(completionCalled).toEventually(beTrue())
 
         expect(receivedCreated).to(equal(true))
-        expect(receivedPurchaserInfo).to(equal(mockPurchaserInfo))
+        expect(receivedCustomerInfo).to(equal(mockCustomerInfo))
         expect(receivedError).to(beNil())
 
         expect(self.mockBackend.invokedLogInCount) == 1
-        expect(self.mockPurchaserInfoManager.invokedPurchaserInfoCount) == 0
+        expect(self.mockCustomerInfoManager.invokedCustomerInfoCount) == 0
     }
 
     func testLogInPassesBackendLoginErrors() {
@@ -282,7 +282,7 @@ class IdentityManagerTests: XCTestCase {
         let newAppUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = oldAppUserID
         var receivedCreated: Bool = false
-        var receivedPurchaserInfo: PurchaserInfo?
+        var receivedCustomerInfo: CustomerInfo?
         var receivedError: NSError?
 
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
@@ -290,26 +290,26 @@ class IdentityManagerTests: XCTestCase {
                                    userInfo: [:])
         self.mockBackend.stubbedLogInCompletionResult = (nil, false, stubbedError)
 
-        self.mockPurchaserInfoManager.stubbedError = stubbedError
+        self.mockCustomerInfoManager.stubbedError = stubbedError
 
-        identityManager.logIn(appUserID: newAppUserID){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: newAppUserID){ customerInfo, created, error in
             completionCalled = true
             receivedCreated = created
-            receivedPurchaserInfo = purchaserInfo
+            receivedCustomerInfo = customerInfo
             receivedError = error as NSError?
         }
 
         expect(completionCalled).toEventually(beTrue())
 
         expect(receivedCreated) == false
-        expect(receivedPurchaserInfo).to(beNil())
+        expect(receivedCustomerInfo).to(beNil())
         expect(receivedError) == stubbedError
 
         expect(self.mockBackend.invokedLogInCount) == 1
-        expect(self.mockPurchaserInfoManager.invokedPurchaserInfoCount) == 0
+        expect(self.mockCustomerInfoManager.invokedCustomerInfoCount) == 0
 
         expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == false
-        expect(self.mockPurchaserInfoManager.invokedCachedPurchaserInfo) == false
+        expect(self.mockCustomerInfoManager.invokedCachedCustomerInfo) == false
     }
 
     func testLogInClearsCachesIfSuccessful() {
@@ -318,9 +318,9 @@ class IdentityManagerTests: XCTestCase {
         let newAppUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = oldAppUserID
 
-        self.mockBackend.stubbedLogInCompletionResult = (mockPurchaserInfo, true, nil)
+        self.mockBackend.stubbedLogInCompletionResult = (mockCustomerInfo, true, nil)
 
-        identityManager.logIn(appUserID: newAppUserID){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: newAppUserID){ customerInfo, created, error in
             completionCalled = true
         }
 
@@ -329,23 +329,23 @@ class IdentityManagerTests: XCTestCase {
         expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == true
     }
 
-    func testLogInCachesNewPurchaserInfoIfSuccessful() {
+    func testLogInCachesNewCustomerInfoIfSuccessful() {
         var completionCalled: Bool = false
         let oldAppUserID = "anonymous"
         let newAppUserID = "myUser"
         mockDeviceCache.stubbedAppUserID = oldAppUserID
 
-        self.mockBackend.stubbedLogInCompletionResult = (mockPurchaserInfo, true, nil)
+        self.mockBackend.stubbedLogInCompletionResult = (mockCustomerInfo, true, nil)
 
-        identityManager.logIn(appUserID: newAppUserID){ purchaserInfo, created, error in
+        identityManager.logIn(appUserID: newAppUserID){ customerInfo, created, error in
             completionCalled = true
         }
 
         expect(completionCalled).toEventually(beTrue())
 
-        expect(self.mockPurchaserInfoManager.invokedCachePurchaserInfo) == true
-        expect(self.mockPurchaserInfoManager.invokedCachePurchaserInfoParameters?.info) == mockPurchaserInfo
-        expect(self.mockPurchaserInfoManager.invokedCachePurchaserInfoParameters?.appUserID) == newAppUserID
+        expect(self.mockCustomerInfoManager.invokedCacheCustomerInfo) == true
+        expect(self.mockCustomerInfoManager.invokedCacheCustomerInfoParameters?.info) == mockCustomerInfo
+        expect(self.mockCustomerInfoManager.invokedCacheCustomerInfoParameters?.appUserID) == newAppUserID
     }
 
     func testLogOutCallsCompletionWithErrorIfUserAnonymous() {

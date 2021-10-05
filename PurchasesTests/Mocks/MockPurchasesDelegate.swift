@@ -9,12 +9,12 @@ import StoreKit
 
 public class MockPurchasesDelegate: NSObject, PurchasesDelegate {
 
-    var purchaserInfo: PurchaserInfo?
-    var purchaserInfoReceivedCount = 0
+    var customerInfo: CustomerInfo?
+    var customerInfoReceivedCount = 0
 
-    public func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) {
-        purchaserInfoReceivedCount += 1
-        self.purchaserInfo = purchaserInfo
+    public func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
+        customerInfoReceivedCount += 1
+        self.customerInfo = customerInfo
     }
 
     var promoProduct: SKProduct?

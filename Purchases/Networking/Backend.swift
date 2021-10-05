@@ -14,12 +14,12 @@
 import Foundation
 
 typealias SubscriberAttributeDict = [String: SubscriberAttribute]
-typealias BackendPurchaserInfoResponseHandler = (PurchaserInfo?, Error?) -> Void
+typealias BackendCustomerInfoResponseHandler = (CustomerInfo?, Error?) -> Void
 typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], Error?) -> Void
 typealias OfferingsResponseHandler = ([String: Any]?, Error?) -> Void
 typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumber?, Error?) -> Void
 typealias PostRequestResponseHandler = (Error?) -> Void
-typealias IdentifyResponseHandler = (PurchaserInfo?, Bool, Error?) -> Void
+typealias IdentifyResponseHandler = (CustomerInfo?, Bool, Error?) -> Void
 
 // swiftlint:disable type_body_length file_length
 class Backend {
@@ -34,7 +34,7 @@ class Backend {
     // callbackQueue controls access to callbackCaches
     private let callbackQueue = DispatchQueue(label: "Backend callbackQueue")
     private var offeringsCallbacksCache: [String: [OfferingsResponseHandler]]
-    private var purchaserInfoCallbacksCache: [String: [BackendPurchaserInfoResponseHandler]]
+    private var customerInfoCallbacksCache: [String: [BackendCustomerInfoResponseHandler]]
     private var createAliasCallbacksCache: [String: [PostRequestResponseHandler?]]
     private var identifyCallbacksCache: [String: [IdentifyResponseHandler]]
 
@@ -52,7 +52,7 @@ class Backend {
         self.httpClient = httpClient
         self.apiKey = apiKey
         self.offeringsCallbacksCache = [:]
-        self.purchaserInfoCallbacksCache = [:]
+        self.customerInfoCallbacksCache = [:]
         self.createAliasCallbacksCache = [:]
         self.identifyCallbacksCache = [:]
     }
@@ -93,7 +93,7 @@ class Backend {
               presentedOfferingIdentifier offeringIdentifier: String?,
               observerMode: Bool,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
-              completion: @escaping BackendPurchaserInfoResponseHandler) {
+              completion: @escaping BackendCustomerInfoResponseHandler) {
         // swiftlint:enable function_parameter_count
         let fetchToken = receiptData.asFetchToken
         var body: [String: Any] = [
@@ -130,14 +130,14 @@ class Backend {
                                       path: "/receipts",
                                       requestBody: body,
                                       headers: authHeaders) { statusCode, response, error in
-            let callbacks = self.getPurchaserInfoCallbacksAndClearCache(forKey: cacheKey)
+            let callbacks = self.getCustomerInfoCallbacksAndClearCache(forKey: cacheKey)
             for callback in callbacks {
-                self.handle(purchaserInfoResponse: response, statusCode: statusCode, error: error, completion: callback)
+                self.handle(customerInfoResponse: response, statusCode: statusCode, error: error, completion: callback)
             }
         }
     }
 
-    func getSubscriberData(appUserID: String, completion: @escaping BackendPurchaserInfoResponseHandler) {
+    func getSubscriberData(appUserID: String, completion: @escaping BackendCustomerInfoResponseHandler) {
         guard let appUserID = try? escapedAppUserID(appUserID: appUserID) else {
             completion(nil, ErrorUtils.missingAppUserIDError())
             return
@@ -156,8 +156,8 @@ class Backend {
                 return
             }
 
-            for completion in self.getPurchaserInfoCallbacksAndClearCache(forKey: path) {
-                self.handle(purchaserInfoResponse: response,
+            for completion in self.getCustomerInfoCallbacksAndClearCache(forKey: path) {
+                self.handle(customerInfoResponse: response,
                             statusCode: statusCode,
                             error: error,
                             completion: completion)
@@ -461,7 +461,7 @@ private extension Backend {
             return
         }
 
-        guard let response = response, let purchaserInfo = PurchaserInfo(data: response) else {
+        guard let response = response, let customerInfo = CustomerInfo(data: response) else {
             let responseError = ErrorUtils.unexpectedBackendResponseError()
             completion(nil, false, responseError)
             return
@@ -469,7 +469,7 @@ private extension Backend {
 
         let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
         Logger.user(Strings.identity.login_success)
-        completion(purchaserInfo, created, nil)
+        completion(customerInfo, created, nil)
     }
 
     func attributesUserInfoFromResponse(response: [String: Any], statusCode: Int) -> [String: Any] {
@@ -538,10 +538,10 @@ private extension Backend {
         completion?(nil)
     }
 
-    func handle(purchaserInfoResponse response: [String: Any]?,
+    func handle(customerInfoResponse response: [String: Any]?,
                 statusCode: Int,
                 error: Error?,
-                completion: BackendPurchaserInfoResponseHandler) {
+                completion: BackendCustomerInfoResponseHandler) {
         if let error = error {
             completion(nil, ErrorUtils.networkError(withUnderlyingError: error))
             return
@@ -549,8 +549,8 @@ private extension Backend {
 
         let isErrorStatusCode = statusCode >= HTTPStatusCodes.redirect.rawValue
 
-        let maybePurchaserInfo: PurchaserInfo? = response == nil ? nil : PurchaserInfo(data: response!)
-        if !isErrorStatusCode && maybePurchaserInfo == nil {
+        let maybeCustomerInfo: CustomerInfo? = response == nil ? nil : CustomerInfo(data: response!)
+        if !isErrorStatusCode && maybeCustomerInfo == nil {
             completion(nil, ErrorUtils.unexpectedBackendResponseError())
             return
         }
@@ -569,11 +569,11 @@ private extension Backend {
             let responseError = ErrorUtils.backendError(withBackendCode: code,
                                                         backendMessage: message,
                                                         extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
-            completion(maybePurchaserInfo, responseError)
+            completion(maybeCustomerInfo, responseError)
             return
         }
 
-        completion(maybePurchaserInfo, nil)
+        completion(maybeCustomerInfo, nil)
     }
 
     func escapedAppUserID(appUserID: String) throws -> String {
@@ -626,15 +626,15 @@ private extension Backend {
 
     // MARK: Callback cache management
 
-    func add(callback: @escaping BackendPurchaserInfoResponseHandler, key: String) -> CallbackCacheStatus {
+    func add(callback: @escaping BackendCustomerInfoResponseHandler, key: String) -> CallbackCacheStatus {
         return callbackQueue.sync { [self] in
-            var callbacksForKey = purchaserInfoCallbacksCache[key] ?? []
+            var callbacksForKey = customerInfoCallbacksCache[key] ?? []
             let cacheStatus: CallbackCacheStatus = !callbacksForKey.isEmpty
                 ? .addedToExistingInFlightList
                 : .firstCallbackAddedToList
 
             callbacksForKey.append(callback)
-            purchaserInfoCallbacksCache[key] = callbacksForKey
+            customerInfoCallbacksCache[key] = callbacksForKey
             return cacheStatus
         }
     }
@@ -686,9 +686,9 @@ private extension Backend {
         }
     }
 
-    func getPurchaserInfoCallbacksAndClearCache(forKey key: String) -> [BackendPurchaserInfoResponseHandler] {
+    func getCustomerInfoCallbacksAndClearCache(forKey key: String) -> [BackendCustomerInfoResponseHandler] {
         return callbackQueue.sync { [self] in
-            let callbacks = purchaserInfoCallbacksCache.removeValue(forKey: key)
+            let callbacks = customerInfoCallbacksCache.removeValue(forKey: key)
             assert(callbacks != nil)
             return callbacks ?? []
         }

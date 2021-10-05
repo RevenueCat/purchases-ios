@@ -26,9 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
                            appUserID:@"integrationTest"];
 }
 
-- (void)purchaserInfoWithCompletion:(void (^)(RCPurchaserInfo * _Nullable, NSError * _Nullable))completion
-NS_SWIFT_NAME(purchaserInfo(_:)) {
-    [RCPurchases.sharedPurchases purchaserInfoWithCompletion:completion];
+- (void)customerInfoWithCompletion:(void (^)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion
+NS_SWIFT_NAME(customerInfo(_:)) {
+    [RCPurchases.sharedPurchases customerInfoWithCompletion:completion];
 }
 
 @end

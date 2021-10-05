@@ -37,12 +37,12 @@ class IdentityManager {
 
     private let deviceCache: DeviceCache
     private let backend: Backend
-    private let purchaserInfoManager: PurchaserInfoManager
+    private let customerInfoManager: CustomerInfoManager
 
-    init(deviceCache: DeviceCache, backend: Backend, purchaserInfoManager: PurchaserInfoManager) {
+    init(deviceCache: DeviceCache, backend: Backend, customerInfoManager: CustomerInfoManager) {
         self.deviceCache = deviceCache
         self.backend = backend
-        self.purchaserInfoManager = purchaserInfoManager
+        self.customerInfoManager = customerInfoManager
     }
 
     func configure(appUserID maybeAppUserID: String?) {
@@ -56,7 +56,7 @@ class IdentityManager {
         deviceCache.cleanupSubscriberAttributes()
     }
 
-    func logIn(appUserID: String, completion: @escaping (PurchaserInfo?, Bool, Error?) -> Void) {
+    func logIn(appUserID: String, completion: @escaping (CustomerInfo?, Bool, Error?) -> Void) {
         let newAppUserID = appUserID.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !newAppUserID.isEmpty else {
             Logger.error(Strings.identity.logging_in_with_nil_appuserid)
@@ -66,21 +66,21 @@ class IdentityManager {
 
         guard newAppUserID != currentAppUserID else {
             Logger.warn(Strings.identity.logging_in_with_same_appuserid)
-            purchaserInfoManager.purchaserInfo(appUserID: currentAppUserID) { maybePurchaserInfo, maybeError in
-                completion(maybePurchaserInfo, false, maybeError)
+            customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
+                completion(maybeCustomerInfo, false, maybeError)
             }
             return
         }
 
         backend.logIn(currentAppUserID: currentAppUserID,
-                      newAppUserID: newAppUserID) { maybePurchaserInfo, created, maybeError in
+                      newAppUserID: newAppUserID) { maybeCustomerInfo, created, maybeError in
             if maybeError == nil,
-               let purchaserInfo = maybePurchaserInfo {
+               let customerInfo = maybeCustomerInfo {
                 self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID, andSaveWithNewUserID: newAppUserID)
-                self.purchaserInfoManager.cache(purchaserInfo: purchaserInfo, appUserID: newAppUserID)
+                self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
             }
 
-            completion(maybePurchaserInfo, created, maybeError)
+            completion(maybeCustomerInfo, created, maybeError)
         }
     }
 

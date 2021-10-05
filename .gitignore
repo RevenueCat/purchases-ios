@@ -24,7 +24,10 @@ DerivedData/
 .idea/
 Carthage
 .DS_Store
+.ruby-version
+.bundle/
 .build/
+vendor/
 CarthageUploads
 *.bck
 **/fastlane/report.xml

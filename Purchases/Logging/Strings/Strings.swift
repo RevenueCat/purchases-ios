@@ -20,7 +20,7 @@ enum Strings {
     static let network = NetworkStrings.self
     static let offering = OfferingStrings.self
     static let purchase = PurchaseStrings.self
-    static let purchaserInfo = PurchaserInfoStrings.self
+    static let customerInfo = CustomerInfoStrings.self
     static let receipt = ReceiptStrings.self
     static let restore = RestoreStrings.self
     static let codable = CodableStrings.self

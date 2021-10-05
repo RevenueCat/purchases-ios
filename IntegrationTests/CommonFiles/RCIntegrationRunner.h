@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-@class RCPurchaserInfo;
+@class RCCustomerInfo;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -14,8 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)start;
 
-- (void)purchaserInfoWithCompletion:(void (^)(RCPurchaserInfo * _Nullable, NSError * _Nullable))completion
-NS_SWIFT_NAME(purchaserInfo(_:));
+- (void)customerInfoWithCompletion:(void (^)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion
+NS_SWIFT_NAME(customerInfo(_:));
 
 @end
 
