@@ -121,8 +121,8 @@ jobs:
       - run:
           name: pre-warm simulator
           command:  |
-              open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID "iPhone 8"
-              open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID "iPhone 12"
+              open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID "iPhone 8 (14.5)"
+              open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID "iPhone 12 (15.0)"
               open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID "Apple TV"
       - install-dependencies
       
