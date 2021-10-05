@@ -53,10 +53,11 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         receiptParser = MockReceiptParser()
         let attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                         systemInfo: systemInfo)
-        subscriberAttributesManager = MockSubscriberAttributesManager(backend: backend,
-                                                                      deviceCache: deviceCache,
-                                                                      attributionFetcher: attributionFetcher,
-                                                                      attributionDataMigrator: MockAttributionDataMigrator())
+        subscriberAttributesManager = MockSubscriberAttributesManager(
+            backend: backend,
+            deviceCache: deviceCache,
+            attributionFetcher: attributionFetcher,
+            attributionDataMigrator: MockAttributionDataMigrator())
 
         orchestrator = PurchasesOrchestrator(productsManager: productsManager,
                                              storeKitWrapper: storeKitWrapper,
@@ -73,7 +74,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             orchestrator.storeKit2Listener = MockStoreKit2Listener()
         }
     }
-    
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageReturnsCorrectValues() async throws {
 
@@ -124,7 +125,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               productDetails: productDetails,
                               offeringIdentifier: "offering")
 
-        let _ = await withCheckedContinuation { continuation in
+        _ = await withCheckedContinuation { continuation in
             orchestrator.purchase(package: package) { transaction, purchaserInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, purchaserInfo, error, userCancelled))
             }
@@ -149,7 +150,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               productDetails: productDetails,
                               offeringIdentifier: "offering")
 
-        let _ = await withCheckedContinuation { continuation in
+        _ = await withCheckedContinuation { continuation in
             orchestrator.purchase(package: package) { transaction, purchaserInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, purchaserInfo, error, userCancelled))
             }
@@ -208,7 +209,7 @@ private extension PurchasesOrchestratorTests {
         // can't store SK2ProductDetails directly because it causes linking issues on older OS versions
         // https://openradar.appspot.com/radar?id=4970535809187840
         let sk2Product: Any = try await fetchSk2Product()
-        return try SK2ProductDetails(sk2Product: try XCTUnwrap(sk2Product as? SK2Product))
+        return SK2ProductDetails(sk2Product: try XCTUnwrap(sk2Product as? SK2Product))
     }
 
     var mockPurchaserInfo: PurchaserInfo {
