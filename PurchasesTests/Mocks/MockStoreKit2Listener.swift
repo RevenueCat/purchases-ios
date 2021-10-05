@@ -54,8 +54,11 @@ class MockStoreKit2Listener: StoreKit2TransactionListener {
 
     var invokedHandle = false
     var invokedHandleCount = 0
-    var invokedHandleParameters: (purchaseResult: StoreKit.Product.PurchaseResult, Void)?
-    var invokedHandleParametersList = [(purchaseResult: StoreKit.Product.PurchaseResult, Void)]()
+    // purchaseResult will always be an instance of StoreKit.Product.PurchaseResult
+    // but we can't store it directly as a property.
+    // see https://openradar.appspot.com/radar?id=4970535809187840
+    var invokedHandleParameters: (purchaseResult: Any, Void)?
+    var invokedHandleParametersList = [(purchaseResult: Any, Void)]()
 
     override func handle(purchaseResult: StoreKit.Product.PurchaseResult) async {
         invokedHandle = true
