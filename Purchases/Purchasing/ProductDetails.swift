@@ -68,11 +68,20 @@ public typealias SK2Product = StoreKit.Product
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 @objc(RCSK2ProductDetails) public class SK2ProductDetails: ProductDetails {
 
-    init(sk2Product: StoreKit.Product) {
-        self.underlyingSK2Product = sk2Product
+    init(sk2Product: SK2Product) {
+        self._underlyingSK2Product = sk2Product
     }
 
-    public let underlyingSK2Product: StoreKit.Product
+    // We can't directly store instances of StoreKit.Product, since that causes
+    // linking issues in iOS < 15, even with @available checks correctly in place.
+    // So instead, we store the underlying product as Any and wrap it with casting.
+    // https://openradar.appspot.com/radar?id=4970535809187840
+    private var _underlyingSK2Product: Any
+    public var underlyingSK2Product: SK2Product {
+        // swiftlint:disable:next force_cast
+        get { _underlyingSK2Product as! SK2Product }
+        set { _underlyingSK2Product = newValue }
+    }
 
     @objc public override var localizedDescription: String { underlyingSK2Product.description }
 
