@@ -84,8 +84,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         purchaserInfoManager.stubbedCachedPurchaserInfoResult = mockPurchaserInfo
         backend.stubbedPostReceiptPurchaserInfo = mockPurchaserInfo
 
-        let sk2Product = try! await fetchSk2Product()
-        let productDetails = SK2ProductDetails(sk2Product: sk2Product)
+        let productDetails = try await fetchSk2ProductDetails()
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               productDetails: productDetails,
@@ -119,8 +118,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         purchaserInfoManager.stubbedCachedPurchaserInfoResult = mockPurchaserInfo
         backend.stubbedPostReceiptPurchaserInfo = mockPurchaserInfo
 
-        let sk2Product = try! await fetchSk2Product()
-        let productDetails = SK2ProductDetails(sk2Product: sk2Product)
+        let productDetails = try await fetchSk2ProductDetails()
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               productDetails: productDetails,
@@ -145,8 +143,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         purchaserInfoManager.stubbedCachedPurchaserInfoResult = mockPurchaserInfo
         backend.stubbedPostReceiptPurchaserInfo = mockPurchaserInfo
 
-        let sk2Product = try! await fetchSk2Product()
-        let productDetails = SK2ProductDetails(sk2Product: sk2Product)
+        let productDetails = try await fetchSk2ProductDetails()
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               productDetails: productDetails,
@@ -172,8 +169,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         purchaserInfoManager.stubbedCachedPurchaserInfoResult = mockPurchaserInfo
         backend.stubbedPostReceiptPurchaserInfo = mockPurchaserInfo
 
-        let sk2Product = try! await fetchSk2Product()
-        let productDetails = SK2ProductDetails(sk2Product: sk2Product)
+        let productDetails = try await fetchSk2ProductDetails()
         let package = Package(identifier: "package",
                               packageType: .monthly,
                               productDetails: productDetails,
@@ -202,6 +198,15 @@ private extension PurchasesOrchestratorTests {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func fetchSk2Product() async throws -> SK2Product {
         return try! await StoreKit.Product.products(for: ["com.revenuecat.monthly_4.99.1_week_intro"]).first!
+    }
+
+    @MainActor
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func fetchSk2ProductDetails() async throws -> SK2ProductDetails {
+        // can't store SK2ProductDetails directly because it causes linking issues on older OS versions
+        // https://openradar.appspot.com/radar?id=4970535809187840
+        let sk2Product: Any = try! await fetchSk2Product()
+        return SK2ProductDetails(sk2Product: sk2Product as! SK2Product)
     }
 
     var mockPurchaserInfo: PurchaserInfo {
