@@ -350,15 +350,16 @@ class BasicPurchaserInfoTests: XCTestCase {
         expect(entitlements["old_pro"]).to(beNil());
     }
 
-    func testPurchaseDateForEntitlement() {
-        let purchaseDate = self.purchaserInfo!.purchaseDate(forEntitlement: "pro")
+    func testPurchaseDateForEntitlement() throws {
+        let purchaserInfo = try XCTUnwrap(self.purchaserInfo)
+        let purchaseDate = purchaserInfo.purchaseDate(forEntitlement: "pro")
         expect(purchaseDate).to(equal(Date(timeIntervalSinceReferenceDate: 562288673)))
     }
 
     func testPurchaseDateForProductIdentifier() throws {
         let purchaserInfo = try XCTUnwrap(self.purchaserInfo)
         let purchaseDate = try XCTUnwrap(purchaserInfo.purchaseDate(forProductIdentifier: "threemonth_freetrial"))
-        expect(purchaseDate).to(equal(Date(timeIntervalSince1970: 1526797490)))
+        expect(purchaseDate) == Date(timeIntervalSince1970: 1526797490)
     }
 
     func testPurchaseDateEmpty() {
