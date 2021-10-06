@@ -29,7 +29,8 @@ If you think you've made a mistake:
 ### Getting out of the beta 😿
 #### Swift package manager
 
-- You need to update the package's repo rules to use `3.0.0 < 4.0.0`
+- First, you'll need to remove the ReveneCat package from your project.
+- Next, re-add it, but make sure you update the package's repo rules to use `3.0.0 < 4.0.0`
 
 #### Cocoapods
 
@@ -41,7 +42,12 @@ If you think you've made a mistake:
 
 #### Direct Integration
 
-- You'll want to checkout one of the `3.x`[Purchases.framework tags](https://github.com/RevenueCat/purchases-ios/tags).
+- You'll want to check out one of the `3.x`[Purchases.framework tags](https://github.com/RevenueCat/purchases-ios/tags).
+
+#### After you get out of the beta
+
+Once you revert to version 3 of the framework you'll need to do a reverse migration. While not explicitly outlined in our [API updates doc](https://rev.cat/uet).
+You can see the differences between v3 and V4. The changes are mostly naming updates, so don't worry about having to refactor things beyond that.
 
 ## RevenueCat SDK Features
 |   | RevenueCat |
