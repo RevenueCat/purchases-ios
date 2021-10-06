@@ -153,6 +153,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Update Swift Package Commit
+          command: bundle exec fastlane update_swift_package_commit
+      - run:
           name: Build SwiftAPITester
           command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme SwiftAPITester
 
@@ -163,6 +166,9 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
+      - run:
+          name: Update Swift Package Commit
+          command: bundle exec fastlane update_swift_package_commit
       - run:
           name: Build ObjCAPITester
           command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme ObjCAPITester
