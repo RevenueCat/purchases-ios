@@ -29,7 +29,7 @@ checkOfferingAPI()
 
 checkOfferingsAPI()
 
-checkPurchaserInfoAPI()
+checkCustomerInfoAPI()
 
 checkPurchasesAPI()
 checkPurchasesConstants()

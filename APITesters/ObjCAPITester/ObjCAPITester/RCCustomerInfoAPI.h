@@ -1,5 +1,5 @@
 //
-//  RCPurchaserInfoAPI.h
+//  RCCustomerInfoAPI.h
 //  Purchases
 //
 //  Created by Madeline Beyl on 7/9/21.
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RCPurchaserInfoAPI : NSObject
+@interface RCCustomerInfoAPI : NSObject
 
 + (void)checkAPI;
 

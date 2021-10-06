@@ -1,20 +1,20 @@
 //
-//  RCPurchaserInfoAPI.m
+//  RCCustomerInfoAPI.m
 //  Purchases
 //
 //  Created by Madeline Beyl on 7/9/21.
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
-#import "RCPurchaserInfoAPI.h"
+#import "RCCustomerInfoAPI.h"
 
 @import RevenueCat;
 
-@implementation RCPurchaserInfoAPI
+@implementation RCCustomerInfoAPI
 
 + (void)checkAPI {
-    // RCPurchaserInfo initializer is publically unavailable.
-    RCPurchaserInfo *pi = nil;
+    // RCCustomerInfo initializer is publically unavailable.
+    RCCustomerInfo *pi = nil;
     RCEntitlementInfos *ei = pi.entitlements;
     NSSet<NSString *> *as = pi.activeSubscriptions;
     NSSet<NSString *> *appis = pi.allPurchasedProductIdentifiers;

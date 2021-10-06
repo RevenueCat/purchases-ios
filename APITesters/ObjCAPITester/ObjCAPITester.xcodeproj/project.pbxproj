@@ -17,7 +17,7 @@
 		A5D614FF26EBE84F007DDB75 /* RCAttributionNetworkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */; };
 		A5D6150026EBE84F007DDB75 /* RCPurchasesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614ED26EBE84F007DDB75 /* RCPurchasesAPI.m */; };
 		A5D6150126EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */; };
-		A5D6150226EBE84F007DDB75 /* RCPurchaserInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F026EBE84F007DDB75 /* RCPurchaserInfoAPI.m */; };
+		A5D6150226EBE84F007DDB75 /* RCCustomerInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F026EBE84F007DDB75 /* RCCustomerInfoAPI.m */; };
 		A5D6150326EBE84F007DDB75 /* RCIntroEligibilityAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F226EBE84F007DDB75 /* RCIntroEligibilityAPI.m */; };
 		A5D6150426EBE84F007DDB75 /* RCTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */; };
 		A5D6150526EBE84F007DDB75 /* RCBackendErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F726EBE84F007DDB75 /* RCBackendErrorCodeAPI.m */; };
@@ -47,7 +47,7 @@
 		A5D614E326EBE84F007DDB75 /* RCIntroEligibilityAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibilityAPI.h; sourceTree = "<group>"; };
 		A5D614E426EBE84F007DDB75 /* RCOfferingAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCOfferingAPI.h; sourceTree = "<group>"; };
 		A5D614E526EBE84F007DDB75 /* RCPurchasesAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesAPI.h; sourceTree = "<group>"; };
-		A5D614E626EBE84F007DDB75 /* RCPurchaserInfoAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchaserInfoAPI.h; sourceTree = "<group>"; };
+		A5D614E626EBE84F007DDB75 /* RCCustomerInfoAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCCustomerInfoAPI.h; sourceTree = "<group>"; };
 		A5D614E726EBE84F007DDB75 /* RCTransactionAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTransactionAPI.h; sourceTree = "<group>"; };
 		A5D614E826EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrorUtilsAPI.h; sourceTree = "<group>"; };
 		A5D614E926EBE84F007DDB75 /* RCEntitlementInfosAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfosAPI.m; sourceTree = "<group>"; };
@@ -57,7 +57,7 @@
 		A5D614ED26EBE84F007DDB75 /* RCPurchasesAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesAPI.m; sourceTree = "<group>"; };
 		A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesErrorCodeAPI.m; sourceTree = "<group>"; };
 		A5D614EF26EBE84F007DDB75 /* RCEntitlementInfosAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfosAPI.h; sourceTree = "<group>"; };
-		A5D614F026EBE84F007DDB75 /* RCPurchaserInfoAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchaserInfoAPI.m; sourceTree = "<group>"; };
+		A5D614F026EBE84F007DDB75 /* RCCustomerInfoAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCCustomerInfoAPI.m; sourceTree = "<group>"; };
 		A5D614F126EBE84F007DDB75 /* RCAttributionNetworkAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCAttributionNetworkAPI.h; sourceTree = "<group>"; };
 		A5D614F226EBE84F007DDB75 /* RCIntroEligibilityAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIntroEligibilityAPI.m; sourceTree = "<group>"; };
 		A5D614F326EBE84F007DDB75 /* RCOfferingsAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCOfferingsAPI.h; sourceTree = "<group>"; };
@@ -115,8 +115,8 @@
 				A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */,
 				A5D614E126EBE84F007DDB75 /* RCPackageAPI.h */,
 				A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */,
-				A5D614E626EBE84F007DDB75 /* RCPurchaserInfoAPI.h */,
-				A5D614F026EBE84F007DDB75 /* RCPurchaserInfoAPI.m */,
+				A5D614E626EBE84F007DDB75 /* RCCustomerInfoAPI.h */,
+				A5D614F026EBE84F007DDB75 /* RCCustomerInfoAPI.m */,
 				A5D614E526EBE84F007DDB75 /* RCPurchasesAPI.h */,
 				A5D614ED26EBE84F007DDB75 /* RCPurchasesAPI.m */,
 				A5D614EA26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.h */,
@@ -202,7 +202,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A5D6150326EBE84F007DDB75 /* RCIntroEligibilityAPI.m in Sources */,
-				A5D6150226EBE84F007DDB75 /* RCPurchaserInfoAPI.m in Sources */,
+				A5D6150226EBE84F007DDB75 /* RCCustomerInfoAPI.m in Sources */,
 				A519264D26EBCEF6007D0BD1 /* main.m in Sources */,
 				A5D614FB26EBE84F007DDB75 /* RCOfferingAPI.m in Sources */,
 				A5D6150526EBE84F007DDB75 /* RCBackendErrorCodeAPI.m in Sources */,

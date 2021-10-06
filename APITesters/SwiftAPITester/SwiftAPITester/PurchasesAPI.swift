@@ -102,7 +102,7 @@ private func checkStaticMethods() {
 }
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
-    purchases.purchaserInfo { _, _ in }
+    purchases.customerInfo { _, _ in }
     purchases.offerings { _, _ in }
     purchases.products([String]()) { _ in }
 
@@ -123,11 +123,11 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
     purchases.purchase(product: skp, discount: skmd) { _, _, _, _  in }
     purchases.purchase(package: pack, discount: skmd) { _, _, _, _  in }
-    purchases.invalidatePurchaserInfoCache()
+    purchases.invalidateCustomerInfoCache()
 
     // PurchasesDelegate
-    let purchaserInfo: PurchaserInfo? = nil
-    purchases.delegate?.purchases?(purchases, didReceiveUpdated: purchaserInfo!)
+    let customerInfo: CustomerInfo? = nil
+    purchases.delegate?.purchases?(purchases, receivedUpdated: customerInfo!)
 
     let defermentBlock: DeferredPromotionalPurchaseBlock = { _ in }
     purchases.delegate?.purchases?(purchases, shouldPurchasePromoProduct: skp, defermentBlock: defermentBlock)
@@ -146,7 +146,7 @@ private func checkIdentity(purchases: Purchases) {
 
     purchases.logOut { _, _ in }
 
-    let loginComplete: (PurchaserInfo?, Bool, Error?) -> Void = { _, _, _ in }
+    let loginComplete: (CustomerInfo?, Bool, Error?) -> Void = { _, _, _ in }
     purchases.logIn("", completion: loginComplete)
     purchases.logIn("") { _, _, _ in }
 }
