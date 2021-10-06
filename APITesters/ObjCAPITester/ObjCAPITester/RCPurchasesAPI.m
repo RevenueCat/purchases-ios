@@ -73,14 +73,14 @@ BOOL isAnonymous;
     appUserID = [p appUserID];
     isAnonymous = [p isAnonymous];
     
-    RCPurchaserInfo *pi = nil;
+    RCCustomerInfo *pi = nil;
     SKProduct *skp = [[SKProduct alloc] init];
     SKProductDiscount *skpd = [[SKProductDiscount alloc] init];
     SKPaymentDiscount *skmd = [[SKPaymentDiscount alloc] init];
     
     RCPackage *pack;
 
-    [p invalidatePurchaserInfoCache];
+    [p invalidateCustomerInfoCache];
 
     NSDictionary<NSString *, NSString *> *attributes = nil;
     [p setAttributes: attributes];
@@ -116,35 +116,35 @@ BOOL isAnonymous;
     [p setCreative: @""];
     [p collectDeviceIdentifiers];
     
-    [p purchaserInfoWithCompletion:^(RCPurchaserInfo *info, NSError *error) {}];
+    [p customerInfoWithCompletion:^(RCCustomerInfo *info, NSError *error) {}];
     [p offeringsWithCompletion:^(RCOfferings *info, NSError *error) {}];
     [p productsWithIdentifiers:@[@""] completion:^(NSArray<SKProduct *> *products) { }];
-    [p purchaseProduct:skp withCompletion:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *error, BOOL userCancelled) { }];
-    [p purchasePackage:pack withCompletion:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
-    [p restoreTransactionsWithCompletion:^(RCPurchaserInfo *i, NSError *e) {}];
-    [p syncPurchasesWithCompletion:^(RCPurchaserInfo *i, NSError *e) {}];
+    [p purchaseProduct:skp withCompletion:^(SKPaymentTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
+    [p purchasePackage:pack withCompletion:^(SKPaymentTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p restoreTransactionsWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
+    [p syncPurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p checkTrialOrIntroductoryPriceEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
     [p paymentDiscountForProductDiscount:skpd product:skp completion:^(SKPaymentDiscount *d, NSError *e) { }];
-    [p purchaseProduct:skp withDiscount:skmd completion:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
-    [p purchasePackage:pack withDiscount:skmd completion:^(SKPaymentTransaction *t, RCPurchaserInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchaseProduct:skp withDiscount:skmd completion:^(SKPaymentTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchasePackage:pack withDiscount:skmd completion:^(SKPaymentTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
 
     // should have deprecation warning 'createAlias:completion:' is deprecated: Use logIn instead.
-    [p createAlias:@"" completion:^(RCPurchaserInfo *i, NSError *e) { }];
+    [p createAlias:@"" completion:^(RCCustomerInfo *i, NSError *e) { }];
 
     // should have deprecation warning 'identify:completion:' is deprecated: Use logIn instead.
-    [p identify:@"" completion:^(RCPurchaserInfo *i, NSError *e) { }];
+    [p identify:@"" completion:^(RCCustomerInfo *i, NSError *e) { }];
 
     // should have deprecation warning 'resetWithCompletion:' is deprecated: Use logOut instead.
-    [p resetWithCompletion:^(RCPurchaserInfo *i, NSError *e) { }];
+    [p resetWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
 
-    [p logIn:@"" completion:^(RCPurchaserInfo *i, BOOL created, NSError *e) { }];
-    [p logOutWithCompletion:^(RCPurchaserInfo *i, NSError *e) { }];
+    [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
+    [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
 
-    [p.delegate purchases:p didReceiveUpdatedPurchaserInfo:pi];
+    [p.delegate purchases:p receivedUpdatedCustomerInfo:pi];
     [p.delegate purchases:p
 shouldPurchasePromoProduct:skp
            defermentBlock:^(void (^ _Nonnull completion)(SKPaymentTransaction * _Nullable transaction,
-                                                         RCPurchaserInfo * _Nullable info,
+                                                         RCCustomerInfo * _Nullable info,
                                                          NSError * _Nullable error,
                                                          BOOL cancelled)) {}];
 }

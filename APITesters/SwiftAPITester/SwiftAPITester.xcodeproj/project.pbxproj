@@ -10,7 +10,7 @@
 		A55F62DB26EB001F00A1B466 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A55F62DA26EB001F00A1B466 /* RevenueCat */; };
 		A5D614CF26EBE7EA007DDB75 /* ErrorCodesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */; };
 		A5D614D026EBE7EA007DDB75 /* OfferingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */; };
-		A5D614D126EBE7EA007DDB75 /* PurchaserInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C426EBE7EA007DDB75 /* PurchaserInfoAPI.swift */; };
+		A5D614D126EBE7EA007DDB75 /* CustomerInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C426EBE7EA007DDB75 /* CustomerInfoAPI.swift */; };
 		A5D614D226EBE7EA007DDB75 /* EntitlementInfosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */; };
 		A5D614D326EBE7EA007DDB75 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C626EBE7EA007DDB75 /* main.swift */; };
 		A5D614D426EBE7EA007DDB75 /* OfferingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C726EBE7EA007DDB75 /* OfferingAPI.swift */; };
@@ -39,7 +39,7 @@
 		A55F62B526EAFFD200A1B466 /* SwiftAPITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SwiftAPITester; sourceTree = BUILT_PRODUCTS_DIR; };
 		A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorCodesAPI.swift; sourceTree = "<group>"; };
 		A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingsAPI.swift; sourceTree = "<group>"; };
-		A5D614C426EBE7EA007DDB75 /* PurchaserInfoAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaserInfoAPI.swift; sourceTree = "<group>"; };
+		A5D614C426EBE7EA007DDB75 /* CustomerInfoAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerInfoAPI.swift; sourceTree = "<group>"; };
 		A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntitlementInfosAPI.swift; sourceTree = "<group>"; };
 		A5D614C626EBE7EA007DDB75 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		A5D614C726EBE7EA007DDB75 /* OfferingAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingAPI.swift; sourceTree = "<group>"; };
@@ -92,7 +92,7 @@
 				A5D614C726EBE7EA007DDB75 /* OfferingAPI.swift */,
 				A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */,
 				A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */,
-				A5D614C426EBE7EA007DDB75 /* PurchaserInfoAPI.swift */,
+				A5D614C426EBE7EA007DDB75 /* CustomerInfoAPI.swift */,
 				A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */,
 				A5D614CC26EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift */,
 				A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */,
@@ -166,7 +166,7 @@
 			files = (
 				A5D614CF26EBE7EA007DDB75 /* ErrorCodesAPI.swift in Sources */,
 				A5D614D326EBE7EA007DDB75 /* main.swift in Sources */,
-				A5D614D126EBE7EA007DDB75 /* PurchaserInfoAPI.swift in Sources */,
+				A5D614D126EBE7EA007DDB75 /* CustomerInfoAPI.swift in Sources */,
 				A5D614D026EBE7EA007DDB75 /* OfferingsAPI.swift in Sources */,
 				A5D614D426EBE7EA007DDB75 /* OfferingAPI.swift in Sources */,
 				A5D614D926EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift in Sources */,
