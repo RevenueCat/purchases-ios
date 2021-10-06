@@ -152,6 +152,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
+      - install-dependencies
       - run:
           name: Update Swift Package Commit
           command: bundle exec fastlane update_swift_package_commit
@@ -166,6 +167,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
+      - install-dependencies
       - run:
           name: Update Swift Package Commit
           command: bundle exec fastlane update_swift_package_commit
