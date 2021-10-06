@@ -152,10 +152,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-dependencies
-      - run:
-          name: Update Swift Package Commit
-          command: bundle exec fastlane update_swift_package_commit
+      - update-spm-integration-commit
       - run:
           name: Build SwiftAPITester
           command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme SwiftAPITester
@@ -167,10 +164,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-dependencies
-      - run:
-          name: Update Swift Package Commit
-          command: bundle exec fastlane update_swift_package_commit
+      - update-spm-integration-commit
       - run:
           name: Build ObjCAPITester
           command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme ObjCAPITester
