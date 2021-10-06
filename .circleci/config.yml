@@ -155,6 +155,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
+      - update-spm-integration-commit
       - run:
           name: Build SwiftAPITester
           command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme SwiftAPITester
@@ -166,6 +167,7 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
+      - update-spm-integration-commit
       - run:
           name: Build ObjCAPITester
           command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme ObjCAPITester
