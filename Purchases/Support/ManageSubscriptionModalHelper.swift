@@ -15,7 +15,7 @@ import StoreKit
 
 enum ManageSubscriptionsModalError: Error {
 
-    case couldntGetPurchaserInfo(message: String)
+    case couldntGetCustomerInfo(message: String)
     case couldntGetWindowScene
     case storeKitShowManageSubscriptionsFailed(error: Error)
     case couldntGetAppleSubscriptionsURL
@@ -26,7 +26,7 @@ extension ManageSubscriptionsModalError: CustomStringConvertible {
 
     var description: String {
         switch self {
-        case .couldntGetPurchaserInfo(let message):
+        case .couldntGetCustomerInfo(let message):
             return "Failed to get managemementURL from PurchaserInfo. Details: \(message)"
         case .couldntGetWindowScene:
             return "Failed to get UIWindowScene"
@@ -61,12 +61,12 @@ class ManageSubscriptionsModalHelper {
         let currentAppUserID = identityManager.currentAppUserID
         customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
             if let error = maybeError {
-                completion(.failure(.couldntGetPurchaserInfo(message: error.localizedDescription)))
+                completion(.failure(.couldntGetCustomerInfo(message: error.localizedDescription)))
                 return
             }
 
             guard let customerInfo = maybeCustomerInfo else {
-                completion(.failure(.couldntGetPurchaserInfo(message: "purchaserInfo is nil.")))
+                completion(.failure(.couldntGetCustomerInfo(message: "customerInfo is nil.")))
                 return
             }
 
