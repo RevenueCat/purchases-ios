@@ -82,8 +82,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        purchaserInfoManager.stubbedCachedPurchaserInfoResult = mockPurchaserInfo
-        backend.stubbedPostReceiptPurchaserInfo = mockPurchaserInfo
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
         let productDetails = try await fetchSk2ProductDetails()
         let package = Package(identifier: "package",
@@ -91,16 +91,16 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               productDetails: productDetails,
                               offeringIdentifier: "offering")
 
-        let (transaction, purchaserInfo, error, userCancelled) = await withCheckedContinuation { continuation in
-            orchestrator.purchase(package: package) { transaction, purchaserInfo, error, userCancelled in
-                continuation.resume(returning: (transaction, purchaserInfo, error, userCancelled))
+        let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(package: package) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
 
         expect(transaction).to(beNil())
         expect(userCancelled) == false
         expect(error).to(beNil())
-        expect(purchaserInfo) == PurchaserInfo(data: [
+        expect(customerInfo) == CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -116,8 +116,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        purchaserInfoManager.stubbedCachedPurchaserInfoResult = mockPurchaserInfo
-        backend.stubbedPostReceiptPurchaserInfo = mockPurchaserInfo
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
         let productDetails = try await fetchSk2ProductDetails()
         let package = Package(identifier: "package",
@@ -126,8 +126,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               offeringIdentifier: "offering")
 
         _ = await withCheckedContinuation { continuation in
-            orchestrator.purchase(package: package) { transaction, purchaserInfo, error, userCancelled in
-                continuation.resume(returning: (transaction, purchaserInfo, error, userCancelled))
+            orchestrator.purchase(package: package) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
 
@@ -141,8 +141,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        purchaserInfoManager.stubbedCachedPurchaserInfoResult = mockPurchaserInfo
-        backend.stubbedPostReceiptPurchaserInfo = mockPurchaserInfo
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
         let productDetails = try await fetchSk2ProductDetails()
         let package = Package(identifier: "package",
@@ -151,8 +151,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               offeringIdentifier: "offering")
 
         _ = await withCheckedContinuation { continuation in
-            orchestrator.purchase(package: package) { transaction, purchaserInfo, error, userCancelled in
-                continuation.resume(returning: (transaction, purchaserInfo, error, userCancelled))
+            orchestrator.purchase(package: package) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
 
@@ -167,8 +167,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        purchaserInfoManager.stubbedCachedPurchaserInfoResult = mockPurchaserInfo
-        backend.stubbedPostReceiptPurchaserInfo = mockPurchaserInfo
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
         let productDetails = try await fetchSk2ProductDetails()
         let package = Package(identifier: "package",
@@ -176,15 +176,15 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               productDetails: productDetails,
                               offeringIdentifier: "offering")
 
-        let (transaction, purchaserInfo, error, userCancelled) = await withCheckedContinuation { continuation in
-            orchestrator.purchase(package: package) { transaction, purchaserInfo, error, userCancelled in
-                continuation.resume(returning: (transaction, purchaserInfo, error, userCancelled))
+        let (transaction, customerInfo, error, userCancelled) = await withCheckedContinuation { continuation in
+            orchestrator.purchase(package: package) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
 
         expect(transaction).to(beNil())
         expect(userCancelled) == false
-        expect(purchaserInfo).to(beNil())
+        expect(customerInfo).to(beNil())
         expect(error).toNot(beNil())
         expect(self.backend.invokedPostReceiptData) == false
         let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2Listener)
@@ -212,8 +212,8 @@ private extension PurchasesOrchestratorTests {
         return SK2ProductDetails(sk2Product: try XCTUnwrap(sk2Product as? SK2Product))
     }
 
-    var mockPurchaserInfo: PurchaserInfo {
-        PurchaserInfo(data: [
+    var mockCustomerInfo: CustomerInfo {
+        CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",

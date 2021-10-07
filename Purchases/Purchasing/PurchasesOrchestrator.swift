@@ -186,9 +186,9 @@ class PurchasesOrchestrator {
                     switch result {
                     case .failure(let error):
                         completion(nil, nil, error, false)
-                    case .success(let (purchaserInfo, userCancelled)):
+                    case .success(let (customerInfo, userCancelled)):
                         // todo: change API and send transaction
-                        completion(nil, purchaserInfo, nil, userCancelled)
+                        completion(nil, customerInfo, nil, userCancelled)
                     }
                 }
             }
@@ -567,7 +567,7 @@ private extension PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func purchase(sk2Package: Package) async -> Result<(PurchaserInfo, Bool), Error> {
+    func purchase(sk2Package: Package) async -> Result<(CustomerInfo, Bool), Error> {
         guard let sk2ProductDetails = sk2Package.productDetails as? SK2ProductDetails else {
             // todo: use custom error
             return .failure(ErrorUtils.unexpectedBackendResponseError())
