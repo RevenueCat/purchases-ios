@@ -161,7 +161,7 @@
 		3543914126F911CC00E669DF /* MockDeviceCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B513C26D4491E00BD2BD7 /* MockDeviceCache.swift */; };
 		3543914226F911F300E669DF /* MockSK1Product.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E524F6F5DC005BC22D /* MockSK1Product.swift */; };
 		3543914326F911F300E669DF /* MockSKDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E724F6F61B005BC22D /* MockSKDiscount.swift */; };
-		3543914426F911F300E669DF /* MockPurchaserInfoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B514826D44A2F00BD2BD7 /* MockPurchaserInfoManager.swift */; };
+		3543914426F911F300E669DF /* MockCustomerInfoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B514826D44A2F00BD2BD7 /* MockCustomerInfoManager.swift */; };
 		3543914526F926D900E669DF /* SKProductSubscriptionDurationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DDF41E924F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift */; };
 		354895D4267AE4B4001DC5B1 /* AttributionKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D3267AE4B4001DC5B1 /* AttributionKey.swift */; };
 		354895D6267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D5267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift */; };
@@ -971,7 +971,6 @@
 		354235D624C11160008C84EE /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
-				37E359D8F304C83184560135 /* CustomerInfoTests.swift */,
 				37E3582920E16E065502E5FC /* EntitlementInfosTests.swift */,
 				B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */,
 				37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */,
@@ -980,9 +979,8 @@
 				37E3583675928C01D92E3166 /* ProductInfoExtensions.swift */,
 				37E3548189DA008320B3FC98 /* ProductInfoExtractorTests.swift */,
 				37E350E57B0A393455A72B40 /* ProductInfoTests.swift */,
-				37E351F0E21361EAEC078A0D /* ProductsManagerTests.swift */,
 				37E351F0E21361EAEC078A0D /* ProductsFetcherSK1Tests.swift */,
-				37E359D8F304C83184560135 /* PurchaserInfoTests.swift */,
+				37E359D8F304C83184560135 /* CustomerInfoTests.swift */,
 				37E35DE5707E845DA3FF51BC /* PurchasesTests.swift */,
 				2D84458826B9CD270033B5A3 /* ReceiptFetcherTests.swift */,
 				F5BE4244269676E200254A30 /* StoreKitRequestFetcherTests.swift */,
@@ -1548,7 +1546,7 @@
 				3543913926F90FFB00E669DF /* MockBackend.swift in Sources */,
 				2D9C5EC826F280510057FC45 /* ProductDetailsTests.swift in Sources */,
 				3543913E26F9116A00E669DF /* MockHTTPClient.swift in Sources */,
-				3543914426F911F300E669DF /* MockPurchaserInfoManager.swift in Sources */,
+				3543914426F911F300E669DF /* MockCustomerInfoManager.swift in Sources */,
 				3543913726F90FCE00E669DF /* MockReceiptFetcher.swift in Sources */,
 				3543913A26F90FFB00E669DF /* MockProductsManager.swift in Sources */,
 				3543914226F911F300E669DF /* MockSK1Product.swift in Sources */,
