@@ -22,10 +22,10 @@ import XCTest
 class ManageSubscriptionsModalHelperTests: XCTestCase {
 
     private var systemInfo: MockSystemInfo!
-    private var purchaserInfoManager: MockPurchaserInfoManager!
+    private var customerInfoManager: MockCustomerInfoManager!
     private var identityManager: MockIdentityManager!
     private var helper: ManageSubscriptionsModalHelper!
-    private let mockPurchaserInfoData: [String: Any] = [
+    private let mockCustomerInfoData: [String: Any] = [
         "request_date": "2018-12-21T02:40:36Z",
         "subscriber": [
             "original_app_user_id": "app_user_id",
@@ -40,13 +40,13 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
 
     override func setUp() {
         systemInfo = try! MockSystemInfo(platformFlavor: "", platformFlavorVersion: "", finishTransactions: true)
-        purchaserInfoManager = MockPurchaserInfoManager(operationDispatcher: MockOperationDispatcher(),
-                                                        deviceCache: MockDeviceCache(),
-                                                        backend: MockBackend(),
-                                                        systemInfo: systemInfo)
+        customerInfoManager = MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
+                                                      deviceCache: MockDeviceCache(),
+                                                      backend: MockBackend(),
+                                                      systemInfo: systemInfo)
         identityManager = MockIdentityManager(mockAppUserID: "appUserID")
         helper = ManageSubscriptionsModalHelper(systemInfo: systemInfo,
-                                                purchaserInfoManager: purchaserInfoManager,
+                                                customerInfoManager: customerInfoManager,
                                                 identityManager: identityManager)
     }
 
@@ -54,7 +54,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         guard #available(iOS 15.0, *) else { return }
         // given
         var callbackCalled = false
-        purchaserInfoManager.stubbedPurchaserInfo = PurchaserInfo(data: mockPurchaserInfoData)
+        customerInfoManager.stubbedCustomerInfo = CustomerInfo(data: mockCustomerInfoData)
         
         // when
         helper.showManageSubscriptionModal { result in
@@ -63,7 +63,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         
         // then
         expect(callbackCalled).toEventually(beTrue())
-        expect(self.purchaserInfoManager.invokedPurchaserInfo) == true
+        expect(self.customerInfoManager.invokedCustomerInfo) == true
         
         // we'd ideally also patch the UIApplication (or NSWorkspace for mac), as well as
         // AppStore, and check for the calls in those, but it gets very tricky.
@@ -74,7 +74,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, ManageSubscriptionsModalError>?
-        purchaserInfoManager.stubbedPurchaserInfo = PurchaserInfo(data: mockPurchaserInfoData)
+        customerInfoManager.stubbedCustomerInfo = CustomerInfo(data: mockCustomerInfoData)
         
         // when
         helper.showManageSubscriptionModal { result in
@@ -102,7 +102,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, ManageSubscriptionsModalError>?
-        purchaserInfoManager.stubbedPurchaserInfo = PurchaserInfo(data: mockPurchaserInfoData)
+        customerInfoManager.stubbedCustomerInfo = CustomerInfo(data: mockCustomerInfoData)
         
         // when
         helper.showManageSubscriptionModal { result in
@@ -117,11 +117,11 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
 #endif
     }
 
-    func testShowManageSubscriptionModalFailsIfCouldntGetPurchaserInfo() throws {
+    func testShowManageSubscriptionModalFailsIfCouldntGetCustomerInfo() throws {
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, ManageSubscriptionsModalError>?
-        purchaserInfoManager.stubbedError = NSError(domain: RCPurchasesErrorCodeDomain, code: 123, userInfo: nil)
+        customerInfoManager.stubbedError = NSError(domain: RCPurchasesErrorCodeDomain, code: 123, userInfo: nil)
 
         // when
         helper.showManageSubscriptionModal { result in
@@ -132,9 +132,9 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         // then
         expect(callbackCalled).toEventually(beTrue())
         let nonNilReceivedResult: Result<Void, ManageSubscriptionsModalError> = try XCTUnwrap(receivedResult)
-        let expectedErrorMessage = "Failed to get managemementURL from PurchaserInfo. " +
+        let expectedErrorMessage = "Failed to get managemementURL from CustomerInfo. " +
         "Details: The operation couldn’t be completed"
-        let expectedError = ManageSubscriptionsModalError.couldntGetPurchaserInfo(message: expectedErrorMessage)
+        let expectedError = ManageSubscriptionsModalError.couldntGetCustomerInfo(message: expectedErrorMessage)
         expect(nonNilReceivedResult).to(beFailure { error in
             expect(error).to(matchError(expectedError))
         })

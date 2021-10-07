@@ -1670,7 +1670,7 @@
 				F5714EA526D6C24D00635477 /* JSONDecoder+Extensions.swift in Sources */,
 				B3766F1E26BDA95100141450 /* IntroEligibilityResponse.swift in Sources */,
 				6E38843A0CAFD551013D0A3F /* ProductDetails.swift in Sources */,
-				35E840C6270FB47C00899AE2 /* ManageSubscriptionModalHelper.swift in Sources */,
+				35E840CC270FB70D00899AE2 /* ManageSubscriptionModalHelper.swift in Sources */,
 				42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */,
 				805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */,
 			);
