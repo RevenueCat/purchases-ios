@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  MockStoreKit2Listener.swift
+//  MockStoreKit2TransactionListener.swift
 //
 //  Created by Andrés Boedo on 23/9/21.
 
@@ -16,7 +16,7 @@ import Foundation
 import StoreKit
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *)
-class MockStoreKit2Listener: StoreKit2TransactionListener {
+class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
 
     convenience init() {
         self.init(delegate: nil)

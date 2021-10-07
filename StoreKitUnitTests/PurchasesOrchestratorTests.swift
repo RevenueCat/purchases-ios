@@ -71,7 +71,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              receiptParser: receiptParser,
                                              deviceCache: deviceCache)
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            orchestrator.storeKit2Listener = MockStoreKit2Listener()
+            orchestrator.storeKit2Listener = MockStoreKit2TransactionListener()
         }
     }
 
@@ -131,7 +131,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             }
         }
 
-        let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2Listener)
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener)
         expect(mockListener.invokedHandle) == true
     }
 
@@ -187,7 +187,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(customerInfo).to(beNil())
         expect(error).toNot(beNil())
         expect(self.backend.invokedPostReceiptData) == false
-        let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2Listener)
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener)
         expect(mockListener.invokedHandle) == false
     }
 
