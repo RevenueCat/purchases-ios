@@ -158,7 +158,9 @@ jobs:
       - update-spm-integration-commit
       - run:
           name: Build SwiftAPITester
-          command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme SwiftAPITesterIOS
+          command: |
+              bundle exec fastlane match --readonly
+              xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme SwiftAPITesterIOS
 
   objc_apitest:
     macos:
@@ -170,7 +172,9 @@ jobs:
       - update-spm-integration-commit
       - run:
           name: Build ObjCAPITester
-          command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme ObjCAPITesterIOS
+          command: |
+              bundle exec fastlane match --readonly
+              xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme ObjCAPITesterIOS
 
   backend_integration_tests:
     macos:
