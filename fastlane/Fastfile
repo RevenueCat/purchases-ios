@@ -177,7 +177,7 @@ platform :ios do
   end
   
   desc "build ObjC API tester"
-  lane :build_swift_api_tester do
+  lane :build_objc_api_tester do
       match(
         type: "development",
         git_url: ENV["CERTS_REPO_URL"],

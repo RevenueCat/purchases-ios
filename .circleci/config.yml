@@ -172,7 +172,7 @@ jobs:
       - run:
           name: Build ObjCAPITester
           command: |
-              bundle exec fastlane build_swift_api_tester
+              bundle exec fastlane build_objc_api_tester
 
   backend_integration_tests:
     macos:
