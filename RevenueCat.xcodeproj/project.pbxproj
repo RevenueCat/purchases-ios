@@ -96,6 +96,8 @@
 		2DEAC2E426EFE46E006914ED /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DEAC2E226EFE46E006914ED /* Main.storyboard */; };
 		2DEAC2E626EFE470006914ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DEAC2E526EFE470006914ED /* Assets.xcassets */; };
 		2DEAC2E926EFE470006914ED /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DEAC2E726EFE470006914ED /* LaunchScreen.storyboard */; };
+		3500256F270FA3F100E257BE /* Support in Resources */ = {isa = PBXBuildFile; fileRef = 3500256E270FA3F100E257BE /* Support */; };
+		35002571270FA40B00E257BE /* Support in Resources */ = {isa = PBXBuildFile; fileRef = 35002570270FA40B00E257BE /* Support */; };
 		351B513B26D448F400BD2BD7 /* AttributionPosterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354FE32DD3EA3FF3ECD0A /* AttributionPosterTests.swift */; };
 		351B513D26D4491E00BD2BD7 /* MockDeviceCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B513C26D4491E00BD2BD7 /* MockDeviceCache.swift */; };
 		351B513F26D4496000BD2BD7 /* MockIdentityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B513E26D4496000BD2BD7 /* MockIdentityManager.swift */; };
@@ -377,6 +379,8 @@
 		2DEAC2EA26EFE470006914ED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2DEC0CFB24A2A1B100B0E5BB /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = SOURCE_ROOT; };
 		33FFC8744F2BAE7BD8889A4C /* Pods_RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3500256E270FA3F100E257BE /* Support */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Support; sourceTree = "<group>"; };
+		35002570270FA40B00E257BE /* Support */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Support; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		351B513C26D4491E00BD2BD7 /* MockDeviceCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceCache.swift; sourceTree = "<group>"; };
 		351B513E26D4496000BD2BD7 /* MockIdentityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockIdentityManager.swift; sourceTree = "<group>"; };
@@ -684,6 +688,7 @@
 		2DC5621724EC63420031F69B /* Purchases */ = {
 			isa = PBXGroup;
 			children = (
+				35002570270FA40B00E257BE /* Support */,
 				F5BE44412698580200254A30 /* Attribution */,
 				B3B5FBBD269E080A00104A0C /* Caching */,
 				F5714EA626D7A82E00635477 /* CodableExtensions */,
@@ -704,6 +709,7 @@
 		2DC5622224EC63430031F69B /* PurchasesTests */ = {
 			isa = PBXGroup;
 			children = (
+				3500256E270FA3F100E257BE /* Support */,
 				F5BE444626985E6E00254A30 /* Attribution */,
 				37E35AE0CDC4C2AA8260FB58 /* Caching */,
 				35F82BBB26A9BFA60051DF03 /* FoundationExtensions */,
@@ -1432,6 +1438,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				35002571270FA40B00E257BE /* Support in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1441,6 +1448,7 @@
 			files = (
 				2D4D6AF624F7193700B656BE /* verifyReceiptSample1.txt in Resources */,
 				2D4D6AF724F7193700B656BE /* base64encodedreceiptsample1.txt in Resources */,
+				3500256F270FA3F100E257BE /* Support in Resources */,
 				B319514B26C1991E002CA9AC /* base64EncodedReceiptSampleForDataExtension.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
