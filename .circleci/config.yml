@@ -127,7 +127,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
-  buildTvWatchAndMacOS:
+  buildTvAndWatch:
     macos:
       xcode: "13.0.0"
     working_directory: ~/purchases-ios
@@ -139,8 +139,8 @@ jobs:
           command: brew install swiftlint
       - install-dependencies
       - run:
-          name: Build tvOS, watchOS, and macOS
-          command: bundle exec fastlane build_tv_watch_mac
+          name: Build tvOS and watchOS
+          command: bundle exec fastlane build_tv_watch
 
   swift_apitest:
     macos:
@@ -152,7 +152,7 @@ jobs:
       - update-spm-integration-commit
       - run:
           name: Build SwiftAPITester
-          command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme SwiftAPITester
+          command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme SwiftAPITesterIOS
 
   objc_apitest:
     macos:
@@ -164,7 +164,7 @@ jobs:
       - update-spm-integration-commit
       - run:
           name: Build ObjCAPITester
-          command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme ObjCAPITester
+          command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme ObjCAPITesterIOS
 
   backend_integration_tests:
     macos:
@@ -371,7 +371,7 @@ workflows:
       - runtest
       - swift_apitest
       - objc_apitest
-      - buildTvWatchAndMacOS
+      - buildTvAndWatch
       - backend_integration_tests
       - deployment-checks: *release-branches
       - integration-tests-cocoapods: *release-tags-and-branches
