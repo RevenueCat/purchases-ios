@@ -141,10 +141,10 @@ platform :ios do
     check_no_github_release_exists(version_number)
   end
 
-  desc "tvOS, watchOS, and macOS build"
-  lane :build_tv_watch_mac do |options|
+  desc "tvOS, watchOS"
+  lane :build_tv_watch do |options|
     check_pods
-    carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS,Mac", use_xcframeworks: true)
+    carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS", use_xcframeworks: true)
   end
 
   desc "macOS build"
