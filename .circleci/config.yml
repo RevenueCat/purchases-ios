@@ -159,8 +159,7 @@ jobs:
       - run:
           name: Build SwiftAPITester
           command: |
-              bundle exec fastlane match --readonly
-              xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme SwiftAPITesterIOS
+              bundle exec fastlane build_swift_api_tester
 
   objc_apitest:
     macos:
@@ -173,8 +172,7 @@ jobs:
       - run:
           name: Build ObjCAPITester
           command: |
-              bundle exec fastlane match --readonly
-              xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme ObjCAPITesterIOS
+              bundle exec fastlane build_swift_api_tester
 
   backend_integration_tests:
     macos:

@@ -164,6 +164,30 @@ platform :ios do
     gym(export_method: "app-store")
   end
 
+  desc "build Swift API tester"
+  lane :build_swift_api_tester do
+      match(
+        type: "development",
+        git_url: ENV["CERTS_REPO_URL"],
+        storage_mode: "git",
+        type: "development",
+        app_identifier: ["com.revenuecat.SwiftAPITesterIOS"],
+        username: ENV["FASTLANE_USER"])
+      sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'SwiftAPITesterIOS')
+  end
+  
+  desc "build ObjC API tester"
+  lane :build_swift_api_tester do
+      match(
+        type: "development",
+        git_url: ENV["CERTS_REPO_URL"],
+        storage_mode: "git",
+        type: "development",
+        app_identifier: ["com.revenuecat.ObjCAPITesterIOS"],
+        username: ENV["FASTLANE_USER"])
+      sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'ObjCAPITesterIOS')
+  end
+
   desc "replace API KEY for integration tests"
   lane :replace_api_key_integration_tests do
     replace_in("REVENUECAT_API_KEY", ENV["REVENUECAT_API_KEY"], '../BackendIntegrationTests/Constants.swift')
