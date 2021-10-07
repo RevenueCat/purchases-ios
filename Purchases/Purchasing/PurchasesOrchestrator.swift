@@ -188,7 +188,11 @@ class PurchasesOrchestrator {
                         completion(nil, nil, error, false)
                     case .success(let (customerInfo, userCancelled)):
                         // todo: change API and send transaction
-                        completion(nil, customerInfo, nil, userCancelled)
+                        if userCancelled {
+                            completion(nil, nil, ErrorUtils.purchaseCancelledError(), userCancelled)
+                        } else {
+                            completion(nil, customerInfo, nil, userCancelled)
+                        }
                     }
                 }
             }
@@ -576,9 +580,7 @@ private extension PurchasesOrchestrator {
         let sk2Product = sk2ProductDetails.underlyingSK2Product
         do {
             let result = try await sk2Product.purchase()
-            await storeKit2Listener.handle(purchaseResult: result)
-            // todo: nicer handling, improve the userCancelled case
-            let userCancelled = false
+            let userCancelled = await storeKit2Listener.handle(purchaseResult: result)
 
             return await withCheckedContinuation { continuation in
                 syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybeCustomerInfo, maybeError in

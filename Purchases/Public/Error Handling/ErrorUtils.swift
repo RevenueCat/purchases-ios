@@ -193,6 +193,18 @@ import StoreKit
         return error(with: errorCode, message: errorCode.description, underlyingError: skError)
     }
 
+    /**
+     * Constructs an Error with the ``ErrorCode/purchaseCancelledError`` code.
+     *
+     * - Note: This error is used when  a purchase is cancelled by the user.
+     */
+    @objc static func purchaseCancelledError() -> Error {
+        let errorCode = ErrorCode.purchaseCancelledError
+        return ErrorUtils.error(with: errorCode,
+                                message: errorCode.description,
+                                underlyingError: nil)
+    }
+
 }
 
 private extension SKError {

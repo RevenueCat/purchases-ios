@@ -60,10 +60,11 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
     var invokedHandleParameters: (purchaseResult: Any, Void)?
     var invokedHandleParametersList = [(purchaseResult: Any, Void)]()
 
-    override func handle(purchaseResult: StoreKit.Product.PurchaseResult) async {
+    override func handle(purchaseResult: StoreKit.Product.PurchaseResult) async -> Bool {
         invokedHandle = true
         invokedHandleCount += 1
         invokedHandleParameters = (purchaseResult, ())
         invokedHandleParametersList.append((purchaseResult, ()))
+        return false
     }
 }
