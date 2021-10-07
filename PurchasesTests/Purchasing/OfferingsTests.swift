@@ -199,7 +199,7 @@ class OfferingsTests: XCTestCase {
     func testCurrentOfferingWithBrokenProductReturnsNilForCurrentOfferingButContainsOtherOfferings() throws {
         let productDetailsByID = [
             "com.myproduct.annual": SK1ProductDetails(sk1Product:
-                                                        MockSKProduct(mockProductIdentifier: "com.myproduct.annual")),
+                                                        MockSK1Product(mockProductIdentifier: "com.myproduct.annual")),
         ]
 
         let data: [String : Any] = [

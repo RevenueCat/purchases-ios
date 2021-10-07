@@ -568,8 +568,8 @@ private extension PurchasesOrchestrator {
             let result = try await sk2Product.purchase()
             await storeKit2Listener.handle(purchaseResult: result)
             // todo: nicer handling, improve the userCancelled case
-            syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybePurchaserInfo, maybeError in
-                completion(nil, maybePurchaserInfo, maybeError, false)
+            syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybeCustomerInfo, maybeError in
+                completion(nil, maybeCustomerInfo, maybeError, false)
             }
         }
     }

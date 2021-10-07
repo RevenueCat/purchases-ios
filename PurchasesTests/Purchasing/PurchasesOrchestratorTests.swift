@@ -24,7 +24,7 @@ class PurchasesOrchestratorTests: XCTestCase {
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var operationDispatcher: MockOperationDispatcher!
     var receiptFetcher: MockReceiptFetcher!
-    var purchaserInfoManager: MockPurchaserInfoManager!
+    var customerInfoManager: MockCustomerInfoManager!
     var backend: MockBackend!
     var identityManager: MockIdentityManager!
     var receiptParser: MockReceiptParser!
@@ -43,7 +43,7 @@ class PurchasesOrchestratorTests: XCTestCase {
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher())
         deviceCache = MockDeviceCache()
         backend = MockBackend()
-        purchaserInfoManager = MockPurchaserInfoManager(operationDispatcher: OperationDispatcher(),
+        customerInfoManager = MockCustomerInfoManager(operationDispatcher: OperationDispatcher(),
                                                         deviceCache: deviceCache,
                                                         backend: backend,
                                                         systemInfo: systemInfo)
@@ -62,7 +62,7 @@ class PurchasesOrchestratorTests: XCTestCase {
                                              subscriberAttributesManager: subscriberAttributesManager,
                                              operationDispatcher: operationDispatcher,
                                              receiptFetcher: receiptFetcher,
-                                             purchaserInfoManager: purchaserInfoManager,
+                                             customerInfoManager: customerInfoManager,
                                              backend: backend,
                                              identityManager: identityManager,
                                              receiptParser: receiptParser,
