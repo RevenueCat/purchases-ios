@@ -20,6 +20,9 @@ import XCTest
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
 class StoreKitConfigTestCase: XCTestCase {
 
+    private static var hasWaited = false
+    private static let waitLock = NSLock()
+
     var testSession: SKTestSession!
     var userDefaults: UserDefaults!
 
@@ -31,11 +34,27 @@ class StoreKitConfigTestCase: XCTestCase {
         testSession.resetToDefaultState()
         testSession.disableDialogs = true
         testSession.clearTransactions()
-        // Wait for StoreKitTest
-        Thread.sleep(forTimeInterval: 5)
+
+        self.waitForStoreKitTestIfNeeded()
+
         let suiteName = "StoreKitConfigTests"
         userDefaults = UserDefaults(suiteName: suiteName)
         userDefaults?.removePersistentDomain(forName: suiteName)
+    }
+
+}
+
+private extension StoreKitConfigTestCase {
+
+    func waitForStoreKitTestIfNeeded() {
+        // StoreKitTest seems to take a few seconds to initialize, and running tests before that
+        // might result in failure. So we give it a few seconds to load before testing.
+        Self.waitLock.lock()
+        if !(Self.hasWaited) {
+            Thread.sleep(forTimeInterval: 5)
+            Self.hasWaited = true
+        }
+        Self.waitLock.unlock()
     }
 
 }
