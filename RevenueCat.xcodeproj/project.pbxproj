@@ -189,6 +189,7 @@
 		35D83312262FBD4200E60AC5 /* MockETagManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D83311262FBD4200E60AC5 /* MockETagManager.swift */; };
 		35E840CA270FB52800899AE2 /* ManageSubscriptionsModalHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E840C9270FB52800899AE2 /* ManageSubscriptionsModalHelperTests.swift */; };
 		35E840CC270FB70D00899AE2 /* ManageSubscriptionModalHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E840C5270FB47C00899AE2 /* ManageSubscriptionModalHelper.swift */; };
+		35E840CE2710E2EB00899AE2 /* MockManageSubscriptionModalHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E840CD2710E2EB00899AE2 /* MockManageSubscriptionModalHelper.swift */; };
 		35F6FD62267426D600ABCB53 /* ETagAndResponseWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F6FD61267426D600ABCB53 /* ETagAndResponseWrapper.swift */; };
 		35F82BAB26A84E130051DF03 /* Dictionary+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BAA26A84E130051DF03 /* Dictionary+Extensions.swift */; };
 		35F82BB226A98EC50051DF03 /* AttributionDataMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F82BB126A98EC50051DF03 /* AttributionDataMigratorTests.swift */; };
@@ -441,6 +442,7 @@
 		35E1CE1F26E022C20008560A /* TrialOrIntroPriceEligibilityCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerTests.swift; sourceTree = "<group>"; };
 		35E840C5270FB47C00899AE2 /* ManageSubscriptionModalHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ManageSubscriptionModalHelper.swift; sourceTree = "<group>"; };
 		35E840C9270FB52800899AE2 /* ManageSubscriptionsModalHelperTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ManageSubscriptionsModalHelperTests.swift; sourceTree = "<group>"; };
+		35E840CD2710E2EB00899AE2 /* MockManageSubscriptionModalHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockManageSubscriptionModalHelper.swift; sourceTree = "<group>"; };
 		35F6FD61267426D600ABCB53 /* ETagAndResponseWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETagAndResponseWrapper.swift; sourceTree = "<group>"; };
 		35F82BAA26A84E130051DF03 /* Dictionary+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Dictionary+Extensions.swift"; sourceTree = "<group>"; };
 		35F82BB126A98EC50051DF03 /* AttributionDataMigratorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttributionDataMigratorTests.swift; sourceTree = "<group>"; };
@@ -863,6 +865,7 @@
 				37E357D16038F07915D7825D /* MockUserDefaults.swift */,
 				2DDF41E924F6F844005BC22D /* SKProductSubscriptionDurationExtensions.swift */,
 				2D90F8C926FD257A009B9142 /* MockStoreKit2TransactionListener.swift */,
+				35E840CD2710E2EB00899AE2 /* MockManageSubscriptionModalHelper.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -1762,6 +1765,7 @@
 				351B51B826D450E800BD2BD7 /* StoreKitWrapperTests.swift in Sources */,
 				2DDF41E624F6F5DC005BC22D /* MockSK1Product.swift in Sources */,
 				351B51BA26D450E800BD2BD7 /* ProductInfoExtensions.swift in Sources */,
+				35E840CE2710E2EB00899AE2 /* MockManageSubscriptionModalHelper.swift in Sources */,
 				F591492826B9956C00D32E58 /* MockTransaction.swift in Sources */,
 				351B517626D44F7200BD2BD7 /* MockProductDiscount.swift in Sources */,
 				351B516A26D44CB300BD2BD7 /* ISOPeriodFormatterTests.swift in Sources */,
