@@ -1005,6 +1005,14 @@ public extension Purchases {
         purchasesOrchestrator.paymentDiscount(forProductDiscount: discount, product: product, completion: completion)
     }
 
+    /**
+     * Use this function to open the manage subscriptions modal.
+     * If the manage subscriptions modal can't be opened, the managementURL in the customerInfo will be opened.
+     * If managementURL is not available, the App Store's subscription management section will be opened.
+     *
+     * - Parameter completion: A completion block that is called when the when the modal is closed.
+     * If it was not successful, there will be an `Error`.
+     */
     @available(iOS 9.0, *)
     @available(macOS 10.12, *)
     @available(watchOS, unavailable)
