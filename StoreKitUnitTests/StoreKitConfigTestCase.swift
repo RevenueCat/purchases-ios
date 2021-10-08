@@ -31,6 +31,8 @@ class StoreKitConfigTestCase: XCTestCase {
         testSession.resetToDefaultState()
         testSession.disableDialogs = true
         testSession.clearTransactions()
+        // Wait for StoreKitTest
+        Thread.sleep(forTimeInterval: 5)
         let suiteName = "StoreKitConfigTests"
         userDefaults = UserDefaults(suiteName: suiteName)
         userDefaults?.removePersistentDomain(forName: suiteName)
