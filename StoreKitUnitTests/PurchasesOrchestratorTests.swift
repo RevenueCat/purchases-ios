@@ -39,16 +39,16 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         productsManager = MockProductsManager()
         storeKitWrapper = MockStoreKitWrapper()
         systemInfo = try MockSystemInfo(platformFlavor: "xyz",
-                                         platformFlavorVersion: "1.2.3",
-                                         finishTransactions: true)
+                                        platformFlavorVersion: "1.2.3",
+                                        finishTransactions: true)
         operationDispatcher = MockOperationDispatcher()
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher())
         deviceCache = MockDeviceCache()
         backend = MockBackend()
         customerInfoManager = MockCustomerInfoManager(operationDispatcher: OperationDispatcher(),
-                                                        deviceCache: deviceCache,
-                                                        backend: backend,
-                                                        systemInfo: systemInfo)
+                                                      deviceCache: deviceCache,
+                                                      backend: backend,
+                                                      systemInfo: systemInfo)
         identityManager = MockIdentityManager(mockAppUserID: "appUserID")
         receiptParser = MockReceiptParser()
         let attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
