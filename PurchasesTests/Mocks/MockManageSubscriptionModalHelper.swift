@@ -14,8 +14,8 @@
 import Foundation
 @testable import RevenueCat
 
-class MockManageSubscriptionModalHelper: ManageSubscriptionModalHelper {
+class MockManageSubscriptionModalHelper: ManageSubscriptionsModalHelper {
 
-    
+
 
 }
