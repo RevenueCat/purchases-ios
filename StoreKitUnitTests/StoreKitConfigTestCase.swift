@@ -50,9 +50,9 @@ private extension StoreKitConfigTestCase {
         // StoreKitTest seems to take a few seconds to initialize, and running tests before that
         // might result in failure. So we give it a few seconds to load before testing.
         Self.waitLock.lock()
-        if !(Self.hasWaited) {
-            Thread.sleep(forTimeInterval: 5)
+        if !Self.hasWaited {
             Self.hasWaited = true
+            Thread.sleep(forTimeInterval: 5)
         }
         Self.waitLock.unlock()
     }
