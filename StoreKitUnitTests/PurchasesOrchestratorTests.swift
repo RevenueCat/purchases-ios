@@ -161,12 +161,15 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageSkipsIfPurhaseFailed() async throws {
-        testSession.failTransactionsEnabled = true
-
         guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
 
+        guard SystemInfo.useStoreKit2IfAvailable else {
+            throw XCTSkip("StoreKit 2 tests are disabled.")
+        }
+
+        testSession.failTransactionsEnabled = true
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
