@@ -22,7 +22,7 @@ class StoreKitConfigTestCase: XCTestCase {
 
     private static var hasWaited = false
     private static let waitLock = NSLock()
-    private static let waitTimeInSeconds: Double = 10
+    private static let waitTimeInSeconds: Double = 20
 
     var testSession: SKTestSession!
     var userDefaults: UserDefaults!
