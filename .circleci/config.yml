@@ -19,6 +19,8 @@ release-tags: &release-tags
     branches:
       ignore: /.*/
 
+orbs:
+   macos: circleci/macos@dev:25cb9bd
 
 version: 2.1
 commands:
@@ -118,12 +120,18 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - run:
-          name: pre-warm simulator
-          command:  |
-              open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID "iPhone 8 (14.5)"
-              open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID "iPhone 12 (15.0)"
-              open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app --args -CurrentDeviceUDID "Apple TV"
+      - macos/preboot-simulator:
+          version: "14.5"
+          platform: "iOS"
+          device: "iPhone 8"
+      - macos/preboot-simulator:
+          version: "15.0"
+          platform: "iOS"
+          device: "iPhone 12"
+      - macos/preboot-simulator:
+          version: "15.0"
+          platform: "tvOS"
+          device: "Apple TV"
       - install-dependencies
       
       - run:
