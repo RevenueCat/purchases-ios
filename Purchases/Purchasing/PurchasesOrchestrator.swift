@@ -266,7 +266,7 @@ class PurchasesOrchestrator {
             switch result {
             case .failure(let error):
                 completion(error)
-            case .success():
+            case .success:
                 completion(nil)
             }
         }
