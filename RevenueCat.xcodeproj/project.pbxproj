@@ -38,7 +38,6 @@
 		2D90F8B526FD2093009B9142 /* MockSystemInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B514626D44A0D00BD2BD7 /* MockSystemInfo.swift */; };
 		2D90F8B626FD2099009B9142 /* MockSubscriberAttributesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B514226D449C100BD2BD7 /* MockSubscriberAttributesManager.swift */; };
 		2D90F8B826FD20AA009B9142 /* MockReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515126D44AF000BD2BD7 /* MockReceiptFetcher.swift */; };
-		2D90F8B926FD20AF009B9142 /* MockCustomerInfoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B514826D44A2F00BD2BD7 /* MockCustomerInfoManager.swift */; };
 		2D90F8BB26FD20BD009B9142 /* MockIdentityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B513E26D4496000BD2BD7 /* MockIdentityManager.swift */; };
 		2D90F8BC26FD20C2009B9142 /* MockReceiptParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B13440508B46C9A530 /* MockReceiptParser.swift */; };
 		2D90F8BF26FD20D6009B9142 /* MockAttributionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515926D44B6200BD2BD7 /* MockAttributionFetcher.swift */; };
@@ -1596,7 +1595,6 @@
 				35B745A82711001A00458D46 /* MockManageSubscriptionsModalHelper.swift in Sources */,
 				2D90F8B126FD1E52009B9142 /* PurchasesOrchestratorTests.swift in Sources */,
 				2D90F8B426FD208B009B9142 /* MockStoreKitWrapper.swift in Sources */,
-				2D90F8B926FD20AF009B9142 /* MockCustomerInfoManager.swift in Sources */,
 				2D90F8BB26FD20BD009B9142 /* MockIdentityManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

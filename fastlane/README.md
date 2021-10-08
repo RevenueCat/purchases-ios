@@ -76,6 +76,11 @@ archive
 fastlane ios build_swift_api_tester
 ```
 build Swift API tester
+### ios build_objc_api_tester
+```
+fastlane ios build_objc_api_tester
+```
+build ObjC API tester
 ### ios replace_api_key_integration_tests
 ```
 fastlane ios replace_api_key_integration_tests

@@ -16,15 +16,13 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
+class TrialOrIntroPriceEligibilityCheckerTests: StoreKitConfigTestCase {
 
     var receiptFetcher: MockReceiptFetcher!
     var trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
     var mockBackend: MockBackend!
     var mockProductsManager: MockProductsManager!
-    var testSession: SKTestSession!
-    var userDefaults: UserDefaults!
 
     func setupSK1() {
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher())
@@ -43,9 +41,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: XCTestCase {
     }
 
     func setUpSK2WithError() throws {
-        testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
-        testSession.disableDialogs = true
-        testSession.clearTransactions()
+        try super.setUpWithError()
 
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher())
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
