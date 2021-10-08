@@ -30,6 +30,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         guard #available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
+
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var completionCalled = false
         var maybeReceivedProducts: Set<ProductDetails>?
@@ -45,7 +46,8 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
         let firstProduct = try XCTUnwrap(receivedProducts.first)
 
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *) {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *),
+            SystemInfo.useStoreKit2IfAvailable {
             expect(firstProduct as? SK2ProductDetails).toNot(beNil())
         } else {
             expect(firstProduct as? SK1ProductDetails).toNot(beNil())

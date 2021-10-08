@@ -44,6 +44,8 @@ class SystemInfo {
 
     let appleSubscriptionsURL = URL(string: "https://rev.cat/manage-apple-subscription")
 
+    static let useStoreKit2IfAvailable = false
+
     var finishTransactions: Bool
     let platformFlavor: String
     let platformFlavorVersion: String?
