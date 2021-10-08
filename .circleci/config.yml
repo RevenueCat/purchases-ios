@@ -128,10 +128,6 @@ jobs:
           version: "15.0"
           platform: "iOS"
           device: "iPhone 12"
-      - macos/preboot-simulator:
-          version: "15.0"
-          platform: "tvOS"
-          device: "Apple TV"
       - install-dependencies
       
       - run:
