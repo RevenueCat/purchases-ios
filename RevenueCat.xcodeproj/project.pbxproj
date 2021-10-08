@@ -2413,8 +2413,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/quick/nimble";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 9.2.1;
+				branch = main;
+				kind = branch;
 			};
 		};
 		2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */ = {
