@@ -30,6 +30,7 @@ class StoreKitConfigTestCase: XCTestCase {
         testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
         testSession.disableDialogs = true
         testSession.clearTransactions()
+        testSession.failTransactionsEnabled = false
         let suiteName = "StoreKitConfigTests"
         userDefaults = UserDefaults(suiteName: suiteName)
         userDefaults?.removePersistentDomain(forName: suiteName)
