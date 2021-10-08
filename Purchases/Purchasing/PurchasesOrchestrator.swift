@@ -58,7 +58,7 @@ class PurchasesOrchestrator {
     private let lock = NSRecursiveLock()
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    private lazy var storeKit2Listener = StoreKit2TransactionListener(delegate: self)
+    lazy var storeKit2Listener = StoreKit2TransactionListener(delegate: self)
 
     init(productsManager: ProductsManager,
          storeKitWrapper: StoreKitWrapper,
@@ -180,7 +180,22 @@ class PurchasesOrchestrator {
         // todo: clean up, move to new class along with the private funcs below
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            package.productDetails is SK2ProductDetails {
-            purchase(sk2Package: package, completion: completion)
+            Task {
+                let result = await purchase(sk2Package: package)
+                DispatchQueue.main.async {
+                    switch result {
+                    case .failure(let error):
+                        completion(nil, nil, error, false)
+                    case .success(let (customerInfo, userCancelled)):
+                        // todo: change API and send transaction
+                        if userCancelled {
+                            completion(nil, nil, ErrorUtils.purchaseCancelledError(), userCancelled)
+                        } else {
+                            completion(nil, customerInfo, nil, userCancelled)
+                        }
+                    }
+                }
+            }
         } else {
             guard package.productDetails is SK1ProductDetails else {
                 fatalError("could not identify StoreKit version to use!")
@@ -556,19 +571,33 @@ private extension PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func purchase(sk2Package: Package, completion: @escaping PurchaseCompletedBlock) {
+    func purchase(sk2Package: Package) async -> Result<(CustomerInfo, Bool), Error> {
         guard let sk2ProductDetails = sk2Package.productDetails as? SK2ProductDetails else {
-            return
+            // todo: use custom error
+            return .failure(ErrorUtils.unexpectedBackendResponseError())
         }
 
         let sk2Product = sk2ProductDetails.underlyingSK2Product
-        Task {
+        do {
             let result = try await sk2Product.purchase()
-            await storeKit2Listener.handle(purchaseResult: result)
-            // todo: nicer handling, improve the userCancelled case
-            syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybeCustomerInfo, maybeError in
-                completion(nil, maybeCustomerInfo, maybeError, false)
+            let userCancelled = await storeKit2Listener.handle(purchaseResult: result)
+
+            return await withCheckedContinuation { continuation in
+                syncPurchases(receiptRefreshPolicy: .always, isRestore: false) { maybeCustomerInfo, maybeError in
+                    if let error = maybeError {
+                        continuation.resume(returning: .failure(error))
+                        return
+                    }
+                    guard let customerInfo = maybeCustomerInfo else {
+                        continuation.resume(returning: .failure(ErrorUtils.unexpectedBackendResponseError()))
+                        return
+                    }
+
+                    continuation.resume(returning: .success((customerInfo, userCancelled)))
+                }
             }
+        } catch {
+            return .failure(error)
         }
     }
 

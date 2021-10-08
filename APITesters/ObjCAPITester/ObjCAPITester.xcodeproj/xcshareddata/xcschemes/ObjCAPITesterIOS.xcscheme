@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2DD778F4270E235B0079CBD4"
-               BuildableName = "ObjCAPITesterIOSApp.app"
+               BuildableName = "ObjCAPITesterIOS.app"
                BlueprintName = "ObjCAPITesterIOS"
                ReferencedContainer = "container:ObjCAPITester.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2DD778F4270E235B0079CBD4"
-            BuildableName = "ObjCAPITesterIOSApp.app"
+            BuildableName = "ObjCAPITesterIOS.app"
             BlueprintName = "ObjCAPITesterIOS"
             ReferencedContainer = "container:ObjCAPITester.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2DD778F4270E235B0079CBD4"
-            BuildableName = "ObjCAPITesterIOSApp.app"
+            BuildableName = "ObjCAPITesterIOS.app"
             BlueprintName = "ObjCAPITesterIOS"
             ReferencedContainer = "container:ObjCAPITester.xcodeproj">
          </BuildableReference>
