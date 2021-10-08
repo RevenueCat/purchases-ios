@@ -144,7 +144,7 @@ jobs:
 
   swift_apitest:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -152,7 +152,8 @@ jobs:
       - update-spm-integration-commit
       - run:
           name: Build SwiftAPITester
-          command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme SwiftAPITesterIOS
+          command: |
+              bundle exec fastlane build_swift_api_tester
 
   objc_apitest:
     macos:
@@ -164,7 +165,8 @@ jobs:
       - update-spm-integration-commit
       - run:
           name: Build ObjCAPITester
-          command: xcodebuild -workspace APITesters/APITesters.xcworkspace -scheme ObjCAPITesterIOS
+          command: |
+              bundle exec fastlane build_objc_api_tester
 
   backend_integration_tests:
     macos:

@@ -36,21 +36,26 @@ class StoreKit2TransactionListener {
         }
     }
 
-    func handle(purchaseResult: StoreKit.Product.PurchaseResult) async {
+    func handle(purchaseResult: StoreKit.Product.PurchaseResult) async -> Bool {
         switch purchaseResult {
         case .success(let verificationResult):
             await handle(transactionResult: verificationResult)
             // todo: proper handling
+            return false
         case .pending:
             Logger.info("the transaction is pending")
             // todo: proper handling
+            return false
         case .userCancelled:
             Logger.info("the transaction is cancelled")
+            return true
         @unknown default:
             // todo: proper handling
             Logger.info("")
+            return false
         }
     }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
