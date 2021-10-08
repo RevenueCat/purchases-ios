@@ -13,7 +13,7 @@
 
 import StoreKit
 
-enum ManageSubscriptionsModalError: Error {
+public enum ManageSubscriptionsModalError: Error {
 
     case couldntGetCustomerInfo(message: String)
     case couldntGetWindowScene
@@ -24,7 +24,7 @@ enum ManageSubscriptionsModalError: Error {
 
 extension ManageSubscriptionsModalError: CustomStringConvertible {
 
-    var description: String {
+    public var description: String {
         switch self {
         case .couldntGetCustomerInfo(let message):
             return "Failed to get managemementURL from PurchaserInfo. Details: \(message)"
@@ -155,7 +155,7 @@ private extension ManageSubscriptionsModalHelper {
 
 // todo: remove when this gets fixed.
 // limiting to arm architecture since builds on beta 5 fail if other archs are included
-#if os(iOS) && arch(arm64)
+#if os(iOS)
             try await AppStore.showManageSubscriptions(in: windowScene)
             return .success(())
 #else

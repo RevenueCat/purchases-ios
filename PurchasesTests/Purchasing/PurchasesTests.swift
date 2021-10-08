@@ -268,6 +268,7 @@ class PurchasesTests: XCTestCase {
     var mockOfferingsManager: MockOfferingsManager!
     var purchasesOrchestrator: PurchasesOrchestrator!
     var trialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
+    var mockManageSubsModalHelper: MockManageSubsModalHelper!
 
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -302,7 +303,8 @@ class PurchasesTests: XCTestCase {
                                                       backend: backend,
                                                       identityManager: identityManager,
                                                       receiptParser: mockReceiptParser,
-                                                      deviceCache: deviceCache)
+                                                      deviceCache: deviceCache,
+                                                      manageSubscriptionsModalHelper: mockManageSubsModalHelper)
         trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
                                                                                       introEligibilityCalculator: mockIntroEligibilityCalculator,
                                                                                       backend: backend,
