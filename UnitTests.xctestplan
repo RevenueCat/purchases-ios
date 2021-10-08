@@ -4,7 +4,7 @@
       "id" : "0F20159C-1CBD-47B2-BA13-2AFF518106DE",
       "name" : "Configuration 1",
       "options" : {
-
+        "testTimeoutsEnabled" : true
       }
     }
   ],
@@ -15,7 +15,8 @@
       "identifier" : "2DEAC2D926EFE46E006914ED",
       "name" : "UnitTestsHostApp"
     },
-    "testExecutionOrdering" : "random"
+    "testExecutionOrdering" : "random",
+    "testTimeoutsEnabled" : true
   },
   "testTargets" : [
     {

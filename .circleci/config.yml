@@ -19,6 +19,8 @@ release-tags: &release-tags
     branches:
       ignore: /.*/
 
+orbs:
+   macos: circleci/macos@dev:25cb9bd
 
 version: 2.1
 commands:
@@ -60,7 +62,7 @@ commands:
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
-          command: bundle exec fastlane test wait_for_simulator:true
+          command: bundle exec fastlane test
 
       - store_test_results:
           path: fastlane/test_output
@@ -123,7 +125,7 @@ jobs:
       
       - run:
           name: Run tests
-          command: bundle exec fastlane test wait_for_simulator:true
+          command: bundle exec fastlane test
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
