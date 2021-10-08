@@ -132,7 +132,7 @@ jobs:
       
       - run:
           name: Run tests
-          command: bundle exec fastlane test wait_for_simulator:true
+          command: bundle exec fastlane test
       - store_artifacts:
           path: fastlane/test_output
       - store_test_results:
