@@ -15,7 +15,7 @@ import StoreKit
 
 enum ManageSubscriptionsModalError: Error {
 
-    case couldntGetPurchaserInfo(message: String)
+    case couldntGetCustomerInfo(message: String)
     case couldntGetWindowScene
     case storeKitShowManageSubscriptionsFailed(error: Error)
     case couldntGetAppleSubscriptionsURL
@@ -26,7 +26,7 @@ extension ManageSubscriptionsModalError: CustomStringConvertible {
 
     var description: String {
         switch self {
-        case .couldntGetPurchaserInfo(let message):
+        case .couldntGetCustomerInfo(let message):
             return "Failed to get managemementURL from PurchaserInfo. Details: \(message)"
         case .couldntGetWindowScene:
             return "Failed to get UIWindowScene"
@@ -42,14 +42,14 @@ extension ManageSubscriptionsModalError: CustomStringConvertible {
 class ManageSubscriptionsModalHelper {
 
     private let systemInfo: SystemInfo
-    private let purchaserInfoManager: PurchaserInfoManager
+    private let customerInfoManager: CustomerInfoManager
     private let identityManager: IdentityManager
 
     init(systemInfo: SystemInfo,
-         purchaserInfoManager: PurchaserInfoManager,
+         customerInfoManager: CustomerInfoManager,
          identityManager: IdentityManager) {
         self.systemInfo = systemInfo
-        self.purchaserInfoManager = purchaserInfoManager
+        self.customerInfoManager = customerInfoManager
         self.identityManager = identityManager
     }
 
@@ -59,18 +59,18 @@ class ManageSubscriptionsModalHelper {
     @available(tvOS, unavailable)
     func showManageSubscriptionModal(completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
         let currentAppUserID = identityManager.currentAppUserID
-        purchaserInfoManager.purchaserInfo(appUserID: currentAppUserID) { maybePurchaserInfo, maybeError in
+        customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
             if let error = maybeError {
-                completion(.failure(.couldntGetPurchaserInfo(message: error.localizedDescription)))
+                completion(.failure(.couldntGetCustomerInfo(message: error.localizedDescription)))
                 return
             }
 
-            guard let purchaserInfo = maybePurchaserInfo else {
-                completion(.failure(.couldntGetPurchaserInfo(message: "purchaserInfo is nil.")))
+            guard let customerInfo = maybeCustomerInfo else {
+                completion(.failure(.couldntGetCustomerInfo(message: "customerInfo is nil.")))
                 return
             }
 
-            guard let managementURL = purchaserInfo.managementURL else {
+            guard let managementURL = customerInfo.managementURL else {
                 Logger.debug(Strings.purchase.management_url_nil_opening_default)
                 guard let appleSubscriptionsURL = self.systemInfo.appleSubscriptionsURL else {
                     completion(.failure(.couldntGetAppleSubscriptionsURL))
