@@ -62,7 +62,7 @@ commands:
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
-          command: bundle exec fastlane test wait_for_simulator:true
+          command: bundle exec fastlane test
 
       - store_test_results:
           path: fastlane/test_output
