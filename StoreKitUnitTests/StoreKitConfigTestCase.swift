@@ -28,9 +28,9 @@ class StoreKitConfigTestCase: XCTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
         testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
+        testSession.resetToDefaultState()
         testSession.disableDialogs = true
         testSession.clearTransactions()
-        testSession.failTransactionsEnabled = false
         let suiteName = "StoreKitConfigTests"
         userDefaults = UserDefaults(suiteName: suiteName)
         userDefaults?.removePersistentDomain(forName: suiteName)
