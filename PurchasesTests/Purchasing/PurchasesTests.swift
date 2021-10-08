@@ -63,6 +63,9 @@ class PurchasesTests: XCTestCase {
                                                     backend: backend,
                                                     offeringsFactory: offeringsFactory,
                                                     productsManager: mockProductsManager)
+        mockManageSubsModalHelper = MockManageSubscriptionsModalHelper(systemInfo: systemInfo,
+                                                                       customerInfoManager: customerInfoManager,
+                                                                       identityManager: identityManager)
     }
 
     override func tearDown() {
@@ -268,7 +271,7 @@ class PurchasesTests: XCTestCase {
     var mockOfferingsManager: MockOfferingsManager!
     var purchasesOrchestrator: PurchasesOrchestrator!
     var trialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
-    var mockManageSubsModalHelper: MockManageSubsModalHelper!
+    var mockManageSubsModalHelper: MockManageSubscriptionsModalHelper!
 
     let purchasesDelegate = MockPurchasesDelegate()
 

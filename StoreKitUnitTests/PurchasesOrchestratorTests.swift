@@ -30,6 +30,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     var identityManager: MockIdentityManager!
     var receiptParser: MockReceiptParser!
     var deviceCache: MockDeviceCache!
+    var mockManageSubsModalHelper: MockManageSubscriptionsModalHelper!
 
     var orchestrator: PurchasesOrchestrator!
 
@@ -59,6 +60,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             attributionFetcher: attributionFetcher,
             attributionDataMigrator: MockAttributionDataMigrator())
 
+        mockManageSubsModalHelper = MockManageSubscriptionsModalHelper(systemInfo: systemInfo,
+                                                                       customerInfoManager: customerInfoManager,
+                                                                       identityManager: identityManager)
+
         orchestrator = PurchasesOrchestrator(productsManager: productsManager,
                                              storeKitWrapper: storeKitWrapper,
                                              systemInfo: systemInfo,
@@ -69,7 +74,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              backend: backend,
                                              identityManager: identityManager,
                                              receiptParser: receiptParser,
-                                             deviceCache: deviceCache)
+                                             deviceCache: deviceCache,
+                                             manageSubscriptionsModalHelper: mockManageSubsModalHelper)
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             orchestrator.storeKit2Listener = MockStoreKit2TransactionListener()
         }
@@ -160,7 +166,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testPurchaseSK2PackageSkipsIfPurhaseFailed() async throws {
+    func testPurchaseSK2PackageSkipsIfPurchaseFailed() async throws {
         testSession.failTransactionsEnabled = true
 
         guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
@@ -189,6 +195,26 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptData) == false
         let mockListener = try XCTUnwrap(orchestrator.storeKit2Listener as? MockStoreKit2TransactionListener)
         expect(mockListener.invokedHandle) == false
+    }
+
+    func testShowManageSubscriptionModalCallsCompletionWithErrorIfThereIsAFailure() {
+        mockManageSubsModalHelper.mockError = ManageSubscriptionsModalError.couldntGetAppleSubscriptionsURL
+        var receivedError: ManageSubscriptionsModalError?
+        orchestrator.showManageSubscriptionModal { maybeError in
+            receivedError = maybeError
+        }
+
+        expect(receivedError).toNot(beNil())
+        expect(receivedError).to(matchError(ManageSubscriptionsModalError.couldntGetAppleSubscriptionsURL))
+    }
+
+    func testShowManageSubscriptionModalCallsCompletionWithoutErrorIfItsSuccesful() {
+        var receivedError: ManageSubscriptionsModalError?
+        orchestrator.showManageSubscriptionModal { maybeError in
+            receivedError = maybeError
+        }
+
+        expect(receivedError).to(beNil())
     }
 
 }
