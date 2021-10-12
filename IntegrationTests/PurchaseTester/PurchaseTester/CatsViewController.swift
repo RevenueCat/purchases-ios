@@ -23,18 +23,18 @@ class CatsViewController: UIViewController {
         goPremiumButton.addTarget(self, action: #selector(goPremiumButtonTapped), for: .touchUpInside)
         restorePurchasesButton.addTarget(self, action: #selector(restorePurchasesButtonTapped), for: .touchUpInside)
         
-        Purchases.shared.purchaserInfo { (purchaserInfo, error) in
-            self.configureCatContentFor(purchaserInfo: purchaserInfo)
+        Purchases.shared.customerInfo{ (maybeCustomerInfo, error) in
+            self.configureCatContentFor(customerInfo: maybeCustomerInfo)
         }
 
     }
     
-    func configureCatContentFor(purchaserInfo: PurchaserInfo?) {
+    func configureCatContentFor(customerInfo maybeCustomerInfo: CustomerInfo?) {
         
         // set the content based on the user subscription status
-        if let purchaserInfo = purchaserInfo {
+        if let customerInfo = maybeCustomerInfo {
             
-            if purchaserInfo.entitlements["pro_cat"]?.isActive == true {
+            if customerInfo.entitlements["pro_cat"]?.isActive == true {
                 
                 print("Hey there premium, you're a happy cat 😻")
                 self.catContentLabel.text = "😻"
@@ -44,10 +44,10 @@ class CatsViewController: UIViewController {
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateStyle = .medium
                 
-                if let purchaseDate = purchaserInfo.purchaseDate(forEntitlement: "pro_cat") {
+                if let purchaseDate = customerInfo.purchaseDate(forEntitlement: "pro_cat") {
                     self.purchaseDateLabel.text = "Purchase Date: \(dateFormatter.string(from: purchaseDate))"
                 }
-                if let expirationDate = purchaserInfo.expirationDate(forEntitlement: "pro_cat") {
+                if let expirationDate = customerInfo.expirationDate(forEntitlement: "pro_cat") {
                     self.expirationDateLabel.text = "Expiration Date: \(dateFormatter.string(from: expirationDate))"
                     
                 }
@@ -65,11 +65,11 @@ class CatsViewController: UIViewController {
     }
     
     @objc func restorePurchasesButtonTapped() {
-        Purchases.shared.restoreTransactions { (purchaserInfo, error) in
+        Purchases.shared.restoreTransactions { (customerInfo, error) in
             if let e = error {
                 print("RESTORE ERROR: - \(e.localizedDescription)")
             }
-            self.configureCatContentFor(purchaserInfo: purchaserInfo)
+            self.configureCatContentFor(customerInfo: customerInfo)
                 
         }
     }

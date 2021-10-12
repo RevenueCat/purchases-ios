@@ -17,9 +17,9 @@ enum PayWallEdgeStyle : String {
 }
 
 @objc protocol SwiftPaywallDelegate {
-    func purchaseCompleted(paywall: SwiftPaywall, transaction: SKPaymentTransaction, purchaserInfo: PurchaserInfo)
-    @objc optional func purchaseFailed(paywall: SwiftPaywall, purchaserInfo: PurchaserInfo?, error: Error, userCancelled: Bool)
-    @objc optional func purchaseRestored(paywall: SwiftPaywall, purchaserInfo: PurchaserInfo?, error: Error?)
+    func purchaseCompleted(paywall: SwiftPaywall, transaction: SKPaymentTransaction, customerInfo: CustomerInfo)
+    @objc optional func purchaseFailed(paywall: SwiftPaywall, customerInfo: CustomerInfo?, error: Error, userCancelled: Bool)
+    @objc optional func purchaseRestored(paywall: SwiftPaywall, customerInfo: CustomerInfo?, error: Error?)
 }
 
 class SwiftPaywall: UIViewController {
@@ -198,8 +198,8 @@ class SwiftPaywall: UIViewController {
                 if let error = error {
                     self.showAlert(title: "Error", message: error.localizedDescription)
                 } else {
-                    if let purchaserInfo = info {
-                        if purchaserInfo.entitlements.active.isEmpty {
+                    if let customerInfo = info {
+                        if customerInfo.entitlements.active.isEmpty {
                             self.showAlert(title: "Restore Unsuccessful", message: "No prior purchases found for your account.")
                         } else {
                             self.close()
