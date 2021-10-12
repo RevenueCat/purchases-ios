@@ -18,6 +18,7 @@ class MockManageSubscriptionsModalHelper: ManageSubscriptionsModalHelper {
 
     var mockError: ManageSubscriptionsModalError?
 
+#if os(iOS) || os(macOS)
     @available(iOS 9.0, *)
     @available(macOS 10.12, *)
     @available(watchOS, unavailable)
@@ -29,5 +30,6 @@ class MockManageSubscriptionsModalHelper: ManageSubscriptionsModalHelper {
             completion(.success(Void()))
         }
     }
+#endif
 
 }
