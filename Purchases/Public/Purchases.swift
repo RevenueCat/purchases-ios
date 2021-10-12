@@ -1017,7 +1017,7 @@ public extension Purchases {
     @available(macOS 10.12, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showManageSubscriptionModal(completion: @escaping (ManageSubscriptionsModalError?) -> Void) {
+    @objc func showManageSubscriptionModal(completion: @escaping (ManageSubscriptionsModalError?) -> Void) {
         purchasesOrchestrator.showManageSubscriptionModal(completion: completion)
     }
 
