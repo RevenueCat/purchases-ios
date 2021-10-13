@@ -20,6 +20,8 @@ enum StoreKitStrings {
 
     case skproductsrequest_failed(error: Error)
 
+    case skproductsrequest_timed_out(after: Int)
+
     case skproductsrequest_finished
 
     case skproductsrequest_received_response
@@ -36,6 +38,10 @@ extension StoreKitStrings: CustomStringConvertible {
 
         case .skproductsrequest_failed(let error):
             return "SKProductsRequest failed! error: \(error.localizedDescription)"
+
+        case .skproductsrequest_timed_out(let afterTimeInSeconds):
+            return "SKProductsRequest took longer than \(afterTimeInSeconds), " +
+            "cancelling request and returning empty set"
 
         case .skproductsrequest_finished:
             return "SKProductsRequest did finish"

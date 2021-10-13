@@ -22,6 +22,7 @@ class ProductsManager: NSObject {
     private let queue = DispatchQueue(label: "ProductsManager")
     private var productsByRequests: [SKRequest: Set<String>] = [:]
     private var completionHandlers: [Set<String>: [(Set<SKProduct>) -> Void]] = [:]
+    private let requestTimeoutInSeconds = 30
 
     init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory()) {
         self.productsRequestFactory = productsRequestFactory
@@ -56,6 +57,25 @@ class ProductsManager: NSObject {
             self.completionHandlers[identifiers] = [completion]
             self.productsByRequests[request] = identifiers
             request.start()
+            queue.asyncAfter(deadline: .now() + .seconds(requestTimeoutInSeconds)) { [weak self] in
+                guard let self = self else { return }
+
+                if let products = self.productsByRequests[request] {
+                    request.cancel()
+
+                    Logger.appleError(Strings.storeKit.skproductsrequest_timed_out(after: requestTimeoutInSeconds))
+                    guard let completionBlocks = self.completionHandlers[products] else {
+                        Logger.error("callback not found for failing request: \(request)")
+                        return
+                    }
+
+                    self.completionHandlers.removeValue(forKey: products)
+                    self.productsByRequests.removeValue(forKey: request)
+                    for completion in completionBlocks {
+                        completion(Set())
+                    }
+                }
+            }
         }
     }
 
