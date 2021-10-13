@@ -193,7 +193,7 @@ private extension HTTPClient {
             if let httpURLResponse = maybeURLResponse as? HTTPURLResponse {
                 statusCode = httpURLResponse.statusCode
                 Logger.debug(Strings.network.api_request_completed(httpMethod: request.httpMethod,
-                                                                   path: request.httpMethod,
+                                                                   path: request.path,
                                                                    httpCode: statusCode))
 
                 if statusCode == HTTPStatusCodes.notModifiedResponseCode.rawValue || maybeData == nil {
