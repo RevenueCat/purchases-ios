@@ -45,17 +45,20 @@ platform :ios do
     scan(
       step_name: "scan - iPhone", 
       devices: ["iPhone 8", "iPhone 12"],
-      output_types: 'junit',
-      output_files: 'junit.xml',
-      output_directory: 'fastlane/test_output/xctest'
+      output_types: '',
+      fail_build: false,
+      result_bundle: true
     )
+    trainer(path: "fastlane/test_output", output_directory: "fastlane/test_output/xctest/ios")
+
     scan(
       step_name: "scan - Apple TV",
       devices: ["Apple TV"],
-      output_types: 'junit',
-      output_files: 'junit.xml',
-      output_directory: 'fastlane/test_output/xctest'
+      output_types: '',
+      fail_build: false,
+      result_bundle: true
     )
+    trainer(path: "fastlane/test_output", output_directory: "fastlane/test_output/xctest/tvos")
   end
 
   desc "Increment build number"
