@@ -81,6 +81,11 @@ replace API KEY for integration tests
 fastlane ios deploy
 ```
 Deploy
+### ios deploy_new
+```
+fastlane ios deploy_new
+```
+
 ### ios prepare_next_version
 ```
 fastlane ios prepare_next_version

@@ -179,6 +179,15 @@ platform :ios do
     github_release(version: version_number)
   end
 
+  lane :deploy_new do |options|
+    version_number = current_version_number
+
+    UI.important("Current version is #{version_number}")
+    new_version_number = UI.input("New version number: ")
+    
+    bump(version: new_version_number)
+  end
+
   desc "Prepare next version"
   lane :prepare_next_version do |options|
     old_version_number = current_version_number
