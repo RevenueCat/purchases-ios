@@ -194,12 +194,23 @@ platform :ios do
     sh("git checkout -b 'release/#{new_version_number}'")
    
     # Open CHANGELOG.latest.md in vim 
-    current_changelog = File.open("../CHANGELOG.latest.md", 'r')
-    system("vim", File.absolute_path(current_changelog).shellescape)
+    current_changelog_path = File.absolute("../CHANGELOG.latest.md")
+    system("vim", File.absolute_path(current_changelog_path).shellescape)
+    current_changelog = File.read(current_changelog_path)
 
     # Bump version
     bump(version: new_version_number)
 
+    # Only add and commit update files
+    sh("git add -u")
+    sh("git commit -m 'Version bump for #{new_version_number}'")
+
+    create_pull_request(
+      repo: "RevenueCat/purchases-ios",
+      title: "Release/#{new_version_number}",
+      base: "main",
+      body: current_changelog
+    )
   end
 
   desc "Prepare next version"
