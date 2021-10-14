@@ -172,16 +172,8 @@ platform :ios do
 
   desc "Deploy"
   lane :deploy do |options|
-    version_number = current_version_number
-    push_pods
-    carthage_archive
-    export_xcframework
-    github_release(version: version_number)
-  end
-
-  lane :deploy_new do |options|
-    #ensure_git_branch(branch: 'main')
-    #ensure_git_status_clean
+    ensure_git_branch(branch: 'main')
+    ensure_git_status_clean
 
     # Get and print current version number
     version_number = current_version_number
