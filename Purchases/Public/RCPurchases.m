@@ -1054,7 +1054,7 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
         RCDebugLog(@"%@", RCStrings.receipt.refreshing_empty_receipt);
         [self refreshReceipt:completion];
     } else {
-        completion(receiptData);
+        completion(receiptData ?: [NSData data]);
     }
 }
 
