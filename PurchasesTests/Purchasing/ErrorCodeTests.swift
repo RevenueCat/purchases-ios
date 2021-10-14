@@ -117,24 +117,24 @@ class ErrorCodeTests: XCTestCase {
     }
 
     func testEmptySubscriberAttributes() {
-        ensureEnumCaseMatchesExpectedRawValue(errorCode: .emptySubscriberAttributes, expectedRawValue: 24)
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .emptySubscriberAttributes, expectedRawValue: 25)
     }
 
     func testProductDiscountMissingIdentifierError() {
-        ensureEnumCaseMatchesExpectedRawValue(errorCode: .productDiscountMissingIdentifierError, expectedRawValue: 25)
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .productDiscountMissingIdentifierError, expectedRawValue: 26)
     }
 
     func testMissingAppUserIDForAliasCreationError() {
-        ensureEnumCaseMatchesExpectedRawValue(errorCode: .missingAppUserIDForAliasCreationError, expectedRawValue: 26)
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .missingAppUserIDForAliasCreationError, expectedRawValue: 27)
     }
 
     func testProductDiscountMissingSubscriptionGroupIdentifierError() {
         ensureEnumCaseMatchesExpectedRawValue(errorCode: .productDiscountMissingSubscriptionGroupIdentifierError,
-                                              expectedRawValue: 27)
+                                              expectedRawValue: 28)
     }
 
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases.count).to(equal(28))
+        expect(ErrorCode.allCases.count).to(equal(29))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {
