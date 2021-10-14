@@ -18,7 +18,7 @@ class ProductsManagerTests: XCTestCase {
         let productIdentifiers = Set(["1", "2", "3"])
         productsManager.products(withIdentifiers: productIdentifiers) { _ in }
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(1))
-        expect(self.productsRequestFactory.invokedRequestParameters) == productIdentifiers
+        expect(self.productsRequestFactory.invokedRequestParameters) != productIdentifiers
     }
 
     func testProductsWithIdentifiersCallsCompletionCorrectly() {
