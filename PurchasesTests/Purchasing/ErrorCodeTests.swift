@@ -116,6 +116,11 @@ class ErrorCodeTests: XCTestCase {
         ensureEnumCaseMatchesExpectedRawValue(errorCode: .configurationError, expectedRawValue: 23)
     }
 
+
+    func testUnsupportedError() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .unsupportedError, expectedRawValue: 24)
+    }
+
     func testEmptySubscriberAttributes() {
         ensureEnumCaseMatchesExpectedRawValue(errorCode: .emptySubscriberAttributes, expectedRawValue: 25)
     }
