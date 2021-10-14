@@ -16,14 +16,14 @@ import Foundation
 
 class MockManageSubscriptionsModalHelper: ManageSubscriptionsModalHelper {
 
-    var mockError: ManageSubscriptionsModalError?
+    var mockError: Error?
 
 #if os(iOS) || os(macOS)
     @available(iOS 9.0, *)
     @available(macOS 10.12, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    override func showManageSubscriptionModal(completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
+    override func showManageSubscriptionModal(completion: @escaping (Result<Void, Error>) -> Void) {
         if let manageSubscriptionsModalError = mockError {
             completion(.failure(manageSubscriptionsModalError))
         } else {

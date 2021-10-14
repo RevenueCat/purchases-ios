@@ -261,7 +261,7 @@ class PurchasesOrchestrator {
     @available(macOS 10.12, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showManageSubscriptionModal(completion: @escaping (ManageSubscriptionsModalError?) -> Void) {
+    func showManageSubscriptionModal(completion: @escaping (Error?) -> Void) {
         self.manageSubscriptionsModalHelper.showManageSubscriptionModal { result in
             switch result {
             case .failure(let error):

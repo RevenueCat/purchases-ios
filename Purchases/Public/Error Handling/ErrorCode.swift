@@ -48,6 +48,10 @@ import Foundation
     @objc(RCMissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 26
     @objc(RCProductDiscountMissingSubscriptionGroupIdentifierError)
     case productDiscountMissingSubscriptionGroupIdentifierError = 27
+    @objc(RCCustomerInfoError)
+    case customerInfoError = 29
+    @objc(RCSystemInfoError)
+    case systemInfoError = 30
 
 }
 
@@ -118,6 +122,10 @@ extension ErrorCode {
             return "Unable to create an alias when the alias is either nil or empty string"
         case .productDiscountMissingSubscriptionGroupIdentifierError:
             return "Unable to create a discount offer, the product is missing a subscriptionGroupIdentifier."
+        case .customerInfoError:
+            return "There was a problem related to the customer info."
+        case .systemInfoError:
+            return "There was a problem related to the system info."
         @unknown default:
             return "Something went wrong."
         }
@@ -185,6 +193,10 @@ extension ErrorCode {
             return "MISSING_APP_USER_ID_FOR_ALIAS_CREATION_ERROR"
         case .productDiscountMissingSubscriptionGroupIdentifierError:
             return "PRODUCT_DISCOUNT_MISSING_SUBSCRIPTION_GROUP_IDENTIFIER_ERROR"
+        case .customerInfoError:
+            return "CUSTOMER_INFO_ERROR"
+        case .systemInfoError:
+            return "SYSTEM_INFO_ERROR"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }

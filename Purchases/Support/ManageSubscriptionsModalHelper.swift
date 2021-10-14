@@ -13,32 +13,6 @@
 
 import StoreKit
 
-public enum ManageSubscriptionsModalError: Error {
-
-    case couldntGetCustomerInfo(message: String)
-    case couldntGetWindowScene
-    case storeKitShowManageSubscriptionsFailed(error: Error)
-    case couldntGetAppleSubscriptionsURL
-
-}
-
-extension ManageSubscriptionsModalError: CustomStringConvertible {
-
-    public var description: String {
-        switch self {
-        case .couldntGetCustomerInfo(let message):
-            return "Failed to get managemementURL from PurchaserInfo. Details: \(message)"
-        case .couldntGetWindowScene:
-            return "Failed to get UIWindowScene"
-        case .storeKitShowManageSubscriptionsFailed(let error):
-            return "Error when trying to show manage subscription: \(error.localizedDescription)"
-        case .couldntGetAppleSubscriptionsURL:
-            return "Error when trying to form the Apple Subscriptions URL."
-        }
-    }
-
-}
-
 class ManageSubscriptionsModalHelper {
 
     private let systemInfo: SystemInfo
@@ -57,23 +31,26 @@ class ManageSubscriptionsModalHelper {
     @available(macOS 10.12, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showManageSubscriptionModal(completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
+    func showManageSubscriptionModal(completion: @escaping (Result<Void, Error>) -> Void) {
         let currentAppUserID = identityManager.currentAppUserID
         customerInfoManager.customerInfo(appUserID: currentAppUserID) { maybeCustomerInfo, maybeError in
             if let error = maybeError {
-                completion(.failure(.couldntGetCustomerInfo(message: error.localizedDescription)))
+                let message = "Failed to get managemementURL from PurchaserInfo. Details: \(error.localizedDescription)"
+                completion(.failure(ErrorUtils.customerInfoError(withMessage: message, error: error)))
                 return
             }
 
             guard let customerInfo = maybeCustomerInfo else {
-                completion(.failure(.couldntGetCustomerInfo(message: "customerInfo is nil.")))
+                let message = "Failed to get managemementURL from PurchaserInfo. Details: customerInfo is nil."
+                completion(.failure(ErrorUtils.customerInfoError(withMessage: message)))
                 return
             }
 
             guard let managementURL = customerInfo.managementURL else {
                 Logger.debug(Strings.purchase.management_url_nil_opening_default)
                 guard let appleSubscriptionsURL = self.systemInfo.appleSubscriptionsURL else {
-                    completion(.failure(.couldntGetAppleSubscriptionsURL))
+                    let message = "Error when trying to form the Apple Subscriptions URL."
+                    completion(.failure(ErrorUtils.systemInfoError(withMessage: message)))
                     return
                 }
                 self.showAppleManageSubscriptions(managementURL: appleSubscriptionsURL, completion: completion)
@@ -98,7 +75,7 @@ class ManageSubscriptionsModalHelper {
 private extension ManageSubscriptionsModalHelper {
 
     func showAppleManageSubscriptions(managementURL: URL,
-                                      completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
+                                      completion: @escaping (Result<Void, Error>) -> Void) {
 #if os(iOS)
         if #available(iOS 15.0, *) {
             Task {
@@ -111,7 +88,7 @@ private extension ManageSubscriptionsModalHelper {
         openURL(managementURL, completion: completion)
     }
 
-    func openURL(_ url: URL, completion: @escaping (Result<Void, ManageSubscriptionsModalError>) -> Void) {
+    func openURL(_ url: URL, completion: @escaping (Result<Void, Error>) -> Void) {
 #if os(iOS)
         openURLIfNotAppExtension(url: url)
 #elseif os(macOS)
@@ -145,10 +122,10 @@ private extension ManageSubscriptionsModalHelper {
     @MainActor
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
-    func showSK2ManageSubscriptions() async -> Result<Void, ManageSubscriptionsModalError> {
+    func showSK2ManageSubscriptions() async -> Result<Void, Error> {
         guard let application = systemInfo.sharedUIApplication,
               let windowScene = application.currentWindowScene else {
-                  return .failure(.couldntGetWindowScene)
+                  return .failure(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
         }
 
         do {
@@ -162,7 +139,8 @@ private extension ManageSubscriptionsModalHelper {
             fatalError("tried to call AppStore.showManageSubscriptions in a platform that doesn't support it!")
 #endif
         } catch {
-            return .failure(.storeKitShowManageSubscriptionsFailed(error: error))
+            let message = "Error when trying to show manage subscription: \(error.localizedDescription)"
+            return .failure(ErrorUtils.storeProblemError(withMessage: message, error: error))
         }
     }
 #endif

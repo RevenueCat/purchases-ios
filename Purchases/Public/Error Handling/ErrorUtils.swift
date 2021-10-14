@@ -205,6 +205,42 @@ import StoreKit
                                 underlyingError: nil)
     }
 
+    /**
+     * Constructs an Error with the ``ErrorCode/storeProblemError`` code.
+     *
+     * - Note: This error is used when there is a problem with the App Store.
+     */
+    @objc static func storeProblemError(withMessage message: String, error: Error? = nil) -> Error {
+        let errorCode = ErrorCode.storeProblemError
+        return ErrorUtils.error(with: errorCode,
+                                message: message,
+                                underlyingError: error)
+    }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/customerInfoError`` code.
+     *
+     * - Note: This error is used when there is a problem related to the customer info.
+     */
+    @objc static func customerInfoError(withMessage message: String, error: Error? = nil) -> Error {
+        let errorCode = ErrorCode.customerInfoError
+        return ErrorUtils.error(with: errorCode,
+                                message: message,
+                                underlyingError: error)
+    }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/systemInfoError`` code.
+     *
+     * - Note: This error is used when there is a problem related to the system info.
+     */
+    @objc static func systemInfoError(withMessage message: String, error: Error? = nil) -> Error {
+        let errorCode = ErrorCode.systemInfoError
+        return ErrorUtils.error(with: errorCode,
+                                message: message,
+                                underlyingError: error)
+    }
+
 }
 
 private extension SKError {
