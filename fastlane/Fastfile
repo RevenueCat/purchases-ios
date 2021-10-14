@@ -172,8 +172,8 @@ platform :ios do
 
   desc "Bump version, edit changelog, and create pull request"
   lane :bump do |options|
-    ensure_git_branch(branch: 'main')
-    ensure_git_status_clean
+    #ensure_git_branch(branch: 'main')
+    #ensure_git_status_clean
 
     # Ensure GitHub API token is set
     if ENV['GITHUB_PULL_REQUEST_API_TOKEN'].nil?
@@ -190,13 +190,13 @@ platform :ios do
     new_version_number = UI.input("New version number: ")
 
     # Open CHANGELOG.latest.md in editor
-    current_changelog_filename = "CHANGELOG.latest.md"
-    current_changelog_path = File.absolute_path("../#{current_changelog_path}")
+    changelog_filename = "CHANGELOG.latest.md"
+    changelog_path = File.absolute_path("../#{changelog_filename}")
     editor = ENV['FASTLANE_EDITOR'] || ENV['EDITOR'] || 'vim'
 
     UI.message("Will use '#{editor}'... Override by setting FASTLANE_EDITOR or EDITOR environment variable")
-    if UI.confirm("Open #{current_changelog_filename} in '#{editor}'?")
-      system(editor, File.absolute_path(current_changelog_path).shellescape)
+    if UI.confirm("Open #{changelog_filename} in '#{editor}'?")
+      system(editor, File.absolute_path(changelog_path).shellescape)
     else
       UI.user_error!("Cancelled")
     end
@@ -212,11 +212,11 @@ platform :ios do
     sh("git commit -m 'Version bump for #{new_version_number}'")
     push_to_git_remote
 
-    current_changelog = File.read(current_changelog_path)
+    changelog = File.read(changelog_path)
     create_pull_request(
       title: "Release/#{new_version_number}",
       base: "main",
-      body: current_changelog
+      body: changelog
     )
   end
 
