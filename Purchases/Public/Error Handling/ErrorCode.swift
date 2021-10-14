@@ -43,11 +43,12 @@ import Foundation
     @objc(RCInvalidSubscriberAttributesError) case invalidSubscriberAttributesError = 21
     @objc(RCLogOutAnonymousUserError) case logOutAnonymousUserError = 22
     @objc(RCConfigurationError) case configurationError = 23
-    @objc(RCEmptySubscriberAttributesError) case emptySubscriberAttributes = 24
-    @objc(RCProductDiscountMissingIdentifierError) case productDiscountMissingIdentifierError = 25
-    @objc(RCMissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 26
+    @objc(RCUnsupportedError) case unsupportedError = 24
+    @objc(RCEmptySubscriberAttributesError) case emptySubscriberAttributes = 25
+    @objc(RCProductDiscountMissingIdentifierError) case productDiscountMissingIdentifierError = 26
+    @objc(RCMissingAppUserIDForAliasCreationError) case missingAppUserIDForAliasCreationError = 27
     @objc(RCProductDiscountMissingSubscriptionGroupIdentifierError)
-    case productDiscountMissingSubscriptionGroupIdentifierError = 27
+    case productDiscountMissingSubscriptionGroupIdentifierError = 28
 
 }
 
@@ -110,6 +111,11 @@ extension ErrorCode {
             return "LogOut was called but the current user is anonymous."
         case .configurationError:
             return "There is an issue with your configuration. Check the underlying error for more details."
+        case .unsupportedError:
+            return """
+                   There was a problem with the operation. Looks like we doesn't support that yet.
+                   Check the underlying error for more details.
+                   """
         case .emptySubscriberAttributes:
             return "A request for subscriber attributes returned none."
         case .productDiscountMissingIdentifierError:
@@ -177,6 +183,8 @@ extension ErrorCode {
             return "LOGOUT_CALLED_WITH_ANONYMOUS_USER"
         case .configurationError:
             return "CONFIGURATION_ERROR"
+        case .unsupportedError:
+            return "UNSUPPORTED_ERROR"
         case .emptySubscriberAttributes:
             return "EMPTY_SUBSCRIBER_ATTRIBUTES"
         case .productDiscountMissingIdentifierError:

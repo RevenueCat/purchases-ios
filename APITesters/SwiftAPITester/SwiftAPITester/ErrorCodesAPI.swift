@@ -69,6 +69,7 @@ func checkPurchasesErrorCodeEnums() {
          .logOutAnonymousUserError,
          .configurationError,
          .operationAlreadyInProgressForProductError,
+         .unsupportedError,
          .emptySubscriberAttributes,
          .productDiscountMissingIdentifierError,
          .missingAppUserIDForAliasCreationError,
