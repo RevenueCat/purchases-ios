@@ -128,7 +128,7 @@ jobs:
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
-          path: fastlane/test_output
+          path: fastlane/test_output/xctest
           destination: scan-test-output
   buildTvWatchAndMacOS:
     macos:
