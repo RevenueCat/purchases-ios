@@ -194,7 +194,7 @@ platform :ios do
     sh("git checkout -b 'release/#{new_version_number}'")
    
     # Open CHANGELOG.latest.md in vim 
-    current_changelog_path = File.absolute("../CHANGELOG.latest.md")
+    current_changelog_path = File.absolute_path("../CHANGELOG.latest.md")
     system("vim", File.absolute_path(current_changelog_path).shellescape)
     current_changelog = File.read(current_changelog_path)
 
