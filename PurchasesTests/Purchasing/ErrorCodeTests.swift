@@ -138,8 +138,18 @@ class ErrorCodeTests: XCTestCase {
                                               expectedRawValue: 28)
     }
 
+    func testCustomerInfoError() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .customerInfoError,
+                                              expectedRawValue: 29)
+    }
+
+    func testSystemInfoError() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .systemInfoError,
+                                              expectedRawValue: 30)
+    }
+
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases.count).to(equal(29))
+        expect(ErrorCode.allCases.count).to(equal(30))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {

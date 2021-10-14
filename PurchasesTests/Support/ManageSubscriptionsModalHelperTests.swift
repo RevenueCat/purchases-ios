@@ -73,7 +73,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
 #if os(iOS)
         // given
         var callbackCalled = false
-        var receivedResult: Result<Void, ManageSubscriptionsModalError>?
+        var receivedResult: Result<Void, Error>?
         customerInfoManager.stubbedCustomerInfo = CustomerInfo(data: mockCustomerInfoData)
         
         // when
@@ -84,11 +84,11 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         
         // then
         expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<Void, ManageSubscriptionsModalError> = try XCTUnwrap(receivedResult)
+        let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
         if #available(iOS 15.0, *) {
             // in tests in iOS 15, this method always fails, since the currentWindow scene can't be obtained.
             expect(nonNilReceivedResult).to(beFailure { error in
-                expect(error).to(matchError(ManageSubscriptionsModalError.couldntGetWindowScene))
+                expect(error).to(matchError(ErrorCode.storeProblemError))
             })
         } else {
             expect(nonNilReceivedResult).to(beSuccess())
@@ -101,7 +101,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
 #if os(macOS)
         // given
         var callbackCalled = false
-        var receivedResult: Result<Void, ManageSubscriptionsModalError>?
+        var receivedResult: Result<Void, Error>?
         customerInfoManager.stubbedCustomerInfo = CustomerInfo(data: mockCustomerInfoData)
         
         // when
@@ -112,7 +112,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         
         // then
         expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<Void, ManageSubscriptionsModalError> = try XCTUnwrap(receivedResult)
+        let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
         expect(nonNilReceivedResult).to(beSuccess())
 #endif
     }
@@ -120,7 +120,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
     func testShowManageSubscriptionModalFailsIfCouldntGetCustomerInfo() throws {
         // given
         var callbackCalled = false
-        var receivedResult: Result<Void, ManageSubscriptionsModalError>?
+        var receivedResult: Result<Void, Error>?
         customerInfoManager.stubbedError = NSError(domain: RCPurchasesErrorCodeDomain, code: 123, userInfo: nil)
 
         // when
@@ -131,10 +131,10 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
 
         // then
         expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<Void, ManageSubscriptionsModalError> = try XCTUnwrap(receivedResult)
+        let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
         let expectedErrorMessage = "Failed to get managemementURL from CustomerInfo. " +
         "Details: The operation couldn’t be completed"
-        let expectedError = ManageSubscriptionsModalError.couldntGetCustomerInfo(message: expectedErrorMessage)
+        let expectedError = ErrorUtils.customerInfoError(withMessage: expectedErrorMessage, error: customerInfoManager.stubbedError)
         expect(nonNilReceivedResult).to(beFailure { error in
             expect(error).to(matchError(expectedError))
         })

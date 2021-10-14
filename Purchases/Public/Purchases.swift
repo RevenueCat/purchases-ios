@@ -250,6 +250,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                 backend: backend,
                                                 offeringsFactory: offeringsFactory,
                                                 productsManager: productsManager)
+        let manageSubsModalHelper = ManageSubscriptionsModalHelper(systemInfo: systemInfo,
+                                                                   customerInfoManager: customerInfoManager,
+                                                                   identityManager: identityManager)
         let purchasesOrchestrator = PurchasesOrchestrator(productsManager: productsManager,
                                                           storeKitWrapper: storeKitWrapper,
                                                           systemInfo: systemInfo,
@@ -260,7 +263,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                           backend: backend,
                                                           identityManager: identityManager,
                                                           receiptParser: receiptParser,
-                                                          deviceCache: deviceCache)
+                                                          deviceCache: deviceCache,
+                                                          manageSubscriptionsModalHelper: manageSubsModalHelper)
         let trialOrIntroPriceChecker = TrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
                                                                            introEligibilityCalculator: introCalculator,
                                                                            backend: backend,
@@ -1005,14 +1009,20 @@ public extension Purchases {
         purchasesOrchestrator.paymentDiscount(forProductDiscount: discount, product: product, completion: completion)
     }
 
-    private func purchase(product: SKProduct,
-                          payment: SKMutablePayment,
-                          presentedOfferingIdentifier: String?,
-                          completion: @escaping PurchaseCompletedBlock) {
-        purchasesOrchestrator.purchase(sk1Product: product,
-                                       payment: payment,
-                                       presentedOfferingIdentifier: presentedOfferingIdentifier,
-                                       completion: completion)
+    /**
+     * Use this function to open the manage subscriptions modal.
+     * If the manage subscriptions modal can't be opened, the managementURL in the customerInfo will be opened.
+     * If managementURL is not available, the App Store's subscription management section will be opened.
+     *
+     * - Parameter completion: A completion block that is called when the when the modal is closed.
+     * If it was not successful, there will be an `Error`.
+     */
+    @available(iOS 9.0, *)
+    @available(macOS 10.12, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @objc func showManageSubscriptionModal(completion: @escaping (Error?) -> Void) {
+        purchasesOrchestrator.showManageSubscriptionModal(completion: completion)
     }
 
 }
@@ -1221,6 +1231,16 @@ private extension Purchases {
                                                        isAppBackgrounded: isAppBackgrounded,
                                                        completion: nil)
         }
+    }
+
+    func purchase(product: SKProduct,
+                  payment: SKMutablePayment,
+                  presentedOfferingIdentifier: String?,
+                  completion: @escaping PurchaseCompletedBlock) {
+        purchasesOrchestrator.purchase(sk1Product: product,
+                                       payment: payment,
+                                       presentedOfferingIdentifier: presentedOfferingIdentifier,
+                                       completion: completion)
     }
 
 }

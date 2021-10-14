@@ -73,7 +73,9 @@ func checkPurchasesErrorCodeEnums() {
          .emptySubscriberAttributes,
          .productDiscountMissingIdentifierError,
          .missingAppUserIDForAliasCreationError,
-         .productDiscountMissingSubscriptionGroupIdentifierError:
+         .productDiscountMissingSubscriptionGroupIdentifierError,
+         .customerInfoError,
+         .systemInfoError:
         print(errCode!)
     }
 }
