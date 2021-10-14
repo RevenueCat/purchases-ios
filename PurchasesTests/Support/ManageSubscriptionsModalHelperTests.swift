@@ -101,7 +101,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
 #if os(macOS)
         // given
         var callbackCalled = false
-        var receivedResult: Result<Void, ManageSubscriptionsModalError>?
+        var receivedResult: Result<Void, Error>?
         customerInfoManager.stubbedCustomerInfo = CustomerInfo(data: mockCustomerInfoData)
         
         // when
@@ -112,7 +112,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         
         // then
         expect(callbackCalled).toEventually(beTrue())
-        let nonNilReceivedResult: Result<Void, ManageSubscriptionsModalError> = try XCTUnwrap(receivedResult)
+        let nonNilReceivedResult: Result<Void, Error> = try XCTUnwrap(receivedResult)
         expect(nonNilReceivedResult).to(beSuccess())
 #endif
     }

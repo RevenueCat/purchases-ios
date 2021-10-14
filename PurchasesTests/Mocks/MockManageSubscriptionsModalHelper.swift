@@ -24,8 +24,8 @@ class MockManageSubscriptionsModalHelper: ManageSubscriptionsModalHelper {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     override func showManageSubscriptionModal(completion: @escaping (Result<Void, Error>) -> Void) {
-        if let manageSubscriptionsModalError = mockError {
-            completion(.failure(manageSubscriptionsModalError))
+        if let error = mockError {
+            completion(.failure(error))
         } else {
             completion(.success(Void()))
         }

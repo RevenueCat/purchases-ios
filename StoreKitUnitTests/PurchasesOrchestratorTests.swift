@@ -201,18 +201,19 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     func testShowManageSubscriptionModalCallsCompletionWithErrorIfThereIsAFailure() {
-        mockManageSubsModalHelper.mockError = ManageSubscriptionsModalError.couldntGetAppleSubscriptionsURL
-        var receivedError: ManageSubscriptionsModalError?
+        let message = "Failed to get managemementURL from PurchaserInfo. Details: customerInfo is nil."
+        mockManageSubsModalHelper.mockError = ErrorUtils.customerInfoError(withMessage: message)
+        var receivedError: Error?
         orchestrator.showManageSubscriptionModal { maybeError in
             receivedError = maybeError
         }
 
         expect(receivedError).toNot(beNil())
-        expect(receivedError).to(matchError(ManageSubscriptionsModalError.couldntGetAppleSubscriptionsURL))
+        expect(receivedError).to(matchError(ErrorCode.customerInfoError))
     }
 
     func testShowManageSubscriptionModalCallsCompletionWithoutErrorIfItsSuccesful() {
-        var receivedError: ManageSubscriptionsModalError?
+        var receivedError: Error?
         orchestrator.showManageSubscriptionModal { maybeError in
             receivedError = maybeError
         }
