@@ -170,10 +170,17 @@ platform :ios do
     replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m', allow_empty: true)
   end
 
-  desc "Deploy"
-  lane :deploy do |options|
+  desc "Bump version, edit changelog, and create pull request"
+  lane :bump do |options|
     ensure_git_branch(branch: 'main')
     ensure_git_status_clean
+
+    # Ensure GitHub API token is set
+    if ENV['GITHUB_PULL_REQUEST_API_TOKEN'].nil?
+      UI.error("Environment variable GITHUB_PULL_REQUEST_API_TOKEN is required to create a pull request")
+      UI.error("Please make a fastlane/.env file from the fastlane/.env.SAMPLE template")
+      UI.user_error!("Could not find value for GITHUB_PULL_REQUEST_API_TOKEN")
+    end
 
     # Get and print current version number
     version_number = current_version_number
