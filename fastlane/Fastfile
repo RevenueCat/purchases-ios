@@ -204,6 +204,7 @@ platform :ios do
     # Only add and commit update files
     sh("git add -u")
     sh("git commit -m 'Version bump for #{new_version_number}'")
+    push_to_git_remote
 
     create_pull_request(
       repo: "RevenueCat/purchases-ios",
