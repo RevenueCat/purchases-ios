@@ -60,8 +60,8 @@ platform :ios do
     trainer(path: "fastlane/test_output", output_directory: "fastlane/test_output/xctest/tvos")
   end
 
-  desc "Increment build number"
-  lane :bump do |options|
+  desc "Replace version number in project and supporting files"
+  lane :replace_version_number do |options|
     new_version_number = options[:version]
     fail ArgumentError, "missing version" unless new_version_number
     previous_version_number = current_version_number
@@ -85,7 +85,7 @@ platform :ios do
 
   desc "Increment build number and update changelog"
   lane :bump_and_update_changelog do |options|
-    bump(options)
+    replace_version_number(options)
     attach_changelog_to_master(options[:version])
   end
 
@@ -189,22 +189,30 @@ platform :ios do
     # Ask for new version number
     new_version_number = UI.input("New version number: ")
 
+    # Open CHANGELOG.latest.md in editor
+    current_changelog_filename = "CHANGELOG.latest.md"
+    current_changelog_path = File.absolute_path("../#{current_changelog_path}")
+    editor = ENV['FASTLANE_EDITOR'] || ENV['EDITOR'] || 'vim'
+
+    UI.message("Will use '#{editor}'... Override by setting FASTLANE_EDITOR or EDITOR environment variable")
+    if UI.confirm("Open #{current_changelog_filename} in '#{editor}'?")
+      system(editor, File.absolute_path(current_changelog_path).shellescape)
+    else
+      UI.user_error!("Cancelled")
+    end
+
     # Create new branch
     sh("git checkout -b 'release/#{new_version_number}'")
-   
-    # Open CHANGELOG.latest.md in vim 
-    current_changelog_path = File.absolute_path("../CHANGELOG.latest.md")
-    system("vim", File.absolute_path(current_changelog_path).shellescape)
-    current_changelog = File.read(current_changelog_path)
 
-    # Bump version
-    bump(version: new_version_number)
+    # Replace version number
+    replace_version_number(version: new_version_number)
 
     # Only add and commit update files
     sh("git add -u")
     sh("git commit -m 'Version bump for #{new_version_number}'")
     push_to_git_remote
 
+    current_changelog = File.read(current_changelog_path)
     create_pull_request(
       title: "Release/#{new_version_number}",
       base: "main",
@@ -222,7 +230,7 @@ platform :ios do
     branch_name = "bump/#{next_version_snapshot}"
     sh("git", "checkout", "-b", branch_name)
 
-    bump(version: next_version_snapshot)
+    replace_version_number(version: next_version_snapshot)
 
     sh("git", "commit", "-am", "Preparing for next version")
     push_to_git_remote
