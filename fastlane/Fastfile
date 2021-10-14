@@ -66,10 +66,8 @@ platform :ios do
     fail ArgumentError, "missing version" unless new_version_number
     previous_version_number = current_version_number
    
-    xcodeproj = "RevenueCat.xcodeproj"
-
     version_number_without_prerelease_modifiers = new_version_number.split("-")[0]
-    increment_version_number(xcodeproj: xcodeproj, version_number: version_number_without_prerelease_modifiers)
+    increment_version_number(xcodeproj: "RevenueCat.xcodeproj", version_number: version_number_without_prerelease_modifiers)
     
     files_to_update = [
       '../RevenueCat.podspec',
@@ -81,7 +79,7 @@ platform :ios do
       '../Examples/MagicWeatherSwiftUI/Magic Weather SwiftUI.xcodeproj/project.pbxproj',
     ]
     for file_to_update in files_to_update
-      increment_build_number(xcodeproj: xcodeproj, previous_version_number, new_version_number, file_to_update)
+      increment_build_number(previous_version_number, new_version_number, file_to_update)
     end
   end
 
