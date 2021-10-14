@@ -180,12 +180,26 @@ platform :ios do
   end
 
   lane :deploy_new do |options|
-    version_number = current_version_number
+    #ensure_git_branch(branch: 'main')
+    #ensure_git_status_clean
 
+    # Get and print current version number
+    version_number = current_version_number
     UI.important("Current version is #{version_number}")
+
+    # Ask for new version number
     new_version_number = UI.input("New version number: ")
-    
+
+    # Create new branch
+    sh("git checkout -b 'release/#{new_version_number}'")
+   
+    # Open CHANGELOG.latest.md in vim 
+    current_changelog = File.open("../CHANGELOG.latest.md", 'r')
+    system("vim", File.absolute_path(current_changelog).shellescape)
+
+    # Bump version
     bump(version: new_version_number)
+
   end
 
   desc "Prepare next version"
