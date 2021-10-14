@@ -65,9 +65,9 @@ platform :ios do
     new_version_number = options[:version]
     fail ArgumentError, "missing version" unless new_version_number
     previous_version_number = current_version_number
-   
+    
     version_number_without_prerelease_modifiers = new_version_number.split("-")[0]
-    increment_version_number(xcodeproj: "RevenueCat.xcodeproj", version_number: version_number_without_prerelease_modifiers)
+    increment_version_number(version_number: version_number_without_prerelease_modifiers)
     
     files_to_update = [
       '../RevenueCat.podspec',
