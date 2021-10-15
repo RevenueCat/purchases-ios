@@ -2064,7 +2064,6 @@ class PurchasesTests: XCTestCase {
         expect(receivedError?.code).toEventually(be(ErrorCode.missingReceiptFileError.rawValue))
     }
 
-
     func testRestoreTransactionsCallsCompletionOnMainThreadWhenMissingReceipts() {
         setupPurchases()
         self.receiptFetcher.shouldReturnReceipt = false
@@ -2076,7 +2075,6 @@ class PurchasesTests: XCTestCase {
         expect(self.mockOperationDispatcher.invokedDispatchOnMainThreadCount) == 1
         expect(receivedError?.code).toEventually(be(ErrorCode.missingReceiptFileError.rawValue))
     }
-
 
     func testUserCancelledFalseIfPurchaseSuccessful() {
         setupPurchases()
