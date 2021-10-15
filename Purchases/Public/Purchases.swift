@@ -912,6 +912,23 @@ public extension Purchases {
         purchasesOrchestrator.showManageSubscriptionModal(completion: completion)
     }
 
+    /**
+     * Presents a refund request sheet for the transaction in a window scene
+     *
+     * - Parameter transaction: The `Transaction` to begin a refund request for.
+     * - Parameter scene: The `UIWindowScene` the user intends to purchase.
+     */
+    @available(iOS 15.0, *)
+    @available(macCatalyst 15.0, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    // todo mark objc and use diff error type, make types public and mark public
+    internal func beginRefundRequest(for transactionID: UInt64,
+                                     completion: @escaping (RefundRequestStatus,
+                                                            BeginRefundRequestHelperError?) -> Void) async {
+        purchasesOrchestrator.beginRefundRequest(for: transactionID, completion: completion)
+    }
+
 }
 
 // MARK: Configuring Purchases

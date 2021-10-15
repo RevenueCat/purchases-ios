@@ -272,6 +272,14 @@ class PurchasesOrchestrator {
         }
     }
 
+    @available(iOS 15.0, *)
+    @available(macCatalyst 15.0, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequest(for transactionID: UInt64,
+                            completion: @escaping (RefundRequestStatus, BeginRefundRequestHelperError?) -> Void) {
+        // TODO
+    }
 }
 
 extension PurchasesOrchestrator: StoreKitWrapperDelegate {
