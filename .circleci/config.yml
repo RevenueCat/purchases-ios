@@ -128,8 +128,8 @@ jobs:
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
-          path: fastlane/test_output/report.html
-          destination: test_report.html
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
   buildTvWatchAndMacOS:
     macos:
       xcode: "12.5.1"
@@ -359,8 +359,16 @@ jobs:
       - checkout
       - install-dependencies
       - run:
+          command: mkdir -p fastlane/test_output/swiftlint
+      - run:
           name: Run fastlane swiftlint lane
-          command: fastlane run swiftlint raise_if_swiftlint_error:true strict:true
+          command: |
+            fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
+            reporter:junit output_file:fastlane/test_output/swiftlint/junit.xml
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output
 
 workflows:
   version: 2
