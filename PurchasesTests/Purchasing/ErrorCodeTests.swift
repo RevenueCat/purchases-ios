@@ -149,7 +149,7 @@ class ErrorCodeTests: XCTestCase {
     }
 
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases.count).to(equal(30))
+        expect(ErrorCode.allCases.count).to(equal(31))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {
