@@ -58,26 +58,8 @@ class ProductsManager: NSObject {
             request.delegate = self
             self.completionHandlers[identifiers] = [completion]
             self.productsByRequests[request] = identifiers
+            self.scheduleCancellationInCaseOfTimeout(for: request)
             request.start()
-            queue.asyncAfter(deadline: .now() + .seconds(requestTimeoutInSeconds)) { [weak self] in
-                guard let self = self,
-                      let products = self.productsByRequests[request] else { return }
-
-                request.cancel()
-
-                Logger.appleError(Strings.storeKit.skproductsrequest_timed_out(after: requestTimeoutInSeconds))
-                guard let completionBlocks = self.completionHandlers[products] else {
-                    Logger.error("callback not found for failing request: \(request)")
-                    return
-                }
-
-                self.completionHandlers.removeValue(forKey: products)
-                self.productsByRequests.removeValue(forKey: request)
-                for completion in completionBlocks {
-                    completion(Set())
-                }
-
-            }
         }
     }
 
@@ -149,6 +131,32 @@ private extension ProductsManager {
         }
 
         cachedProductsByIdentifier = cachedProductsByIdentifier.merging(productsByIdentifier)
+    }
+
+    // Even though there's a specific delegate method for when SKProductsRequest fails,
+    // there seem to be some situations in which SKProductsRequest hangs forever,
+    // without timing out and calling the delegate.
+    // So we schedule a cancellation just in case, and skip it if all goes as expected.
+    // More information: https://rev.cat/skproductsrequest-hangs
+    func scheduleCancellationInCaseOfTimeout(for request: SKProductsRequest) {
+        queue.asyncAfter(deadline: .now() + .seconds(requestTimeoutInSeconds)) { [weak self] in
+            guard let self = self,
+                  let products = self.productsByRequests[request] else { return }
+
+            request.cancel()
+
+            Logger.appleError(Strings.storeKit.skproductsrequest_timed_out(after: self.requestTimeoutInSeconds))
+            guard let completionBlocks = self.completionHandlers[products] else {
+                Logger.error("callback not found for failing request: \(request)")
+                return
+            }
+
+            self.completionHandlers.removeValue(forKey: products)
+            self.productsByRequests.removeValue(forKey: request)
+            for completion in completionBlocks {
+                completion(Set())
+            }
+        }
     }
 
 }

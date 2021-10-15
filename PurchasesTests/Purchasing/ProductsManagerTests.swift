@@ -145,4 +145,31 @@ class ProductsManagerTests: XCTestCase {
         expect(request.cancelCalled) == true
     }
 
+    func testProductsWithIdentifiersDoesntTimeOutIfRequestReturnsOnTime() throws {
+        let productIdentifiers = Set(["1", "2", "3"])
+        let toleranceInSeconds = 2
+        let productsRequestResponseTimeInSeconds = 1
+        let request = MockProductsRequest(productIdentifiers: productIdentifiers,
+                                          responseTimeInSeconds: productsRequestResponseTimeInSeconds)
+        productsRequestFactory.stubbedRequestResult = request
+
+        productsManager = ProductsManager(productsRequestFactory: productsRequestFactory,
+                                          requestTimeoutInSeconds: toleranceInSeconds)
+
+
+        var completionCallCount = 0
+        var maybeReceivedProducts: Set<SKProduct>?
+
+        productsManager.products(withIdentifiers: productIdentifiers) { products in
+            completionCallCount += 1
+            maybeReceivedProducts = products
+        }
+
+        expect(completionCallCount).toEventually(equal(1), timeout: .seconds(3))
+        expect(self.productsRequestFactory.invokedRequestCount) == 1
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        expect(receivedProducts).toNot(beEmpty())
+        expect(request.cancelCalled) == false
+    }
+
 }
