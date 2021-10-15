@@ -431,7 +431,9 @@ private extension PurchasesOrchestrator {
                       }
 
                       if let completion = maybeCompletion {
-                          completion(nil, ErrorUtils.missingReceiptFileError())
+                          self.operationDispatcher.dispatchOnMainThread {
+                              completion(nil, ErrorUtils.missingReceiptFileError())
+                          }
                       }
                       return
                   }
