@@ -240,6 +240,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         let manageSubsModalHelper = ManageSubscriptionsModalHelper(systemInfo: systemInfo,
                                                                    customerInfoManager: customerInfoManager,
                                                                    identityManager: identityManager)
+        let beginRefundRequestHelper = BeginRefundRequestHelper(systemInfo: systemInfo)
         let purchasesOrchestrator = PurchasesOrchestrator(productsManager: productsManager,
                                                           storeKitWrapper: storeKitWrapper,
                                                           systemInfo: systemInfo,
@@ -251,7 +252,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                           identityManager: identityManager,
                                                           receiptParser: receiptParser,
                                                           deviceCache: deviceCache,
-                                                          manageSubscriptionsModalHelper: manageSubsModalHelper)
+                                                          manageSubscriptionsModalHelper: manageSubsModalHelper,
+                                                          beginRefundRequestHelper: beginRefundRequestHelper)
         let trialOrIntroPriceChecker = TrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
                                                                            introEligibilityCalculator: introCalculator,
                                                                            backend: backend,
@@ -901,7 +903,7 @@ public extension Purchases {
      * If the manage subscriptions modal can't be opened, the managementURL in the customerInfo will be opened.
      * If managementURL is not available, the App Store's subscription management section will be opened.
      *
-     * - Parameter completion: A completion block that is called when the when the modal is closed.
+     * - Parameter completion: A completion block that is called when the modal is closed.
      * If it was not successful, there will be an `Error`.
      */
     @available(iOS 9.0, *)
@@ -913,21 +915,24 @@ public extension Purchases {
     }
 
     /**
-     * Presents a refund request sheet for the transaction in a window scene
+     * Presents a refund request sheet for the transaction in the current window scene
      *
-     * - Parameter transaction: The `Transaction` to begin a refund request for.
-     * - Parameter scene: The `UIWindowScene` the user intends to purchase.
+     * - Parameter transactionID: The transactionID to begin a refund request for.
+     * - Parameter completion: A completion block that is called when the modal is closed.
+     * If the request was successful, there will be a `RefundRequestStatus`
+     * If it was not successful, there will be an `Error`.
      */
     @available(iOS 15.0, *)
     @available(macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    // todo mark objc and use diff error type, make types public and mark public
-    internal func beginRefundRequest(for transactionID: UInt64,
-                                     completion: @escaping (RefundRequestStatus,
-                                                            BeginRefundRequestHelperError?) -> Void) async {
+    @objc func beginRefundRequest(for transactionID: UInt64,
+                                  completion: @escaping (RefundRequestStatus, Error?) -> Void) async {
         purchasesOrchestrator.beginRefundRequest(for: transactionID, completion: completion)
     }
+
+    // TODO add version for productId like this:
+    // https://wwdcbysundell.com/2021/working-with-in-app-purchases-in-storekit2/
 
 }
 

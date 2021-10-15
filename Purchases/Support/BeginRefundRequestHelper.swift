@@ -13,26 +13,6 @@
 
 import StoreKit
 
-enum BeginRefundRequestHelperError: Error {
-
-    case couldntGetWindowScene
-    case storeKitBeginRefundRequestNotSupported
-
-}
-
-extension BeginRefundRequestHelperError: CustomStringConvertible {
-
-    var description: String {
-        switch self {
-        case .couldntGetWindowScene:
-            return "Failed to get UIWindowScene"
-        case .storeKitBeginRefundRequestNotSupported:
-            return "tried to call StoreKit.Transaction.beginRefundRequest in a platform that doesn't support it!"
-        }
-    }
-
-}
-
 class BeginRefundRequestHelper {
 
     private let systemInfo: SystemInfo
@@ -45,11 +25,11 @@ class BeginRefundRequestHelper {
     @available(macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func beginRefundRequest(transactionId: UInt64,
+    func beginRefundRequest(transactionID: UInt64,
                             completion: @escaping (Result<RefundRequestStatus,
-                                                   BeginRefundRequestHelperError>) -> Void) {
+                                                   Error>) -> Void) {
         Task {
-            self.beginRefundRequest(transactionId: transactionId, completion: completion)
+            self.beginRefundRequest(transactionID: transactionID, completion: completion)
         }
         return
     }
@@ -65,21 +45,21 @@ private extension BeginRefundRequestHelper {
     @MainActor
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
-    func beginRefundRequest(transactionId: UInt64) async throws
-        -> Result<RefundRequestStatus, BeginRefundRequestHelperError> {
+    func beginRefundRequest(transactionID: UInt64) async throws
+        -> Result<RefundRequestStatus, Error> {
         // TODO pull out to some kind of UIHelper class?
         guard let application = systemInfo.sharedUIApplication,
               let windowScene = application.currentWindowScene else {
-                  return .failure(.couldntGetWindowScene)
+                  return .failure(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
         }
 
         do {
-            let status = try await StoreKit.Transaction.beginRefundRequest(for: transactionId, in: windowScene)
+            let status = try await StoreKit.Transaction.beginRefundRequest(for: transactionID, in: windowScene)
 
             return .success(RefundRequestStatus.refundRequestStatus(fromSKRefundRequestStatus: status))
         } catch {
-            // is this not supported or just failed? should i pass the error?
-            return .failure(.storeKitBeginRefundRequestNotSupported)
+            let message = "Error when trying to begin refund request: \(error.localizedDescription)"
+            return .failure(ErrorUtils.storeProblemError(withMessage: message, error: error))
         }
 
     }
@@ -90,7 +70,9 @@ private extension BeginRefundRequestHelper {
     /// User canceled submission of the refund request
     case userCancelled = 0,
         /// Apple has received the refund request
-         success
+         success,
+         // todo should this be error or none or what, need to not require nullable enum in status
+         error
 }
 
 @available(iOS 15.0, *)

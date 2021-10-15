@@ -56,6 +56,7 @@ class PurchasesOrchestrator {
     private let receiptParser: ReceiptParser
     private let deviceCache: DeviceCache
     private let manageSubscriptionsModalHelper: ManageSubscriptionsModalHelper
+    private let beginRefundRequestHelper: BeginRefundRequestHelper
     private let lock = NSRecursiveLock()
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -72,7 +73,8 @@ class PurchasesOrchestrator {
          identityManager: IdentityManager,
          receiptParser: ReceiptParser,
          deviceCache: DeviceCache,
-         manageSubscriptionsModalHelper: ManageSubscriptionsModalHelper) {
+         manageSubscriptionsModalHelper: ManageSubscriptionsModalHelper,
+         beginRefundRequestHelper: BeginRefundRequestHelper) {
         self.productsManager = productsManager
         self.storeKitWrapper = storeKitWrapper
         self.systemInfo = systemInfo
@@ -85,6 +87,7 @@ class PurchasesOrchestrator {
         self.receiptParser = receiptParser
         self.deviceCache = deviceCache
         self.manageSubscriptionsModalHelper = manageSubscriptionsModalHelper
+        self.beginRefundRequestHelper = beginRefundRequestHelper
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
             storeKit2Listener.listenForTransactions()
         }
@@ -277,8 +280,15 @@ class PurchasesOrchestrator {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequest(for transactionID: UInt64,
-                            completion: @escaping (RefundRequestStatus, BeginRefundRequestHelperError?) -> Void) {
-        // TODO
+                            completion: @escaping (RefundRequestStatus, Error?) -> Void) {
+        beginRefundRequestHelper.beginRefundRequest(transactionID: transactionID) { result in
+            switch result {
+            case .failure(let error):
+                completion(RefundRequestStatus.error, error)
+            case .success(let status):
+                completion(status, nil)
+            }
+        }
     }
 }
 
