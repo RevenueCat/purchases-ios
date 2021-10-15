@@ -22,10 +22,12 @@ class ProductsManager: NSObject {
     private let queue = DispatchQueue(label: "ProductsManager")
     private var productsByRequests: [SKRequest: Set<String>] = [:]
     private var completionHandlers: [Set<String>: [(Set<SKProduct>) -> Void]] = [:]
-    private let requestTimeoutInSeconds = 30
+    private let requestTimeoutInSeconds: Int
 
-    init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory()) {
+    init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
+         requestTimeoutInSeconds: Int = 30) {
         self.productsRequestFactory = productsRequestFactory
+        self.requestTimeoutInSeconds = requestTimeoutInSeconds
     }
 
     func products(withIdentifiers identifiers: Set<String>,

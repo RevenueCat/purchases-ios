@@ -14,12 +14,14 @@ class MockProductsRequestFactory: ProductsRequestFactory {
     var invokedRequestParameters: Set<String>?
     var invokedRequestParametersList = [Set<String>]()
     var stubbedRequestResult: MockProductsRequest!
+    var requestResponseTimeInSeconds: Double = 0
 
     override func request(productIdentifiers: Set<String>) -> SKProductsRequest {
         invokedRequest = true
         invokedRequestCount += 1
         invokedRequestParameters = productIdentifiers
         invokedRequestParametersList.append(productIdentifiers)
-        return stubbedRequestResult ?? MockProductsRequest(productIdentifiers: productIdentifiers)
+        return stubbedRequestResult ?? MockProductsRequest(productIdentifiers: productIdentifiers,
+                                                           responseTimeInSeconds: requestResponseTimeInSeconds)
     }
 }
