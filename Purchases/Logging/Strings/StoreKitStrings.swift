@@ -41,7 +41,9 @@ extension StoreKitStrings: CustomStringConvertible {
 
         case .skproductsrequest_timed_out(let afterTimeInSeconds):
             return "SKProductsRequest took longer than \(afterTimeInSeconds), " +
-            "cancelling request and returning empty set"
+            "cancelling request and returning empty set. This seems to be an App Store quirk. If this is happening " +
+            "to you consistently, you might want to try using a new Sandbox account." +
+            "More information: https://rev.cat/skproductsrequest-hangs"
 
         case .skproductsrequest_finished:
             return "SKProductsRequest did finish"
