@@ -14,7 +14,7 @@ class MockProductsRequestFactory: ProductsRequestFactory {
     var invokedRequestParameters: Set<String>?
     var invokedRequestParametersList = [Set<String>]()
     var stubbedRequestResult: MockProductsRequest!
-    var requestResponseTimeInSeconds: Double = 0
+    var requestResponseTimeInSeconds: Int = 0
 
     override func request(productIdentifiers: Set<String>) -> SKProductsRequest {
         invokedRequest = true

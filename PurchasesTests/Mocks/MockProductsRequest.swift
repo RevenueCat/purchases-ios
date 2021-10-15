@@ -28,11 +28,12 @@ enum StoreKitError: Error {
 
 class MockProductsRequest: SKProductsRequest {
     var startCalled = false
+    var cancelCalled = false
     var requestedIdentifiers: Set<String>
     var fails = false
-    var responseTimeInSeconds: Double
+    var responseTimeInSeconds: Int
 
-    init(productIdentifiers: Set<String>, responseTimeInSeconds: Double = 0) {
+    init(productIdentifiers: Set<String>, responseTimeInSeconds: Int = 0) {
         self.requestedIdentifiers = productIdentifiers
         self.responseTimeInSeconds = responseTimeInSeconds
         super.init()
@@ -40,7 +41,7 @@ class MockProductsRequest: SKProductsRequest {
 
     override func start() {
         startCalled = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + responseTimeInSeconds) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(responseTimeInSeconds)) {
             if (self.fails) {
                 self.delegate?.request!(self, didFailWithError: StoreKitError.unknown)
             } else {
@@ -49,4 +50,9 @@ class MockProductsRequest: SKProductsRequest {
             }
         }
     }
+
+    override func cancel() {
+        cancelCalled = true
+    }
+
 }

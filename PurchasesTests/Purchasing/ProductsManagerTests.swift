@@ -121,11 +121,14 @@ class ProductsManagerTests: XCTestCase {
     func testProductsWithIdentifiersTimesOutIfMaxToleranceExceeded() throws {
         let productIdentifiers = Set(["1", "2", "3"])
         let toleranceInSeconds = 1
-        let productsRequestResponseTime: Double = 2
-        productsRequestFactory.requestResponseTimeInSeconds = productsRequestResponseTime
+        let productsRequestResponseTimeInSeconds = 2
+        let request = MockProductsRequest(productIdentifiers: productIdentifiers,
+                                          responseTimeInSeconds: productsRequestResponseTimeInSeconds)
+        productsRequestFactory.stubbedRequestResult = request
 
         productsManager = ProductsManager(productsRequestFactory: productsRequestFactory,
                                           requestTimeoutInSeconds: toleranceInSeconds)
+
 
         var completionCallCount = 0
         var maybeReceivedProducts: Set<SKProduct>?
@@ -139,7 +142,7 @@ class ProductsManagerTests: XCTestCase {
         expect(self.productsRequestFactory.invokedRequestCount) == 1
         let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
         expect(receivedProducts).to(beEmpty())
-
+        expect(request.cancelCalled) == true
     }
 
 }
