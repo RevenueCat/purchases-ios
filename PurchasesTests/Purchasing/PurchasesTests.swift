@@ -1686,7 +1686,7 @@ class PurchasesTests: XCTestCase {
         })
 
         expect(maybeReceivedError).toEventuallyNot(beNil())
-        let error = try XCTUnwrap(maybeReceivedError)
+        expect(maybeReceivedError).toNot(beNil())
         expect(maybeReceivedOfferings).to(beNil())
     }
 

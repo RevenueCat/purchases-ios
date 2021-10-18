@@ -33,6 +33,9 @@ class StoreKitRequestFetcher: XCTestCase {
 
     class MockRequestsFactory: RCProductsRequestFactory {
         let fails: Bool
+        var requestResponseTimeInSeconds: Int = 0
+        var invokedRequestCount = 0
+        var stubbedRequestResult: MockProductsRequest?
 
         init(fails: Bool) {
             self.fails = fails
@@ -40,7 +43,8 @@ class StoreKitRequestFetcher: XCTestCase {
 
         var requests: [SKRequest] = []
         override func request(forProductIdentifiers identifiers: Set<String>) -> SKProductsRequest {
-            let r = MockProductsRequest(productIdentifiers:identifiers)
+            invokedRequestCount += 1
+            let r = stubbedRequestResult ?? MockProductsRequest(productIdentifiers:identifiers, responseTimeInSeconds: requestResponseTimeInSeconds)
             requests.append(r)
             r.fails = self.fails
             return r
@@ -54,47 +58,47 @@ class StoreKitRequestFetcher: XCTestCase {
         }
     }
 
-    var fetcher: RCStoreKitRequestFetcher?
-    var factory: MockRequestsFactory?
+    var fetcher: RCStoreKitRequestFetcher!
+    var factory: MockRequestsFactory!
     var products: [SKProduct]?
     var receiptFetched = false
     var receiptFetchedCallbackCount = 0
 
     func setupFetcher(fails: Bool) {
         self.factory = MockRequestsFactory(fails: fails)
-        self.fetcher = RCStoreKitRequestFetcher(requestFactory: self.factory!)
+        self.fetcher = RCStoreKitRequestFetcher(requestFactory: self.factory)
 
-        self.fetcher!.fetchProducts(["com.a.product"]) { (newProducts) in
+        self.fetcher.fetchProducts(["com.a.product"]) { (newProducts) in
             self.products = newProducts
         }
 
-        self.fetcher!.fetchReceiptData {
+        self.fetcher.fetchReceiptData {
             self.receiptFetched = true
             self.receiptFetchedCallbackCount += 1
         }
         
-        self.fetcher!.fetchReceiptData {
+        self.fetcher.fetchReceiptData {
             self.receiptFetchedCallbackCount += 1
         }
         
-        self.fetcher!.fetchReceiptData {
+        self.fetcher.fetchReceiptData {
             self.receiptFetchedCallbackCount += 1
         }
     }
 
     func testCreatesARequest() {
         setupFetcher(fails: false)
-        expect(self.factory!.requests.count).toEventually(equal(2))
+        expect(self.factory.requests.count).toEventually(equal(2))
     }
 
     func testSetsTheRequestDelegate() {
         setupFetcher(fails: false)
-        expect(self.factory!.requests[0].delegate).toEventually(be(self.fetcher), timeout: .seconds(1))
+        expect(self.factory.requests[0].delegate).toEventually(be(self.fetcher), timeout: .seconds(1))
     }
 
     func testCallsStartOnRequest() {
         setupFetcher(fails: false)
-        expect((self.factory!.requests[0] as! MockProductsRequest).startCalled).toEventually(beTrue(), timeout: .seconds(1))
+        expect((self.factory.requests[0] as! MockProductsRequest).startCalled).toEventually(beTrue(), timeout: .seconds(1))
     }
 
     func testReturnsProducts() {
@@ -107,11 +111,11 @@ class StoreKitRequestFetcher: XCTestCase {
         setupFetcher(fails: false)
         
         var callbackCount = 0
-        self.fetcher!.fetchProducts(["com.a.product", "com.b.product"]) { (newProducts) in
+        self.fetcher.fetchProducts(["com.a.product", "com.b.product"]) { (newProducts) in
             callbackCount += 1
         }
         
-        self.fetcher!.fetchProducts(["com.a.product", "com.b.product"]) { (newProducts) in
+        self.fetcher.fetchProducts(["com.a.product", "com.b.product"]) { (newProducts) in
             callbackCount += 1
         }
         
@@ -149,7 +153,7 @@ class StoreKitRequestFetcher: XCTestCase {
         expect(self.receiptFetched).toEventually(beTrue())
         var fetchedAgain = false
         
-        self.fetcher!.fetchReceiptData {
+        self.fetcher.fetchReceiptData {
             fetchedAgain = true
         }
         
@@ -157,5 +161,61 @@ class StoreKitRequestFetcher: XCTestCase {
         
         expect(self.factory?.requests).to(haveCount(3))
     }
-    
+
+    func testProductsWithIdentifiersTimesOutIfMaxToleranceExceeded() throws {
+        setupFetcher(fails: false)
+        let productIdentifiers = Set(["1", "2", "3"])
+        let toleranceInSeconds = 1
+        let productsRequestResponseTimeInSeconds = 2
+        let request = MockProductsRequest(productIdentifiers: productIdentifiers,
+                                          responseTimeInSeconds: productsRequestResponseTimeInSeconds)
+        factory.stubbedRequestResult = request
+
+//        productsManager = ProductsManager(productsRequestFactory: factory,
+//                                          requestTimeoutInSeconds: toleranceInSeconds)
+
+
+        var completionCallCount = 0
+        var maybeReceivedProducts: [SKProduct]?
+
+        fetcher.fetchProducts(productIdentifiers) { products in
+            completionCallCount += 1
+            maybeReceivedProducts = products
+        }
+
+        expect(completionCallCount).toEventually(equal(1), timeout: .seconds(3))
+        expect(self.factory.invokedRequestCount) == 1
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        expect(receivedProducts).to(beEmpty())
+        expect(request.cancelCalled) == true
+    }
+
+    func testProductsWithIdentifiersDoesntTimeOutIfRequestReturnsOnTime() throws {
+        setupFetcher(fails: false)
+        let productIdentifiers = Set(["1", "2", "3"])
+        let toleranceInSeconds = 2
+        let productsRequestResponseTimeInSeconds = 1
+        let request = MockProductsRequest(productIdentifiers: productIdentifiers,
+                                          responseTimeInSeconds: productsRequestResponseTimeInSeconds)
+        factory.stubbedRequestResult = request
+
+//        productsManager = ProductsManager(productsRequestFactory: factory,
+//                                          requestTimeoutInSeconds: toleranceInSeconds)
+
+
+        var completionCallCount = 0
+        var maybeReceivedProducts: [SKProduct]?
+
+        fetcher.fetchProducts(productIdentifiers) { products in
+            completionCallCount += 1
+            maybeReceivedProducts = products
+        }
+
+        expect(completionCallCount).toEventually(equal(1), timeout: .seconds(3))
+        expect(self.factory.invokedRequestCount) == 1
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        expect(receivedProducts).toNot(beEmpty())
+        expect(request.cancelCalled) == false
+    }
+
 }
