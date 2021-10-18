@@ -109,7 +109,7 @@ commands:
 jobs:
   runtest:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -155,7 +155,7 @@ jobs:
 
   deployment-checks: 
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -187,7 +187,7 @@ jobs:
           
   docs-deploy:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -208,7 +208,7 @@ jobs:
   
   make-release:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -221,7 +221,7 @@ jobs:
 
   prepare-next-version:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -234,7 +234,7 @@ jobs:
 
   integration-tests-cocoapods:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -255,7 +255,7 @@ jobs:
       
   integration-tests-swift-package-manager:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -267,7 +267,7 @@ jobs:
 
   integration-tests-carthage:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -297,7 +297,7 @@ jobs:
 
   integration-tests-xcode-direct-integration:
     macos:
-      xcode: "12.5.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -308,7 +308,7 @@ jobs:
 
   lint:
     macos:
-      xcode: "12.2.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
