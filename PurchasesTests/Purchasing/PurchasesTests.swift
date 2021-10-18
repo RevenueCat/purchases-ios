@@ -1686,7 +1686,6 @@ class PurchasesTests: XCTestCase {
         })
 
         expect(maybeReceivedError).toEventuallyNot(beNil())
-        expect(maybeReceivedError).toNot(beNil())
         expect(maybeReceivedOfferings).to(beNil())
     }
 
