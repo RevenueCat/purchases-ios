@@ -678,7 +678,8 @@ class PurchasesTests: XCTestCase {
 
     func testReceiptsSendsAsNotRestoreWhenAnonymousAndNotAllowingSharingAppStoreAccount() {
         setupAnonPurchases()
-        self.purchases.allowSharingAppStoreAccount = false
+        var deprecated = purchases.deprecated
+        deprecated.allowSharingAppStoreAccount = false
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
 
@@ -699,7 +700,8 @@ class PurchasesTests: XCTestCase {
 
     func testReceiptsSendsAsRestoreWhenNotAnonymousAndAllowingSharingAppStoreAccount() {
         setupPurchases()
-        self.purchases.allowSharingAppStoreAccount = true
+        var deprecated = purchases.deprecated
+        deprecated.allowSharingAppStoreAccount = true
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
 
@@ -1343,11 +1345,12 @@ class PurchasesTests: XCTestCase {
     func testSyncPurchasesPassesIsRestoreAsAllowSharingAppStoreAccount() {
         setupPurchases()
 
-        purchases.allowSharingAppStoreAccount = false
+        var deprecated = purchases.deprecated
+        deprecated.allowSharingAppStoreAccount = false
         purchases!.syncPurchases(completion: nil)
         expect(self.backend.postedIsRestore!) == false
 
-        purchases.allowSharingAppStoreAccount = true
+        deprecated.allowSharingAppStoreAccount = true
         purchases!.syncPurchases(completion: nil)
         expect(self.backend.postedIsRestore!) == true
     }
@@ -1355,11 +1358,12 @@ class PurchasesTests: XCTestCase {
     func testSyncPurchasesSetsIsRestoreForAnon() {
         setupAnonPurchases()
 
-        purchases.allowSharingAppStoreAccount = false
+        var deprecated = purchases.deprecated
+        deprecated.allowSharingAppStoreAccount = false
         purchases!.syncPurchases(completion: nil)
         expect(self.backend.postedIsRestore!) == false
 
-        purchases.allowSharingAppStoreAccount = true
+        deprecated.allowSharingAppStoreAccount = true
         purchases!.syncPurchases(completion: nil)
         expect(self.backend.postedIsRestore!) == true
     }
@@ -1816,7 +1820,7 @@ class PurchasesTests: XCTestCase {
     func testAddAttributionAlwaysAddsAdIdsEmptyDict() {
         setupPurchases()
 
-        Purchases.addAttributionData([:], fromNetwork: AttributionNetwork.adjust)
+        Purchases.deprecated.addAttributionData([:], fromNetwork: AttributionNetwork.adjust)
 
         let attributionData = self.subscriberAttributesManager.invokedConvertAttributionDataAndSetParameters?.attributionData
         expect(attributionData?.count) == 2
@@ -1828,7 +1832,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
 
-        Purchases.addAttributionData(data, fromNetwork: AttributionNetwork.appleSearchAds)
+        Purchases.deprecated.addAttributionData(data, fromNetwork: AttributionNetwork.appleSearchAds)
 
         for key in data.keys {
             expect(self.backend.invokedPostAttributionDataParametersList[0].data?.keys.contains(key)).toEventually(beTrue())
@@ -1867,7 +1871,7 @@ class PurchasesTests: XCTestCase {
         var completionCalled = false
         self.identityManager.aliasError = nil
         var info: CustomerInfo?
-        self.purchases?.createAlias("cesarpedro") { (newInfo, error) in
+        purchases.deprecated.createAlias("cesarpedro") { (newInfo, error) in
             completionCalled = (error == nil)
             info = newInfo
         }
@@ -1878,7 +1882,7 @@ class PurchasesTests: XCTestCase {
 
         self.identityManager.aliasError = ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
 
-        self.purchases?.createAlias("cesardro") { (info, error) in
+        purchases.deprecated.createAlias("cesardro") { (info, error) in
             completionCalled = (error == nil)
         }
 
@@ -1902,7 +1906,7 @@ class PurchasesTests: XCTestCase {
 
         var completionCalled = false
         self.identityManager.aliasError = nil
-        self.purchases?.createAlias(newAppUserID) { (info, error) in
+        purchases.deprecated.createAlias(newAppUserID) { (info, error) in
             completionCalled = (error == nil)
         }
 
@@ -1915,7 +1919,7 @@ class PurchasesTests: XCTestCase {
 
         var completionCalled = false
         var info: CustomerInfo?
-        self.purchases?.identify("cesarpedro") { (newInfo, error) in
+        self.purchases.deprecated.identify("cesarpedro") { (newInfo, error) in
             completionCalled = true
             info = newInfo
         }
@@ -1926,7 +1930,7 @@ class PurchasesTests: XCTestCase {
 
         self.identityManager.identifyError = ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
 
-        self.purchases?.identify("cesardro") { (info, error) in
+        self.purchases.deprecated.identify("cesardro") { (info, error) in
             completionCalled = (error == nil)
         }
 
@@ -1949,7 +1953,7 @@ class PurchasesTests: XCTestCase {
         let newAppUserID = "cesarPedro"
 
         var completionCalled = false
-        self.purchases?.identify(newAppUserID) { (info, error) in
+        purchases.deprecated.identify(newAppUserID) { (info, error) in
             completionCalled = true
         }
 
@@ -1962,7 +1966,7 @@ class PurchasesTests: XCTestCase {
 
         var completionCalled = false
         var info: CustomerInfo?
-        self.purchases?.reset { newInfo, error in
+        purchases.deprecated.reset { newInfo, error in
             completionCalled = true
             info = newInfo
         }
@@ -1985,7 +1989,7 @@ class PurchasesTests: XCTestCase {
             ]])
 
         var completionCalled = false
-        self.purchases?.reset() { (info, error) in
+        purchases.deprecated.reset() { (info, error) in
             completionCalled = (error == nil)
         }
 
@@ -2001,7 +2005,7 @@ class PurchasesTests: XCTestCase {
 
         var completionCalled = false
         var info: CustomerInfo?
-        self.purchases?.createAlias(identityManager.currentAppUserID) { (newInfo, error) in
+        purchases.deprecated.createAlias(identityManager.currentAppUserID) { (newInfo, error) in
             completionCalled = true
             info = newInfo
         }
@@ -2019,7 +2023,7 @@ class PurchasesTests: XCTestCase {
 
         var completionCalled = false
         var info: CustomerInfo?
-        self.purchases?.identify(identityManager.currentAppUserID) { (newInfo, error) in
+        purchases.deprecated.identify(identityManager.currentAppUserID) { (newInfo, error) in
             completionCalled = true
             info = newInfo
         }
@@ -2318,7 +2322,7 @@ class PurchasesTests: XCTestCase {
     func testAttributionDataIsPostponedIfThereIsNoInstance() {
         let data = ["yo" : "dog", "what" : 45, "is" : ["up"]] as [String : Any]
 
-        Purchases.addAttributionData(data, fromNetwork: AttributionNetwork.appsFlyer)
+        Purchases.deprecated.addAttributionData(data, fromNetwork: AttributionNetwork.appsFlyer)
 
         setupPurchases()
 
@@ -2338,7 +2342,7 @@ class PurchasesTests: XCTestCase {
     func testAttributionDataSendsNetworkAppUserId() {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
 
-        Purchases.addAttributionData(data, from: AttributionNetwork.appleSearchAds, forNetworkUserId: "newuser")
+        Purchases.deprecated.addAttributionData(data, from: AttributionNetwork.appleSearchAds, forNetworkUserId: "newuser")
 
         setupPurchases()
 
@@ -2358,7 +2362,7 @@ class PurchasesTests: XCTestCase {
     func testAttributionDataDontSendNetworkAppUserIdIfNotProvided() {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
 
-        Purchases.addAttributionData(data, fromNetwork: AttributionNetwork.appleSearchAds)
+        Purchases.deprecated.addAttributionData(data, fromNetwork: AttributionNetwork.appleSearchAds)
 
         setupPurchases()
 
@@ -2388,7 +2392,7 @@ class PurchasesTests: XCTestCase {
     func testAttributionDataPostponesMultiple() {
         let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
 
-        Purchases.addAttributionData(data, from: AttributionNetwork.adjust, forNetworkUserId: "newuser")
+        Purchases.deprecated.addAttributionData(data, from: AttributionNetwork.adjust, forNetworkUserId: "newuser")
 
         setupPurchases(automaticCollection: true)
         expect(self.backend.invokedPostAttributionDataParametersList.count) == 1
