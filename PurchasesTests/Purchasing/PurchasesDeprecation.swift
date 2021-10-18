@@ -78,10 +78,23 @@ class PurchasesDeprecation: PurchasesDeprecatable {
 
 extension Purchases {
 
+    /**
+     * Computed property you should use if you receive deprecation warnings. This is a proxy for a Purchases object.
+     * By calling `.deprecated` you will have access to the same API, but it won't trigger a deprecation.
+     * If you need to set a property that is deprecated, you'll need to create a var in your test to hold a copy of
+     * the `deprecated` object. This is because the `deprecated` property is computed and so you cannot mutate it.
+     * e.g.:
+     * var deprecatedVarObject = purchases.deprecated
+     * deprecatedVarObject.allowSharingAppStoreAccount = true
+     */
     var deprecated: PurchasesDeprecatable {
-        return (PurchasesDeprecation(purchases: self) as PurchasesDeprecatable)
+        return PurchasesDeprecation(purchases: self)
     }
 
+    /**
+     * Computed property you should use if you receive deprecation warnings. This is a proxy for the Purchases class.
+     * By calling `.deprecated` you will have access to the same API, but it won't trigger a deprecation.
+     */
     static var deprecated: PurchasesDeprecatable.Type {
         return PurchasesDeprecation.self
     }
