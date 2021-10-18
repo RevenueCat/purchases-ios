@@ -1,2 +1,3 @@
-- Fixes an instance where `nil` could potentially be passed in to a completion block that expects a non-nil result.
-    https://github.com/revenuecat/purchases-ios/pulls/904
+- Adds a timeout when `SKProductsRequest` hangs forever, which may happen with some sandbox accounts. 
+When this happens, the SDK will return an error and post a warning to the logs.
+    https://github.com/RevenueCat/purchases-ios/pull/910
