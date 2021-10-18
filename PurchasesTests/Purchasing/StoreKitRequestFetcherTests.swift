@@ -164,7 +164,10 @@ class StoreKitRequestFetcher: XCTestCase {
     }
 
     func testProductsWithIdentifiersTimesOutIfMaxToleranceExceeded() throws {
-        setupFetcher(fails: false)
+        self.factory = MockRequestsFactory(fails: false)
+        self.fetcher = RCStoreKitRequestFetcher(requestFactory: self.factory,
+                                                operationDispatcher: MockOperationDispatcher())
+
         let productIdentifiers = Set(["1", "2", "3"])
         let toleranceInSeconds = 1
         let productsRequestResponseTimeInSeconds = 2
@@ -189,7 +192,10 @@ class StoreKitRequestFetcher: XCTestCase {
     }
 
     func testProductsWithIdentifiersDoesntTimeOutIfRequestReturnsOnTime() throws {
-        setupFetcher(fails: false)
+        self.factory = MockRequestsFactory(fails: false)
+        self.fetcher = RCStoreKitRequestFetcher(requestFactory: self.factory,
+                                                operationDispatcher: MockOperationDispatcher())
+
         let productIdentifiers = Set(["1", "2", "3"])
         let toleranceInSeconds = 2
         let productsRequestResponseTimeInSeconds = 1
