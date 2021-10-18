@@ -29,7 +29,7 @@ typedef void(^RCFetchReceiptCompletionHandler)(void);
 
 - (nullable instancetype)initWithOperationDispatcher:(RCOperationDispatcher *)operationDispatcher;
 
-- (nullable instancetype)init NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 - (void)fetchProducts:(NSSet<NSString *> *)identifiers
            completion:(RCFetchProductsCompletionHandler)completion;

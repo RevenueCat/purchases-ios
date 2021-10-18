@@ -114,7 +114,9 @@
                 associatedProductIdentifiers = productIdentifiers;
             }
         }
-        NSAssert(associatedProductIdentifiers != nil, @"Could not find request in storage");
+        if (associatedProductIdentifiers == nil) {
+            return @[];
+        }
         
         handlers = self.productsCompletionHandlers[associatedProductIdentifiers];
         [self.productsRequests removeObjectForKey:associatedProductIdentifiers];
