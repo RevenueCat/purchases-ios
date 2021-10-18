@@ -927,7 +927,7 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @objc func beginRefundRequest(for transactionID: UInt64,
-                                  completion: @escaping (RefundRequestStatus, Error?) -> Void) async {
+                                  completion: @escaping (RefundRequestStatus, Error?) -> Void) {
         purchasesOrchestrator.beginRefundRequest(for: transactionID, completion: completion)
     }
 

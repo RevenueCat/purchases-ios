@@ -29,22 +29,27 @@ class BeginRefundRequestHelper {
     func beginRefundRequest(transactionID: UInt64,
                             completion: @escaping (Result<RefundRequestStatus,
                                                    Error>) -> Void) {
+#if os(iOS) || targetEnvironment(macCatalyst)
         Task {
-            self.beginRefundRequest(transactionID: transactionID, completion: completion)
+            let result = await self.beginRefundRequest(transactionID: transactionID)
+            completion(result)
         }
-        return
-    }
 
+        return
+#else
+        fatalError("tried to call Transaction.beginRefundRequest in a platform that doesn't support it!")
+#endif
+    }
 }
 
-@available(iOS 15.0, macCatalyst 15.0, *)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
 private extension BeginRefundRequestHelper {
 
+#if os(iOS) || targetEnvironment(macCatalyst)
     @MainActor
-    func beginRefundRequest(transactionID: UInt64) async throws
-        -> Result<RefundRequestStatus, Error> {
+    @available(iOS 15.0, macCatalyst 15.0, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func beginRefundRequest(transactionID: UInt64) async -> Result<RefundRequestStatus, Error> {
         // TODO pull out to some kind of UIHelper class?
         guard let application = systemInfo.sharedUIApplication,
               let windowScene = application.currentWindowScene else {
@@ -59,7 +64,7 @@ private extension BeginRefundRequestHelper {
             return .failure(ErrorUtils.storeProblemError(withMessage: message, error: error))
         }
     }
-
+#endif
 }
 
 /// Status codes for refund requests
@@ -76,7 +81,7 @@ private extension BeginRefundRequestHelper {
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 private extension RefundRequestStatus {
-
+#if os(iOS) || targetEnvironment(macCatalyst)
     static func refundRequestStatus(fromSKRefundRequestStatus status: StoreKit.Transaction.RefundRequestStatus)
         -> RefundRequestStatus {
         switch status {
@@ -89,5 +94,7 @@ private extension RefundRequestStatus {
             fatalError()
         }
     }
-
+#endif
 }
+
+

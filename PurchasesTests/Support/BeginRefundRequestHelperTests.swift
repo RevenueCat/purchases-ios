@@ -17,8 +17,6 @@ import XCTest
 
 @testable import RevenueCat
 
-#if os(macOS) || os(iOS)
-
 class BeginRefundRequestHelperTests: XCTestCase {
 
     private var systemInfo: MockSystemInfo!
@@ -30,4 +28,4 @@ class BeginRefundRequestHelperTests: XCTestCase {
         systemInfo = try! MockSystemInfo(platformFlavor: "", platformFlavorVersion: "", finishTransactions: true)
         helper = BeginRefundRequestHelper(systemInfo: systemInfo)
     }
-
+}
