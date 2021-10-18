@@ -12,6 +12,7 @@
 @import PurchasesCoreSwift;
 
 @implementation RCProductsRequestFactory : NSObject
+
 - (SKProductsRequest *)requestForProductIdentifiers:(NSSet<NSString *> *)identifiers
 {
     return [[SKProductsRequest alloc] initWithProductIdentifiers:identifiers];
@@ -25,6 +26,7 @@
 @end
 
 @interface RCStoreKitRequestFetcher ()
+
 @property (nonatomic) RCProductsRequestFactory *requestFactory;
 
 @property (nonatomic) NSMutableDictionary<NSSet *, SKRequest *> *productsRequests;
@@ -50,6 +52,7 @@
         
         self.receiptRefreshRequest = nil;
         self.receiptRefreshCompletionHandlers = [NSMutableArray new];
+        self.requestTimeoutInSeconds = 30;
     }
     return self;
 }
@@ -77,6 +80,7 @@
         
         
         [newRequest start];
+        [self scheduleCancellationInCaseOfTimeoutForRequest:newRequest];
     }
     
     NSAssert(self.productsRequests.count == self.productsCompletionHandlers.count, @"Corrupted handler storage");
@@ -174,6 +178,10 @@
     {
         handler(response.products);
     }
+}
+
+- (void)scheduleCancellationInCaseOfTimeoutForRequest:(SKProductsRequest *)request {
+
 }
 
 @end

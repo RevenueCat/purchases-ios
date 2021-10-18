@@ -31,6 +31,8 @@ typedef void(^RCFetchReceiptCompletionHandler)(void);
 
 - (void)fetchReceiptData:(RCFetchReceiptCompletionHandler)completion;
 
+@property (nonatomic) NSInteger requestTimeoutInSeconds;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -170,10 +170,7 @@ class StoreKitRequestFetcher: XCTestCase {
         let request = MockProductsRequest(productIdentifiers: productIdentifiers,
                                           responseTimeInSeconds: productsRequestResponseTimeInSeconds)
         factory.stubbedRequestResult = request
-
-//        productsManager = ProductsManager(productsRequestFactory: factory,
-//                                          requestTimeoutInSeconds: toleranceInSeconds)
-
+        fetcher.requestTimeoutInSeconds = toleranceInSeconds;
 
         var completionCallCount = 0
         var maybeReceivedProducts: [SKProduct]?
@@ -198,10 +195,7 @@ class StoreKitRequestFetcher: XCTestCase {
         let request = MockProductsRequest(productIdentifiers: productIdentifiers,
                                           responseTimeInSeconds: productsRequestResponseTimeInSeconds)
         factory.stubbedRequestResult = request
-
-//        productsManager = ProductsManager(productsRequestFactory: factory,
-//                                          requestTimeoutInSeconds: toleranceInSeconds)
-
+        fetcher.requestTimeoutInSeconds = toleranceInSeconds;
 
         var completionCallCount = 0
         var maybeReceivedProducts: [SKProduct]?

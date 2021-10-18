@@ -56,4 +56,12 @@ import Foundation
         "if one is being used). \nTo configure products, follow the instructions in " +
         "https://rev.cat/how-to-configure-offerings. \nMore information: https://rev.cat/why-are-offerings-empty"
     }
+
+    @objc public var skproductsrequest_timed_out: String {
+        "SKProductsRequest took longer than %@ seconds, " +
+        "cancelling request and returning an empty set. This seems to be an App Store quirk. " +
+        "If this is happening to you consistently, you might want to try using a new Sandbox account. " +
+        "More information: https://rev.cat/skproductsrequest-hangs"
+    }
+
 }
