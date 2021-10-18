@@ -21,8 +21,9 @@ class BeginRefundRequestHelper {
         self.systemInfo = systemInfo
     }
 
-    @available(iOS 15.0, *)
-    @available(macCatalyst 15.0, *)
+    // TODO figure out whether to have a fallback for unavailable
+    // TODO any transactionId checking?
+    @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequest(transactionID: UInt64,
@@ -36,15 +37,12 @@ class BeginRefundRequestHelper {
 
 }
 
-@available(iOS 15.0, *)
-@available(macCatalyst 15.0, *)
+@available(iOS 15.0, macCatalyst 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 private extension BeginRefundRequestHelper {
 
     @MainActor
-    @available(iOS 15.0, *)
-    @available(macOS, unavailable)
     func beginRefundRequest(transactionID: UInt64) async throws
         -> Result<RefundRequestStatus, Error> {
         // TODO pull out to some kind of UIHelper class?
@@ -55,14 +53,13 @@ private extension BeginRefundRequestHelper {
 
         do {
             let status = try await StoreKit.Transaction.beginRefundRequest(for: transactionID, in: windowScene)
-
             return .success(RefundRequestStatus.refundRequestStatus(fromSKRefundRequestStatus: status))
         } catch {
             let message = "Error when trying to begin refund request: \(error.localizedDescription)"
             return .failure(ErrorUtils.storeProblemError(withMessage: message, error: error))
         }
-
     }
+
 }
 
 /// Status codes for refund requests
@@ -71,15 +68,15 @@ private extension BeginRefundRequestHelper {
     case userCancelled = 0,
         /// Apple has received the refund request
          success,
-         // todo should this be error or none or what, need to not require nullable enum in status
+         // TODO should this be error or none or what, need to not require nullable enum in status
          error
 }
 
-@available(iOS 15.0, *)
-@available(macCatalyst 15.0, *)
+@available(iOS 15.0, macCatalyst 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 private extension RefundRequestStatus {
+
     static func refundRequestStatus(fromSKRefundRequestStatus status: StoreKit.Transaction.RefundRequestStatus)
         -> RefundRequestStatus {
         switch status {
@@ -88,8 +85,9 @@ private extension RefundRequestStatus {
         case .success:
             return .success
         @unknown default:
-            // todo figure out how to handle this
+            // TODO figure out how to handle this -- .error?
             fatalError()
         }
     }
+
 }

@@ -31,6 +31,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     var receiptParser: MockReceiptParser!
     var deviceCache: MockDeviceCache!
     var mockManageSubsModalHelper: MockManageSubscriptionsModalHelper!
+    var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
 
     var orchestrator: PurchasesOrchestrator!
 
@@ -64,6 +65,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                                        customerInfoManager: customerInfoManager,
                                                                        identityManager: identityManager)
 
+        mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo)
+
         orchestrator = PurchasesOrchestrator(productsManager: productsManager,
                                              storeKitWrapper: storeKitWrapper,
                                              systemInfo: systemInfo,
@@ -75,7 +78,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              identityManager: identityManager,
                                              receiptParser: receiptParser,
                                              deviceCache: deviceCache,
-                                             manageSubscriptionsModalHelper: mockManageSubsModalHelper)
+                                             manageSubscriptionsModalHelper: mockManageSubsModalHelper,
+                                             beginRefundRequestHelper: mockBeginRefundRequestHelper)
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             orchestrator.storeKit2Listener = MockStoreKit2TransactionListener()
         }
@@ -217,16 +221,38 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(receivedError).to(matchError(ErrorCode.customerInfoError))
     }
 
-    func testShowManageSubscriptionModalCallsCompletionWithoutErrorIfItsSuccesful() {
+    @available(iOS 15.0, *)
+    @available(macCatalyst 15.0, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func testBeginRefundRequestCallsCompletionWithoutErrorIfItsSuccesful() {
         var receivedError: Error?
         var completionCalled = false
-        orchestrator.showManageSubscriptionModal { maybeError in
+        orchestrator.beginRefundRequest(for: UInt64()) { _, maybeError in
             completionCalled = true
             receivedError = maybeError
         }
 
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).to(beNil())
+    }
+
+    @available(iOS 15.0, *)
+    @available(macCatalyst 15.0, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func testBeginRefundRequestCallsCompletionWithErrorIfThereIsAFailure() {
+        mockBeginRefundRequestHelper.mockError = ErrorUtils.storeProblemError(withMessage: "test")
+        var receivedError: Error?
+        var completionCalled = false
+        orchestrator.beginRefundRequest(for: UInt64()) { _, maybeError in
+            completionCalled = true
+            receivedError = maybeError
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedError).toNot(beNil())
+        expect(receivedError).to(matchError(ErrorCode.customerInfoError))
     }
 
 }
