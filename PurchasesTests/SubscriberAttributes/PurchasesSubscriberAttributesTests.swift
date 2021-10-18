@@ -11,7 +11,7 @@ import Nimble
 class PurchasesSubscriberAttributesTests: XCTestCase {
 
     let mockReceiptFetcher = MockReceiptFetcher()
-    let mockRequestFetcher = MockRequestFetcher()
+    var mockRequestFetcher: MockRequestFetcher!
     let mockBackend = MockBackend()
     let mockStoreKitWrapper = MockStoreKitWrapper()
     let mockNotificationCenter = MockNotificationCenter()
@@ -51,6 +51,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         self.mockReceiptParser = MockReceiptParser()
+        self.mockRequestFetcher = MockRequestFetcher(operationDispatcher: mockOperationDispatcher)
         let systemInfoAttribution = MockSystemInfo(platformFlavor: "iOS",
                                                    platformFlavorVersion: "3.2.1",
                                                    finishTransactions: true)

@@ -66,7 +66,8 @@ class StoreKitRequestFetcher: XCTestCase {
 
     func setupFetcher(fails: Bool) {
         self.factory = MockRequestsFactory(fails: fails)
-        self.fetcher = RCStoreKitRequestFetcher(requestFactory: self.factory)
+        self.fetcher = RCStoreKitRequestFetcher(requestFactory: self.factory,
+                                                operationDispatcher: MockOperationDispatcher())
 
         self.fetcher.fetchProducts(["com.a.product"]) { (newProducts) in
             self.products = newProducts

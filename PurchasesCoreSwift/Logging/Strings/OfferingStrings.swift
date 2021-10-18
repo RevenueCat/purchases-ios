@@ -58,7 +58,7 @@ import Foundation
     }
 
     @objc public var skproductsrequest_timed_out: String {
-        "SKProductsRequest took longer than %@ seconds, " +
+        "SKProductsRequest took longer than %ld seconds, " +
         "cancelling request and returning an empty set. This seems to be an App Store quirk. " +
         "If this is happening to you consistently, you might want to try using a new Sandbox account. " +
         "More information: https://rev.cat/skproductsrequest-hangs"

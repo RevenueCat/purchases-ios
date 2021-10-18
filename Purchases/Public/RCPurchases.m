@@ -233,7 +233,6 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
                   observerMode:(BOOL)observerMode
                 platformFlavor:(nullable NSString *)platformFlavor
          platformFlavorVersion:(nullable NSString *)platformFlavorVersion {
-    RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc] init];
     RCReceiptFetcher *receiptFetcher = [[RCReceiptFetcher alloc] init];
     RCSystemInfo *systemInfo = [[RCSystemInfo alloc] initWithPlatformFlavor:platformFlavor
                                                       platformFlavorVersion:platformFlavorVersion
@@ -253,6 +252,9 @@ static BOOL _automaticAppleSearchAdsAttributionCollection = NO;
 
     RCDeviceCache *deviceCache = [[RCDeviceCache alloc] initWith:userDefaults];
     RCOperationDispatcher *operationDispatcher = [[RCOperationDispatcher alloc] init];
+    RCStoreKitRequestFetcher *fetcher = [[RCStoreKitRequestFetcher alloc]
+                                         initWithOperationDispatcher:operationDispatcher];
+
     RCIntroEligibilityCalculator *introCalculator = [[RCIntroEligibilityCalculator alloc] init];
     RCReceiptParser *receiptParser = [[RCReceiptParser alloc] init];
     RCPurchaserInfoManager *purchaserInfoManager = [[RCPurchaserInfoManager alloc]

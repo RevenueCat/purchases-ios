@@ -13,9 +13,9 @@ class PurchasesTests: XCTestCase {
 
     override func setUp() {
         self.userDefaults = UserDefaults(suiteName: "TestDefaults")
-        requestFetcher = MockRequestFetcher()
         systemInfo = MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockOperationDispatcher = MockOperationDispatcher()
+        requestFetcher = MockRequestFetcher(operationDispatcher: mockOperationDispatcher)
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockReceiptParser = MockReceiptParser()
         let systemInfoAttribution = MockSystemInfo(platformFlavor: "iOS",

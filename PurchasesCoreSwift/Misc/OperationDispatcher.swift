@@ -36,4 +36,11 @@ import Foundation
             workerQueue.async { block() }
         }
     }
+
+    @objc public func dispatchOnWorkerThread(afterDelayInSeconds delayInSeconds: Int,
+                                             block: @escaping () -> Void) {
+        workerQueue.asyncAfter(deadline: .now() + .seconds(delayInSeconds)) {
+            block()
+        }
+    }
 }

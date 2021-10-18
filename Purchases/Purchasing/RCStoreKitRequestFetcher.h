@@ -15,7 +15,7 @@ typedef void(^RCFetchProductsCompletionHandler)(NSArray<SKProduct *> *products);
 
 typedef void(^RCFetchReceiptCompletionHandler)(void);
 
-@class SKProduct, SKProductsRequest;
+@class SKProduct, SKProductsRequest, RCOperationDispatcher;
 
 @interface RCProductsRequestFactory : NSObject
 - (SKProductsRequest *)requestForProductIdentifiers:(NSSet<NSString *> *)identifiers;
@@ -24,7 +24,12 @@ typedef void(^RCFetchReceiptCompletionHandler)(void);
 
 @interface RCStoreKitRequestFetcher : NSObject <SKProductsRequestDelegate>
 
-- (nullable instancetype)initWithRequestFactory:(RCProductsRequestFactory *)requestFactory;
+- (nullable instancetype)initWithRequestFactory:(RCProductsRequestFactory *)requestFactory
+                            operationDispatcher:(RCOperationDispatcher *)operationDispatcher;
+
+- (nullable instancetype)initWithOperationDispatcher:(RCOperationDispatcher *)operationDispatcher;
+
+- (nullable instancetype)init NS_UNAVAILABLE;
 
 - (void)fetchProducts:(NSSet<NSString *> *)identifiers
            completion:(RCFetchProductsCompletionHandler)completion;
