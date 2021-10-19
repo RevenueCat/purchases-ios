@@ -38,7 +38,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
 #warning(
     """
-    You're using a beta release (4.0.0-beta.3). If that's not intentional, you'll want to point to one of the \
+    You're using a beta release (4.0.0-beta.4). If that's not intentional, you'll want to point to one of the \
     3.x release tags, or a specific branch instead of `main` see https://rev.cat/v4rmd for more information.
     """
     )
