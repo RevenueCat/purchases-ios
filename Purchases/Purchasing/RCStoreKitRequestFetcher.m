@@ -62,8 +62,7 @@
 }
 
 - (void)fetchProducts:(NSSet<NSString *> *)identifiers
-           completion:(RCFetchProductsCompletionHandler)completion;
-{
+           completion:(RCFetchProductsCompletionHandler)completion {
     
     @synchronized(self) {
         SKProductsRequest *newRequest = nil;
@@ -89,8 +88,7 @@
     NSAssert(self.productsRequests.count == self.productsCompletionHandlers.count, @"Corrupted handler storage");
 }
 
-- (void)fetchReceiptData:(void (^ _Nonnull)(void))completion
-{
+- (void)fetchReceiptData:(void (^ _Nonnull)(void))completion {
     @synchronized(self) {
         [self.receiptRefreshCompletionHandlers addObject:[completion copy]];
         
@@ -102,8 +100,7 @@
     }
 }
 
-- (NSArray<RCFetchProductsCompletionHandler> *)finishProductsRequest:(SKRequest *)request
-{
+- (NSArray<RCFetchProductsCompletionHandler> *)finishProductsRequest:(SKRequest *)request {
     NSMutableArray<RCFetchProductsCompletionHandler> *handlers;
     @synchronized(self) {
         NSSet *associatedProductIdentifiers = nil;
@@ -126,8 +123,7 @@
     return handlers;
 }
 
-- (NSArray<RCFetchReceiptCompletionHandler> *)finishReceiptRequest:(SKRequest *)request
-{
+- (NSArray<RCFetchReceiptCompletionHandler> *)finishReceiptRequest:(SKRequest *)request {
     @synchronized(self) {
         self.receiptRefreshRequest = nil;
         NSArray *handlers = [NSArray arrayWithArray:self.receiptRefreshCompletionHandlers];
@@ -136,8 +132,7 @@
     }
 }
 
-- (void)requestDidFinish:(SKRequest *)request
-{
+- (void)requestDidFinish:(SKRequest *)request {
     if ([request isKindOfClass:SKReceiptRefreshRequest.class]) {
         NSArray<RCFetchReceiptCompletionHandler> *receiptHandlers = [self finishReceiptRequest:request];
         for (RCFetchReceiptCompletionHandler receiptHandler in receiptHandlers) {
@@ -147,8 +142,7 @@
     [request cancel];
 }
 
-- (void)request:(SKRequest *)request didFailWithError:(NSError *)error
-{
+- (void)request:(SKRequest *)request didFailWithError:(NSError *)error {
     RCAppleErrorLog(RCStrings.offering.fetching_products_failed, error.localizedDescription);
     if ([request isKindOfClass:SKReceiptRefreshRequest.class]) {
         NSArray<RCFetchReceiptCompletionHandler> *receiptHandlers = [self finishReceiptRequest:request];
@@ -157,20 +151,17 @@
         }
     } else if ([request isKindOfClass:SKProductsRequest.class]) {
         NSArray<RCFetchProductsCompletionHandler> *productsHandlers = [self finishProductsRequest:request];
-        for (RCFetchProductsCompletionHandler handler in productsHandlers)
-        {
+        for (RCFetchProductsCompletionHandler handler in productsHandlers) {
             handler(@[]);
         }
     }
     [request cancel];
 }
 
-- (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response
-{
+- (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response {
     RCDebugLog(@"%@", RCStrings.offering.fetching_products_finished);
     RCPurchaseLog(@"%@", RCStrings.offering.retrieved_products);
-    for (SKProduct *p in response.products)
-    {
+    for (SKProduct *p in response.products) {
         RCPurchaseLog(RCStrings.offering.list_products, p.productIdentifier, p);
     }
     if (response.invalidProductIdentifiers.count > 0) {
@@ -179,8 +170,7 @@
 
     NSArray<RCFetchProductsCompletionHandler> *handlers = [self finishProductsRequest:request];
     RCDebugLog(RCStrings.offering.completion_handlers_waiting_on_products, (unsigned long)handlers.count);
-    for (RCFetchProductsCompletionHandler handler in handlers)
-    {
+    for (RCFetchProductsCompletionHandler handler in handlers) {
         handler(response.products);
     }
 }
@@ -198,8 +188,7 @@
             SKProductsRequest *request = maybeRequest;
             [request cancel];
             NSArray<RCFetchProductsCompletionHandler> *productsHandlers = [self finishProductsRequest:request];
-            for (RCFetchProductsCompletionHandler handler in productsHandlers)
-            {
+            for (RCFetchProductsCompletionHandler handler in productsHandlers) {
                 handler(@[]);
             }
         }
