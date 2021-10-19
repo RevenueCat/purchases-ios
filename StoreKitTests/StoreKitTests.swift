@@ -15,7 +15,7 @@ class TestPurchaseDelegate: NSObject, PurchasesDelegate {
     var purchaserInfo: CustomerInfo?
     var purchaserInfoUpdateCount = 0
 
-    func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: CustomerInfo) {
+    func purchases(_ purchases: Purchases, receivedUpdated purchaserInfo: CustomerInfo) {
         self.purchaserInfo = purchaserInfo
         purchaserInfoUpdateCount += 1
     }
