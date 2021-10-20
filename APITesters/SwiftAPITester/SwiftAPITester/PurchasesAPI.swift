@@ -102,9 +102,9 @@ private func checkStaticMethods() {
 }
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
-    purchases.customerInfo { _, _ in }
-    purchases.offerings { _, _ in }
-    purchases.products([String]()) { _ in }
+    purchases.getCustomerInfo { _, _ in }
+    purchases.getOfferings { _, _ in }
+    purchases.getProducts([String]()) { _ in }
 
     let skp: SKProduct = SKProduct()
     let skpd: SKProductDiscount = SKProductDiscount()

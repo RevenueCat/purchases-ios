@@ -631,7 +631,7 @@ public extension Purchases {
      * - Parameter completion: A completion block called when offerings are available.
      * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
      */
-    func getOfferings(completion: @escaping (Offerings?, Error?) -> Void) {
+    @objc func getOfferings(completion: @escaping (Offerings?, Error?) -> Void) {
         offeringsManager.offerings(appUserID: appUserID, completion: completion)
     }
 
@@ -1121,24 +1121,29 @@ public extension Purchases {
      * Deprecated
      */
     @available(swift, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
+    @available(*, deprecated, message: "use getCustomerInfoWithCompletion:", renamed: "getOfferingsWithCompletion")
     @objc func customerInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
         getCustomerInfo(completion: completion)
     }
 
+    // swiftlint:disable line_length
     /**
      * Deprecated
      */
+    @available(*, deprecated, message: "use getProductsWithIdentifiers:completion:", renamed: "getProductsWithIdentifiers")
     @available(swift, obsoleted: 1, renamed: "getProducts(_:completion:)")
     @objc(productsWithIdentifiers:completion:)
     func products(_ productIdentifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
         getProducts(productIdentifiers, completion: completion)
     }
+    // swiftlint:enable line_length
 
     /**
      * Deprecated
      */
     @available(swift, obsoleted: 1, renamed: "getOfferings(completion:)")
-    func offerings(completion: @escaping (Offerings?, Error?) -> Void) {
+    @available(*, deprecated, message: "use getOfferingsWithCompletion:", renamed: "getOfferingsWithCompletion")
+    @objc func offerings(completion: @escaping (Offerings?, Error?) -> Void) {
         getOfferings(completion: completion)
     }
 
