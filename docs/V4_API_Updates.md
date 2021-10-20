@@ -100,11 +100,19 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 	<tbody>
 		<tr>
 			<td>purchaserInfoWithCompletion:</td>
-			<td>customerInfoWithCompletion:</td>
+			<td>getCustomerInfoWithCompletion:</td>
 		</tr>
 		<tr>
 			<td>invalidatePurchaserInfoCache</td>
 			<td>invalidateCustomerInfoCache</td>
+		</tr>
+		<tr>
+			<td>Purchases -offeringsWithCompletion:</td>
+			<td>Purchases -getOfferingsWithcompletion:</td>
+		</tr>
+		<tr>
+			<td>Purchases -productsWithIdentifiers:completion:</td>
+			<td>Purchases -getProductsWithIdentifiers:completion:</td>
 		</tr>
 	</tbody>
 </table>
@@ -248,15 +256,15 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 		</tr>
 		<tr>
 			<td>purchaserInfo(_ completion)</td>
-			<td>customerInfo(completion)</td>
+			<td>getCustomerInfo(completion)</td>
 		</tr>
 		<tr>
 			<td>offerings(_completion)</td>
-			<td>offerings(completion)</td>
+			<td>getOfferings(completion)</td>
 		</tr>
 		<tr>
 			<td>products(_ productIdentifiers, _ completion)</td>
-			<td>products(identifiers: completion)</td>
+			<td>getProducts(identifiers: completion)</td>
 		</tr>
 		<tr>
 			<td>purchaseProduct(_ product, _ completion)</td>

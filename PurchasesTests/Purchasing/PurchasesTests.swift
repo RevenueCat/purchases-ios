@@ -574,7 +574,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         var products: [SKProduct]?
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
-        purchases!.products(productIdentifiers) { (newProducts) in
+        purchases!.getProducts(productIdentifiers) { (newProducts) in
             products = newProducts
         }
 
@@ -613,7 +613,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         var completionCalled = false
         mockProductsManager.resetMock()
-        self.purchases.products([]) { _ in
+        self.purchases.getProducts([]) { _ in
             completionCalled = true
         }
         expect(completionCalled).toEventually(beTrue())
@@ -768,7 +768,7 @@ class PurchasesTests: XCTestCase {
     func testSendsProductInfoIfProductIsCached() {
         setupPurchases()
         let productIdentifiers = ["com.product.id1", "com.product.id2"]
-        purchases!.products(productIdentifiers) { (newProducts) in
+        purchases!.getProducts(productIdentifiers) { (newProducts) in
             let product = newProducts[0];
             self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
 
@@ -1621,7 +1621,7 @@ class PurchasesTests: XCTestCase {
 
         var receivedInfo: CustomerInfo?
 
-        purchases!.customerInfo { (info, error) in
+        purchases!.getCustomerInfo { (info, error) in
             receivedInfo = info
         }
 
@@ -1651,7 +1651,7 @@ class PurchasesTests: XCTestCase {
 
         var receivedInfo: CustomerInfo?
 
-        purchases!.customerInfo { (info, error) in
+        purchases!.getCustomerInfo { (info, error) in
             receivedInfo = info
         }
 
@@ -1675,7 +1675,7 @@ class PurchasesTests: XCTestCase {
 
         var receivedInfo: CustomerInfo?
 
-        purchases!.customerInfo { (info, error) in
+        purchases!.getCustomerInfo { (info, error) in
             receivedInfo = info
         }
 
@@ -1700,7 +1700,7 @@ class PurchasesTests: XCTestCase {
 
         var callCount = 0
 
-        purchases!.customerInfo { (_, _) in
+        purchases!.getCustomerInfo { (_, _) in
             callCount += 1
         }
 
@@ -1727,7 +1727,7 @@ class PurchasesTests: XCTestCase {
 
         var receivedInfo: CustomerInfo?
 
-        purchases!.customerInfo { (info, error) in
+        purchases!.getCustomerInfo { (info, error) in
             receivedInfo = info
         }
 
@@ -1754,7 +1754,7 @@ class PurchasesTests: XCTestCase {
 
         var receivedInfo: CustomerInfo?
 
-        purchases!.customerInfo { (info, error) in
+        purchases!.getCustomerInfo { (info, error) in
             receivedInfo = info
         }
 
@@ -1768,7 +1768,7 @@ class PurchasesTests: XCTestCase {
 
         expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
 
-        purchases!.customerInfo { (info, error) in
+        purchases!.getCustomerInfo { (info, error) in
         }
 
         expect(self.backend.getSubscriberCallCount).to(equal(2))
@@ -1789,7 +1789,7 @@ class PurchasesTests: XCTestCase {
     func testProductInfoIsCachedForOfferings() {
         setupPurchases()
         mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
-        self.purchases?.offerings { (newOfferings, _) in
+        self.purchases?.getOfferings { (newOfferings, _) in
             let product = newOfferings!["base"]!.monthly!.product;
             self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
 
@@ -2502,7 +2502,7 @@ class PurchasesTests: XCTestCase {
     func testPostsOfferingIfPurchasingPackage() {
         setupPurchases()
         mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
-        self.purchases!.offerings { (newOfferings, _) in
+        self.purchases!.getOfferings { (newOfferings, _) in
             let package = newOfferings!["base"]!.monthly!
             self.purchases!.purchase(package: package) { (tx, info, error, userCancelled) in
 
@@ -2552,7 +2552,7 @@ class PurchasesTests: XCTestCase {
         var receivedError: NSError? = nil
         var secondCompletionCalled = false
         mockOfferingsManager.stubbedOfferingsCompletionResult = (offeringsFactory.createOfferings(withProducts: [:], data: [:]), nil)
-        self.purchases!.offerings { (newOfferings, _) in
+        self.purchases!.getOfferings { (newOfferings, _) in
             let package = newOfferings!["base"]!.monthly!
             self.purchases!.purchase(package: package) { _,_,_,_  in
                 self.purchases!.purchase(package: package) { (tx, info, error, userCancelled) in
@@ -2583,7 +2583,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         self.deviceCache.stubbedIsCustomerInfoCacheStale = true
 
-        self.purchases?.customerInfo() { (info, error) in
+        self.purchases?.getCustomerInfo() { (info, error) in
 
         }
 
@@ -2713,7 +2713,7 @@ class PurchasesTests: XCTestCase {
         var receivedCustomerInfo: CustomerInfo? = nil
         var completionCallCount = 0
         var receivedError: Error? = nil
-        nonOptionalPurchases.customerInfo { (customerInfo, error) in
+        nonOptionalPurchases.getCustomerInfo { (customerInfo, error) in
             completionCallCount += 1
             receivedError = error
             receivedCustomerInfo = customerInfo
@@ -2746,7 +2746,7 @@ class PurchasesTests: XCTestCase {
         var receivedCustomerInfo: CustomerInfo? = nil
         var completionCallCount = 0
         var receivedError: Error? = nil
-        nonOptionalPurchases.customerInfo { (customerInfo, error) in
+        nonOptionalPurchases.getCustomerInfo { (customerInfo, error) in
             completionCallCount += 1
             receivedError = error
             receivedCustomerInfo = customerInfo
