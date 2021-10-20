@@ -380,8 +380,7 @@ workflows:
       - objc_apitest
       - buildTvWatchAndMacOS
       - storekit_tests: *release-tags-and-branches
-      # - deployment-checks: *release-branches
-      - deployment-checks
+      - deployment-checks: *release-branches
       - integration-tests-cocoapods: *release-tags-and-branches
       - integration-tests-swift-package-manager: *release-tags-and-branches
       - integration-tests-carthage: *release-tags-and-branches
@@ -389,5 +388,5 @@ workflows:
   deploy:
     jobs:
       - make-release: *release-tags
-      - prepare-next-version: *release-tags
+      # - prepare-next-version: *release-tags Disabled for beta releases.
       # - docs-deploy: *release-tags Disabled for beta releases.

@@ -131,11 +131,11 @@ platform :ios do
   desc "Deployment checks"
   lane :deployment_checks do |options|
     version_number = current_version_number
-    # check_no_git_tag_exists(version_number)
+    check_no_git_tag_exists(version_number)
     check_pods
     carthage_archive
     export_xcframework
-    # check_no_github_release_exists(version_number)
+    check_no_github_release_exists(version_number)
   end
 
   desc "tvOS, watchOS, and macOS build"
