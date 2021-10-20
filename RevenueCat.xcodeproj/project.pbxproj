@@ -567,6 +567,7 @@
 				F5BE44412698580200254A30 /* Attribution */,
 				B3B5FBBD269E080A00104A0C /* Caching */,
 				F5714EA626D7A82E00635477 /* CodableExtensions */,
+				B324DC482720C15300103EE9 /* Error Handling */,
 				2CD72940268A820E00BFC976 /* FoundationExtensions */,
 				B3A36AAC26BC76230059EDEA /* Identity */,
 				2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */,
@@ -952,6 +953,16 @@
 			path = BasicTypes;
 			sourceTree = "<group>";
 		};
+		B324DC482720C15300103EE9 /* Error Handling */ = {
+			isa = PBXGroup;
+			children = (
+				B3B5FBB3269CED4B00104A0C /* BackendErrorCode.swift */,
+				B3B5FBB5269CED6400104A0C /* ErrorDetails.swift */,
+				35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */,
+			);
+			path = "Error Handling";
+			sourceTree = "<group>";
+		};
 		B36824BB268FBB9B00957E4C /* SubscriberAttributes */ = {
 			isa = PBXGroup;
 			children = (
@@ -974,15 +985,12 @@
 			path = Identity;
 			sourceTree = "<group>";
 		};
-		B3B5FBB7269CED6D00104A0C /* Error Handling */ = {
+		B3B5FBB7269CED6D00104A0C /* Errors */ = {
 			isa = PBXGroup;
 			children = (
-				B3B5FBB3269CED4B00104A0C /* BackendErrorCode.swift */,
 				B34D2AA526976FC700D88C3A /* ErrorCode.swift */,
-				B3B5FBB5269CED6400104A0C /* ErrorDetails.swift */,
-				35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */,
 			);
-			path = "Error Handling";
+			path = Errors;
 			sourceTree = "<group>";
 		};
 		B3B5FBBD269E080A00104A0C /* Caching */ = {
@@ -997,7 +1005,7 @@
 		B3DDB55726854850008CCF23 /* Public */ = {
 			isa = PBXGroup;
 			children = (
-				B3B5FBB7269CED6D00104A0C /* Error Handling */,
+				B3B5FBB7269CED6D00104A0C /* Errors */,
 				B39E8119268E849900D31189 /* AttributionNetwork.swift */,
 				A56F9AB026990E9200AFC48F /* CustomerInfo.swift */,
 				B32B750026868C1D005647BF /* EntitlementInfo.swift */,

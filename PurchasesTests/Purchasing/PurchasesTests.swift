@@ -857,7 +857,7 @@ class PurchasesTests: XCTestCase {
 
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
-        self.backend.postReceiptError = ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
+        self.backend.postReceiptError = ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue, backendMessage: "Invalid credentials", finishable: false)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -876,7 +876,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptError = ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
+        self.backend.postReceiptError = ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue, backendMessage: "Invalid credentials", finishable: true)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -895,7 +895,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptError = ErrorUtils.backendError(withBackendCode: ErrorCode.invalidCredentialsError.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: false)
+        self.backend.postReceiptError = ErrorUtils.backendError(withBackendCode: ErrorCode.invalidCredentialsError.rawValue, backendMessage: "Invalid credentials", finishable: false)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -1233,7 +1233,7 @@ class PurchasesTests: XCTestCase {
     func testRestorePurchasesPassesErrorOnFailure() {
         setupPurchases()
 
-        let errorCode = BackendErrorCode.invalidAPIKey.rawValue as NSNumber
+        let errorCode = BackendErrorCode.invalidAPIKey.rawValue
         let error = ErrorUtils.backendError(withBackendCode: errorCode,
                                             backendMessage: "Invalid credentials",
                                             finishable: true)
@@ -1386,7 +1386,7 @@ class PurchasesTests: XCTestCase {
     func testSyncPurchasesPassesErrorOnFailure() {
         setupPurchases()
 
-        let errorCode = BackendErrorCode.invalidAPIKey.rawValue as NSNumber
+        let errorCode = BackendErrorCode.invalidAPIKey.rawValue
         let error = ErrorUtils.backendError(withBackendCode: errorCode,
                                             backendMessage: "Invalid credentials",
                                             finishable: true)
@@ -1880,7 +1880,7 @@ class PurchasesTests: XCTestCase {
         expect(self.identityManager.aliasCalled).toEventually(beTrue())
         expect(info).toEventuallyNot(beNil())
 
-        self.identityManager.aliasError = ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
+        self.identityManager.aliasError = ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue, backendMessage: "Invalid credentials", finishable: true)
 
         purchases.deprecated.createAlias("cesardro") { (info, error) in
             completionCalled = (error == nil)
@@ -1928,7 +1928,7 @@ class PurchasesTests: XCTestCase {
         expect(self.identityManager.identifyCalled).toEventually(beTrue())
         expect(info).toEventuallyNot(beNil())
 
-        self.identityManager.identifyError = ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber, backendMessage: "Invalid credentials", finishable: true)
+        self.identityManager.identifyError = ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue, backendMessage: "Invalid credentials", finishable: true)
 
         self.purchases.deprecated.identify("cesardro") { (info, error) in
             completionCalled = (error == nil)
@@ -2728,7 +2728,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testGetCustomerInfoAfterInvalidatingCallsCompletionWithErrorIfBackendError() {
-        let backendError = ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue as NSNumber,
+        let backendError = ErrorUtils.backendError(withBackendCode: BackendErrorCode.invalidAPIKey.rawValue,
                                                    backendMessage: "Invalid credentials",
                                                    finishable: true)
         self.backend.overrideCustomerInfoError = backendError

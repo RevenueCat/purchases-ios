@@ -644,7 +644,7 @@ class BackendTests: XCTestCase {
         expect(error?.domain).to(equal(RCPurchasesErrorCodeDomain))
         let underlyingError = (error?.userInfo[NSUnderlyingErrorKey]) as? NSError
         expect(underlyingError).toEventuallyNot(beNil())
-        expect(underlyingError?.domain).to(equal(RCBackendErrorCodeDomain))
+        expect(underlyingError?.domain).to(equal("RevenueCat.BackendErrorCode"))
         expect(error?.userInfo["finishable"]).to(be(true))
     }
 
@@ -1479,7 +1479,7 @@ class BackendTests: XCTestCase {
             equal(ErrorCode.invalidAppleSubscriptionKeyError.rawValue))
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.code).toEventually(equal(7234))
-        expect(receivedUnderlyingError?.domain).toEventually(equal(RCBackendErrorCodeDomain))
+        expect(receivedUnderlyingError?.domain).toEventually(equal("RevenueCat.BackendErrorCode"))
         expect(receivedUnderlyingError?.localizedDescription).toEventually(equal("Ineligible for some reason"))
     }
     

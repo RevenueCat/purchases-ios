@@ -194,9 +194,9 @@ class Backend {
             }
 
             guard statusCode < HTTPStatusCodes.redirect.rawValue else {
-                let code = self.maybeNumberFromError(code: response?["code"])
+                let code = self.maybeIntFromError(code: response?["code"])
                 let backendMessage = response?["message"] as? String
-                let error = ErrorUtils.backendError(withBackendCode: code as NSNumber?, backendMessage: backendMessage)
+                let error = ErrorUtils.backendError(withBackendCode: code, backendMessage: backendMessage)
                 completion(nil, nil, nil, nil, error)
                 return
             }
@@ -208,9 +208,9 @@ class Backend {
 
             let offer = offers[0]
             if let signatureError = offer["signature_error"] as? [String: Any] {
-                let code = self.maybeNumberFromError(code: signatureError["code"])
+                let code = self.maybeIntFromError(code: signatureError["code"])
                 let backendMessage = signatureError["message"] as? String
-                let error = ErrorUtils.backendError(withBackendCode: code as NSNumber?, backendMessage: backendMessage)
+                let error = ErrorUtils.backendError(withBackendCode: code, backendMessage: backendMessage)
                 completion(nil, nil, nil, nil, error)
 
             } else if let signatureData = offer["signature_data"] as? [String: Any] {
@@ -331,9 +331,9 @@ class Backend {
             if let error = maybeError {
                 errorForCallbacks = ErrorUtils.networkError(withUnderlyingError: error)
             } else if statusCode > HTTPStatusCodes.redirect.rawValue {
-                let backendCode = self.maybeNumberFromError(code: maybeResponse?["code"])
+                let backendCode = self.maybeIntFromError(code: maybeResponse?["code"])
                 let backendMessage = maybeResponse?["message"] as? String
-                errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode as NSNumber?,
+                errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode,
                                                             backendMessage: backendMessage)
             } else {
                 errorForCallbacks = ErrorUtils.unexpectedBackendResponseError()
@@ -453,10 +453,9 @@ private extension Backend {
         }
 
         if statusCode > HTTPStatusCodes.redirect.rawValue {
-            let backendCode = maybeNumberFromError(code: response?["code"])
+            let backendCode = maybeIntFromError(code: response?["code"])
             let backendMessage = response?["message"] as? String
-            let responsError = ErrorUtils.backendError(withBackendCode: backendCode as NSNumber?,
-                                                       backendMessage: backendMessage)
+            let responsError = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
             completion(nil, false, ErrorUtils.networkError(withUnderlyingError: responsError))
             return
         }
@@ -510,7 +509,7 @@ private extension Backend {
 
         if let response = response, statusCode > HTTPStatusCodes.redirect.rawValue {
             let extraUserInfo = attributesUserInfoFromResponse(response: response, statusCode: statusCode)
-            responseError = ErrorUtils.backendError(withBackendCode: maybeNumberFromError(code: response["code"]),
+            responseError = ErrorUtils.backendError(withBackendCode: maybeIntFromError(code: response["code"]),
                                                     backendMessage: response["message"] as? String,
                                                     extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
         } else {
@@ -528,7 +527,7 @@ private extension Backend {
         }
 
         guard statusCode <= HTTPStatusCodes.redirect.rawValue else {
-            let code = maybeNumberFromError(code: response?["code"])
+            let code = maybeIntFromError(code: response?["code"])
             let message = response?["message"] as? String
             let responseError = ErrorUtils.backendError(withBackendCode: code, backendMessage: message)
             completion?(responseError)
@@ -564,7 +563,7 @@ private extension Backend {
             let finishable = statusCode < HTTPStatusCodes.internalServerError.rawValue
             var extraUserInfo = [ErrorDetails.finishableKey: finishable] as [String: Any]
             extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
-            let code = maybeNumberFromError(code: response?["code"])
+            let code = maybeIntFromError(code: response?["code"])
             let message = response?["message"] as? String
             let responseError = ErrorUtils.backendError(withBackendCode: code,
                                                         backendMessage: message,
@@ -611,17 +610,13 @@ private extension Backend {
         return resultDict
     }
 
-    func maybeNumberFromError(code: Any?) -> NSNumber? {
+    func maybeIntFromError(code: Any?) -> Int? {
         // The code can be a String or NSNumber
         if let codeString = code as? String {
-            if let codeInt = Int(codeString) {
-                return codeInt as NSNumber
-            } else {
-                return nil
-            }
+            return Int(codeString) ?? nil
         }
 
-        return code as? NSNumber
+        return code as? Int
     }
 
     // MARK: Callback cache management

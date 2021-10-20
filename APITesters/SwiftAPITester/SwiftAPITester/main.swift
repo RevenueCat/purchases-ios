@@ -20,8 +20,6 @@ checkEntitlementInfoEnums()
 
 checkEntitlementInfosAPI()
 
-checkErrorCodeEnums()
-
 checkIntroEligibilityAPI()
 checkIntroEligibilityEnums()
 

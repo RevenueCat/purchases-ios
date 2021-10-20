@@ -84,6 +84,7 @@
 			isa = PBXGroup;
 			children = (
 				A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */,
+				A5D614C426EBE7EA007DDB75 /* CustomerInfoAPI.swift */,
 				A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */,
 				A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */,
 				A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */,
@@ -92,7 +93,6 @@
 				A5D614C726EBE7EA007DDB75 /* OfferingAPI.swift */,
 				A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */,
 				A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */,
-				A5D614C426EBE7EA007DDB75 /* CustomerInfoAPI.swift */,
 				A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */,
 				A5D614CC26EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift */,
 				A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */,

@@ -12,7 +12,6 @@
 		A5D614F926EBE84F007DDB75 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */; };
 		A5D614FA26EBE84F007DDB75 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */; };
 		A5D614FB26EBE84F007DDB75 /* RCOfferingAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DF26EBE84F007DDB75 /* RCOfferingAPI.m */; };
-		A5D614FC26EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614E026EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.m */; };
 		A5D614FE26EBE84F007DDB75 /* RCEntitlementInfosAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614E926EBE84F007DDB75 /* RCEntitlementInfosAPI.m */; };
 		A5D614FF26EBE84F007DDB75 /* RCAttributionNetworkAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */; };
 		A5D6150026EBE84F007DDB75 /* RCPurchasesAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614ED26EBE84F007DDB75 /* RCPurchasesAPI.m */; };
@@ -20,7 +19,6 @@
 		A5D6150226EBE84F007DDB75 /* RCCustomerInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F026EBE84F007DDB75 /* RCCustomerInfoAPI.m */; };
 		A5D6150326EBE84F007DDB75 /* RCIntroEligibilityAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F226EBE84F007DDB75 /* RCIntroEligibilityAPI.m */; };
 		A5D6150426EBE84F007DDB75 /* RCTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */; };
-		A5D6150526EBE84F007DDB75 /* RCBackendErrorCodeAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F726EBE84F007DDB75 /* RCBackendErrorCodeAPI.m */; };
 		A5D6150626EBE84F007DDB75 /* RCEntitlementInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F826EBE84F007DDB75 /* RCEntitlementInfoAPI.m */; };
 /* End PBXBuildFile section */
 
@@ -42,14 +40,12 @@
 		A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCOfferingsAPI.m; sourceTree = "<group>"; };
 		A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPackageAPI.m; sourceTree = "<group>"; };
 		A5D614DF26EBE84F007DDB75 /* RCOfferingAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCOfferingAPI.m; sourceTree = "<group>"; };
-		A5D614E026EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCPurchasesErrorUtilsAPI.m; sourceTree = "<group>"; };
 		A5D614E126EBE84F007DDB75 /* RCPackageAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPackageAPI.h; sourceTree = "<group>"; };
 		A5D614E326EBE84F007DDB75 /* RCIntroEligibilityAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCIntroEligibilityAPI.h; sourceTree = "<group>"; };
 		A5D614E426EBE84F007DDB75 /* RCOfferingAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCOfferingAPI.h; sourceTree = "<group>"; };
 		A5D614E526EBE84F007DDB75 /* RCPurchasesAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesAPI.h; sourceTree = "<group>"; };
 		A5D614E626EBE84F007DDB75 /* RCCustomerInfoAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCCustomerInfoAPI.h; sourceTree = "<group>"; };
 		A5D614E726EBE84F007DDB75 /* RCTransactionAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTransactionAPI.h; sourceTree = "<group>"; };
-		A5D614E826EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrorUtilsAPI.h; sourceTree = "<group>"; };
 		A5D614E926EBE84F007DDB75 /* RCEntitlementInfosAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfosAPI.m; sourceTree = "<group>"; };
 		A5D614EA26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCPurchasesErrorCodeAPI.h; sourceTree = "<group>"; };
 		A5D614EB26EBE84F007DDB75 /* RCEntitlementInfoAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCEntitlementInfoAPI.h; sourceTree = "<group>"; };
@@ -62,8 +58,6 @@
 		A5D614F226EBE84F007DDB75 /* RCIntroEligibilityAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCIntroEligibilityAPI.m; sourceTree = "<group>"; };
 		A5D614F326EBE84F007DDB75 /* RCOfferingsAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCOfferingsAPI.h; sourceTree = "<group>"; };
 		A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTransactionAPI.m; sourceTree = "<group>"; };
-		A5D614F526EBE84F007DDB75 /* RCBackendErrorCodeAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCBackendErrorCodeAPI.h; sourceTree = "<group>"; };
-		A5D614F726EBE84F007DDB75 /* RCBackendErrorCodeAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCBackendErrorCodeAPI.m; sourceTree = "<group>"; };
 		A5D614F826EBE84F007DDB75 /* RCEntitlementInfoAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCEntitlementInfoAPI.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -101,8 +95,6 @@
 			children = (
 				A5D614F126EBE84F007DDB75 /* RCAttributionNetworkAPI.h */,
 				A5D614EC26EBE84F007DDB75 /* RCAttributionNetworkAPI.m */,
-				A5D614F526EBE84F007DDB75 /* RCBackendErrorCodeAPI.h */,
-				A5D614F726EBE84F007DDB75 /* RCBackendErrorCodeAPI.m */,
 				A5D614EB26EBE84F007DDB75 /* RCEntitlementInfoAPI.h */,
 				A5D614F826EBE84F007DDB75 /* RCEntitlementInfoAPI.m */,
 				A5D614EF26EBE84F007DDB75 /* RCEntitlementInfosAPI.h */,
@@ -121,8 +113,6 @@
 				A5D614ED26EBE84F007DDB75 /* RCPurchasesAPI.m */,
 				A5D614EA26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.h */,
 				A5D614EE26EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m */,
-				A5D614E826EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.h */,
-				A5D614E026EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.m */,
 				A5D614E726EBE84F007DDB75 /* RCTransactionAPI.h */,
 				A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */,
 				A519264C26EBCEF6007D0BD1 /* main.m */,
@@ -205,12 +195,10 @@
 				A5D6150226EBE84F007DDB75 /* RCCustomerInfoAPI.m in Sources */,
 				A519264D26EBCEF6007D0BD1 /* main.m in Sources */,
 				A5D614FB26EBE84F007DDB75 /* RCOfferingAPI.m in Sources */,
-				A5D6150526EBE84F007DDB75 /* RCBackendErrorCodeAPI.m in Sources */,
 				A5D614FF26EBE84F007DDB75 /* RCAttributionNetworkAPI.m in Sources */,
 				A5D6150626EBE84F007DDB75 /* RCEntitlementInfoAPI.m in Sources */,
 				A5D614FA26EBE84F007DDB75 /* RCPackageAPI.m in Sources */,
 				A5D6150126EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m in Sources */,
-				A5D614FC26EBE84F007DDB75 /* RCPurchasesErrorUtilsAPI.m in Sources */,
 				A5D614F926EBE84F007DDB75 /* RCOfferingsAPI.m in Sources */,
 				A5D6150426EBE84F007DDB75 /* RCTransactionAPI.m in Sources */,
 				A5D6150026EBE84F007DDB75 /* RCPurchasesAPI.m in Sources */,
