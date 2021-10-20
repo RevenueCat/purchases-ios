@@ -38,9 +38,10 @@ import Foundation
     @objc public var vending_offerings_cache: String { "Vending Offerings from cache" }
 
     @objc public var configuration_error_skproducts_not_found: String {
-        "There's a problem with your configuration. None of the products registered in the RevenueCat " +
-        "dashboard could be fetched from App Store Connect (or the StoreKit Configuration file " +
-        "if one is being used). \nMore information: https://rev.cat/why-are-offerings-empty"
+        "None of the products registered in the RevenueCat dashboard could be fetched from " +
+        "App Store Connect (or the StoreKit Configuration file if one is being used).\n" +
+        "This could be due to a timeout, or a problem in your configuration.\n" +
+        "More information: https://rev.cat/why-are-offerings-empty"
     }
 
     @objc public var configuration_error_no_products_for_offering: String {
