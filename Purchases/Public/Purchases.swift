@@ -36,12 +36,14 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
  */
 @objc(RCPurchases) public class Purchases: NSObject {
 
+#if DEBUG
 #warning(
     """
     You're using a beta release (4.0.0-beta.4). If that's not intentional, you'll want to point to one of the \
     3.x release tags, or a specific branch instead of `main` see https://rev.cat/v4rmd for more information.
     """
     )
+#endif
     @objc(sharedPurchases)
     public static var shared: Purchases {
         guard let purchases = purchases else {
