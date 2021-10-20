@@ -380,7 +380,8 @@ workflows:
       - objc_apitest
       - buildTvWatchAndMacOS
       - storekit_tests: *release-tags-and-branches
-      - deployment-checks: *release-branches
+      # - deployment-checks: *release-branches
+      - deployment-checks
       - integration-tests-cocoapods: *release-tags-and-branches
       - integration-tests-swift-package-manager: *release-tags-and-branches
       - integration-tests-carthage: *release-tags-and-branches
