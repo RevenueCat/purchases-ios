@@ -40,6 +40,7 @@ func checkPurchasesErrorCodeEnums() {
          .invalidSubscriberAttributesError,
          .logOutAnonymousUserError,
          .configurationError,
+         .unsupportedError,
          .operationAlreadyInProgressForProductError,
          .emptySubscriberAttributes,
          .productDiscountMissingIdentifierError,

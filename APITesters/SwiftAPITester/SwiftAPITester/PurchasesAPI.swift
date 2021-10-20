@@ -69,13 +69,6 @@ func checkPurchasesEnums() {
     }
 }
 
-func checkPurchasesConstants() {
-    let finKey = ErrorDetails.finishableKey
-    let errCodeKey = ErrorDetails.readableErrorCodeKey
-
-    print(finKey, errCodeKey)
-}
-
 private func checkStaticMethods() {
     let logHandler: (LogLevel, String) -> Void = { _, _ in }
     Purchases.logHandler = logHandler
