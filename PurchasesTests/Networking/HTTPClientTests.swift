@@ -492,8 +492,8 @@ class HTTPClientTests: XCTestCase {
                 .responseTime(0.003)
         }
 
-        let totalRequests = Int.random(in: 50..<100)
-        for requestNumber in 0..<totalRequests {
+        let serialRequests = 200
+        for requestNumber in 0..<serialRequests {
             client.performPOSTRequest(serially: true,
                                       path: path,
                                       requestBody: ["requestNumber": requestNumber],
@@ -501,7 +501,7 @@ class HTTPClientTests: XCTestCase {
                 completionCallCount += 1
             }
         }
-        expect(completionCallCount).toEventually(equal(totalRequests), timeout: .seconds(3))
+        expect(completionCallCount).toEventually(equal(serialRequests), timeout: .seconds(5))
     }
 
     func testPerformSerialRequestWaitsUntilFirstRequestIsDoneBeforeStartingSecond() {
