@@ -21,14 +21,20 @@ class ProductsFetcherSK1: NSObject {
     private let queue = DispatchQueue(label: "ProductsFetcherSK1")
     private var productsByRequests: [SKRequest: Set<String>] = [:]
     private var completionHandlers: [Set<String>: [(Set<SK1Product>) -> Void]] = [:]
+    private let requestTimeoutInSeconds: Int
 
-    init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory()) {
+    init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(),
+         requestTimeoutInSeconds: Int = 30) {
         self.productsRequestFactory = productsRequestFactory
+        self.requestTimeoutInSeconds = requestTimeoutInSeconds
     }
 
     func sk1Products(withIdentifiers identifiers: Set<String>,
                      completion: @escaping (Set<SK1Product>) -> Void) {
-
+        guard identifiers.count > 0 else {
+            completion([])
+            return
+        }
         queue.async { [self] in
             let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
             if productsAlreadyCached.count == identifiers.count {
@@ -52,6 +58,7 @@ class ProductsFetcherSK1: NSObject {
             self.completionHandlers[identifiers] = [completion]
             self.productsByRequests[request] = identifiers
             request.start()
+            scheduleCancellationInCaseOfTimeout(for: request)
         }
     }
 
@@ -145,11 +152,38 @@ private extension ProductsFetcherSK1 {
         }
     }
 
+    // Even though the request has finished, we've seen instances where
+    // the request seems to live on. So we manually call `cancel` to prevent warnings in runtime.
+    // https://github.com/RevenueCat/purchases-ios/issues/250
+    // https://github.com/RevenueCat/purchases-ios/issues/391
     func cancelRequestToPreventTimeoutWarnings(_ request: SKRequest) {
-        // Even though the request has finished, we've seen instances where
-        // the request seems to live on. So we manually call `cancel` to prevent warnings in runtime.
-        // https://github.com/RevenueCat/purchases-ios/issues/250
-        // https://github.com/RevenueCat/purchases-ios/issues/391
         request.cancel()
     }
+
+    // Even though there's a specific delegate method for when SKProductsRequest fails,
+    // there seem to be some situations in which SKProductsRequest hangs forever,
+    // without timing out and calling the delegate.
+    // So we schedule a cancellation just in case, and skip it if all goes as expected.
+    // More information: https://rev.cat/skproductsrequest-hangs
+    func scheduleCancellationInCaseOfTimeout(for request: SKProductsRequest) {
+        queue.asyncAfter(deadline: .now() + .seconds(requestTimeoutInSeconds)) { [weak self] in
+            guard let self = self,
+                  let products = self.productsByRequests[request] else { return }
+
+            request.cancel()
+
+            Logger.appleError(Strings.storeKit.skproductsrequest_timed_out(after: self.requestTimeoutInSeconds))
+            guard let completionBlocks = self.completionHandlers[products] else {
+                Logger.error("callback not found for failing request: \(request)")
+                return
+            }
+
+            self.completionHandlers.removeValue(forKey: products)
+            self.productsByRequests.removeValue(forKey: request)
+            for completion in completionBlocks {
+                completion(Set())
+            }
+        }
+    }
+
 }

@@ -127,14 +127,14 @@ class ProductsFetcherSK1Tests: XCTestCase {
                                           responseTimeInSeconds: productsRequestResponseTimeInSeconds)
         productsRequestFactory.stubbedRequestResult = request
 
-        productsManager = ProductsManager(productsRequestFactory: productsRequestFactory,
-                                          requestTimeoutInSeconds: toleranceInSeconds)
+        productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
+                                                requestTimeoutInSeconds: toleranceInSeconds)
 
 
         var completionCallCount = 0
         var maybeReceivedProducts: Set<SKProduct>?
 
-        productsManager.products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
             completionCallCount += 1
             maybeReceivedProducts = products
         }
@@ -154,14 +154,14 @@ class ProductsFetcherSK1Tests: XCTestCase {
                                           responseTimeInSeconds: productsRequestResponseTimeInSeconds)
         productsRequestFactory.stubbedRequestResult = request
 
-        productsManager = ProductsManager(productsRequestFactory: productsRequestFactory,
-                                          requestTimeoutInSeconds: toleranceInSeconds)
+        productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
+                                                requestTimeoutInSeconds: toleranceInSeconds)
 
 
         var completionCallCount = 0
         var maybeReceivedProducts: Set<SKProduct>?
 
-        productsManager.products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
             completionCallCount += 1
             maybeReceivedProducts = products
         }
