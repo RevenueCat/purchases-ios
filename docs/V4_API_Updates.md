@@ -108,7 +108,7 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 		</tr>
 		<tr>
 			<td>Purchases -offeringsWithCompletion:</td>
-			<td>Purchases -getOfferingsWithcompletion:</td>
+			<td>Purchases -getOfferingsWithCompletion:</td>
 		</tr>
 		<tr>
 			<td>Purchases -productsWithIdentifiers:completion:</td>
