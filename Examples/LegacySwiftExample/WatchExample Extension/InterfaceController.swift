@@ -11,7 +11,7 @@ import Foundation
 import RevenueCat
 
 class InterfaceController: WKInterfaceController {
-    private var offering : Purchases.Offering?
+    private var offering : Offering?
     
     @IBOutlet weak var expiryDateLabel: WKInterfaceLabel!
     @IBOutlet weak var purchaseDateLabel: WKInterfaceLabel!
@@ -51,7 +51,7 @@ private extension InterfaceController {
         let package = offering.availablePackages[0]
         
         proStatusLabel.setText("purchasing...")
-        Purchases.shared.purchasePackage(package) { [weak self] (trans, info, error, cancelled) in
+        Purchases.shared.purchase(package: package) { [weak self] (trans, info, error, cancelled) in
             guard let self = self else { return }
             
             if let error = error {
@@ -71,7 +71,7 @@ private extension InterfaceController {
         proStatusLabel.setText("Loading...")
         buyButton.setHidden(true)
         
-        Purchases.shared.offerings { [weak self] (offerings, error) in
+        Purchases.shared.getOfferings { [weak self] (offerings, error) in
             guard let self = self else { return }
             if let error = error {
                 print(error.localizedDescription)
@@ -88,27 +88,27 @@ private extension InterfaceController {
     }
     
     func configure() {
-        Purchases.shared.purchaserInfo { [weak self] (purchaserInfo, error) in
+        Purchases.shared.getCustomerInfo { [weak self] (customerInfo, error) in
             guard let self = self else { return }
             if let error = error {
                 print(error.localizedDescription)
                 return
             }
             
-            guard let purchaserInfo = purchaserInfo else { fatalError("didn't get purchaser info but error was nil") }
+            guard let customerInfo = customerInfo else { fatalError("didn't get purchaser info but error was nil") }
             // Route the view depending if we have a pro cat user or not
             
-            let hasPro = purchaserInfo.entitlements["pro_cat"]?.isActive == true
+            let hasPro = customerInfo.entitlements["pro_cat"]?.isActive == true
             self.proStatusLabel.setText(hasPro ? "pro 😻" : "free 🐱")
             self.buyButton.setHidden(hasPro)
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateStyle = .short
             
-            if let purchaseDate = purchaserInfo.purchaseDate(forEntitlement: "pro_cat") {
+            if let purchaseDate = customerInfo.purchaseDate(forEntitlement: "pro_cat") {
                 self.purchaseDateLabel.setText("Purchased: \(dateFormatter.string(from: purchaseDate))")
             }
-            if let expirationDate = purchaserInfo.expirationDate(forEntitlement: "pro_cat") {
+            if let expirationDate = customerInfo.expirationDate(forEntitlement: "pro_cat") {
                 self.expiryDateLabel.setText("Expires: \(dateFormatter.string(from: expirationDate))")
             }
         }

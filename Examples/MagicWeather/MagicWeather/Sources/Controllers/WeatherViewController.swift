@@ -33,8 +33,8 @@ class WeatherViewController: UIViewController {
         /*
          We should check if we can magically change the weather (subscription active) and if not, display the paywall.
          */
-        Purchases.shared.purchaserInfo { (purchaserInfo, error) in
-            if purchaserInfo?.entitlements[Constants.entitlementID]?.isActive == true {
+        Purchases.shared.getCustomerInfo { (customerInfo, error) in
+            if customerInfo?.entitlements[Constants.entitlementID]?.isActive == true {
                 self.setWeatherData(SampleWeatherData.generateSampleData(for: self.currentEnvironment))
             } else {
                 let main = UIStoryboard(name: "Paywall", bundle: nil).instantiateInitialViewController()!
