@@ -11,7 +11,6 @@
 #
 
 default_platform(:ios)
-in_beta = true
 
 platform :ios do
   before_all do
@@ -133,7 +132,7 @@ platform :ios do
   lane :deployment_checks do |options|
     version_number = current_version_number
     check_no_git_tag_exists(version_number)
-    check_pods(ignore_warnings: in_beta)
+    check_pods
     carthage_archive
     export_xcframework
     check_no_github_release_exists(version_number)
@@ -141,13 +140,13 @@ platform :ios do
 
   desc "tvOS, watchOS, and macOS build"
   lane :build_tv_watch_mac do |options|
-    check_pods(ignore_warnings: in_beta)
+    check_pods
     carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS,Mac", use_xcframeworks: true)
   end
 
   desc "macOS build"
   lane :build_mac do |options|
-    check_pods(ignore_warnings: in_beta)
+    check_pods
     carthage(command: "build", no_skip_current: true, platform: "Mac", use_xcframeworks: true)
   end
 
@@ -297,8 +296,8 @@ def carthage_archive
   end
 end
 
-def check_pods(ignore_warnings:)
-  pod_lib_lint(verbose: true, podspec:'RevenueCat.podspec', allow_warnings: ignore_warnings)
+def check_pods
+  pod_lib_lint(verbose: true, podspec:'RevenueCat.podspec')
 end
 
 def increment_build_number(previous_version_number, new_version_number, file_path)
