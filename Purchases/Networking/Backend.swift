@@ -611,7 +611,7 @@ private extension Backend {
     }
 
     func maybeIntFromError(code: Any?) -> Int? {
-        // The code can be a String or NSNumber
+        // The code can be a String or Int
         if let codeString = code as? String {
             return Int(codeString) ?? nil
         }
