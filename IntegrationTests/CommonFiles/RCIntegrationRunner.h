@@ -14,8 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)start;
 
-- (void)customerInfoWithCompletion:(void (^)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion
-NS_SWIFT_NAME(customerInfo(_:));
+- (void)getCustomerInfoWithCompletion:(void (^)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion
+NS_SWIFT_NAME(getCustomerInfo(_:));
 
 @end
 
