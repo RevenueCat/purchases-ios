@@ -279,9 +279,9 @@ class PurchasesOrchestrator {
     @available(macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func beginRefundRequest(for transactionID: UInt64,
+    func beginRefundRequest(for productID: String,
                             completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        beginRefundRequestHelper.beginRefundRequest(transactionID: transactionID) { result in
+        beginRefundRequestHelper.beginRefundRequest(productID: productID) { result in
             switch result {
             case .failure(let error):
                 completion(RefundRequestStatus.error, error)

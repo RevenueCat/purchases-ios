@@ -917,7 +917,7 @@ public extension Purchases {
     /**
      * Presents a refund request sheet for the transaction in the current window scene
      *
-     * - Parameter transactionID: The transactionID to begin a refund request for.
+     * - Parameter productID: The productID to begin a refund request for.
      * - Parameter completion: A completion block that is called when the modal is closed.
      * If the request was successful, there will be a `RefundRequestStatus`
      * If it was not successful, there will be an `Error`.
@@ -926,13 +926,10 @@ public extension Purchases {
     @available(macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @objc func beginRefundRequest(for transactionID: UInt64,
+    @objc func beginRefundRequest(for productID: String,
                                   completion: @escaping (RefundRequestStatus, Error?) -> Void) {
-        purchasesOrchestrator.beginRefundRequest(for: transactionID, completion: completion)
+        purchasesOrchestrator.beginRefundRequest(for: productID, completion: completion)
     }
-
-    // TODO add version for productId like this:
-    // https://wwdcbysundell.com/2021/working-with-in-app-purchases-in-storekit2/
 
 }
 
