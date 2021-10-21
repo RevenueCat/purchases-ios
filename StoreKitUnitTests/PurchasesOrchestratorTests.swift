@@ -228,7 +228,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     func testBeginRefundRequestCallsCompletionWithoutErrorIfItsSuccesful() {
         var receivedError: Error?
         var completionCalled = false
-        orchestrator.beginRefundRequest(for: UInt64()) { _, maybeError in
+        orchestrator.beginRefundRequest(for: "1234") { _, maybeError in
             completionCalled = true
             receivedError = maybeError
         }
@@ -242,17 +242,20 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func testBeginRefundRequestCallsCompletionWithErrorIfThereIsAFailure() {
-        mockBeginRefundRequestHelper.mockError = ErrorUtils.storeProblemError(withMessage: "test")
+        mockBeginRefundRequestHelper.mockError = ErrorUtils.beginRefundRequestError(withMessage: "test")
         var receivedError: Error?
         var completionCalled = false
-        orchestrator.beginRefundRequest(for: UInt64()) { _, maybeError in
+        var receivedStatus: RefundRequestStatus?
+        orchestrator.beginRefundRequest(for: "1235") { status, maybeError in
             completionCalled = true
             receivedError = maybeError
+            receivedStatus = status
         }
 
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).toNot(beNil())
-        expect(receivedError).to(matchError(ErrorCode.customerInfoError))
+        expect(receivedStatus).to(match(RefundRequestStatus.error))
+        expect(receivedError).to(matchError(ErrorCode.beginRefundRequestError))
     }
 
 }

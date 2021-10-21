@@ -60,26 +60,17 @@ private extension BeginRefundRequestHelper {
         }
 
         switch transactionVerificationResult {
-        case .unverified(let transaction, let verificationError):
-            let message = "Transaction with ID \(transaction.id) is unverified by AppStore. Verification error " +
+        case .unverified(_, let verificationError):
+            let message = "Transaction for productID \(productID) is unverified by AppStore. Verification error " +
                 "\(verificationError.localizedDescription)"
             return .failure(ErrorUtils.beginRefundRequestError(withMessage: message))
         case .verified(let transaction):
-            do {
-                let status = try await StoreKit.Transaction.beginRefundRequest(for: transaction.id, in: windowScene)
-                return .success(RefundRequestStatus.refundRequestStatus(fromSKRefundRequestStatus: status))
-            } catch {
-                let message = getErrorMessage(error: error)
-                return .failure(ErrorUtils.beginRefundRequestError(withMessage: message, error: error))
-            }
+            let result = await callStoreKitBeginRefundRequest(transactionID: transaction.id,
+                                           windowScene: windowScene)
+            return result
         }
     }
-#endif
-}
 
-private extension BeginRefundRequestHelper {
-
-#if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -96,6 +87,22 @@ private extension BeginRefundRequestHelper {
             }
         } else {
             return "Unexpected error type returned from AppStore: \(String(describing: error?.localizedDescription))"
+        }
+    }
+
+    // TODO does this also need mainactor?
+    @MainActor
+    @available(iOS 15.0, macCatalyst 15.0, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func callStoreKitBeginRefundRequest(transactionID: UInt64,
+                                        windowScene: UIWindowScene) async -> Result<RefundRequestStatus, Error> {
+        do {
+            let status = try await StoreKit.Transaction.beginRefundRequest(for: transactionID, in: windowScene)
+            return .success(RefundRequestStatus.refundRequestStatus(fromSKRefundRequestStatus: status))
+        } catch {
+            let message = getErrorMessage(error: error)
+            return .failure(ErrorUtils.beginRefundRequestError(withMessage: message, error: error))
         }
     }
 #endif
