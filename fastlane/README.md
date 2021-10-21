@@ -46,11 +46,11 @@ Make github release
 fastlane ios create_sandbox_account
 ```
 Create sandbox account
-### ios deployment_checks
+### ios release_checks
 ```
-fastlane ios deployment_checks
+fastlane ios release_checks
 ```
-Deployment checks
+Release checks
 ### ios build_tv_watch_mac
 ```
 fastlane ios build_tv_watch_mac
@@ -76,6 +76,11 @@ archive
 fastlane ios replace_api_key_integration_tests
 ```
 replace API KEY for integration tests
+### ios release
+```
+fastlane ios release
+```
+Release to CocoaPods, create Carthage archive, export XCFramework, and create GitHub release
 ### ios bump
 ```
 fastlane ios bump
