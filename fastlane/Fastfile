@@ -227,7 +227,7 @@ platform :ios do
     sh("git checkout -b 'release/#{version}'")
   end
 
-  private_lane :commit_updated_files_and_push do
+  private_lane :commit_updated_files_and_push do |options|
     version = options[:version]
     sh("git add -u")
     sh("git commit -m 'Version bump for #{version}'")
