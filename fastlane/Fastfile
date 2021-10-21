@@ -128,8 +128,8 @@ platform :ios do
     Spaceship::Tunes::SandboxTester.create!(email: email, password: password)
   end
 
-  desc "Deployment checks"
-  lane :deployment_checks do |options|
+  desc "Release checks"
+  lane :release_checks do |options|
     version_number = current_version_number
     check_no_git_tag_exists(version_number)
     check_pods
@@ -170,9 +170,18 @@ platform :ios do
     replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m', allow_empty: true)
   end
 
+  desc "Release to CocoaPods, create Carthage archive, export XCFramework, and create GitHub release"
+  lane :release do |options|
+    version_number = current_version_number
+    push_pods
+    carthage_archive
+    export_xcframework
+    github_release(version: version_number)
+  end
+
   desc "Bump version, edit changelog, and create pull request"
   lane :bump do |options|
-    ensure_git_branch(branch: 'main')
+    ensure_git_branch(branch: options[:branch] || 'main')
     ensure_git_status_clean
 
     # Ensure GitHub API token is set
@@ -201,16 +210,9 @@ platform :ios do
       UI.user_error!("Cancelled")
     end
 
-    # Create new branch
-    sh("git checkout -b 'release/#{new_version_number}'")
-
-    # Replace version number
+    create_new_release_branch(version: new_version_number)
     replace_version_number(version: new_version_number)
-
-    # Only add and commit update files
-    sh("git add -u")
-    sh("git commit -m 'Version bump for #{new_version_number}'")
-    push_to_git_remote
+    commit_updated_files_and_push(version: new_version_number)
 
     changelog = File.read(changelog_path)
     create_pull_request(
@@ -218,6 +220,18 @@ platform :ios do
       base: "main",
       body: changelog
     )
+  end
+
+  private_lane :create_new_release_branch do |options|
+    version = options[:version]
+    sh("git checkout -b 'release/#{version}'")
+  end
+
+  private_lane :commit_updated_files_and_push do
+    version = options[:version]
+    sh("git add -u")
+    sh("git commit -m 'Version bump for #{version}'")
+    push_to_git_remote
   end
 
   desc "Prepare next version"
