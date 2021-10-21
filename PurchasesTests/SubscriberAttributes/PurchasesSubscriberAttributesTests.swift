@@ -603,9 +603,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
-        let errorCode = BackendErrorCode.invalidAPIKey.rawValue
         let extraUserInfo = [Backend.RCSuccessfullySyncedKey: true]
-        self.mockBackend.stubbedPostReceiptPurchaserError = ErrorUtils.backendError(withBackendCode: errorCode,
+        self.mockBackend.stubbedPostReceiptPurchaserError = ErrorUtils.backendError(withBackendCode: .invalidAPIKey,
                                                                                     backendMessage: "Invalid credentials",
                                                                                     extraUserInfo: extraUserInfo)
 
@@ -632,9 +631,8 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
-        let errorCode = BackendErrorCode.invalidAPIKey.rawValue
         let extraUserInfo = [Backend.RCSuccessfullySyncedKey as NSError.UserInfoKey: false]
-        self.mockBackend.stubbedPostReceiptPurchaserError = ErrorUtils.backendError(withBackendCode: errorCode,
+        self.mockBackend.stubbedPostReceiptPurchaserError = ErrorUtils.backendError(withBackendCode: .invalidAPIKey,
                                                                                     backendMessage: "Invalid credentials",
                                                                                     extraUserInfo: extraUserInfo)
 

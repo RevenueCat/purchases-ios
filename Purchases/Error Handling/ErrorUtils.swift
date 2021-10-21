@@ -41,7 +41,7 @@ class ErrorUtils: NSObject {
      * - Note: This error is used when an network request returns an error. The backend error returned is wrapped in
      * this internal error code.
      */
-    static func backendError(withBackendCode backendCode: Int?, backendMessage: String?) -> Error {
+    static func backendError(withBackendCode backendCode: BackendErrorCode, backendMessage: String?) -> Error {
         return backendError(withBackendCode: backendCode, backendMessage: backendMessage, extraUserInfo: nil)
     }
 
@@ -59,7 +59,9 @@ class ErrorUtils: NSObject {
      * - Note: This error is used when an network request returns an error. The backend error returned is wrapped in
      * this internal error code.
      */
-    static func backendError(withBackendCode backendCode: Int?, backendMessage: String?, finishable: Bool) -> Error {
+    static func backendError(withBackendCode backendCode: BackendErrorCode,
+                             backendMessage: String?,
+                             finishable: Bool) -> Error {
         let extraUserInfo: [NSError.UserInfoKey: Any] = [
             ErrorDetails.finishableKey: finishable
         ]
@@ -232,16 +234,10 @@ private extension SKError {
 
 extension ErrorUtils {
 
-    static func backendError(withBackendCode backendCode: Int?,
+    static func backendError(withBackendCode backendCode: BackendErrorCode,
                              backendMessage: String?,
                              extraUserInfo: [NSError.UserInfoKey: Any]? = nil) -> Error {
-        let errorCode: ErrorCode
-        if let maybeBackendCode = backendCode,
-           let backendErrorCode = BackendErrorCode.init(rawValue: maybeBackendCode) {
-            errorCode = backendErrorCode.toPurchasesErrorCode()
-        } else {
-            errorCode = ErrorCode.unknownBackendError
-        }
+        let errorCode = backendCode.toPurchasesErrorCode()
         let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: backendMessage)
 
         return error(with: errorCode,
@@ -305,19 +301,11 @@ private extension ErrorUtils {
         return nsErrorWithUserInfo as Error
     }
 
-    static func backendUnderlyingError(backendCode: Int?, backendMessage: String?) -> Error {
-        let error: Error
-        if let maybeBackendCode = backendCode,
-           let backendError = BackendErrorCode.init(rawValue: maybeBackendCode) {
-            error = backendError
-        } else {
-            error = BackendErrorCode.unknownError
-        }
-
+    static func backendUnderlyingError(backendCode: BackendErrorCode, backendMessage: String?) -> Error {
         let userInfo = [
             NSLocalizedDescriptionKey: backendMessage ?? ""
         ]
-        let errorWithUserInfo = addUserInfo(userInfo: userInfo, error: error)
+        let errorWithUserInfo = addUserInfo(userInfo: userInfo, error: backendCode)
         return errorWithUserInfo
     }
 

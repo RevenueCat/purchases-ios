@@ -19,7 +19,8 @@ import Foundation
  */
 enum BackendErrorCode: Int, Error {
 
-    case unknownError = 0
+    case unknownBackendError = -1 // Some backend problem we don't know the specifics of.
+    case unknownError = 0 // We don't know what happened.
     case invalidPlatform = 7000
     case storeProblem = 7101
     case cannotTransferPurchase = 7102
@@ -40,6 +41,29 @@ enum BackendErrorCode: Int, Error {
     case invalidAppleSubscriptionKey = 7234
     case invalidSubscriberAttributes = 7263
     case invalidSubscriberAttributesBody = 7264
+
+    /**
+     * - Parameter maybeCode: Generally comes from the backend in json. This may be a String, or an Int, or nothing.
+     */
+    init(maybeCode: Any?) {
+        let maybeCodeInt = BackendErrorCode.maybeInt(maybeCodeObject: maybeCode)
+
+        guard let codeInt = maybeCodeInt else {
+            self = .unknownBackendError
+            return
+        }
+
+        self = BackendErrorCode(rawValue: codeInt) ?? .unknownBackendError
+    }
+
+    static func maybeInt(maybeCodeObject: Any?) -> Int? {
+        // The code can be a String or Int
+        if let codeString = maybeCodeObject as? String {
+            return Int(codeString) ?? nil
+        }
+
+        return maybeCodeObject as? Int
+    }
 
 }
 
@@ -74,7 +98,8 @@ extension BackendErrorCode {
         case .invalidSubscriberAttributes,
              .invalidSubscriberAttributesBody:
             return .invalidSubscriberAttributesError
-        case .playStoreInvalidPackageName,
+        case .unknownBackendError,
+             .playStoreInvalidPackageName,
              .playStoreQuotaExceeded,
              .playStoreGenericError,
              .invalidPlayStoreCredentials,
