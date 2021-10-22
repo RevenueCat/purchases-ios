@@ -186,7 +186,6 @@
 		35D83300262FAD8000E60AC5 /* ETagManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D832FF262FAD8000E60AC5 /* ETagManagerTests.swift */; };
 		35D8330A262FBA9A00E60AC5 /* MockUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E357D16038F07915D7825D /* MockUserDefaults.swift */; };
 		35D83312262FBD4200E60AC5 /* MockETagManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D83311262FBD4200E60AC5 /* MockETagManager.swift */; };
-		35E840CA270FB52800899AE2 /* ManageSubscriptionsModalHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E840C9270FB52800899AE2 /* ManageSubscriptionsModalHelperTests.swift */; };
 		35E840CC270FB70D00899AE2 /* ManageSubscriptionsModalHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E840C5270FB47C00899AE2 /* ManageSubscriptionsModalHelper.swift */; };
 		35E840CE2710E2EB00899AE2 /* MockManageSubscriptionsModalHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E840CD2710E2EB00899AE2 /* MockManageSubscriptionsModalHelper.swift */; };
 		35F6FD62267426D600ABCB53 /* ETagAndResponseWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F6FD61267426D600ABCB53 /* ETagAndResponseWrapper.swift */; };
@@ -214,8 +213,11 @@
 		9A65E0A52591A23500DE00B0 /* PurchaseStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */; };
 		9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */; };
 		A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */; };
+		A55D08302722368600D919E0 /* RefundRequestHelperSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55D082F2722368600D919E0 /* RefundRequestHelperSK2.swift */; };
+		A55D083427235DED00D919E0 /* BeginRefundRequestHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F587271E076800246E0C /* BeginRefundRequestHelperTests.swift */; };
+		A55D083527235E2800D919E0 /* ManageSubscriptionsModalHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E840C9270FB52800899AE2 /* ManageSubscriptionsModalHelperTests.swift */; };
+		A55D083627236F0200D919E0 /* MockRefundRequestHelperSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55D08312722471200D919E0 /* MockRefundRequestHelperSK2.swift */; };
 		A563F586271E072B00246E0C /* MockBeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */; };
-		A563F588271E076800246E0C /* BeginRefundRequestHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F587271E076800246E0C /* BeginRefundRequestHelperTests.swift */; };
 		A563F589271E1DAD00246E0C /* MockBeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */; };
 		A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* CustomerInfo.swift */; };
 		A5F0104E2717B3150090732D /* BeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F0104D2717B3150090732D /* BeginRefundRequestHelper.swift */; };
@@ -517,6 +519,8 @@
 		9A65E0A42591A23500DE00B0 /* PurchaseStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaseStrings.swift; sourceTree = "<group>"; };
 		9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestoreStrings.swift; sourceTree = "<group>"; };
 		A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesManager.swift; sourceTree = "<group>"; };
+		A55D082F2722368600D919E0 /* RefundRequestHelperSK2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefundRequestHelperSK2.swift; sourceTree = "<group>"; };
+		A55D08312722471200D919E0 /* MockRefundRequestHelperSK2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRefundRequestHelperSK2.swift; sourceTree = "<group>"; };
 		A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBeginRefundRequestHelper.swift; sourceTree = "<group>"; };
 		A563F587271E076800246E0C /* BeginRefundRequestHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginRefundRequestHelperTests.swift; sourceTree = "<group>"; };
 		A56F9AB026990E9200AFC48F /* CustomerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfo.swift; sourceTree = "<group>"; };
@@ -640,6 +644,7 @@
 			children = (
 				2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */,
 				3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */,
+				A55D082F2722368600D919E0 /* RefundRequestHelperSK2.swift */,
 			);
 			path = StoreKit2;
 			sourceTree = "<group>";
@@ -886,6 +891,7 @@
 				2D90F8C926FD257A009B9142 /* MockStoreKit2TransactionListener.swift */,
 				35E840CD2710E2EB00899AE2 /* MockManageSubscriptionsModalHelper.swift */,
 				A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */,
+				A55D08312722471200D919E0 /* MockRefundRequestHelperSK2.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -1611,11 +1617,13 @@
 				3543913626F90D6A00E669DF /* TrialOrIntroPriceEligibilityCheckerTests.swift in Sources */,
 				2D90F8C726FD221D009B9142 /* MockASN1ContainerBuilder.swift in Sources */,
 				2D90F8C326FD214F009B9142 /* MockAttributionTypeFactory.swift in Sources */,
+				A55D083427235DED00D919E0 /* BeginRefundRequestHelperTests.swift in Sources */,
 				2D90F8CC26FD2BA1009B9142 /* StoreKitConfigTestCase.swift in Sources */,
 				2D90F8BC26FD20C2009B9142 /* MockReceiptParser.swift in Sources */,
 				2D90F8C226FD20F7009B9142 /* MockETagManager.swift in Sources */,
 				2D90F8B526FD2093009B9142 /* MockSystemInfo.swift in Sources */,
 				2D90F8C126FD20F2009B9142 /* MockHTTPClient.swift in Sources */,
+				A55D083527235E2800D919E0 /* ManageSubscriptionsModalHelperTests.swift in Sources */,
 				2DFF6C56270CA28800ECAFAB /* MockRequestFetcher.swift in Sources */,
 				2D90F8C826FD2225009B9142 /* MockAppleReceiptBuilder.swift in Sources */,
 				2D90F8C026FD20DF009B9142 /* MockAttributionDataMigrator.swift in Sources */,
@@ -1630,6 +1638,7 @@
 				A563F589271E1DAD00246E0C /* MockBeginRefundRequestHelper.swift in Sources */,
 				2D90F8B426FD208B009B9142 /* MockStoreKitWrapper.swift in Sources */,
 				2D90F8BB26FD20BD009B9142 /* MockIdentityManager.swift in Sources */,
+				A55D083627236F0200D919E0 /* MockRefundRequestHelperSK2.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1715,6 +1724,7 @@
 				2DC5622E24EC636C0031F69B /* Transaction.swift in Sources */,
 				9A65E0AA2591A23800DE00B0 /* RestoreStrings.swift in Sources */,
 				35F82BB626A9B8040051DF03 /* AttributionDataMigrator.swift in Sources */,
+				A55D08302722368600D919E0 /* RefundRequestHelperSK2.swift in Sources */,
 				35D832CD262A5B7500E60AC5 /* ETagManager.swift in Sources */,
 				2DDF41BC24F6F392005BC22D /* ArraySlice_UInt8+Extensions.swift in Sources */,
 				F575858D26C088FE00C12B97 /* OfferingsManager.swift in Sources */,
@@ -1800,7 +1810,6 @@
 				351B51B826D450E800BD2BD7 /* StoreKitWrapperTests.swift in Sources */,
 				2DDF41E624F6F5DC005BC22D /* MockSK1Product.swift in Sources */,
 				351B51BA26D450E800BD2BD7 /* ProductInfoExtensions.swift in Sources */,
-				A563F588271E076800246E0C /* BeginRefundRequestHelperTests.swift in Sources */,
 				35E840CE2710E2EB00899AE2 /* MockManageSubscriptionsModalHelper.swift in Sources */,
 				F591492826B9956C00D32E58 /* MockTransaction.swift in Sources */,
 				351B517626D44F7200BD2BD7 /* MockProductDiscount.swift in Sources */,
@@ -1838,7 +1847,6 @@
 				B319514926C19856002CA9AC /* NSData+RCExtensionsTests.swift in Sources */,
 				351B517026D44E8D00BD2BD7 /* MockDateProvider.swift in Sources */,
 				2D1C3F3926B9D8B800112626 /* MockBundle.swift in Sources */,
-				35E840CA270FB52800899AE2 /* ManageSubscriptionsModalHelperTests.swift in Sources */,
 				351B515E26D44B9900BD2BD7 /* MockPurchasesDelegate.swift in Sources */,
 				351B515A26D44B6200BD2BD7 /* MockAttributionFetcher.swift in Sources */,
 				351B51BD26D450E800BD2BD7 /* EntitlementInfosTests.swift in Sources */,

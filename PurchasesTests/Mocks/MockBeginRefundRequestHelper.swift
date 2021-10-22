@@ -18,12 +18,12 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
 
     var mockError: Error?
     var mockRefundRequestStatus: RefundRequestStatus?
+    var mockIsWindowSceneAvailable = true
 
-#if os(iOS) || os(macOS)
     @available(iOS 15.0, macOS 15, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    override func beginRefundRequest(transactionID: UInt64,
+    override func beginRefundRequest(productID: String,
                                      completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
         if let error = mockError {
             completion(.failure(error))
@@ -31,6 +31,5 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
             completion(.success(mockRefundRequestStatus ?? RefundRequestStatus.success))
         }
     }
-#endif
 
 }

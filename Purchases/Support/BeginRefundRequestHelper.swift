@@ -17,6 +17,11 @@ class BeginRefundRequestHelper {
 
     private let systemInfo: SystemInfo
 
+    @available(iOS 15.0, tvOS 15.0, *)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    lazy var refundRequestHelperSK2 = RefundRequestHelperSK2()
+
     init(systemInfo: SystemInfo) {
         self.systemInfo = systemInfo
     }
@@ -35,77 +40,38 @@ class BeginRefundRequestHelper {
 
         return
 #else
-        fatalError("Tried to call Transaction.beginRefundRequest in a platform that doesn't support it!")
+        fatalError("Tried to call beginRefundRequest in a platform that doesn't support it!")
 #endif
     }
+
 }
 
+#if os(iOS) || targetEnvironment(macCatalyst)
+@available(iOS 15.0, macCatalyst 15.0, *)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
 private extension BeginRefundRequestHelper {
 
-#if os(iOS) || targetEnvironment(macCatalyst)
     @MainActor
     @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequest(productID: String) async -> Result<RefundRequestStatus, Error> {
-        // TODO pull out to some kind of UIHelper class?
-        guard let application = systemInfo.sharedUIApplication,
-              let windowScene = application.currentWindowScene else {
-                  return .failure(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
+        guard let windowScene = systemInfo.sharedUIApplication?.currentWindowScene else {
+            return .failure(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
         }
 
-        guard let transactionVerificationResult = await StoreKit.Transaction.latest(for: productID) else {
-            let message = "Product hasn't been purchased or doesn't exist."
-            return .failure(ErrorUtils.beginRefundRequestError(withMessage: message))
-        }
+        let transactionVerificationResult = await refundRequestHelperSK2.verifyTransaction(productID: productID)
 
         switch transactionVerificationResult {
-        case .unverified(_, let verificationError):
-            let message = "Transaction for productID \(productID) is unverified by AppStore. Verification error " +
-                "\(verificationError.localizedDescription)"
-            return .failure(ErrorUtils.beginRefundRequestError(withMessage: message))
-        case .verified(let transaction):
-            let result = await callStoreKitBeginRefundRequest(transactionID: transaction.id,
-                                           windowScene: windowScene)
-            return result
+        case .failure(let verificationError):
+            return .failure(verificationError)
+        case .success(let transactionID):
+            let sk2Result = await refundRequestHelperSK2.initiateRefundRequest(transactionID: transactionID,
+                                                                               windowScene: windowScene)
+            return sk2Result.map { RefundRequestStatus.from(sk2RefundRequestStatus: $0) }
         }
     }
-
-    @available(iOS 15.0, macCatalyst 15.0, *)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    func getErrorMessage(error: Error?) -> String {
-        if let skError = error as? StoreKit.Transaction.RefundRequestError {
-            switch skError {
-            case .duplicateRequest:
-                return "Refund already requested for this product and is pending, already denied, " +
-                    "or already approved."
-            case .failed:
-                return "Refund request submission failed."
-            @unknown default:
-                return "Unknown RefundRequestError type."
-            }
-        } else {
-            return "Unexpected error type returned from AppStore: \(String(describing: error?.localizedDescription))"
-        }
-    }
-
-    // TODO does this also need mainactor?
-    @MainActor
-    @available(iOS 15.0, macCatalyst 15.0, *)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    func callStoreKitBeginRefundRequest(transactionID: UInt64,
-                                        windowScene: UIWindowScene) async -> Result<RefundRequestStatus, Error> {
-        do {
-            let status = try await StoreKit.Transaction.beginRefundRequest(for: transactionID, in: windowScene)
-            return .success(RefundRequestStatus.refundRequestStatus(fromSKRefundRequestStatus: status))
-        } catch {
-            let message = getErrorMessage(error: error)
-            return .failure(ErrorUtils.beginRefundRequestError(withMessage: message, error: error))
-        }
-    }
-#endif
 
 }
 
@@ -124,8 +90,7 @@ private extension BeginRefundRequestHelper {
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 private extension RefundRequestStatus {
-#if os(iOS) || targetEnvironment(macCatalyst)
-    static func refundRequestStatus(fromSKRefundRequestStatus status: StoreKit.Transaction.RefundRequestStatus)
+    static func from(sk2RefundRequestStatus status: StoreKit.Transaction.RefundRequestStatus)
         -> RefundRequestStatus {
         switch status {
         case .userCancelled:
@@ -136,5 +101,5 @@ private extension RefundRequestStatus {
             return .error
         }
     }
-#endif
 }
+#endif
