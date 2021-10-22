@@ -1123,7 +1123,7 @@ public extension Purchases {
      * Deprecated
      */
     @available(swift, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
-    @available(*, deprecated, message: "use getCustomerInfoWithCompletion:", renamed: "getOfferingsWithCompletion:")
+    @available(*, deprecated, message: "use getCustomerInfoWithCompletion:", renamed: "getOfferingsWithCompletion")
     @objc func customerInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
         getCustomerInfo(completion: completion)
     }
@@ -1132,31 +1132,29 @@ public extension Purchases {
      * Deprecated
      */
     @available(swift, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
-    @available(*, deprecated, message: "use getCustomerInfoWithCompletion:", renamed: "getOfferingsWithCompletion:")
+    @available(*, deprecated, message: "use getCustomerInfoWithCompletion:", renamed: "getOfferingsWithCompletion")
     @objc func purchaserInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
         getCustomerInfo(completion: completion)
     }
 
-    // swiftlint:disable line_length
     /**
      * Deprecated
      */
-    @available(*, 
-               deprecated, 
-               message: "use getProductsWithIdentifiers:completion:", 
-               renamed: "getProductsWithIdentifiers:completion:")
+    @available(*,
+                deprecated,
+                message: "use getProductsWithIdentifiers:completion:",
+                renamed: "getProductsWithIdentifiers")
     @available(swift, obsoleted: 1, renamed: "getProducts(_:completion:)")
     @objc(productsWithIdentifiers:completion:)
     func products(_ productIdentifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
         getProducts(productIdentifiers, completion: completion)
     }
-    // swiftlint:enable line_length
 
     /**
      * Deprecated
      */
     @available(swift, obsoleted: 1, renamed: "getOfferings(completion:)")
-    @available(*, deprecated, message: "use getOfferingsWithCompletion:", renamed: "getOfferingsWithCompletion:")
+    @available(*, deprecated, message: "use getOfferingsWithCompletion:", renamed: "getOfferingsWithCompletion")
     @objc func offerings(completion: @escaping (Offerings?, Error?) -> Void) {
         getOfferings(completion: completion)
     }
