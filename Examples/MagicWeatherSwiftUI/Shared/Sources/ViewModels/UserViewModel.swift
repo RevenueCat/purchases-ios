@@ -13,17 +13,17 @@ import SwiftUI
 class UserViewModel: NSObject, ObservableObject {
     static let shared = UserViewModel()
     
-    /* The latest PurchaserInfo from RevenueCat. Updated by PurchasesDelegate whenever the Purchases SDK updates the cache */
-    @Published var purchaserInfo: Purchases.PurchaserInfo? {
+    /* The latest CustomerInfo from RevenueCat. Updated by PurchasesDelegate whenever the Purchases SDK updates the cache */
+    @Published var customerInfo: CustomerInfo? {
         didSet {
-            subscriptionActive = purchaserInfo?.entitlements[Constants.entitlementID]?.isActive == true
+            subscriptionActive = customerInfo?.entitlements[Constants.entitlementID]?.isActive == true
         }
     }
     
     /* The latest offerings - fetched from MagicWeatherApp.swift on app launch */
-    @Published var offerings: Purchases.Offerings? = nil
+    @Published var offerings: Offerings? = nil
     
-    /* Set from the didSet method of purchaserInfo above, based on the entitlement set in Constants.swift */
+    /* Set from the didSet method of customerInfo above, based on the entitlement set in Constants.swift */
     @Published var subscriptionActive: Bool = false
     
     /*
@@ -35,17 +35,17 @@ class UserViewModel: NSObject, ObservableObject {
      */
     #warning("Public-facing usernames aren't optimal for user ID's - you should use something non-guessable, like a non-public database ID. For more information, visit https://docs.revenuecat.com/docs/user-ids.")
     func login(userId: String) {
-        Purchases.shared.identify(userId, nil)
+        Purchases.shared.logIn(userId) { _, _, _ in }
     }
     
     func logout() {
         /*
-         The current user ID is no longer valid for your instance of *Purchases* since the user is logging out, and is no longer authorized to access purchaserInfo for that user ID.
+         The current user ID is no longer valid for your instance of *Purchases* since the user is logging out, and is no longer authorized to access customerInfo for that user ID.
          
          `reset` clears the cache and regenerates a new anonymous user ID.
          
          Note: Each time you call `reset`, a new installation will be logged in the RevenueCat dashboard as that metric tracks unique user ID's that are in-use. Since this method generates a new anonymous ID, it counts as a new user ID in-use.
          */
-        Purchases.shared.reset(nil)
+        Purchases.shared.logOut(completion: nil)
     }
 }

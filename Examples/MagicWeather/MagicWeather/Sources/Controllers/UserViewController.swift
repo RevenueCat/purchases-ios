@@ -34,7 +34,7 @@ class UserViewController: UIViewController {
             self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Log Out", style: .done, target: self, action: #selector(logout))
         }
         
-        Purchases.shared.purchaserInfo { (purchaserInfo, error) in
+        Purchases.shared.getCustomerInfo { (purchaserInfo, error) in
             if purchaserInfo?.entitlements[Constants.entitlementID]?.isActive == true {
                 self.statusLabel.text = "Active"
                 self.statusLabel.textColor = .green

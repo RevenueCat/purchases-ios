@@ -696,7 +696,7 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `YES`.
      */
     @objc(purchaseProduct:withCompletion:)
-    func purchase(product: SKProduct, _ completion: @escaping PurchaseCompletedBlock) {
+    func purchase(product: SKProduct, completion: @escaping PurchaseCompletedBlock) {
         let payment: SKMutablePayment = storeKitWrapper.payment(withProduct: product)
         purchase(product: product, payment: payment, presentedOfferingIdentifier: nil, completion: completion)
     }
@@ -719,7 +719,7 @@ public extension Purchases {
      * If the user cancelled, `userCancelled` will be `true`.
      */
     @objc(purchasePackage:withCompletion:)
-    func purchase(package: Package, _ completion: @escaping PurchaseCompletedBlock) {
+    func purchase(package: Package, completion: @escaping PurchaseCompletedBlock) {
         let payment = storeKitWrapper.payment(withProduct: package.product)
         purchase(product: package.product,
                  payment: payment,
@@ -1128,17 +1128,27 @@ public extension Purchases {
         getCustomerInfo(completion: completion)
     }
 
-    // swiftlint:disable line_length
     /**
      * Deprecated
      */
-    @available(*, deprecated, message: "use getProductsWithIdentifiers:completion:", renamed: "getProductsWithIdentifiers")
+    @available(swift, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
+    @available(*, deprecated, message: "use getCustomerInfoWithCompletion:", renamed: "getOfferingsWithCompletion")
+    @objc func purchaserInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
+        getCustomerInfo(completion: completion)
+    }
+
+    /**
+     * Deprecated
+     */
+    @available(*,
+                deprecated,
+                message: "use getProductsWithIdentifiers:completion:",
+                renamed: "getProductsWithIdentifiers")
     @available(swift, obsoleted: 1, renamed: "getProducts(_:completion:)")
     @objc(productsWithIdentifiers:completion:)
     func products(_ productIdentifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
         getProducts(productIdentifiers, completion: completion)
     }
-    // swiftlint:enable line_length
 
     /**
      * Deprecated
@@ -1147,6 +1157,44 @@ public extension Purchases {
     @available(*, deprecated, message: "use getOfferingsWithCompletion:", renamed: "getOfferingsWithCompletion")
     @objc func offerings(completion: @escaping (Offerings?, Error?) -> Void) {
         getOfferings(completion: completion)
+    }
+
+    /**
+     * Deprecated
+     */
+    @available(swift, obsoleted: 1, renamed: "purchase(package:completion:)")
+    func purchasePackage(_ package: Package, _ completion: @escaping PurchaseCompletedBlock) {
+        purchase(package: package, completion: completion)
+    }
+
+    /**
+     * Deprecated
+     */
+    @available(swift, obsoleted: 1, renamed: "purchase(package:discount:completion:)")
+    @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
+    func purchasePackage(_ package: Package,
+                         discount: SKPaymentDiscount,
+                         _ completion: @escaping PurchaseCompletedBlock) {
+        purchase(package: package, discount: discount, completion: completion)
+    }
+
+    /**
+     * Deprecated
+     */
+    @available(swift, obsoleted: 1, renamed: "purchase(product:_:)")
+    func purchaseProduct(_ product: SKProduct, _ completion: @escaping PurchaseCompletedBlock) {
+        purchase(product: product, completion: completion)
+    }
+
+    /**
+     * Deprecated
+     */
+    @available(swift, obsoleted: 1, renamed: "purchase(product:discount:completion:)")
+    @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
+    func purchaseProduct(_ product: SKProduct,
+                         discount: SKPaymentDiscount,
+                         _ completion: @escaping PurchaseCompletedBlock) {
+        purchase(product: product, discount: discount, completion: completion)
     }
 
     /**
@@ -1250,6 +1298,10 @@ public extension Purchases {
     }
 
 }
+
+@available(swift, obsoleted: 1, renamed: "CustomerInfo")
+@available(*, deprecated, message: "use RCCustomerInfo:", renamed: "RCCustomerInfo")
+@objc(RCPurchaserInfo) public class PurchaserInfo: NSObject { }
 
 // MARK: Private
 private extension Purchases {
