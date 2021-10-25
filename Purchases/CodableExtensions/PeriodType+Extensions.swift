@@ -18,10 +18,8 @@ extension PeriodType: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         guard let periodTypeString = try? container.decode(String.self) else {
-            let context = DecodingError.Context(codingPath: decoder.codingPath,
-                                                debugDescription: "Unable to extract a periodTypeString",
-                                                underlyingError: nil)
-            throw CodableError.valueNotFound(value: PeriodType.self, context: context)
+            throw decoder.throwValueNotFoundError(expectedType: PeriodType.self,
+                                                  message: "Unable to extract a periodTypeString")
         }
 
         switch periodTypeString {
