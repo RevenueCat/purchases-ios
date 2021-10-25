@@ -171,7 +171,7 @@ class PurchasesTests: XCTestCase {
         override func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
             gotOfferings += 1
             if (failOfferings) {
-                completion(nil, ErrorUtils.unexpectedBackendResponseError())
+                completion(nil, ErrorUtils.unexpectedBackendResponseWithSubError(.getOfferUnexpectedResponse))
                 return
             }
             if (badOfferingsResponse) {

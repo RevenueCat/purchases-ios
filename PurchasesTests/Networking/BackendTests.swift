@@ -1434,7 +1434,8 @@ class BackendTests: XCTestCase {
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).toEventually(
             equal(ErrorCode.unexpectedBackendResponseError.rawValue))
-        expect(receivedUnderlyingError).toEventually(beNil())
+        expect(receivedUnderlyingError?.code).toEventually(
+            equal(UnexpectedBackendResponseSubErrorCode.postOfferIdMissingOffersInResponse.rawValue))
     }
     
     func testOfferForSigningSignatureErrorResponse() {
@@ -1520,7 +1521,8 @@ class BackendTests: XCTestCase {
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).toEventually(
             equal(ErrorCode.unexpectedBackendResponseError.rawValue))
-        expect(receivedUnderlyingError).toEventually(beNil())
+        expect(receivedUnderlyingError?.code).toEventually(
+            equal(UnexpectedBackendResponseSubErrorCode.postOfferIdSignature.rawValue))
 
     }
 

@@ -201,8 +201,24 @@ class Backend {
                 return
             }
 
-            guard let offers = response?["offers"] as? [[String: Any]], offers.count > 0 else {
-                completion(nil, nil, nil, nil, ErrorUtils.unexpectedBackendResponseError())
+            guard let response = response else {
+                let error = ErrorUtils.unexpectedBackendResponseWithSubError(.postOfferEmptyResponse)
+                Logger.debug("Unable to parse Offerings object from empty response")
+                completion(nil, nil, nil, nil, error)
+                return
+            }
+
+            guard let offers = response["offers"] as? [[String: Any]] else {
+                let error = ErrorUtils.unexpectedBackendResponseWithSubError(.postOfferIdBadResponse)
+                Logger.debug("Unable to parse Offerings from response:\n\(String(describing: response["offers"]))")
+                completion(nil, nil, nil, nil, error)
+                return
+            }
+
+            guard offers.count > 0 else {
+                let error = ErrorUtils.unexpectedBackendResponseWithSubError(.postOfferIdMissingOffersInResponse)
+                Logger.debug("No offerings found in response:\n\(String(describing: response["offers"]))")
+                completion(nil, nil, nil, nil, error)
                 return
             }
 
@@ -212,6 +228,7 @@ class Backend {
                 let backendMessage = signatureError["message"] as? String
                 let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
                 completion(nil, nil, nil, nil, error)
+                return
 
             } else if let signatureData = offer["signature_data"] as? [String: Any] {
                 let signature = signatureData["signature"] as? String
@@ -229,7 +246,9 @@ class Backend {
                 completion(signature, keyIdentifier, maybeNonce, timestamp as NSNumber?, nil)
                 return
             } else {
-                completion(nil, nil, nil, nil, ErrorUtils.unexpectedBackendResponseError())
+                let maybeSignatureDataString = String(describing: offer["signature_data"])
+                Logger.debug("Missing 'signatureData' or its structure changed:\n\(maybeSignatureDataString)")
+                completion(nil, nil, nil, nil, ErrorUtils.unexpectedBackendResponseWithSubError(.postOfferIdSignature))
                 return
             }
         }
@@ -317,6 +336,7 @@ class Backend {
                                      path: path,
                                      headers: authHeaders) { [weak self] (statusCode, maybeResponse, maybeError) in
             guard let self = self else {
+                Logger.debug("Received a response from getOfferings but the Backend was already deallocated.")
                 return
             }
 
@@ -330,15 +350,16 @@ class Backend {
             let errorForCallbacks: Error
             if let error = maybeError {
                 errorForCallbacks = ErrorUtils.networkError(withUnderlyingError: error)
-            } else if statusCode > HTTPStatusCodes.redirect.rawValue {
+            } else if statusCode >= HTTPStatusCodes.redirect.rawValue {
                 let backendCode = BackendErrorCode(maybeCode: maybeResponse?["code"])
                 let backendMessage = maybeResponse?["message"] as? String
                 errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode,
                                                             backendMessage: backendMessage)
             } else {
-                errorForCallbacks = ErrorUtils.unexpectedBackendResponseError()
+                errorForCallbacks = ErrorUtils.unexpectedBackendResponseWithSubError(.getOfferUnexpectedResponse)
             }
-
+            let responseString = "response:\n\(String(describing: maybeResponse?.debugDescription))"
+            Logger.debug("Encountered an error getting offerings, status code:\(statusCode)\(responseString)")
             for callback in self.getOfferingsCallbacksAndClearCache(forKey: path) {
                 callback(nil, errorForCallbacks)
             }
@@ -452,16 +473,23 @@ private extension Backend {
             return
         }
 
+        guard let response = response else {
+            let responseError = ErrorUtils.unexpectedBackendResponseWithSubError(.loginMissingResponse)
+            completion(nil, false, responseError)
+            return
+        }
+
         if statusCode > HTTPStatusCodes.redirect.rawValue {
-            let backendCode = BackendErrorCode(maybeCode: response?["code"])
-            let backendMessage = response?["message"] as? String
+            let backendCode = BackendErrorCode(maybeCode: response["code"])
+            let backendMessage = response["message"] as? String
             let responsError = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
             completion(nil, false, ErrorUtils.networkError(withUnderlyingError: responsError))
             return
         }
 
-        guard let response = response, let customerInfo = CustomerInfo(data: response) else {
-            let responseError = ErrorUtils.unexpectedBackendResponseError()
+        guard let customerInfo = CustomerInfo(data: response) else {
+            Logger.debug("Login failed, unable to instantiate \(CustomerInfo.self) from:\n\(response)")
+            let responseError = ErrorUtils.unexpectedBackendResponseWithSubError(.loginResponseDecoding)
             completion(nil, false, responseError)
             return
         }
@@ -541,9 +569,11 @@ private extension Backend {
     func handle(customerInfoResponse response: [String: Any]?,
                 statusCode: Int,
                 error: Error?,
+                file: String = #file,
+                function: String = #function,
                 completion: BackendCustomerInfoResponseHandler) {
         if let error = error {
-            completion(nil, ErrorUtils.networkError(withUnderlyingError: error))
+            completion(nil, ErrorUtils.networkError(withUnderlyingError: error, generatedBy: "\(file) \(function)"))
             return
         }
 
@@ -551,7 +581,7 @@ private extension Backend {
 
         let maybeCustomerInfo: CustomerInfo? = response == nil ? nil : CustomerInfo(data: response!)
         if !isErrorStatusCode && maybeCustomerInfo == nil {
-            completion(nil, ErrorUtils.unexpectedBackendResponseError())
+            completion(nil, ErrorUtils.unexpectedBackendResponseWithSubError(.customerInfoResponse))
             return
         }
 

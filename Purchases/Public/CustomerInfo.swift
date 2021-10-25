@@ -157,32 +157,38 @@ import Foundation
     }
 
     init?(data: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) {
-        guard let subscriberObject = data["subscriber"] as? [String: Any],
-              let subscriberData = SubscriberData(subscriberData: subscriberObject,
+        guard let subscriberObject = data["subscriber"] as? [String: Any] else {
+            Logger.error("Unable to find subscriber object in data: \(data.debugDescription)")
+            return nil
+        }
+
+        guard let subscriberData = SubscriberData(subscriberData: subscriberObject,
                                                   dateFormatter: dateFormatter,
-                                                  transactionsFactory: transactionsFactory)
-            else {
+                                                  transactionsFactory: transactionsFactory) else {
+            Logger.error("Unable to instantiate SubscriberData from \(subscriberObject.debugDescription)")
+            return nil
+        }
+
+        guard let requestDateString = data["request_date"] as? String else {
+            Logger.error("Unable to parse 'request_date' from CustomerInfo")
+            return nil
+        }
+
+        guard let formattedRequestDate = dateFormatter.date(from: requestDateString) else {
+            Logger.error("Unable to parse date from: \(requestDateString)")
             return nil
         }
 
         self.dateFormatter = dateFormatter
         self.originalData = data
         self.schemaVersion = data["schema_version"] as? String
-
-        guard let requestDateString = data["request_date"] as? String,
-              let formattedRequestDate = dateFormatter.date(from: requestDateString) else {
-            return nil
-        }
         self.requestDate = formattedRequestDate
-
         self.originalPurchaseDate = subscriberData.originalPurchaseDate
         self.firstSeen = subscriberData.firstSeen
         self.originalAppUserId = subscriberData.originalAppUserId
         self.managementURL = subscriberData.managementURL
         self.originalApplicationVersion = subscriberData.originalApplicationVersion
-
         self.nonSubscriptionTransactions = subscriberData.nonSubscriptionTransactions
-
         self.entitlements = EntitlementInfos(entitlementsData: subscriberData.entitlementsData,
                                              purchasesData: subscriberData.allTransactionsByProductId,
                                              requestDate: requestDate,
