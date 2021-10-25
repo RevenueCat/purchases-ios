@@ -17,33 +17,57 @@ import Foundation
 /**
  Error codes sent by the RevenueCat backend. This only includes the errors that matter to the SDK
  */
-@objc(RCBackendErrorCode) public enum BackendErrorCode: Int, Error {
+enum BackendErrorCode: Int, Error {
 
-    @objc(RCBackendUnknownError) case unknownError = 0
-    @objc(RCBackendInvalidPlatform) case invalidPlatform = 7000
-    @objc(RCBackendStoreProblem) case storeProblem = 7101
-    @objc(RCBackendCannotTransferPurchase) case cannotTransferPurchase = 7102
-    @objc(RCBackendInvalidReceiptToken) case invalidReceiptToken = 7103
-    @objc(RCBackendInvalidAppStoreSharedSecret) case invalidAppStoreSharedSecret = 7104
-    @objc(RCBackendInvalidPaymentModeOrIntroPriceNotProvided) case invalidPaymentModeOrIntroPriceNotProvided = 7105
-    @objc(RCBackendProductIdForGoogleReceiptNotProvided) case productIdForGoogleReceiptNotProvided = 7106
-    @objc(RCBackendInvalidPlayStoreCredentials) case invalidPlayStoreCredentials = 7107
-    @objc(RCBackendInternalServerError) case internalServerError = 7110
-    @objc(RCBackendEmptyAppUserId) case emptyAppUserId = 7220
-    @objc(RCBackendInvalidAuthToken) case invalidAuthToken = 7224
-    @objc(RCBackendInvalidAPIKey) case invalidAPIKey = 7225
-    @objc(RCBackendBadRequest) case badRequest = 7226
-    @objc(RCBackendPlayStoreQuotaExceeded) case playStoreQuotaExceeded = 7229
-    @objc(RCBackendPlayStoreInvalidPackageName) case playStoreInvalidPackageName = 7230
-    @objc(RCBackendPlayStoreGenericError) case playStoreGenericError = 7231
-    @objc(RCBackendUserIneligibleForPromoOffer) case userIneligibleForPromoOffer = 7232
-    @objc(RCBackendInvalidAppleSubscriptionKey) case invalidAppleSubscriptionKey = 7234
-    @objc(RCBackendInvalidSubscriberAttributes) case invalidSubscriberAttributes = 7263
-    @objc(RCBackendInvalidSubscriberAttributesBody) case invalidSubscriberAttributesBody = 7264
+    case unknownBackendError = -1 // Some backend problem we don't know the specifics of.
+    case unknownError = 0 // We don't know what happened.
+    case invalidPlatform = 7000
+    case storeProblem = 7101
+    case cannotTransferPurchase = 7102
+    case invalidReceiptToken = 7103
+    case invalidAppStoreSharedSecret = 7104
+    case invalidPaymentModeOrIntroPriceNotProvided = 7105
+    case productIdForGoogleReceiptNotProvided = 7106
+    case invalidPlayStoreCredentials = 7107
+    case internalServerError = 7110
+    case emptyAppUserId = 7220
+    case invalidAuthToken = 7224
+    case invalidAPIKey = 7225
+    case badRequest = 7226
+    case playStoreQuotaExceeded = 7229
+    case playStoreInvalidPackageName = 7230
+    case playStoreGenericError = 7231
+    case userIneligibleForPromoOffer = 7232
+    case invalidAppleSubscriptionKey = 7234
+    case invalidSubscriberAttributes = 7263
+    case invalidSubscriberAttributesBody = 7264
+
+    /**
+     * - Parameter maybeCode: Generally comes from the backend in json. This may be a String, or an Int, or nothing.
+     */
+    init(maybeCode: Any?) {
+        let maybeCodeInt = BackendErrorCode.maybeInt(maybeCodeObject: maybeCode)
+
+        guard let codeInt = maybeCodeInt else {
+            self = .unknownBackendError
+            return
+        }
+
+        self = BackendErrorCode(rawValue: codeInt) ?? .unknownBackendError
+    }
+
+    static func maybeInt(maybeCodeObject: Any?) -> Int? {
+        // The code can be a String or Int
+        if let codeString = maybeCodeObject as? String {
+            return Int(codeString) ?? nil
+        }
+
+        return maybeCodeObject as? Int
+    }
 
 }
 
-public extension BackendErrorCode {
+extension BackendErrorCode {
 
     // swiftlint:disable cyclomatic_complexity
     /// Turns ``BackendErrorCode``(RCBackendErrorCode) codes into ``ErrorCode``(RCPurchasesErrorCode) error codes
@@ -74,7 +98,8 @@ public extension BackendErrorCode {
         case .invalidSubscriberAttributes,
              .invalidSubscriberAttributesBody:
             return .invalidSubscriberAttributesError
-        case .playStoreInvalidPackageName,
+        case .unknownBackendError,
+             .playStoreInvalidPackageName,
              .playStoreQuotaExceeded,
              .playStoreGenericError,
              .invalidPlayStoreCredentials,
@@ -82,8 +107,6 @@ public extension BackendErrorCode {
              .internalServerError:
             return .unknownBackendError
         case .unknownError:
-            return .unknownError
-        @unknown default:
             return .unknownError
         }
     }

@@ -15,7 +15,7 @@
 import Foundation
 import StoreKit
 
-@objc(RCPurchasesErrorUtils) public class ErrorUtils: NSObject {
+class ErrorUtils: NSObject {
 
     /**
      * Constructs an NSError with the ``ErrorCode/networkError`` code and a populated `NSUnderlyingErrorKey` in
@@ -26,7 +26,7 @@ import StoreKit
      * - Note: This error is used when there is an error performing network request returns an error or when there
      * is an `NSJSONSerialization` error.
      */
-    @objc public static func networkError(withUnderlyingError underlyingError: Error) -> Error {
+    static func networkError(withUnderlyingError underlyingError: Error) -> Error {
         return error(with: .networkError, underlyingError: underlyingError)
     }
 
@@ -41,8 +41,7 @@ import StoreKit
      * - Note: This error is used when an network request returns an error. The backend error returned is wrapped in
      * this internal error code.
      */
-    @objc public static func backendError(withBackendCode backendCode: NSNumber?,
-                                          backendMessage: String?) -> Error {
+    static func backendError(withBackendCode backendCode: BackendErrorCode, backendMessage: String?) -> Error {
         return backendError(withBackendCode: backendCode, backendMessage: backendMessage, extraUserInfo: nil)
     }
 
@@ -60,9 +59,9 @@ import StoreKit
      * - Note: This error is used when an network request returns an error. The backend error returned is wrapped in
      * this internal error code.
      */
-    @objc public static func backendError(withBackendCode backendCode: NSNumber?,
-                                          backendMessage: String?,
-                                          finishable: Bool) -> Error {
+    static func backendError(withBackendCode backendCode: BackendErrorCode,
+                             backendMessage: String?,
+                             finishable: Bool) -> Error {
         let extraUserInfo: [NSError.UserInfoKey: Any] = [
             ErrorDetails.finishableKey: finishable
         ]
@@ -75,7 +74,7 @@ import StoreKit
      *
      * - Note: This error is used when an network request returns an unexpected response.
      */
-    @objc public static func unexpectedBackendResponseError() -> Error {
+    static func unexpectedBackendResponseError() -> Error {
         return error(with: ErrorCode.unexpectedBackendResponseError)
     }
 
@@ -85,7 +84,7 @@ import StoreKit
      * - Note: This error is used when the receipt is missing in the device. This can happen if the user is in
      * sandbox or if there are no previous purchases.
      */
-    @objc public static func missingReceiptFileError() -> Error {
+    static func missingReceiptFileError() -> Error {
         return error(with: ErrorCode.missingReceiptFileError)
     }
 
@@ -95,7 +94,7 @@ import StoreKit
      * - Note: This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
      * are removed manually or if the OS deletes entries when running out of space.
      */
-    @objc public static func missingAppUserIDError() -> Error {
+    static func missingAppUserIDError() -> Error {
         return error(with: ErrorCode.invalidAppUserIdError)
     }
 
@@ -105,7 +104,7 @@ import StoreKit
      * - Note: This error code is used when attemping to post data about product discounts but the discount is
      * missing an indentifier.
      */
-    @objc public static func productDiscountMissingIdentifierError() -> Error {
+    static func productDiscountMissingIdentifierError() -> Error {
         return error(with: ErrorCode.productDiscountMissingIdentifierError)
     }
 
@@ -115,7 +114,7 @@ import StoreKit
      * - Note: This error code is used when attemping to post data about product discounts but the discount is
      * missing a subscriptionGroupIndentifier.
      */
-    @objc public static func productDiscountMissingSubscriptionGroupIdentifierError() -> Error {
+    static func productDiscountMissingSubscriptionGroupIdentifierError() -> Error {
         return error(with: ErrorCode.productDiscountMissingSubscriptionGroupIdentifierError)
     }
 
@@ -125,7 +124,7 @@ import StoreKit
      * - Note: This error is used when the appUserID can't be found in user defaults. This can happen if user defaults
      * are removed manually or if the OS deletes entries when running out of space.
      */
-    @objc public static func missingAppUserIDForAliasCreationError() -> Error {
+    static func missingAppUserIDForAliasCreationError() -> Error {
         return error(with: ErrorCode.missingAppUserIDForAliasCreationError)
     }
 
@@ -135,7 +134,7 @@ import StoreKit
      * - Note: This error is used when logOut is called but the current user is anonymous,
      * as noted by ``Purchases/isAnonymous`` property.
      */
-    @objc public static func logOutAnonymousUserError() -> Error {
+    static func logOutAnonymousUserError() -> Error {
         return error(with: ErrorCode.logOutAnonymousUserError)
     }
 
@@ -145,21 +144,21 @@ import StoreKit
      * - Note: This error is used during an “ask to buy” flow for a payment. The completion block of the purchasing
      * function will get this error to indicate the guardian has to complete the purchase.
      */
-    @objc public static func paymentDeferredError() -> Error {
+    static func paymentDeferredError() -> Error {
         return error(with: ErrorCode.paymentPendingError, message: "The payment is deferred.")
     }
 
     /**
      * Constructs an Error with the ``ErrorCode/unknownError`` code and optional message.
      */
-    @objc public static func unknownError(message: String? = nil) -> Error {
+    static func unknownError(message: String? = nil) -> Error {
         return error(with: ErrorCode.unknownError, message: message)
     }
 
     /**
      * Constructs an Error with the ``ErrorCode/unknownError`` code.
      */
-    @objc public static func unknownError() -> Error {
+    static func unknownError() -> Error {
         return error(with: ErrorCode.unknownError, message: nil)
     }
 
@@ -169,7 +168,7 @@ import StoreKit
      * - Note: This error is used when a purchase is initiated for a product, but there's already a purchase for the
      * same product in progress.
      */
-    @objc public static func operationAlreadyInProgressError() -> Error {
+    static func operationAlreadyInProgressError() -> Error {
         return error(with: ErrorCode.operationAlreadyInProgressForProductError)
     }
 
@@ -179,7 +178,7 @@ import StoreKit
      * - Note: This error is used when the configuration in App Store Connect doesn't match the configuration
      * in the RevenueCat dashboard.
      */
-    @objc public static func configurationError(message: String? = nil) -> Error {
+    static func configurationError(message: String? = nil) -> Error {
         return error(with: ErrorCode.configurationError, message: message)
     }
 
@@ -188,7 +187,7 @@ import StoreKit
      *
      * - Parameter skError: The originating `SKError`.
      */
-    @objc public static func purchasesError(withSKError skError: Error) -> Error {
+    static func purchasesError(withSKError skError: Error) -> Error {
         let errorCode = (skError as? SKError)?.toPurchasesErrorCode() ?? .unknownError
         return error(with: errorCode, message: errorCode.description, underlyingError: skError)
     }
@@ -235,16 +234,10 @@ private extension SKError {
 
 extension ErrorUtils {
 
-    static func backendError(withBackendCode backendCode: NSNumber?,
+    static func backendError(withBackendCode backendCode: BackendErrorCode,
                              backendMessage: String?,
                              extraUserInfo: [NSError.UserInfoKey: Any]? = nil) -> Error {
-        let errorCode: ErrorCode
-        if let maybeBackendCode = backendCode,
-           let backendErrorCode = BackendErrorCode.init(rawValue: maybeBackendCode.intValue) {
-            errorCode = backendErrorCode.toPurchasesErrorCode()
-        } else {
-            errorCode = ErrorCode.unknownBackendError
-        }
+        let errorCode = backendCode.toPurchasesErrorCode()
         let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: backendMessage)
 
         return error(with: errorCode,
@@ -308,19 +301,11 @@ private extension ErrorUtils {
         return nsErrorWithUserInfo as Error
     }
 
-    static func backendUnderlyingError(backendCode: NSNumber?, backendMessage: String?) -> Error {
-        let error: Error
-        if let maybeBackendCode = backendCode,
-           let backendError = BackendErrorCode.init(rawValue: maybeBackendCode.intValue) {
-            error = backendError
-        } else {
-            error = BackendErrorCode.unknownError
-        }
-
+    static func backendUnderlyingError(backendCode: BackendErrorCode, backendMessage: String?) -> Error {
         let userInfo = [
             NSLocalizedDescriptionKey: backendMessage ?? ""
         ]
-        let errorWithUserInfo = addUserInfo(userInfo: userInfo, error: error)
+        let errorWithUserInfo = addUserInfo(userInfo: userInfo, error: backendCode)
         return errorWithUserInfo
     }
 

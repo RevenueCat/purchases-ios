@@ -177,12 +177,8 @@ shouldPurchasePromoProduct:skp
 }
 
 + (void)checkConstants {
-    NSErrorDomain bed = RCBackendErrorCodeDomain;
     NSErrorDomain ped = RCPurchasesErrorCodeDomain;
-    NSErrorUserInfoKey fk = RCErrorDetails.RCFinishableKey;
-    NSErrorUserInfoKey eck = RCErrorDetails.RCReadableErrorCodeKey;
-
-    NSLog(bed, ped, fk, eck);
+    NSLog(@"%@", ped);
 }
 
 @end

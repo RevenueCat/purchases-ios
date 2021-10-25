@@ -18,7 +18,6 @@
 		A5D614D626EBE7EA007DDB75 /* PackageAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */; };
 		A5D614D726EBE7EA007DDB75 /* AttributionNetworkAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */; };
 		A5D614D826EBE7EA007DDB75 /* TransactionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */; };
-		A5D614D926EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CC26EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift */; };
 		A5D614DA26EBE7EA007DDB75 /* IntroEligibilityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CD26EBE7EA007DDB75 /* IntroEligibilityAPI.swift */; };
 		A5D614DB26EBE7EA007DDB75 /* PurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */; };
 /* End PBXBuildFile section */
@@ -47,7 +46,6 @@
 		A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PackageAPI.swift; sourceTree = "<group>"; };
 		A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttributionNetworkAPI.swift; sourceTree = "<group>"; };
 		A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionAPI.swift; sourceTree = "<group>"; };
-		A5D614CC26EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesErrorUtilsAPI.swift; sourceTree = "<group>"; };
 		A5D614CD26EBE7EA007DDB75 /* IntroEligibilityAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntroEligibilityAPI.swift; sourceTree = "<group>"; };
 		A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesAPI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -84,6 +82,7 @@
 			isa = PBXGroup;
 			children = (
 				A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */,
+				A5D614C426EBE7EA007DDB75 /* CustomerInfoAPI.swift */,
 				A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */,
 				A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */,
 				A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */,
@@ -92,9 +91,7 @@
 				A5D614C726EBE7EA007DDB75 /* OfferingAPI.swift */,
 				A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */,
 				A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */,
-				A5D614C426EBE7EA007DDB75 /* CustomerInfoAPI.swift */,
 				A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */,
-				A5D614CC26EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift */,
 				A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */,
 			);
 			path = SwiftAPITester;
@@ -169,7 +166,6 @@
 				A5D614D126EBE7EA007DDB75 /* CustomerInfoAPI.swift in Sources */,
 				A5D614D026EBE7EA007DDB75 /* OfferingsAPI.swift in Sources */,
 				A5D614D426EBE7EA007DDB75 /* OfferingAPI.swift in Sources */,
-				A5D614D926EBE7EA007DDB75 /* PurchasesErrorUtilsAPI.swift in Sources */,
 				A5D614D526EBE7EA007DDB75 /* EntitlementInfoAPI.swift in Sources */,
 				A5D614DA26EBE7EA007DDB75 /* IntroEligibilityAPI.swift in Sources */,
 				A5D614D826EBE7EA007DDB75 /* TransactionAPI.swift in Sources */,

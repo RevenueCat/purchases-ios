@@ -39,16 +39,24 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 			<td>RCOperationAlreadyInProgressForProductError</td>
 		</tr>
 		<tr>
-			<td>RCBackendErrorDomain</td>
-			<td>RCBackendErrorCodeDomain</td>
-		</tr>
-		<tr>
 			<td>RCPurchasesErrorDomain</td>
 			<td>RCPurchasesErrorCodeDomain</td>
 		</tr>
 		<tr>
+			<td>RCBackendError</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
+			<td>RCErrorUtils</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
+			<td>RCBackendErrorDomain</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
 			<td>RCFinishableKey</td>
-			<td>RCErrorDetails.RCFinishableKey</td>
+			<td><i>REMOVED</i></td>
 		</tr>
 		<tr>
 			<td>RCReceivePurchaserInfoBlock</td>
@@ -134,10 +142,6 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 			<td>Offering</td>
 		</tr>
 		<tr>
-			<td>Purchases.RevenueCatBackendErrorCode</td>
-			<td>RCBackendErrorCodeDomain</td>
-		</tr>
-		<tr>
 			<td>Purchases.ErrorCode.Code</td>
 			<td>RCPurchasesErrorCodeDomain</td>
 		</tr>
@@ -178,10 +182,6 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 			<td>AttributionNetwork</td>
 		</tr>
 		<tr>
-			<td>Purchases.ErrorUtils</td>
-			<td>ErrorUtils</td>
-		</tr>
-		<tr>
 			<td>RCIntroEligibility</td>
 			<td>IntroEligibility</td>
 		</tr>
@@ -192,14 +192,6 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 		<tr>
 			<td>Purchases.LogLevel</td>
 			<td>LogLevel</td>
-		</tr>
-		<tr>
-			<td>ReadableErrorCodeKey</td>
-			<td>ErrorDetails.readableErrorCodeKey</td>
-		</tr>
-		<tr>
-			<td>RCFinishableKey</td>
-			<td>ErrorDetails.finishableKey</td>
 		</tr>
 		<tr>
 			<td>Purchases.Offerings</td>
@@ -231,6 +223,22 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 		</tr>
 		<tr>
 			<td>Purchases.PaymentDiscountBlock</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+				<tr>
+			<td>Purchases.RevenueCatBackendErrorCode</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
+			<td>Purchases.ErrorUtils</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
+			<td>ReadableErrorCodeKey</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
+			<td>RCFinishableKey</td>
 			<td><i>REMOVED</i></td>
 		</tr>
 	</tbody>
