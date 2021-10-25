@@ -225,14 +225,20 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func testBeginRefundRequestCallsCompletionWithoutErrorIfItsSuccesful() {
+    func testBeginRefundRequestCallsCompletionWithoutErrorAndPassesThroughStatusIfSuccessful() {
         var receivedError: Error?
+        var receivedStatus: RefundRequestStatus?
         var completionCalled = false
-        orchestrator.beginRefundRequest(for: "1234") { _, maybeError in
+        let expectedStatus = RefundRequestStatus.userCancelled
+        mockBeginRefundRequestHelper.mockRefundRequestStatus = expectedStatus
+
+        orchestrator.beginRefundRequest(for: "1234") { status, maybeError in
             completionCalled = true
             receivedError = maybeError
+            receivedStatus = status
         }
 
+        expect(receivedStatus) == expectedStatus
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).to(beNil())
     }
@@ -242,10 +248,13 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func testBeginRefundRequestCallsCompletionWithErrorIfThereIsAFailure() {
-        mockBeginRefundRequestHelper.mockError = ErrorUtils.beginRefundRequestError(withMessage: "test")
+        let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
+        mockBeginRefundRequestHelper.mockError = expectedError
+
         var receivedError: Error?
         var completionCalled = false
         var receivedStatus: RefundRequestStatus?
+
         orchestrator.beginRefundRequest(for: "1235") { status, maybeError in
             completionCalled = true
             receivedError = maybeError
@@ -254,8 +263,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(completionCalled).toEventually(beTrue())
         expect(receivedError).toNot(beNil())
-//        expect(receivedStatus).to(match(RefundRequestStatus.error))
-        expect(receivedError).to(matchError(ErrorCode.beginRefundRequestError))
+        expect(receivedStatus) == RefundRequestStatus.error
+        expect(receivedError).to(matchError(expectedError))
     }
 
 }

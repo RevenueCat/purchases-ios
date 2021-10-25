@@ -18,7 +18,6 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
 
     var mockError: Error?
     var mockRefundRequestStatus: RefundRequestStatus?
-    var mockIsWindowSceneAvailable = true
 
     @available(iOS 15.0, macOS 15, *)
     @available(watchOS, unavailable)
