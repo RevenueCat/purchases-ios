@@ -59,11 +59,7 @@ extension JSONDecoder {
             do {
                 return try decode(type, from: maybeJsonData)
             } catch {
-                if let decodingError = error as? DecodingError {
-                    ErrorUtils.handleDecodingError(decodingError)
-                } else {
-                    Logger.error(Strings.codable.decoding_error(error))
-                }
+                ErrorUtils.logDecodingError(error)
                 return nil
             }
         } else {
@@ -87,11 +83,7 @@ extension KeyedDecodingContainer {
         do {
             return try decode(type, forKey: key)
         } catch {
-            if let decodingError = error as? DecodingError {
-                ErrorUtils.handleDecodingError(decodingError)
-            } else {
-                Logger.error(Strings.codable.decoding_error(error))
-            }
+            ErrorUtils.logDecodingError(error)
             return defaultValue
         }
     }
@@ -99,20 +91,25 @@ extension KeyedDecodingContainer {
 }
 
 // MARK: Decoding Error handling
-extension ErrorUtils {
+private extension ErrorUtils {
 
-    static func handleDecodingError(_ decodingError: DecodingError) {
+    static func logDecodingError(_ error: Error) {
+        guard let decodingError = error as? DecodingError else {
+            Logger.error(Strings.codable.decoding_error(error))
+            return
+        }
+
         switch decodingError {
-        case DecodingError.dataCorrupted(let context):
+        case .dataCorrupted(let context):
             Logger.error(Strings.codable.corrupted_data_error(context: context))
-        case DecodingError.keyNotFound(let key, let context):
+        case .keyNotFound(let key, let context):
             Logger.error(Strings.codable.keyNotFoundError(key: key, context: context))
-        case DecodingError.valueNotFound(let value, let context):
+        case .valueNotFound(let value, let context):
             Logger.error(Strings.codable.valueNotFoundError(value: value, context: context))
-        case DecodingError.typeMismatch(let type, let context):
+        case .typeMismatch(let type, let context):
             Logger.error(Strings.codable.typeMismatch(type: type, context: context))
         default:
-            Logger.error(Strings.codable.decoding_error(decodingError))
+            Logger.error("Unhandled DecodingError: \(decodingError)\n\(Strings.codable.decoding_error(decodingError))")
         }
      }
 
