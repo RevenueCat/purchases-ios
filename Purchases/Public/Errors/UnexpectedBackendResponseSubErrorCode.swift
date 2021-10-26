@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  SubErrorCode.swift
+//  UnexpectedBackendResponseSubErrorCode.swift
 //
 //  Created by Joshua Liebowitz on 10/25/21.
 

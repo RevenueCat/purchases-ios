@@ -72,18 +72,20 @@ class ErrorUtils: NSObject {
     /**
      * Constructs an Error with the ``ErrorCode/unexpectedBackendResponseError`` code.
      *
-     * - Note: This error is used when an network request returns an unexpected response.
+     * - Note: This error is used when a network request returns an unexpected response.
      */
     static func unexpectedBackendResponseError() -> Error {
         return error(with: ErrorCode.unexpectedBackendResponseError)
     }
 
     /**
-     * Constructs an Error with the ``ErrorCode/unexpectedBackendResponseError`` code.
+     * Constructs an Error with the ``ErrorCode/unexpectedBackendResponseError`` code which contains an underlying
+     * ``UnexpectedBackendResponseSubErrorCode``
      *
-     * - Note: This error is used when an network request returns an unexpected response.
+     * - Note: This error is used when a network request returns an unexpected response and we can determine some
+     * of what went wrong with the response.
      */
-    static func unexpectedBackendResponseWithSubError(_ subError: UnexpectedBackendResponseSubErrorCode) -> Error {
+    static func unexpectedBackendResponse(withSubError subError: UnexpectedBackendResponseSubErrorCode) -> Error {
         return backendResponseError(withSubError: subError)
     }
 

@@ -75,7 +75,7 @@ class Backend {
                                       headers: authHeaders) { statusCode, response, error in
 
             for callback in self.getCreateAliasCallbacksAndClearCache(forKey: cacheKey) {
-                self.handle(response: response, statusCode: statusCode, error: error, completion: callback)
+                self.handle(response: response, statusCode: statusCode, maybeError: error, completion: callback)
             }
         }
 
@@ -132,7 +132,10 @@ class Backend {
                                       headers: authHeaders) { statusCode, response, error in
             let callbacks = self.getCustomerInfoCallbacksAndClearCache(forKey: cacheKey)
             for callback in callbacks {
-                self.handle(customerInfoResponse: response, statusCode: statusCode, error: error, completion: callback)
+                self.handle(customerInfoResponse: response,
+                            statusCode: statusCode,
+                            maybeError: error,
+                            completion: callback)
             }
         }
     }
@@ -159,7 +162,7 @@ class Backend {
             for completion in self.getCustomerInfoCallbacksAndClearCache(forKey: path) {
                 self.handle(customerInfoResponse: response,
                             statusCode: statusCode,
-                            error: error,
+                            maybeError: error,
                             completion: completion)
             }
         }
@@ -187,36 +190,36 @@ class Backend {
         self.httpClient.performPOSTRequest(serially: true,
                                            path: "/offers",
                                            requestBody: requestBody,
-                                           headers: authHeaders) { statusCode, response, error in
-            if let error = error {
+                                           headers: authHeaders) { statusCode, maybeResponse, maybeError in
+            if let error = maybeError {
                 completion(nil, nil, nil, nil, ErrorUtils.networkError(withUnderlyingError: error))
                 return
             }
 
             guard statusCode < HTTPStatusCodes.redirect.rawValue else {
-                let backendCode = BackendErrorCode(maybeCode: response?["code"])
-                let backendMessage = response?["message"] as? String
+                let backendCode = BackendErrorCode(maybeCode: maybeResponse?["code"])
+                let backendMessage = maybeResponse?["message"] as? String
                 let error = ErrorUtils.backendError(withBackendCode: backendCode, backendMessage: backendMessage)
                 completion(nil, nil, nil, nil, error)
                 return
             }
 
-            guard let response = response else {
-                let error = ErrorUtils.unexpectedBackendResponseWithSubError(.postOfferEmptyResponse)
+            guard let response = maybeResponse else {
+                let error = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferEmptyResponse)
                 Logger.debug("Unable to parse Offerings object from empty response")
                 completion(nil, nil, nil, nil, error)
                 return
             }
 
             guard let offers = response["offers"] as? [[String: Any]] else {
-                let error = ErrorUtils.unexpectedBackendResponseWithSubError(.postOfferIdBadResponse)
+                let error = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferIdBadResponse)
                 Logger.debug("Unable to parse Offerings from response:\n\(String(describing: response["offers"]))")
                 completion(nil, nil, nil, nil, error)
                 return
             }
 
             guard offers.count > 0 else {
-                let error = ErrorUtils.unexpectedBackendResponseWithSubError(.postOfferIdMissingOffersInResponse)
+                let error = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferIdMissingOffersInResponse)
                 Logger.debug("No offerings found in response:\n\(String(describing: response["offers"]))")
                 completion(nil, nil, nil, nil, error)
                 return
@@ -248,7 +251,8 @@ class Backend {
             } else {
                 let maybeSignatureDataString = String(describing: offer["signature_data"])
                 Logger.debug("Missing 'signatureData' or its structure changed:\n\(maybeSignatureDataString)")
-                completion(nil, nil, nil, nil, ErrorUtils.unexpectedBackendResponseWithSubError(.postOfferIdSignature))
+                let signatureError = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferIdSignature)
+                completion(nil, nil, nil, nil, signatureError)
                 return
             }
         }
@@ -269,7 +273,7 @@ class Backend {
                                       path: path,
                                       requestBody: body,
                                       headers: authHeaders) { statusCode, response, error in
-            self.handle(response: response, statusCode: statusCode, error: error, completion: completion)
+            self.handle(response: response, statusCode: statusCode, maybeError: error, completion: completion)
         }
     }
 
@@ -296,7 +300,7 @@ class Backend {
                                       headers: authHeaders) { statusCode, response, error in
             self.handleSubscriberAttributesResult(statusCode: statusCode,
                                                   response: response,
-                                                  error: error,
+                                                  maybeError: error,
                                                   completion: completion)
         }
     }
@@ -316,7 +320,10 @@ class Backend {
                                       requestBody: requestBody,
                                       headers: authHeaders) { statusCode, response, error in
             for callback in self.getIdentifyCallbacksAndClearCache(forKey: cacheKey) {
-                self.handleLogin(response: response, statusCode: statusCode, error: error, completion: callback)
+                self.handleLogin(maybeResponse: response,
+                                 statusCode: statusCode,
+                                 maybeError: error,
+                                 completion: callback)
             }
         }
     }
@@ -336,7 +343,8 @@ class Backend {
                                      path: path,
                                      headers: authHeaders) { [weak self] (statusCode, maybeResponse, maybeError) in
             guard let self = self else {
-                Logger.debug("Received a response from getOfferings but the Backend was already deallocated.")
+                Logger.debug("Received a response from getOfferings but the Backend was already deallocated, so the"
+                             + " response will be ignored.")
                 return
             }
 
@@ -356,7 +364,7 @@ class Backend {
                 errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode,
                                                             backendMessage: backendMessage)
             } else {
-                errorForCallbacks = ErrorUtils.unexpectedBackendResponseWithSubError(.getOfferUnexpectedResponse)
+                errorForCallbacks = ErrorUtils.unexpectedBackendResponse(withSubError: .getOfferUnexpectedResponse)
             }
             let responseString = "response:\n\(String(describing: maybeResponse?.debugDescription))"
             Logger.debug("Encountered an error getting offerings, status code:\(statusCode)\(responseString)")
@@ -464,17 +472,17 @@ private extension Backend {
         response.completion(eligibilities, nil)
     }
 
-    func handleLogin(response: [String: Any]?,
+    func handleLogin(maybeResponse: [String: Any]?,
                      statusCode: Int,
-                     error: Error?,
+                     maybeError: Error?,
                      completion: IdentifyResponseHandler) {
-        if let error = error {
+        if let error = maybeError {
             completion(nil, false, ErrorUtils.networkError(withUnderlyingError: error))
             return
         }
 
-        guard let response = response else {
-            let responseError = ErrorUtils.unexpectedBackendResponseWithSubError(.loginMissingResponse)
+        guard let response = maybeResponse else {
+            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: .loginMissingResponse)
             completion(nil, false, responseError)
             return
         }
@@ -489,7 +497,7 @@ private extension Backend {
 
         guard let customerInfo = CustomerInfo(data: response) else {
             Logger.debug("Login failed, unable to instantiate \(CustomerInfo.self) from:\n\(response)")
-            let responseError = ErrorUtils.unexpectedBackendResponseWithSubError(.loginResponseDecoding)
+            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: .loginResponseDecoding)
             completion(nil, false, responseError)
             return
         }
@@ -522,13 +530,13 @@ private extension Backend {
 
     func handleSubscriberAttributesResult(statusCode: Int,
                                           response: [String: Any]?,
-                                          error: Error?,
+                                          maybeError: Error?,
                                           completion: PostRequestResponseHandler?) {
         guard let completion = completion else {
             return
         }
 
-        if let error = error {
+        if let error = maybeError {
             completion(ErrorUtils.networkError(withUnderlyingError: error))
             return
         }
@@ -549,8 +557,11 @@ private extension Backend {
 
     }
 
-    func handle(response: [String: Any]?, statusCode: Int, error: Error?, completion: PostRequestResponseHandler?) {
-        if let error = error {
+    func handle(response: [String: Any]?,
+                statusCode: Int,
+                maybeError: Error?,
+                completion: PostRequestResponseHandler?) {
+        if let error = maybeError {
             completion?(ErrorUtils.networkError(withUnderlyingError: error))
             return
         }
@@ -568,11 +579,11 @@ private extension Backend {
 
     func handle(customerInfoResponse response: [String: Any]?,
                 statusCode: Int,
-                error: Error?,
+                maybeError: Error?,
                 file: String = #file,
                 function: String = #function,
                 completion: BackendCustomerInfoResponseHandler) {
-        if let error = error {
+        if let error = maybeError {
             completion(nil, ErrorUtils.networkError(withUnderlyingError: error, generatedBy: "\(file) \(function)"))
             return
         }
@@ -581,7 +592,7 @@ private extension Backend {
 
         let maybeCustomerInfo: CustomerInfo? = response == nil ? nil : CustomerInfo(data: response!)
         if !isErrorStatusCode && maybeCustomerInfo == nil {
-            completion(nil, ErrorUtils.unexpectedBackendResponseWithSubError(.customerInfoResponse))
+            completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: .customerInfoResponse))
             return
         }
 
