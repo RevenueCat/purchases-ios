@@ -57,6 +57,14 @@ class SK2BeginRefundRequestHelper {
         }
     }
 
+}
+
+@available(iOS 15.0, macCatalyst 15.0, *)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
+@available(macOS, unavailable)
+private extension SK2BeginRefundRequestHelper {
+
     private func getErrorMessage(from sk2Error: Error?) -> String {
         let details = sk2Error?.localizedDescription ?? "No extra info"
         if let skError = sk2Error as? StoreKit.Transaction.RefundRequestError {
@@ -73,12 +81,16 @@ class SK2BeginRefundRequestHelper {
         }
     }
 
+    /*
+     * - Parameter sk2Result: The Result returned from StoreKit2
+     * - Returns The result expected by `BeginRefundRequestHelper`, converting to our `RefundRequestStatus` type
+     * and adding more descriptive error messages where needed.
+     */
     private func mapSk2Result(from sk2Result: Result<StoreKit.Transaction.RefundRequestStatus, Error>) ->
         Result<RevenueCat.RefundRequestStatus, Error> {
         switch sk2Result {
         case .success(let sk2Status):
-            let rcStatus = RefundRequestStatus.from(sk2RefundRequestStatus: sk2Status)
-            if rcStatus == RefundRequestStatus.error {
+            guard let rcStatus = RefundRequestStatus.from(sk2RefundRequestStatus: sk2Status) else {
                 return .failure(ErrorUtils.beginRefundRequestError(
                     withMessage: Strings.purchase.unknown_refund_request_status.description))
             }
@@ -87,7 +99,6 @@ class SK2BeginRefundRequestHelper {
             let message = getErrorMessage(from: error)
             return .failure(ErrorUtils.beginRefundRequestError(withMessage: message))
         }
-
     }
 
 }
@@ -98,14 +109,14 @@ class SK2BeginRefundRequestHelper {
 @available(macOS, unavailable)
 private extension RefundRequestStatus {
     static func from(sk2RefundRequestStatus status: StoreKit.Transaction.RefundRequestStatus)
-        -> RefundRequestStatus {
+        -> RefundRequestStatus? {
         switch status {
         case .userCancelled:
             return .userCancelled
         case .success:
             return .success
         @unknown default:
-            return .error
+            return nil
         }
     }
 }

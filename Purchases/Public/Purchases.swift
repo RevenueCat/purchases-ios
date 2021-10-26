@@ -915,18 +915,18 @@ public extension Purchases {
     }
 
     /**
-     * Presents a refund request sheet for the transaction in the current window scene
+     * Presents a refund request sheet in the current window scene for the latest transaction associated with the productID 
      *
      * - Parameter productID: The productID to begin a refund request for.
      * - Parameter completion: A completion block that is called when the modal is closed.
      * If the request was successful, there will be a `RefundRequestStatus`.
      * Keep in mind the status could be `userCancelled`
-     * If ithe request was unsuccessful, there will be an `Error`.
+     * If the request was unsuccessful, there will be an `Error`.
      */
-    @available(iOS 15.0, *)
-    @available(macCatalyst 15.0, *)
+    @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
+    @available(macOS, unavailable)
     @objc func beginRefundRequest(for productID: String,
                                   completion: @escaping (RefundRequestStatus, Error?) -> Void) {
         purchasesOrchestrator.beginRefundRequest(for: productID, completion: completion)
