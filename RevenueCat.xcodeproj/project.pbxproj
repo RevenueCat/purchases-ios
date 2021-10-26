@@ -967,6 +967,7 @@
 				B3B5FBB3269CED4B00104A0C /* BackendErrorCode.swift */,
 				B3B5FBB5269CED6400104A0C /* ErrorDetails.swift */,
 				35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */,
+				B302206B2727436F008F1A0D /* UnexpectedBackendResponseSubErrorCode.swift */,
 			);
 			path = "Error Handling";
 			sourceTree = "<group>";
@@ -997,7 +998,6 @@
 			isa = PBXGroup;
 			children = (
 				B34D2AA526976FC700D88C3A /* ErrorCode.swift */,
-				B302206B2727436F008F1A0D /* UnexpectedBackendResponseSubErrorCode.swift */,
 			);
 			path = Errors;
 			sourceTree = "<group>";

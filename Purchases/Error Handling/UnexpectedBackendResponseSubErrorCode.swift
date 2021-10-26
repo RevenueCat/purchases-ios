@@ -13,7 +13,7 @@
 
 import Foundation
 
-@objc(RCUnexpectedBackendResponseSubErrorCode) public enum UnexpectedBackendResponseSubErrorCode: Int, Error {
+enum UnexpectedBackendResponseSubErrorCode: Int, Error {
 
     case unknown = 0
     case loginMissingResponse
