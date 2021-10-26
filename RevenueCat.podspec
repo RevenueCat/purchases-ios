@@ -23,8 +23,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '12.0'
   s.watchos.deployment_target = '6.2'
   s.tvos.deployment_target = '9.0'
-  # temporarily disabling macOS, since Xcode 13 isn't compatible with macOS 12.
-  # s.osx.deployment_target = '10.12'
+  s.osx.deployment_target = '10.12'
   
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
