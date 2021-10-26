@@ -158,24 +158,35 @@ import Foundation
 
     init?(data: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) {
         guard let subscriberObject = data["subscriber"] as? [String: Any] else {
-            Logger.error("Unable to find subscriber object in data: \(data.debugDescription)")
+            if Logger.logLevel == .debug {
+                Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(maybeJsonData: data))
+            } else {
+                // This may contain sensitive info, don't log everything if in production.
+                Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(maybeJsonData: nil))
+            }
+
             return nil
         }
 
         guard let subscriberData = SubscriberData(subscriberData: subscriberObject,
                                                   dateFormatter: dateFormatter,
                                                   transactionsFactory: transactionsFactory) else {
-            Logger.error("Unable to instantiate SubscriberData from \(subscriberObject.debugDescription)")
+            if Logger.logLevel == .debug {
+                Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberObject))
+            } else {
+                // This may contain sensitive info, don't log everything if in production.
+                Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: nil))
+            }
             return nil
         }
 
         guard let requestDateString = data["request_date"] as? String else {
-            Logger.error("Unable to parse 'request_date' from CustomerInfo")
+            Logger.error(Strings.customerInfo.cant_parse_request_date_from_json(maybeDate: data["request_date"]))
             return nil
         }
 
         guard let formattedRequestDate = dateFormatter.date(from: requestDateString) else {
-            Logger.error("Unable to parse date from: \(requestDateString)")
+            Logger.error(Strings.customerInfo.cant_parse_request_date_from_string(string: requestDateString))
             return nil
         }
 
