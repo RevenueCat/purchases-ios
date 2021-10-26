@@ -15,10 +15,11 @@ import Foundation
 @testable import RevenueCat
 import StoreKit
 
-@available(iOS 15.0, tvOS 15.0, *)
+@available(iOS 15.0, macCatalyst 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
-class MockRefundRequestHelperSK2: RefundRequestHelperSK2 {
+@available(macOS, unavailable)
+class MockRefundRequestHelperSK2: SK2BeginRefundRequestHelper {
 
     var mockError: Error?
     var mockStatus: StoreKit.Transaction.RefundRequestStatus?

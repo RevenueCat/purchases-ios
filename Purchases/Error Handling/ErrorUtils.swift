@@ -258,7 +258,7 @@ class ErrorUtils: NSObject {
     /**
      * Constructs an Error with the ``ErrorCode/beginRefundRequestError`` code.
      *
-     * - Note: This error is used when there is a problem related to the system info.
+     * - Note: This error is used when there is a problem beginning a refund request.
      */
     @objc static func beginRefundRequestError(withMessage: String, error: Error? = nil) -> Error {
         let errorCode = ErrorCode.beginRefundRequestError

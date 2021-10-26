@@ -17,10 +17,11 @@ class BeginRefundRequestHelper {
 
     private let systemInfo: SystemInfo
 
-    @available(iOS 15.0, tvOS 15.0, *)
+    @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    lazy var refundRequestHelperSK2 = RefundRequestHelperSK2()
+    @available(macOS, unavailable)
+    lazy var sk2Helper = SK2BeginRefundRequestHelper()
 
     init(systemInfo: SystemInfo) {
         self.systemInfo = systemInfo
@@ -29,6 +30,7 @@ class BeginRefundRequestHelper {
     @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
+    @available(macOS, unavailable)
     func beginRefundRequest(productID: String,
                             completion: @escaping (Result<RefundRequestStatus,
                                                    Error>) -> Void) {
@@ -50,24 +52,26 @@ class BeginRefundRequestHelper {
 @available(iOS 15.0, macCatalyst 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
+@available(macOS, unavailable)
 private extension BeginRefundRequestHelper {
 
     @MainActor
     @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
+    @available(macOS, unavailable)
     func beginRefundRequest(productID: String) async -> Result<RefundRequestStatus, Error> {
         guard let windowScene = systemInfo.sharedUIApplication?.currentWindowScene else {
             return .failure(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
         }
 
-        let transactionVerificationResult = await refundRequestHelperSK2.verifyTransaction(productID: productID)
+        let transactionVerificationResult = await sk2Helper.verifyTransaction(productID: productID)
 
         switch transactionVerificationResult {
         case .failure(let verificationError):
             return .failure(verificationError)
         case .success(let transactionID):
-            let sk2Result = await refundRequestHelperSK2.initiateRefundRequest(transactionID: transactionID,
+            let sk2Result = await sk2Helper.initiateRefundRequest(transactionID: transactionID,
                                                                                windowScene: windowScene)
             return sk2Result.map { RefundRequestStatus.from(sk2RefundRequestStatus: $0) }
         }
@@ -77,18 +81,18 @@ private extension BeginRefundRequestHelper {
 
 /// Status codes for refund requests
 @objc(RCRefundRequestStatus) public enum RefundRequestStatus: Int {
-    // TODO i personally find this confusing, should we make userCancelled an error?
     /// User canceled submission of the refund request
     case userCancelled = 0,
         /// Apple has received the refund request
          success,
-         // TODO should this be error or none or what, need to not require nullable enum in status
+        /// Something went wrong. See error details for more specifics
          error
 }
 
 @available(iOS 15.0, macCatalyst 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
+@available(macOS, unavailable)
 private extension RefundRequestStatus {
     static func from(sk2RefundRequestStatus status: StoreKit.Transaction.RefundRequestStatus)
         -> RefundRequestStatus {

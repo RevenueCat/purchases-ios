@@ -19,8 +19,9 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
     var mockError: Error?
     var mockRefundRequestStatus: RefundRequestStatus?
 
-    @available(iOS 15.0, macOS 15, *)
+    @available(iOS 15.0, macCatalyst 15, *)
     @available(watchOS, unavailable)
+    @available(macOS, unavailable)
     @available(tvOS, unavailable)
     override func beginRefundRequest(productID: String,
                                      completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
