@@ -115,7 +115,7 @@ commands:
 jobs:
   runtest:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -129,9 +129,9 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
-  buildTvAndWatch:
+  buildTvWatchAndMac:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -142,11 +142,11 @@ jobs:
       - install-dependencies
       - run:
           name: Build tvOS and watchOS
-          command: bundle exec fastlane build_tv_watch
+          command: bundle exec fastlane build_tv_watch_mac
 
   swift_apitest:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -159,7 +159,7 @@ jobs:
 
   objc_apitest:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -172,7 +172,7 @@ jobs:
 
   backend_integration_tests:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -193,7 +193,7 @@ jobs:
 
   deployment-checks: 
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -225,7 +225,7 @@ jobs:
           
   docs-deploy:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -249,7 +249,7 @@ jobs:
   
   make-release:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -262,7 +262,7 @@ jobs:
 
   prepare-next-version:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -275,7 +275,7 @@ jobs:
 
   integration-tests-cocoapods:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -296,7 +296,7 @@ jobs:
       
   integration-tests-swift-package-manager:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -308,7 +308,7 @@ jobs:
 
   integration-tests-carthage:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -338,7 +338,7 @@ jobs:
 
   integration-tests-xcode-direct-integration:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -349,7 +349,7 @@ jobs:
 
   lint:
     macos:
-      xcode: "13.0.0"
+      xcode: "13.1.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
@@ -375,7 +375,7 @@ workflows:
       - runtest
       - swift_apitest
       - objc_apitest
-      - buildTvAndWatch
+      - buildTvWatchAndMac
       - backend_integration_tests
       - deployment-checks: *release-branches
       - integration-tests-cocoapods: *release-tags-and-branches

@@ -149,10 +149,10 @@ platform :ios do
     check_no_github_release_exists(version_number)
   end
 
-  desc "tvOS, watchOS"
-  lane :build_tv_watch do |options|
+  desc "build tvOS, watchOS, macOS"
+  lane :build_tv_watch_mac do |options|
     check_pods(ignore_warnings: in_beta)
-    carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS", use_xcframeworks: true)
+    carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS,Mac", use_xcframeworks: true)
   end
 
   desc "macOS build"
@@ -182,6 +182,7 @@ platform :ios do
         app_identifier: ["com.revenuecat.SwiftAPITesterIOS"],
         username: ENV["FASTLANE_USER"])
       sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'SwiftAPITesterIOS')
+      sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'SwiftAPITester')
   end
   
   desc "build ObjC API tester"
@@ -194,6 +195,7 @@ platform :ios do
         app_identifier: ["com.revenuecat.ObjCAPITesterIOS"],
         username: ENV["FASTLANE_USER"])
       sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'ObjCAPITesterIOS')
+      sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'ObjCAPITester')
   end
 
   desc "replace API KEY for integration tests"
