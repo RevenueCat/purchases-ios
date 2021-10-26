@@ -28,20 +28,20 @@ class BeginRefundRequestHelperTests: XCTestCase {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
-    private lazy var sk2Helper = MockRefundRequestHelperSK2()
+    private lazy var sk2Helper = MockSK2BeginRefundRequestHelper()
 
     override func setUp() {
         systemInfo = try! MockSystemInfo(platformFlavor: "", platformFlavorVersion: "", finishTransactions: true)
         helper = BeginRefundRequestHelper(systemInfo: systemInfo)
 
         if #available(iOS 15.0, macCatalyst 15.0, *) {
-            helper.refundRequestHelperSK2 = sk2Helper
+            helper.sk2Helper = sk2Helper
         }
     }
 
     func testBeginRefundRequestFatalErrorIfNotIosOrCatalyst() {
         #if os(watchOS) || os(macOS) || os(tvOS)
-        expectFatalError(expectedMessage: "Tried to call beginRefundRequest in a platform that doesn't support it!") {
+        expectFatalError(expectedMessage: Strings.purchase.begin_refund_request_unsupported.description) {
             helper.beginRefundRequest(productID: mockProductID) { result in }
         }
         #endif
@@ -56,7 +56,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
 
         sk2Helper.transactionVerified = false
-        sk2Helper.mockError = expectedError
+        sk2Helper.mockSK2Error = expectedError
 
 
         var callbackCalled = false
@@ -83,7 +83,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        sk2Helper.mockStatus = StoreKit.Transaction.RefundRequestStatus.success
+        sk2Helper.mockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
         sk2Helper.transactionVerified = true
 
         var callbackCalled = false
@@ -109,7 +109,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        sk2Helper.mockStatus = StoreKit.Transaction.RefundRequestStatus.success
+        sk2Helper.mockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
 
         var callbackCalled = false
         var receivedResult: Result<RefundRequestStatus, Error>?
@@ -133,7 +133,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         }
 
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
-        sk2Helper.mockError = expectedError
+        sk2Helper.mockSK2Error = expectedError
 
         var callbackCalled = false
         var receivedResult: Result<RefundRequestStatus, Error>?
@@ -148,6 +148,10 @@ class BeginRefundRequestHelperTests: XCTestCase {
         expect(nonNilReceivedResult).to(beFailure { error in
             expect(error).to(matchError(expectedError))
         })
+    }
+
+    func testBeginRefundMapsSK2FailuresCorrectly(){
+        
     }
 #endif
 

@@ -11,8 +11,6 @@
 //
 //  Created by Madeline Beyl on 10/13/21.
 
-import StoreKit
-
 class BeginRefundRequestHelper {
 
     private let systemInfo: SystemInfo
@@ -42,7 +40,7 @@ class BeginRefundRequestHelper {
 
         return
 #else
-        fatalError("Tried to call beginRefundRequest in a platform that doesn't support it!")
+        fatalError(Strings.purchase.begin_refund_request_unsupported.description)
 #endif
     }
 
@@ -71,9 +69,8 @@ private extension BeginRefundRequestHelper {
         case .failure(let verificationError):
             return .failure(verificationError)
         case .success(let transactionID):
-            let sk2Result = await sk2Helper.initiateRefundRequest(transactionID: transactionID,
-                                                                               windowScene: windowScene)
-            return sk2Result.map { RefundRequestStatus.from(sk2RefundRequestStatus: $0) }
+            return await sk2Helper.initiateRefundRequest(transactionID: transactionID,
+                                                         windowScene: windowScene)
         }
     }
 
@@ -87,23 +84,5 @@ private extension BeginRefundRequestHelper {
          success,
         /// Something went wrong. See error details for more specifics
          error
-}
-
-@available(iOS 15.0, macCatalyst 15.0, *)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
-@available(macOS, unavailable)
-private extension RefundRequestStatus {
-    static func from(sk2RefundRequestStatus status: StoreKit.Transaction.RefundRequestStatus)
-        -> RefundRequestStatus {
-        switch status {
-        case .userCancelled:
-            return .userCancelled
-        case .success:
-            return .success
-        @unknown default:
-            return .error
-        }
-    }
 }
 #endif

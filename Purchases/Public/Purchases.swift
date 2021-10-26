@@ -919,7 +919,8 @@ public extension Purchases {
      *
      * - Parameter productID: The productID to begin a refund request for.
      * - Parameter completion: A completion block that is called when the modal is closed.
-     * If the request was successful, there will be a `RefundRequestStatus`. Keep in mind the status could be `userCancelled`
+     * If the request was successful, there will be a `RefundRequestStatus`.
+     * Keep in mind the status could be `userCancelled`
      * If ithe request was unsuccessful, there will be an `Error`.
      */
     @available(iOS 15.0, *)

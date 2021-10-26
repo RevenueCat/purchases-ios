@@ -37,12 +37,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-
         productsManager = MockProductsManager()
         storeKitWrapper = MockStoreKitWrapper()
-        systemInfo = try MockSystemInfo(platformFlavor: "xyz",
-                                        platformFlavorVersion: "1.2.3",
-                                        finishTransactions: true)
+        try setUpSystemInfo()
         operationDispatcher = MockOperationDispatcher()
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher())
         deviceCache = MockDeviceCache()
@@ -60,13 +57,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             deviceCache: deviceCache,
             attributionFetcher: attributionFetcher,
             attributionDataMigrator: MockAttributionDataMigrator())
-
         mockManageSubsModalHelper = MockManageSubscriptionsModalHelper(systemInfo: systemInfo,
                                                                        customerInfoManager: customerInfoManager,
                                                                        identityManager: identityManager)
-
         mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo)
-
         orchestrator = PurchasesOrchestrator(productsManager: productsManager,
                                              storeKitWrapper: storeKitWrapper,
                                              systemInfo: systemInfo,
@@ -80,18 +74,23 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                              deviceCache: deviceCache,
                                              manageSubscriptionsModalHelper: mockManageSubsModalHelper,
                                              beginRefundRequestHelper: mockBeginRefundRequestHelper)
+        setUpStoreKit2Listener()
+    }
+
+    fileprivate func setUpStoreKit2Listener() {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             orchestrator.storeKit2Listener = MockStoreKit2TransactionListener()
         }
     }
 
+    fileprivate func setUpSystemInfo() throws {
+        systemInfo = try MockSystemInfo(platformFlavor: "xyz",
+                                        platformFlavorVersion: "1.2.3",
+                                        finishTransactions: true)
+    }
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageReturnsCorrectValues() async throws {
-
-        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
@@ -124,10 +123,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageHandlesPurchaseResult() async throws {
-        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
@@ -149,10 +144,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageSendsReceiptToBackendIfSuccessful() async throws {
-        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
@@ -173,10 +164,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageSkipsIfPurchaseFailed() async throws {
-        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-
         guard SystemInfo.useStoreKit2IfAvailable else {
             throw XCTSkip("StoreKit 2 tests are disabled.")
         }

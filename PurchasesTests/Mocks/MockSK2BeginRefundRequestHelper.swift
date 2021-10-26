@@ -18,23 +18,23 @@ import StoreKit
 @available(iOS 15.0, macCatalyst 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
-@available(macOS, unavailable)
-class MockRefundRequestHelperSK2: SK2BeginRefundRequestHelper {
+@available(tvOS, unavailable)
+class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
 
-    var mockError: Error?
-    var mockStatus: StoreKit.Transaction.RefundRequestStatus?
+    var mockSK2Error: Error?
+    var mockSK2Status: StoreKit.Transaction.RefundRequestStatus?
     var transactionVerified = true
 
     var refundRequestCalled = false
     var verifyTransactionCalled = false
 
-    override func initiateRefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async ->
+    override func initiateSK2RefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async ->
         Result<StoreKit.Transaction.RefundRequestStatus, Error> {
         refundRequestCalled = true
-        if let error = mockError {
+        if let error = mockSK2Error {
             return .failure(error)
         } else {
-            return .success(mockStatus ?? StoreKit.Transaction.RefundRequestStatus.success)
+            return .success(mockSK2Status ?? StoreKit.Transaction.RefundRequestStatus.success)
         }
     }
 

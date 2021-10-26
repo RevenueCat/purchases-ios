@@ -28,9 +28,6 @@ class StoreKitConfigTestCase: XCTestCase {
     var userDefaults: UserDefaults!
 
     override func setUpWithError() throws {
-        guard #available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *) else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
         testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
         testSession.resetToDefaultState()
         testSession.disableDialogs = true
