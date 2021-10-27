@@ -249,7 +249,7 @@ class Backend {
                 completion(signature, keyIdentifier, maybeNonce, timestamp as NSNumber?, nil)
                 return
             } else {
-                Logger.debug(Strings.backendError.signature_error(maybeSignatureDataString: offer["signature_data"]))
+                Logger.error(Strings.backendError.signature_error(maybeSignatureDataString: offer["signature_data"]))
                 let signatureError = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferIdSignature)
                 completion(nil, nil, nil, nil, signatureError)
                 return

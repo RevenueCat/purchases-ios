@@ -15,14 +15,28 @@ import Foundation
 
 enum UnexpectedBackendResponseSubErrorCode: Int, Error {
 
-    case unknown = 0
-    case loginMissingResponse
+    // Login call returned with no response.
+    case loginMissingResponse = 0
+
+    // Login call failed due to a problem with the response.
     case loginResponseDecoding
+
+    // Received an empty response after posting an offer.
     case postOfferEmptyResponse
+
+    // Received a bad response after posting an offer- "offers" couldn't be read from response.
     case postOfferIdBadResponse
+
+    // Received a bad response after posting an offer- "offers" was totally missing.
     case postOfferIdMissingOffersInResponse
+
+    // Received a bad response after posting an offer- there was an issue with the signature.
     case postOfferIdSignature
+
+    // getOffer call failed with an invalid response.
     case getOfferUnexpectedResponse
+
+    // A call that is supposed to retrieve a CustomerInfo failed and we're not sure why.
     case customerInfoResponse
 
     var description: String {
@@ -43,8 +57,6 @@ enum UnexpectedBackendResponseSubErrorCode: Int, Error {
             return "Unknown error encountered while getting offerings."
         case .customerInfoResponse:
             return "Unable to instantiate a CustomerInfoResponse."
-        case .unknown:
-            return "Encountered an unknown sub-error code."
         }
     }
 

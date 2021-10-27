@@ -16,12 +16,25 @@ import Foundation
 // swiftlint:disable identifier_name
 enum BackendErrorStrings {
 
+    // A backend response came back after the Backend object was deallocated.
     case backend_deallocated
+
+    // Backend tried to instantiate a CustomerInfo but for some reason it couldn't.
     case customer_info_instantiation_error(maybeResponse: [String: Any]?)
+
+    // getOfferings response was totally empty.
     case offerings_empty_response
+
+    // getOfferings object was missing from response.
     case offerings_response_json_error(response: [String: Any])
+
+    // getOfferings response contained no offerings.
     case no_offerings_response_json(response: [String: Any])
+
+    // Posting offerIdForSigning failed due to a signature problem.
     case signature_error(maybeSignatureDataString: Any?)
+
+    // getOfferings failed and we're not totally sure why.
     case unknown_get_offerings_error(statusCode: Int, maybeResponseString: String?)
 
 }
