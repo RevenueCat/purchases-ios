@@ -158,25 +158,14 @@ import Foundation
 
     init?(data: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) {
         guard let subscriberObject = data["subscriber"] as? [String: Any] else {
-            if Logger.logLevel == .debug {
-                Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(maybeJsonData: data))
-            } else {
-                // This may contain sensitive info, don't log everything if in production.
-                Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(maybeJsonData: nil))
-            }
-
+            Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(maybeJsonData: data))
             return nil
         }
 
         guard let subscriberData = SubscriberData(subscriberData: subscriberObject,
                                                   dateFormatter: dateFormatter,
                                                   transactionsFactory: transactionsFactory) else {
-            if Logger.logLevel == .debug {
-                Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberObject))
-            } else {
-                // This may contain sensitive info, don't log everything if in production.
-                Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: nil))
-            }
+            Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberObject))
             return nil
         }
 

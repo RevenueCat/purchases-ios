@@ -496,12 +496,7 @@ private extension Backend {
         }
 
         guard let customerInfo = CustomerInfo(data: response) else {
-            if Logger.logLevel == .debug {
-                Logger.error(Strings.backendError.customer_info_instantiation_error(maybeResponse: response))
-            } else {
-                // This may contain sensitive info, don't log everything if in production.
-                Logger.error(Strings.backendError.customer_info_instantiation_error(maybeResponse: nil))
-            }
+            Logger.error(Strings.backendError.customer_info_instantiation_error(maybeResponse: response))
             let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: .loginResponseDecoding)
             completion(nil, false, responseError)
             return
