@@ -26,8 +26,8 @@ class ErrorUtils: NSObject {
      * - Note: This error is used when there is an error performing network request returns an error or when there
      * is an `NSJSONSerialization` error.
      */
-    static func networkError(withUnderlyingError underlyingError: Error) -> Error {
-        return error(with: .networkError, underlyingError: underlyingError)
+    static func networkError(withUnderlyingError underlyingError: Error, generatedBy: String? = nil) -> Error {
+        return error(with: .networkError, underlyingError: underlyingError, generatedBy: generatedBy)
     }
 
     /**
@@ -72,10 +72,21 @@ class ErrorUtils: NSObject {
     /**
      * Constructs an Error with the ``ErrorCode/unexpectedBackendResponseError`` code.
      *
-     * - Note: This error is used when an network request returns an unexpected response.
+     * - Note: This error is used when a network request returns an unexpected response.
      */
     static func unexpectedBackendResponseError() -> Error {
         return error(with: ErrorCode.unexpectedBackendResponseError)
+    }
+
+    /**
+     * Constructs an Error with the ``ErrorCode/unexpectedBackendResponseError`` code which contains an underlying
+     * ``UnexpectedBackendResponseSubErrorCode``
+     *
+     * - Note: This error is used when a network request returns an unexpected response and we can determine some
+     * of what went wrong with the response.
+     */
+    static func unexpectedBackendResponse(withSubError subError: UnexpectedBackendResponseSubErrorCode) -> Error {
+        return backendResponseError(withSubError: subError)
     }
 
     /**
@@ -259,12 +270,15 @@ private extension ErrorUtils {
     static func error(with code: ErrorCode,
                       message: String? = nil,
                       underlyingError: Error? = nil,
+                      generatedBy: String? = nil,
                       extraUserInfo: [NSError.UserInfoKey: Any]? = nil) -> Error {
         var userInfo = extraUserInfo ?? [:]
         userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = message ?? code.description
         if let maybeUnderlyingError = underlyingError {
             userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = maybeUnderlyingError
         }
+        userInfo[ErrorDetails.generatedByKey] = generatedBy
+
         userInfo[ErrorDetails.readableErrorCodeKey] = code.codeName
 
         switch code {
@@ -296,8 +310,23 @@ private extension ErrorUtils {
             break
         }
         let nsError = code as NSError
-        let nsErrorWithUserInfo = NSError(domain: nsError.domain, code: nsError.code,
-                userInfo: userInfo as [String: Any])
+        let nsErrorWithUserInfo = NSError(domain: nsError.domain,
+                                          code: nsError.code,
+                                          userInfo: userInfo as [String: Any])
+        return nsErrorWithUserInfo as Error
+    }
+
+    static func backendResponseError(withSubError subError: UnexpectedBackendResponseSubErrorCode) -> Error {
+        var userInfo: [NSError.UserInfoKey: Any] = [:]
+        userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = subError.description
+        userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = subError
+        userInfo[ErrorDetails.readableErrorCodeKey] = ErrorCode.unexpectedBackendResponseError.codeName
+        Logger.error(subError.description)
+
+        let nsError = ErrorCode.unexpectedBackendResponseError as NSError
+        let nsErrorWithUserInfo = NSError(domain: nsError.domain,
+                                          code: nsError.code,
+                                          userInfo: userInfo as [String: Any])
         return nsErrorWithUserInfo as Error
     }
 
