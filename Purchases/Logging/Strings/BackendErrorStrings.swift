@@ -17,7 +17,7 @@ import Foundation
 enum BackendErrorStrings {
 
     case backend_deallocated
-    case customer_info_instantiation_error(response: [String: Any]?)
+    case customer_info_instantiation_error(maybeResponse: [String: Any]?)
     case offerings_empty_response
     case offerings_response_json_error(response: [String: Any])
     case no_offerings_response_json(response: [String: Any])
@@ -32,9 +32,9 @@ extension BackendErrorStrings: CustomStringConvertible {
         switch self {
         case .backend_deallocated:
             return "Received response from getOfferings but Backend was already deallocated, response will be ignored."
-        case .customer_info_instantiation_error(let response):
+        case .customer_info_instantiation_error(let maybeResponse):
             var message = "Login failed, unable to instantiate \(CustomerInfo.self)"
-            if let response = response {
+            if let response = maybeResponse {
                 message += " from:\n \(response.debugDescription)"
             }
             return message

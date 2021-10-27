@@ -42,7 +42,7 @@ enum UnexpectedBackendResponseSubErrorCode: Int, Error {
         case .getOfferUnexpectedResponse:
             return "Unknown error encountered while getting offerings."
         case .customerInfoResponse:
-            return "Unable to instantiate a CustomerInfoResponse"
+            return "Unable to instantiate a CustomerInfoResponse."
         case .unknown:
             return "Encountered an unknown sub-error code."
         }
