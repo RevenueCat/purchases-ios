@@ -19,6 +19,7 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
     var mockError: Error?
     var mockRefundRequestStatus: RefundRequestStatus?
 
+#if os(iOS) || os(macOS)
     @available(iOS 15.0, macCatalyst 15, *)
     @available(watchOS, unavailable)
     @available(macOS, unavailable)
@@ -31,5 +32,6 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
             completion(.success(mockRefundRequestStatus ?? RefundRequestStatus.success))
         }
     }
+#endif
 
 }

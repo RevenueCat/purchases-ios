@@ -11,6 +11,8 @@
 //
 //  Created by Madeline Beyl on 10/13/21.
 
+import Foundation
+
 class BeginRefundRequestHelper {
 
     private let systemInfo: SystemInfo

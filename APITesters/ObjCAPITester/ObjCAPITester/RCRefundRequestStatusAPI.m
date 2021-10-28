@@ -11,11 +11,11 @@
 @implementation RCRefundRequestStatusAPI
 
 + (void) checkEnums {
-    RCRefundRequestStatus status = RCRefundRequestStatusSuccess;
+    RCRefundRequestStatus status = RCRefundRequestSuccess;
     switch(status) {
-        case RCRefundRequestStatusSuccess:
-        case RCRefundRequestStatusError:
-        case RCRefundRequestStatusUserCancelled:
+        case RCRefundRequestSuccess:
+        case RCRefundRequestError:
+        case RCRefundRequestUserCancelled:
             NSLog(@"%ld", (long)status);
     }
 }
