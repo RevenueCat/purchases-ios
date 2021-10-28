@@ -147,6 +147,8 @@ shouldPurchasePromoProduct:skp
                                                          RCCustomerInfo * _Nullable info,
                                                          NSError * _Nullable error,
                                                          BOOL cancelled)) {}];
+
+    [p beginRefundRequestFor:@"asdf" completion:^(RCRefundRequestStatus s, NSError *e) { }];
 }
 
 + (void)checkEnums {

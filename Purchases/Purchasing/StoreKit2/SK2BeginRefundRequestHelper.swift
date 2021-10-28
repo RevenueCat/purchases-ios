@@ -13,7 +13,9 @@
 
 import Foundation
 import StoreKit
+#if os(iOS) || targetEnvironment(macCatalyst)
 import UIKit
+#endif
 
 @available(iOS 15.0, macCatalyst 15.0, *)
 @available(watchOS, unavailable)
