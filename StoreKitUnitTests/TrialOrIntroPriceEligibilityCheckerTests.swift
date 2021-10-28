@@ -139,6 +139,9 @@ class TrialOrIntroPriceEligibilityCheckerTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK2CheckEligibilityAsync() async throws {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
         try setUpSK2WithError()
 
         let products = ["product_id",
@@ -161,6 +164,9 @@ class TrialOrIntroPriceEligibilityCheckerTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testCheckEligibilityNoAsync() throws {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
         try setUpSK2WithError()
 
         let products = ["product_id",

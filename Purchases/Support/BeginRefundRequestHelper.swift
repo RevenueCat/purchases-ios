@@ -79,10 +79,10 @@ private extension BeginRefundRequestHelper {
 /// Status codes for refund requests
 @objc(RCRefundRequestStatus) public enum RefundRequestStatus: Int {
     /// User canceled submission of the refund request
-    case userCancelled = 0,
-         /// Apple has received the refund request
-         success,
-         /// There was an error with the request. See message for more details
-         error
+    @objc(RCRefundRequestUserCancelled) case userCancelled = 0
+     /// Apple has received the refund request
+    @objc(RCRefundRequestSuccess) case success
+     /// There was an error with the request. See message for more details
+    @objc(RCRefundRequestError) case error
 }
 #endif

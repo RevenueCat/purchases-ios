@@ -91,6 +91,11 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageReturnsCorrectValues() async throws {
+
+        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
@@ -123,6 +128,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageHandlesPurchaseResult() async throws {
+        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
@@ -144,6 +153,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageSendsReceiptToBackendIfSuccessful() async throws {
+        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptCustomerInfo = mockCustomerInfo
 
@@ -164,6 +177,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageSkipsIfPurchaseFailed() async throws {
+        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
         guard SystemInfo.useStoreKit2IfAvailable else {
             throw XCTSkip("StoreKit 2 tests are disabled.")
         }

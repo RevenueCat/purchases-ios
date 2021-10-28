@@ -915,7 +915,8 @@ public extension Purchases {
     }
 
     /**
-     * Presents a refund request sheet in the current window scene for the latest transaction associated with the productID 
+     * Presents a refund request sheet in the current window scene for
+     * the latest transaction associated with the productID
      *
      * - Parameter productID: The productID to begin a refund request for.
      * - Parameter completion: A completion block that is called when the modal is closed.
