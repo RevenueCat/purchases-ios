@@ -15,11 +15,13 @@ class BeginRefundRequestHelper {
 
     private let systemInfo: SystemInfo
 
+#if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @available(macOS, unavailable)
     lazy var sk2Helper = SK2BeginRefundRequestHelper()
+#endif
 
     init(systemInfo: SystemInfo) {
         self.systemInfo = systemInfo
@@ -75,6 +77,7 @@ private extension BeginRefundRequestHelper {
     }
 
 }
+#endif
 
 /// Status codes for refund requests
 @objc(RCRefundRequestStatus) public enum RefundRequestStatus: Int {
@@ -85,4 +88,3 @@ private extension BeginRefundRequestHelper {
      /// There was an error with the request. See message for more details
     @objc(RCRefundRequestError) case error
 }
-#endif
