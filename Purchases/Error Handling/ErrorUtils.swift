@@ -85,8 +85,10 @@ class ErrorUtils: NSObject {
      * - Note: This error is used when a network request returns an unexpected response and we can determine some
      * of what went wrong with the response.
      */
-    static func unexpectedBackendResponse(withSubError subError: UnexpectedBackendResponseSubErrorCode) -> Error {
-        return backendResponseError(withSubError: subError)
+    static func unexpectedBackendResponse(withSubError subError: UnexpectedBackendResponseSubErrorCode,
+                                          generatedBy: String? = nil,
+                                          extraContext: String? = nil) -> Error {
+        return backendResponseError(withSubError: subError, generatedBy: generatedBy, extraContext: extraContext)
     }
 
     /**
@@ -316,11 +318,15 @@ private extension ErrorUtils {
         return nsErrorWithUserInfo as Error
     }
 
-    static func backendResponseError(withSubError subError: UnexpectedBackendResponseSubErrorCode) -> Error {
+    static func backendResponseError(withSubError subError: UnexpectedBackendResponseSubErrorCode,
+                                     generatedBy: String?,
+                                     extraContext: String?) -> Error {
         var userInfo: [NSError.UserInfoKey: Any] = [:]
         userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = subError.description
         userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = subError
         userInfo[ErrorDetails.readableErrorCodeKey] = ErrorCode.unexpectedBackendResponseError.codeName
+        userInfo[ErrorDetails.generatedByKey] = generatedBy
+        userInfo[ErrorDetails.extraContextKey] = extraContext
         Logger.error(subError.description)
 
         let nsError = ErrorCode.unexpectedBackendResponseError as NSError

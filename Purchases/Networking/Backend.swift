@@ -577,7 +577,7 @@ private extension Backend {
         completion?(nil)
     }
 
-    func handle(customerInfoResponse response: [String: Any]?,
+    func handle(customerInfoResponse maybeResponse: [String: Any]?,
                 statusCode: Int,
                 maybeError: Error?,
                 file: String = #file,
@@ -590,13 +590,23 @@ private extension Backend {
 
         let isErrorStatusCode = statusCode >= HTTPStatusCodes.redirect.rawValue
 
-        let maybeCustomerInfo: CustomerInfo? = response == nil ? nil : CustomerInfo(data: response!)
+        let maybeCustomerInfo: CustomerInfo? = maybeResponse == nil ? nil : CustomerInfo(data: maybeResponse!)
         if !isErrorStatusCode && maybeCustomerInfo == nil {
-            completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: .customerInfoResponse))
+            let subError: UnexpectedBackendResponseSubErrorCode
+            let extraContext = "statusCode: \(statusCode), json:\(maybeResponse.debugDescription)"
+            if maybeResponse == nil {
+                subError = .customerInfoResponseMissing
+            } else {
+                subError = .customerInfoResponseParsing
+
+            }
+            completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: subError,
+                                                                 generatedBy: "\(file) \(function)",
+                                                                 extraContext: extraContext))
             return
         }
 
-        let subscriberAttributesErrorInfo = attributesUserInfoFromResponse(response: response ?? [:],
+        let subscriberAttributesErrorInfo = attributesUserInfoFromResponse(response: maybeResponse ?? [:],
                                                                            statusCode: statusCode)
 
         let hasError = (isErrorStatusCode || subscriberAttributesErrorInfo[Backend.RCAttributeErrorsKey] != nil)
@@ -605,8 +615,8 @@ private extension Backend {
             let finishable = statusCode < HTTPStatusCodes.internalServerError.rawValue
             var extraUserInfo = [ErrorDetails.finishableKey: finishable] as [String: Any]
             extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
-            let backendErrorCode = BackendErrorCode(maybeCode: response?["code"])
-            let message = response?["message"] as? String
+            let backendErrorCode = BackendErrorCode(maybeCode: maybeResponse?["code"])
+            let message = maybeResponse?["message"] as? String
             let responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode,
                                                         backendMessage: message,
                                                         extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
