@@ -152,31 +152,33 @@ import Foundation
 
     let schemaVersion: String?
 
-    convenience init?(data: [String: Any]) {
-        self.init(data: data, dateFormatter: .iso8601SecondsDateFormatter, transactionsFactory: TransactionsFactory())
+    convenience init(data: [String: Any]) throws {
+        try self.init(data: data,
+                      dateFormatter: .iso8601SecondsDateFormatter,
+                      transactionsFactory: TransactionsFactory())
     }
 
-    init?(data: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) {
+    init(data: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) throws {
         guard let subscriberObject = data["subscriber"] as? [String: Any] else {
             Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(maybeJsonData: data))
-            return nil
+            throw CustomerInfoError.missingJsonObject
         }
 
         guard let subscriberData = SubscriberData(subscriberData: subscriberObject,
                                                   dateFormatter: dateFormatter,
                                                   transactionsFactory: transactionsFactory) else {
             Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberObject))
-            return nil
+            throw CustomerInfoError.cantInstantiateJsonObject
         }
 
         guard let requestDateString = data["request_date"] as? String else {
             Logger.error(Strings.customerInfo.cant_parse_request_date_from_json(maybeDate: data["request_date"]))
-            return nil
+            throw CustomerInfoError.requestDateFromJson
         }
 
         guard let formattedRequestDate = dateFormatter.date(from: requestDateString) else {
             Logger.error(Strings.customerInfo.cant_parse_request_date_from_string(string: requestDateString))
-            return nil
+            throw CustomerInfoError.requestDateFromString
         }
 
         self.dateFormatter = dateFormatter
@@ -274,6 +276,28 @@ import Foundation
 
             self.allPurchases = latestNonSubscriptionTransactionsByProductId
                             .merging(subscriptionTransactionsByProductId) { (current, _) in current }
+        }
+    }
+
+}
+
+enum CustomerInfoError: Int, Error, DescribableError {
+
+    case missingJsonObject
+    case cantInstantiateJsonObject
+    case requestDateFromJson
+    case requestDateFromString
+
+    var description: String {
+        switch self {
+        case .missingJsonObject:
+            return "Unable to read property \"subscriber\" from json."
+        case .cantInstantiateJsonObject:
+            return "json appears to be in an unexpected format."
+        case .requestDateFromJson:
+            return "Unable to read property \"request_date\" from json."
+        case .requestDateFromString:
+            return "Unable to parse a date from json propery \"request_date\"."
         }
     }
 

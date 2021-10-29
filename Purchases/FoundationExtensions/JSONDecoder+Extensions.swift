@@ -103,9 +103,10 @@ private extension ErrorUtils {
         case .dataCorrupted(let context):
             Logger.error(Strings.codable.corrupted_data_error(context: context))
         case .keyNotFound(let key, let context):
-            Logger.error(Strings.codable.keyNotFoundError(key: key, context: context))
+            // This is expected to happen occasionally, the backend doesn't always populate all key/values.
+            Logger.debug(Strings.codable.keyNotFoundError(key: key, context: context))
         case .valueNotFound(let value, let context):
-            Logger.error(Strings.codable.valueNotFoundError(value: value, context: context))
+            Logger.debug(Strings.codable.valueNotFoundError(value: value, context: context))
         case .typeMismatch(let type, let context):
             Logger.error(Strings.codable.typeMismatch(type: type, context: context))
         default:

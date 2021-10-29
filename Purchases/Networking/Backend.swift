@@ -205,21 +205,24 @@ class Backend {
             }
 
             guard let response = maybeResponse else {
-                let error = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferEmptyResponse)
+                let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferEmptyResponse
+                let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 Logger.debug(Strings.backendError.offerings_empty_response)
                 completion(nil, nil, nil, nil, error)
                 return
             }
 
             guard let offers = response["offers"] as? [[String: Any]] else {
-                let error = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferIdBadResponse)
+                let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdBadResponse
+                let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 Logger.debug(Strings.backendError.offerings_response_json_error(response: response))
                 completion(nil, nil, nil, nil, error)
                 return
             }
 
             guard offers.count > 0 else {
-                let error = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferIdMissingOffersInResponse)
+                let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdMissingOffersInResponse
+                let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 Logger.debug(Strings.backendError.no_offerings_response_json(response: response))
                 completion(nil, nil, nil, nil, error)
                 return
@@ -250,7 +253,8 @@ class Backend {
                 return
             } else {
                 Logger.error(Strings.backendError.signature_error(maybeSignatureDataString: offer["signature_data"]))
-                let signatureError = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferIdSignature)
+                let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdSignature
+                let signatureError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 completion(nil, nil, nil, nil, signatureError)
                 return
             }
@@ -362,7 +366,8 @@ class Backend {
                 errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode,
                                                             backendMessage: backendMessage)
             } else {
-                errorForCallbacks = ErrorUtils.unexpectedBackendResponse(withSubError: .getOfferUnexpectedResponse)
+                let subErrorCode = UnexpectedBackendResponseSubErrorCode.getOfferUnexpectedResponse
+                errorForCallbacks = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
             }
 
             let responseString = maybeResponse?.debugDescription
@@ -482,7 +487,8 @@ private extension Backend {
         }
 
         guard let response = maybeResponse else {
-            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: .loginMissingResponse)
+            let subErrorCode = UnexpectedBackendResponseSubErrorCode.loginMissingResponse
+            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
             completion(nil, false, responseError)
             return
         }
@@ -495,16 +501,18 @@ private extension Backend {
             return
         }
 
-        guard let customerInfo = CustomerInfo(data: response) else {
+        do {
+            let customerInfo = try CustomerInfo(data: response)
+            let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
+            Logger.user(Strings.identity.login_success)
+            completion(customerInfo, created, nil)
+        } catch {
             Logger.error(Strings.backendError.customer_info_instantiation_error(maybeResponse: response))
-            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: .loginResponseDecoding)
+            let subErrorCode = UnexpectedBackendResponseSubErrorCode.loginResponseDecoding
+            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
             completion(nil, false, responseError)
             return
         }
-
-        let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
-        Logger.user(Strings.identity.login_success)
-        completion(customerInfo, created, nil)
     }
 
     func attributesUserInfoFromResponse(response: [String: Any], statusCode: Int) -> [String: Any] {
@@ -577,6 +585,21 @@ private extension Backend {
         completion?(nil)
     }
 
+    func parseCustomerInfo(fromMaybeResponse maybeResponse: [String: Any]?) throws -> CustomerInfo {
+        guard let customerJson = maybeResponse else {
+            let subError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseMalformed
+            throw subError
+        }
+
+        do {
+            return try CustomerInfo(data: customerJson)
+        } catch {
+            let parsingError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseParsing
+            let subError = ErrorUtils.attach(subError: error, toError: parsingError)
+            throw subError
+        }
+    }
+
     func handle(customerInfoResponse maybeResponse: [String: Any]?,
                 statusCode: Int,
                 maybeError: Error?,
@@ -587,20 +610,21 @@ private extension Backend {
             completion(nil, ErrorUtils.networkError(withUnderlyingError: error, generatedBy: "\(file) \(function)"))
             return
         }
-
         let isErrorStatusCode = statusCode >= HTTPStatusCodes.redirect.rawValue
 
-        let maybeCustomerInfo: CustomerInfo? = maybeResponse == nil ? nil : CustomerInfo(data: maybeResponse!)
-        if !isErrorStatusCode && maybeCustomerInfo == nil {
-            let subError: UnexpectedBackendResponseSubErrorCode
-            let extraContext = "statusCode: \(statusCode), json:\(maybeResponse.debugDescription)"
-            if maybeResponse == nil {
-                subError = .customerInfoResponseMissing
-            } else {
-                subError = .customerInfoResponseParsing
+        let maybeError: Error?
+        let customerInfo: CustomerInfo?
+        do {
+            customerInfo = try self.parseCustomerInfo(fromMaybeResponse: maybeResponse)
+            maybeError = nil
+        } catch let customerInfoError {
+            customerInfo = nil
+            maybeError = customerInfoError
+        }
 
-            }
-            completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: subError,
+        if !isErrorStatusCode && customerInfo == nil {
+            let extraContext = "statusCode: \(statusCode), json:\(maybeResponse.debugDescription)"
+            completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: maybeError,
                                                                  generatedBy: "\(file) \(function)",
                                                                  extraContext: extraContext))
             return
@@ -617,14 +641,15 @@ private extension Backend {
             extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
             let backendErrorCode = BackendErrorCode(maybeCode: maybeResponse?["code"])
             let message = maybeResponse?["message"] as? String
-            let responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode,
+            var responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode,
                                                         backendMessage: message,
                                                         extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
-            completion(maybeCustomerInfo, responseError)
+            responseError = ErrorUtils.attach(subError: maybeError, toError: responseError)
+            completion(customerInfo, responseError)
             return
         }
 
-        completion(maybeCustomerInfo, nil)
+        completion(customerInfo, nil)
     }
 
     func escapedAppUserID(appUserID: String) throws -> String {
@@ -747,6 +772,13 @@ private extension Backend {
             return callbacks ?? []
         }
     }
+
+}
+
+private struct CustomerInfoResponseTuple {
+
+    let maybeCustomerInfo: CustomerInfo?
+    let maybeError: Error?
 
 }
 

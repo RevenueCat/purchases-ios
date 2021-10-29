@@ -36,11 +36,15 @@ enum UnexpectedBackendResponseSubErrorCode: Int, Error {
     // getOffer call failed with an invalid response.
     case getOfferUnexpectedResponse
 
-    // A call that is supposed to retrieve a CustomerInfo failed because the response object was missing.
-    case customerInfoResponseMissing
+    // A call that is supposed to retrieve a CustomerInfo failed because the response object was malformed.
+    case customerInfoResponseMalformed
 
     // A call that is supposed to retrieve a CustomerInfo failed because the json object couldn't be parsed.
     case customerInfoResponseParsing
+
+}
+
+extension UnexpectedBackendResponseSubErrorCode: DescribableError {
 
     var description: String {
         switch self {
@@ -58,8 +62,8 @@ enum UnexpectedBackendResponseSubErrorCode: Int, Error {
             return "Signature error encountered in response returned from posting offer for signing."
         case .getOfferUnexpectedResponse:
             return "Unknown error encountered while getting offerings."
-        case .customerInfoResponseMissing:
-            return "Unable to instantiate a CustomerInfoResponse, backend response missing."
+        case .customerInfoResponseMalformed:
+            return "Unable to instantiate a CustomerInfoResponse, backend response is malformed."
         case .customerInfoResponseParsing:
             return "Unable to instantiate a CustomerInfoResponse due to malformed json."
         }

@@ -126,8 +126,19 @@ class CustomerInfoManager {
 
         do {
             let maybeInfoDict = try JSONSerialization.jsonObject(with: customerInfoData) as? [String: Any]
-            guard let customerInfoDict = maybeInfoDict,
-                  let info = CustomerInfo(data: customerInfoDict) else {
+            guard let customerInfoDict = maybeInfoDict else {
+                return nil
+            }
+
+            let info: CustomerInfo
+            do {
+                info = try CustomerInfo(data: customerInfoDict)
+            } catch {
+                if let customerInfoError = error as? CustomerInfoError {
+                    Logger.error(customerInfoError.description)
+                } else {
+                    Logger.error("Error loading customer info from cache: \(error)")
+                }
                 return nil
             }
 

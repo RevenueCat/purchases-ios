@@ -79,7 +79,7 @@ class PurchasesTests: XCTestCase {
         var timeout = false
         var getSubscriberCallCount = 0
         var overrideCustomerInfoError: Error? = nil
-        var overrideCustomerInfo = CustomerInfo(data: [
+        var overrideCustomerInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -171,7 +171,8 @@ class PurchasesTests: XCTestCase {
         override func getOfferings(appUserID: String, completion: @escaping OfferingsResponseHandler) {
             gotOfferings += 1
             if (failOfferings) {
-                completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: .getOfferUnexpectedResponse))
+                let subError = UnexpectedBackendResponseSubErrorCode.getOfferUnexpectedResponse
+                completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: subError))
                 return
             }
             if (badOfferingsResponse) {
@@ -369,7 +370,7 @@ class PurchasesTests: XCTestCase {
 
     func testFirstInitializationFromBackgroundCallsDelegateForAnonIfInfoCached() {
         systemInfo.stubbedIsApplicationBackgrounded = true
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -425,13 +426,13 @@ class PurchasesTests: XCTestCase {
     func testDelegateIsCalledForRandomPurchaseSuccess() {
         setupPurchases()
 
-        let customerInfo = CustomerInfo(data: emptyCustomerInfoData)
+        let customerInfo = CustomerInfo(testData: emptyCustomerInfoData)
         self.backend.postReceiptCustomerInfo = customerInfo
 
         let product = MockSKProduct(mockProductIdentifier: "product")
         let payment = SKPayment(product: product)
 
-        let customerInfoBeforePurchase = CustomerInfo(data: [
+        let customerInfoBeforePurchase = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -439,7 +440,7 @@ class PurchasesTests: XCTestCase {
                 "subscriptions": [:],
                 "non_subscriptions": [:]
             ]])
-        let customerInfoAfterPurchase = CustomerInfo(data: [
+        let customerInfoAfterPurchase = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -467,7 +468,7 @@ class PurchasesTests: XCTestCase {
     func testDelegateIsOnlyCalledOnceIfCustomerInfoTheSame() {
         setupPurchases()
 
-        let customerInfo1 = CustomerInfo(data: [
+        let customerInfo1 = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -505,7 +506,7 @@ class PurchasesTests: XCTestCase {
     func testDelegateIsCalledTwiceIfCustomerInfoTheDifferent() {
         setupPurchases()
 
-        let customerInfo1 = CustomerInfo(data: [
+        let customerInfo1 = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -516,7 +517,7 @@ class PurchasesTests: XCTestCase {
             ]
             ])
 
-        let customerInfo2 = CustomerInfo(data: [
+        let customerInfo2 = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -733,7 +734,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptCustomerInfo = CustomerInfo(data: emptyCustomerInfoData)
+        self.backend.postReceiptCustomerInfo = CustomerInfo(testData: emptyCustomerInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -756,7 +757,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptCustomerInfo = CustomerInfo(data: self.emptyCustomerInfoData)
+        self.backend.postReceiptCustomerInfo = CustomerInfo(testData: self.emptyCustomerInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -780,7 +781,7 @@ class PurchasesTests: XCTestCase {
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-            self.backend.postReceiptCustomerInfo = CustomerInfo(data: self.emptyCustomerInfoData)
+            self.backend.postReceiptCustomerInfo = CustomerInfo(testData: self.emptyCustomerInfoData)
 
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -829,7 +830,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptCustomerInfo = CustomerInfo(data: emptyCustomerInfoData)
+        self.backend.postReceiptCustomerInfo = CustomerInfo(testData: emptyCustomerInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -941,7 +942,7 @@ class PurchasesTests: XCTestCase {
         var receivedError: Error?
         var receivedUserCancelled: Bool?
 
-        let customerInfoBeforePurchase = CustomerInfo(data: [
+        let customerInfoBeforePurchase = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -949,7 +950,7 @@ class PurchasesTests: XCTestCase {
                 "subscriptions": [:],
                 "non_subscriptions": [:]
             ]])
-        let customerInfoAfterPurchase = CustomerInfo(data: [
+        let customerInfoAfterPurchase = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -991,7 +992,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = self.storeKitWrapper.payment!
 
-        self.backend.postReceiptCustomerInfo = CustomerInfo(data: emptyCustomerInfoData)
+        self.backend.postReceiptCustomerInfo = CustomerInfo(testData: emptyCustomerInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
 
@@ -1015,7 +1016,7 @@ class PurchasesTests: XCTestCase {
         let transaction = MockTransaction()
         transaction.mockPayment = SKPayment.init(product: otherProduct)
 
-        self.backend.postReceiptCustomerInfo = CustomerInfo(data: self.emptyCustomerInfoData)
+        self.backend.postReceiptCustomerInfo = CustomerInfo(testData: self.emptyCustomerInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
 
@@ -1134,7 +1135,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testRestoringPurchasesDoesntPostIfReceiptEmptyAndCustomerInfoLoaded() {
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -1168,7 +1169,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testRestoringPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoLoaded() {
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1225,7 +1226,7 @@ class PurchasesTests: XCTestCase {
     func testRestoringPurchasesCallsSuccessDelegateMethod() {
         setupPurchases()
 
-        let customerInfo = CustomerInfo(data: self.emptyCustomerInfoData)
+        let customerInfo = CustomerInfo(testData: self.emptyCustomerInfoData)
         self.backend.postReceiptCustomerInfo = customerInfo
 
         var receivedCustomerInfo: CustomerInfo?
@@ -1264,7 +1265,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testSyncPurchasesDoesntPostIfReceiptEmptyAndCustomerInfoLoaded() {
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1298,7 +1299,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testSyncPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoLoaded() {
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1378,7 +1379,7 @@ class PurchasesTests: XCTestCase {
     func testSyncPurchasesCallsSuccessDelegateMethod() {
         setupPurchases()
 
-        let customerInfo = CustomerInfo(data: self.emptyCustomerInfoData)
+        let customerInfo = CustomerInfo(testData: self.emptyCustomerInfoData)
         self.backend.postReceiptCustomerInfo = customerInfo
 
         var receivedCustomerInfo: CustomerInfo?
@@ -1534,7 +1535,7 @@ class PurchasesTests: XCTestCase {
     func testFetchVersionSendsAReceiptIfNoVersion() {
         setupPurchases()
 
-        self.backend.postReceiptCustomerInfo = CustomerInfo(data: [
+        self.backend.postReceiptCustomerInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1580,7 +1581,7 @@ class PurchasesTests: XCTestCase {
 
         expect(self.deviceCache.cachedCustomerInfo.count).toEventually(equal(1))
 
-        self.backend.postReceiptCustomerInfo = CustomerInfo(data: [
+        self.backend.postReceiptCustomerInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1609,7 +1610,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testCachedCustomerInfoHasSchemaVersion() {
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1636,7 +1637,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testCachedCustomerInfoHandlesNullSchema() {
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1665,7 +1666,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testSendsCachedCustomerInfoToGetter() {
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1689,7 +1690,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testCustomerInfoCompletionBlockCalledExactlyOnceWhenInfoCached() {
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1714,7 +1715,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testDoesntSendsCachedCustomerInfoToGetterIfSchemaVersionDiffers() {
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1741,7 +1742,7 @@ class PurchasesTests: XCTestCase {
     }
 
     func testDoesntSendsCachedCustomerInfoToGetterIfNoSchemaVersionInCached() {
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1807,7 +1808,7 @@ class PurchasesTests: XCTestCase {
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-            self.backend.postReceiptCustomerInfo = CustomerInfo(data: self.emptyCustomerInfoData)
+            self.backend.postReceiptCustomerInfo = CustomerInfo(testData: self.emptyCustomerInfoData)
 
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -1900,7 +1901,7 @@ class PurchasesTests: XCTestCase {
 
     func testCreateAliasUpdatesCaches() {
         setupPurchases()
-        self.backend.overrideCustomerInfo = CustomerInfo(data: [
+        self.backend.overrideCustomerInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1951,7 +1952,7 @@ class PurchasesTests: XCTestCase {
     func testIdentifyUpdatesCaches() {
         setupPurchases()
 
-        self.backend.overrideCustomerInfo = CustomerInfo(data: [
+        self.backend.overrideCustomerInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -1988,7 +1989,7 @@ class PurchasesTests: XCTestCase {
 
     func testResetUpdatesCaches() {
         setupPurchases()
-        self.backend.overrideCustomerInfo = CustomerInfo(data: [
+        self.backend.overrideCustomerInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -2422,7 +2423,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptCustomerInfo = CustomerInfo(data: self.emptyCustomerInfoData)
+        self.backend.postReceiptCustomerInfo = CustomerInfo(testData: self.emptyCustomerInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2444,7 +2445,7 @@ class PurchasesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptCustomerInfo = CustomerInfo(data: self.emptyCustomerInfoData)
+        self.backend.postReceiptCustomerInfo = CustomerInfo(testData: self.emptyCustomerInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2524,7 +2525,7 @@ class PurchasesTests: XCTestCase {
             transaction.mockState = SKPaymentTransactionState.purchasing
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
 
-            self.backend.postReceiptCustomerInfo = CustomerInfo(data: self.emptyCustomerInfoData)
+            self.backend.postReceiptCustomerInfo = CustomerInfo(testData: self.emptyCustomerInfoData)
 
             transaction.mockState = SKPaymentTransactionState.purchased
             self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
@@ -2584,7 +2585,7 @@ class PurchasesTests: XCTestCase {
 
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
-        self.backend.postReceiptCustomerInfo = CustomerInfo(data: self.emptyCustomerInfoData)
+        self.backend.postReceiptCustomerInfo = CustomerInfo(testData: self.emptyCustomerInfoData)
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
     }
@@ -2615,7 +2616,7 @@ class PurchasesTests: XCTestCase {
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "product")
 
-        let customerInfoBeforePurchase = CustomerInfo(data: [
+        let customerInfoBeforePurchase = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -2623,7 +2624,7 @@ class PurchasesTests: XCTestCase {
                 "subscriptions": [:],
                 "non_subscriptions": [:]
             ]])
-        let customerInfoAfterPurchase = CustomerInfo(data: [
+        let customerInfoAfterPurchase = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -2710,7 +2711,7 @@ class PurchasesTests: XCTestCase {
         let appUserID = identityManager.currentAppUserID
         let oldAppUserInfo = Data()
         self.deviceCache.cache(customerInfo: oldAppUserInfo, appUserID: appUserID)
-        let overrideCustomerInfo = CustomerInfo(data: [
+        let overrideCustomerInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",

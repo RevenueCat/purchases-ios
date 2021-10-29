@@ -523,7 +523,11 @@ class BackendTests: XCTestCase {
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect(error?.code).toEventually(be(ErrorCode.invalidCredentialsError.rawValue))
+        let unexpectedBackendError = error?.userInfo[ErrorDetails.extraContextKey as String] as? NSError
+        let customerInfoError = unexpectedBackendError?.userInfo[ErrorDetails.extraContextKey as String] as! CustomerInfoError
+
+        expect(customerInfoError.rawValue).to(equal(CustomerInfoError.missingJsonObject.rawValue))
+        expect(error?.code).toEventually(equal(ErrorCode.invalidCredentialsError.rawValue))
         expect(error?.userInfo["finishable"]).to(be(false))
 
         expect(underlyingError).toEventuallyNot(beNil())
@@ -1773,9 +1777,8 @@ class BackendTests: XCTestCase {
         }
 
         expect(completionCalled).toEventually(beTrue())
-
         expect(receivedCreated) == true
-        expect(receivedCustomerInfo) == CustomerInfo(data: mockCustomerInfoDict)
+        expect(receivedCustomerInfo) == CustomerInfo(testData: mockCustomerInfoDict)
         expect(receivedError).to(beNil())
     }
 
@@ -1805,7 +1808,7 @@ class BackendTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
 
         expect(receivedCreated) == false
-        expect(receivedCustomerInfo) == CustomerInfo(data: mockCustomerInfoDict)
+        expect(receivedCustomerInfo) == CustomerInfo(testData: mockCustomerInfoDict)
         expect(receivedError).to(beNil())
     }
 
