@@ -511,7 +511,6 @@ private extension Backend {
             let subErrorCode = UnexpectedBackendResponseSubErrorCode.loginResponseDecoding
             let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
             completion(nil, false, responseError)
-            return
         }
     }
 
@@ -613,16 +612,16 @@ private extension Backend {
         let isErrorStatusCode = statusCode >= HTTPStatusCodes.redirect.rawValue
 
         let maybeError: Error?
-        let customerInfo: CustomerInfo?
+        let maybeCustomerInfo: CustomerInfo?
         do {
-            customerInfo = try self.parseCustomerInfo(fromMaybeResponse: maybeResponse)
+            maybeCustomerInfo = try self.parseCustomerInfo(fromMaybeResponse: maybeResponse)
             maybeError = nil
         } catch let customerInfoError {
-            customerInfo = nil
+            maybeCustomerInfo = nil
             maybeError = customerInfoError
         }
 
-        if !isErrorStatusCode && customerInfo == nil {
+        if !isErrorStatusCode && maybeCustomerInfo == nil {
             let extraContext = "statusCode: \(statusCode), json:\(maybeResponse.debugDescription)"
             completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: maybeError,
                                                                  generatedBy: "\(file) \(function)",
@@ -645,11 +644,11 @@ private extension Backend {
                                                         backendMessage: message,
                                                         extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
             responseError = ErrorUtils.attach(subError: maybeError, toError: responseError)
-            completion(customerInfo, responseError)
+            completion(maybeCustomerInfo, responseError)
             return
         }
 
-        completion(customerInfo, nil)
+        completion(maybeCustomerInfo, nil)
     }
 
     func escapedAppUserID(appUserID: String) throws -> String {
@@ -772,13 +771,6 @@ private extension Backend {
             return callbacks ?? []
         }
     }
-
-}
-
-private struct CustomerInfoResponseTuple {
-
-    let maybeCustomerInfo: CustomerInfo?
-    let maybeError: Error?
 
 }
 
