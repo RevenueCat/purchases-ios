@@ -588,9 +588,7 @@ private extension Backend {
             return try CustomerInfo(data: customerJson)
         } catch {
             let parsingError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseParsing
-            let subError = ErrorUtils.attach(error: error,
-                                             toError: parsingError,
-                                             extraContext: customerJson.stringRepresentation)
+            let subError = parsingError.attaching(error: error, extraContext: customerJson.stringRepresentation)
             throw subError
         }
     }
@@ -639,9 +637,8 @@ private extension Backend {
             var responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode,
                                                         backendMessage: message,
                                                         extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
-            responseError = ErrorUtils.attach(error: maybeError,
-                                              toError: responseError,
-                                              extraContext: maybeResponse?.stringRepresentation)
+            responseError = responseError.attaching(error: maybeError,
+                                                    extraContext: maybeResponse?.stringRepresentation)
             completion(maybeCustomerInfo, responseError)
             return
         }

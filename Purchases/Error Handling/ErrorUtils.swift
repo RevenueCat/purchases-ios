@@ -261,24 +261,6 @@ extension ErrorUtils {
                      extraUserInfo: extraUserInfo)
     }
 
-    // Addes a sub-error to the userInfo of the `error` object as some extra context. Sometimes we have multiple error
-    // Conditions but only a single place to surface them. This adds the second error as extra context to help during
-    // debugging.
-    static func attach(error maybeError: Error?, toError error: Error, extraContext: String? = nil) -> Error {
-        guard let attachedError = maybeError else {
-            return error
-        }
-
-        var userInfo = (error as NSError).userInfo as [NSError.UserInfoKey: Any]
-        userInfo[ErrorDetails.attachedErrorKey] = attachedError
-        userInfo[ErrorDetails.extraContextKey] = extraContext
-        let ogError = error as NSError
-        let nsErrorWithUserInfo = NSError(domain: ogError.domain,
-                                          code: ogError.code,
-                                          userInfo: userInfo as [String: Any])
-        return nsErrorWithUserInfo as Error
-    }
-
 }
 
 private extension ErrorUtils {
