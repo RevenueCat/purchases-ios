@@ -281,7 +281,7 @@ import Foundation
 
 }
 
-enum CustomerInfoError: Int, Error, DescribableError {
+enum CustomerInfoError: Int, DescribableError {
 
     case missingJsonObject
     case cantInstantiateJsonObject
