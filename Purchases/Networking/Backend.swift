@@ -17,7 +17,7 @@ typealias SubscriberAttributeDict = [String: SubscriberAttribute]
 typealias BackendCustomerInfoResponseHandler = (CustomerInfo?, Error?) -> Void
 typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], Error?) -> Void
 typealias OfferingsResponseHandler = ([String: Any]?, Error?) -> Void
-typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumber?, Error?) -> Void
+typealias OfferSigningResponseHandler = (String?, String?, UUID?, Int?, Error?) -> Void
 typealias PostRequestResponseHandler = (Error?) -> Void
 typealias IdentifyResponseHandler = (CustomerInfo?, Bool, Error?) -> Void
 
@@ -214,7 +214,8 @@ class Backend {
 
             guard let offers = response["offers"] as? [[String: Any]] else {
                 let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdBadResponse
-                let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
+                let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
+                                                                 extraContext: response.stringRepresentation)
                 Logger.debug(Strings.backendError.offerings_response_json_error(response: response))
                 completion(nil, nil, nil, nil, error)
                 return
@@ -240,16 +241,9 @@ class Backend {
                 let signature = signatureData["signature"] as? String
                 let keyIdentifier = offer["key_id"] as? String
                 let nonceString = signatureData["nonce"] as? String
-                let maybeNonce: UUID?
-                if let nonceString = nonceString {
-                    maybeNonce = UUID(uuidString: nonceString)
-                } else {
-                    maybeNonce = nil
-                }
+                let maybeNonce: UUID? = nonceString.flatMap { UUID(uuidString: $0) }
 
-                let timestamp = signatureData["timestamp"] as? Int
-
-                completion(signature, keyIdentifier, maybeNonce, timestamp as NSNumber?, nil)
+                completion(signature, keyIdentifier, maybeNonce, signatureData["timestamp"] as? Int, nil)
                 return
             } else {
                 Logger.error(Strings.backendError.signature_error(maybeSignatureDataString: offer["signature_data"]))

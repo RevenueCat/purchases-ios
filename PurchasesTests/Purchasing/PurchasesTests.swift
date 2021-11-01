@@ -239,7 +239,11 @@ class PurchasesTests: XCTestCase {
                            appUserID: String,
                            completion: @escaping OfferSigningResponseHandler) {
             postOfferForSigningCalled = true
-            completion(postOfferForSigningPaymentDiscountResponse["signature"] as? String, postOfferForSigningPaymentDiscountResponse["keyIdentifier"] as? String, postOfferForSigningPaymentDiscountResponse["nonce"] as? UUID, postOfferForSigningPaymentDiscountResponse["timestamp"] as? NSNumber, postOfferForSigningError)
+            completion(postOfferForSigningPaymentDiscountResponse["signature"] as? String,
+                       postOfferForSigningPaymentDiscountResponse["keyIdentifier"] as? String,
+                       postOfferForSigningPaymentDiscountResponse["nonce"] as? UUID,
+                       postOfferForSigningPaymentDiscountResponse["timestamp"] as? Int,
+                       postOfferForSigningError)
         }
     }
 
