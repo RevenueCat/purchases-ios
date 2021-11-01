@@ -56,7 +56,7 @@ extension ErrorCode: CaseIterable { }
 
 extension ErrorCode: DescribableError {
 
-    var description: String {
+    public var description: String {
         switch self {
         case .networkError:
             return "Error performing request."

@@ -13,8 +13,4 @@
 
 import Foundation
 
-protocol DescribableError: Error {
-
-    var description: String { get }
-
-}
+protocol DescribableError: Error, CustomStringConvertible { }

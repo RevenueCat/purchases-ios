@@ -241,7 +241,7 @@ class Backend {
                 let signature = signatureData["signature"] as? String
                 let keyIdentifier = offer["key_id"] as? String
                 let nonceString = signatureData["nonce"] as? String
-                let maybeNonce: UUID? = nonceString.flatMap { UUID(uuidString: $0) }
+                let maybeNonce = nonceString.flatMap { UUID(uuidString: $0) }
 
                 completion(signature, keyIdentifier, maybeNonce, signatureData["timestamp"] as? Int, nil)
                 return
@@ -580,8 +580,7 @@ private extension Backend {
 
     func parseCustomerInfo(fromMaybeResponse maybeResponse: [String: Any]?) throws -> CustomerInfo {
         guard let customerJson = maybeResponse else {
-            let subError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseMalformed
-            throw subError
+            throw UnexpectedBackendResponseSubErrorCode.customerInfoResponseMalformed
         }
 
         do {

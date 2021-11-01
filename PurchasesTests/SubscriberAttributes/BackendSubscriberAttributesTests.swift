@@ -371,11 +371,11 @@ class BackendSubscriberAttributesTests: XCTestCase {
 
         let unexpectedBackendError = receivedError?.userInfo[ErrorDetails.attachedErrorKey as String] as? NSError
         let customerInfoError = unexpectedBackendError?.userInfo[ErrorDetails.attachedErrorKey as String] as? NSError
-        expect(customerInfoError as? CustomerInfoError).to(equal(CustomerInfoError.missingJsonObject))
+        expect(customerInfoError as? CustomerInfoError) == CustomerInfoError.missingJsonObject
         expect(receivedError).toNot(beNil())
         guard let nonNilReceivedError = receivedError else { fatalError() }
-        expect(nonNilReceivedError.successfullySynced).to(equal(true))
-        expect(nonNilReceivedError.subscriberAttributesErrors).to(equal(attributeErrors[Backend.RCAttributeErrorsKey]))
+        expect(nonNilReceivedError.successfullySynced) == true
+        expect(nonNilReceivedError.subscriberAttributesErrors) == attributeErrors[Backend.RCAttributeErrorsKey]
     }
 
     func testPostReceiptWithSubscriberAttributesPassesErrorsToCallbackIfStatusCodeIsSuccess() {
