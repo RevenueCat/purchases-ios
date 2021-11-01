@@ -523,9 +523,12 @@ class BackendTests: XCTestCase {
         })
 
         expect(error).toEventuallyNot(beNil())
-        let unexpectedBackendError = error?.userInfo[ErrorDetails.extraContextKey as String] as? NSError
-        let customerInfoError = unexpectedBackendError?.userInfo[ErrorDetails.extraContextKey as String] as! CustomerInfoError
+        let attachedErrorKey = ErrorDetails.attachedErrorKey as String
+        let unexpectedBackendError = error?.userInfo[attachedErrorKey] as? NSError
+        let customerInfoError = unexpectedBackendError?.userInfo[attachedErrorKey] as! CustomerInfoError
+        let extraContextString = unexpectedBackendError?.userInfo[ErrorDetails.extraContextKey as String] as! String
 
+        expect(extraContextString).to(equal("code=7225,message=something is bad up in the cloud"))
         expect(customerInfoError.rawValue).to(equal(CustomerInfoError.missingJsonObject.rawValue))
         expect(error?.code).toEventually(equal(ErrorCode.invalidCredentialsError.rawValue))
         expect(error?.userInfo["finishable"]).to(be(false))

@@ -16,8 +16,14 @@ import Foundation
 
 extension Dictionary {
 
+    var stringRepresentation: String {
+        compactMap { "\($0)=\($1)" }
+        .sorted()
+        .joined(separator: ",")
+    }
+
     func removingNSNullValues() -> Dictionary {
-        self.filter { !($0.value is NSNull) }
+        filter { !($0.value is NSNull) }
     }
 
 }

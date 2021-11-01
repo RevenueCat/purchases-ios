@@ -369,8 +369,8 @@ class BackendSubscriberAttributesTests: XCTestCase {
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
 
 
-        let unexpectedBackendError = receivedError?.userInfo[ErrorDetails.extraContextKey as String] as? NSError
-        let customerInfoError = unexpectedBackendError?.userInfo[ErrorDetails.extraContextKey as String] as? NSError
+        let unexpectedBackendError = receivedError?.userInfo[ErrorDetails.attachedErrorKey as String] as? NSError
+        let customerInfoError = unexpectedBackendError?.userInfo[ErrorDetails.attachedErrorKey as String] as? NSError
         expect(customerInfoError as? CustomerInfoError).to(equal(CustomerInfoError.missingJsonObject))
         expect(receivedError).toNot(beNil())
         guard let nonNilReceivedError = receivedError else { fatalError() }
