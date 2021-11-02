@@ -242,8 +242,9 @@ class Backend {
                 let keyIdentifier = offer["key_id"] as? String
                 let nonceString = signatureData["nonce"] as? String
                 let maybeNonce = nonceString.flatMap { UUID(uuidString: $0) }
+                let timestamp = signatureData["timestamp"] as? Int
 
-                completion(signature, keyIdentifier, maybeNonce, signatureData["timestamp"] as? Int, nil)
+                completion(signature, keyIdentifier, maybeNonce, timestamp, nil)
                 return
             } else {
                 Logger.error(Strings.backendError.signature_error(maybeSignatureDataString: offer["signature_data"]))
