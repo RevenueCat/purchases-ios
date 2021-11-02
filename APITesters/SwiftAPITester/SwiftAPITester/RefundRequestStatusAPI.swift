@@ -10,10 +10,10 @@ import RevenueCat
 
 var refundStatus: RefundRequestStatus!
 func testEnums() {
-    switch refundStatus {
-    case .userCancelled:
-    case .success:
-    case .error:
-        print(refundStatus)
+    switch refundStatus! {
+    case .userCancelled,
+            .success,
+            .error:
+        print(refundStatus!)
     }
 }

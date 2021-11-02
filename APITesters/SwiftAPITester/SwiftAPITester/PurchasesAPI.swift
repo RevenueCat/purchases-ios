@@ -118,9 +118,9 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(package: pack, discount: skmd) { _, _, _, _  in }
     purchases.invalidateCustomerInfoCache()
 
-    let beginRefundRequestCompletion = (Result<RefundRequestStatus, Error?>) -> Void = { _, in }
+    let beginRefundRequestCompletion: (RefundRequestStatus, Error?) -> Void = { _, _ in }
     purchases.beginRefundRequest(for: "asdf", completion: beginRefundRequestCompletion)
-    purchases.beginRefundRequest(for: "asdf") { _, in }
+    purchases.beginRefundRequest(for: "asdf") { _, _ in }
 
     // PurchasesDelegate
     let customerInfo: CustomerInfo? = nil
