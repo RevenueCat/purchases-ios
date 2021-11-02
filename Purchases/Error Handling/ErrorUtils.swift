@@ -85,8 +85,12 @@ class ErrorUtils: NSObject {
      * - Note: This error is used when a network request returns an unexpected response and we can determine some
      * of what went wrong with the response.
      */
-    static func unexpectedBackendResponse(withSubError subError: UnexpectedBackendResponseSubErrorCode) -> Error {
-        return backendResponseError(withSubError: subError)
+    static func unexpectedBackendResponse(withSubError maybeSubError: Error?,
+                                          generatedBy maybeGeneratedBy: String? = nil,
+                                          extraContext maybeExtraContext: String? = nil) -> Error {
+        return backendResponseError(withSubError: maybeSubError,
+                                    generatedBy: maybeGeneratedBy,
+                                    extraContext: maybeExtraContext)
     }
 
     /**
@@ -246,10 +250,10 @@ private extension SKError {
 extension ErrorUtils {
 
     static func backendError(withBackendCode backendCode: BackendErrorCode,
-                             backendMessage: String?,
+                             backendMessage maybeBackendMessage: String?,
                              extraUserInfo: [NSError.UserInfoKey: Any]? = nil) -> Error {
         let errorCode = backendCode.toPurchasesErrorCode()
-        let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: backendMessage)
+        let underlyingError = backendUnderlyingError(backendCode: backendCode, backendMessage: maybeBackendMessage)
 
         return error(with: errorCode,
                      message: errorCode.description,
@@ -316,12 +320,17 @@ private extension ErrorUtils {
         return nsErrorWithUserInfo as Error
     }
 
-    static func backendResponseError(withSubError subError: UnexpectedBackendResponseSubErrorCode) -> Error {
+    static func backendResponseError(withSubError maybeSubError: Error?,
+                                     generatedBy maybeGeneratedBy: String?,
+                                     extraContext maybeExtraContext: String?) -> Error {
         var userInfo: [NSError.UserInfoKey: Any] = [:]
-        userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = subError.description
-        userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = subError
+        let describableSubError = maybeSubError as? DescribableError
+        let errorDescription = describableSubError?.description ?? ErrorCode.unexpectedBackendResponseError.description
+        userInfo[NSLocalizedDescriptionKey as NSError.UserInfoKey] = errorDescription
+        userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = maybeSubError
         userInfo[ErrorDetails.readableErrorCodeKey] = ErrorCode.unexpectedBackendResponseError.codeName
-        Logger.error(subError.description)
+        userInfo[ErrorDetails.generatedByKey] = maybeGeneratedBy
+        userInfo[ErrorDetails.extraContextKey] = maybeExtraContext
 
         let nsError = ErrorCode.unexpectedBackendResponseError as NSError
         let nsErrorWithUserInfo = NSError(domain: nsError.domain,

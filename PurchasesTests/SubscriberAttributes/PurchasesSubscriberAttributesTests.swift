@@ -187,7 +187,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
     }
 
     func testSubscriberAttributesSyncIsPerformedAfterCustomerInfoSync() {
-        mockBackend.stubbedGetSubscriberDataCustomerInfo = CustomerInfo(data: [
+        mockBackend.stubbedGetSubscriberDataCustomerInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -577,7 +577,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         transaction.mockState = SKPaymentTransactionState.purchasing
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)
 
-        self.mockBackend.stubbedPostReceiptCustomerInfo = CustomerInfo(data: emptyCustomerInfoData)
+        self.mockBackend.stubbedPostReceiptCustomerInfo = CustomerInfo(testData: emptyCustomerInfoData)
 
         transaction.mockState = SKPaymentTransactionState.purchased
         self.mockStoreKitWrapper.delegate?.storeKitWrapper(self.mockStoreKitWrapper, updatedTransaction: transaction)

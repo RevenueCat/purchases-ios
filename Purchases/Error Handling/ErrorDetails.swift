@@ -19,5 +19,6 @@ class ErrorDetails: NSObject {
     static let finishableKey: NSError.UserInfoKey = "finishable"
     static let readableErrorCodeKey: NSError.UserInfoKey = "readable_error_code"
     static let generatedByKey: NSError.UserInfoKey = "generated_by"
+    static let extraContextKey: NSError.UserInfoKey = "extra_context"
 
 }

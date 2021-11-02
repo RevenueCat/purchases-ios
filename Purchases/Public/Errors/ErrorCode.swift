@@ -54,10 +54,9 @@ import Foundation
 
 extension ErrorCode: CaseIterable { }
 
-extension ErrorCode {
+extension ErrorCode: DescribableError {
 
-    var description: String {
-
+    public var description: String {
         switch self {
         case .networkError:
             return "Error performing request."
@@ -127,8 +126,11 @@ extension ErrorCode {
         @unknown default:
             return "Something went wrong."
         }
-
     }
+
+}
+
+extension ErrorCode {
 
     /**
      * The error short string, based on the error code.

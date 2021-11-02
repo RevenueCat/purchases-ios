@@ -17,7 +17,7 @@ typealias SubscriberAttributeDict = [String: SubscriberAttribute]
 typealias BackendCustomerInfoResponseHandler = (CustomerInfo?, Error?) -> Void
 typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], Error?) -> Void
 typealias OfferingsResponseHandler = ([String: Any]?, Error?) -> Void
-typealias OfferSigningResponseHandler = (String?, String?, UUID?, NSNumber?, Error?) -> Void
+typealias OfferSigningResponseHandler = (String?, String?, UUID?, Int?, Error?) -> Void
 typealias PostRequestResponseHandler = (Error?) -> Void
 typealias IdentifyResponseHandler = (CustomerInfo?, Bool, Error?) -> Void
 
@@ -205,21 +205,25 @@ class Backend {
             }
 
             guard let response = maybeResponse else {
-                let error = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferEmptyResponse)
+                let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferEmptyResponse
+                let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 Logger.debug(Strings.backendError.offerings_empty_response)
                 completion(nil, nil, nil, nil, error)
                 return
             }
 
             guard let offers = response["offers"] as? [[String: Any]] else {
-                let error = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferIdBadResponse)
+                let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdBadResponse
+                let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode,
+                                                                 extraContext: response.stringRepresentation)
                 Logger.debug(Strings.backendError.offerings_response_json_error(response: response))
                 completion(nil, nil, nil, nil, error)
                 return
             }
 
             guard offers.count > 0 else {
-                let error = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferIdMissingOffersInResponse)
+                let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdMissingOffersInResponse
+                let error = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 Logger.debug(Strings.backendError.no_offerings_response_json(response: response))
                 completion(nil, nil, nil, nil, error)
                 return
@@ -237,20 +241,15 @@ class Backend {
                 let signature = signatureData["signature"] as? String
                 let keyIdentifier = offer["key_id"] as? String
                 let nonceString = signatureData["nonce"] as? String
-                let maybeNonce: UUID?
-                if let nonceString = nonceString {
-                    maybeNonce = UUID(uuidString: nonceString)
-                } else {
-                    maybeNonce = nil
-                }
-
+                let maybeNonce = nonceString.flatMap { UUID(uuidString: $0) }
                 let timestamp = signatureData["timestamp"] as? Int
 
-                completion(signature, keyIdentifier, maybeNonce, timestamp as NSNumber?, nil)
+                completion(signature, keyIdentifier, maybeNonce, timestamp, nil)
                 return
             } else {
                 Logger.error(Strings.backendError.signature_error(maybeSignatureDataString: offer["signature_data"]))
-                let signatureError = ErrorUtils.unexpectedBackendResponse(withSubError: .postOfferIdSignature)
+                let subErrorCode = UnexpectedBackendResponseSubErrorCode.postOfferIdSignature
+                let signatureError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
                 completion(nil, nil, nil, nil, signatureError)
                 return
             }
@@ -362,7 +361,8 @@ class Backend {
                 errorForCallbacks = ErrorUtils.backendError(withBackendCode: backendCode,
                                                             backendMessage: backendMessage)
             } else {
-                errorForCallbacks = ErrorUtils.unexpectedBackendResponse(withSubError: .getOfferUnexpectedResponse)
+                let subErrorCode = UnexpectedBackendResponseSubErrorCode.getOfferUnexpectedResponse
+                errorForCallbacks = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
             }
 
             let responseString = maybeResponse?.debugDescription
@@ -482,7 +482,8 @@ private extension Backend {
         }
 
         guard let response = maybeResponse else {
-            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: .loginMissingResponse)
+            let subErrorCode = UnexpectedBackendResponseSubErrorCode.loginMissingResponse
+            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
             completion(nil, false, responseError)
             return
         }
@@ -495,16 +496,17 @@ private extension Backend {
             return
         }
 
-        guard let customerInfo = CustomerInfo(data: response) else {
+        do {
+            let customerInfo = try CustomerInfo(data: response)
+            let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
+            Logger.user(Strings.identity.login_success)
+            completion(customerInfo, created, nil)
+        } catch {
             Logger.error(Strings.backendError.customer_info_instantiation_error(maybeResponse: response))
-            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: .loginResponseDecoding)
+            let subErrorCode = UnexpectedBackendResponseSubErrorCode.loginResponseDecoding
+            let responseError = ErrorUtils.unexpectedBackendResponse(withSubError: subErrorCode)
             completion(nil, false, responseError)
-            return
         }
-
-        let created = statusCode == HTTPStatusCodes.createdSuccess.rawValue
-        Logger.user(Strings.identity.login_success)
-        completion(customerInfo, created, nil)
     }
 
     func attributesUserInfoFromResponse(response: [String: Any], statusCode: Int) -> [String: Any] {
@@ -577,39 +579,81 @@ private extension Backend {
         completion?(nil)
     }
 
-    func handle(customerInfoResponse response: [String: Any]?,
+    func parseCustomerInfo(fromMaybeResponse maybeResponse: [String: Any]?) throws -> CustomerInfo {
+        guard let customerJson = maybeResponse else {
+            throw UnexpectedBackendResponseSubErrorCode.customerInfoResponseMalformed
+        }
+
+        do {
+            return try CustomerInfo(data: customerJson)
+        } catch {
+            let parsingError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseParsing
+            let subError = parsingError.addingUnderlyingError(error,
+                                                              extraContext: customerJson.stringRepresentation)
+            throw subError
+        }
+    }
+
+    // swiftlint:disable function_body_length
+    func handle(customerInfoResponse maybeResponse: [String: Any]?,
                 statusCode: Int,
                 maybeError: Error?,
                 file: String = #file,
                 function: String = #function,
                 completion: BackendCustomerInfoResponseHandler) {
+        // swiftlint:enable function_body_length
         if let error = maybeError {
             completion(nil, ErrorUtils.networkError(withUnderlyingError: error, generatedBy: "\(file) \(function)"))
             return
         }
-
         let isErrorStatusCode = statusCode >= HTTPStatusCodes.redirect.rawValue
 
-        let maybeCustomerInfo: CustomerInfo? = response == nil ? nil : CustomerInfo(data: response!)
+        let maybeCustomerInfoError: Error?
+        let maybeCustomerInfo: CustomerInfo?
+
+        if !isErrorStatusCode {
+            // Only attempt to parse a response if we don't have an error status code from the backend.
+            do {
+                maybeCustomerInfo = try parseCustomerInfo(fromMaybeResponse: maybeResponse)
+                maybeCustomerInfoError = nil
+            } catch let customerInfoError {
+                maybeCustomerInfo = nil
+                maybeCustomerInfoError = customerInfoError
+            }
+        } else {
+            maybeCustomerInfoError = nil
+            maybeCustomerInfo = nil
+        }
+
         if !isErrorStatusCode && maybeCustomerInfo == nil {
-            completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: .customerInfoResponse))
+            let extraContext = "statusCode: \(statusCode), json:\(maybeResponse.debugDescription)"
+            completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: maybeCustomerInfoError,
+                                                                 generatedBy: "\(file) \(function)",
+                                                                 extraContext: extraContext))
             return
         }
 
-        let subscriberAttributesErrorInfo = attributesUserInfoFromResponse(response: response ?? [:],
+        let subscriberAttributesErrorInfo = attributesUserInfoFromResponse(response: maybeResponse ?? [:],
                                                                            statusCode: statusCode)
 
-        let hasError = (isErrorStatusCode || subscriberAttributesErrorInfo[Backend.RCAttributeErrorsKey] != nil)
+        let hasError = (isErrorStatusCode
+                        || subscriberAttributesErrorInfo[Backend.RCAttributeErrorsKey] != nil
+                        || maybeCustomerInfoError != nil)
 
         guard !hasError else {
             let finishable = statusCode < HTTPStatusCodes.internalServerError.rawValue
             var extraUserInfo = [ErrorDetails.finishableKey: finishable] as [String: Any]
             extraUserInfo.merge(subscriberAttributesErrorInfo) { _, new in new }
-            let backendErrorCode = BackendErrorCode(maybeCode: response?["code"])
-            let message = response?["message"] as? String
-            let responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode,
+            let backendErrorCode = BackendErrorCode(maybeCode: maybeResponse?["code"])
+            let message = maybeResponse?["message"] as? String
+            var responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode,
                                                         backendMessage: message,
                                                         extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
+            if let maybeCustomerInfoError = maybeCustomerInfoError {
+                responseError = maybeCustomerInfoError
+                    .addingUnderlyingError(responseError, extraContext: maybeResponse?.stringRepresentation)
+            }
+
             completion(maybeCustomerInfo, responseError)
             return
         }

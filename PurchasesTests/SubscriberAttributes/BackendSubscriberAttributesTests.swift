@@ -313,6 +313,53 @@ class BackendSubscriberAttributesTests: XCTestCase {
         expect(requestBody["attributes"] as? [String: NSObject]) == expectedBody
     }
 
+    func testPostReceiptWithSubscriberAttributesReturnsBadJson() {
+        let subscriberAttributesByKey: [String: SubscriberAttribute] = [
+            subscriberAttribute1.key: subscriberAttribute1,
+            subscriberAttribute2.key: subscriberAttribute2
+        ]
+
+        var maybeReceivedError: Error? = nil
+        var maybeCustomerInfo: CustomerInfo? = nil
+        backend.post(receiptData: receiptData,
+                     appUserID: appUserID,
+                     isRestore: false,
+                     productInfo: nil,
+                     presentedOfferingIdentifier: nil,
+                     observerMode: false,
+                     subscriberAttributes: subscriberAttributesByKey,
+                     completion: { (customerInfo, error) in
+            maybeReceivedError = error
+            maybeCustomerInfo = customerInfo
+        })
+
+        expect(maybeCustomerInfo).toEventually(beNil())
+
+        guard let nsError = maybeReceivedError as NSError? else {
+            fail("receivedError is nil")
+            return
+        }
+
+        expect(nsError.domain) == RevenueCat.ErrorCode._nsErrorDomain
+        expect(nsError.code) == ErrorCode.unexpectedBackendResponseError.rawValue
+
+        guard let underlyingError = nsError.userInfo[NSUnderlyingErrorKey] as? NSError else {
+            fail("Underlying error missing")
+            return
+        }
+
+        expect(underlyingError.domain) == "RevenueCat.UnexpectedBackendResponseSubErrorCode"
+        expect(underlyingError.code) == UnexpectedBackendResponseSubErrorCode.customerInfoResponseParsing.rawValue
+
+        guard let parsingError = underlyingError.userInfo[NSUnderlyingErrorKey] as? NSError else {
+            fail("Additional error details missing")
+            return
+        }
+
+        expect(parsingError.domain) == "RevenueCat.CustomerInfoError"
+        expect(parsingError.code) == CustomerInfoError.missingJsonObject.rawValue
+    }
+
     func testPostReceiptWithoutSubscriberAttributesSkipsThem() {
         var completionCallCount = 0
 
@@ -367,12 +414,20 @@ class BackendSubscriberAttributesTests: XCTestCase {
                                 })
 
         expect(self.mockHTTPClient.invokedPerformRequestCount) == 1
-
         expect(receivedError).toNot(beNil())
-        guard let nonNilReceivedError = receivedError else { fatalError() }
+        guard let nonNilReceivedError = receivedError else {
+            fail("missing receivedError")
+            return
+        }
         expect(nonNilReceivedError.successfullySynced) == true
-        expect(nonNilReceivedError.subscriberAttributesErrors)
-            == attributeErrors[Backend.RCAttributeErrorsKey]
+        expect(nonNilReceivedError.subscriberAttributesErrors) == attributeErrors[Backend.RCAttributeErrorsKey]
+
+        guard let underlyingError = (nonNilReceivedError as NSError).userInfo[NSUnderlyingErrorKey] as? NSError else {
+            fail("Missing underlying error")
+            return
+        }
+
+        expect(underlyingError.userInfo[NSUnderlyingErrorKey]).to(beNil())
     }
 
     func testPostReceiptWithSubscriberAttributesPassesErrorsToCallbackIfStatusCodeIsSuccess() {

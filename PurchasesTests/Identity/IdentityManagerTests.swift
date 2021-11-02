@@ -20,7 +20,7 @@ class IdentityManagerTests: XCTestCase {
                                                                                                platformFlavorVersion: nil,
                                                                                                finishTransactions: false))
 
-    let mockCustomerInfo = CustomerInfo(data: [
+    let mockCustomerInfo = CustomerInfo(testData: [
         "request_date": "2019-08-16T10:30:42Z",
         "subscriber": [
             "first_seen": "2019-07-17T00:05:54Z",
