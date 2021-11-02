@@ -587,36 +587,46 @@ private extension Backend {
             return try CustomerInfo(data: customerJson)
         } catch {
             let parsingError = UnexpectedBackendResponseSubErrorCode.customerInfoResponseParsing
-            let subError = parsingError.attaching(error: error, extraContext: customerJson.stringRepresentation)
+            let subError = parsingError.addingUnderlyingError(error,
+                                                              extraContext: customerJson.stringRepresentation)
             throw subError
         }
     }
 
+    // swiftlint:disable function_body_length
     func handle(customerInfoResponse maybeResponse: [String: Any]?,
                 statusCode: Int,
                 maybeError: Error?,
                 file: String = #file,
                 function: String = #function,
                 completion: BackendCustomerInfoResponseHandler) {
+        // swiftlint:enable function_body_length
         if let error = maybeError {
             completion(nil, ErrorUtils.networkError(withUnderlyingError: error, generatedBy: "\(file) \(function)"))
             return
         }
         let isErrorStatusCode = statusCode >= HTTPStatusCodes.redirect.rawValue
 
-        let maybeError: Error?
+        let maybeCustomerInfoError: Error?
         let maybeCustomerInfo: CustomerInfo?
-        do {
-            maybeCustomerInfo = try parseCustomerInfo(fromMaybeResponse: maybeResponse)
-            maybeError = nil
-        } catch let customerInfoError {
+
+        if !isErrorStatusCode {
+            // Only attempt to parse a response if we don't have an error status code from the backend.
+            do {
+                maybeCustomerInfo = try parseCustomerInfo(fromMaybeResponse: maybeResponse)
+                maybeCustomerInfoError = nil
+            } catch let customerInfoError {
+                maybeCustomerInfo = nil
+                maybeCustomerInfoError = customerInfoError
+            }
+        } else {
+            maybeCustomerInfoError = nil
             maybeCustomerInfo = nil
-            maybeError = customerInfoError
         }
 
         if !isErrorStatusCode && maybeCustomerInfo == nil {
             let extraContext = "statusCode: \(statusCode), json:\(maybeResponse.debugDescription)"
-            completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: maybeError,
+            completion(nil, ErrorUtils.unexpectedBackendResponse(withSubError: maybeCustomerInfoError,
                                                                  generatedBy: "\(file) \(function)",
                                                                  extraContext: extraContext))
             return
@@ -625,7 +635,9 @@ private extension Backend {
         let subscriberAttributesErrorInfo = attributesUserInfoFromResponse(response: maybeResponse ?? [:],
                                                                            statusCode: statusCode)
 
-        let hasError = (isErrorStatusCode || subscriberAttributesErrorInfo[Backend.RCAttributeErrorsKey] != nil)
+        let hasError = (isErrorStatusCode
+                        || subscriberAttributesErrorInfo[Backend.RCAttributeErrorsKey] != nil
+                        || maybeCustomerInfoError != nil)
 
         guard !hasError else {
             let finishable = statusCode < HTTPStatusCodes.internalServerError.rawValue
@@ -636,8 +648,11 @@ private extension Backend {
             var responseError = ErrorUtils.backendError(withBackendCode: backendErrorCode,
                                                         backendMessage: message,
                                                         extraUserInfo: extraUserInfo as [NSError.UserInfoKey: Any])
-            responseError = responseError.attaching(error: maybeError,
-                                                    extraContext: maybeResponse?.stringRepresentation)
+            if let maybeCustomerInfoError = maybeCustomerInfoError {
+                responseError = maybeCustomerInfoError
+                    .addingUnderlyingError(responseError, extraContext: maybeResponse?.stringRepresentation)
+            }
+
             completion(maybeCustomerInfo, responseError)
             return
         }

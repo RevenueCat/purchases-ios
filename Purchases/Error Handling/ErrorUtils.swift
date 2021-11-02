@@ -332,10 +332,6 @@ private extension ErrorUtils {
         userInfo[ErrorDetails.generatedByKey] = maybeGeneratedBy
         userInfo[ErrorDetails.extraContextKey] = maybeExtraContext
 
-        if let describableSubError = describableSubError {
-            Logger.error(describableSubError.description)
-        }
-
         let nsError = ErrorCode.unexpectedBackendResponseError as NSError
         let nsErrorWithUserInfo = NSError(domain: nsError.domain,
                                           code: nsError.code,
