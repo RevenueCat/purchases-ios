@@ -129,7 +129,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
-  buildTvWatchAndMac:
+  buildTvWatchAndMacOS:
     macos:
       xcode: "13.1.0"
     working_directory: ~/purchases-ios
