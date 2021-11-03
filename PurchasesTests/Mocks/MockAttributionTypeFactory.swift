@@ -16,7 +16,7 @@ import Foundation
 #endif
 @testable import RevenueCat
 
-class MockAdClientProxy: AdClientProxy {
+class MockAdClientProxy: AfficheClientProxy {
 
     static var mockAttributionDetails: [String: NSObject] = [
         "Version3.1":
@@ -50,7 +50,7 @@ class MockAttributionTypeFactory: AttributionTypeFactory {
 
     static var shouldReturnAdClientProxy = true
 
-    override func adClientProxy() -> AdClientProxy? {
+    override func adClientProxy() -> AfficheClientProxy? {
         Self.shouldReturnAdClientProxy ? MockAdClientProxy() : nil
     }
 

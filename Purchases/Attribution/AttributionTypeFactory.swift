@@ -16,8 +16,8 @@ import Foundation
 
 class AttributionTypeFactory {
 
-    func adClientProxy() -> AdClientProxy? {
-        return AdClientProxy.adClientClass == nil ? nil : AdClientProxy()
+    func adClientProxy() -> AfficheClientProxy? {
+        return AfficheClientProxy.afficheClientClass == nil ? nil : AfficheClientProxy()
     }
 
     func atTrackingProxy() -> TrackingManagerProxy? {

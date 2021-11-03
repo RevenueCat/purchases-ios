@@ -29,7 +29,7 @@ enum AttributionStrings {
     case instance_configured_posting_attribution
     case search_ads_attribution_cancelled_missing_att_framework
     case att_framework_present_but_couldnt_call_tracking_authorization_status
-    case iad_framework_present_but_couldnt_call_request_attribution_details
+    case apple_affiche_framework_present_but_couldnt_call_request_attribution_details
     case search_ads_attribution_cancelled_missing_iad_framework
     case search_ads_attribution_cancelled_not_authorized
     case skip_same_attributes
@@ -84,7 +84,7 @@ extension AttributionStrings: CustomStringConvertible {
         case .att_framework_present_but_couldnt_call_tracking_authorization_status:
             return "ATT Framework was found but it didn't respond to authorization status selector!"
 
-        case .iad_framework_present_but_couldnt_call_request_attribution_details:
+        case .apple_affiche_framework_present_but_couldnt_call_request_attribution_details:
             return "iAd Framework was found but it didn't respond to attribution details request!"
 
         case .search_ads_attribution_cancelled_missing_iad_framework:
