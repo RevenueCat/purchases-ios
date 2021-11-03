@@ -284,7 +284,7 @@ class PurchasesOrchestrator {
         beginRefundRequestHelper.beginRefundRequest(productID: productID) { result in
             switch result {
             case .failure(let error):
-                completion(RefundRequestStatus.error, error)
+                completion(.error, error)
             case .success(let status):
                 completion(status, nil)
             }

@@ -24,7 +24,6 @@ class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
     var mockSK2Error: Error?
     var mockSK2Status: StoreKit.Transaction.RefundRequestStatus?
     var transactionVerified = true
-
     var refundRequestCalled = false
     var verifyTransactionCalled = false
 
@@ -47,4 +46,5 @@ class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
             return .failure(ErrorUtils.beginRefundRequestError(withMessage: message))
         }
     }
+    
 }

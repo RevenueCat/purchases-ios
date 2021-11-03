@@ -9,7 +9,7 @@ import Foundation
 import RevenueCat
 
 var refundStatus: RefundRequestStatus!
-func testEnums() {
+func checkRefundRequestStatusEnum() {
     switch refundStatus! {
     case .userCancelled,
             .success,
