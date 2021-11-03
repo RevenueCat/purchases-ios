@@ -19,7 +19,7 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
     var mockError: Error?
     var mockRefundRequestStatus: RefundRequestStatus?
 
-#if os(iOS) || os(macOS)
+#if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 15.0, macCatalyst 15, *)
     @available(watchOS, unavailable)
     @available(macOS, unavailable)

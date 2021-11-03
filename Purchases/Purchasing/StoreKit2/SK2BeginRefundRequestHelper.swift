@@ -47,7 +47,7 @@ class SK2BeginRefundRequestHelper {
     }
 
     @MainActor
-    internal func initiateSK2RefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async ->
+    func initiateSK2RefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async ->
     Result<StoreKit.Transaction.RefundRequestStatus, Error> {
         do {
             let sk2Status = try await StoreKit.Transaction.beginRefundRequest(for: transactionID, in: windowScene)
@@ -66,7 +66,7 @@ class SK2BeginRefundRequestHelper {
 @available(macOS, unavailable)
 private extension SK2BeginRefundRequestHelper {
 
-    private func getErrorMessage(from sk2Error: Error?) -> String {
+    func getErrorMessage(from sk2Error: Error?) -> String {
         let details = sk2Error?.localizedDescription ?? "No extra info"
         if let skError = sk2Error as? StoreKit.Transaction.RefundRequestError {
             switch skError {
@@ -84,10 +84,10 @@ private extension SK2BeginRefundRequestHelper {
 
     /*
      * - Parameter sk2Result: The Result returned from StoreKit2
-     * - Returns The result expected by `BeginRefundRequestHelper`, converting to our `RefundRequestStatus` type
-     * and adding more descriptive error messages where needed.
+     * - Returns The result expected by `BeginRefundRequestHelper`, converting from a StoreKit RefundRequestStatus
+     * to our `RefundRequestStatus` type and adding more descriptive error messages where needed.
      */
-    private func mapSk2Result(from sk2Result: Result<StoreKit.Transaction.RefundRequestStatus, Error>) ->
+    func mapSk2Result(from sk2Result: Result<StoreKit.Transaction.RefundRequestStatus, Error>) ->
         Result<RevenueCat.RefundRequestStatus, Error> {
         switch sk2Result {
         case .success(let sk2Status):
