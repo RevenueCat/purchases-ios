@@ -173,7 +173,7 @@ class PurchasesOrchestrator {
                                                         keyIdentifier: keyIdentifier,
                                                         nonce: nonce,
                                                         signature: signature,
-                                                        timestamp: timestamp)
+                                                        timestamp: timestamp as NSNumber)
                 completion(paymentDiscount, nil)
             }
         }

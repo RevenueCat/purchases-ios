@@ -116,9 +116,9 @@ BOOL isAnonymous;
     [p setCreative: @""];
     [p collectDeviceIdentifiers];
     
-    [p customerInfoWithCompletion:^(RCCustomerInfo *info, NSError *error) {}];
-    [p offeringsWithCompletion:^(RCOfferings *info, NSError *error) {}];
-    [p productsWithIdentifiers:@[@""] completion:^(NSArray<SKProduct *> *products) { }];
+    [p getCustomerInfoWithCompletion:^(RCCustomerInfo *info, NSError *error) {}];
+    [p getOfferingsWithCompletion:^(RCOfferings *info, NSError *error) {}];
+    [p getProductsWithIdentifiers:@[@""] completion:^(NSArray<SKProduct *> *products) { }];
     [p purchaseProduct:skp withCompletion:^(SKPaymentTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
     [p purchasePackage:pack withCompletion:^(SKPaymentTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     [p restoreTransactionsWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
@@ -177,12 +177,8 @@ shouldPurchasePromoProduct:skp
 }
 
 + (void)checkConstants {
-    NSErrorDomain bed = RCBackendErrorCodeDomain;
     NSErrorDomain ped = RCPurchasesErrorCodeDomain;
-    NSErrorUserInfoKey fk = RCErrorDetails.RCFinishableKey;
-    NSErrorUserInfoKey eck = RCErrorDetails.RCReadableErrorCodeKey;
-
-    NSLog(bed, ped, fk, eck);
+    NSLog(@"%@", ped);
 }
 
 @end

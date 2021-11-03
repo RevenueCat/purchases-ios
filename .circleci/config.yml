@@ -191,7 +191,7 @@ jobs:
           destination: test_report.html
 
 
-  deployment-checks: 
+  release-checks: 
     macos:
       xcode: "13.1.0"
     working_directory: ~/purchases-ios
@@ -214,7 +214,7 @@ jobs:
       
       - run:
           name: Deployment checks
-          command: bundle exec fastlane deployment_checks
+          command: bundle exec fastlane release_checks
           environment:
             SCAN_SCHEME: All Tests
       - store_test_results:
@@ -258,7 +258,7 @@ jobs:
       - update-spm-integration-commit
       - run:
           name: Deploy new version
-          command: bundle exec fastlane deploy
+          command: bundle exec fastlane release
 
   prepare-next-version:
     macos:
@@ -375,7 +375,9 @@ workflows:
       - runtest
       - swift_apitest
       - objc_apitest
-      - buildTvWatchAndMac
+      - buildTvWatchAndMacOS
+      - storekit_tests: *release-tags-and-branches
+      - release-checks: *release-branches
       - backend_integration_tests
       - deployment-checks: *release-branches
       - integration-tests-cocoapods: *release-tags-and-branches
@@ -385,5 +387,5 @@ workflows:
   deploy:
     jobs:
       - make-release: *release-tags
-      - prepare-next-version: *release-tags
+      # - prepare-next-version: *release-tags Disabled for beta releases.
       # - docs-deploy: *release-tags Disabled for beta releases.

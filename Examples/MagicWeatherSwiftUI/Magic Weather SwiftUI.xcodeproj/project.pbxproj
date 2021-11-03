@@ -16,10 +16,10 @@
 		5597798A25ACDC3E00C33DFB /* MagicWeatherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5597797725ACDC3A00C33DFB /* MagicWeatherApp.swift */; };
 		5597798C25ACDC3E00C33DFB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5597797825ACDC3A00C33DFB /* ContentView.swift */; };
 		5597798E25ACDC3E00C33DFB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5597797925ACDC3E00C33DFB /* Assets.xcassets */; };
-		559779A825B72D1D00C33DFB /* Purchases in Frameworks */ = {isa = PBXBuildFile; productRef = 559779A725B72D1D00C33DFB /* Purchases */; };
 		559779AC25B72D3200C33DFB /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559779AB25B72D3200C33DFB /* Constants.swift */; };
 		559779B925B72DCF00C33DFB /* SampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559779B325B72DC000C33DFB /* SampleData.swift */; };
 		559779C025B72EE100C33DFB /* PurchasesDelegateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559779BF25B72EE100C33DFB /* PurchasesDelegateHandler.swift */; };
+		B3D4400727220C6800A665B1 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = B3D4400627220C6800A665B1 /* RevenueCat */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,7 +44,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				559779A825B72D1D00C33DFB /* Purchases in Frameworks */,
+				B3D4400727220C6800A665B1 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -160,7 +160,7 @@
 			);
 			name = "Magic Weather SwiftUI (iOS)";
 			packageProductDependencies = (
-				559779A725B72D1D00C33DFB /* Purchases */,
+				B3D4400627220C6800A665B1 /* RevenueCat */,
 			);
 			productName = "Magic Weather SwiftUI (iOS)";
 			productReference = 5597797E25ACDC3E00C33DFB /* Magic Weather SwiftUI.app */;
@@ -190,7 +190,7 @@
 			);
 			mainGroup = 5597797125ACDC3A00C33DFB;
 			packageReferences = (
-				559779A625B72D1D00C33DFB /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				B3D4400527220C6800A665B1 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = 5597797F25ACDC3E00C33DFB /* Products */;
 			projectDirPath = "";
@@ -414,7 +414,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		559779A625B72D1D00C33DFB /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+		B3D4400527220C6800A665B1 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
 			requirement = {
@@ -425,10 +425,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		559779A725B72D1D00C33DFB /* Purchases */ = {
+		B3D4400627220C6800A665B1 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 559779A625B72D1D00C33DFB /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = Purchases;
+			package = B3D4400527220C6800A665B1 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

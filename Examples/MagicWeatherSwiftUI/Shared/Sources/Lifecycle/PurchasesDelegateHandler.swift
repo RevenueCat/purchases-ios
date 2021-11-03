@@ -9,7 +9,7 @@ import Foundation
 import RevenueCat
 
 /*
- The class we'll use to publish PurchaserInfo data to our Magic Weather app.
+ The class we'll use to publish CustomerInfo data to our Magic Weather app.
  */
 
 class PurchasesDelegateHandler: NSObject, ObservableObject {
@@ -19,15 +19,15 @@ class PurchasesDelegateHandler: NSObject, ObservableObject {
 extension PurchasesDelegateHandler: PurchasesDelegate {
     
     /* 
-     Whenever the `shared` instance of Purchases updates the PurchaserInfo cache, this method will be called.
+     Whenever the `shared` instance of Purchases updates the CustomerInfo cache, this method will be called.
     
-     Note: PurchaserInfo is not pushed to each Purchases client, it has to be fetched. 
+     Note: CustomerInfo is not pushed to each Purchases client, it has to be fetched.
      This delegate method is only called when the SDK updates its cache after an app launch, purchase, restore, or fetch. 
-     You still need to call `Purchases.shared.purchaserInfo` to fetch PurchaserInfo regularly.
+     You still need to call `Purchases.shared.customerInfo` to fetch CustomerInfo regularly.
      */
-    func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: Purchases.PurchaserInfo) {
+    func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
         
-        /// - Update our published purchaserInfo object
-        UserViewModel.shared.purchaserInfo = purchaserInfo
+        /// - Update our published customerInfo object
+        UserViewModel.shared.customerInfo = customerInfo
     }
 }

@@ -71,7 +71,7 @@ struct UserView: View {
                        
             /// - You should always give users the option to restore purchases to connect their purchase to their current app user ID
             Button("Restore Purchases") {
-                Purchases.shared.restoreTransactions(nil)
+                Purchases.shared.restoreTransactions(completion: nil)
             }
             .foregroundColor(.blue)
             .font(.headline)

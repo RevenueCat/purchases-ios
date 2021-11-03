@@ -52,8 +52,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 extension AppDelegate: PurchasesDelegate {
     
     /// -  Whenever the `shared` instance of Purchases updates the PurchaserInfo cache, this method will be called.
-    func purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: Purchases.PurchaserInfo) {
+    func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
         /// - If necessary, refresh app UI from updated PurchaserInfo
     }
-    
+
 }

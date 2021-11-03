@@ -49,7 +49,7 @@ class BackendIntegrationTests: XCTestCase {
         var completionCalled = false
         var receivedError: Error? = nil
         var receivedOfferings: Offerings? = nil
-        Purchases.shared.offerings { offerings, error in
+        Purchases.shared.getOfferings { offerings, error in
             completionCalled = true
             receivedError = error
             receivedOfferings = offerings
@@ -299,7 +299,7 @@ class BackendIntegrationTests: XCTestCase {
 private extension BackendIntegrationTests {
 
     func purchaseMonthlyOffering(completion: ((CustomerInfo?, Error?) -> Void)? = nil) {
-        Purchases.shared.offerings { offerings, error in
+        Purchases.shared.getOfferings { offerings, error in
             expect(error).to(beNil())
 
             let offering = offerings?.current

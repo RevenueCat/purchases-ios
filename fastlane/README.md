@@ -26,11 +26,11 @@ Setup development environment
 fastlane ios test
 ```
 Runs all the tests
-### ios bump
+### ios replace_version_number
 ```
-fastlane ios bump
+fastlane ios replace_version_number
 ```
-Increment build number
+Replace version number in project and supporting files
 ### ios bump_and_update_changelog
 ```
 fastlane ios bump_and_update_changelog
@@ -46,16 +46,16 @@ Make github release
 fastlane ios create_sandbox_account
 ```
 Create sandbox account
-### ios deployment_checks
+### ios release_checks
 ```
-fastlane ios deployment_checks
+fastlane ios release_checks
 ```
-Deployment checks
-### ios build_tv_watch
+Release checks
+### ios build_tv_watch_mac
 ```
-fastlane ios build_tv_watch
+fastlane ios build_tv_watch_mac
 ```
-tvOS, watchOS
+tvOS, watchOS, and macOS build
 ### ios build_mac
 ```
 fastlane ios build_mac
@@ -86,11 +86,16 @@ build ObjC API tester
 fastlane ios replace_api_key_integration_tests
 ```
 replace API KEY for integration tests
-### ios deploy
+### ios release
 ```
-fastlane ios deploy
+fastlane ios release
 ```
-Deploy
+Release to CocoaPods, create Carthage archive, export XCFramework, and create GitHub release
+### ios bump
+```
+fastlane ios bump
+```
+Bump version, edit changelog, and create pull request
 ### ios prepare_next_version
 ```
 fastlane ios prepare_next_version

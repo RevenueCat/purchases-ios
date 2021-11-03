@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
-        Purchases.debugLogsEnabled = true
+        Purchases.logLevel = .debug
         Purchases.configure(withAPIKey: <your_public_sdk_key_here>)
 
         // set attributes to store additional, structured information for a user in RevenueCat.

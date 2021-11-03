@@ -69,13 +69,6 @@ func checkPurchasesEnums() {
     }
 }
 
-func checkPurchasesConstants() {
-    let finKey = ErrorDetails.finishableKey
-    let errCodeKey = ErrorDetails.readableErrorCodeKey
-
-    print(finKey, errCodeKey)
-}
-
 private func checkStaticMethods() {
     let logHandler: (LogLevel, String) -> Void = { _, _ in }
     Purchases.logHandler = logHandler
@@ -102,9 +95,9 @@ private func checkStaticMethods() {
 }
 
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
-    purchases.customerInfo { _, _ in }
-    purchases.offerings { _, _ in }
-    purchases.products([String]()) { _ in }
+    purchases.getCustomerInfo { _, _ in }
+    purchases.getOfferings { _, _ in }
+    purchases.getProducts([String]()) { _ in }
 
     let skp: SKProduct = SKProduct()
     let skpd: SKProductDiscount = SKProductDiscount()

@@ -60,7 +60,7 @@ struct WeatherView: View {
         /*
          We should check if we can magically change the weather (subscription active) and if not, display the paywall.
          */
-        Purchases.shared.purchaserInfo { (_, _) in
+        Purchases.shared.getCustomerInfo { (_, _) in
             if userModel.subscriptionActive {
                 self.model.currentData = SampleWeatherData.generateSampleData(for: self.model.currentEnvironment)
             } else {

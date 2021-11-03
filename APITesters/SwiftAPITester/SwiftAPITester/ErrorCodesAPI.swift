@@ -14,34 +14,6 @@
 import Foundation
 import RevenueCat
 
-var backendErrCode: BackendErrorCode!
-func checkErrorCodeEnums() {
-    switch backendErrCode! {
-    case .invalidPlatform,
-         .storeProblem,
-         .cannotTransferPurchase,
-         .invalidReceiptToken,
-         .invalidAppStoreSharedSecret,
-         .invalidPaymentModeOrIntroPriceNotProvided,
-         .productIdForGoogleReceiptNotProvided,
-         .invalidPlayStoreCredentials,
-         .internalServerError,
-         .emptyAppUserId,
-         .invalidAuthToken,
-         .invalidAPIKey,
-         .badRequest,
-         .playStoreQuotaExceeded,
-         .playStoreInvalidPackageName,
-         .playStoreGenericError,
-         .userIneligibleForPromoOffer,
-         .invalidAppleSubscriptionKey,
-         .invalidSubscriberAttributes,
-         .invalidSubscriberAttributesBody,
-         .unknownError:
-        print(backendErrCode!)
-    }
-}
-
 var errCode: ErrorCode!
 func checkPurchasesErrorCodeEnums() {
     switch errCode! {
@@ -68,8 +40,8 @@ func checkPurchasesErrorCodeEnums() {
          .invalidSubscriberAttributesError,
          .logOutAnonymousUserError,
          .configurationError,
-         .operationAlreadyInProgressForProductError,
          .unsupportedError,
+         .operationAlreadyInProgressForProductError,
          .emptySubscriberAttributes,
          .productDiscountMissingIdentifierError,
          .missingAppUserIDForAliasCreationError,

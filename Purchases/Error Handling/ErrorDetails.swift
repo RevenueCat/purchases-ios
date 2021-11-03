@@ -14,9 +14,11 @@
 
 import Foundation
 
-@objc(RCErrorDetails) public class ErrorDetails: NSObject {
+class ErrorDetails: NSObject {
 
-    @objc(RCFinishableKey) public static let finishableKey: NSError.UserInfoKey = "finishable"
-    @objc(RCReadableErrorCodeKey) public static let readableErrorCodeKey: NSError.UserInfoKey = "readable_error_code"
+    static let finishableKey: NSError.UserInfoKey = "finishable"
+    static let readableErrorCodeKey: NSError.UserInfoKey = "readable_error_code"
+    static let generatedByKey: NSError.UserInfoKey = "generated_by"
+    static let extraContextKey: NSError.UserInfoKey = "extra_context"
 
 }

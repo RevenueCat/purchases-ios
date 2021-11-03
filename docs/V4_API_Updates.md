@@ -39,16 +39,24 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 			<td>RCOperationAlreadyInProgressForProductError</td>
 		</tr>
 		<tr>
-			<td>RCBackendErrorDomain</td>
-			<td>RCBackendErrorCodeDomain</td>
-		</tr>
-		<tr>
 			<td>RCPurchasesErrorDomain</td>
 			<td>RCPurchasesErrorCodeDomain</td>
 		</tr>
 		<tr>
+			<td>RCBackendError</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
+			<td>RCErrorUtils</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
+			<td>RCBackendErrorDomain</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
 			<td>RCFinishableKey</td>
-			<td>RCErrorDetails.RCFinishableKey</td>
+			<td><i>REMOVED</i></td>
 		</tr>
 		<tr>
 			<td>RCReceivePurchaserInfoBlock</td>
@@ -100,11 +108,19 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 	<tbody>
 		<tr>
 			<td>purchaserInfoWithCompletion:</td>
-			<td>customerInfoWithCompletion:</td>
+			<td>getCustomerInfoWithCompletion:</td>
 		</tr>
 		<tr>
 			<td>invalidatePurchaserInfoCache</td>
 			<td>invalidateCustomerInfoCache</td>
+		</tr>
+		<tr>
+			<td>Purchases -offeringsWithCompletion:</td>
+			<td>Purchases -getOfferingsWithCompletion:</td>
+		</tr>
+		<tr>
+			<td>Purchases -productsWithIdentifiers:completion:</td>
+			<td>Purchases -getProductsWithIdentifiers:completion:</td>
 		</tr>
 	</tbody>
 </table>
@@ -124,10 +140,6 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 		<tr>
 			<td>Purchases.Offering</td>
 			<td>Offering</td>
-		</tr>
-		<tr>
-			<td>Purchases.RevenueCatBackendErrorCode</td>
-			<td>RCBackendErrorCodeDomain</td>
 		</tr>
 		<tr>
 			<td>Purchases.ErrorCode.Code</td>
@@ -170,10 +182,6 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 			<td>AttributionNetwork</td>
 		</tr>
 		<tr>
-			<td>Purchases.ErrorUtils</td>
-			<td>ErrorUtils</td>
-		</tr>
-		<tr>
 			<td>RCIntroEligibility</td>
 			<td>IntroEligibility</td>
 		</tr>
@@ -184,14 +192,6 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 		<tr>
 			<td>Purchases.LogLevel</td>
 			<td>LogLevel</td>
-		</tr>
-		<tr>
-			<td>ReadableErrorCodeKey</td>
-			<td>ErrorDetails.readableErrorCodeKey</td>
-		</tr>
-		<tr>
-			<td>RCFinishableKey</td>
-			<td>ErrorDetails.finishableKey</td>
 		</tr>
 		<tr>
 			<td>Purchases.Offerings</td>
@@ -225,6 +225,22 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 			<td>Purchases.PaymentDiscountBlock</td>
 			<td><i>REMOVED</i></td>
 		</tr>
+				<tr>
+			<td>Purchases.RevenueCatBackendErrorCode</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
+			<td>Purchases.ErrorUtils</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
+			<td>ReadableErrorCodeKey</td>
+			<td><i>REMOVED</i></td>
+		</tr>
+		<tr>
+			<td>RCFinishableKey</td>
+			<td><i>REMOVED</i></td>
+		</tr>
 	</tbody>
 </table>
 
@@ -248,15 +264,15 @@ to your project, and `#import RevenueCat-Swift.h` in your bridging header. You c
 		</tr>
 		<tr>
 			<td>purchaserInfo(_ completion)</td>
-			<td>customerInfo(completion)</td>
+			<td>getCustomerInfo(completion)</td>
 		</tr>
 		<tr>
 			<td>offerings(_completion)</td>
-			<td>offerings(completion)</td>
+			<td>getOfferings(completion)</td>
 		</tr>
 		<tr>
 			<td>products(_ productIdentifiers, _ completion)</td>
-			<td>products(identifiers: completion)</td>
+			<td>getProducts(identifiers: completion)</td>
 		</tr>
 		<tr>
 			<td>purchaseProduct(_ product, _ completion)</td>

@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 #import "RCAttributionNetworkAPI.h"
-#import "RCBackendErrorCodeAPI.h"
 #import "RCEntitlementInfoAPI.h"
 #import "RCEntitlementInfosAPI.h"
 #import "RCIntroEligibilityAPI.h"
@@ -17,7 +16,6 @@
 #import "RCPurchasesAPI.h"
 #import "RCPurchasesErrorCodeAPI.h"
 #import "RCTransactionAPI.h"
-#import "RCPurchasesErrorUtilsAPI.h"
 #import "RCPackageAPI.h"
 
 @import StoreKit;
@@ -25,8 +23,6 @@
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
         [RCAttributionNetworkAPI checkEnums];
-
-        [RCBackendErrorCodeAPI checkEnums];
 
         [RCEntitlementInfoAPI checkAPI];
         [RCEntitlementInfoAPI checkEnums];
@@ -50,8 +46,6 @@ int main(int argc, const char * argv[]) {
         [RCPurchasesAPI checkConstants];
 
         [RCPurchasesErrorCodeAPI checkEnums];
-
-        [RCPurchasesErrorUtilsAPI checkAPI];
 
         [RCTransactionAPI checkAPI];
     }

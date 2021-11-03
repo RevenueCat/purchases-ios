@@ -11,7 +11,6 @@
 #
 
 default_platform(:ios)
-in_beta = true
 
 platform :ios do
   before_all do
@@ -71,8 +70,8 @@ platform :ios do
     trainer(path: "fastlane/test_output", output_directory: "fastlane/test_output/xctest/tvos")
   end
 
-  desc "Increment build number"
-  lane :bump do |options|
+  desc "Replace version number in project and supporting files"
+  lane :replace_version_number do |options|
     new_version_number = options[:version]
     fail ArgumentError, "missing version" unless new_version_number
     previous_version_number = current_version_number
@@ -96,7 +95,7 @@ platform :ios do
 
   desc "Increment build number and update changelog"
   lane :bump_and_update_changelog do |options|
-    bump(options)
+    replace_version_number(options)
     attach_changelog_to_master(options[:version])
   end
 
@@ -139,11 +138,11 @@ platform :ios do
     Spaceship::Tunes::SandboxTester.create!(email: email, password: password)
   end
 
-  desc "Deployment checks"
-  lane :deployment_checks do |options|
+  desc "Release checks"
+  lane :release_checks do |options|
     version_number = current_version_number
     check_no_git_tag_exists(version_number)
-    check_pods(ignore_warnings: in_beta)
+    check_pods
     carthage_archive
     export_xcframework
     check_no_github_release_exists(version_number)
@@ -151,13 +150,13 @@ platform :ios do
 
   desc "build tvOS, watchOS, macOS"
   lane :build_tv_watch_mac do |options|
-    check_pods(ignore_warnings: in_beta)
+    check_pods
     carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS,Mac", use_xcframeworks: true)
   end
 
   desc "macOS build"
   lane :build_mac do |options|
-    check_pods(ignore_warnings: in_beta)
+    check_pods
     carthage(command: "build", no_skip_current: true, platform: "Mac", use_xcframeworks: true)
   end
 
@@ -207,13 +206,68 @@ platform :ios do
     replace_in("REVENUECAT_PROXY_URL", ENV["REVENUECAT_PROXY_URL"].to_s, '../IntegrationTests/CommonFiles/RCIntegrationRunner.m', allow_empty: true)
   end
 
-  desc "Deploy"
-  lane :deploy do |options|
+  desc "Release to CocoaPods, create Carthage archive, export XCFramework, and create GitHub release"
+  lane :release do |options|
     version_number = current_version_number
     push_pods
     carthage_archive
     export_xcframework
     github_release(version: version_number)
+  end
+
+  desc "Bump version, edit changelog, and create pull request"
+  lane :bump do |options|
+    ensure_git_branch(branch: options[:branch] || 'main')
+    ensure_git_status_clean
+
+    # Ensure GitHub API token is set
+    if ENV['GITHUB_PULL_REQUEST_API_TOKEN'].nil?
+      UI.error("Environment variable GITHUB_PULL_REQUEST_API_TOKEN is required to create a pull request")
+      UI.error("Please make a fastlane/.env file from the fastlane/.env.SAMPLE template")
+      UI.user_error!("Could not find value for GITHUB_PULL_REQUEST_API_TOKEN")
+    end
+
+    # Get and print current version number
+    version_number = current_version_number
+    UI.important("Current version is #{version_number}")
+
+    # Ask for new version number
+    new_version_number = UI.input("New version number: ")
+
+    # Open CHANGELOG.latest.md in editor
+    changelog_filename = "CHANGELOG.latest.md"
+    changelog_path = File.absolute_path("../#{changelog_filename}")
+    editor = ENV['FASTLANE_EDITOR'] || ENV['EDITOR'] || 'vim'
+
+    UI.message("Will use '#{editor}'... Override by setting FASTLANE_EDITOR or EDITOR environment variable")
+    if UI.confirm("Open #{changelog_filename} in '#{editor}'?")
+      system(editor, File.absolute_path(changelog_path).shellescape)
+    else
+      UI.user_error!("Cancelled")
+    end
+
+    create_new_release_branch(version: new_version_number)
+    replace_version_number(version: new_version_number)
+    commit_updated_files_and_push(version: new_version_number)
+
+    changelog = File.read(changelog_path)
+    create_pull_request(
+      title: "Release/#{new_version_number}",
+      base: "main",
+      body: changelog
+    )
+  end
+
+  private_lane :create_new_release_branch do |options|
+    version = options[:version]
+    sh("git checkout -b 'release/#{version}'")
+  end
+
+  private_lane :commit_updated_files_and_push do |options|
+    version = options[:version]
+    sh("git add -u")
+    sh("git commit -m 'Version bump for #{version}'")
+    push_to_git_remote
   end
 
   desc "Prepare next version"
@@ -226,7 +280,7 @@ platform :ios do
     branch_name = "bump/#{next_version_snapshot}"
     sh("git", "checkout", "-b", branch_name)
 
-    bump(version: next_version_snapshot)
+    replace_version_number(version: next_version_snapshot)
 
     sh("git", "commit", "-am", "Preparing for next version")
     push_to_git_remote
@@ -333,8 +387,8 @@ def carthage_archive
   end
 end
 
-def check_pods(ignore_warnings:)
-  pod_lib_lint(verbose: true, podspec:'RevenueCat.podspec', allow_warnings: ignore_warnings)
+def check_pods
+  pod_lib_lint(verbose: true, podspec:'RevenueCat.podspec')
 end
 
 def increment_build_number(previous_version_number, new_version_number, file_path)

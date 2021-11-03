@@ -8,6 +8,7 @@
 
 import UIKit
 import RevenueCat
+import StoreKit
 
 enum PayWallEdgeStyle : String {
     case square
@@ -16,9 +17,9 @@ enum PayWallEdgeStyle : String {
 }
 
 @objc protocol SwiftPaywallDelegate {
-    func purchaseCompleted(paywall: SwiftPaywall, transaction: SKPaymentTransaction, purchaserInfo: Purchases.PurchaserInfo)
-    @objc optional func purchaseFailed(paywall: SwiftPaywall, purchaserInfo: Purchases.PurchaserInfo?, error: Error, userCancelled: Bool)
-    @objc optional func purchaseRestored(paywall: SwiftPaywall, purchaserInfo: Purchases.PurchaserInfo?, error: Error?)
+    func purchaseCompleted(paywall: SwiftPaywall, transaction: SKPaymentTransaction, customerInfo: CustomerInfo)
+    @objc optional func purchaseFailed(paywall: SwiftPaywall, customerInfo: CustomerInfo?, error: Error, userCancelled: Bool)
+    @objc optional func purchaseRestored(paywall: SwiftPaywall, customerInfo: CustomerInfo?, error: Error?)
 }
 
 class SwiftPaywall: UIViewController {
@@ -48,7 +49,7 @@ class SwiftPaywall: UIViewController {
     
     // Internal variables
     private var scrollView : UIScrollView!
-    private var offering : Purchases.Offering?
+    private var offering : Offering?
     private var offeringCollectionView : UICollectionView!
     private let maxItemsPerRow : CGFloat = 3
     private let aspectRatio : CGFloat = 1.3
@@ -126,7 +127,7 @@ class SwiftPaywall: UIViewController {
         offeringLoadingIndicator.startAnimating()
         buyButton.isEnabled = false
                 
-        Purchases.shared.offerings { (offerings, error) in
+        Purchases.shared.getOfferings { (offerings, error) in
             
             if error != nil {
                 self.showAlert(title: "Error", message: "Unable to fetch offerings.") { (action) in
@@ -163,7 +164,7 @@ class SwiftPaywall: UIViewController {
         }
         
         setState(loading: true)
-        Purchases.shared.purchasePackage(package) { (trans, info, error, cancelled) in
+        Purchases.shared.purchase(package: package) { (trans, info, error, cancelled) in
 
             self.setState(loading: false)
 
@@ -197,8 +198,8 @@ class SwiftPaywall: UIViewController {
                 if let error = error {
                     self.showAlert(title: "Error", message: error.localizedDescription)
                 } else {
-                    if let purchaserInfo = info {
-                        if purchaserInfo.entitlements.active.isEmpty {
+                    if let customerInfo = info {
+                        if customerInfo.entitlements.active.isEmpty {
                             self.showAlert(title: "Restore Unsuccessful", message: "No prior purchases found for your account.")
                         } else {
                             self.close()
@@ -269,13 +270,13 @@ class SwiftPaywall: UIViewController {
         }
     }
     
-    private func shouldShowDiscount(package: Purchases.Package?) -> (Bool, Purchases.Package?) {
+    private func shouldShowDiscount(package: Package?) -> (Bool, Package?) {
         return (showDiscountPercentage == true
             && mostAffordablePackages.count > 1
             && mostAffordablePackages.first?.product.productIdentifier == package?.product.productIdentifier, mostAffordablePackages.last)
     }
     
-    private var mostAffordablePackages : [Purchases.Package] {
+    private var mostAffordablePackages : [Package] {
         guard let sorted = offering?.availablePackages
             .filter({$0.packageType != .lifetime && $0.packageType != .custom})
             .sorted(by: { $1.annualCost() > $0.annualCost() }) else {
@@ -557,6 +558,8 @@ extension SwiftPaywall: UICollectionViewDelegate, UICollectionViewDataSource, UI
                     trialLength = "\(numUnits)-year"
                     cancelDate = Calendar.current.date(byAdding: .year, value: numUnits, to: Date())
                     cancelDate = Calendar.current.date(byAdding: .day, value: -1, to: cancelDate ?? Date())
+                @unknown default:
+                    fatalError("Unknown introPrice.subscriptionPeriod.unit \(introPrice.subscriptionPeriod.unit)")
                 }
                 
                 let dateFormatter = DateFormatter()
@@ -693,8 +696,8 @@ private class PackageCell : UICollectionViewCell {
     }
     
     func setupWith(
-        package: Purchases.Package?,
-        discount: (Bool, Purchases.Package?),
+        package: Package?,
+        discount: (Bool, Package?),
         edgeStyle: PayWallEdgeStyle = .round,
         productSelectedColor: UIColor? = nil,
         productDeselectedColor: UIColor? = nil) {
@@ -765,7 +768,7 @@ private class PackageCell : UICollectionViewCell {
         }
     }
     
-    func discountBetween(highest: Purchases.Package, current: Purchases.Package) -> NSNumber {
+    func discountBetween(highest: Package, current: Package) -> NSNumber {
         let highestAnnualCost : NSNumber!
         switch highest.packageType {
         case .annual:
@@ -854,7 +857,7 @@ private class PackageCell : UICollectionViewCell {
     }
 }
 
-fileprivate extension Purchases.Package {
+fileprivate extension Package {
     
     func annualCost() -> Double {
         switch self.packageType {

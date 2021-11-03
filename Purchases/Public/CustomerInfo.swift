@@ -152,37 +152,45 @@ import Foundation
 
     let schemaVersion: String?
 
-    convenience init?(data: [String: Any]) {
-        self.init(data: data, dateFormatter: .iso8601SecondsDateFormatter, transactionsFactory: TransactionsFactory())
+    convenience init(data: [String: Any]) throws {
+        try self.init(data: data,
+                      dateFormatter: .iso8601SecondsDateFormatter,
+                      transactionsFactory: TransactionsFactory())
     }
 
-    init?(data: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) {
-        guard let subscriberObject = data["subscriber"] as? [String: Any],
-              let subscriberData = SubscriberData(subscriberData: subscriberObject,
+    init(data: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) throws {
+        guard let subscriberObject = data["subscriber"] as? [String: Any] else {
+            Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(maybeJsonData: data))
+            throw CustomerInfoError.missingJsonObject
+        }
+
+        guard let subscriberData = SubscriberData(subscriberData: subscriberObject,
                                                   dateFormatter: dateFormatter,
-                                                  transactionsFactory: transactionsFactory)
-            else {
-            return nil
+                                                  transactionsFactory: transactionsFactory) else {
+            Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberObject))
+            throw CustomerInfoError.cantInstantiateJsonObject
+        }
+
+        guard let requestDateString = data["request_date"] as? String else {
+            Logger.error(Strings.customerInfo.cant_parse_request_date_from_json(maybeDate: data["request_date"]))
+            throw CustomerInfoError.requestDateFromJson
+        }
+
+        guard let formattedRequestDate = dateFormatter.date(from: requestDateString) else {
+            Logger.error(Strings.customerInfo.cant_parse_request_date_from_string(string: requestDateString))
+            throw CustomerInfoError.requestDateFromString
         }
 
         self.dateFormatter = dateFormatter
         self.originalData = data
         self.schemaVersion = data["schema_version"] as? String
-
-        guard let requestDateString = data["request_date"] as? String,
-              let formattedRequestDate = dateFormatter.date(from: requestDateString) else {
-            return nil
-        }
         self.requestDate = formattedRequestDate
-
         self.originalPurchaseDate = subscriberData.originalPurchaseDate
         self.firstSeen = subscriberData.firstSeen
         self.originalAppUserId = subscriberData.originalAppUserId
         self.managementURL = subscriberData.managementURL
         self.originalApplicationVersion = subscriberData.originalApplicationVersion
-
         self.nonSubscriptionTransactions = subscriberData.nonSubscriptionTransactions
-
         self.entitlements = EntitlementInfos(entitlementsData: subscriberData.entitlementsData,
                                              purchasesData: subscriberData.allTransactionsByProductId,
                                              requestDate: requestDate,
@@ -268,6 +276,28 @@ import Foundation
 
             self.allPurchases = latestNonSubscriptionTransactionsByProductId
                             .merging(subscriptionTransactionsByProductId) { (current, _) in current }
+        }
+    }
+
+}
+
+enum CustomerInfoError: Int, DescribableError {
+
+    case missingJsonObject
+    case cantInstantiateJsonObject
+    case requestDateFromJson
+    case requestDateFromString
+
+    var description: String {
+        switch self {
+        case .missingJsonObject:
+            return "Unable to read property \"subscriber\" from json."
+        case .cantInstantiateJsonObject:
+            return "json appears to be in an unexpected format."
+        case .requestDateFromJson:
+            return "Unable to read property \"request_date\" from json."
+        case .requestDateFromString:
+            return "Unable to parse a date from json propery \"request_date\"."
         }
     }
 

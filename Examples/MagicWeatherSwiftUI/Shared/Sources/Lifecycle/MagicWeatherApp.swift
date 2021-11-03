@@ -13,7 +13,7 @@ struct MagicWeatherApp: App {
     
     init() {
         /* Enable debug logs before calling `configure`. */
-        Purchases.debugLogsEnabled = true
+        Purchases.logLevel = .debug
         
         /*
          Initialize the RevenueCat Purchases SDK.
@@ -31,7 +31,7 @@ struct MagicWeatherApp: App {
         Purchases.shared.delegate = PurchasesDelegateHandler.shared
         
         /* Fetch the available offerings */
-        Purchases.shared.offerings { (offerings, error) in
+        Purchases.shared.getOfferings { (offerings, error) in
             UserViewModel.shared.objectWillChange.send()
             UserViewModel.shared.offerings = offerings
         }

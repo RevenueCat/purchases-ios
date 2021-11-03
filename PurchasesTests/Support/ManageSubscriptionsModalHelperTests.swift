@@ -54,7 +54,9 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         guard #available(iOS 15.0, *) else { return }
         // given
         var callbackCalled = false
-        customerInfoManager.stubbedCustomerInfo = CustomerInfo(data: mockCustomerInfoData)
+        // swiftlint:disable force_try
+        customerInfoManager.stubbedCustomerInfo = try! CustomerInfo(data: mockCustomerInfoData)
+        // swiftlint:enable force_try
         
         // when
         helper.showManageSubscriptionModal { result in
@@ -74,7 +76,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         // given
         var callbackCalled = false
         var receivedResult: Result<Void, Error>?
-        customerInfoManager.stubbedCustomerInfo = CustomerInfo(data: mockCustomerInfoData)
+        customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoData)
         
         // when
         helper.showManageSubscriptionModal { result in

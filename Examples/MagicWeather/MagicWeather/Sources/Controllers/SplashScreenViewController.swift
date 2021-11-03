@@ -26,11 +26,11 @@ class SplashScreenViewController: UIViewController {
     
     // - Since the splash screen is displayed first, this method attempts to start the app "for real"
     func startAppForReal() {
-        Purchases.shared.offerings { (offerings, error) in
+        Purchases.shared.getOfferings { (offerings, error) in
             if let error = error {
                 self.catchError(error)
             } else {
-                Purchases.shared.purchaserInfo { (info, error) in
+                Purchases.shared.getCustomerInfo { (info, error) in
                     if let error = error {
                         self.catchError(error)
                     } else {

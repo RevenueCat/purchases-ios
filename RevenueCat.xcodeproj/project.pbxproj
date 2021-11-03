@@ -218,6 +218,10 @@
 		B300E4BF26D436F900B22262 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
 		B300E4C026D4371200B22262 /* SKPaymentTransactionExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591492526B994B400D32E58 /* SKPaymentTransactionExtensionsTests.swift */; };
 		B300E4C226D439B700B22262 /* IntroEligibilityCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E354B18710B488B8B0D443 /* IntroEligibilityCalculatorTests.swift */; };
+		B302206A27271BCB008F1A0D /* Decoder+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B302206927271BCB008F1A0D /* Decoder+Extensions.swift */; };
+		B302206C2727436F008F1A0D /* UnexpectedBackendResponseSubErrorCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B302206B2727436F008F1A0D /* UnexpectedBackendResponseSubErrorCode.swift */; };
+		B302206E2728B798008F1A0D /* BackendErrorStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B302206D2728B798008F1A0D /* BackendErrorStrings.swift */; };
+		B3022072272B3DDC008F1A0D /* DescribableError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3022071272B3DDC008F1A0D /* DescribableError.swift */; };
 		B3083A132699334C007B5503 /* Offering.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3083A122699334C007B5503 /* Offering.swift */; };
 		B319514926C19856002CA9AC /* NSData+RCExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E35ABEE9FD79CCA64E4F8B /* NSData+RCExtensionsTests.swift */; };
 		B319514B26C1991E002CA9AC /* base64EncodedReceiptSampleForDataExtension.txt in Resources */ = {isa = PBXBuildFile; fileRef = B319514A26C1991E002CA9AC /* base64EncodedReceiptSampleForDataExtension.txt */; };
@@ -510,6 +514,10 @@
 		9A65E0A92591A23800DE00B0 /* RestoreStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestoreStrings.swift; sourceTree = "<group>"; };
 		A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesManager.swift; sourceTree = "<group>"; };
 		A56F9AB026990E9200AFC48F /* CustomerInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfo.swift; sourceTree = "<group>"; };
+		B302206927271BCB008F1A0D /* Decoder+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Decoder+Extensions.swift"; sourceTree = "<group>"; };
+		B302206B2727436F008F1A0D /* UnexpectedBackendResponseSubErrorCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnexpectedBackendResponseSubErrorCode.swift; sourceTree = "<group>"; };
+		B302206D2728B798008F1A0D /* BackendErrorStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendErrorStrings.swift; sourceTree = "<group>"; };
+		B3022071272B3DDC008F1A0D /* DescribableError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DescribableError.swift; sourceTree = "<group>"; };
 		B3083A122699334C007B5503 /* Offering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Offering.swift; sourceTree = "<group>"; };
 		B319514A26C1991E002CA9AC /* base64EncodedReceiptSampleForDataExtension.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = base64EncodedReceiptSampleForDataExtension.txt; sourceTree = "<group>"; };
 		B32B750026868C1D005647BF /* EntitlementInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntitlementInfo.swift; sourceTree = "<group>"; };
@@ -635,6 +643,7 @@
 				2CD72941268A823900BFC976 /* Data+Extensions.swift */,
 				2CD72943268A826F00BFC976 /* Date+Extensions.swift */,
 				37E353FD94A8FD5CD8796530 /* DateFormatter+Extensions.swift */,
+				B302206927271BCB008F1A0D /* Decoder+Extensions.swift */,
 				35F82BAA26A84E130051DF03 /* Dictionary+Extensions.swift */,
 				B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */,
 				F5714EA426D6C24D00635477 /* JSONDecoder+Extensions.swift */,
@@ -659,6 +668,7 @@
 			isa = PBXGroup;
 			children = (
 				2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */,
+				B302206D2728B798008F1A0D /* BackendErrorStrings.swift */,
 				F5714EE426DC2F1D00635477 /* CodableStrings.swift */,
 				9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */,
 				9A65E0752591977200DE00B0 /* IdentityStrings.swift */,
@@ -718,6 +728,7 @@
 				F5BE44412698580200254A30 /* Attribution */,
 				B3B5FBBD269E080A00104A0C /* Caching */,
 				F5714EA626D7A82E00635477 /* CodableExtensions */,
+				B324DC482720C15300103EE9 /* Error Handling */,
 				2CD72940268A820E00BFC976 /* FoundationExtensions */,
 				B3A36AAC26BC76230059EDEA /* Identity */,
 				2D1A28CB24AA6F4B006BE931 /* LocalReceiptParsing */,
@@ -1150,6 +1161,18 @@
 			path = BasicTypes;
 			sourceTree = "<group>";
 		};
+		B324DC482720C15300103EE9 /* Error Handling */ = {
+			isa = PBXGroup;
+			children = (
+				B3B5FBB3269CED4B00104A0C /* BackendErrorCode.swift */,
+				B3022071272B3DDC008F1A0D /* DescribableError.swift */,
+				B3B5FBB5269CED6400104A0C /* ErrorDetails.swift */,
+				35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */,
+				B302206B2727436F008F1A0D /* UnexpectedBackendResponseSubErrorCode.swift */,
+			);
+			path = "Error Handling";
+			sourceTree = "<group>";
+		};
 		B36824BB268FBB9B00957E4C /* SubscriberAttributes */ = {
 			isa = PBXGroup;
 			children = (
@@ -1172,15 +1195,12 @@
 			path = Identity;
 			sourceTree = "<group>";
 		};
-		B3B5FBB7269CED6D00104A0C /* Error Handling */ = {
+		B3B5FBB7269CED6D00104A0C /* Errors */ = {
 			isa = PBXGroup;
 			children = (
-				B3B5FBB3269CED4B00104A0C /* BackendErrorCode.swift */,
 				B34D2AA526976FC700D88C3A /* ErrorCode.swift */,
-				B3B5FBB5269CED6400104A0C /* ErrorDetails.swift */,
-				35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */,
 			);
-			path = "Error Handling";
+			path = Errors;
 			sourceTree = "<group>";
 		};
 		B3B5FBBD269E080A00104A0C /* Caching */ = {
@@ -1195,7 +1215,7 @@
 		B3DDB55726854850008CCF23 /* Public */ = {
 			isa = PBXGroup;
 			children = (
-				B3B5FBB7269CED6D00104A0C /* Error Handling */,
+				B3B5FBB7269CED6D00104A0C /* Errors */,
 				B39E8119268E849900D31189 /* AttributionNetwork.swift */,
 				A56F9AB026990E9200AFC48F /* CustomerInfo.swift */,
 				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
@@ -1410,7 +1430,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1300;
-				LastUpgradeCheck = 1300;
+				LastUpgradeCheck = 1310;
 				ORGANIZATIONNAME = RevenueCat;
 				TargetAttributes = {
 					2DAC5F7126F13C9800C5258F = {
@@ -1617,7 +1637,9 @@
 				2DDF41B624F6F387005BC22D /* ASN1ObjectIdentifierBuilder.swift in Sources */,
 				35D832D2262E56DB00E60AC5 /* HTTPStatusCodes.swift in Sources */,
 				F5E4383826B8530700841CC8 /* SKPaymentTransaction+Extensions.swift in Sources */,
+				B3022072272B3DDC008F1A0D /* DescribableError.swift in Sources */,
 				F5C0196926E880800005D61E /* StoreKitStrings.swift in Sources */,
+				B302206C2727436F008F1A0D /* UnexpectedBackendResponseSubErrorCode.swift in Sources */,
 				2D4E926526990AB1000E10B0 /* StoreKitWrapper.swift in Sources */,
 				2DDF419624F6F331005BC22D /* ProductsRequestFactory.swift in Sources */,
 				2DDF419724F6F331005BC22D /* DateExtensions.swift in Sources */,
@@ -1697,6 +1719,7 @@
 				2DDF41B324F6F387005BC22D /* InAppPurchaseBuilder.swift in Sources */,
 				F5BE447B269E4A7500254A30 /* TrackingManagerProxy.swift in Sources */,
 				B34D2AA0269606E400D88C3A /* IntroEligibility.swift in Sources */,
+				B302206E2728B798008F1A0D /* BackendErrorStrings.swift in Sources */,
 				35D0E5D026A5886C0099EAD8 /* ErrorUtils.swift in Sources */,
 				B372EC54268FEDC60099171E /* PromotionalOffer.swift in Sources */,
 				9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */,
@@ -1709,6 +1732,7 @@
 				37E350C67712B9E054FEF297 /* AttributionData.swift in Sources */,
 				37E3578711F5FDD5DC6458A8 /* AttributionFetcher.swift in Sources */,
 				F5714EA526D6C24D00635477 /* JSONDecoder+Extensions.swift in Sources */,
+				B302206A27271BCB008F1A0D /* Decoder+Extensions.swift in Sources */,
 				B3766F1E26BDA95100141450 /* IntroEligibilityResponse.swift in Sources */,
 				6E38843A0CAFD551013D0A3F /* ProductDetails.swift in Sources */,
 				35E840CC270FB70D00899AE2 /* ManageSubscriptionsModalHelper.swift in Sources */,

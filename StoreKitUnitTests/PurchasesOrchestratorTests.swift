@@ -106,7 +106,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(transaction).to(beNil())
         expect(userCancelled) == false
         expect(error).to(beNil())
-        expect(customerInfo) == CustomerInfo(data: [
+
+        let expectedCustomerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
@@ -114,6 +115,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]])
+        expect(customerInfo) == expectedCustomerInfo
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -248,15 +250,17 @@ private extension PurchasesOrchestratorTests {
         return SK2ProductDetails(sk2Product: try XCTUnwrap(sk2Product as? SK2Product))
     }
 
+    // swiftlint:disable force_try
     var mockCustomerInfo: CustomerInfo {
-        CustomerInfo(data: [
+        try! CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "first_seen": "2019-07-17T00:05:54Z",
                 "original_app_user_id": "",
                 "subscriptions": [:],
                 "other_purchases": [:]
-            ]])!
+            ]])
     }
+    // swiftlint:enable force_try
 
 }
