@@ -13,7 +13,7 @@ class MockAttributionFetcher: RCAttributionFetcher {
         return "rc_idfv"
     }
 
-    override func adClientAttributionDetails(completionBlock completionHandler: @escaping ([String: NSObject]?, Error?) -> Void) {
+    override func afficheClientAttributionDetails(completionBlock completionHandler: @escaping ([String: NSObject]?, Error?) -> Void) {
         completionHandler(["Version3.1": ["iad-campaign-id": 15292426, "iad-attribution": true] as NSObject], nil)
     }
 }
