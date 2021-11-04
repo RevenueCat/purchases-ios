@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSString *)identifierForVendor;
 
-- (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler;
+- (void)afficheClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler;
 
 - (BOOL)isAuthorizedToPostSearchAds;
 

@@ -17,7 +17,7 @@ typedef NS_ENUM(NSUInteger, FakeTrackingManagerAuthorizationStatus) {
     FakeTrackingManagerAuthorizationStatusAuthorized
 };
 
-@protocol FakeAdClient <NSObject>
+@protocol FakeAfficheClient <NSObject>
 
 + (instancetype)sharedClient;
 - (void)requestAttributionDetailsWithBlock:(RCAttributionDetailsBlock)completionHandler;
@@ -25,13 +25,13 @@ typedef NS_ENUM(NSUInteger, FakeTrackingManagerAuthorizationStatus) {
 @end
 
 
-@protocol FakeASIdentifierManager <NSObject>
+@protocol FakeASIdManager <NSObject>
 
 + (instancetype)sharedManager;
 
 @end
 
-@protocol FakeTrackingManager <NSObject>
+@protocol FakeFollowingManager <NSObject>
 
 + (NSInteger)trackingAuthorizationStatus;
 
@@ -41,9 +41,9 @@ typedef NS_ENUM(NSUInteger, FakeTrackingManagerAuthorizationStatus) {
 NS_SWIFT_NAME(AttributionTypeFactory)
 @interface RCAttributionTypeFactory : NSObject
 
-- (Class<FakeAdClient> _Nullable)adClientClass;
-- (Class<FakeTrackingManager> _Nullable)atTrackingClass;
-- (Class<FakeASIdentifierManager> _Nullable)asIdentifierClass;
+- (Class<FakeAfficheClient> _Nullable)afficheClientClass;
+- (Class<FakeFollowingManager> _Nullable)atFollowingClass;
+- (Class<FakeASIdManager> _Nullable)asIdClass;
 
 - (NSString *)asIdentifierPropertyName;
 - (NSString *)authorizationStatusPropertyName;

@@ -48,7 +48,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
 - (nullable NSString *)identifierForAdvertisers {
     if (@available(iOS 6.0, macOS 10.14, *)) {
-        Class <FakeASIdentifierManager> _Nullable asIdentifierManagerClass = [self.attributionFactory asIdentifierClass];
+        Class <FakeASIdManager> _Nullable asIdentifierManagerClass = [self.attributionFactory asIdClass];
         if (asIdentifierManagerClass) {
             id sharedManager = [asIdentifierManagerClass sharedManager];
             NSUUID *identifierValue = [sharedManager valueForKey:[self.attributionFactory asIdentifierPropertyName]];
@@ -69,14 +69,14 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
     return nil;
 }
 
-- (void)adClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler {
+- (void)afficheClientAttributionDetailsWithCompletionBlock:(RCAttributionDetailsBlock)completionHandler {
 #if AD_CLIENT_AVAILABLE
-    Class<FakeAdClient> _Nullable adClientClass = [self.attributionFactory adClientClass];
-    if (!adClientClass) {
-        RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_iad_framework);
+    Class<FakeAfficheClient> _Nullable afficheClientClass = [self.attributionFactory afficheClientClass];
+    if (!afficheClientClass) {
+        RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_ad_framework);
         return;
     }
-    [[adClientClass sharedClient] requestAttributionDetailsWithBlock:completionHandler];
+    [[afficheClientClass sharedClient] requestAttributionDetailsWithBlock:completionHandler];
 #endif
 }
 
@@ -87,7 +87,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
 
         BOOL needsTrackingAuthorization = [self.systemInfo isOperatingSystemAtLeastVersion:minimumOSVersionRequiringAuthorization];
 
-        Class _Nullable trackingManagerClass = [self.attributionFactory atTrackingClass];
+        Class _Nullable trackingManagerClass = [self.attributionFactory atFollowingClass];
         if (!trackingManagerClass) {
             if (needsTrackingAuthorization) {
                 RCWarnLog(@"%@", RCStrings.attribution.search_ads_attribution_cancelled_missing_att_framework);
