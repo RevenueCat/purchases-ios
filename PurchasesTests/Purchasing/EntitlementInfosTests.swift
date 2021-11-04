@@ -86,7 +86,7 @@ class EntitlementInfosTests: XCTestCase {
             ]
         )
         
-        let subscriberInfo: CustomerInfo = CustomerInfo(data: response)!
+        let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
         expect(subscriberInfo.entitlements.all.count).to(equal(2))
         // The default is "pro_cat"
         verifySubscriberInfo()
@@ -133,7 +133,7 @@ class EntitlementInfosTests: XCTestCase {
             ]
         )
         
-        let subscriberInfo: CustomerInfo = CustomerInfo(data: response)!
+        let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
         
         expect(subscriberInfo.entitlements["pro_cat"]).toNot(beNil())
         expect(subscriberInfo.entitlements.active["pro_cat"]).toNot(beNil())
@@ -193,7 +193,7 @@ class EntitlementInfosTests: XCTestCase {
 
     func testGetsEmptySubscriberInfo() {
         stubResponse()
-        let subscriberInfo = CustomerInfo(data: response)
+        let subscriberInfo = CustomerInfo(testData: response)
 
         expect(subscriberInfo?.firstSeen).toNot(beNil())
         expect(subscriberInfo?.originalAppUserId).to(equal("cesarsandbox1"))
@@ -471,7 +471,7 @@ class EntitlementInfosTests: XCTestCase {
         stubResponse(entitlements: mockEntitlements,
                      subscriptions: mockSubscriptions(ownershipType: "PURCHASED"))
 
-        var subscriberInfo = CustomerInfo(data: response)!
+        var subscriberInfo = CustomerInfo(testData: response)!
         var entitlement: EntitlementInfo? = subscriberInfo.entitlements.active["pro_cat"]
         expect(entitlement).toNot(beNil())
         expect(entitlement!.ownershipType) == .purchased
@@ -479,7 +479,7 @@ class EntitlementInfosTests: XCTestCase {
         stubResponse(entitlements: mockEntitlements,
                      subscriptions: mockSubscriptions(ownershipType: "FAMILY_SHARED"))
 
-        subscriberInfo = CustomerInfo(data: response)!
+        subscriberInfo = CustomerInfo(testData: response)!
         entitlement = subscriberInfo.entitlements.active["pro_cat"]
         expect(entitlement).toNot(beNil())
         expect(entitlement!.ownershipType) == .familyShared
@@ -487,7 +487,7 @@ class EntitlementInfosTests: XCTestCase {
         stubResponse(entitlements: mockEntitlements,
                      subscriptions: mockSubscriptions(ownershipType: "BOATY_MCBOATFACE"))
 
-        subscriberInfo = CustomerInfo(data: response)!
+        subscriberInfo = CustomerInfo(testData: response)!
         entitlement = subscriberInfo.entitlements.active["pro_cat"]
         expect(entitlement).toNot(beNil())
         expect(entitlement!.ownershipType) == .unknown
@@ -504,7 +504,7 @@ class EntitlementInfosTests: XCTestCase {
         stubResponse(entitlements: mockEntitlements,
                      subscriptions: mockSubscriptions(ownershipType: nil))
 
-        let subscriberInfo = CustomerInfo(data: response)!
+        let subscriberInfo = CustomerInfo(testData: response)!
         let entitlement: EntitlementInfo? = subscriberInfo.entitlements.active["pro_cat"]
         expect(entitlement).toNot(beNil())
         expect(entitlement!.ownershipType) == .purchased
@@ -1019,7 +1019,7 @@ class EntitlementInfosTests: XCTestCase {
     }
 
     func verifySubscriberInfo() {
-        let subscriberInfo: CustomerInfo = CustomerInfo(data: response)!
+        let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
 
         expect(subscriberInfo).toNot(beNil())
         expect(subscriberInfo.firstSeen).to(equal(formatter.date(from: "2019-07-26T23:29:50Z")))
@@ -1027,7 +1027,7 @@ class EntitlementInfosTests: XCTestCase {
     }
 
     func verifyEntitlementActive(_ expectedEntitlementActive: Bool = true, entitlement: String = "pro_cat") {
-        let subscriberInfo: CustomerInfo = CustomerInfo(data: response)!
+        let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
         let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.identifier) == entitlement
@@ -1040,7 +1040,7 @@ class EntitlementInfosTests: XCTestCase {
                        expectedUnsubscribeDetectedAt: Date? = nil,
                        expectedBillingIssueDetectedAt: Date? = nil,
                        entitlement: String = "pro_cat") {
-        let subscriberInfo: CustomerInfo = CustomerInfo(data: response)!
+        let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
         let proCat: EntitlementInfo = subscriberInfo.entitlements[entitlement]!
 
         expect(proCat.willRenew) == expectedWillRenew
@@ -1059,21 +1059,21 @@ class EntitlementInfosTests: XCTestCase {
     }
 
     func verifyPeriodType(_ expectedPeriodType: PeriodType = PeriodType.normal, expectedEntitlement: String = "pro_cat") {
-        let subscriberInfo: CustomerInfo = CustomerInfo(data: response)!
+        let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
         let proCat: EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
 
         expect(proCat.periodType) == expectedPeriodType
     }
 
     func verifyStore(_ expectedStore: Store = Store.appStore, expectedEntitlement: String = "pro_cat") {
-        let subscriberInfo: CustomerInfo = CustomerInfo(data: response)!
+        let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
         let proCat: EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
 
         expect(proCat.store) == expectedStore
     }
 
     func verifySandbox(_ expectedIsSandbox: Bool = false, expectedEntitlement: String = "pro_cat") {
-        let subscriberInfo: CustomerInfo = CustomerInfo(data: response)!
+        let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
         let proCat: EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
 
         expect(proCat.isSandbox) == expectedIsSandbox
@@ -1093,7 +1093,7 @@ class EntitlementInfosTests: XCTestCase {
                        expectedOriginalPurchaseDate: Date?,
                        expectedExpirationDate: Date?,
                        expectedEntitlement: String = "pro_cat") {
-        let subscriberInfo: CustomerInfo = CustomerInfo(data: response)!
+        let subscriberInfo: CustomerInfo = CustomerInfo(testData: response)!
         let proCat: EntitlementInfo = subscriberInfo.entitlements[expectedEntitlement]!
 
         if (expectedLatestPurchaseDate != nil) {

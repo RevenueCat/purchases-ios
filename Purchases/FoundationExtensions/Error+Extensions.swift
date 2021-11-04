@@ -13,6 +13,31 @@
 
 import Foundation
 
+extension Error {
+
+    /**
+     * Addes a sub-error to the userInfo of a new `error` object as some extra context. Sometimes we have multiple error
+     * Conditions but only a single place to surface them. This adds the second error as extra context to help during
+     * debugging.
+     * - Returns: a new error matching `self` but with the `extraContext` and `error` added.
+     */
+    func addingUnderlyingError(_ maybeError: Error?, extraContext: String? = nil) -> Error {
+        guard let attachedError = maybeError else {
+            return self
+        }
+
+        let asNSError = self as NSError
+        var userInfo = asNSError.userInfo as [NSError.UserInfoKey: Any]
+        userInfo[NSUnderlyingErrorKey as NSString] = attachedError
+        userInfo[ErrorDetails.extraContextKey] = extraContext
+        let nsErrorWithUserInfo = NSError(domain: asNSError.domain,
+                                          code: asNSError.code,
+                                          userInfo: userInfo as [String: Any])
+        return nsErrorWithUserInfo as Error
+    }
+
+}
+
 extension NSError {
 
     var successfullySynced: Bool {

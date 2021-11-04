@@ -7,17 +7,18 @@
 
 import Foundation
 import RevenueCat
+import StoreKit
 
 /* The `Package` class needs to be identifiable to work with a List */
 
-extension Purchases.Package: Identifiable {
+extension Package: Identifiable {
     public var id: String { self.identifier }
 }
 
 /* Some methods to make displaying subscription terms easier */
 
-extension Purchases.Package {
-    func terms(for package: Purchases.Package) -> String {
+extension Package {
+    func terms(for package: Package) -> String {
         if let intro = package.product.introductoryPrice {
             if intro.price == 0 {
                 return "\(intro.subscriptionPeriod.periodTitle()) free trial"

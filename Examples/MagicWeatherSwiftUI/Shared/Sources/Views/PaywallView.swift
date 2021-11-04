@@ -21,7 +21,7 @@ struct PaywallView: View {
     @State var isPurchasing: Bool = false
     
     /// - The current offering saved from PurchasesDelegateHandler
-    var offering: Purchases.Offering? = UserViewModel.shared.offerings?.current
+    var offering: Offering? = UserViewModel.shared.offerings?.current
     
     #warning("Modify this value to reflect your app's Privacy Policy and Terms & Conditions agreements. Required to make it through App Review.")
     var footerText = "Don't forget to add your subscription terms and conditions. Read more about this here: https://www.revenuecat.com/blog/schedule-2-section-3-8-b"
@@ -39,7 +39,7 @@ struct PaywallView: View {
                                 isPurchasing = true
                                 
                                 /// - Purchase a package
-                                Purchases.shared.purchasePackage(package) { (transaction, info, error, userCancelled) in
+                                Purchases.shared.purchase(package: package) { (transaction, info, error, userCancelled) in
                                     
                                     /// - Set 'isPurchasing' state to `false`
                                     isPurchasing = false
@@ -73,8 +73,8 @@ struct PaywallView: View {
 
 /* The cell view for each package */
 struct PackageCellView: View {
-    let package: Purchases.Package
-    let onSelection: (Purchases.Package) -> Void
+    let package: Package
+    let onSelection: (Package) -> Void
     
     var body: some View {
         HStack {

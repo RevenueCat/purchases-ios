@@ -18,7 +18,7 @@ extension Store: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         guard let storeString = try? container.decode(String.self) else {
-            throw CodableError.valueNotFound(Store.self)
+            throw decoder.throwValueNotFoundError(expectedType: Store.self, message: "Unable to extract a storeString")
         }
 
         switch storeString {

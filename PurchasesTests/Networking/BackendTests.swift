@@ -523,7 +523,7 @@ class BackendTests: XCTestCase {
         })
 
         expect(error).toEventuallyNot(beNil())
-        expect(error?.code).toEventually(be(ErrorCode.invalidCredentialsError.rawValue))
+        expect(error?.code).toEventually(equal(ErrorCode.invalidCredentialsError.rawValue))
         expect(error?.userInfo["finishable"]).to(be(false))
 
         expect(underlyingError).toEventuallyNot(beNil())
@@ -644,7 +644,7 @@ class BackendTests: XCTestCase {
         expect(error?.domain).to(equal(RCPurchasesErrorCodeDomain))
         let underlyingError = (error?.userInfo[NSUnderlyingErrorKey]) as? NSError
         expect(underlyingError).toEventuallyNot(beNil())
-        expect(underlyingError?.domain).to(equal(RCBackendErrorCodeDomain))
+        expect(underlyingError?.domain).to(equal("RevenueCat.BackendErrorCode"))
         expect(error?.userInfo["finishable"]).to(be(true))
     }
 
@@ -1434,7 +1434,8 @@ class BackendTests: XCTestCase {
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).toEventually(
             equal(ErrorCode.unexpectedBackendResponseError.rawValue))
-        expect(receivedUnderlyingError).toEventually(beNil())
+        expect(receivedUnderlyingError?.code).toEventually(
+            equal(UnexpectedBackendResponseSubErrorCode.postOfferIdMissingOffersInResponse.rawValue))
     }
     
     func testOfferForSigningSignatureErrorResponse() {
@@ -1479,7 +1480,7 @@ class BackendTests: XCTestCase {
             equal(ErrorCode.invalidAppleSubscriptionKeyError.rawValue))
         expect(receivedUnderlyingError).toEventuallyNot(beNil())
         expect(receivedUnderlyingError?.code).toEventually(equal(7234))
-        expect(receivedUnderlyingError?.domain).toEventually(equal(RCBackendErrorCodeDomain))
+        expect(receivedUnderlyingError?.domain).toEventually(equal("RevenueCat.BackendErrorCode"))
         expect(receivedUnderlyingError?.localizedDescription).toEventually(equal("Ineligible for some reason"))
     }
     
@@ -1520,7 +1521,8 @@ class BackendTests: XCTestCase {
         expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
         expect(receivedError?.code).toEventually(
             equal(ErrorCode.unexpectedBackendResponseError.rawValue))
-        expect(receivedUnderlyingError).toEventually(beNil())
+        expect(receivedUnderlyingError?.code).toEventually(
+            equal(UnexpectedBackendResponseSubErrorCode.postOfferIdSignature.rawValue))
 
     }
 
@@ -1771,9 +1773,8 @@ class BackendTests: XCTestCase {
         }
 
         expect(completionCalled).toEventually(beTrue())
-
         expect(receivedCreated) == true
-        expect(receivedCustomerInfo) == CustomerInfo(data: mockCustomerInfoDict)
+        expect(receivedCustomerInfo) == CustomerInfo(testData: mockCustomerInfoDict)
         expect(receivedError).to(beNil())
     }
 
@@ -1803,7 +1804,7 @@ class BackendTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
 
         expect(receivedCreated) == false
-        expect(receivedCustomerInfo) == CustomerInfo(data: mockCustomerInfoDict)
+        expect(receivedCustomerInfo) == CustomerInfo(testData: mockCustomerInfoDict)
         expect(receivedError).to(beNil())
     }
 

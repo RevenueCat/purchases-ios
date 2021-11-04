@@ -15,15 +15,16 @@ import Foundation
 enum Strings {
 
     static let attribution = AttributionStrings.self
+    static let codable = CodableStrings.self
     static let configure = ConfigureStrings.self
+    static let backendError = BackendErrorStrings.self
+    static let customerInfo = CustomerInfoStrings.self
     static let identity = IdentityStrings.self
     static let network = NetworkStrings.self
     static let offering = OfferingStrings.self
     static let purchase = PurchaseStrings.self
-    static let customerInfo = CustomerInfoStrings.self
     static let receipt = ReceiptStrings.self
     static let restore = RestoreStrings.self
-    static let codable = CodableStrings.self
     static let storeKit = StoreKitStrings.self
 
 }

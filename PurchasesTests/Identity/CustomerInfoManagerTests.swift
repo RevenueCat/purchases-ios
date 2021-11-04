@@ -8,7 +8,7 @@ class CustomerInfoManagerTests: XCTestCase {
     var mockOperationDispatcher = MockOperationDispatcher()
     var mockDeviceCache: MockDeviceCache!
     var mockSystemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
-    let mockCustomerInfo = CustomerInfo(data: [
+    let mockCustomerInfo = CustomerInfo(testData: [
         "request_date": "2018-12-21T02:40:36Z",
         "subscriber": [
             "original_app_user_id": "app_user_id",
@@ -185,7 +185,7 @@ class CustomerInfoManagerTests: XCTestCase {
     }
 
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfNeverSent() {
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
         "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -206,7 +206,7 @@ class CustomerInfoManagerTests: XCTestCase {
     }
 
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfDifferent() {
-        let oldInfo = CustomerInfo(data: [
+        let oldInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -223,7 +223,7 @@ class CustomerInfoManagerTests: XCTestCase {
 
         customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
 
-        let newInfo = CustomerInfo(data: [
+        let newInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -242,7 +242,7 @@ class CustomerInfoManagerTests: XCTestCase {
     }
 
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsOnMainThread() {
-        let oldInfo = CustomerInfo(data: [
+        let oldInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -311,7 +311,7 @@ class CustomerInfoManagerTests: XCTestCase {
 
     func testCachedCustomerInfoParsesCorrectly() {
         let appUserID = "myUser"
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -337,7 +337,7 @@ class CustomerInfoManagerTests: XCTestCase {
     }
 
     func testCachedCustomerInfoReturnsNilIfNotAvailableForTheAppUserID() {
-        let info = CustomerInfo(data: [
+        let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
                 "original_app_user_id": "app_user_id",
@@ -396,7 +396,7 @@ class CustomerInfoManagerTests: XCTestCase {
     func testCachePurchaserDoesntStoreIfCantBeSerialized() {
         // infinity can't be cast into JSON, so we use it to force a parsing exception. See:
         // https://developer.apple.com/documentation/foundation/nsjsonserialization?language=objc
-        let invalidCustomerInfo = CustomerInfo(data: [
+        let invalidCustomerInfo = CustomerInfo(testData: [
             "something": Double.infinity,
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [

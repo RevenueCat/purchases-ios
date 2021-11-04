@@ -7,18 +7,10 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RCBackendErrorCodeAPI.h
+//  DescribableError.swift
 //
-//  Created by Madeline Beyl on 9/7/21.
+//  Created by Joshua Liebowitz on 10/28/21.
 
-#import <Foundation/Foundation.h>
+import Foundation
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface RCBackendErrorCodeAPI : NSObject
-
-+ (void)checkEnums;
-
-@end
-
-NS_ASSUME_NONNULL_END
+protocol DescribableError: Error, CustomStringConvertible { }
