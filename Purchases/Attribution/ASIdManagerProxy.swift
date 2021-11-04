@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ASIdentifierManagerProxy.swift
+//  ASIdManagerProxy.swift
 //
 //  Created by Juanpe Catalán on 14/7/21.
 //
@@ -18,16 +18,16 @@ import Foundation
 // Review uses some grep to find the class names, so we ended up creating a fake class that
 // exposes the same methods we're looking for in ASIdentifierManager to call the same methods and mangling
 // the class names. So that Apple can't find them during the review, but we can still access them on runtime.
-class FakeASIdentifierManager: NSObject {
+class FakeASIdManager: NSObject {
 
     // We need this method to be available as an optional implicitly unwrapped method for `AnyClass`.
-    @objc static func sharedManager() -> FakeASIdentifierManager {
-        FakeASIdentifierManager()
+    @objc static func sharedManager() -> FakeASIdManager {
+        FakeASIdManager()
     }
 
 }
 
-class ASIdentifierManagerProxy {
+class ASIdManagerProxy {
 
     static let mangledIdentifierClassName = "NFVqragvsvreZnantre"
     static let mangledIdentifierPropertyName = "nqiregvfvatVqragvsvre"

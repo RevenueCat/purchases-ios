@@ -50,13 +50,13 @@ class MockAttributionTypeFactory: AttributionTypeFactory {
 
     static var shouldReturnAdClientProxy = true
 
-    override func adClientProxy() -> AfficheClientProxy? {
+    override func afficheClientProxy() -> AfficheClientProxy? {
         Self.shouldReturnAdClientProxy ? MockAdClientProxy() : nil
     }
 
     static var shouldReturnTrackingManagerProxy = true
 
-    override func atTrackingProxy() -> TrackingManagerProxy? {
+    override func atFollowingProxy() -> TrackingManagerProxy? {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
             return Self.shouldReturnTrackingManagerProxy ? MockTrackingManagerProxy() : nil
         } else {

@@ -27,7 +27,7 @@ class AttributionTypeFactoryTests: XCTestCase {
 
     func testCanRotateASIdentifierManagerBack() {
         let expected = "ASIdentifierManager"
-        let randomized = ASIdentifierManagerProxy.mangledIdentifierClassName
+        let randomized = ASIdManagerProxy.mangledIdentifierClassName
 
         expect { randomized.rot13() }.to(equal(expected))
     }
@@ -42,7 +42,7 @@ class AttributionTypeFactoryTests: XCTestCase {
 
     func testCanRotateAdvertisingIdentifierBack() {
         let expected = "advertisingIdentifier"
-        let randomized = ASIdentifierManagerProxy.mangledIdentifierPropertyName
+        let randomized = ASIdManagerProxy.mangledIdentifierPropertyName
 
         expect { randomized.rot13() }.to(equal(expected))
     }
