@@ -275,12 +275,10 @@ class PurchasesOrchestrator {
         }
     }
 
-    @available(iOS 15.0, macCatalyst 15.0, *)
+    @available(iOS 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @available(macOS, unavailable)
-    func beginRefundRequest(for productID: String,
-                            completion: @escaping (RefundRequestStatus, Error?) -> Void) {
+    func beginRefundRequest(for productID: String, completion: @escaping (RefundRequestStatus, Error?) -> Void) {
         beginRefundRequestHelper.beginRefundRequest(productID: productID) { result in
             switch result {
             case .failure(let error):

@@ -16,12 +16,13 @@ import Foundation
 import StoreKit
 import UIKit
 
-@available(iOS 15.0, macCatalyst 15.0, *)
+/// Helper class responsible for calling into StoreKit2 and translating results/errors for consumption by RevenueCat.
+@available(iOS 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
-@available(macOS, unavailable)
 class SK2BeginRefundRequestHelper {
 
+    /// Calls `initiateSK2RefundRequest` and maps the result for consumption by `BeginRefundRequestHelper`
     @MainActor
     func initiateRefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async ->
     Result<RevenueCat.RefundRequestStatus, Error> {
@@ -29,11 +30,14 @@ class SK2BeginRefundRequestHelper {
         return mapSk2Result(from: sk2Result)
     }
 
+    /* Checks with StoreKit2 that the given `productID` has an existing verified transaction, and maps the
+     * result for consumption by `BeginRefundRequestHelper`.
+     */
     func verifyTransaction(productID: String) async -> Result<UInt64, Error> {
-        let maybeResult: VerificationResult<StoreKit.Transaction>? = await StoreKit.Transaction.latest(for: productID)
+        let maybeResult = await StoreKit.Transaction.latest(for: productID)
         guard let nonNilResult = maybeResult else {
-            return .failure(ErrorUtils.beginRefundRequestError(
-                withMessage: Strings.purchase.product_unpurchased_or_missing.description))
+            let errorMessage = Strings.purchase.product_unpurchased_or_missing.description
+            return .failure(ErrorUtils.beginRefundRequestError(withMessage: errorMessage))
         }
 
         switch nonNilResult {
@@ -46,6 +50,13 @@ class SK2BeginRefundRequestHelper {
         }
     }
 
+    /*
+     * Attempts to begin a refund request for the given transactionID and current windowScene with StoreKit2.
+     * If successful, passes result on as-is. If unsuccessful, calls `getErrorMessage` to add more
+     * descriptive details to the error.
+     *
+     * This function allows for us to mock the StoreKit2 response in unit tests.
+     */
     @MainActor
     func initiateSK2RefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async ->
     Result<StoreKit.Transaction.RefundRequestStatus, Error> {
@@ -60,10 +71,9 @@ class SK2BeginRefundRequestHelper {
 
 }
 
-@available(iOS 15.0, macCatalyst 15.0, *)
+@available(iOS 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
-@available(macOS, unavailable)
 private extension SK2BeginRefundRequestHelper {
 
     func getErrorMessage(from maybeSK2Error: Error?) -> String {
@@ -104,14 +114,12 @@ private extension SK2BeginRefundRequestHelper {
 
 }
 
-@available(iOS 15.0, macCatalyst 15.0, *)
+@available(iOS 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
-@available(macOS, unavailable)
 private extension RefundRequestStatus {
 
-    static func from(sk2RefundRequestStatus status: StoreKit.Transaction.RefundRequestStatus)
-        -> RefundRequestStatus? {
+    static func from(sk2RefundRequestStatus status: StoreKit.Transaction.RefundRequestStatus) -> RefundRequestStatus? {
         switch status {
         case .userCancelled:
             return .userCancelled

@@ -924,10 +924,9 @@ public extension Purchases {
      * Keep in mind the status could be `userCancelled`
      * If the request was unsuccessful, there will be an `Error`.
      */
-    @available(iOS 15.0, macCatalyst 15.0, *)
+    @available(iOS 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @available(macOS, unavailable)
     @objc func beginRefundRequest(for productID: String,
                                   completion: @escaping (RefundRequestStatus, Error?) -> Void) {
         purchasesOrchestrator.beginRefundRequest(for: productID, completion: completion)

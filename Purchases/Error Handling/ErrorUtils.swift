@@ -260,10 +260,10 @@ class ErrorUtils: NSObject {
      *
      * - Note: This error is used when there is a problem beginning a refund request.
      */
-    @objc static func beginRefundRequestError(withMessage: String, error: Error? = nil) -> Error {
+    @objc static func beginRefundRequestError(withMessage message: String, error: Error? = nil) -> Error {
         let errorCode = ErrorCode.beginRefundRequestError
         return ErrorUtils.error(with: errorCode,
-                                message: withMessage,
+                                message: message,
                                 underlyingError: error)
     }
 

@@ -13,15 +13,18 @@
 
 import Foundation
 
+/**
+ * Helper class responsible for handling any non-store-specific code involved in beginning a refund request.
+ * Delegates store-specific operations to `SK2BeginRefundRequestHelper`.
+ */
 class BeginRefundRequestHelper {
 
     private let systemInfo: SystemInfo
 
 #if os(iOS) || targetEnvironment(macCatalyst)
-    @available(iOS 15.0, macCatalyst 15.0, *)
+    @available(iOS 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @available(macOS, unavailable)
     lazy var sk2Helper = SK2BeginRefundRequestHelper()
 #endif
 
@@ -29,13 +32,14 @@ class BeginRefundRequestHelper {
         self.systemInfo = systemInfo
     }
 
-    @available(iOS 15.0, macCatalyst 15.0, *)
+    /*
+     * Entry point for beginning the refund request. fatalErrors if beginning a refund request is not supported
+     * on the current platform, else passes the request on to `beginRefundRequest(productID:)`.
+     */
+    @available(iOS 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @available(macOS, unavailable)
-    func beginRefundRequest(productID: String,
-                            completion: @escaping (Result<RefundRequestStatus,
-                                                   Error>) -> Void) {
+    func beginRefundRequest(productID: String, completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
 #if os(iOS) || targetEnvironment(macCatalyst)
         Task {
             let result = await self.beginRefundRequest(productID: productID)
@@ -51,17 +55,19 @@ class BeginRefundRequestHelper {
 }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
-@available(iOS 15.0, macCatalyst 15.0, *)
+@available(iOS 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
-@available(macOS, unavailable)
 private extension BeginRefundRequestHelper {
 
+    /*
+     * Main worker function for beginning a refund request. Handles getting the current windowScene and verifying the
+     * transaction before calling into `SK2BeginRefundRequestHelper`'s `initiateRefundRequest`.
+     */
     @MainActor
-    @available(iOS 15.0, macCatalyst 15.0, *)
+    @available(iOS 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    @available(macOS, unavailable)
     func beginRefundRequest(productID: String) async -> Result<RefundRequestStatus, Error> {
         guard let windowScene = systemInfo.sharedUIApplication?.currentWindowScene else {
             return .failure(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
@@ -81,14 +87,14 @@ private extension BeginRefundRequestHelper {
 }
 #endif
 
-/// Status codes for refund requests
+/// Status codes for refund requests.
 @objc(RCRefundRequestStatus) public enum RefundRequestStatus: Int {
 
-    /// User canceled submission of the refund request
+    /// User canceled submission of the refund request.
     @objc(RCRefundRequestUserCancelled) case userCancelled = 0
-     /// Apple has received the refund request
+     /// Apple has received the refund request.
     @objc(RCRefundRequestSuccess) case success
-     /// There was an error with the request. See message for more details
+     /// There was an error with the request. See message for more details.
     @objc(RCRefundRequestError) case error
 
 }
