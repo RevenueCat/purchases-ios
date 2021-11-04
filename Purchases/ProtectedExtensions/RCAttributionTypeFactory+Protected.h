@@ -10,7 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RCAttributionTypeFactory (Protected)
 
-- (NSString *)rot13:(NSString *)string;
++ (NSString *)rot13:(NSString *)string;
 
 @end
 
