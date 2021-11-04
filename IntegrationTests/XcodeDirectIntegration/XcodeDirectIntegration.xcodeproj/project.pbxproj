@@ -58,6 +58,20 @@
 			remoteGlobalIDString = 2DC5621E24EC63430031F69B;
 			remoteInfo = PurchasesCoreSwiftTests;
 		};
+		B3493DF827335FD200037F47 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2DE20B7F26409EB7004C597D;
+			remoteInfo = StoreKitTestApp;
+		};
+		B3493DFA27335FD200037F47 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2D6C0454254A0AF10039CB92 /* Purchases.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2DE20B6C264087FB004C597D;
+			remoteInfo = StoreKitTests;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -185,6 +199,8 @@
 				2D6C045E254A0AF10039CB92 /* PurchasesTests.xctest */,
 				2D6C0460254A0AF10039CB92 /* PurchasesCoreSwift.framework */,
 				2D6C0462254A0AF10039CB92 /* PurchasesCoreSwiftTests.xctest */,
+				B3493DF927335FD200037F47 /* StoreKitTestApp.app */,
+				B3493DFB27335FD200037F47 /* StoreKitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -318,6 +334,20 @@
 			fileType = wrapper.cfbundle;
 			path = PurchasesCoreSwiftTests.xctest;
 			remoteRef = 2D6C0461254A0AF10039CB92 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		B3493DF927335FD200037F47 /* StoreKitTestApp.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = StoreKitTestApp.app;
+			remoteRef = B3493DF827335FD200037F47 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		B3493DFB27335FD200037F47 /* StoreKitTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = StoreKitTests.xctest;
+			remoteRef = B3493DFA27335FD200037F47 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -548,7 +578,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.XcodeDirectIntegration;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.XcodeDirectIntegration 1604090134";
+				PROVISIONING_PROFILE_SPECIFIER = "match AppStore com.revenuecat.XcodeDirectIntegration";
 				SWIFT_OBJC_BRIDGING_HEADER = "XcodeDirectIntegration/XcodeDirectIntegration-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
