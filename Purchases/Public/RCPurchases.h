@@ -478,7 +478,7 @@ NS_SWIFT_NAME(syncPurchases(_:));
 /**
  * Subscriber attribute associated with the push token for the user
  *
- * @param pushToken nil will delete the subscriber attribute.
+ * @param pushToken Empty String or nil will delete the subscriber attribute.
  */
 - (void)setPushToken:(nullable NSData *)pushToken;
 
@@ -533,42 +533,42 @@ NS_SWIFT_NAME(syncPurchases(_:));
 /**
  * Subscriber attribute associated with the install media source for the user
  *
- * @param mediaSource nil will delete the subscriber attribute.
+ * @param mediaSource Empty String or nil will delete the subscriber attribute.
  */
 - (void)setMediaSource:(nullable NSString *)mediaSource;
 
 /**
  * Subscriber attribute associated with the install campaign for the user
  *
- * @param campaign nil will delete the subscriber attribute.
+ * @param campaign Empty String or nil will delete the subscriber attribute.
  */
 - (void)setCampaign:(nullable NSString *)campaign;
 
 /**
  * Subscriber attribute associated with the install ad group for the user
  *
- * @param adGroup nil will delete the subscriber attribute.
+ * @param adGroup Empty String or nil will delete the subscriber attribute.
  */
 - (void)setAdGroup:(nullable NSString *)adGroup;
 
 /**
  * Subscriber attribute associated with the install ad for the user
  *
- * @param ad nil will delete the subscriber attribute.
+ * @param ad Empty String or nil will delete the subscriber attribute.
  */
 - (void)setAd:(nullable NSString *)ad;
 
 /**
  * Subscriber attribute associated with the install keyword for the user
  *
- * @param keyword nil will delete the subscriber attribute.
+ * @param keyword Empty String or nil will delete the subscriber attribute.
  */
 - (void)setKeyword:(nullable NSString *)keyword;
 
 /**
  * Subscriber attribute associated with the install ad creative for the user
  *
- * @param creative nil will delete the subscriber attribute.
+ * @param creative Empty String or nil will delete the subscriber attribute.
  */
 - (void)setCreative:(nullable NSString *)creative;
 
