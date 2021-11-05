@@ -1,2 +1,2 @@
-- Added new method, `setAirshipChannelID`, which allows developers to set their Airship channel ID for RevenueCat integration. 
+- Added support for Airship integration via `setAirshipChannelID`
     https://github.com/RevenueCat/purchases-ios/pull/933
