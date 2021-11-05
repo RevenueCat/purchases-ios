@@ -127,7 +127,7 @@ class SwiftPaywall: UIViewController {
         offeringLoadingIndicator.startAnimating()
         buyButton.isEnabled = false
                 
-        Purchases.shared.offerings { (offerings, error) in
+        Purchases.shared.getOfferings { (offerings, error) in
             
             if error != nil {
                 self.showAlert(title: "Error", message: "Unable to fetch offerings.") { (action) in

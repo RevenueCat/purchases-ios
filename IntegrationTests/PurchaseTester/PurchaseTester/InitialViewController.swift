@@ -20,7 +20,7 @@ class InitialViewController: UIViewController {
         super.viewDidAppear(animated)
         
         // Get the latest customerInfo to see if we have a pro cat user or not
-        Purchases.shared.customerInfo { (customerInfo, error) in
+        Purchases.shared.getCustomerInfo { (customerInfo, error) in
             if let e = error {
                 print(e.localizedDescription)
             }

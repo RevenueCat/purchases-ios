@@ -71,7 +71,7 @@ private extension InterfaceController {
         proStatusLabel.setText("Loading...")
         buyButton.setHidden(true)
         
-        Purchases.shared.offerings { [weak self] (offerings, error) in
+        Purchases.shared.getOfferings { [weak self] (offerings, error) in
             guard let self = self else { return }
             if let error = error {
                 print(error.localizedDescription)
@@ -88,7 +88,7 @@ private extension InterfaceController {
     }
     
     func configure() {
-        Purchases.shared.customerInfo { [weak self] (maybeCustomerInfo, error) in
+        Purchases.shared.getCustomerInfo { [weak self] (maybeCustomerInfo, error) in
             guard let self = self else { return }
             if let error = error {
                 print(error.localizedDescription)
