@@ -21,8 +21,8 @@ import StoreKit
 @available(tvOS, unavailable)
 class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
 
-    var mockSK2Error: Error?
-    var mockSK2Status: StoreKit.Transaction.RefundRequestStatus?
+    var maybeMockSK2Error: Error?
+    var maybeMockSK2Status: StoreKit.Transaction.RefundRequestStatus?
     var transactionVerified = true
     var refundRequestCalled = false
     var verifyTransactionCalled = false
@@ -30,10 +30,10 @@ class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
     override func initiateSK2RefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async ->
         Result<StoreKit.Transaction.RefundRequestStatus, Error> {
         refundRequestCalled = true
-        if let error = mockSK2Error {
+        if let error = maybeMockSK2Error {
             return .failure(error)
         } else {
-            return .success(mockSK2Status ?? StoreKit.Transaction.RefundRequestStatus.success)
+            return .success(maybeMockSK2Status ?? StoreKit.Transaction.RefundRequestStatus.success)
         }
     }
 

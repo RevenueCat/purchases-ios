@@ -56,7 +56,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
 
         sk2Helper.transactionVerified = false
-        sk2Helper.mockSK2Error = expectedError
+        sk2Helper.maybeMockSK2Error = expectedError
 
 
         var callbackCalled = false
@@ -83,7 +83,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        sk2Helper.mockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
+        sk2Helper.maybeMockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
         sk2Helper.transactionVerified = true
 
         var callbackCalled = false
@@ -109,7 +109,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        sk2Helper.mockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
+        sk2Helper.maybeMockSK2Status = StoreKit.Transaction.RefundRequestStatus.success
 
         var callbackCalled = false
         var receivedResult: Result<RefundRequestStatus, Error>?
@@ -133,7 +133,7 @@ class BeginRefundRequestHelperTests: XCTestCase {
         }
 
         let expectedError = ErrorUtils.beginRefundRequestError(withMessage: "test")
-        sk2Helper.mockSK2Error = expectedError
+        sk2Helper.maybeMockSK2Error = expectedError
 
         var callbackCalled = false
         var receivedResult: Result<RefundRequestStatus, Error>?

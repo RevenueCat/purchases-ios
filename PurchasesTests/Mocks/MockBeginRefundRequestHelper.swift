@@ -16,8 +16,8 @@ import Foundation
 
 class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
 
-    var mockError: Error?
-    var mockRefundRequestStatus: RefundRequestStatus?
+    var maybeMockError: Error?
+    var maybeMockRefundRequestStatus: RefundRequestStatus?
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 15.0, macCatalyst 15, *)
@@ -26,10 +26,10 @@ class MockBeginRefundRequestHelper: BeginRefundRequestHelper {
     @available(tvOS, unavailable)
     override func beginRefundRequest(productID: String,
                                      completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
-        if let error = mockError {
+        if let error = maybeMockError {
             completion(.failure(error))
         } else {
-            completion(.success(mockRefundRequestStatus ?? RefundRequestStatus.success))
+            completion(.success(maybeMockRefundRequestStatus ?? RefundRequestStatus.success))
         }
     }
 #endif
