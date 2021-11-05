@@ -27,6 +27,8 @@
 		2DD77915270E23870079CBD4 /* RCPackageAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DE26EBE84F007DDB75 /* RCPackageAPI.m */; };
 		2DD77916270E23870079CBD4 /* RCTransactionAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */; };
 		2DD77919270E23CC0079CBD4 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2DD77918270E23CC0079CBD4 /* RevenueCat */; };
+		A513AD31272B327A00E0C1BA /* RCRefundRequestStatusAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */; };
+		A513AD32272B328800E0C1BA /* RCRefundRequestStatusAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */; };
 		A519264D26EBCEF6007D0BD1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A519264C26EBCEF6007D0BD1 /* main.m */; };
 		A52A8A3C26EC2AEC00F06846 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A52A8A3B26EC2AEC00F06846 /* RevenueCat */; };
 		A5D614F926EBE84F007DDB75 /* RCOfferingsAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */; };
@@ -63,6 +65,8 @@
 		2DD77900270E235C0079CBD4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2DD77903270E235C0079CBD4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2DD77905270E235C0079CBD4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A513AD2F272B327A00E0C1BA /* RCRefundRequestStatusAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCRefundRequestStatusAPI.h; sourceTree = "<group>"; };
+		A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCRefundRequestStatusAPI.m; sourceTree = "<group>"; };
 		A519264926EBCEF6007D0BD1 /* ObjCAPITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ObjCAPITester; sourceTree = BUILT_PRODUCTS_DIR; };
 		A519264C26EBCEF6007D0BD1 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		A5D614DD26EBE84E007DDB75 /* RCOfferingsAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCOfferingsAPI.m; sourceTree = "<group>"; };
@@ -168,6 +172,8 @@
 				A5D614E726EBE84F007DDB75 /* RCTransactionAPI.h */,
 				A5D614F426EBE84F007DDB75 /* RCTransactionAPI.m */,
 				A519264C26EBCEF6007D0BD1 /* main.m */,
+				A513AD2F272B327A00E0C1BA /* RCRefundRequestStatusAPI.h */,
+				A513AD30272B327A00E0C1BA /* RCRefundRequestStatusAPI.m */,
 			);
 			path = ObjCAPITester;
 			sourceTree = "<group>";
@@ -284,6 +290,7 @@
 				2DD778FC270E235B0079CBD4 /* ViewController.swift in Sources */,
 				2DD778F8270E235B0079CBD4 /* AppDelegate.swift in Sources */,
 				2DD77914270E23870079CBD4 /* RCOfferingAPI.m in Sources */,
+				A513AD32272B328800E0C1BA /* RCRefundRequestStatusAPI.m in Sources */,
 				2DD7790C270E23870079CBD4 /* RCPurchasesErrorCodeAPI.m in Sources */,
 				2DD77915270E23870079CBD4 /* RCPackageAPI.m in Sources */,
 				2DD7790A270E23870079CBD4 /* RCBackendErrorCodeAPI.m in Sources */,
@@ -310,6 +317,7 @@
 				A5D614FB26EBE84F007DDB75 /* RCOfferingAPI.m in Sources */,
 				A5D614FF26EBE84F007DDB75 /* RCAttributionNetworkAPI.m in Sources */,
 				A5D6150626EBE84F007DDB75 /* RCEntitlementInfoAPI.m in Sources */,
+				A513AD31272B327A00E0C1BA /* RCRefundRequestStatusAPI.m in Sources */,
 				A5D614FA26EBE84F007DDB75 /* RCPackageAPI.m in Sources */,
 				A5D6150126EBE84F007DDB75 /* RCPurchasesErrorCodeAPI.m in Sources */,
 				A5D614F926EBE84F007DDB75 /* RCOfferingsAPI.m in Sources */,

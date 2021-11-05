@@ -31,7 +31,7 @@ class ErrorUtils: NSObject {
     }
 
     /**
-     * Maps an ``BackendErrorCode`` code to a ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
+     * Maps a ``BackendErrorCode`` code to a ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
      * `NSUnderlyingErrorKey` in the `NSError.userInfo` dictionary. The backend error code will be mapped using
      * ``BackendErrorCode/toPurchasesErrorCode()``.
      *
@@ -46,7 +46,7 @@ class ErrorUtils: NSObject {
     }
 
     /**
-     * Maps an ``BackendErrorCode`` code to an ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
+     * Maps a ``BackendErrorCode`` code to an ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
      * `RCUnderlyingErrorKey` in the `NSError.userInfo` dictionary. The backend error code will be mapped using
      * ``BackendErrorCode/toPurchasesErrorCode()``.
      *
@@ -255,42 +255,16 @@ class ErrorUtils: NSObject {
                                 underlyingError: error)
     }
 
-}
-
-private extension SKError {
-
-    func toPurchasesErrorCode() -> ErrorCode {
-        switch self.code {
-        case .unknown,
-             .cloudServiceNetworkConnectionFailed,
-             .cloudServiceRevoked,
-             .overlayTimeout,
-             .overlayPresentedInBackgroundScene:
-            return .storeProblemError
-        case .clientInvalid,
-             .paymentNotAllowed,
-             .cloudServicePermissionDenied,
-             .privacyAcknowledgementRequired:
-            return .purchaseNotAllowedError
-        case .paymentCancelled,
-             .overlayCancelled:
-            return .purchaseCancelledError
-        case .paymentInvalid,
-             .unauthorizedRequestData,
-             .missingOfferParams,
-             .invalidOfferPrice,
-             .invalidSignature,
-             .invalidOfferIdentifier:
-            return .purchaseInvalidError
-        case .storeProductNotAvailable:
-            return .productNotAvailableForPurchaseError
-        case .ineligibleForOffer,
-             .overlayInvalidConfiguration,
-             .unsupportedPlatform:
-            return .purchaseNotAllowedError
-        @unknown default:
-            return .unknownError
-        }
+    /**
+     * Constructs an Error with the ``ErrorCode/beginRefundRequestError`` code.
+     *
+     * - Note: This error is used when there is a problem beginning a refund request.
+     */
+    @objc static func beginRefundRequestError(withMessage message: String, error: Error? = nil) -> Error {
+        let errorCode = ErrorCode.beginRefundRequestError
+        return ErrorUtils.error(with: errorCode,
+                                message: message,
+                                underlyingError: error)
     }
 
 }
@@ -343,6 +317,7 @@ private extension ErrorUtils {
              .operationAlreadyInProgressForProductError,
              .unknownBackendError,
              .invalidSubscriberAttributesError,
+             .beginRefundRequestError,
              .logOutAnonymousUserError:
             Logger.error(code.description)
         case .purchaseCancelledError,

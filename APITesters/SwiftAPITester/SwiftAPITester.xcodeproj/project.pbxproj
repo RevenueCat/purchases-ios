@@ -27,6 +27,8 @@
 		2DD778ED270E23460079CBD4 /* OfferingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C726EBE7EA007DDB75 /* OfferingAPI.swift */; };
 		2DD778EE270E23460079CBD4 /* EntitlementInfosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */; };
 		2DD778EF270E23460079CBD4 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */; };
+		A513AD34272B4C0100E0C1BA /* RefundRequestStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */; };
+		A513AD35272B4C0100E0C1BA /* RefundRequestStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */; };
 		A55F62DB26EB001F00A1B466 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = A55F62DA26EB001F00A1B466 /* RevenueCat */; };
 		A5D614CF26EBE7EA007DDB75 /* ErrorCodesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */; };
 		A5D614D026EBE7EA007DDB75 /* OfferingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */; };
@@ -62,6 +64,7 @@
 		2DD778DB270E23400079CBD4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2DD778DE270E23400079CBD4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2DD778E0270E23400079CBD4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefundRequestStatusAPI.swift; sourceTree = "<group>"; };
 		A55F62B526EAFFD200A1B466 /* SwiftAPITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SwiftAPITester; sourceTree = BUILT_PRODUCTS_DIR; };
 		A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorCodesAPI.swift; sourceTree = "<group>"; };
 		A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingsAPI.swift; sourceTree = "<group>"; };
@@ -152,6 +155,7 @@
 				A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */,
 				A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */,
 				A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */,
+				A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */,
 			);
 			path = SwiftAPITester;
 			sourceTree = "<group>";
@@ -259,6 +263,7 @@
 			files = (
 				2DD778EA270E23460079CBD4 /* OfferingsAPI.swift in Sources */,
 				2DD778D7270E233F0079CBD4 /* ViewController.swift in Sources */,
+				A513AD35272B4C0100E0C1BA /* RefundRequestStatusAPI.swift in Sources */,
 				2DD778E8270E23460079CBD4 /* PackageAPI.swift in Sources */,
 				2DD778E6270E23460079CBD4 /* PurchasesAPI.swift in Sources */,
 				2DD778D3270E233F0079CBD4 /* AppDelegate.swift in Sources */,
@@ -279,6 +284,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A513AD34272B4C0100E0C1BA /* RefundRequestStatusAPI.swift in Sources */,
 				A5D614CF26EBE7EA007DDB75 /* ErrorCodesAPI.swift in Sources */,
 				2D6F3874270E593F002C9987 /* main.swift in Sources */,
 				A5D614D126EBE7EA007DDB75 /* CustomerInfoAPI.swift in Sources */,

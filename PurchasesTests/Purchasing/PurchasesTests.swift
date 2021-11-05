@@ -66,6 +66,7 @@ class PurchasesTests: XCTestCase {
         mockManageSubsModalHelper = MockManageSubscriptionsModalHelper(systemInfo: systemInfo,
                                                                        customerInfoManager: customerInfoManager,
                                                                        identityManager: identityManager)
+        mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: systemInfo)
     }
 
     override func tearDown() {
@@ -277,6 +278,7 @@ class PurchasesTests: XCTestCase {
     var purchasesOrchestrator: PurchasesOrchestrator!
     var trialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
     var mockManageSubsModalHelper: MockManageSubscriptionsModalHelper!
+    var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
 
     let purchasesDelegate = MockPurchasesDelegate()
 
@@ -312,7 +314,8 @@ class PurchasesTests: XCTestCase {
                                                       identityManager: identityManager,
                                                       receiptParser: mockReceiptParser,
                                                       deviceCache: deviceCache,
-                                                      manageSubscriptionsModalHelper: mockManageSubsModalHelper)
+                                                      manageSubscriptionsModalHelper: mockManageSubsModalHelper,
+                                                      beginRefundRequestHelper: mockBeginRefundRequestHelper)
         trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
                                                                                       introEligibilityCalculator: mockIntroEligibilityCalculator,
                                                                                       backend: backend,

@@ -50,8 +50,11 @@
         case RCMissingAppUserIDForAliasCreationError:
         case RCProductDiscountMissingSubscriptionGroupIdentifierError:
         case RCConfigurationError:
+        case RCUnsupportedError:
+        case RCCustomerInfoError:
+        case RCSystemInfoError:
+        case RCBeginRefundRequestError:
             NSLog(@"%ld", (long)errCode);
-
     }
 }
 
