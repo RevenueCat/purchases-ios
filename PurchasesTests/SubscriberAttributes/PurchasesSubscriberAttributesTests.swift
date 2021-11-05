@@ -293,6 +293,16 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                 .currentAppUserID
     }
 
+    func testSetAndClearAirshipChannelID() {
+        setupPurchases()
+        purchases.setAirshipChannelID("airship")
+        purchases.setAirshipChannelID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetAirshipChannelIDParametersList[0])
+            .to(equal(("airship", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetAirshipChannelIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
     func testSetMediaSourceMakesRightCalls() {
         setupPurchases()
 

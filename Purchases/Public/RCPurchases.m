@@ -864,6 +864,11 @@ withPresentedOfferingIdentifier:(nullable NSString *)presentedOfferingIdentifier
     [self.subscriberAttributesManager setOnesignalID:onesignalID appUserID:self.appUserID];
 }
 
+- (void)setAirshipChannelID:(nullable NSString *)airshipChannelID {
+    RCDebugLog(RCStrings.attribution.method_called, "setAirshipChannelID");
+    [self.subscriberAttributesManager setAirshipChannelID:airshipChannelID appUserID:self.appUserID];
+}
+
 - (void)setMediaSource:(nullable NSString *)mediaSource {
     RCDebugLog(RCStrings.attribution.method_called, "setMediaSource");
     [self.subscriberAttributesManager setMediaSource:mediaSource appUserID:self.appUserID];

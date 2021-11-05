@@ -44,6 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setOnesignalID:(nullable NSString *)onesignalID appUserID:(NSString *)appUserID;
 
+- (void)setAirshipChannelID:(nullable NSString *)airshipChannelID appUserID:(NSString *)appUserID;
+
 - (void)setMediaSource:(nullable NSString *)mediaSource appUserID:(NSString *)appUserID;
 
 - (void)setCampaign:(nullable NSString *)campaign appUserID:(NSString *)appUserID;

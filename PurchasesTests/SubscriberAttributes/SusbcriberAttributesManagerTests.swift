@@ -938,6 +938,81 @@ class SubscriberAttributesManagerTests: XCTestCase {
         checkDeviceIdentifiersAreSet()
     }
     // endregion
+
+    // region OnesignalID
+    func testSetAirshipChannelID() throws {
+        let airshipChannelID = "airshipChannelID"
+
+        self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$airshipChannelId"
+        expect(receivedAttribute.value) == airshipChannelID
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAirshipChannelIDSetsEmptyIfNil() throws {
+        let airshipChannelID = "airshipChannelId"
+
+        self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
+        self.subscriberAttributesManager.setAirshipChannelID(nil, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 8
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$airshipChannelId"
+        expect(receivedAttribute.value) == ""
+        expect(receivedAttribute.isSynced) == false
+    }
+
+    func testSetAirshipChannelIDSkipsIfSameValue() {
+        let airshipChannelID = "airshipChannelId"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: airshipChannelID,
+                                                                                      value: airshipChannelID)
+        self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 3
+    }
+
+    func testSetAirshipChannelIDOverwritesIfNewValue() throws {
+        let oldSyncTime = Date()
+        let airshipChannelID = "airshipChannelID"
+
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = RCSubscriberAttribute(key: "$airshipChannelId",
+                                                                                      value: "old_id",
+                                                                                      isSynced: true,
+                                                                                      setTime: oldSyncTime)
+
+        self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
+
+        let invokedParams = try XCTUnwrap(self.mockDeviceCache.invokedStoreParameters)
+        let receivedAttribute = invokedParams.attribute
+
+        expect(receivedAttribute.key) == "$airshipChannelId"
+        expect(receivedAttribute.value) == airshipChannelID
+        expect(receivedAttribute.isSynced) == false
+        expect(receivedAttribute.setTime) > oldSyncTime
+    }
+
+    func testSetAirshipChannelIDSetsDeviceIdentifiers() {
+        let airshipChannelID = "airshipChannelID"
+        self.subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 4
+
+        expect(self.mockDeviceCache.invokedStoreParametersList.count) == 4
+
+        checkDeviceIdentifiersAreSet()
+    }
+    // endregion
+    
     // region Media source
     func testSetMediaSource() {
         let mediaSource = "mediaSource"
