@@ -1,3 +1,7 @@
+## 3.13.0
+- Added new method, `setAirshipChannelID`, which allows developers to set their Airship channel ID for RevenueCat integration. 
+    https://github.com/RevenueCat/purchases-ios/pull/933
+
 ## 3.12.8
 - Adds a timeout when `SKProductsRequest` hangs forever, which may happen with some sandbox accounts. 
 When this happens, the SDK will return an error and post a warning to the logs.
