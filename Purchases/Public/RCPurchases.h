@@ -515,12 +515,20 @@ NS_SWIFT_NAME(syncPurchases(_:));
 - (void)setMparticleID:(nullable NSString *)mparticleID;
 
 /**
- * Subscriber attribute associated with the OneSignal Player Id for the user
+ * Subscriber attribute associated with the OneSignal Player ID for the user
  * Required for the RevenueCat OneSignal integration
  *
  * @param onesignalID nil will delete the subscriber attribute
  */
 - (void)setOnesignalID:(nullable NSString *)onesignalID;
+
+/**
+ * Subscriber attribute associated with the Airship Channel ID for the user
+ * Required for the RevenueCat Airship integration
+ *
+ * @param airshipChannelID nil will delete the subscriber attribute
+ */
+- (void)setAirshipChannelID:(nullable NSString *)airshipChannelID;
 
 /**
  * Subscriber attribute associated with the install media source for the user

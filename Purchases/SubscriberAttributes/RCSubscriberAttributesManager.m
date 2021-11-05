@@ -93,6 +93,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self setAttributionID:onesignalID networkKey:RCSpecialSubscriberAttributes.oneSignalID appUserID:appUserID];
 }
 
+- (void)setAirshipChannelID:(nullable NSString *)airshipChannelID appUserID:(NSString *)appUserID {
+    [self setAttributionID:airshipChannelID
+                networkKey:RCSpecialSubscriberAttributes.airshipChannelID
+                 appUserID:appUserID];
+}
+
 - (void)setMediaSource:(nullable NSString *)mediaSource appUserID:(NSString *)appUserID {
     [self setAttributeWithKey:RCSpecialSubscriberAttributes.mediaSource value:mediaSource appUserID:appUserID];
 }

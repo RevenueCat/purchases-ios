@@ -26,6 +26,7 @@ import Foundation
     @objc public static let fBAnonID = "$fbAnonId"
     @objc public static let mpParticleID = "$mparticleId"
     @objc public static let oneSignalID = "$onesignalId"
+    @objc public static let airshipChannelID = "$airshipChannelId"
 
     @objc public static let mediaSource = "$mediaSource"
     @objc public static let campaign = "$campaign"
