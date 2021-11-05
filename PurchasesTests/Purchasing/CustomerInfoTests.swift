@@ -477,7 +477,18 @@ class BasicCustomerInfoTests: XCTestCase {
             ]])
         expect(info1).toNot(equal(info2))
     }
-    
+
+    func testWeird() {
+        let jsonString = CustomerData().jsonString
+        let json = try! JSONSerialization.jsonObject(with: jsonString.data(using: .utf8)!, options: .mutableContainers) as! [String: Any]
+
+
+        let info = CustomerInfo(testData: json)!
+        print("\(String(describing: info))")
+
+    }
+
+
     func testDifferentEntitlementsNotEqual() {
         let info1 = CustomerInfo(testData: [
             "request_date": "2018-12-20T02:40:36Z",
