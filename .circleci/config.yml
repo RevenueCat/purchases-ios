@@ -234,7 +234,7 @@ jobs:
 
   integration-tests-cocoapods:
     macos:
-      xcode: "12.5.1"
+      xcode: "13.0.0"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
