@@ -939,7 +939,7 @@ class SubscriberAttributesManagerTests: XCTestCase {
     }
     // endregion
 
-    // region OnesignalID
+    // region AirshipChannelID
     func testSetAirshipChannelID() throws {
         let airshipChannelID = "airshipChannelID"
 

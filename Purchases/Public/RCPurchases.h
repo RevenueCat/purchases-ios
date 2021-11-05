@@ -486,7 +486,7 @@ NS_SWIFT_NAME(syncPurchases(_:));
  * Subscriber attribute associated with the Adjust Id for the user
  * Required for the RevenueCat Adjust integration
  *
- * @param adjustID nil will delete the subscriber attribute
+ * @param adjustID Empty String or nil will delete the subscriber attribute.
  */
 - (void)setAdjustID:(nullable NSString *)adjustID;
 
@@ -494,7 +494,7 @@ NS_SWIFT_NAME(syncPurchases(_:));
  * Subscriber attribute associated with the Appsflyer Id for the user
  * Required for the RevenueCat Appsflyer integration
  *
- * @param appsflyerID nil will delete the subscriber attribute
+ * @param appsflyerID Empty String or nil will delete the subscriber attribute.
  */
 - (void)setAppsflyerID:(nullable NSString *)appsflyerID;
 
@@ -502,7 +502,7 @@ NS_SWIFT_NAME(syncPurchases(_:));
  * Subscriber attribute associated with the Facebook SDK Anonymous Id for the user
  * Recommended for the RevenueCat Facebook integration
  *
- * @param fbAnonymousID nil will delete the subscriber attribute
+ * @param fbAnonymousID Empty String or nil will delete the subscriber attribute.
  */
 - (void)setFBAnonymousID:(nullable NSString *)fbAnonymousID;
 
@@ -510,7 +510,7 @@ NS_SWIFT_NAME(syncPurchases(_:));
  * Subscriber attribute associated with the mParticle Id for the user
  * Recommended for the RevenueCat mParticle integration
  *
- * @param mparticleID nil will delete the subscriber attribute
+ * @param mparticleID Empty String or nil will delete the subscriber attribute.
  */
 - (void)setMparticleID:(nullable NSString *)mparticleID;
 
@@ -518,7 +518,7 @@ NS_SWIFT_NAME(syncPurchases(_:));
  * Subscriber attribute associated with the OneSignal Player ID for the user
  * Required for the RevenueCat OneSignal integration
  *
- * @param onesignalID nil will delete the subscriber attribute
+ * @param onesignalID Empty String or nil will delete the subscriber attribute.
  */
 - (void)setOnesignalID:(nullable NSString *)onesignalID;
 
@@ -526,7 +526,7 @@ NS_SWIFT_NAME(syncPurchases(_:));
  * Subscriber attribute associated with the Airship Channel ID for the user
  * Required for the RevenueCat Airship integration
  *
- * @param airshipChannelID nil will delete the subscriber attribute
+ * @param airshipChannelID Empty String or nil will delete the subscriber attribute.
  */
 - (void)setAirshipChannelID:(nullable NSString *)airshipChannelID;
 
