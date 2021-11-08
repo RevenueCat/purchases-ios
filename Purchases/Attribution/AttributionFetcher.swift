@@ -60,7 +60,7 @@ class AttributionFetcher {
         // https://developer.apple.com/documentation/adsupport/asidentifiermanager/1614151-advertisingidentifier
 #if os(iOS) || os(tvOS) || os(macOS)
         if #available(macOS 10.14, *) {
-            let maybeIdentifierManagerProxy = attributionFactory.asIdentifierProxy()
+            let maybeIdentifierManagerProxy = attributionFactory.asIdProxy()
             guard let identifierManagerProxy = maybeIdentifierManagerProxy else {
                 Logger.warn(Strings.configure.adsupport_not_imported)
                 return nil
@@ -76,16 +76,16 @@ class AttributionFetcher {
         return nil
     }
 
-    func adClientAttributionDetails(completion: @escaping ([String: NSObject]?, Error?) -> Void) {
+    func afficheClientAttributionDetails(completion: @escaping ([String: NSObject]?, Error?) -> Void) {
         // Should match available platforms in
         // https://developer.apple.com/documentation/iad/adclient?language=swift
 #if os(iOS)
-        guard let adClientProxy = attributionFactory.adClientProxy() else {
-            Logger.warn(Strings.attribution.search_ads_attribution_cancelled_missing_iad_framework)
+        guard let afficheClientProxy = attributionFactory.afficheClientProxy() else {
+            Logger.warn(Strings.attribution.search_ads_attribution_cancelled_missing_ad_framework)
             completion(nil, AttributionFetcherError.identifierForAdvertiserFrameworksUnavailable)
             return
         }
-        adClientProxy.requestAttributionDetails(completion)
+        afficheClientProxy.requestAttributionDetails(completion)
 #else
         completion(nil, AttributionFetcherError.identifierForAdvertiserUnavailableForPlatform)
 #endif
@@ -117,7 +117,7 @@ private extension AttributionFetcher {
         let needsTrackingAuthorization = systemInfo
             .isOperatingSystemAtLeastVersion(minimumOSVersionRequiringAuthorization)
 
-        guard let trackingManagerProxy = attributionFactory.atTrackingProxy() else {
+        guard let trackingManagerProxy = attributionFactory.atFollowingProxy() else {
             if needsTrackingAuthorization {
                 Logger.warn(Strings.attribution.search_ads_attribution_cancelled_missing_att_framework)
             }
