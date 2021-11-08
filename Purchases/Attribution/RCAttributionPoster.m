@@ -120,7 +120,7 @@ static NSMutableArray<RCAttributionData *> *_Nullable postponedAttributionData;
         return;
     }
 
-    [self.attributionFetcher adClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails,
+    [self.attributionFetcher afficheClientAttributionDetailsWithCompletionBlock:^(NSDictionary<NSString *, NSObject *> *_Nullable attributionDetails,
                                                           NSError *_Nullable error) {
         NSArray *values = [attributionDetails allValues];
 

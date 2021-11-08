@@ -7,7 +7,7 @@ import Foundation
 import AppTrackingTransparency
 import Purchases
 
-class MockAdClient: NSObject, FakeAdClient {
+class MockAdClient: NSObject, FakeAfficheClient {
     static func shared() -> Self {
         return sharedInstance as! Self
     }
@@ -31,7 +31,7 @@ class MockAdClient: NSObject, FakeAdClient {
 }
 
 @available(iOS 14, macOS 11, tvOS 14, *)
-class MockTrackingManager: NSObject, FakeTrackingManager {
+class MockTrackingManager: NSObject, FakeFollowingManager {
     static var mockAuthorizationStatus: ATTrackingManager.AuthorizationStatus = .authorized
 
     static func trackingAuthorizationStatus() -> Int {
@@ -42,13 +42,13 @@ class MockTrackingManager: NSObject, FakeTrackingManager {
 class MockAttributionTypeFactory: AttributionTypeFactory {
     static var shouldReturnAdClientClass = true
 
-    override func adClientClass() -> FakeAdClient.Type? {
+    override func afficheClientClass() -> FakeAfficheClient.Type? {
         return Self.shouldReturnAdClientClass ? MockAdClient.self : nil
     }
 
     static var shouldReturnTrackingManagerClass = true
 
-    override func atTrackingClass() -> FakeTrackingManager.Type? {
+    override func atFollowingClass() -> FakeFollowingManager.Type? {
         if #available(iOS 14, macOS 11, tvOS 14, *) {
             return Self.shouldReturnTrackingManagerClass ? MockTrackingManager.self : nil
         } else {

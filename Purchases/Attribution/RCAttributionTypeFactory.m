@@ -9,8 +9,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation RCAttributionTypeFactory
 
-- (Class<FakeAdClient> _Nullable)adClientClass {
-    return (Class<FakeAdClient> _Nullable)NSClassFromString(@"ADClient");
+- (Class<FakeAfficheClient> _Nullable)afficheClientClass {
+    NSString *mangledAfficheClient = @"NQPyvrag";
+    return (Class<FakeAfficheClient> _Nullable)NSClassFromString([self.class rot13: mangledAfficheClient]);
 }
 
 - (NSString *)mangledIdentifierClassName {
@@ -29,35 +30,35 @@ NS_ASSUME_NONNULL_BEGIN
     return @"NGGenpxvatZnantre";
 }
 
-- (Class<FakeTrackingManager> _Nullable)atTrackingClass {
+- (Class<FakeFollowingManager> _Nullable)atFollowingClass {
     // We need to do this mangling to avoid Kid apps being rejected for getting idfa.
     // It looks like during the app review process Apple does some string matching looking for
     // functions in ATTrackingTransparency. We apply rot13 on these functions and classes names
     // so that Apple can't find them during the review, but we can still access them on runtime.
-    NSString *className = [self rot13:self.mangledTrackingClassName];
+    NSString *className = [self.class rot13:self.mangledTrackingClassName];
 
-    return (Class<FakeTrackingManager> _Nullable)NSClassFromString(className);
+    return (Class<FakeFollowingManager> _Nullable)NSClassFromString(className);
 }
 
-- (Class<FakeASIdentifierManager> _Nullable)asIdentifierClass {
+- (Class<FakeASIdManager> _Nullable)asIdClass {
     // We need to do this mangling to avoid Kid apps being rejected for getting idfa.
     // It looks like during the app review process Apple does some string matching looking for
     // functions in the AdSupport.framework. We apply rot13 on these functions and classes names
     // so that Apple can't find them during the review, but we can still access them on runtime.
-    NSString *className = [self rot13:self.mangledIdentifierClassName];
+    NSString *className = [self.class rot13:self.mangledIdentifierClassName];
 
-    return (Class<FakeASIdentifierManager> _Nullable)NSClassFromString(className);
+    return (Class<FakeASIdManager> _Nullable)NSClassFromString(className);
 }
 
 - (NSString *)asIdentifierPropertyName {
-    return [self rot13:self.mangledIdentifierPropertyName];
+    return [self.class rot13:self.mangledIdentifierPropertyName];
 }
 
 - (NSString *)authorizationStatusPropertyName {
-    return [self rot13:self.mangledAuthStatusPropertyName];
+    return [self.class rot13:self.mangledAuthStatusPropertyName];
 }
 
-- (NSString *)rot13:(NSString *)string {
++ (NSString *)rot13:(NSString *)string {
     NSMutableString *rotatedString = [NSMutableString string];
     for (NSUInteger charIdx = 0; charIdx < string.length; charIdx++) {
         unichar c = [string characterAtIndex:charIdx];
