@@ -276,10 +276,6 @@ jobs:
       - checkout
       - trust-github-key
       - update-carthage-integration-commit
-      # Carthage
-      - restore_cache:
-          keys: 
-            - carthage-cache-{{ checksum "Cartfile.resolved" }}
       - run:
           name: Carthage Update
           working_directory: IntegrationTests/CarthageIntegration/
@@ -289,11 +285,7 @@ jobs:
               ./carthage.sh update --no-build
               rm -rf Carthage/Checkouts/purchases-root/IntegrationTests/
               ./carthage.sh build
-      - save_cache:
-          key: carthage-cache-{{ checksum "Cartfile.resolved" }}
-          paths:
-            - Carthage
-
+      
       - install-dependencies-scan-and-archive:
           directory: IntegrationTests/CarthageIntegration/
 
