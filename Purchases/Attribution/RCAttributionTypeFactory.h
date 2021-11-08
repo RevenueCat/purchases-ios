@@ -17,6 +17,7 @@ typedef NS_ENUM(NSUInteger, FakeTrackingManagerAuthorizationStatus) {
     FakeTrackingManagerAuthorizationStatusAuthorized
 };
 
+// You can see the class here: https://rev.cat/fake-affiche-client
 @protocol FakeAfficheClient <NSObject>
 
 + (instancetype)sharedClient;
@@ -24,13 +25,14 @@ typedef NS_ENUM(NSUInteger, FakeTrackingManagerAuthorizationStatus) {
 
 @end
 
-
+// You can see the class here: https://rev.cat/FakeASIdManager
 @protocol FakeASIdManager <NSObject>
 
 + (instancetype)sharedManager;
 
 @end
 
+// You can see the class here: https://rev.cat/FakeFollowingManager
 @protocol FakeFollowingManager <NSObject>
 
 + (NSInteger)trackingAuthorizationStatus;
