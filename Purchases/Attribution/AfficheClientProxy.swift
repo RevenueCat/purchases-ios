@@ -20,6 +20,7 @@ typealias AttributionDetailsBlock = ([String: NSObject]?, Error?) -> Void
 // Review uses some grep to find the class names, so we ended up creating a fake class that
 // exposes the same methods we're looking for in ADClient to call the same methods and mangling
 // the class names. So that Apple can't find them during the review, but we can still access them on runtime.
+// You can see the class here: https://rev.cat/fake-affiche-client
 class FakeAfficheClient: NSObject {
 
     // We need this method to be available as an optional implicitly unwrapped method for `AnyClass`.
