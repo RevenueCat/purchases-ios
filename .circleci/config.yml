@@ -234,23 +234,20 @@ jobs:
 
   integration-tests-cocoapods:
     macos:
-      xcode: "13.0.0"
+      xcode: "12.5.1"
     working_directory: ~/purchases-ios/
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
       
       - install-dependencies
-      - install-dependencies:
-          directory: IntegrationTests/CocoapodsIntegration
-
       - run:
           name: Install Pods
           working_directory: IntegrationTests/CocoapodsIntegration/
           command: |
               pod install
       
-      - scan-and-archive:
+      - install-dependencies-scan-and-archive:
           directory: IntegrationTests/CocoapodsIntegration
       
   integration-tests-swift-package-manager:
