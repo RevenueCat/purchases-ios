@@ -63,8 +63,6 @@ commands:
       - store_artifacts:
           path: fastlane/test_output/report.html
           destination: test_report.html
-      - run: curl https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer -o AppleWWDRCAG3.cer
-      - run: sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain AppleWWDRCAG3.cer
       - run:
           name: Archive
           working_directory: << parameters.directory >>
