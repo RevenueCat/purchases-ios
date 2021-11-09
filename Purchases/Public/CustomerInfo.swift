@@ -239,7 +239,7 @@ import Foundation
                 case .firstSeenMissing:
                     return "Missing propery \"first_seen\" from json."
                 case .firstSeenFormat:
-                    return "Unable to parse \"first_seem\" due to formatting issues."
+                    return "Unable to parse \"first_seen\" due to formatting issues."
                 }
             }
 
