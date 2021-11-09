@@ -1,6 +1,8 @@
 ## 3.13.0
 - Added support for Airship integration via `setAirshipChannelID`
     https://github.com/RevenueCat/purchases-ios/pull/933
+- Obfuscates calls to `AdClient`, `ASIdentifierManager` and `ATTrackingManager` to prevent unnecessary rejections for kids apps when the relevant frameworks aren't used at all. 
+    https://github.com/RevenueCat/purchases-ios/pull/932
 
 ## 3.12.8
 - Adds a timeout when `SKProductsRequest` hangs forever, which may happen with some sandbox accounts. 
