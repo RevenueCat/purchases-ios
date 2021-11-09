@@ -42,13 +42,13 @@ import Foundation
     @objc public var nonConsumablePurchases: Set<String> { Set(self.nonSubscriptionTransactions.map { $0.productId }) }
 
     /**
-    Returns all the non-subscription purchases a user has made.
-    The purchases are ordered by purchase date in ascending order.
+     * Returns all the non-subscription purchases a user has made.
+     * The purchases are ordered by purchase date in ascending order.
      */
     @objc public let nonSubscriptionTransactions: [Transaction]
 
     /**
-     Returns the fetch date of this CustomerInfo.
+     * Returns the fetch date of this CustomerInfo.
      */
     @objc public let requestDate: Date
 
@@ -68,10 +68,10 @@ import Foundation
     @objc public let managementURL: URL?
 
     /**
-    Returns the purchase date for the version of the application when the user bought the app.
-    Use this for grandfathering users when migrating to subscriptions.
-
-    Note: This can be `nil`, see ``Purchases/restoreTransactions(completion:)``
+     * Returns the purchase date for the version of the application when the user bought the app.
+     * Use this for grandfathering users when migrating to subscriptions.
+     *
+     * Note: This can be `nil`, see ``Purchases/restoreTransactions(completion:)``
      */
     @objc public let originalPurchaseDate: Date?
 
@@ -164,11 +164,13 @@ import Foundation
             throw CustomerInfoError.missingJsonObject
         }
 
-        guard let subscriberData = SubscriberData(subscriberData: subscriberObject,
-                                                  dateFormatter: dateFormatter,
-                                                  transactionsFactory: transactionsFactory) else {
-            Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberObject))
-            throw CustomerInfoError.cantInstantiateJsonObject
+        let subscriberData: SubscriberData
+        do {
+            try subscriberData = SubscriberData(subscriberData: subscriberObject,
+                                                dateFormatter: dateFormatter,
+                                                transactionsFactory: transactionsFactory)
+        } catch let subscriberDataError {
+            throw CustomerInfo.createSubscriberDataError(subscriberDataError, subscriberDictionary: subscriberObject)
         }
 
         guard let requestDateString = data["request_date"] as? String else {
@@ -221,7 +223,27 @@ import Foundation
         return parsePurchaseDates(transactionsByProductId: allPurchases)
     }()
 
-    private struct SubscriberData {
+    fileprivate struct SubscriberData {
+
+        // swiftlint:disable:next nesting
+        enum SubscriberDataError: Int, DescribableError {
+
+            case originalAppUserIdMissing = 0
+            case firstSeenMissing
+            case firstSeenFormat
+
+            var description: String {
+                switch self {
+                case .originalAppUserIdMissing:
+                    return "Missing property \"original_app_user_id\" from json."
+                case .firstSeenMissing:
+                    return "Missing propery \"first_seen\" from json."
+                case .firstSeenFormat:
+                    return "Unable to parse \"first_seem\" due to formatting issues."
+                }
+            }
+
+        }
 
         let subscriptionTransactionsByProductId: [String: [String: Any]]
         let originalAppUserId: String
@@ -235,24 +257,30 @@ import Foundation
         let allTransactionsByProductId: [String: [String: Any]]
         let allPurchases: [String: [String: Any]]
 
-        init?(subscriberData: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) {
-            self.subscriptionTransactionsByProductId =
-                subscriberData["subscriptions"] as? [String: [String: Any]] ?? [:]
+        init(subscriberData: [String: Any],
+             dateFormatter: DateFormatter,
+             transactionsFactory: TransactionsFactory) throws {
+            let maybeSubscriptions = subscriberData["subscriptions"] as? [String: [String: Any]] ?? [:]
+            self.subscriptionTransactionsByProductId = maybeSubscriptions
 
             // Metadata
             self.originalApplicationVersion = subscriberData["original_application_version"] as? String
 
             self.originalPurchaseDate =
-                dateFormatter.date(fromString: subscriberData["original_purchase_date"] as? String ?? "")
+            dateFormatter.date(fromString: subscriberData["original_purchase_date"] as? String ?? "")
 
-            guard let firstSeenDateString = subscriberData["first_seen"] as? String,
-                  let firstSeenDate = dateFormatter.date(fromString: firstSeenDateString) else {
-                return nil
+            guard let firstSeenDateString = subscriberData["first_seen"] as? String else {
+                throw SubscriberDataError.firstSeenMissing
             }
+
+            guard let firstSeenDate = dateFormatter.date(fromString: firstSeenDateString) else {
+                throw SubscriberDataError.firstSeenFormat
+            }
+
             self.firstSeen = firstSeenDate
 
             guard let originalAppUserIdString = subscriberData["original_app_user_id"] as? String else {
-                return nil
+                throw SubscriberDataError.originalAppUserIdMissing
             }
             self.originalAppUserId = originalAppUserIdString
 
@@ -269,13 +297,13 @@ import Foundation
             let latestNonSubscriptionTransactionsByProductId = [String: [String: Any]](
                 uniqueKeysWithValues: nonSubscriptionsByProductId.map { productId, transactionsArray in
                     (productId, transactionsArray.last ?? [:])
-            })
+                })
 
             self.allTransactionsByProductId = latestNonSubscriptionTransactionsByProductId
                 .merging(subscriptionTransactionsByProductId, strategy: .keepOriginalValue)
 
             self.allPurchases = latestNonSubscriptionTransactionsByProductId
-                            .merging(subscriptionTransactionsByProductId) { (current, _) in current }
+                .merging(subscriptionTransactionsByProductId) { (current, _) in current }
         }
     }
 
@@ -283,7 +311,7 @@ import Foundation
 
 enum CustomerInfoError: Int, DescribableError {
 
-    case missingJsonObject
+    case missingJsonObject = 0
     case cantInstantiateJsonObject
     case requestDateFromJson
     case requestDateFromString
@@ -304,6 +332,26 @@ enum CustomerInfoError: Int, DescribableError {
 }
 
 private extension CustomerInfo {
+
+    static func createSubscriberDataError(_ error: Error, subscriberDictionary: [String: Any]) -> Error {
+        Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberDictionary))
+
+        guard let subscriberDataError = error as? SubscriberData.SubscriberDataError else {
+            return CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(error)
+        }
+
+        let extraContext: String?
+        switch subscriberDataError {
+        case .originalAppUserIdMissing:
+            let originalAppUserId = subscriberDictionary["original_app_user_id"] as? String ?? "missing"
+            extraContext = "original_app_user_id is: \(originalAppUserId)"
+        case .firstSeenMissing, .firstSeenFormat:
+            let firstSeen = subscriberDictionary["first_seen"] as? String ?? "missing"
+            extraContext = "first_seen is: \(firstSeen)"
+        }
+        return CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(subscriberDataError,
+                                                                                 extraContext: extraContext)
+    }
 
     func activeKeys(dates: [String: Date?]) -> Set<String> {
         return Set(dates.keys.filter {
