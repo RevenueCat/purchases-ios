@@ -42,13 +42,13 @@ import Foundation
     @objc public var nonConsumablePurchases: Set<String> { Set(self.nonSubscriptionTransactions.map { $0.productId }) }
 
     /**
-    Returns all the non-subscription purchases a user has made.
-    The purchases are ordered by purchase date in ascending order.
+     * Returns all the non-subscription purchases a user has made.
+     * The purchases are ordered by purchase date in ascending order.
      */
     @objc public let nonSubscriptionTransactions: [Transaction]
 
     /**
-     Returns the fetch date of this CustomerInfo.
+     * Returns the fetch date of this CustomerInfo.
      */
     @objc public let requestDate: Date
 
@@ -68,10 +68,10 @@ import Foundation
     @objc public let managementURL: URL?
 
     /**
-    Returns the purchase date for the version of the application when the user bought the app.
-    Use this for grandfathering users when migrating to subscriptions.
-
-    Note: This can be `nil`, see ``Purchases/restoreTransactions(completion:)``
+     * Returns the purchase date for the version of the application when the user bought the app.
+     * Use this for grandfathering users when migrating to subscriptions.
+     *
+     * Note: This can be `nil`, see ``Purchases/restoreTransactions(completion:)``
      */
     @objc public let originalPurchaseDate: Date?
 
@@ -158,9 +158,7 @@ import Foundation
                       transactionsFactory: TransactionsFactory())
     }
 
-    // swiftlint:disable function_body_length
     init(data: [String: Any], dateFormatter: DateFormatter, transactionsFactory: TransactionsFactory) throws {
-    // swiftlint:enable function_body_length
         guard let subscriberObject = data["subscriber"] as? [String: Any] else {
             Logger.error(Strings.customerInfo.missing_json_object_instantiation_error(maybeJsonData: data))
             throw CustomerInfoError.missingJsonObject
@@ -168,27 +166,11 @@ import Foundation
 
         let subscriberData: SubscriberData
         do {
-             try subscriberData = SubscriberData(subscriberData: subscriberObject,
-                                                 dateFormatter: dateFormatter,
-                                                 transactionsFactory: transactionsFactory)
+            try subscriberData = SubscriberData(subscriberData: subscriberObject,
+                                                dateFormatter: dateFormatter,
+                                                transactionsFactory: transactionsFactory)
         } catch let subscriberDataError {
-            Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberObject))
-
-            guard let subscriberDataError = subscriberDataError as? SubscriberData.SubscriberDataError else {
-                throw CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(subscriberDataError)
-            }
-
-            let extraContext: String?
-            switch subscriberDataError {
-            case .originalAppUserIdMissing:
-                let originalAppUserId = subscriberObject["original_app_user_id"] as? String ?? "missing"
-                extraContext = "original_app_user_id is: \(originalAppUserId)"
-            case .firstSeenMissing, .firstSeenFormat:
-                let firstSeen = subscriberObject["first_seen"] as? String ?? "missing"
-                extraContext = "first_seen is: \(firstSeen)"
-            }
-            throw CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(subscriberDataError,
-                                                                                    extraContext: extraContext)
+            throw CustomerInfo.createSubscriberDataError(subscriberDataError, subscriberDictionary: subscriberObject)
         }
 
         guard let requestDateString = data["request_date"] as? String else {
@@ -243,9 +225,8 @@ import Foundation
 
     fileprivate struct SubscriberData {
 
-        // swiftlint:disable nesting
+        // swiftlint:disable:next nesting
         enum SubscriberDataError: Int, DescribableError {
-        // swiftlint:enable nesting
 
             case originalAppUserIdMissing = 0
             case firstSeenMissing
@@ -286,7 +267,7 @@ import Foundation
             self.originalApplicationVersion = subscriberData["original_application_version"] as? String
 
             self.originalPurchaseDate =
-                dateFormatter.date(fromString: subscriberData["original_purchase_date"] as? String ?? "")
+            dateFormatter.date(fromString: subscriberData["original_purchase_date"] as? String ?? "")
 
             guard let firstSeenDateString = subscriberData["first_seen"] as? String else {
                 throw SubscriberDataError.firstSeenMissing
@@ -316,13 +297,13 @@ import Foundation
             let latestNonSubscriptionTransactionsByProductId = [String: [String: Any]](
                 uniqueKeysWithValues: nonSubscriptionsByProductId.map { productId, transactionsArray in
                     (productId, transactionsArray.last ?? [:])
-            })
+                })
 
             self.allTransactionsByProductId = latestNonSubscriptionTransactionsByProductId
                 .merging(subscriptionTransactionsByProductId, strategy: .keepOriginalValue)
 
             self.allPurchases = latestNonSubscriptionTransactionsByProductId
-                            .merging(subscriptionTransactionsByProductId) { (current, _) in current }
+                .merging(subscriptionTransactionsByProductId) { (current, _) in current }
         }
     }
 
@@ -351,6 +332,26 @@ enum CustomerInfoError: Int, DescribableError {
 }
 
 private extension CustomerInfo {
+
+    static func createSubscriberDataError(_ error: Error, subscriberDictionary: [String: Any]) -> Error {
+        Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberDictionary))
+
+        guard let subscriberDataError = error as? SubscriberData.SubscriberDataError else {
+            return CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(error)
+        }
+
+        let extraContext: String?
+        switch subscriberDataError {
+        case .originalAppUserIdMissing:
+            let originalAppUserId = subscriberDictionary["original_app_user_id"] as? String ?? "missing"
+            extraContext = "original_app_user_id is: \(originalAppUserId)"
+        case .firstSeenMissing, .firstSeenFormat:
+            let firstSeen = subscriberDictionary["first_seen"] as? String ?? "missing"
+            extraContext = "first_seen is: \(firstSeen)"
+        }
+        return CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(subscriberDataError,
+                                                                                 extraContext: extraContext)
+    }
 
     func activeKeys(dates: [String: Date?]) -> Set<String> {
         return Set(dates.keys.filter {
