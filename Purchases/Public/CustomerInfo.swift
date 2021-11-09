@@ -173,16 +173,19 @@ import Foundation
                                                  transactionsFactory: transactionsFactory)
         } catch let subscriberDataError {
             Logger.error(Strings.customerInfo.cant_instantiate_from_json_object(maybeJsonObject: subscriberObject))
+
+            guard let subscriberDataError = subscriberDataError as? SubscriberData.SubscriberDataError else {
+                throw CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(subscriberDataError)
+            }
+
             let extraContext: String?
             switch subscriberDataError {
-            case CustomerInfo.SubscriberData.SubscriberDataError.originalAppUserId:
+            case .originalAppUserIdMissing:
                 let originalAppUserId = subscriberObject["original_app_user_id"] as? String ?? "missing"
                 extraContext = "original_app_user_id is: \(originalAppUserId)"
-            case CustomerInfo.SubscriberData.SubscriberDataError.firstSeen:
+            case .firstSeenMissing, .firstSeenFormat:
                 let firstSeen = subscriberObject["first_seen"] as? String ?? "missing"
                 extraContext = "first_seen is: \(firstSeen)"
-            default:
-                extraContext = nil
             }
             throw CustomerInfoError.cantInstantiateJsonObject.addingUnderlyingError(subscriberDataError,
                                                                                     extraContext: extraContext)
@@ -244,16 +247,18 @@ import Foundation
         enum SubscriberDataError: Int, DescribableError {
         // swiftlint:enable nesting
 
-            case originalAppUserId = 0
-            case firstSeen
+            case originalAppUserIdMissing = 0
+            case firstSeenMissing
+            case firstSeenFormat
 
             var description: String {
                 switch self {
-                case .originalAppUserId:
-                    return "Unable to read property \"original_app_user_id\" from json."
-
-                case .firstSeen:
-                    return "Unable to parse a date from json propery \"first_seen\"."
+                case .originalAppUserIdMissing:
+                    return "Missing property \"original_app_user_id\" from json."
+                case .firstSeenMissing:
+                    return "Missing propery \"first_seen\" from json."
+                case .firstSeenFormat:
+                    return "Unable to parse \"first_seem\" due to formatting issues."
                 }
             }
 
@@ -283,14 +288,18 @@ import Foundation
             self.originalPurchaseDate =
                 dateFormatter.date(fromString: subscriberData["original_purchase_date"] as? String ?? "")
 
-            guard let firstSeenDateString = subscriberData["first_seen"] as? String,
-                  let firstSeenDate = dateFormatter.date(fromString: firstSeenDateString) else {
-                      throw SubscriberDataError.firstSeen
+            guard let firstSeenDateString = subscriberData["first_seen"] as? String else {
+                throw SubscriberDataError.firstSeenMissing
             }
+
+            guard let firstSeenDate = dateFormatter.date(fromString: firstSeenDateString) else {
+                throw SubscriberDataError.firstSeenFormat
+            }
+
             self.firstSeen = firstSeenDate
 
             guard let originalAppUserIdString = subscriberData["original_app_user_id"] as? String else {
-                throw SubscriberDataError.originalAppUserId
+                throw SubscriberDataError.originalAppUserIdMissing
             }
             self.originalAppUserId = originalAppUserIdString
 
