@@ -31,7 +31,7 @@ class ProductsManager: NSObject {
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            SystemInfo.useStoreKit2IfAvailable {
-            Task {
+            _ = Task<Void, Never> {
                 let productDetails = await self.sk2ProductDetails(withIdentifiers: identifiers)
                 completion(productDetails)
             }
