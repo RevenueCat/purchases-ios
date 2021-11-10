@@ -42,7 +42,7 @@ class TrialOrIntroPriceEligibilityChecker {
     func checkEligibility(productIdentifiers: [String],
                           completion: @escaping ReceiveIntroEligibilityBlock) {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            Task {
+            _ = Task<Void, Never> {
                 let eligibility = await sk2CheckEligibility(productIdentifiers)
                 completion(eligibility)
             }

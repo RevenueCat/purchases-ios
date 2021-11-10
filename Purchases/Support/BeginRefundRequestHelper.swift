@@ -41,7 +41,7 @@ class BeginRefundRequestHelper {
     @available(tvOS, unavailable)
     func beginRefundRequest(productID: String, completion: @escaping (Result<RefundRequestStatus, Error>) -> Void) {
 #if os(iOS) || targetEnvironment(macCatalyst)
-        Task {
+        _ = Task<Void, Never> {
             let result = await self.beginRefundRequest(productID: productID)
             completion(result)
         }
