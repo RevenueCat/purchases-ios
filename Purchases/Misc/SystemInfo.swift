@@ -47,7 +47,6 @@ class SystemInfo {
     var finishTransactions: Bool
     let platformFlavor: String
     let platformFlavorVersion: String?
-    private let bundle: Bundle
 
     static var forceUniversalAppStore: Bool = false
     var isSandbox: Bool {
@@ -60,6 +59,8 @@ class SystemInfo {
         return receiptURLString.contains("sandboxReceipt")
     }
 
+    private let bundle: Bundle
+    
     static var frameworkVersion: String {
         return "4.0.0-beta.6"
     }

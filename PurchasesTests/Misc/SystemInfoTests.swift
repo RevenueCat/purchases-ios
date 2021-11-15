@@ -92,6 +92,7 @@ class SystemInfoTests: XCTestCase {
 }
 
 private extension SystemInfo {
+    
     static func withReceiptResult(_ result: MockBundle.ReceiptURLResult) -> SystemInfo {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
@@ -101,4 +102,5 @@ private extension SystemInfo {
                                finishTransactions: false,
                                bundle: bundle)
     }
+    
 }
