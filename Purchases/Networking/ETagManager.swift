@@ -20,7 +20,7 @@ class ETagManager {
 
     private let queue = DispatchQueue(label: "ETagManager")
     private let userDefaults: UserDefaults
-    private let recursiveLock = NSRecursiveLock()
+    private let lock = Lock()
 
     init() {
         self.userDefaults = UserDefaults(suiteName: ETagManager.suiteName) ?? UserDefaults.standard
@@ -75,9 +75,9 @@ class ETagManager {
     }
 
     func clearCaches() {
-        recursiveLock.lock()
-        userDefaults.removePersistentDomain(forName: ETagManager.suiteName)
-        recursiveLock.unlock()
+        lock.perform {
+            userDefaults.removePersistentDomain(forName: ETagManager.suiteName)
+        }
     }
 
 }
@@ -89,16 +89,15 @@ private extension ETagManager {
     }
 
     func storedETagAndResponse(for request: URLRequest) -> ETagAndResponseWrapper? {
-        recursiveLock.lock()
-        if let cacheKey = eTagDefaultCacheKey(for: request),
-            let value = userDefaults.object(forKey: cacheKey),
-            let data = value as? Data {
-            recursiveLock.unlock()
-            return ETagAndResponseWrapper(with: data)
-        }
+        return lock.perform {
+            if let cacheKey = eTagDefaultCacheKey(for: request),
+               let value = userDefaults.object(forKey: cacheKey),
+               let data = value as? Data {
+                return ETagAndResponseWrapper(with: data)
+            }
 
-        recursiveLock.unlock()
-        return nil
+            return nil
+        }
     }
 
     func storedHTTPResponse(for request: URLRequest) -> HTTPResponse? {
@@ -121,9 +120,9 @@ private extension ETagManager {
            let cacheKey = eTagDefaultCacheKey(for: request) {
             let eTagAndResponse = ETagAndResponseWrapper(eTag: eTag, statusCode: statusCode, jsonObject: responseObject)
             if let dataToStore = eTagAndResponse.asData() {
-                recursiveLock.lock()
-                userDefaults.set(dataToStore, forKey: cacheKey)
-                recursiveLock.unlock()
+                lock.perform {
+                    userDefaults.set(dataToStore, forKey: cacheKey)
+                }
             }
         }
     }
