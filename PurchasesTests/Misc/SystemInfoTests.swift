@@ -77,4 +77,28 @@ class SystemInfoTests: XCTestCase {
                                        finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
     }
+    
+    func testIsSandbox() {
+        expect(SystemInfo.withReceiptResult(.sandboxReceipt).isSandbox) == true
+    }
+    
+    func testIsNotSandbox() {
+        expect(SystemInfo.withReceiptResult(.receiptWithData).isSandbox) == false
+    }
+    
+    func testIsNotSandboxIfNoReceiptURL() {
+        expect(SystemInfo.withReceiptResult(.nilURL).isSandbox) == false
+    }
+}
+
+private extension SystemInfo {
+    static func withReceiptResult(_ result: MockBundle.ReceiptURLResult) -> SystemInfo {
+        let bundle = MockBundle()
+        bundle.receiptURLResult = result
+        
+        return try! SystemInfo(platformFlavor: nil,
+                               platformFlavorVersion: nil,
+                               finishTransactions: false,
+                               bundle: bundle)
+    }
 }

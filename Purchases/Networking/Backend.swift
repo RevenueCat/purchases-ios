@@ -384,7 +384,7 @@ class Backend {
         }
 
         if receiptData.count == 0 {
-            if SystemInfo.isSandbox {
+            if self.httpClient.systemInfo.isSandbox {
                 Logger.appleWarning(Strings.receipt.no_sandbox_receipt_intro_eligibility)
             }
 
