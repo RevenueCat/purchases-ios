@@ -19,13 +19,15 @@ class MockETagManager: ETagManager {
     var stubbedETagHeaderResult: [String: String]! = [:]
 
     override func eTagHeader(for urlRequest: URLRequest, refreshETag: Bool = false) -> [String: String] {
-        invokedETagHeader = true
-        invokedETagHeaderCount += 1
-        invokedETagHeaderParameters = (urlRequest, refreshETag)
-        invokedETagHeaderParametersList.append((urlRequest, refreshETag))
-        return stubbedETagHeaderResult
+        return lock.perform {
+            invokedETagHeader = true
+            invokedETagHeaderCount += 1
+            invokedETagHeaderParameters = (urlRequest, refreshETag)
+            invokedETagHeaderParametersList.append((urlRequest, refreshETag))
+            return stubbedETagHeaderResult
+        }
     }
-
+    
     var invokedHTTPResultFromCacheOrBackend = false
     var invokedHTTPResultFromCacheOrBackendCount = 0
     var invokedHTTPResultFromCacheOrBackendParameters: (response: HTTPURLResponse, responseObject: [String: Any]?, error: Error?, request: URLRequest, retried: Bool)?
@@ -38,21 +40,28 @@ class MockETagManager: ETagManager {
                                                error: Error?,
                                                request: URLRequest,
                                                retried: Bool) -> HTTPResponse? {
-        invokedHTTPResultFromCacheOrBackend = true
-        invokedHTTPResultFromCacheOrBackendCount += 1
-        invokedHTTPResultFromCacheOrBackendParameters = (response, jsonObject, error, request, retried)
-        invokedHTTPResultFromCacheOrBackendParametersList.append((response, jsonObject, error, request, retried))
-        if shouldReturnResultFromBackend {
-            return HTTPResponse(statusCode: response.statusCode, jsonObject: jsonObject)
+        return lock.perform {
+            invokedHTTPResultFromCacheOrBackend = true
+            invokedHTTPResultFromCacheOrBackendCount += 1
+            invokedHTTPResultFromCacheOrBackendParameters = (response, jsonObject, error, request, retried)
+            invokedHTTPResultFromCacheOrBackendParametersList.append((response, jsonObject, error, request, retried))
+            if shouldReturnResultFromBackend {
+                return HTTPResponse(statusCode: response.statusCode, jsonObject: jsonObject)
+            }
+            return stubbedHTTPResultFromCacheOrBackendResult
         }
-        return stubbedHTTPResultFromCacheOrBackendResult
     }
 
     var invokedClearCaches = false
     var invokedClearCachesCount = 0
 
     override func clearCaches() {
-        invokedClearCaches = true
-        invokedClearCachesCount += 1
+        lock.perform {
+            invokedClearCaches = true
+            invokedClearCachesCount += 1
+        }
     }
+    
+    private let lock = Lock()
+    
 }
