@@ -17,15 +17,11 @@ import Foundation
 class ReceiptFetcher {
 
     private let requestFetcher: StoreKitRequestFetcher
-    private let receiptBundle: Bundle
+    private let systemInfo: SystemInfo
 
-    convenience init(requestFetcher: StoreKitRequestFetcher) {
-        self.init(requestFetcher: requestFetcher, bundle: .main)
-    }
-
-    init(requestFetcher: StoreKitRequestFetcher, bundle: Bundle) {
+    init(requestFetcher: StoreKitRequestFetcher, systemInfo: SystemInfo) {
         self.requestFetcher = requestFetcher
-        self.receiptBundle = bundle
+        self.systemInfo = systemInfo
     }
 
     func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping (Data?) -> Void) {
@@ -51,7 +47,7 @@ class ReceiptFetcher {
 private extension ReceiptFetcher {
 
     func receiptData() -> Data? {
-        guard var receiptURL: URL = receiptBundle.appStoreReceiptURL else {
+        guard var receiptURL: URL = systemInfo.bundle.appStoreReceiptURL else {
             Logger.debug(Strings.receipt.no_sandbox_receipt_restore)
             return nil
         }
@@ -68,7 +64,7 @@ private extension ReceiptFetcher {
                                                                                       patchVersion: 0)
         let isBelowFirstOSVersionWithoutBug = ProcessInfo.processInfo.isOperatingSystemAtLeast(firstOSVersionWithoutBug)
 
-        if isBelowFirstOSVersionWithoutBug && SystemInfo.isSandbox {
+        if isBelowFirstOSVersionWithoutBug && systemInfo.isSandbox {
             let receiptURLFolder: URL = receiptURL.deletingLastPathComponent()
             let productionReceiptURL: URL = receiptURLFolder.appendingPathComponent("receipt")
             receiptURL = productionReceiptURL

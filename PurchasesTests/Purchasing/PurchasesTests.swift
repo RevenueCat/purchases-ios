@@ -37,10 +37,10 @@ class PurchasesTests: XCTestCase {
         mockOperationDispatcher = MockOperationDispatcher()
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockReceiptParser = MockReceiptParser()
-        receiptFetcher = MockReceiptFetcher(requestFetcher: requestFetcher)
         let systemInfoAttribution = try! MockSystemInfo(platformFlavor: "iOS",
                                                    platformFlavorVersion: "3.2.1",
                                                    finishTransactions: true)
+        receiptFetcher = MockReceiptFetcher(requestFetcher: requestFetcher, systemInfo: systemInfoAttribution)
         attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfoAttribution)
         subscriberAttributesManager =

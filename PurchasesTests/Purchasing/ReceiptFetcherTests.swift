@@ -22,11 +22,16 @@ class ReceiptFetcherTests: XCTestCase {
     var receiptFetcher: ReceiptFetcher!
     var mockRequestFetcher: MockRequestFetcher!
     var mockBundle: MockBundle!
+    var mockSystemInfo: MockSystemInfo!
     
     override func setUp() {
         mockBundle = MockBundle()
         mockRequestFetcher = MockRequestFetcher()
-        receiptFetcher = ReceiptFetcher(requestFetcher: mockRequestFetcher, bundle: mockBundle)
+        mockSystemInfo = try! MockSystemInfo(platformFlavor: nil,
+                                             platformFlavorVersion: nil,
+                                             finishTransactions: false,
+                                             bundle: mockBundle)
+        receiptFetcher = ReceiptFetcher(requestFetcher: mockRequestFetcher, systemInfo: mockSystemInfo)
     }
     
     func testReceiptDataWithRefreshPolicyNeverReturnsReceiptData() {
