@@ -47,7 +47,6 @@ platform :ios do
       scheme: "UnitTests",
       testplan: "UnitTests",
       prelaunch_simulator: true,
-      devices: ["iPhone 8", "iPhone 12"],
       scheme: "UnitTests",
       output_types: '',
       fail_build: false,
