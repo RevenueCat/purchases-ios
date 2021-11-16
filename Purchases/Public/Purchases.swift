@@ -188,7 +188,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
                                              operationDispatcher: operationDispatcher)
-        let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher)
         let systemInfo: SystemInfo
         do {
             systemInfo = try SystemInfo(platformFlavor: platformFlavor,
@@ -198,6 +197,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
             fatalError(error.localizedDescription)
         }
 
+        let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()
         let backend = Backend(apiKey: apiKey,
                               systemInfo: systemInfo,

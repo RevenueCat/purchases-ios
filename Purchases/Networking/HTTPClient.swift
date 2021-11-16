@@ -16,7 +16,7 @@ import Foundation
 class HTTPClient {
 
     private let session: URLSession
-    private let systemInfo: SystemInfo
+    internal let systemInfo: SystemInfo
     private var queuedRequests: [HTTPRequest] = []
     private var currentSerialRequest: HTTPRequest?
     private var eTagManager: ETagManager

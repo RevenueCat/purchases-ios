@@ -426,7 +426,7 @@ private extension PurchasesOrchestrator {
         receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { maybeReceiptData in
             guard let receiptData = maybeReceiptData,
                   !receiptData.isEmpty else {
-                      if SystemInfo.isSandbox {
+                      if self.systemInfo.isSandbox {
                           Logger.appleWarning(Strings.receipt.no_sandbox_receipt_restore)
                       }
 

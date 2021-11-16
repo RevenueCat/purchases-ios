@@ -20,10 +20,6 @@ class MockReceiptFetcher: ReceiptFetcher {
     var receiptDataTimesCalled = 0
     var receiptDataReceivedRefreshPolicy: ReceiptRefreshPolicy?
 
-    convenience init(requestFetcher: StoreKitRequestFetcher) {
-        self.init(requestFetcher: requestFetcher, bundle: .main)
-    }
-
     override func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping ((Data?) -> Void)) {
         receiptDataReceivedRefreshPolicy = refreshPolicy
         receiptDataCalled = true

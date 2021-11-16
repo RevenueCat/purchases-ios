@@ -98,7 +98,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                     backend: mockBackend,
                                                     offeringsFactory: MockOfferingsFactory(),
                                                     productsManager: MockProductsManager())
-        self.mockReceiptFetcher = MockReceiptFetcher(requestFetcher: mockRequestFetcher)
+        self.mockReceiptFetcher = MockReceiptFetcher(requestFetcher: mockRequestFetcher, systemInfo: systemInfoAttribution)
     }
 
     override func tearDown() {
