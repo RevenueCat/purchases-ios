@@ -22,7 +22,21 @@ import StoreKit
 class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
 
     var maybeMockSK2Error: Error?
-    var maybeMockSK2Status: StoreKit.Transaction.RefundRequestStatus?
+
+    // We can't directly store instances of StoreKit.Product, since that causes
+    // linking issues in iOS < 15, even with @available checks correctly in place.
+    // So instead, we store the underlying product as Any and wrap it with casting.
+    // https://openradar.appspot.com/radar?id=4970535809187840
+    private var untypedSK2Status: Any?
+    var maybeMockSK2Status: StoreKit.Transaction.RefundRequestStatus? {
+        get {
+            return untypedSK2Status as! StoreKit.Transaction.RefundRequestStatus?
+        }
+        set {
+            untypedSK2Status = newValue
+        }
+    }
+
     var transactionVerified = true
     var refundRequestCalled = false
     var verifyTransactionCalled = false
