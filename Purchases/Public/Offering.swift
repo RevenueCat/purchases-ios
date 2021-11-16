@@ -103,23 +103,38 @@ import Foundation
         for package in availablePackages {
             switch package.packageType {
             case .lifetime:
+                Self.checkForNilAndLogReplacement(package: self.lifetime, newPackage: package)
                 self.lifetime = package
             case .annual:
+                Self.checkForNilAndLogReplacement(package: self.annual, newPackage: package)
                 self.annual = package
             case .sixMonth:
+                Self.checkForNilAndLogReplacement(package: self.sixMonth, newPackage: package)
                 self.sixMonth = package
             case .threeMonth:
+                Self.checkForNilAndLogReplacement(package: self.threeMonth, newPackage: package)
                 self.threeMonth = package
             case .twoMonth:
+                Self.checkForNilAndLogReplacement(package: self.twoMonth, newPackage: package)
                 self.twoMonth = package
             case .monthly:
+                Self.checkForNilAndLogReplacement(package: self.monthly, newPackage: package)
                 self.monthly = package
             case .weekly:
+                Self.checkForNilAndLogReplacement(package: self.weekly, newPackage: package)
                 self.weekly = package
             case .unknown, .custom:
-                break
+                Logger.warn("Unknown subscription length for package:\(package.offeringIdentifier), ignoring.")
             }
         }
+    }
+
+    private static func checkForNilAndLogReplacement(package: Package?, newPackage: Package) {
+        guard let package = package else {
+            return
+        }
+
+        Logger.warn("Package: \(package.identifier) already exists, overwriting with:\(newPackage.identifier)")
     }
 
     private func valueOrEmpty<T: CustomStringConvertible>(_ value: T?) -> String {
