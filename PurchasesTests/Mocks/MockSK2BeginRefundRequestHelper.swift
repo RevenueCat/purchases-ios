@@ -23,7 +23,7 @@ class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
 
     var maybeMockSK2Error: Error?
 
-    // We can't directly store instances of StoreKit.Product, since that causes
+    // We can't directly store instances of StoreKit.Transaction.RefundRequestStatus, since that causes
     // linking issues in iOS < 15, even with @available checks correctly in place.
     // So instead, we store the underlying product as Any and wrap it with casting.
     // https://openradar.appspot.com/radar?id=4970535809187840
