@@ -477,7 +477,7 @@ class BasicCustomerInfoTests: XCTestCase {
             ]])
         expect(info1).toNot(equal(info2))
     }
-    
+
     func testDifferentEntitlementsNotEqual() {
         let info1 = CustomerInfo(testData: [
             "request_date": "2018-12-20T02:40:36Z",

@@ -16,16 +16,16 @@ import Foundation
 
 class AttributionTypeFactory {
 
-    func adClientProxy() -> AdClientProxy? {
-        return AdClientProxy.adClientClass == nil ? nil : AdClientProxy()
+    func afficheClientProxy() -> AfficheClientProxy? {
+        return AfficheClientProxy.afficheClientClass == nil ? nil : AfficheClientProxy()
     }
 
-    func atTrackingProxy() -> TrackingManagerProxy? {
+    func atFollowingProxy() -> TrackingManagerProxy? {
         return TrackingManagerProxy.trackingClass == nil ? nil : TrackingManagerProxy()
     }
 
-    func asIdentifierProxy() -> ASIdentifierManagerProxy? {
-        return ASIdentifierManagerProxy.identifierClass == nil ? nil : ASIdentifierManagerProxy()
+    func asIdProxy() -> ASIdManagerProxy? {
+        return ASIdManagerProxy.identifierClass == nil ? nil : ASIdManagerProxy()
     }
 
 }

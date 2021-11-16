@@ -23,7 +23,7 @@ class CatsViewController: UIViewController {
         goPremiumButton.addTarget(self, action: #selector(goPremiumButtonTapped), for: .touchUpInside)
         restorePurchasesButton.addTarget(self, action: #selector(restorePurchasesButtonTapped), for: .touchUpInside)
         
-        Purchases.shared.customerInfo{ (maybeCustomerInfo, error) in
+        Purchases.shared.getCustomerInfo{ (maybeCustomerInfo, error) in
             self.configureCatContentFor(customerInfo: maybeCustomerInfo)
         }
 
