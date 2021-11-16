@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -19,7 +19,7 @@
 		559779AC25B72D3200C33DFB /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559779AB25B72D3200C33DFB /* Constants.swift */; };
 		559779B925B72DCF00C33DFB /* SampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559779B325B72DC000C33DFB /* SampleData.swift */; };
 		559779C025B72EE100C33DFB /* PurchasesDelegateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559779BF25B72EE100C33DFB /* PurchasesDelegateHandler.swift */; };
-		B3D4400727220C6800A665B1 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = B3D4400627220C6800A665B1 /* RevenueCat */; };
+		5791CEC42742EF2400E50C4B /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5791CEC32742EF2400E50C4B /* RevenueCat.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +38,7 @@
 		559779B325B72DC000C33DFB /* SampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleData.swift; sourceTree = "<group>"; };
 		559779BF25B72EE100C33DFB /* PurchasesDelegateHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDelegateHandler.swift; sourceTree = "<group>"; };
 		5791CE812742E39900E50C4B /* Magic Weather SwiftUI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Magic Weather SwiftUI.entitlements"; sourceTree = "<group>"; };
+		5791CEC32742EF2400E50C4B /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,7 +46,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B3D4400727220C6800A665B1 /* RevenueCat in Frameworks */,
+				5791CEC42742EF2400E50C4B /* RevenueCat.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,6 +56,7 @@
 		55413BF525B73F7200ECCA5A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5791CEC32742EF2400E50C4B /* RevenueCat.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -162,7 +164,6 @@
 			);
 			name = "Magic Weather SwiftUI (iOS)";
 			packageProductDependencies = (
-				B3D4400627220C6800A665B1 /* RevenueCat */,
 			);
 			productName = "Magic Weather SwiftUI (iOS)";
 			productReference = 5597797E25ACDC3E00C33DFB /* Magic Weather SwiftUI.app */;
@@ -192,7 +193,6 @@
 			);
 			mainGroup = 5597797125ACDC3A00C33DFB;
 			packageReferences = (
-				B3D4400527220C6800A665B1 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = 5597797F25ACDC3E00C33DFB /* Products */;
 			projectDirPath = "";
@@ -420,25 +420,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		B3D4400527220C6800A665B1 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		B3D4400627220C6800A665B1 /* RevenueCat */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B3D4400527220C6800A665B1 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCat;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5597797225ACDC3A00C33DFB /* Project object */;
 }
