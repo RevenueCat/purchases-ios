@@ -71,7 +71,12 @@ extension ErrorCode: DescribableError {
         case .purchaseCancelledError:
             return "Purchase was cancelled."
         case .storeProblemError:
+        #if os(macOS) || targetEnvironment(macCatalyst)
+            // See https://github.com/RevenueCat/purchases-ios/issues/370
+            return "There was a problem with the App Store. This could also indicate the purchase dialog was cancelled."
+        #else
             return "There was a problem with the App Store."
+        #endif
         case .purchaseNotAllowedError:
             return "The device or user is not allowed to make the purchase."
         case .purchaseInvalidError:

@@ -26,6 +26,8 @@
 		3493336B21E69360007AAAB9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3493336921E69360007AAAB9 /* LaunchScreen.storyboard */; };
 		3493337521E694D6007AAAB9 /* CatsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3493337421E694D6007AAAB9 /* CatsViewController.swift */; };
 		34D05817233C1A3700343134 /* SwiftPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D05816233C1A3700343134 /* SwiftPaywall.swift */; };
+		5791CEC62743219A00E50C4B /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791CEC52743219A00E50C4B /* Constants.swift */; };
+		5791CEC72743219A00E50C4B /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5791CEC52743219A00E50C4B /* Constants.swift */; };
 		963589776E76AD1BD9685D3C /* libPods-WatchPurchaseTester Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 77F30BA285533CF765B337AA /* libPods-WatchPurchaseTester Extension.a */; };
 /* End PBXBuildFile section */
 
@@ -104,6 +106,7 @@
 		37066E6754E910550E7803A8 /* Pods-LegacySwiftExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LegacySwiftExample.release.xcconfig"; path = "Target Support Files/Pods-LegacySwiftExample/Pods-LegacySwiftExample.release.xcconfig"; sourceTree = "<group>"; };
 		3BE82E1CF8DA6047D020ECDB /* Pods-PurchaseTester.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PurchaseTester.release.xcconfig"; path = "Target Support Files/Pods-PurchaseTester/Pods-PurchaseTester.release.xcconfig"; sourceTree = "<group>"; };
 		505CA64DE33CA213B6B7DB16 /* Pods-WatchPurchaseTester Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchPurchaseTester Extension.release.xcconfig"; path = "Target Support Files/Pods-WatchPurchaseTester Extension/Pods-WatchPurchaseTester Extension.release.xcconfig"; sourceTree = "<group>"; };
+		5791CEC52743219A00E50C4B /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		77F30BA285533CF765B337AA /* libPods-WatchPurchaseTester Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchPurchaseTester Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		96B8BAFC92896215F2FDBF35 /* Pods-PurchaseTester.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PurchaseTester.debug.xcconfig"; path = "Target Support Files/Pods-PurchaseTester/Pods-PurchaseTester.debug.xcconfig"; sourceTree = "<group>"; };
 		C7A95EBC8058CE87D0E2B60A /* Pods-WatchExample Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchExample Extension.release.xcconfig"; path = "Target Support Files/Pods-WatchExample Extension/Pods-WatchExample Extension.release.xcconfig"; sourceTree = "<group>"; };
@@ -200,6 +203,7 @@
 				3493336721E69360007AAAB9 /* Assets.xcassets */,
 				3493336921E69360007AAAB9 /* LaunchScreen.storyboard */,
 				3493336C21E69360007AAAB9 /* Info.plist */,
+				5791CEC52743219A00E50C4B /* Constants.swift */,
 			);
 			path = PurchaseTester;
 			sourceTree = "<group>";
@@ -420,6 +424,7 @@
 				2D54BF772437DED900FF4EE4 /* NotificationController.swift in Sources */,
 				2D54BF752437DED900FF4EE4 /* ExtensionDelegate.swift in Sources */,
 				2D54BF732437DED900FF4EE4 /* InterfaceController.swift in Sources */,
+				5791CEC72743219A00E50C4B /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -427,6 +432,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5791CEC62743219A00E50C4B /* Constants.swift in Sources */,
 				3493336321E6935F007AAAB9 /* InitialViewController.swift in Sources */,
 				3493337521E694D6007AAAB9 /* CatsViewController.swift in Sources */,
 				34D05817233C1A3700343134 /* SwiftPaywall.swift in Sources */,

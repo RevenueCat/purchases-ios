@@ -21,10 +21,10 @@
       },
       {
         "package": "Nimble",
-        "repositoryURL": "https://github.com/quick/nimble",
+        "repositoryURL": "https://github.com/Quick/Nimble.git",
         "state": {
-          "branch": "main",
-          "revision": "ea662491f7f4b6ec72656674488bf830003eaaf5",
+          "branch": null,
+          "revision": "0fd4ba405699eb8ca939aefa34babf988f4ff9ff",
           "version": null
         }
       },

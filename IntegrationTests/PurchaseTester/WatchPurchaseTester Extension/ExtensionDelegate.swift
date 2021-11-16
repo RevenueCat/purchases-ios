@@ -12,7 +12,7 @@ import RevenueCat
 class ExtensionDelegate: NSObject, WKExtensionDelegate {
 
     func applicationDidFinishLaunching() {
-        Purchases.configure(withAPIKey: <your_public_sdk_key_here>)
+        Purchases.configure(withAPIKey: Constants.apiKey)
         Purchases.logLevel = .debug
     }
 
