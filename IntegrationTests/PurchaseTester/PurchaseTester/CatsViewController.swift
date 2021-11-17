@@ -77,6 +77,7 @@ class CatsViewController: UIViewController {
 
     @objc func beginRefundButtonTapped() {
         if #available(iOS 15.0, *) {
+            // refund for pro_cat's productID
             Purchases.shared.beginRefundRequest(for: "com.revenuecat.purchaseTester.annual_39.99.2_week_intro")
             { status, error in
                 switch status {
@@ -86,7 +87,7 @@ class CatsViewController: UIViewController {
                 }
             }
         } else {
-            // Fallback on earlier versions
+            print("Refund requests not supported")
         }
     }
     
