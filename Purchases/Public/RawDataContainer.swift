@@ -14,9 +14,11 @@
 /// A type which exposes its underlying raw data, for debugging purposes or for getting access
 /// to future data while using an older version of the SDK.
 public protocol RawDataContainer {
+
     /// The type of the underlying raw data
     associatedtype Content
 
     /// The underlying data.
     var rawData: Content { get }
+
 }
