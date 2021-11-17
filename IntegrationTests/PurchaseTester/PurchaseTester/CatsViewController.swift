@@ -70,8 +70,10 @@ class CatsViewController: UIViewController {
     }
 
     @objc func manageSubButtonTapped() {
-        Purchases.shared.showManageSubscriptionModal { error in
-            print("Error opening Manage Sub Modal")
+        Purchases.shared.showManageSubscriptionModal { maybeError in
+            if let error = maybeError {
+                print("Error opening Manage Sub Modal: \(error.localizedDescription)")
+            }
         }
     }
 
@@ -79,11 +81,11 @@ class CatsViewController: UIViewController {
         if #available(iOS 15.0, *) {
             // refund for pro_cat's productID
             Purchases.shared.beginRefundRequest(for: "com.revenuecat.purchaseTester.annual_39.99.2_week_intro")
-            { status, error in
+            { status, maybeError in
                 switch status {
                 case .success: print("Refund request submitted!")
                 case .userCancelled: print("Refund request cancelled")
-                case .error: print("Issue submitting refund request: \(error?.localizedDescription ?? "")")
+                case .error: print("Issue submitting refund request: \(maybeError?.localizedDescription ?? "")")
                 }
             }
         } else {
