@@ -134,6 +134,15 @@ import Foundation
      */
     @objc public let ownershipType: PurchaseOwnershipType
 
+    /**
+     * The underlying data for this `EntitlementInfo`.
+     *
+     * - Note: the content and format of this data isn’t documented and is subject to change,
+     *         it's only meant for debugging purposes or for getting access to future data
+     *         without updating the SDK.
+     */
+    @objc public let rawData: [String: Any]
+
     public override var description: String {
         return """
             <\(String(describing: EntitlementInfo.self)): "
@@ -282,9 +291,13 @@ import Foundation
                                                           store: store,
                                                           unsubscribeDetectedAt: unsubscribeDetectedAt,
                                                           billingIssueDetectedAt: billingIssueDetectedAt)
+
+        self.rawData = entitlementDataDict
     }
 
 }
+
+extension EntitlementInfo: RawDataContainer {}
 
 private extension EntitlementInfo {
 
