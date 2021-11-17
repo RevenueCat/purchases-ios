@@ -19,7 +19,10 @@ import StoreKit
 public extension Purchases {
 
     /**
-     * Deprecated
+     * Get latest available purchaser info.
+     *
+     * - Parameter completion: A completion block called when customer info is available and not stale.
+     * Called immediately if info is cached. Customer info can be nil if an error occurred.
      */
     @available(swift, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
     @available(*, deprecated, message: "use getCustomerInfoWithCompletion:", renamed: "getOfferingsWithCompletion")
@@ -28,7 +31,10 @@ public extension Purchases {
     }
 
     /**
-     * Deprecated
+     * Get latest available purchaser info.
+     *
+     * - Parameter completion: A completion block called when customer info is available and not stale.
+     * Called immediately if info is cached. Customer info can be nil if an error occurred.
      */
     @available(swift, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
     @available(*, deprecated, message: "use getCustomerInfoWithCompletion:", renamed: "getOfferingsWithCompletion")
@@ -37,7 +43,23 @@ public extension Purchases {
     }
 
     /**
-     * Deprecated
+     * Fetches the `SKProducts` for your IAPs for given `productIdentifiers`.
+     * Use this method if you aren't using `-offeringsWithCompletionBlock:`.
+     * You should use offerings though.
+     *
+     * - Note: `completion` may be called without `SKProduct`s that you are expecting.
+     * This is usually caused by iTunesConnect configuration errors.
+     * Ensure your IAPs have the "Ready to Submit" status in iTunesConnect.
+     * Also ensure that you have an active developer program subscription and you have
+     * signed the latest paid application agreements.
+     *
+     * If you're having trouble see: https://www.revenuecat.com/2018/10/11/configuring-in-app-products-is-hard
+     *
+     * - Parameter productIdentifiers: A set of product identifiers for in app purchases setup via iTunesConnect.
+     * This should be either hard coded in your application, from a file, or from
+     * a custom endpoint if you want to be able to deploy new IAPs without an app update.
+     * - Parameter completion: An @escaping callback that is called with the loaded products.
+     * If the fetch fails for any reason it will return an empty array.
      */
     @available(*,
                 deprecated,
@@ -50,7 +72,15 @@ public extension Purchases {
     }
 
     /**
-     * Deprecated
+     * Fetch the configured offerings for this users.
+     * Offerings allows you to configure your in-app products via RevenueCat and greatly simplifies management.
+     * See the guide (https://docs.revenuecat.com/entitlements) for more info.
+     *
+     * Offerings will be fetched and cached on instantiation so that, by the time they are needed,
+     * your prices are loaded for your purchase flow. Time is money.
+     *
+     * - Parameter completion: A completion block called when offerings are available.
+     * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
      */
     @available(swift, obsoleted: 1, renamed: "getOfferings(completion:)")
     @available(*, deprecated, message: "use getOfferingsWithCompletion:", renamed: "getOfferingsWithCompletion")
@@ -59,7 +89,17 @@ public extension Purchases {
     }
 
     /**
-     * Deprecated
+     * Purchase the passed `Package`.
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+     * - Note: You do not need to finish the transaction yourself in the completion callback,
+     * Purchases will handle this for you.
+     * - Parameter package: The `Package` the user intends to purchase
+     *
+     * - Parameter completion: A completion block that is called when the purchase completes.
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`
+     * If the purchase was not successful, there will be an `NSError`.
+     * If the user cancelled, `userCancelled` will be `YES`.
      */
     @available(swift, obsoleted: 1, renamed: "purchase(package:completion:)")
     func purchasePackage(_ package: Package, _ completion: @escaping PurchaseCompletedBlock) {
@@ -67,7 +107,17 @@ public extension Purchases {
     }
 
     /**
-     * Deprecated
+     * Purchase the passed `Package`.
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+     * - Note: You do not need to finish the transaction yourself in the completion callback,
+     * Purchases will handle this for you.
+     * - Parameter package: The `Package` the user intends to purchase
+     *
+     * - Parameter completion: A completion block that is called when the purchase completes.
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`.
+     * If the purchase was not successful, there will be an `NSError`.
+     * If the user cancelled, `userCancelled` will be `YES`.
      */
     @available(swift, obsoleted: 1, renamed: "purchase(package:discount:completion:)")
     @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
@@ -78,7 +128,18 @@ public extension Purchases {
     }
 
     /**
-     * Deprecated
+     * Use this function if you are not using the Offerings system to purchase an `SKProduct`.
+     * If you are using the Offerings system, use `-[RCPurchases purchasePackage:withCompletionBlock]` instead.
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback,
+     * Purchases will handle this for you.
+     * - Parameter product: The `SKProduct` the user intends to purchase
+     * - Parameter completion: A completion block that is called when the purchase completes.
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`.
+     * If the purchase was not successful, there will be an `NSError`.
+     * If the user cancelled, `userCancelled` will be `YES`.
      */
     @available(swift, obsoleted: 1, renamed: "purchase(product:_:)")
     func purchaseProduct(_ product: SKProduct, _ completion: @escaping PurchaseCompletedBlock) {
@@ -86,7 +147,18 @@ public extension Purchases {
     }
 
     /**
-     * Deprecated
+     * Use this function if you are not using the Offerings system to purchase an `SKProduct`.
+     * If you are using the Offerings system, use `-[RCPurchases purchasePackage:withCompletionBlock]` instead.
+     * Call this method when a user has decided to purchase a product. Only call this in direct response to user input.
+     * From here `Purchases` will handle the purchase with `StoreKit` and call the `RCPurchaseCompletedBlock`.
+     *
+     * - Note: You do not need to finish the transaction yourself in the completion callback,
+     * Purchases will handle this for you.
+     * - Parameter product: The `SKProduct` the user intends to purchase
+     * - Parameter completion: A completion block that is called when the purchase completes.
+     * If the purchase was successful there will be a `SKPaymentTransaction` and a `RCPurchaserInfo`.
+     * If the purchase was not successful, there will be an `NSError`.
+     * If the user cancelled, `userCancelled` will be `YES`.
      */
     @available(swift, obsoleted: 1, renamed: "purchase(product:discount:completion:)")
     @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
