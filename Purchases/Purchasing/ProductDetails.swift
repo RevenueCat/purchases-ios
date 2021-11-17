@@ -18,10 +18,12 @@ import StoreKit
 /// TypeAlias to StoreKit 1's Product type, called `StoreKit/SKProduct`
 public typealias SK1Product = SKProduct
 
-/// TypeAlias to StoreKit 2's Product type, called `Storekit.Product`
+/// TypeAlias to StoreKit 2's Product type, called `StoreKit.Product`
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public typealias SK2Product = StoreKit.Product
 
+
+/// Abstract class that provides access to all of StoreKit's product type's properties. 
 @objc(RCProductDetails) public class ProductDetails: NSObject {
     public override func isEqual(_ object: Any?) -> Bool {
         return self.productIdentifier == (object as? ProductDetails)?.productIdentifier

@@ -56,8 +56,7 @@ class ProductsManager: NSObject {
             return Set(productDetails)
         } catch {
             Logger.error("Error when fetching SK2 products: \(error.localizedDescription)")
-            let emptySet: Set<SK2ProductDetails> = Set()
-            return emptySet
+            return Set()
         }
     }
 
@@ -69,4 +68,5 @@ class ProductsManager: NSObject {
     func cacheProduct(_ product: SK1Product) {
         productsFetcherSK1.cacheProduct(product)
     }
+    
 }

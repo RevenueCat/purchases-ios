@@ -208,7 +208,6 @@ class PurchasesOrchestrator {
             }
             purchase(sk1Package: package, completion: completion)
         }
-
     }
 
     func purchase(sk1Product: SK1Product,
@@ -288,6 +287,7 @@ class PurchasesOrchestrator {
             }
         }
     }
+
 }
 
 extension PurchasesOrchestrator: StoreKitWrapperDelegate {
@@ -398,6 +398,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         // todo: should isRestore here be set to observer mode?
         syncPurchases(receiptRefreshPolicy: .always, isRestore: false, maybeCompletion: nil)
     }
+    
 }
 
 // MARK: Private funcs.
