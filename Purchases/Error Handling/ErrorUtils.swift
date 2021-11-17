@@ -282,37 +282,10 @@ private extension ErrorUtils {
             userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = maybeUnderlyingError
         }
         userInfo[ErrorDetails.generatedByKey] = generatedBy
-
         userInfo[ErrorDetails.readableErrorCodeKey] = code.codeName
 
-        switch code {
-        case .networkError,
-             .unknownError,
-             .receiptAlreadyInUseError,
-             .unexpectedBackendResponseError,
-             .invalidReceiptError,
-             .invalidAppUserIdError,
-             .operationAlreadyInProgressForProductError,
-             .unknownBackendError,
-             .invalidSubscriberAttributesError,
-             .logOutAnonymousUserError:
-            Logger.error(code.description)
-        case .purchaseCancelledError,
-             .storeProblemError,
-             .purchaseNotAllowedError,
-             .purchaseInvalidError,
-             .productNotAvailableForPurchaseError,
-             .productAlreadyPurchasedError,
-             .missingReceiptFileError,
-             .invalidCredentialsError,
-             .invalidAppleSubscriptionKeyError,
-             .ineligibleError,
-             .insufficientPermissionsError,
-             .paymentPendingError:
-            Logger.appleError(code.description)
-        default:
-            break
-        }
+        Self.logErrorIfNeeded(code)
+
         let nsError = code as NSError
         let nsErrorWithUserInfo = NSError(domain: nsError.domain,
                                           code: nsError.code,
@@ -347,4 +320,44 @@ private extension ErrorUtils {
         return errorWithUserInfo
     }
 
+    private static func logErrorIfNeeded(_ code: ErrorCode) {
+        switch code {
+        case .networkError,
+                .unknownError,
+                .receiptAlreadyInUseError,
+                .unexpectedBackendResponseError,
+                .invalidReceiptError,
+                .invalidAppUserIdError,
+                .operationAlreadyInProgressForProductError,
+                .unknownBackendError,
+                .invalidSubscriberAttributesError,
+                .logOutAnonymousUserError:
+            Logger.error(code.description)
+        case .purchaseCancelledError,
+                .storeProblemError,
+                .purchaseNotAllowedError,
+                .purchaseInvalidError,
+                .productNotAvailableForPurchaseError,
+                .productAlreadyPurchasedError,
+                .missingReceiptFileError,
+                .invalidCredentialsError,
+                .invalidAppleSubscriptionKeyError,
+                .ineligibleError,
+                .insufficientPermissionsError,
+                .paymentPendingError:
+            Logger.appleError(code.description)
+
+        case .receiptInUseByOtherSubscriberError,
+                .configurationError,
+                .unsupportedError,
+                .emptySubscriberAttributes,
+                .productDiscountMissingIdentifierError,
+                .missingAppUserIDForAliasCreationError,
+                .productDiscountMissingSubscriptionGroupIdentifierError:
+            break
+
+        @unknown default:
+            break
+        }
+    }
 }

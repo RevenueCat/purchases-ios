@@ -38,7 +38,7 @@ extension SKProductSubscriptionPeriod {
         case .week: return "week"
         case .month: return "month"
         case .year: return "year"
-        default: return "Unknown"
+        @unknown default: return "Unknown"
         }
     }
     

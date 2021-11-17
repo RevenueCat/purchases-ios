@@ -47,7 +47,7 @@ struct ProductInfo {
             return .payAsYouGo
         case .freeTrial:
             return .freeTrial
-        default:
+        @unknown default:
             return .none
         }
     }
