@@ -210,20 +210,23 @@ import Foundation
     }
 
     public override var hash: Int {
-        var hash: UInt = UInt(self.identifier.hash)
-        hash = hash * UInt(31) + UInt(self.isActive.hashValue)
-        hash = hash * 31 + UInt(self.willRenew.hashValue)
-        hash = hash * 31 + UInt(self.periodType.hashValue)
-        hash = hash * 31 + UInt(self.latestPurchaseDate?.hashValue ?? 0)
-        hash = hash * 31 + UInt(self.originalPurchaseDate?.hashValue ?? 0)
-        hash = hash * 31 + UInt(self.expirationDate?.hashValue ?? 0)
-        hash = hash * 31 + UInt(self.store.hashValue)
-        hash = hash * 31 + UInt(self.productIdentifier.hash)
-        hash = hash * 31 + UInt(self.isSandbox.hashValue)
-        hash = hash * 31 + UInt(self.unsubscribeDetectedAt?.hashValue ?? 0)
-        hash = hash * 31 + UInt(self.billingIssueDetectedAt?.hashValue ?? 0)
-        hash = hash * 31 + UInt(self.ownershipType.hashValue)
-        return Int(hash)
+        var hasher = Hasher()
+
+        hasher.combine(self.identifier)
+        hasher.combine(self.isActive)
+        hasher.combine(self.willRenew)
+        hasher.combine(self.periodType)
+        hasher.combine(self.latestPurchaseDate)
+        hasher.combine(self.originalPurchaseDate)
+        hasher.combine(self.expirationDate)
+        hasher.combine(self.store)
+        hasher.combine(self.productIdentifier)
+        hasher.combine(self.isSandbox)
+        hasher.combine(self.unsubscribeDetectedAt)
+        hasher.combine(self.billingIssueDetectedAt)
+        hasher.combine(self.ownershipType)
+
+        return hasher.finalize()
     }
 
     convenience init?(entitlementId: String,
