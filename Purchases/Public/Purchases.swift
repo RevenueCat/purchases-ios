@@ -134,7 +134,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
      * By default, this sends Info, Warn, and Error messages. If you wish to receive Debug level messages,
      * you must enable debug logs.
      */
-    @objc public static var logHandler: (LogLevel, String) -> Void {
+    @objc public static var logHandler: LogHandler {
         get { Logger.logHandler }
         set { Logger.logHandler = newValue }
     }
