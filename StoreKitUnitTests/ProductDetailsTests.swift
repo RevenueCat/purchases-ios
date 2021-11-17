@@ -18,6 +18,9 @@ import XCTest
 
 class ProductDetailsTests: StoreKitConfigTestCase {
 
+    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
+    // Although the method isn't supposed to be called because of our @available marks,
+    // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK1AndSK2DetailsAreEquivalent() async throws {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
@@ -86,6 +89,9 @@ class ProductDetailsTests: StoreKitConfigTestCase {
         expect(callbackCalled).toEventually(beTrue(), timeout: .seconds(5))
     }
 
+    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
+    // Although the method isn't supposed to be called because of our @available marks,
+    // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2DetailsWrapsCorrectly() async throws {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {

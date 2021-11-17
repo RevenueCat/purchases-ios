@@ -51,7 +51,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
     }
 
     func testShowManageSubscriptionModalMakesRightCalls() throws {
-        guard #available(iOS 15.0, *) else { return }
+        guard #available(iOS 15.0, *) else { throw XCTSkip("Required API is not available for this test.") }
         // given
         var callbackCalled = false
         // swiftlint:disable force_try

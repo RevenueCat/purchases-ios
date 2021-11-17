@@ -89,6 +89,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                         finishTransactions: true)
     }
 
+    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
+    // Although the method isn't supposed to be called because of our @available marks,
+    // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageReturnsCorrectValues() async throws {
 
@@ -126,6 +129,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(customerInfo) == expectedCustomerInfo
     }
 
+    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
+    // Although the method isn't supposed to be called because of our @available marks,
+    // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageHandlesPurchaseResult() async throws {
         guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
@@ -151,6 +157,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(mockListener.invokedHandle) == true
     }
 
+    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
+    // Although the method isn't supposed to be called because of our @available marks,
+    // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageSendsReceiptToBackendIfSuccessful() async throws {
         guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
@@ -175,6 +184,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataCount) == 1
     }
 
+    // - Note: Xcode throws a warning about @available and #available being redundant, but they're actually necessary:
+    // Although the method isn't supposed to be called because of our @available marks,
+    // everything in this class will still be called by XCTest, and it will cause errors.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageSkipsIfPurchaseFailed() async throws {
         guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {

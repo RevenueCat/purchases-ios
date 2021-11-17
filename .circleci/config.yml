@@ -54,16 +54,13 @@ commands:
       directory:
         type: string
     steps:
-
       - run: 
           name: Replace API key
           command: bundle exec fastlane replace_api_key_integration_tests
-      
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
           command: bundle exec fastlane test
-
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -141,7 +138,7 @@ jobs:
           command: brew install swiftlint
       - install-dependencies
       - run:
-          name: Build tvOS and watchOS
+          name: Build tvOS, watchOS and macOS
           command: bundle exec fastlane build_tv_watch_mac
 
   swift_apitest:
