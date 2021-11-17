@@ -15,6 +15,7 @@ import Foundation
 import StoreKit
 
 class ProductsFetcherSK1: NSObject {
+
     private let productsRequestFactory: ProductsRequestFactory
 
     private var cachedProductsByIdentifier: [String: SK1Product] = [:]

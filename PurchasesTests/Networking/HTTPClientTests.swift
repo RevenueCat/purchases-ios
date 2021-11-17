@@ -45,7 +45,7 @@ class HTTPClientTests: XCTestCase {
         
         self.client.performPOSTRequest(serially: true,
                                        path: path,
-                                       requestBody: Dictionary(),
+                                       requestBody: [:],
                                        headers: [:],
                                        completionHandler: nil)
         

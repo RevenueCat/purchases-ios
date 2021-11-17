@@ -68,5 +68,5 @@ class ProductsManager: NSObject {
     func cacheProduct(_ product: SK1Product) {
         productsFetcherSK1.cacheProduct(product)
     }
-    
+
 }
