@@ -74,8 +74,8 @@ class ErrorUtils: NSObject {
      *
      * - Note: This error is used when a network request returns an unexpected response.
      */
-    static func unexpectedBackendResponseError() -> Error {
-        return error(with: ErrorCode.unexpectedBackendResponseError)
+    static func unexpectedBackendResponseError(extraUserInfo: [NSError.UserInfoKey: Any]? = nil) -> Error {
+        return error(with: ErrorCode.unexpectedBackendResponseError, extraUserInfo: extraUserInfo)
     }
 
     /**
