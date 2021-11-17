@@ -88,7 +88,7 @@ private extension HTTPClient {
         return headers
     }
 
-    // swiftlint:disable function_body_length
+    // swiftlint:disable:next function_body_length
     func performRequest(_ httpMethod: String,
                         serially: Bool = true,
                         path: String,
@@ -97,7 +97,6 @@ private extension HTTPClient {
                         retried: Bool = false,
                         completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?) {
 
-        // swiftlint:enable function_body_length
         let requestHeaders = defaultHeaders.merging(authHeaders)
 
         let maybeURLRequest = createRequest(httpMethod: httpMethod,
@@ -156,7 +155,7 @@ private extension HTTPClient {
         task.resume()
     }
 
-    // swiftlint:disable function_parameter_count
+    // swiftlint:disable:next function_parameter_count
     func handleResponse(urlResponse maybeURLResponse: URLResponse?,
                         request: HTTPRequest,
                         data maybeData: Data?,
@@ -164,7 +163,6 @@ private extension HTTPClient {
                         completion maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                         beginNextRequestWhenFinished: Bool,
                         retried: Bool) {
-    // swiftlint:enable function_parameter_count
         threadUnsafeHandleResponse(urlResponse: maybeURLResponse,
                                    request: request,
                                    data: maybeData,
@@ -174,7 +172,7 @@ private extension HTTPClient {
                                    retried: retried)
     }
 
-    // swiftlint:disable function_body_length function_parameter_count
+    // swiftlint:disable:next function_body_length function_parameter_count
     func threadUnsafeHandleResponse(urlResponse maybeURLResponse: URLResponse?,
                                     request: HTTPRequest,
                                     data maybeData: Data?,
@@ -182,7 +180,6 @@ private extension HTTPClient {
                                     completionHandler maybeCompletionHandler: ((Int, [String: Any]?, Error?) -> Void)?,
                                     beginNextRequestWhenFinished: Bool,
                                     retried: Bool) {
-    // swiftlint:enable function_body_length function_parameter_count
         var shouldBeginNextRequestWhenFinished = beginNextRequestWhenFinished
         var statusCode = HTTPStatusCodes.networkConnectTimeoutError.rawValue
         var jsonObject: [String: Any]?

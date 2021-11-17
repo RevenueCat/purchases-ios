@@ -177,7 +177,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                   platformFlavorVersion: nil)
     }
 
-    // swiftlint:disable function_body_length
+    // swiftlint:disable:next function_body_length
     convenience init(apiKey: String,
                      appUserID: String?,
                      userDefaults: UserDefaults?,
@@ -268,7 +268,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                   offeringsManager: offeringsManager,
                   purchasesOrchestrator: purchasesOrchestrator)
     }
-    // swiftlint:enable function_body_length
 
     init(appUserID: String?,
          requestFetcher: StoreKitRequestFetcher,

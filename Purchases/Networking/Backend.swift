@@ -85,7 +85,7 @@ class Backend {
         httpClient.clearCaches()
     }
 
-    // swiftlint:disable function_parameter_count
+    // swiftlint:disable:next function_parameter_count
     func post(receiptData: Data,
               appUserID: String,
               isRestore: Bool,
@@ -94,7 +94,6 @@ class Backend {
               observerMode: Bool,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttributeDict?,
               completion: @escaping BackendCustomerInfoResponseHandler) {
-        // swiftlint:enable function_parameter_count
         let fetchToken = receiptData.asFetchToken
         var body: [String: Any] = [
             "fetch_token": fetchToken,
@@ -168,14 +167,13 @@ class Backend {
         }
     }
 
-    // swiftlint:disable function_parameter_count function_body_length
+    // swiftlint:disable:next function_parameter_count function_body_length
     func post(offerIdForSigning offerIdentifier: String,
               productIdentifier: String,
               subscriptionGroup: String,
               receiptData: Data,
               appUserID: String,
               completion: @escaping OfferSigningResponseHandler) {
-    // swiftlint:enable function_parameter_count function_body_length
         let fetchToken = receiptData.asFetchToken
 
         let requestBody: [String: Any] = ["app_user_id": appUserID,
@@ -594,14 +592,13 @@ private extension Backend {
         }
     }
 
-    // swiftlint:disable function_body_length
+    // swiftlint:disable:next function_body_length
     func handle(customerInfoResponse maybeResponse: [String: Any]?,
                 statusCode: Int,
                 maybeError: Error?,
                 file: String = #file,
                 function: String = #function,
                 completion: BackendCustomerInfoResponseHandler) {
-        // swiftlint:enable function_body_length
         if let error = maybeError {
             completion(nil, ErrorUtils.networkError(withUnderlyingError: error, generatedBy: "\(file) \(function)"))
             return
