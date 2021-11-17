@@ -290,9 +290,9 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
          offeringsManager: OfferingsManager,
          purchasesOrchestrator: PurchasesOrchestrator) {
 
-        Logger.debug(Strings.configure.debug_enabled)
-        Logger.debug(Strings.configure.sdk_version(sdkVersion: Self.frameworkVersion))
-        Logger.user(Strings.configure.initial_app_user_id(appUserID: appUserID))
+        Logger.debug(Strings.configure.debug_enabled, fileName: nil)
+        Logger.debug(Strings.configure.sdk_version(sdkVersion: Self.frameworkVersion), fileName: nil)
+        Logger.user(Strings.configure.initial_app_user_id(appUserID: appUserID), fileName: nil)
 
         self.requestFetcher = requestFetcher
         self.receiptFetcher = receiptFetcher
