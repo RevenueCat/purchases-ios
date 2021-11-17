@@ -89,7 +89,7 @@ private extension AttributionDataMigrator {
         return convertedAttribution
     }
 
-    // swiftlint:disable cyclomatic_complexity
+    // swiftlint:disable:next cyclomatic_complexity
     func convertAppsFlyerAttribution(_ data: [String: Any]) -> [String: String] {
         var fixedData = data
         if let innerDataObject = fixedData[AttributionKey.AppsFlyer.dataKey.rawValue] as? [String: String?] {

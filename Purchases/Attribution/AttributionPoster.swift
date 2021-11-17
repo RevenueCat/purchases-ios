@@ -35,7 +35,7 @@ class AttributionPoster {
         self.subscriberAttributesManager = subscriberAttributesManager
     }
 
-    // swiftlint:disable function_body_length
+    // swiftlint:disable:next function_body_length
     func post(attributionData data: [String: Any],
               fromNetwork network: AttributionNetwork,
               networkUserId: String?) {
@@ -101,7 +101,6 @@ class AttributionPoster {
             }
         }
     }
-    // swiftlint:enable function_body_length
 
     func postAppleSearchAdsAttributionIfNeeded() {
         guard attributionFetcher.isAuthorizedToPostSearchAds else {

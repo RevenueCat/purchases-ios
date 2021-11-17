@@ -398,9 +398,8 @@ private extension DeviceCache {
         var allSubscriberAttributesByKey: [String: SubscriberAttribute] = [:]
         for (key, attributeDict) in allAttributesObjectsByKey {
 
-            // swiftlint:disable force_cast
+            // swiftlint:disable:next force_cast
             let subscriberAttribute = DeviceCache.newAttribute(dictionary: attributeDict as! [String: Any])
-            // swiftlint:enable force_cast
             allSubscriberAttributesByKey[key] = subscriberAttribute
         }
 
