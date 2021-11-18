@@ -7,7 +7,7 @@
     https://github.com/RevenueCat/purchases-ios/pull/954
 - PurchasesOrchestrator.paymentDiscount(forProductDiscount:product:completion:): improved error information
     https://github.com/RevenueCat/purchases-ios/pull/957
-- Make a public originalData a thing for all our datatypes
+- Make a public rawData a thing for all our datatypes
     https://github.com/RevenueCat/purchases-ios/pull/956
-- Detect ErrorCode.productAlreadyPurchasedError when SKError.unknown is actually cased by it
+- Detect ErrorCode.productAlreadyPurchasedError when SKError.unknown is actually caused by it
     https://github.com/RevenueCat/purchases-ios/pull/965
