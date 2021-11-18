@@ -83,8 +83,10 @@ private extension IntroEligibilityStatus {
             return "Eligible for trial or introductory price."
         case .ineligible:
             return "Not eligible for trial or introductory price."
-        default:
-            return "Status indeterminate."
+
+        case .unknown: fallthrough
+        @unknown default:
+            return "Unknown status"
         }
     }
 
