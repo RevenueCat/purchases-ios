@@ -2112,6 +2112,45 @@ class PurchasesTests: XCTestCase {
         expect(receivedUserCancelled).toEventually(beFalse())
     }
 
+    func testUnknownErrorCurrentlySubscribedIsParsedCorrectly() {
+        setupPurchases()
+        let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
+        var receivedUserCancelled: Bool?
+        var receivedError: NSError?
+        var receivedUnderlyingError: NSError?
+
+        let unknownError = NSError(
+            domain: SKErrorDomain,
+            code: SKError.unknown.rawValue,
+            userInfo: [
+                NSUnderlyingErrorKey: NSError(
+                    domain: "ASDServerErrorDomain",
+                    code: 3532,
+                    userInfo: [:]
+                )
+            ]
+        )
+
+        self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
+            receivedError = error as NSError?
+            receivedUserCancelled = userCancelled
+            receivedUnderlyingError = receivedError?.userInfo[NSUnderlyingErrorKey] as! NSError?
+        }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.storeKitWrapper.payment!
+        transaction.mockState = .failed
+        transaction.mockError = unknownError
+        self.storeKitWrapper.delegate?.storeKitWrapper(self.storeKitWrapper, updatedTransaction: transaction)
+
+        expect(receivedUserCancelled).toEventually(beFalse())
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError?.domain).toEventually(equal(RCPurchasesErrorCodeDomain))
+        expect(receivedError?.code).toEventually(equal(ErrorCode.productAlreadyPurchasedError.rawValue))
+        expect(receivedUnderlyingError?.domain).toEventually(equal(unknownError.domain))
+        expect(receivedUnderlyingError?.code).toEventually(equal(unknownError.code))
+    }
+
     func testUserCancelledTrueIfPurchaseCancelled() {
         setupPurchases()
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
