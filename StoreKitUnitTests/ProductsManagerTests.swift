@@ -59,4 +59,65 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         }
         expect(firstProduct.productIdentifier) == identifier
     }
+
+    func testFetchProductsFromOptimalStoreKitVersionPrefersSK2IfUseSK2WhenAvailableEnabled() throws {
+
+        systemInfo = try MockSystemInfo(platformFlavor: "xyz",
+                                        platformFlavorVersion: "123",
+                                        finishTransactions: true,
+                                        useStoreKit2IfAvailable: true)
+        productsManager = ProductsManager(systemInfo: systemInfo)
+
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        var completionCalled = false
+        var maybeReceivedProducts: Set<ProductDetails>?
+
+        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set([identifier]), completion: { products in
+            completionCalled = true
+            maybeReceivedProducts = products
+        })
+
+        expect(completionCalled).toEventually(beTrue())
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        expect(receivedProducts.count) == 1
+
+        let firstProduct = try XCTUnwrap(receivedProducts.first)
+
+        expect(firstProduct).to(beAnInstanceOf(SK2ProductDetails.self))
+    }
+
+    func testFetchProductsFromOptimalStoreKitVersionPrefersSK1ByDefault() throws {
+
+        systemInfo = try MockSystemInfo(platformFlavor: "xyz",
+                                        platformFlavorVersion: "123",
+                                        finishTransactions: true)
+        productsManager = ProductsManager(systemInfo: systemInfo)
+
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+
+        let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
+        var completionCalled = false
+        var maybeReceivedProducts: Set<ProductDetails>?
+
+        productsManager.productsFromOptimalStoreKitVersion(withIdentifiers: Set([identifier]), completion: { products in
+            completionCalled = true
+            maybeReceivedProducts = products
+        })
+
+        expect(completionCalled).toEventually(beTrue())
+        let receivedProducts = try XCTUnwrap(maybeReceivedProducts)
+        expect(receivedProducts.count) == 1
+
+        let firstProduct = try XCTUnwrap(receivedProducts.first)
+
+        expect(firstProduct as? SK1ProductDetails).toNot(beNil())
+        expect(firstProduct).to(beAnInstanceOf(SK1ProductDetails.self))
+    }
+
 }
