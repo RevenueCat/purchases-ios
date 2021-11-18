@@ -360,7 +360,10 @@ private extension ErrorUtils {
                 .emptySubscriberAttributes,
                 .productDiscountMissingIdentifierError,
                 .missingAppUserIDForAliasCreationError,
-                .productDiscountMissingSubscriptionGroupIdentifierError:
+                .productDiscountMissingSubscriptionGroupIdentifierError,
+                .customerInfoError,
+                .systemInfoError,
+                .beginRefundRequestError:
             Logger.error(code.description)
 
         case .purchaseCancelledError,
