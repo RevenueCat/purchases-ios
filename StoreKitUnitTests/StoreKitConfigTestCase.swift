@@ -21,7 +21,7 @@ import XCTest
 class StoreKitConfigTestCase: XCTestCase {
 
     private static var hasWaited = false
-    private static let waitLock = NSLock()
+    private static let waitLock = Lock()
     private static let waitTimeInSeconds: Double = 20
 
     var testSession: SKTestSession!
@@ -47,12 +47,12 @@ private extension StoreKitConfigTestCase {
     func waitForStoreKitTestIfNeeded() {
         // StoreKitTest seems to take a few seconds to initialize, and running tests before that
         // might result in failure. So we give it a few seconds to load before testing.
-        Self.waitLock.lock()
-        if !Self.hasWaited {
-            Self.hasWaited = true
-            Thread.sleep(forTimeInterval: Self.waitTimeInSeconds)
+        Self.waitLock.perform {
+            if !Self.hasWaited {
+                Self.hasWaited = true
+                Thread.sleep(forTimeInterval: Self.waitTimeInSeconds)
+            }
         }
-        Self.waitLock.unlock()
     }
 
 }
