@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: RevenueCat System Status
+    url: https://status.revenuecat.com
+    about: Check RevenueCat's API status
   - name: Our online community
     url: https://community.revenuecat.com
     about: Please ask and answer questions here
