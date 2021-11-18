@@ -20,7 +20,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     var mockReceiptFetcher: MockReceiptFetcher!
     let mockRequestFetcher = MockRequestFetcher()
-    let mockProductsManager = MockProductsManager()
+    var mockProductsManager: MockProductsManager!
     let mockBackend = MockBackend()
     let mockStoreKitWrapper = MockStoreKitWrapper()
     let mockNotificationCenter = MockNotificationCenter()
@@ -73,8 +73,10 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
             subscriberAttributeWeight.key: subscriberAttributeWeight
         ]
         self.mockOperationDispatcher = MockOperationDispatcher()
-        self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         self.mockReceiptParser = MockReceiptParser()
+        self.mockProductsManager = MockProductsManager(systemInfo: systemInfo)
+        self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
+                                                                             receiptParser: mockReceiptParser)
         let systemInfoAttribution = try! MockSystemInfo(platformFlavor: "iOS",
                                                         platformFlavorVersion: "3.2.1",
                                                         finishTransactions: true)
@@ -99,7 +101,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
                                                     systemInfo: systemInfo,
                                                     backend: mockBackend,
                                                     offeringsFactory: MockOfferingsFactory(),
-                                                    productsManager: MockProductsManager())
+                                                    productsManager: mockProductsManager)
         self.mockReceiptFetcher = MockReceiptFetcher(requestFetcher: mockRequestFetcher, systemInfo: systemInfoAttribution)
         self.mockManageSubsModalHelper = MockManageSubscriptionsModalHelper(systemInfo: systemInfo,
                                                                             customerInfoManager: customerInfoManager,

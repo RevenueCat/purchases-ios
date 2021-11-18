@@ -20,7 +20,8 @@ class IntroEligibilityCalculator {
     private let productsManager: ProductsManager
     private let receiptParser: ReceiptParser
 
-    init(productsManager: ProductsManager = ProductsManager(), receiptParser: ReceiptParser = ReceiptParser()) {
+    init(productsManager: ProductsManager,
+         receiptParser: ReceiptParser) {
         self.productsManager = productsManager
         self.receiptParser = receiptParser
     }

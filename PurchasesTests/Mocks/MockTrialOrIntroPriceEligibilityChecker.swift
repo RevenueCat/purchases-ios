@@ -17,12 +17,14 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
 
     convenience init() {
         let systemInfo = try! MockSystemInfo(platformFlavor: "xyz", platformFlavorVersion: "123", finishTransactions: true)
+        let productsManager = MockProductsManager(systemInfo: systemInfo)
         self.init(receiptFetcher: MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo),
-                  introEligibilityCalculator: MockIntroEligibilityCalculator(),
+                  introEligibilityCalculator: MockIntroEligibilityCalculator(productsManager: productsManager,
+                                                                             receiptParser: MockReceiptParser()),
                   backend: MockBackend(),
                   identityManager: MockIdentityManager(mockAppUserID: "app_user"),
                   operationDispatcher: MockOperationDispatcher(),
-                  productsManager: MockProductsManager())
+                  productsManager: MockProductsManager(systemInfo: systemInfo))
     }
 
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = false

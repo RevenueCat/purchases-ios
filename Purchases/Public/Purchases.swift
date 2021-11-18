@@ -208,7 +208,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         let offeringsFactory = OfferingsFactory()
         let userDefaults = userDefaults ?? UserDefaults.standard
         let deviceCache = DeviceCache(userDefaults: userDefaults)
-        let introCalculator = IntroEligibilityCalculator()
         let receiptParser = ReceiptParser()
         let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,
                                                         deviceCache: deviceCache,
@@ -230,7 +229,8 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                                                   attributionFetcher: attributionFetcher,
                                                   subscriberAttributesManager: subscriberAttributesManager)
         let productsRequestFactory = ProductsRequestFactory()
-        let productsManager = ProductsManager(productsRequestFactory: productsRequestFactory)
+        let productsManager = ProductsManager(productsRequestFactory: productsRequestFactory, systemInfo: systemInfo)
+        let introCalculator = IntroEligibilityCalculator(productsManager: productsManager, receiptParser: receiptParser)
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
                                                 systemInfo: systemInfo,

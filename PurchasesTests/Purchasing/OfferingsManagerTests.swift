@@ -25,12 +25,13 @@ class OfferingsManagerTests: XCTestCase {
                                              finishTransactions: true)
     let mockBackend = MockBackend()
     let mockOfferingsFactory = MockOfferingsFactory()
-    let mockProductsManager = MockProductsManager()
+    var mockProductsManager: MockProductsManager!
     var offeringsManager: OfferingsManager!
 
     override func setUp() {
         super.setUp()
-        
+
+        mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo)
         offeringsManager = OfferingsManager(deviceCache: mockDeviceCache,
                                             operationDispatcher: mockOperationDispatcher,
                                             systemInfo: mockSystemInfo,

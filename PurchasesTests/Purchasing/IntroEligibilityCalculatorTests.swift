@@ -7,11 +7,14 @@ import Nimble
 class IntroEligibilityCalculatorTests: XCTestCase {
 
     var calculator: IntroEligibilityCalculator!
-    let mockProductsManager = MockProductsManager()
+    var systemInfo: MockSystemInfo!
+    var mockProductsManager: MockProductsManager!
     let mockReceiptParser = MockReceiptParser()
 
-    override func setUp() {
+    override func setUpWithError() throws {
         super.setUp()
+        systemInfo = try MockSystemInfo(platformFlavor: "xyz", platformFlavorVersion: "123", finishTransactions: true)
+        self.mockProductsManager = MockProductsManager(systemInfo: systemInfo)
         calculator = IntroEligibilityCalculator(productsManager: mockProductsManager,
                                                 receiptParser: mockReceiptParser)
     }

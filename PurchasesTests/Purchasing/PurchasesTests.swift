@@ -33,10 +33,11 @@ class PurchasesTests: XCTestCase {
         deviceCache = MockDeviceCache(userDefaults: userDefaults)
         requestFetcher = MockRequestFetcher()
         systemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
-        mockProductsManager = MockProductsManager()
+        mockProductsManager = MockProductsManager(systemInfo: systemInfo)
         mockOperationDispatcher = MockOperationDispatcher()
-        mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockReceiptParser = MockReceiptParser()
+        mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
+                                                                        receiptParser: mockReceiptParser)
         let systemInfoAttribution = try! MockSystemInfo(platformFlavor: "iOS",
                                                    platformFlavorVersion: "3.2.1",
                                                    finishTransactions: true)

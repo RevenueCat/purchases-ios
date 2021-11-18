@@ -23,10 +23,12 @@ import XCTest
 class ProductsManagerTests: StoreKitConfigTestCase {
 
     var productsManager: ProductsManager!
+    var systemInfo: MockSystemInfo!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-        productsManager = ProductsManager()
+        systemInfo = try MockSystemInfo(platformFlavor: "xyz", platformFlavorVersion: "123", finishTransactions: true)
+        productsManager = ProductsManager(systemInfo: systemInfo)
     }
 
     func testFetchProductsFromOptimalStoreKitVersion() throws {

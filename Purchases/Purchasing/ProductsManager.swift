@@ -19,11 +19,14 @@ class ProductsManager: NSObject {
 
     let productsFetcherSK1: ProductsFetcherSK1
 
+    private let systemInfo: SystemInfo
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private(set) lazy var productsFetcherSK2 = ProductsFetcherSK2()
 
-    init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory()) {
+    init(productsRequestFactory: ProductsRequestFactory = ProductsRequestFactory(), systemInfo: SystemInfo) {
         self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory)
+        self.systemInfo = systemInfo
     }
 
     func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: Set<String>,

@@ -30,11 +30,12 @@ class TrialOrIntroPriceEligibilityCheckerTests: StoreKitConfigTestCase {
                                             platformFlavorVersion: "123",
                                             finishTransactions: true)
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
-        mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
+        let mockProductsManager = MockProductsManager(systemInfo: mockSystemInfo)
+        mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
+                                                                        receiptParser: MockReceiptParser())
         mockBackend = MockBackend()
         let mockOperationDispatcher = MockOperationDispatcher()
         let identityManager = MockIdentityManager(mockAppUserID: "app_user")
-        let mockProductsManager = MockProductsManager()
         trialOrIntroPriceEligibilityChecker =
         TrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
                                             introEligibilityCalculator: mockIntroEligibilityCalculator,
@@ -52,11 +53,12 @@ class TrialOrIntroPriceEligibilityCheckerTests: StoreKitConfigTestCase {
                                             finishTransactions: true)
 
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
-        mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
+        let mockProductsManager = PartialMockProductsManager(systemInfo: mockSystemInfo)
+        mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
+                                                                        receiptParser: MockReceiptParser())
         mockBackend = MockBackend()
         let mockOperationDispatcher = MockOperationDispatcher()
         let identityManager = MockIdentityManager(mockAppUserID: "app_user")
-        let mockProductsManager = PartialMockProductsManager()
         trialOrIntroPriceEligibilityChecker =
         TrialOrIntroPriceEligibilityChecker(receiptFetcher: receiptFetcher,
                                             introEligibilityCalculator: mockIntroEligibilityCalculator,
