@@ -18,10 +18,10 @@ class PurchasesDelegateHandler: NSObject, ObservableObject {
 
 extension PurchasesDelegateHandler: PurchasesDelegate {
     
-    /* 
+    /**
      Whenever the `shared` instance of Purchases updates the CustomerInfo cache, this method will be called.
     
-     Note: CustomerInfo is not pushed to each Purchases client, it has to be fetched.
+     - Note: CustomerInfo is not pushed to each Purchases client, it has to be fetched.
      This delegate method is only called when the SDK updates its cache after an app launch, purchase, restore, or fetch. 
      You still need to call `Purchases.shared.customerInfo` to fetch CustomerInfo regularly.
      */

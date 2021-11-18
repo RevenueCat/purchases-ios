@@ -39,12 +39,12 @@ class UserViewModel: NSObject, ObservableObject {
     }
     
     func logout() {
-        /*
+        /**
          The current user ID is no longer valid for your instance of *Purchases* since the user is logging out, and is no longer authorized to access customerInfo for that user ID.
          
          `reset` clears the cache and regenerates a new anonymous user ID.
          
-         Note: Each time you call `reset`, a new installation will be logged in the RevenueCat dashboard as that metric tracks unique user ID's that are in-use. Since this method generates a new anonymous ID, it counts as a new user ID in-use.
+         - Note: Each time you call `reset`, a new installation will be logged in the RevenueCat dashboard as that metric tracks unique user ID's that are in-use. Since this method generates a new anonymous ID, it counts as a new user ID in-use.
          */
         Purchases.shared.logOut(completion: nil)
     }
