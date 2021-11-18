@@ -44,8 +44,7 @@ class SystemInfo {
 
     let appleSubscriptionsURL = URL(string: "https://rev.cat/manage-apple-subscription")
 
-    static let useStoreKit2IfAvailable = false
-
+    let useStoreKit2IfAvailable: Bool
     var finishTransactions: Bool
     let platformFlavor: String
     let platformFlavorVersion: String?
@@ -113,7 +112,8 @@ class SystemInfo {
     init(platformFlavor: String?,
          platformFlavorVersion: String?,
          finishTransactions: Bool,
-         bundle: Bundle = .main) throws {
+         bundle: Bundle = .main,
+         useStoreKit2IfAvailable: Bool = false) throws {
         self.platformFlavor = platformFlavor ?? "native"
         self.platformFlavorVersion = platformFlavorVersion
         self.bundle = bundle
@@ -125,6 +125,7 @@ class SystemInfo {
         }
 
         self.finishTransactions = finishTransactions
+        self.useStoreKit2IfAvailable = useStoreKit2IfAvailable
     }
 
     func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {

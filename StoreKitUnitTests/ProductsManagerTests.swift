@@ -52,7 +52,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         let firstProduct = try XCTUnwrap(receivedProducts.first)
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 7.0, *),
-            SystemInfo.useStoreKit2IfAvailable {
+            systemInfo.useStoreKit2IfAvailable {
             expect(firstProduct as? SK2ProductDetails).toNot(beNil())
         } else {
             expect(firstProduct as? SK1ProductDetails).toNot(beNil())

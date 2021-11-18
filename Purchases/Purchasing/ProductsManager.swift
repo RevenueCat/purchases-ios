@@ -33,7 +33,7 @@ class ProductsManager: NSObject {
                                             completion: @escaping (Set<ProductDetails>) -> Void) {
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-           SystemInfo.useStoreKit2IfAvailable {
+           self.systemInfo.useStoreKit2IfAvailable {
             _ = Task<Void, Never> {
                 let productDetails = await self.sk2ProductDetails(withIdentifiers: identifiers)
                 completion(productDetails)

@@ -193,7 +193,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        guard SystemInfo.useStoreKit2IfAvailable else {
+        guard self.systemInfo.useStoreKit2IfAvailable else {
             throw XCTSkip("StoreKit 2 tests are disabled.")
         }
 
