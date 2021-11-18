@@ -143,9 +143,9 @@ class OfferingsTests: XCTestCase {
         ])
 
         expect(offerings).toNot(beNil())
-        expect(offerings!["offering_a"]).toNot(beNil())
-        expect(offerings!["offering_b"]).toNot(beNil())
-        expect(offerings!.current).to(be(offerings!["offering_a"]))
+        expect(offerings?["offering_a"]).toNot(beNil())
+        expect(offerings?["offering_b"]).toNot(beNil())
+        expect(offerings?.current).to(be(offerings?["offering_a"]))
     }
 
     func testLifetimePackage() {
@@ -253,43 +253,43 @@ class OfferingsTests: XCTestCase {
         ])
 
         expect(offerings).toNot(beNil())
-        expect(offerings!.current).toNot(beNil())
+        expect(offerings?.current).toNot(beNil())
         if (packageType == PackageType.lifetime) {
-            expect(offerings!.current?.lifetime).toNot(beNil())
+            expect(offerings?.current?.lifetime).toNot(beNil())
         } else {
-            expect(offerings!.current?.lifetime).to(beNil())
+            expect(offerings?.current?.lifetime).to(beNil())
         }
         if (packageType == PackageType.annual) {
-            expect(offerings!.current?.annual).toNot(beNil())
+            expect(offerings?.current?.annual).toNot(beNil())
         } else {
-            expect(offerings!.current?.annual).to(beNil())
+            expect(offerings?.current?.annual).to(beNil())
         }
         if (packageType == PackageType.sixMonth) {
-            expect(offerings!.current?.sixMonth).toNot(beNil())
+            expect(offerings?.current?.sixMonth).toNot(beNil())
         } else {
-            expect(offerings!.current?.sixMonth).to(beNil())
+            expect(offerings?.current?.sixMonth).to(beNil())
         }
         if (packageType == PackageType.threeMonth) {
-            expect(offerings!.current?.threeMonth).toNot(beNil())
+            expect(offerings?.current?.threeMonth).toNot(beNil())
         } else {
-            expect(offerings!.current?.threeMonth).to(beNil())
+            expect(offerings?.current?.threeMonth).to(beNil())
         }
         if (packageType == PackageType.twoMonth) {
-            expect(offerings!.current?.twoMonth).toNot(beNil())
+            expect(offerings?.current?.twoMonth).toNot(beNil())
         } else {
-            expect(offerings!.current?.twoMonth).to(beNil())
+            expect(offerings?.current?.twoMonth).to(beNil())
         }
         if (packageType == PackageType.monthly) {
-            expect(offerings!.current?.monthly).toNot(beNil())
+            expect(offerings?.current?.monthly).toNot(beNil())
         } else {
-            expect(offerings!.current?.monthly).to(beNil())
+            expect(offerings?.current?.monthly).to(beNil())
         }
         if (packageType == PackageType.weekly) {
-            expect(offerings!.current?.weekly).toNot(beNil())
+            expect(offerings?.current?.weekly).toNot(beNil())
         } else {
-            expect(offerings!.current?.weekly).to(beNil())
+            expect(offerings?.current?.weekly).to(beNil())
         }
-        let package = offerings!["offering_a"]?.package(identifier: identifier)
+        let package = offerings?["offering_a"]?.package(identifier: identifier)
         expect(package?.packageType).to(equal(packageType))
     }
 

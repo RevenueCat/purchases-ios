@@ -12,19 +12,16 @@ import Nimble
 @testable import RevenueCat
 
 class IntroEligibilityTests: XCTestCase {
-    func testInitWithEligibilityStatusCodeUnknown() {
-        let introElegibility = try! IntroEligibility(eligibilityStatusCode: NSNumber(value: IntroEligibilityStatus.unknown.rawValue))
-        expect(introElegibility.status) == IntroEligibilityStatus.unknown
+    func testInitWithEligibilityStatusCodeUnknown() throws {
+        expect(try self.create(.unknown).status) == IntroEligibilityStatus.unknown
     }
     
-    func testInitWithEligibilityStatusCodeIneligible() {
-        let introElegibility = try! IntroEligibility(eligibilityStatusCode: NSNumber(value: IntroEligibilityStatus.ineligible.rawValue))
-        expect(introElegibility.status) == IntroEligibilityStatus.ineligible
+    func testInitWithEligibilityStatusCodeIneligible() throws {
+        expect(try self.create(.ineligible).status) == IntroEligibilityStatus.ineligible
     }
 
-    func testInitWithEligibilityStatusCodeEligible() {
-        let introElegibility = try! IntroEligibility(eligibilityStatusCode: NSNumber(value: IntroEligibilityStatus.eligible.rawValue))
-        expect(introElegibility.status) == IntroEligibilityStatus.eligible
+    func testInitWithEligibilityStatusCodeEligible() throws {
+        expect(try self.create(.eligible).status) == IntroEligibilityStatus.eligible
     }
     
     func testInitWithEligibilityStatusCodeFailsIfInvalid() {
@@ -34,5 +31,9 @@ class IntroEligibilityTests: XCTestCase {
         expect(try IntroEligibility(eligibilityStatusCode: 3)).to(
             throwError(closure: { expect($0.localizedDescription).to(equal("😿 Invalid status code: 3"))})
         )
+    }
+
+    private func create(_ code: IntroEligibilityStatus) throws -> IntroEligibility {
+        return try IntroEligibility(eligibilityStatusCode: NSNumber(value: code.rawValue))
     }
 }

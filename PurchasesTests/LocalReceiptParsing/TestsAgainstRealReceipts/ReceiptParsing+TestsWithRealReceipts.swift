@@ -16,22 +16,20 @@ class ReceiptParsingRealReceiptTests: XCTestCase {
     
     let receipt1Name = "base64encodedreceiptsample1"
 
-    func testBasicReceiptAttributesForSample1() {
+    func testBasicReceiptAttributesForSample1() throws {
         let receiptData = sampleReceiptData(receiptName: receipt1Name)
-        let receipt = try! ReceiptParser().parse(from: receiptData)
+        let receipt = try ReceiptParser().parse(from: receiptData)
         
         expect(receipt.applicationVersion) == "4"
         expect(receipt.bundleId) == "com.revenuecat.sampleapp"
         expect(receipt.originalApplicationVersion) == "1.0"
         expect(receipt.creationDate) == Date(timeIntervalSince1970: 1595439548)
         expect(receipt.expirationDate).to(beNil())
-        
-        
     }
     
-    func testInAppPurchasesAttributesForSample1() {
+    func testInAppPurchasesAttributesForSample1() throws {
         let receiptData = sampleReceiptData(receiptName: receipt1Name)
-        let receipt = try! ReceiptParser().parse(from: receiptData)
+        let receipt = try ReceiptParser().parse(from: receiptData)
         let inAppPurchases = receipt.inAppPurchases
         
         expect(inAppPurchases.count) == 9

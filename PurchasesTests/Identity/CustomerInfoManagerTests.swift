@@ -184,7 +184,7 @@ class CustomerInfoManagerTests: XCTestCase {
         expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
     }
 
-    func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfNeverSent() {
+    func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfNeverSent() throws {
         let info = CustomerInfo(testData: [
         "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -196,7 +196,7 @@ class CustomerInfoManagerTests: XCTestCase {
 
         let jsonObject = info!.jsonObject()
 
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
         let appUserID = "myUser"
         self.mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
@@ -205,7 +205,7 @@ class CustomerInfoManagerTests: XCTestCase {
         expect(self.customerInfoManagerDelegateCallCount) == 1
     }
 
-    func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfDifferent() {
+    func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfDifferent() throws {
         let oldInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -217,7 +217,7 @@ class CustomerInfoManagerTests: XCTestCase {
 
         var jsonObject = oldInfo!.jsonObject()
 
-        var object = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        var object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
         let appUserID = "myUser"
         mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
@@ -234,14 +234,14 @@ class CustomerInfoManagerTests: XCTestCase {
 
         jsonObject = newInfo!.jsonObject()
 
-        object = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
         mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
         customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: appUserID)
         expect(self.customerInfoManagerDelegateCallCount) == 2
     }
 
-    func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsOnMainThread() {
+    func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsOnMainThread() throws {
         let oldInfo = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -253,7 +253,7 @@ class CustomerInfoManagerTests: XCTestCase {
 
         let jsonObject = oldInfo!.jsonObject()
 
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
         let appUserID = "myUser"
         mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
@@ -309,7 +309,7 @@ class CustomerInfoManagerTests: XCTestCase {
         expect(completionCalled).toEventually(beTrue())
     }
 
-    func testCachedCustomerInfoParsesCorrectly() {
+    func testCachedCustomerInfoParsesCorrectly() throws {
         let appUserID = "myUser"
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
@@ -322,7 +322,7 @@ class CustomerInfoManagerTests: XCTestCase {
 
         let jsonObject = info!.jsonObject()
 
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
         mockDeviceCache.cachedCustomerInfo[appUserID] = object
 
         let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: appUserID)
@@ -336,7 +336,7 @@ class CustomerInfoManagerTests: XCTestCase {
         expect(receivedCustomerInfo).to(beNil())
     }
 
-    func testCachedCustomerInfoReturnsNilIfNotAvailableForTheAppUserID() {
+    func testCachedCustomerInfoReturnsNilIfNotAvailableForTheAppUserID() throws {
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -348,7 +348,7 @@ class CustomerInfoManagerTests: XCTestCase {
 
         let jsonObject = info!.jsonObject()
 
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
         mockDeviceCache.cachedCustomerInfo["firstUser"] = object
 
         let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: "secondUser")
@@ -364,7 +364,7 @@ class CustomerInfoManagerTests: XCTestCase {
         expect(receivedCustomerInfo).to(beNil())
     }
 
-    func testCachedCustomerInfoReturnsNilIfDifferentSchema() {
+    func testCachedCustomerInfoReturnsNilIfDifferentSchema() throws {
         let oldSchemaVersion = Int(CustomerInfo.currentSchemaVersion)! - 1
         let data: [String: Any] = [
             "request_date": "2019-08-16T10:30:42Z",
@@ -377,7 +377,7 @@ class CustomerInfoManagerTests: XCTestCase {
             ]
         ]
 
-        let object = try! JSONSerialization.data(withJSONObject: data, options: [])
+        let object = try JSONSerialization.data(withJSONObject: data, options: [])
         let appUserID = "myUser"
         mockDeviceCache.cachedCustomerInfo[appUserID] = object
 

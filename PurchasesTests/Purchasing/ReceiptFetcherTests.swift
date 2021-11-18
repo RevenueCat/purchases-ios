@@ -24,13 +24,15 @@ class ReceiptFetcherTests: XCTestCase {
     var mockBundle: MockBundle!
     var mockSystemInfo: MockSystemInfo!
     
-    override func setUp() {
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
         mockBundle = MockBundle()
         mockRequestFetcher = MockRequestFetcher()
-        mockSystemInfo = try! MockSystemInfo(platformFlavor: nil,
-                                             platformFlavorVersion: nil,
-                                             finishTransactions: false,
-                                             bundle: mockBundle)
+        mockSystemInfo = try MockSystemInfo(platformFlavor: nil,
+                                            platformFlavorVersion: nil,
+                                            finishTransactions: false,
+                                            bundle: mockBundle)
         receiptFetcher = ReceiptFetcher(requestFetcher: mockRequestFetcher, systemInfo: mockSystemInfo)
     }
     

@@ -19,7 +19,7 @@ class ReceiptParserTests: XCTestCase {
                                       receiptBuilder: mockAppleReceiptBuilder)
     }
 
-    func testParseFromReceiptDataBuildsContainerAfterObjectIdentifier() {
+    func testParseFromReceiptDataBuildsContainerAfterObjectIdentifier() throws {
         let receiptContainer = containerFactory.receiptContainerFromContainers(containers: [])
         let dataObjectIdentifierContainer = containerFactory.objectIdentifierContainer(.data)
         let constructedContainer = containerFactory.constructedContainer(containers: [
@@ -31,14 +31,14 @@ class ReceiptParserTests: XCTestCase {
         let expectedReceipt = mockAppleReceiptWithoutPurchases()
         mockAppleReceiptBuilder.stubbedBuildResult = expectedReceipt
 
-        let receivedReceipt = try! self.receiptParser.parse(from: Data())
+        let receivedReceipt = try self.receiptParser.parse(from: Data())
 
         expect(self.mockAppleReceiptBuilder.invokedBuildCount) == 1
         expect(self.mockAppleReceiptBuilder.invokedBuildParameters) == receiptContainer
         expect(receivedReceipt) == expectedReceipt
     }
 
-    func testParseFromReceiptDataBuildsContainerAfterObjectIdentifierInComplexContainer() {
+    func testParseFromReceiptDataBuildsContainerAfterObjectIdentifierInComplexContainer() throws {
         let receiptContainer = containerFactory.receiptContainerFromContainers(containers: [])
         let dataObjectIdentifierContainer = containerFactory.objectIdentifierContainer(.data)
 
@@ -67,7 +67,7 @@ class ReceiptParserTests: XCTestCase {
         let expectedReceipt = mockAppleReceiptWithoutPurchases()
         mockAppleReceiptBuilder.stubbedBuildResult = expectedReceipt
 
-        let receivedReceipt = try! self.receiptParser.parse(from: Data())
+        let receivedReceipt = try self.receiptParser.parse(from: Data())
 
         expect(self.mockAppleReceiptBuilder.invokedBuildCount) == 1
         expect(self.mockAppleReceiptBuilder.invokedBuildParameters) == receiptContainer

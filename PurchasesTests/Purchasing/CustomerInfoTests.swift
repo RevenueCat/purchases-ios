@@ -244,8 +244,8 @@ class BasicCustomerInfoTests: XCTestCase {
         expect(newInfo).toNot(beNil())
     }
 
-    func testTwoProductJson() {
-        let json = try! JSONSerialization.jsonObject(with: validTwoProductsJSON.data(using: String.Encoding.utf8)!, options: [])
+    func testTwoProductJson() throws {
+        let json = try JSONSerialization.jsonObject(with: validTwoProductsJSON.data(using: String.Encoding.utf8)!, options: [])
         let info = CustomerInfo(testData: json as! [String : Any])
         expect(info?.latestExpirationDate).toNot(beNil())
     }
