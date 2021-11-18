@@ -115,73 +115,74 @@ class OfferingsTests: XCTestCase {
         expect(offerings).to(beNil())
     }
 
-    func testOfferingsIsCreated() {
+    func testOfferingsIsCreated() throws {
         let products = [
             "com.myproduct.annual": MockSKProduct(mockProductIdentifier: "com.myproduct.annual"),
             "com.myproduct.monthly": MockSKProduct(mockProductIdentifier: "com.myproduct.monthly")
         ]
-        let offerings = offeringsFactory.createOfferings(withProducts: products, data: [
-            "offerings": [
-                [
-                    "identifier": "offering_a",
-                    "description": "This is the base offering",
-                    "packages": [
-                        ["identifier": "$rc_six_month",
-                         "platform_product_identifier": "com.myproduct.annual"]
-                    ]
+        let offerings = try XCTUnwrap(
+            offeringsFactory.createOfferings(withProducts: products, data: [
+                "offerings": [
+                    [
+                        "identifier": "offering_a",
+                        "description": "This is the base offering",
+                        "packages": [
+                            ["identifier": "$rc_six_month",
+                             "platform_product_identifier": "com.myproduct.annual"]
+                        ]
+                    ],
+                    [
+                        "identifier": "offering_b",
+                        "description": "This is the base offering b",
+                        "packages": [
+                            ["identifier": "$rc_monthly",
+                             "platform_product_identifier": "com.myproduct.monthly"]
+                        ]
+                    ],
                 ],
-                [
-                    "identifier": "offering_b",
-                    "description": "This is the base offering b",
-                    "packages": [
-                        ["identifier": "$rc_monthly",
-                         "platform_product_identifier": "com.myproduct.monthly"]
-                    ]
-                ],
-            ],
-            "current_offering_id": "offering_a"
-        ])
+                "current_offering_id": "offering_a"
+            ])
+        )
 
-        expect(offerings).toNot(beNil())
-        expect(offerings?["offering_a"]).toNot(beNil())
-        expect(offerings?["offering_b"]).toNot(beNil())
-        expect(offerings?.current).to(be(offerings?["offering_a"]))
+        expect(offerings["offering_a"]).toNot(beNil())
+        expect(offerings["offering_b"]).toNot(beNil())
+        expect(offerings.current).to(be(offerings["offering_a"]))
     }
 
-    func testLifetimePackage() {
-        testPackageType(packageType: PackageType.lifetime)
+    func testLifetimePackage() throws {
+        try testPackageType(packageType: PackageType.lifetime)
     }
 
-    func testAnnualPackage() {
-        testPackageType(packageType: PackageType.annual)
+    func testAnnualPackage() throws {
+        try testPackageType(packageType: PackageType.annual)
     }
 
-    func testSixMonthPackage() {
-        testPackageType(packageType: PackageType.sixMonth)
+    func testSixMonthPackage() throws {
+        try testPackageType(packageType: PackageType.sixMonth)
     }
 
-    func testThreeMonthPackage() {
-        testPackageType(packageType: PackageType.threeMonth)
+    func testThreeMonthPackage() throws {
+        try testPackageType(packageType: PackageType.threeMonth)
     }
 
-    func testTwoMonthPackage() {
-        testPackageType(packageType: PackageType.twoMonth)
+    func testTwoMonthPackage() throws {
+        try testPackageType(packageType: PackageType.twoMonth)
     }
 
-    func testMonthlyPackage() {
-        testPackageType(packageType: PackageType.monthly)
+    func testMonthlyPackage() throws {
+        try testPackageType(packageType: PackageType.monthly)
     }
 
-    func testWeeklyPackage() {
-        testPackageType(packageType: PackageType.weekly)
+    func testWeeklyPackage() throws {
+        try testPackageType(packageType: PackageType.weekly)
     }
 
-    func testCustomPackage() {
-        testPackageType(packageType: PackageType.custom)
+    func testCustomPackage() throws {
+        try testPackageType(packageType: PackageType.custom)
     }
 
-    func testUnknownPackageType() {
-        testPackageType(packageType: PackageType.unknown)
+    func testUnknownPackageType() throws {
+        try testPackageType(packageType: PackageType.unknown)
     }
 
     func testOfferingsIsNilIfNoOfferingCanBeCreated() throws {
@@ -225,7 +226,7 @@ class OfferingsTests: XCTestCase {
         expect(offerings).to(beNil())
     }
 
-    private func testPackageType(packageType: PackageType) {
+    private func testPackageType(packageType: PackageType) throws {
         var identifier = Package.string(from: packageType)
         if (identifier == nil) {
             if (packageType == PackageType.unknown) {
@@ -238,58 +239,59 @@ class OfferingsTests: XCTestCase {
         let products = [
             productIdentifier: MockSKProduct(mockProductIdentifier: productIdentifier)
         ]
-        let offerings = offeringsFactory.createOfferings(withProducts: products, data: [
-            "offerings": [
-                [
-                    "identifier": "offering_a",
-                    "description": "This is the base offering",
-                    "packages": [
-                        ["identifier": identifier,
-                         "platform_product_identifier": "com.myproduct"]
+        let offerings = try XCTUnwrap(
+            offeringsFactory.createOfferings(withProducts: products, data: [
+                "offerings": [
+                    [
+                        "identifier": "offering_a",
+                        "description": "This is the base offering",
+                        "packages": [
+                            ["identifier": identifier,
+                             "platform_product_identifier": "com.myproduct"]
+                        ]
                     ]
-                ]
-            ],
-            "current_offering_id": "offering_a"
-        ])
+                ],
+                "current_offering_id": "offering_a"
+            ])
+        )
 
-        expect(offerings).toNot(beNil())
-        expect(offerings?.current).toNot(beNil())
+        expect(offerings.current).toNot(beNil())
         if (packageType == PackageType.lifetime) {
-            expect(offerings?.current?.lifetime).toNot(beNil())
+            expect(offerings.current?.lifetime).toNot(beNil())
         } else {
-            expect(offerings?.current?.lifetime).to(beNil())
+            expect(offerings.current?.lifetime).to(beNil())
         }
         if (packageType == PackageType.annual) {
-            expect(offerings?.current?.annual).toNot(beNil())
+            expect(offerings.current?.annual).toNot(beNil())
         } else {
-            expect(offerings?.current?.annual).to(beNil())
+            expect(offerings.current?.annual).to(beNil())
         }
         if (packageType == PackageType.sixMonth) {
-            expect(offerings?.current?.sixMonth).toNot(beNil())
+            expect(offerings.current?.sixMonth).toNot(beNil())
         } else {
-            expect(offerings?.current?.sixMonth).to(beNil())
+            expect(offerings.current?.sixMonth).to(beNil())
         }
         if (packageType == PackageType.threeMonth) {
-            expect(offerings?.current?.threeMonth).toNot(beNil())
+            expect(offerings.current?.threeMonth).toNot(beNil())
         } else {
-            expect(offerings?.current?.threeMonth).to(beNil())
+            expect(offerings.current?.threeMonth).to(beNil())
         }
         if (packageType == PackageType.twoMonth) {
-            expect(offerings?.current?.twoMonth).toNot(beNil())
+            expect(offerings.current?.twoMonth).toNot(beNil())
         } else {
-            expect(offerings?.current?.twoMonth).to(beNil())
+            expect(offerings.current?.twoMonth).to(beNil())
         }
         if (packageType == PackageType.monthly) {
-            expect(offerings?.current?.monthly).toNot(beNil())
+            expect(offerings.current?.monthly).toNot(beNil())
         } else {
-            expect(offerings?.current?.monthly).to(beNil())
+            expect(offerings.current?.monthly).to(beNil())
         }
         if (packageType == PackageType.weekly) {
-            expect(offerings?.current?.weekly).toNot(beNil())
+            expect(offerings.current?.weekly).toNot(beNil())
         } else {
-            expect(offerings?.current?.weekly).to(beNil())
+            expect(offerings.current?.weekly).to(beNil())
         }
-        let package = offerings?["offering_a"]?.package(identifier: identifier)
+        let package = offerings["offering_a"]?.package(identifier: identifier)
         expect(package?.packageType).to(equal(packageType))
     }
 
