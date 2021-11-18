@@ -114,7 +114,7 @@ import Foundation
     /**
      The date an unsubscribe was detected. Can be `nil`.
 
-     Note: Entitlement may still be active even if user has unsubscribed. Check the ``isActive`` property.
+     - Note: Entitlement may still be active even if user has unsubscribed. Check the ``isActive`` property.
      */
     @objc public let unsubscribeDetectedAt: Date?
 
@@ -122,7 +122,7 @@ import Foundation
      The date a billing issue was detected. Can be `nil` if there is no
      billing issue or an issue has been resolved.
 
-     Note: Entitlement may still be active even if there is a billing issue.
+     - Note: Entitlement may still be active even if there is a billing issue.
      Check the ``isActive`` property.
      */
     @objc public let billingIssueDetectedAt: Date?
