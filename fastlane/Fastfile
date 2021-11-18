@@ -228,8 +228,8 @@ platform :ios do
       UI.user_error!("Cancelled")
     end
 
-    # Some people may user visual editors and `system` will continue right away
-    # This will compare the content before and afer attempting to open and
+    # Some people may use visual editors and `system` will continue right away
+    # This will compare the content before and afer attempting to open
     # and will open a blocking prompt for the visual editor changes to be saved
     content_after_opening_editor = File.read(changelog_path)
     if content_before_opening_editor == content_after_opening_editor
