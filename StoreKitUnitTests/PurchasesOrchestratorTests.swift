@@ -304,7 +304,7 @@ private extension PurchasesOrchestratorTests {
         return SK2ProductDetails(sk2Product: try XCTUnwrap(sk2Product as? SK2Product))
     }
 
-    // swiftlint:disable force_try
+    // swiftlint:disable:next force_try
     var mockCustomerInfo: CustomerInfo {
         try! CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
@@ -315,6 +315,5 @@ private extension PurchasesOrchestratorTests {
                 "other_purchases": [:]
             ]])
     }
-    // swiftlint:enable force_try
 
 }

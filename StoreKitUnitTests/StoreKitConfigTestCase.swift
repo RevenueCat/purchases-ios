@@ -37,7 +37,7 @@ class StoreKitConfigTestCase: XCTestCase {
 
         let suiteName = "StoreKitConfigTests"
         userDefaults = UserDefaults(suiteName: suiteName)
-        userDefaults?.removePersistentDomain(forName: suiteName)
+        userDefaults.removePersistentDomain(forName: suiteName)
     }
 
 }
