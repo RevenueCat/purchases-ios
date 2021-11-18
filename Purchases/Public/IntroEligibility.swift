@@ -40,6 +40,8 @@ import Foundation
 
 }
 
+extension IntroEligibilityStatus: CaseIterable {}
+
 private extension IntroEligibilityStatus {
 
     enum IntroEligibilityStatusError: LocalizedError {
@@ -54,17 +56,16 @@ private extension IntroEligibilityStatus {
     }
 
     init(statusCode: Int) throws {
-        switch statusCode {
-        case 0:
-            self = .unknown
-        case 1:
-            self = .ineligible
-        case 2:
-            self = .eligible
-        default:
+        guard let result = Self.mapping[statusCode] else {
             throw IntroEligibilityStatusError.invalidStatusCode(statusCode)
         }
+
+        self = result
     }
+
+    private static let mapping: [Int: IntroEligibilityStatus] = Dictionary(
+        uniqueKeysWithValues: IntroEligibilityStatus.allCases.map { ($0.rawValue, $0) }
+    )
 }
 
 /**
