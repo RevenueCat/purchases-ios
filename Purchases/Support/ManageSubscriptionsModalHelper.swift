@@ -130,8 +130,6 @@ private extension ManageSubscriptionsModalHelper {
 
         do {
 
-// todo: remove when this gets fixed.
-// limiting to arm architecture since builds on beta 5 fail if other archs are included
 #if os(iOS)
             try await AppStore.showManageSubscriptions(in: windowScene)
             return .success(())
