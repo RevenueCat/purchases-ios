@@ -73,6 +73,13 @@ struct MyStruct {
 
     // public methods in the main declaration
 
+    /// This method prints the planets
+    public func foo() {
+        // use explicit `self` to make it clear that it's accessing a member
+        // versus a global or value in the local context
+        print(self.mercury)
+    }
+
 }
 
 // separate protocol conformance into extension

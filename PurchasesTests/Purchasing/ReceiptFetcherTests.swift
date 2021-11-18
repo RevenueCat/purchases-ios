@@ -22,11 +22,16 @@ class ReceiptFetcherTests: XCTestCase {
     var receiptFetcher: ReceiptFetcher!
     var mockRequestFetcher: MockRequestFetcher!
     var mockBundle: MockBundle!
+    var mockSystemInfo: MockSystemInfo!
     
     override func setUp() {
         mockBundle = MockBundle()
         mockRequestFetcher = MockRequestFetcher()
-        receiptFetcher = ReceiptFetcher(requestFetcher: mockRequestFetcher, bundle: mockBundle)
+        mockSystemInfo = try! MockSystemInfo(platformFlavor: nil,
+                                             platformFlavorVersion: nil,
+                                             finishTransactions: false,
+                                             bundle: mockBundle)
+        receiptFetcher = ReceiptFetcher(requestFetcher: mockRequestFetcher, systemInfo: mockSystemInfo)
     }
     
     func testReceiptDataWithRefreshPolicyNeverReturnsReceiptData() {
@@ -64,7 +69,7 @@ class ReceiptFetcherTests: XCTestCase {
     
     func testReceiptDataWithRefreshPolicyNeverDoesntRefreshIfEmpty() {
         var completionCalled = false
-        mockBundle.mockAppStoreReceiptURLResult = .emptyReceipt
+        mockBundle.receiptURLResult = .emptyReceipt
         var receivedData: Data?
         receiptFetcher.receiptData(refreshPolicy: .never) { maybeData in
             completionCalled = true
@@ -77,7 +82,7 @@ class ReceiptFetcherTests: XCTestCase {
 
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyRefreshesIfEmpty() {
         var completionCalled = false
-        mockBundle.mockAppStoreReceiptURLResult = .emptyReceipt
+        mockBundle.receiptURLResult = .emptyReceipt
         var receivedData: Data?
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
             completionCalled = true
@@ -91,7 +96,7 @@ class ReceiptFetcherTests: XCTestCase {
     
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyRefreshesIfNil() {
         var completionCalled = false
-        mockBundle.mockAppStoreReceiptURLResult = .nilURL
+        mockBundle.receiptURLResult = .nilURL
         var receivedData: Data?
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
             completionCalled = true
@@ -106,7 +111,7 @@ class ReceiptFetcherTests: XCTestCase {
 
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyDoesntRefreshIfTheresData() {
         var completionCalled = false
-        mockBundle.mockAppStoreReceiptURLResult = .receiptWithData
+        mockBundle.receiptURLResult = .receiptWithData
         var receivedData: Data?
         receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { maybeData in
             completionCalled = true
@@ -121,7 +126,7 @@ class ReceiptFetcherTests: XCTestCase {
 
     func testReceiptDataWithRefreshPolicyAlwaysRefreshesEvenIfTheresData() {
         var completionCalled = false
-        mockBundle.mockAppStoreReceiptURLResult = .receiptWithData
+        mockBundle.receiptURLResult = .receiptWithData
         var receivedData: Data?
         receiptFetcher.receiptData(refreshPolicy: .always) { maybeData in
             completionCalled = true

@@ -109,7 +109,7 @@ private extension ErrorUtils {
             Logger.debug(Strings.codable.valueNotFoundError(value: value, context: context))
         case .typeMismatch(let type, let context):
             Logger.error(Strings.codable.typeMismatch(type: type, context: context))
-        default:
+        @unknown default:
             Logger.error("Unhandled DecodingError: \(decodingError)\n\(Strings.codable.decoding_error(decodingError))")
         }
      }

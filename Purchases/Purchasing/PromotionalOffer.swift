@@ -30,9 +30,7 @@ class PromotionalOffer {
                   paymentMode: rcPaymentMode)
     }
 
-    // swiftlint:disable missing_docs
-    public init(offerIdentifier: String?, price: NSDecimalNumber, paymentMode: ProductInfo.PaymentMode) {
-    // swiftlint:enable missing_docs
+    init(offerIdentifier: String?, price: NSDecimalNumber, paymentMode: ProductInfo.PaymentMode) {
         self.offerIdentifier = offerIdentifier
         self.price = price
         self.paymentMode = paymentMode

@@ -114,7 +114,7 @@ import Foundation
     /**
      The date an unsubscribe was detected. Can be `nil`.
 
-     Note: Entitlement may still be active even if user has unsubscribed. Check the ``isActive`` property.
+     - Note: Entitlement may still be active even if user has unsubscribed. Check the ``isActive`` property.
      */
     @objc public let unsubscribeDetectedAt: Date?
 
@@ -122,7 +122,7 @@ import Foundation
      The date a billing issue was detected. Can be `nil` if there is no
      billing issue or an issue has been resolved.
 
-     Note: Entitlement may still be active even if there is a billing issue.
+     - Note: Entitlement may still be active even if there is a billing issue.
      Check the ``isActive`` property.
      */
     @objc public let billingIssueDetectedAt: Date?
@@ -133,6 +133,15 @@ import Foundation
      an entitlement shared with them, but might not be entirely aware of the benefits they now have.
      */
     @objc public let ownershipType: PurchaseOwnershipType
+
+    /**
+     * The underlying data for this `EntitlementInfo`.
+     *
+     * - Note: the content and format of this data isn’t documented and is subject to change,
+     *         it's only meant for debugging purposes or for getting access to future data
+     *         without updating the SDK.
+     */
+    @objc public let rawData: [String: Any]
 
     public override var description: String {
         return """
@@ -210,20 +219,23 @@ import Foundation
     }
 
     public override var hash: Int {
-        var hash: UInt = UInt(self.identifier.hash)
-        hash = hash * UInt(31) + UInt(self.isActive.hashValue)
-        hash = hash * 31 + UInt(self.willRenew.hashValue)
-        hash = hash * 31 + UInt(self.periodType.hashValue)
-        hash = hash * 31 + UInt(self.latestPurchaseDate?.hashValue ?? 0)
-        hash = hash * 31 + UInt(self.originalPurchaseDate?.hashValue ?? 0)
-        hash = hash * 31 + UInt(self.expirationDate?.hashValue ?? 0)
-        hash = hash * 31 + UInt(self.store.hashValue)
-        hash = hash * 31 + UInt(self.productIdentifier.hash)
-        hash = hash * 31 + UInt(self.isSandbox.hashValue)
-        hash = hash * 31 + UInt(self.unsubscribeDetectedAt?.hashValue ?? 0)
-        hash = hash * 31 + UInt(self.billingIssueDetectedAt?.hashValue ?? 0)
-        hash = hash * 31 + UInt(self.ownershipType.hashValue)
-        return Int(hash)
+        var hasher = Hasher()
+
+        hasher.combine(self.identifier)
+        hasher.combine(self.isActive)
+        hasher.combine(self.willRenew)
+        hasher.combine(self.periodType)
+        hasher.combine(self.latestPurchaseDate)
+        hasher.combine(self.originalPurchaseDate)
+        hasher.combine(self.expirationDate)
+        hasher.combine(self.store)
+        hasher.combine(self.productIdentifier)
+        hasher.combine(self.isSandbox)
+        hasher.combine(self.unsubscribeDetectedAt)
+        hasher.combine(self.billingIssueDetectedAt)
+        hasher.combine(self.ownershipType)
+
+        return hasher.finalize()
     }
 
     convenience init?(entitlementId: String,
@@ -279,9 +291,13 @@ import Foundation
                                                           store: store,
                                                           unsubscribeDetectedAt: unsubscribeDetectedAt,
                                                           billingIssueDetectedAt: billingIssueDetectedAt)
+
+        self.rawData = entitlementDataDict
     }
 
 }
+
+extension EntitlementInfo: RawDataContainer {}
 
 private extension EntitlementInfo {
 

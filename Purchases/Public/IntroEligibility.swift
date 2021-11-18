@@ -40,6 +40,8 @@ import Foundation
 
 }
 
+extension IntroEligibilityStatus: CaseIterable {}
+
 private extension IntroEligibilityStatus {
 
     enum IntroEligibilityStatusError: LocalizedError {
@@ -53,6 +55,17 @@ private extension IntroEligibilityStatus {
         }
     }
 
+    init(statusCode: Int) throws {
+        guard let result = Self.mapping[statusCode] else {
+            throw IntroEligibilityStatusError.invalidStatusCode(statusCode)
+        }
+
+        self = result
+    }
+
+    private static let mapping: [Int: IntroEligibilityStatus] = Dictionary(
+        uniqueKeysWithValues: IntroEligibilityStatus.allCases.map { ($0.rawValue, $0) }
+    )
 }
 
 /**
@@ -71,8 +84,10 @@ private extension IntroEligibilityStatus {
             return "Eligible for trial or introductory price."
         case .ineligible:
             return "Not eligible for trial or introductory price."
-        default:
-            return "Status indeterminate."
+
+        case .unknown: fallthrough
+        @unknown default:
+            return "Unknown status"
         }
     }
 

@@ -178,7 +178,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                   platformFlavorVersion: nil)
     }
 
-    // swiftlint:disable function_body_length
+    // swiftlint:disable:next function_body_length
     convenience init(apiKey: String,
                      appUserID: String?,
                      userDefaults: UserDefaults?,
@@ -189,7 +189,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
                                              operationDispatcher: operationDispatcher)
-        let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher)
         let systemInfo: SystemInfo
         do {
             systemInfo = try SystemInfo(platformFlavor: platformFlavor,
@@ -199,6 +198,7 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
             fatalError(error.localizedDescription)
         }
 
+        let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()
         let backend = Backend(apiKey: apiKey,
                               systemInfo: systemInfo,
@@ -282,7 +282,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
                   purchasesOrchestrator: purchasesOrchestrator,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker)
     }
-    // swiftlint:enable function_body_length
 
     init(appUserID: String?,
          requestFetcher: StoreKitRequestFetcher,
@@ -1106,84 +1105,6 @@ public extension Purchases {
     }
 
     /**
-     * Deprecated
-     */
-    @available(swift, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
-    @available(*, deprecated, message: "use getCustomerInfoWithCompletion:", renamed: "getOfferingsWithCompletion")
-    @objc func customerInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
-        getCustomerInfo(completion: completion)
-    }
-
-    /**
-     * Deprecated
-     */
-    @available(swift, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
-    @available(*, deprecated, message: "use getCustomerInfoWithCompletion:", renamed: "getOfferingsWithCompletion")
-    @objc func purchaserInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
-        getCustomerInfo(completion: completion)
-    }
-
-    /**
-     * Deprecated
-     */
-    @available(*,
-                deprecated,
-                message: "use getProductsWithIdentifiers:completion:",
-                renamed: "getProductsWithIdentifiers")
-    @available(swift, obsoleted: 1, renamed: "getProducts(_:completion:)")
-    @objc(productsWithIdentifiers:completion:)
-    func products(_ productIdentifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
-        getProducts(productIdentifiers, completion: completion)
-    }
-
-    /**
-     * Deprecated
-     */
-    @available(swift, obsoleted: 1, renamed: "getOfferings(completion:)")
-    @available(*, deprecated, message: "use getOfferingsWithCompletion:", renamed: "getOfferingsWithCompletion")
-    @objc func offerings(completion: @escaping (Offerings?, Error?) -> Void) {
-        getOfferings(completion: completion)
-    }
-
-    /**
-     * Deprecated
-     */
-    @available(swift, obsoleted: 1, renamed: "purchase(package:completion:)")
-    func purchasePackage(_ package: Package, _ completion: @escaping PurchaseCompletedBlock) {
-        purchase(package: package, completion: completion)
-    }
-
-    /**
-     * Deprecated
-     */
-    @available(swift, obsoleted: 1, renamed: "purchase(package:discount:completion:)")
-    @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
-    func purchasePackage(_ package: Package,
-                         discount: SKPaymentDiscount,
-                         _ completion: @escaping PurchaseCompletedBlock) {
-        purchase(package: package, discount: discount, completion: completion)
-    }
-
-    /**
-     * Deprecated
-     */
-    @available(swift, obsoleted: 1, renamed: "purchase(product:_:)")
-    func purchaseProduct(_ product: SKProduct, _ completion: @escaping PurchaseCompletedBlock) {
-        purchase(product: product, completion: completion)
-    }
-
-    /**
-     * Deprecated
-     */
-    @available(swift, obsoleted: 1, renamed: "purchase(product:discount:completion:)")
-    @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
-    func purchaseProduct(_ product: SKProduct,
-                         discount: SKPaymentDiscount,
-                         _ completion: @escaping PurchaseCompletedBlock) {
-        purchase(product: product, discount: discount, completion: completion)
-    }
-
-    /**
      * Send your attribution data to RevenueCat so you can track the revenue generated by your different campaigns.
      *
      * - Parameter data: Dictionary provided by the network. See https://docs.revenuecat.com/docs/attribution
@@ -1284,10 +1205,6 @@ public extension Purchases {
     }
 
 }
-
-@available(swift, obsoleted: 1, renamed: "CustomerInfo")
-@available(*, deprecated, message: "use RCCustomerInfo:", renamed: "RCCustomerInfo")
-@objc(RCPurchaserInfo) public class PurchaserInfo: NSObject { }
 
 // MARK: Private
 private extension Purchases {

@@ -71,7 +71,7 @@ import Foundation
      * Returns the purchase date for the version of the application when the user bought the app.
      * Use this for grandfathering users when migrating to subscriptions.
      *
-     * Note: This can be `nil`, see ``Purchases/restoreTransactions(completion:)``
+     * - Note: This can be `nil`, see ``Purchases/restoreTransactions(completion:)``
      */
     @objc public let originalPurchaseDate: Date?
 
@@ -84,6 +84,15 @@ import Foundation
      * - Note: This can be nil, see -`Purchases.restoreTransactions(completion:)`
      */
     @objc public let originalApplicationVersion: String?
+
+    /**
+     * The underlying data for this `CustomerInfo`.
+     *
+     * - Note: the content and format of this data isn’t documented and is subject to change.
+     *         it's only meant for debugging purposes or for getting access to future data
+     *         without updating the SDK.
+     */
+    @objc public let rawData: [String: Any]
 
     /// Get the expiration date for a given product identifier. You should use Entitlements though!
     /// - Parameter productIdentifier: Product identifier for product
@@ -184,7 +193,7 @@ import Foundation
         }
 
         self.dateFormatter = dateFormatter
-        self.originalData = data
+        self.rawData = data
         self.schemaVersion = data["schema_version"] as? String
         self.requestDate = formattedRequestDate
         self.originalPurchaseDate = subscriberData.originalPurchaseDate
@@ -205,7 +214,7 @@ import Foundation
     static let currentSchemaVersion = "2"
 
     func jsonObject() -> [String: Any] {
-        return originalData.merging(
+        return rawData.merging(
             ["schema_version": CustomerInfo.currentSchemaVersion],
             strategy: .keepOriginalValue
         )
@@ -213,7 +222,6 @@ import Foundation
 
     private let allPurchases: [String: [String: Any]]
     private let subscriptionTransactionsByProductId: [String: [String: Any]]
-    private let originalData: [String: Any]
     private let dateFormatter: DateFormatter
 
     private lazy var expirationDatesByProductId: [String: Date?] = {
@@ -308,6 +316,8 @@ import Foundation
     }
 
 }
+
+extension CustomerInfo: RawDataContainer {}
 
 enum CustomerInfoError: Int, DescribableError {
 

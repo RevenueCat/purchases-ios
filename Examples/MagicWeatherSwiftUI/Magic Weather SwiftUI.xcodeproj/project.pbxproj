@@ -20,7 +20,21 @@
 		559779B925B72DCF00C33DFB /* SampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559779B325B72DC000C33DFB /* SampleData.swift */; };
 		559779C025B72EE100C33DFB /* PurchasesDelegateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559779BF25B72EE100C33DFB /* PurchasesDelegateHandler.swift */; };
 		5791CEC42742EF2400E50C4B /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5791CEC32742EF2400E50C4B /* RevenueCat.framework */; };
+		57BACC0E2745C119000021C5 /* RevenueCat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5791CEC32742EF2400E50C4B /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		57BACC0D2745C113000021C5 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				57BACC0E2745C119000021C5 /* RevenueCat.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		55413BE625B735AF00ECCA5A /* UserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserView.swift; sourceTree = "<group>"; };
@@ -157,6 +171,7 @@
 				5597797A25ACDC3E00C33DFB /* Sources */,
 				5597797B25ACDC3E00C33DFB /* Frameworks */,
 				5597797C25ACDC3E00C33DFB /* Resources */,
+				57BACC0D2745C113000021C5 /* CopyFiles */,
 			);
 			buildRules = (
 			);

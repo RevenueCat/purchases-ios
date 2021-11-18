@@ -14,21 +14,30 @@
 import Foundation
 
 class MockBundle: Bundle {
-    enum MockAppStoreReceiptURLResult {
-        case receiptWithData, emptyReceipt, nilURL
+    enum ReceiptURLResult {
+        case receiptWithData
+        case emptyReceipt
+        case sandboxReceipt
+        case nilURL
     }
     
-    var mockAppStoreReceiptURLResult: MockAppStoreReceiptURLResult = .receiptWithData
+    var receiptURLResult: ReceiptURLResult = .receiptWithData
     
-    private let mockAppStoreReceiptFileName = "base64encodedreceiptsample1"
+    private static let mockAppStoreReceiptFileName = "base64encodedreceiptsample1"
+    private static let mockSandboxReceiptFileName = "base64encoded_sandboxReceipt"
     
     override var appStoreReceiptURL: URL? {
-        switch mockAppStoreReceiptURLResult {
+        let testBundle = Bundle(for: type(of: self))
+        
+        switch self.receiptURLResult {
         case .receiptWithData:
-            return Bundle(for: type(of: self))
-                .url(forResource: mockAppStoreReceiptFileName, withExtension: "txt")
+            return testBundle
+                .url(forResource: Self.mockAppStoreReceiptFileName, withExtension: "txt")
         case .emptyReceipt:
             return URL(string: "")
+        case .sandboxReceipt:
+            return testBundle
+                .url(forResource: Self.mockSandboxReceiptFileName, withExtension: "txt")
         case .nilURL:
             return nil
         }

@@ -16,10 +16,10 @@ import StoreKit
 
 extension SKError {
 
+    // swiftlint:disable:next cyclomatic_complexity
     func toPurchasesErrorCode() -> ErrorCode {
         switch self.code {
-        case .unknown,
-             .cloudServiceNetworkConnectionFailed,
+        case .cloudServiceNetworkConnectionFailed,
              .cloudServiceRevoked,
              .overlayTimeout,
              .overlayPresentedInBackgroundScene:
@@ -45,6 +45,19 @@ extension SKError {
              .overlayInvalidConfiguration,
              .unsupportedPlatform:
             return .purchaseNotAllowedError
+        case .unknown:
+            if let error = self.userInfo[NSUnderlyingErrorKey] as? NSError {
+                switch (error.domain, error.code) {
+                case ("ASDServerErrorDomain", 3532): // "You’re currently subscribed to this"
+                    // See https://github.com/RevenueCat/purchases-ios/issues/392
+                    return .productAlreadyPurchasedError
+
+                default: break
+                }
+            }
+
+            return .storeProblemError
+
         @unknown default:
             return .unknownError
         }

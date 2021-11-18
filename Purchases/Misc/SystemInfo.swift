@@ -49,9 +49,11 @@ class SystemInfo {
     var finishTransactions: Bool
     let platformFlavor: String
     let platformFlavorVersion: String?
+    let bundle: Bundle
+
     static var forceUniversalAppStore: Bool = false
-    static var isSandbox: Bool {
-        let url = Bundle.main.appStoreReceiptURL
+    var isSandbox: Bool {
+        let url = self.bundle.appStoreReceiptURL
         guard let url = url else {
             return false
         }
@@ -108,9 +110,13 @@ class SystemInfo {
         return URL(string: defaultServerHostName)!
     }
 
-    init(platformFlavor: String?, platformFlavorVersion: String?, finishTransactions: Bool) throws {
+    init(platformFlavor: String?,
+         platformFlavorVersion: String?,
+         finishTransactions: Bool,
+         bundle: Bundle = .main) throws {
         self.platformFlavor = platformFlavor ?? "native"
         self.platformFlavorVersion = platformFlavorVersion
+        self.bundle = bundle
 
         if (platformFlavor == nil && platformFlavorVersion != nil) ||
             (platformFlavor != nil && platformFlavorVersion == nil) {
@@ -167,7 +173,7 @@ extension SystemInfo {
     }
 
     var isAppExtension: Bool {
-        return Bundle.main.bundlePath.hasSuffix(".appex")
+        return self.bundle.bundlePath.hasSuffix(".appex")
     }
 
 }

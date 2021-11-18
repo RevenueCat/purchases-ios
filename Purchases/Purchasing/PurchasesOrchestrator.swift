@@ -153,22 +153,30 @@ class PurchasesOrchestrator {
                       return
                   }
 
-            // swiftlint:disable line_length
-            self.backend.post(offerIdForSigning: discountIdentifier,
-                              productIdentifier: product.productIdentifier,
-                              subscriptionGroup: subscriptionGroupIdentifier,
-                              receiptData: receiptData,
-                              appUserID: self.appUserID) { maybeSignature, maybeKeyIdentifier, maybeNonce, maybeTimestamp, maybeError in
+            self.backend.post(
+                offerIdForSigning: discountIdentifier,
+                productIdentifier: product.productIdentifier,
+                subscriptionGroup: subscriptionGroupIdentifier,
+                receiptData: receiptData,
+                appUserID: self.appUserID
+            ) { maybeSignature, maybeKeyIdentifier, maybeNonce, maybeTimestamp, maybeError in
                 if let error = maybeError {
                     completion(nil, error)
                     return
                 }
-            // swiftlint:enable line_length
                 guard let keyIdentifier = maybeKeyIdentifier,
                       let nonce = maybeNonce,
                       let signature = maybeSignature,
                       let timestamp = maybeTimestamp else {
-                          completion(nil, ErrorUtils.unexpectedBackendResponseError())
+                          completion(
+                            nil,
+                            ErrorUtils.unexpectedBackendResponseError(extraUserInfo: [
+                                "keyIdentifier": String(describing: maybeKeyIdentifier),
+                                "nonce": String(describing: maybeNonce),
+                                "signature": String(describing: maybeSignature),
+                                "timestamp": String(describing: maybeTimestamp)
+                            ])
+                          )
                           return
                       }
 
@@ -522,7 +530,7 @@ private extension PurchasesOrchestrator {
         receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { maybeReceiptData in
             guard let receiptData = maybeReceiptData,
                   !receiptData.isEmpty else {
-                      if SystemInfo.isSandbox {
+                      if self.systemInfo.isSandbox {
                           Logger.appleWarning(Strings.receipt.no_sandbox_receipt_restore)
                       }
 

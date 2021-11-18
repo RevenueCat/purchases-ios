@@ -74,8 +74,8 @@ class ErrorUtils: NSObject {
      *
      * - Note: This error is used when a network request returns an unexpected response.
      */
-    static func unexpectedBackendResponseError() -> Error {
-        return error(with: ErrorCode.unexpectedBackendResponseError)
+    static func unexpectedBackendResponseError(extraUserInfo: [NSError.UserInfoKey: Any]? = nil) -> Error {
+        return error(with: ErrorCode.unexpectedBackendResponseError, extraUserInfo: extraUserInfo)
     }
 
     /**
@@ -304,38 +304,10 @@ private extension ErrorUtils {
             userInfo[NSUnderlyingErrorKey as NSError.UserInfoKey] = maybeUnderlyingError
         }
         userInfo[ErrorDetails.generatedByKey] = generatedBy
-
         userInfo[ErrorDetails.readableErrorCodeKey] = code.codeName
 
-        switch code {
-        case .networkError,
-             .unknownError,
-             .receiptAlreadyInUseError,
-             .unexpectedBackendResponseError,
-             .invalidReceiptError,
-             .invalidAppUserIdError,
-             .operationAlreadyInProgressForProductError,
-             .unknownBackendError,
-             .invalidSubscriberAttributesError,
-             .beginRefundRequestError,
-             .logOutAnonymousUserError:
-            Logger.error(code.description)
-        case .purchaseCancelledError,
-             .storeProblemError,
-             .purchaseNotAllowedError,
-             .purchaseInvalidError,
-             .productNotAvailableForPurchaseError,
-             .productAlreadyPurchasedError,
-             .missingReceiptFileError,
-             .invalidCredentialsError,
-             .invalidAppleSubscriptionKeyError,
-             .ineligibleError,
-             .insufficientPermissionsError,
-             .paymentPendingError:
-            Logger.appleError(code.description)
-        default:
-            break
-        }
+        Self.logErrorIfNeeded(code)
+
         let nsError = code as NSError
         let nsErrorWithUserInfo = NSError(domain: nsError.domain,
                                           code: nsError.code,
@@ -370,4 +342,43 @@ private extension ErrorUtils {
         return errorWithUserInfo
     }
 
+    private static func logErrorIfNeeded(_ code: ErrorCode) {
+        switch code {
+        case .networkError,
+                .unknownError,
+                .receiptAlreadyInUseError,
+                .unexpectedBackendResponseError,
+                .invalidReceiptError,
+                .invalidAppUserIdError,
+                .operationAlreadyInProgressForProductError,
+                .unknownBackendError,
+                .invalidSubscriberAttributesError,
+                .logOutAnonymousUserError,
+                .receiptInUseByOtherSubscriberError,
+                .configurationError,
+                .unsupportedError,
+                .emptySubscriberAttributes,
+                .productDiscountMissingIdentifierError,
+                .missingAppUserIDForAliasCreationError,
+                .productDiscountMissingSubscriptionGroupIdentifierError:
+            Logger.error(code.description)
+
+        case .purchaseCancelledError,
+                .storeProblemError,
+                .purchaseNotAllowedError,
+                .purchaseInvalidError,
+                .productNotAvailableForPurchaseError,
+                .productAlreadyPurchasedError,
+                .missingReceiptFileError,
+                .invalidCredentialsError,
+                .invalidAppleSubscriptionKeyError,
+                .ineligibleError,
+                .insufficientPermissionsError,
+                .paymentPendingError:
+            Logger.appleError(code.description)
+
+        @unknown default:
+            Logger.error(code.description)
+        }
+    }
 }

@@ -16,7 +16,8 @@
 class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker {
 
     convenience init() {
-        self.init(receiptFetcher: MockReceiptFetcher(requestFetcher: MockRequestFetcher()),
+        let systemInfo = try! MockSystemInfo(platformFlavor: "xyz", platformFlavorVersion: "123", finishTransactions: true)
+        self.init(receiptFetcher: MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo),
                   introEligibilityCalculator: MockIntroEligibilityCalculator(),
                   backend: MockBackend(),
                   identityManager: MockIdentityManager(mockAppUserID: "app_user"),

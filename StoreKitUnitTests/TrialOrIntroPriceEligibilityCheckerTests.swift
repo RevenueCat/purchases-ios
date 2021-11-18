@@ -23,9 +23,13 @@ class TrialOrIntroPriceEligibilityCheckerTests: StoreKitConfigTestCase {
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
     var mockBackend: MockBackend!
     var mockProductsManager: MockProductsManager!
+    var mockSystemInfo: MockSystemInfo!
 
-    func setupSK1() {
-        receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher())
+    func setupSK1() throws {
+        mockSystemInfo = try MockSystemInfo(platformFlavor: "xyz",
+                                            platformFlavorVersion: "123",
+                                            finishTransactions: true)
+        receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockBackend = MockBackend()
         let mockOperationDispatcher = MockOperationDispatcher()
@@ -43,7 +47,11 @@ class TrialOrIntroPriceEligibilityCheckerTests: StoreKitConfigTestCase {
     func setUpSK2WithError() throws {
         try super.setUpWithError()
 
-        receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher())
+        mockSystemInfo = try MockSystemInfo(platformFlavor: "xyz",
+                                            platformFlavorVersion: "123",
+                                            finishTransactions: true)
+
+        receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockBackend = MockBackend()
         let mockOperationDispatcher = MockOperationDispatcher()
@@ -58,14 +66,14 @@ class TrialOrIntroPriceEligibilityCheckerTests: StoreKitConfigTestCase {
                                             productsManager: mockProductsManager)
     }
 
-    func testSK1CheckTrialOrIntroPriceEligibilityDoesntCrash() {
-        setupSK1()
+    func testSK1CheckTrialOrIntroPriceEligibilityDoesntCrash() throws {
+        try setupSK1()
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { _ in
         }
     }
 
-    func testSK1CheckTrialOrIntroPriceEligibilityFetchesAReceipt() {
-        setupSK1()
+    func testSK1CheckTrialOrIntroPriceEligibilityFetchesAReceipt() throws {
+        try setupSK1()
         trialOrIntroPriceEligibilityChecker!.sk1CheckEligibility([]) { _ in
         }
 
@@ -73,7 +81,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: StoreKitConfigTestCase {
     }
 
     func testSK1EligibilityIsCalculatedFromReceiptData() throws {
-        setupSK1()
+        try setupSK1()
         let stubbedEligibility = ["product_id": IntroEligibilityStatus.eligible]
         mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroductoryPriceEligibilityResult = (stubbedEligibility, nil)
 
@@ -90,7 +98,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: StoreKitConfigTestCase {
     }
 
     func testSK1EligibilityIsFetchedFromBackendIfErrorCalculatingEligibility() throws {
-        setupSK1()
+        try setupSK1()
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
                                    code: ErrorCode.invalidAppUserIdError.rawValue,
                                    userInfo: [:])
@@ -115,7 +123,7 @@ class TrialOrIntroPriceEligibilityCheckerTests: StoreKitConfigTestCase {
     }
 
     func testSK1ErrorFetchingFromBackendAfterErrorCalculatingEligibility() throws {
-        setupSK1()
+        try setupSK1()
         let productId = "product_id"
 
         let stubbedError = NSError(domain: RCPurchasesErrorCodeDomain,
