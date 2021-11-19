@@ -7,7 +7,6 @@
 
 class MockIdentityManager: IdentityManager {
 
-    var configurationCalled = false
     var identifyError: Error?
     var aliasError: Error?
     var aliasCalled = false
@@ -26,9 +25,10 @@ class MockIdentityManager: IdentityManager {
         super.init(deviceCache: mockDeviceCache,
                    backend: mockBackend,
                    customerInfoManager: MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
-                                                                  deviceCache: mockDeviceCache,
-                                                                  backend: mockBackend,
-                                                                  systemInfo: mockSystemInfo))
+                                                                deviceCache: mockDeviceCache,
+                                                                backend: mockBackend,
+                                                                systemInfo: mockSystemInfo),
+                   appUserID: mockAppUserID)
     }
 
     override var currentAppUserID: String {
@@ -37,35 +37,6 @@ class MockIdentityManager: IdentityManager {
         } else {
             return mockAppUserID
         }
-    }
-
-    override func configure(appUserID: String?) {
-        configurationCalled = true
-    }
-
-    override func createAlias(appUserID alias: String, completion: @escaping ((Error?) -> ())) {
-        aliasCalled = true
-        if (aliasError != nil) {
-            completion(aliasError)
-        } else {
-            mockAppUserID = alias
-            completion(nil)
-        }
-    }
-
-    override func identify(appUserID: String, completion: @escaping ((Error?) -> ())) {
-        identifyCalled = true
-        if (identifyError != nil) {
-            completion(identifyError)
-        } else {
-            mockAppUserID = appUserID
-            completion(nil)
-        }
-    }
-
-    override func resetAppUserID() {
-        resetCalled = true
-        mockAppUserID = "$RCAnonymousID:ff68f26e432648369a713849a9f93b58"
     }
 
     override var currentUserIsAnonymous: Bool {

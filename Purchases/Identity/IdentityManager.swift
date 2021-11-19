@@ -15,8 +15,6 @@ import Foundation
 
 class IdentityManager {
 
-    static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
-
     var currentAppUserID: String {
         guard let appUserID = deviceCache.cachedAppUserID else {
             fatalError(Strings.identity.null_currentappuserid.description)
@@ -39,17 +37,23 @@ class IdentityManager {
     private let backend: Backend
     private let customerInfoManager: CustomerInfoManager
 
-    init(deviceCache: DeviceCache, backend: Backend, customerInfoManager: CustomerInfoManager) {
+    internal static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
+
+    init(
+        deviceCache: DeviceCache,
+        backend: Backend,
+        customerInfoManager: CustomerInfoManager,
+        appUserID: String?
+    ) {
         self.deviceCache = deviceCache
         self.backend = backend
         self.customerInfoManager = customerInfoManager
-    }
 
-    func configure(appUserID maybeAppUserID: String?) {
-        let appUserID = maybeAppUserID
+        let appUserID = appUserID
             ?? deviceCache.cachedAppUserID
             ?? deviceCache.cachedLegacyAppUserID
-            ?? generateRandomID()
+            ?? Self.generateRandomID()
+
         Logger.user(Strings.identity.identifying_app_user_id(appUserID: appUserID))
 
         deviceCache.cache(appUserID: appUserID)
@@ -92,47 +96,18 @@ class IdentityManager {
             return
         }
 
-        resetAppUserID()
+        self.resetUserIDCache()
         Logger.info(Strings.identity.log_out_success)
         completion(nil)
     }
 
-    func generateRandomID() -> String {
-        "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
-    }
-
-// MARK: Deprecated
-
-    func identify(appUserID: String, completion: @escaping (Error?) -> Void) {
-        if currentUserIsAnonymous {
-            Logger.user(Strings.identity.identifying_anon_id(appUserID: currentAppUserID))
-            createAlias(appUserID: appUserID, completion: completion)
-        } else {
-            Logger.user(Strings.identity.changing_app_user_id(from: currentAppUserID, to: appUserID))
-            deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: appUserID)
-            completion(nil)
-        }
-    }
-
-    func createAlias(appUserID alias: String, completion: @escaping (Error?) -> Void) {
-        guard !alias.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            completion(ErrorUtils.missingAppUserIDForAliasCreationError())
-            return
-        }
-
-        backend.createAlias(appUserID: currentAppUserID, newAppUserID: alias) { maybeError in
-            if maybeError == nil {
-                Logger.user(Strings.identity.creating_alias_success)
-                self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID, andSaveWithNewUserID: alias)
-            }
-            completion(maybeError)
-        }
-    }
-
-    func resetAppUserID() {
-        deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: generateRandomID())
+    private func resetUserIDCache() {
+        deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: Self.generateRandomID())
         deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         backend.clearCaches()
     }
 
+    static func generateRandomID() -> String {
+        "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
+    }
 }

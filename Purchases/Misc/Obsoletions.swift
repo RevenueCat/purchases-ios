@@ -185,6 +185,50 @@ public extension Purchases {
         fatalError()
     }
 
+    /**
+     * This function will alias two appUserIDs together.
+     *
+     * - Parameter alias: The new appUserID that should be linked to the currently identified appUserID
+     * - Parameter completion: An optional completion block called when the aliasing has been successful.
+     * This completion block will receive an error if there's been one.
+     */
+    @available(iOS, obsoleted: 1, renamed: "logIn")
+    @available(tvOS, obsoleted: 1, renamed: "logIn")
+    @available(watchOS, obsoleted: 1, renamed: "logIn")
+    @available(macOS, obsoleted: 1, renamed: "logIn")
+    @objc(createAlias:completion:)
+    func createAlias(_ alias: String, _ completion: ((CustomerInfo?, Error?) -> Void)?) {
+       fatalError()
+    }
+
+    /**
+     * This function will identify the current user with an appUserID. Typically this would be used after a
+     * logout to identify a new user without calling configure.
+     *
+     * - Parameter appUserID: The appUserID that should be linked to the current user.
+     * - Parameter completion: An optional completion block called when the identify call has completed.
+     * This completion block will receive an error if there's been one.
+     */
+    @available(iOS, obsoleted: 1, renamed: "logIn")
+    @available(tvOS, obsoleted: 1, renamed: "logIn")
+    @available(watchOS, obsoleted: 1, renamed: "logIn")
+    @available(macOS, obsoleted: 1, renamed: "logIn")
+    func identify(_ appUserID: String, _ completion: ((CustomerInfo?, Error?) -> Void)?) {
+        fatalError()
+    }
+
+    /**
+     * Resets the Purchases client clearing the saved appUserID.
+     * This will generate a random user id and save it in the cache.
+     */
+    @available(iOS, obsoleted: 1, renamed: "logOut")
+    @available(tvOS, obsoleted: 1, renamed: "logOut")
+    @available(watchOS, obsoleted: 1, renamed: "logOut")
+    @available(macOS, obsoleted: 1, renamed: "logOut")
+    @objc func reset(completion: ((CustomerInfo?, Error?) -> Void)?) {
+        fatalError()
+    }
+
 }
 
 @available(iOS, obsoleted: 1, renamed: "CustomerInfo")
