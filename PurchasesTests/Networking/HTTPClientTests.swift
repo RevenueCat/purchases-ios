@@ -160,12 +160,12 @@ class HTTPClientTests: XCTestCase {
         expect(pathHit).toEventually(equal(true), timeout: .seconds(1))
     }
 
-    func testSendsBodyData() {
+    func testSendsBodyData() throws {
         let path = "/a_random_path"
         let body = ["arg": "value"]
         var pathHit = false
 
-        let bodyData = try! JSONSerialization.data(withJSONObject: body)
+        let bodyData = try JSONSerialization.data(withJSONObject: body)
 
         stub(condition: hasBody(bodyData)) { _ in
             pathHit = true
@@ -395,7 +395,7 @@ class HTTPClientTests: XCTestCase {
         expect(headerPresent).toEventually(equal(true))
     }
     
-    func testPassesPlatformFlavorHeader() {
+    func testPassesPlatformFlavorHeader() throws {
         let path = "/a_random_path"
         var headerPresent = false
 
@@ -403,9 +403,9 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
-        let systemInfo = try! SystemInfo(platformFlavor: "react-native",
-                                         platformFlavorVersion: "3.2.1",
-                                         finishTransactions: true)
+        let systemInfo = try SystemInfo(platformFlavor: "react-native",
+                                        platformFlavorVersion: "3.2.1",
+                                        finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         client.performPOSTRequest(serially: true,
                                   path: path,
@@ -416,7 +416,7 @@ class HTTPClientTests: XCTestCase {
         expect(headerPresent).toEventually(equal(true))
     }
 
-    func testPassesPlatformFlavorVersionHeader() {
+    func testPassesPlatformFlavorVersionHeader() throws {
         let path = "/a_random_path"
         var headerPresent = false
 
@@ -424,9 +424,9 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
-        let systemInfo = try! SystemInfo(platformFlavor: "react-native",
-                                         platformFlavorVersion: "1.2.3",
-                                         finishTransactions: true)
+        let systemInfo = try SystemInfo(platformFlavor: "react-native",
+                                        platformFlavorVersion: "1.2.3",
+                                        finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         
         client.performPOSTRequest(serially: true,
@@ -438,7 +438,7 @@ class HTTPClientTests: XCTestCase {
         expect(headerPresent).toEventually(equal(true))
     }
 
-    func testPassesObserverModeHeaderCorrectlyWhenEnabled() {
+    func testPassesObserverModeHeaderCorrectlyWhenEnabled() throws {
         let path = "/a_random_path"
         var headerPresent = false
 
@@ -446,7 +446,7 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
-        let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+        let systemInfo = try SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         client.performPOSTRequest(serially: true,
                                   path: path,
@@ -457,7 +457,7 @@ class HTTPClientTests: XCTestCase {
         expect(headerPresent).toEventually(equal(true))
     }
 
-    func testPassesObserverModeHeaderCorrectlyWhenDisabled() {
+    func testPassesObserverModeHeaderCorrectlyWhenDisabled() throws {
         let path = "/a_random_path"
         var headerPresent = false
 
@@ -465,7 +465,7 @@ class HTTPClientTests: XCTestCase {
             headerPresent = true
             return HTTPStubsResponse(data: Data.init(), statusCode: 200, headers: nil)
         }
-        let systemInfo = try! SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
+        let systemInfo = try SystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
         let client = HTTPClient(systemInfo: systemInfo, eTagManager: eTagManager)
         client.performPOSTRequest(serially: true,
                                   path: path,

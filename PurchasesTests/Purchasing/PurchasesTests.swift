@@ -28,18 +28,20 @@ class PurchasesTests: XCTestCase {
             "original_application_version": NSNull()
     ]]
 
-    override func setUp() {
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
         userDefaults = UserDefaults(suiteName: "TestDefaults")
         deviceCache = MockDeviceCache(userDefaults: userDefaults)
         requestFetcher = MockRequestFetcher()
-        systemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
+        systemInfo = try MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: true)
         mockProductsManager = MockProductsManager()
         mockOperationDispatcher = MockOperationDispatcher()
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator()
         mockReceiptParser = MockReceiptParser()
-        let systemInfoAttribution = try! MockSystemInfo(platformFlavor: "iOS",
-                                                   platformFlavorVersion: "3.2.1",
-                                                   finishTransactions: true)
+        let systemInfoAttribution = try MockSystemInfo(platformFlavor: "iOS",
+                                                       platformFlavorVersion: "3.2.1",
+                                                       finishTransactions: true)
         receiptFetcher = MockReceiptFetcher(requestFetcher: requestFetcher, systemInfo: systemInfoAttribution)
         attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfoAttribution)
@@ -290,8 +292,8 @@ class PurchasesTests: XCTestCase {
         initializePurchasesInstance(appUserId: nil)
     }
 
-    func setupPurchasesObserverModeOn() {
-        systemInfo = try! MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
+    func setupPurchasesObserverModeOn() throws {
+        systemInfo = try MockSystemInfo(platformFlavor: nil, platformFlavorVersion: nil, finishTransactions: false)
         initializePurchasesInstance(appUserId: nil)
     }
 
@@ -372,7 +374,7 @@ class PurchasesTests: XCTestCase {
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(0))
     }
 
-    func testFirstInitializationFromBackgroundCallsDelegateForAnonIfInfoCached() {
+    func testFirstInitializationFromBackgroundCallsDelegateForAnonIfInfoCached() throws {
         systemInfo.stubbedIsApplicationBackgrounded = true
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
@@ -385,7 +387,7 @@ class PurchasesTests: XCTestCase {
 
         let jsonObject = info!.jsonObject()
 
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         setupPurchases()
@@ -1138,7 +1140,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
 
-    func testRestoringPurchasesDoesntPostIfReceiptEmptyAndCustomerInfoLoaded() {
+    func testRestoringPurchasesDoesntPostIfReceiptEmptyAndCustomerInfoLoaded() throws {
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -1152,7 +1154,7 @@ class PurchasesTests: XCTestCase {
 
         let jsonObject = info!.jsonObject()
 
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         mockReceiptParser.stubbedReceiptHasTransactionsResult = false
@@ -1172,7 +1174,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled) == true
     }
 
-    func testRestoringPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoLoaded() {
+    func testRestoringPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoLoaded() throws {
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -1186,7 +1188,7 @@ class PurchasesTests: XCTestCase {
 
         let jsonObject = info!.jsonObject()
 
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
@@ -1268,7 +1270,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
 
-    func testSyncPurchasesDoesntPostIfReceiptEmptyAndCustomerInfoLoaded() {
+    func testSyncPurchasesDoesntPostIfReceiptEmptyAndCustomerInfoLoaded() throws {
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -1282,7 +1284,7 @@ class PurchasesTests: XCTestCase {
 
         let jsonObject = info!.jsonObject()
 
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         mockReceiptParser.stubbedReceiptHasTransactionsResult = false
@@ -1302,7 +1304,7 @@ class PurchasesTests: XCTestCase {
         expect(self.backend.postReceiptDataCalled) == true
     }
 
-    func testSyncPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoLoaded() {
+    func testSyncPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoLoaded() throws {
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -1316,7 +1318,7 @@ class PurchasesTests: XCTestCase {
 
         let jsonObject = info!.jsonObject()
 
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         mockReceiptParser.stubbedReceiptHasTransactionsResult = true
@@ -1613,7 +1615,7 @@ class PurchasesTests: XCTestCase {
         expect(self.deviceCache.cacheCustomerInfoCount).toEventually(equal(2))
     }
 
-    func testCachedCustomerInfoHasSchemaVersion() {
+    func testCachedCustomerInfoHasSchemaVersion() throws {
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -1624,7 +1626,7 @@ class PurchasesTests: XCTestCase {
             ]]);
         let jsonObject = info!.jsonObject()
 
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
 
@@ -1640,7 +1642,7 @@ class PurchasesTests: XCTestCase {
         expect(receivedInfo?.schemaVersion).toNot(beNil())
     }
 
-    func testCachedCustomerInfoHandlesNullSchema() {
+    func testCachedCustomerInfoHandlesNullSchema() throws {
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -1654,7 +1656,7 @@ class PurchasesTests: XCTestCase {
 
         jsonObject["schema_version"] = NSNull()
 
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
 
@@ -1669,7 +1671,7 @@ class PurchasesTests: XCTestCase {
         expect(receivedInfo).to(beNil())
     }
 
-    func testSendsCachedCustomerInfoToGetter() {
+    func testSendsCachedCustomerInfoToGetter() throws {
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -1678,7 +1680,7 @@ class PurchasesTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
-        let object = try! JSONSerialization.data(withJSONObject: info!.jsonObject(), options: []);
+        let object = try JSONSerialization.data(withJSONObject: info!.jsonObject(), options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
 
@@ -1693,7 +1695,7 @@ class PurchasesTests: XCTestCase {
         expect(receivedInfo).toNot(beNil())
     }
 
-    func testCustomerInfoCompletionBlockCalledExactlyOnceWhenInfoCached() {
+    func testCustomerInfoCompletionBlockCalledExactlyOnceWhenInfoCached() throws {
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -1702,7 +1704,7 @@ class PurchasesTests: XCTestCase {
                 "subscriptions": [:],
                 "other_purchases": [:]
             ]]);
-        let object = try! JSONSerialization.data(withJSONObject: info!.jsonObject(), options: []);
+        let object = try JSONSerialization.data(withJSONObject: info!.jsonObject(), options: []);
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
         self.deviceCache.stubbedIsCustomerInfoCacheStale = true
         self.backend.timeout = false
@@ -1718,7 +1720,7 @@ class PurchasesTests: XCTestCase {
         expect(callCount).toEventually(equal(1))
     }
 
-    func testDoesntSendsCachedCustomerInfoToGetterIfSchemaVersionDiffers() {
+    func testDoesntSendsCachedCustomerInfoToGetterIfSchemaVersionDiffers() throws {
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -1729,7 +1731,7 @@ class PurchasesTests: XCTestCase {
             ]]);
         var jsonObject = info!.jsonObject()
         jsonObject["schema_version"] = "bad_version"
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
 
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
@@ -1745,7 +1747,7 @@ class PurchasesTests: XCTestCase {
         expect(receivedInfo).to(beNil())
     }
 
-    func testDoesntSendsCachedCustomerInfoToGetterIfNoSchemaVersionInCached() {
+    func testDoesntSendsCachedCustomerInfoToGetterIfNoSchemaVersionInCached() throws {
         let info = CustomerInfo(testData: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -1756,7 +1758,7 @@ class PurchasesTests: XCTestCase {
             ]]);
         var jsonObject = info!.jsonObject()
         jsonObject.removeValue(forKey: "schema_version")
-        let object = try! JSONSerialization.data(withJSONObject: jsonObject, options: []);
+        let object = try JSONSerialization.data(withJSONObject: jsonObject, options: []);
 
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
         self.backend.timeout = true
@@ -2475,8 +2477,8 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.finishCalled).toEventually(beTrue())
     }
 
-    func testDoesntFinishTransactionsIfObserverModeIsSet() {
-        setupPurchasesObserverModeOn()
+    func testDoesntFinishTransactionsIfObserverModeIsSet() throws {
+        try setupPurchasesObserverModeOn()
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
 
@@ -2497,8 +2499,8 @@ class PurchasesTests: XCTestCase {
         expect(self.storeKitWrapper.finishCalled).toEventually(beFalse())
     }
 
-    func testRestoredPurchasesArePosted() {
-        setupPurchasesObserverModeOn()
+    func testRestoredPurchasesArePosted() throws {
+        try setupPurchasesObserverModeOn()
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
 
@@ -2694,8 +2696,8 @@ class PurchasesTests: XCTestCase {
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(2))
     }
 
-    func testReceiptsSendsObserverModeWhenObserverMode() {
-        setupPurchasesObserverModeOn()
+    func testReceiptsSendsObserverModeWhenObserverMode() throws {
+        try setupPurchasesObserverModeOn()
         let product = MockSKProduct(mockProductIdentifier: "com.product.id1")
         self.purchases?.purchase(product: product) { (tx, info, error, userCancelled) in
 

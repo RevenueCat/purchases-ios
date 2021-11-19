@@ -26,14 +26,15 @@ class SubscriberAttributesManagerTests: XCTestCase {
     var subscriberAttributeWeight: SubscriberAttribute!
     var mockAttributes: [String: SubscriberAttribute]!
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
         self.mockDeviceCache = MockDeviceCache()
         self.mockBackend = MockBackend()
         self.mockAttributionFetcher = MockAttributionFetcher(attributionFactory: AttributionTypeFactory(),
-                                                             systemInfo: try! MockSystemInfo(platformFlavor: "iOS",
-                                                                                             platformFlavorVersion: "3.2.1",
-                                                                                             finishTransactions: true))
+                                                             systemInfo: try MockSystemInfo(platformFlavor: "iOS",
+                                                                                            platformFlavorVersion: "3.2.1",
+                                                                                            finishTransactions: true))
         self.mockAttributionDataMigrator = MockAttributionDataMigrator()
         self.subscriberAttributesManager = SubscriberAttributesManager(backend: mockBackend,
                                                                          deviceCache: mockDeviceCache,

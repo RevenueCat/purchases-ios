@@ -24,55 +24,55 @@ class AppleReceiptBuilderTests: XCTestCase {
         expect { try self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer) }.notTo(throwError())
     }
 
-    func testBuildGetsCorrectBundleId() {
+    func testBuildGetsCorrectBundleId() throws {
         let sampleReceiptContainer = sampleReceiptContainerWithMinimalAttributes()
-        let receipt = try! self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer)
+        let receipt = try self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer)
         expect(receipt.bundleId) == bundleId
     }
 
-    func testBuildGetsCorrectApplicationVersion() {
+    func testBuildGetsCorrectApplicationVersion() throws {
         let sampleReceiptContainer = sampleReceiptContainerWithMinimalAttributes()
-        let receipt = try! self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer)
+        let receipt = try self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer)
         expect(receipt.applicationVersion) == applicationVersion
     }
 
-    func testBuildGetsCorrectOriginalApplicationVersion() {
+    func testBuildGetsCorrectOriginalApplicationVersion() throws {
         let sampleReceiptContainer = sampleReceiptContainerWithMinimalAttributes()
-        let receipt = try! self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer)
+        let receipt = try self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer)
         expect(receipt.originalApplicationVersion) == originalApplicationVersion
     }
 
-    func testBuildGetsCorrectCreationDate() {
+    func testBuildGetsCorrectCreationDate() throws {
         let sampleReceiptContainer = sampleReceiptContainerWithMinimalAttributes()
-        let receipt = try! self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer)
+        let receipt = try self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer)
         expect(receipt.creationDate) == creationDate
     }
 
-    func testBuildGetsSha1Hash() {
+    func testBuildGetsSha1Hash() throws {
         let sampleReceiptContainer = sampleReceiptContainerWithMinimalAttributes()
-        let receipt = try! self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer)
+        let receipt = try self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer)
         expect(receipt.sha1Hash).toNot(beNil())
     }
 
-    func testBuildGetsOpaqueValue() {
+    func testBuildGetsOpaqueValue() throws {
         let sampleReceiptContainer = sampleReceiptContainerWithMinimalAttributes()
-        let receipt = try! self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer)
+        let receipt = try self.appleReceiptBuilder.build(fromContainer: sampleReceiptContainer)
         expect(receipt.opaqueValue).toNot(beNil())
     }
 
-    func testBuildGetsExpiresDate() {
-        let expirationDate = try! Date.from(year: 2020, month: 7, day: 4, hour: 5, minute: 3, second: 2)
+    func testBuildGetsExpiresDate() throws {
+        let expirationDate = try Date.from(year: 2020, month: 7, day: 4, hour: 5, minute: 3, second: 2)
         let expirationDateContainer =
             containerFactory.receiptAttributeContainer(attributeType: ReceiptAttributeType.expirationDate,
                                                        expirationDate)
         let receiptContainer =
             containerFactory.receiptContainerFromContainers(containers: minimalAttributes() + [expirationDateContainer])
 
-        let receipt = try! self.appleReceiptBuilder.build(fromContainer: receiptContainer)
+        let receipt = try self.appleReceiptBuilder.build(fromContainer: receiptContainer)
         expect(receipt.expirationDate) == expirationDate
     }
 
-    func testBuildGetsInAppPurchases() {
+    func testBuildGetsInAppPurchases() throws {
         let totalInAppPurchases = Int.random(in: 5..<20)
         let inAppContainers = (Int(0)..<totalInAppPurchases).map { _ in
             containerFactory.receiptDataAttributeContainer(attributeType: ReceiptAttributeType.inAppPurchase)
@@ -95,7 +95,7 @@ class AppleReceiptBuilderTests: XCTestCase {
                                                                     webOrderLineItemId: Int64(658464),
                                                                     promotionalOfferIdentifier: nil)
 
-        let receipt = try! self.appleReceiptBuilder.build(fromContainer: receiptContainer)
+        let receipt = try self.appleReceiptBuilder.build(fromContainer: receiptContainer)
         expect(receipt.inAppPurchases.count) == totalInAppPurchases
         expect(self.mockInAppPurchaseBuilder.invokedBuildCount) == totalInAppPurchases
 
