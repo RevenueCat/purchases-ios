@@ -30,8 +30,9 @@ class BeginRefundRequestHelperTests: XCTestCase {
     @available(macOS, unavailable)
     private lazy var sk2Helper = MockSK2BeginRefundRequestHelper()
 
-    override func setUp() {
-        systemInfo = try! MockSystemInfo(platformFlavor: "", platformFlavorVersion: "", finishTransactions: true)
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        systemInfo = try MockSystemInfo(platformFlavor: "", platformFlavorVersion: "", finishTransactions: true)
         helper = BeginRefundRequestHelper(systemInfo: systemInfo)
 
         if #available(iOS 15.0, macCatalyst 15.0, *) {

@@ -38,8 +38,9 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
     ]
 
 
-    override func setUp() {
-        systemInfo = try! MockSystemInfo(platformFlavor: "", platformFlavorVersion: "", finishTransactions: true)
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        systemInfo = try MockSystemInfo(platformFlavor: "", platformFlavorVersion: "", finishTransactions: true)
         customerInfoManager = MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
                                                       deviceCache: MockDeviceCache(),
                                                       backend: MockBackend(),
@@ -55,7 +56,7 @@ class ManageSubscriptionsModalHelperTests: XCTestCase {
         // given
         var callbackCalled = false
         // swiftlint:disable force_try
-        customerInfoManager.stubbedCustomerInfo = try! CustomerInfo(data: mockCustomerInfoData)
+        customerInfoManager.stubbedCustomerInfo = try CustomerInfo(data: mockCustomerInfoData)
         // swiftlint:disable force_try
         
         // when
