@@ -48,90 +48,90 @@ class InAppPurchaseBuilderTests: XCTestCase {
         expect { try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer) }.to(throwError())
     }
 
-    func testBuildGetsCorrectQuantity() {
+    func testBuildGetsCorrectQuantity() throws {
         let sampleInAppPurchaseContainer = sampleInAppPurchaseContainerWithMinimalAttributes()
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
         expect(inAppPurchase.quantity) == quantity
     }
 
-    func testBuildGetsCorrectProductId() {
+    func testBuildGetsCorrectProductId() throws {
         let sampleInAppPurchaseContainer = sampleInAppPurchaseContainerWithMinimalAttributes()
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
         expect(inAppPurchase.productId) == productId
     }
 
-    func testBuildGetsCorrectTransactionId() {
+    func testBuildGetsCorrectTransactionId() throws {
         let sampleInAppPurchaseContainer = sampleInAppPurchaseContainerWithMinimalAttributes()
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
         expect(inAppPurchase.transactionId) == transactionId
     }
 
-    func testBuildGetsCorrectOriginalTransactionId() {
+    func testBuildGetsCorrectOriginalTransactionId() throws {
         let sampleInAppPurchaseContainer = sampleInAppPurchaseContainerWithMinimalAttributes()
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
         expect(inAppPurchase.originalTransactionId) == originalTransactionId
     }
 
-    func testBuildGetsCorrectPurchaseDate() {
+    func testBuildGetsCorrectPurchaseDate() throws {
         let sampleInAppPurchaseContainer = sampleInAppPurchaseContainerWithMinimalAttributes()
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
         expect(inAppPurchase.purchaseDate) == purchaseDate
     }
 
-    func testBuildGetsCorrectOriginalPurchaseDate() {
+    func testBuildGetsCorrectOriginalPurchaseDate() throws {
         let sampleInAppPurchaseContainer = sampleInAppPurchaseContainerWithMinimalAttributes()
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
         expect(inAppPurchase.originalPurchaseDate) == originalPurchaseDate
     }
 
-    func testBuildGetsCorrectIsInIntroOfferPeriod() {
+    func testBuildGetsCorrectIsInIntroOfferPeriod() throws {
         let sampleInAppPurchaseContainer = sampleInAppPurchaseContainerWithMinimalAttributes()
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
         expect(inAppPurchase.isInIntroOfferPeriod) == isInIntroOfferPeriod
     }
 
-    func testBuildGetsCorrectWebOrderLineItemId() {
+    func testBuildGetsCorrectWebOrderLineItemId() throws {
         let sampleInAppPurchaseContainer = sampleInAppPurchaseContainerWithMinimalAttributes()
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: sampleInAppPurchaseContainer)
         expect(inAppPurchase.webOrderLineItemId) == webOrderLineItemId
     }
 
-    func testBuildGetsCorrectProductType() {
+    func testBuildGetsCorrectProductType() throws {
         let inAppPurchaseContainer = containerFactory
             .inAppPurchaseContainerFromContainers(containers: minimalAttributes() + [productTypeContainer()])
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer)
 
         expect(inAppPurchase.productType) == productType
     }
 
-    func testBuildGetsCorrectExpiresDate() {
+    func testBuildGetsCorrectExpiresDate() throws {
         let inAppPurchaseContainer = containerFactory
             .inAppPurchaseContainerFromContainers(containers: minimalAttributes() + [expiresDateContainer()])
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer)
 
         expect(inAppPurchase.expiresDate) == expiresDate
     }
 
-    func testBuildGetsCorrectCancellationDate() {
+    func testBuildGetsCorrectCancellationDate() throws {
         let inAppPurchaseContainer = containerFactory
             .inAppPurchaseContainerFromContainers(containers: minimalAttributes() + [cancellationDateContainer()])
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer)
 
         expect(inAppPurchase.cancellationDate) == cancellationDate
     }
 
-    func testBuildGetsCorrectIsInTrialPeriod() {
+    func testBuildGetsCorrectIsInTrialPeriod() throws {
         let inAppPurchaseContainer = containerFactory
             .inAppPurchaseContainerFromContainers(containers: minimalAttributes() + [isInTrialPeriodContainer()])
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer)
 
         expect(inAppPurchase.isInTrialPeriod) == isInTrialPeriod
     }
 
-    func testBuildGetsCorrectPromotionalOfferIdentifier() {
+    func testBuildGetsCorrectPromotionalOfferIdentifier() throws {
         let inAppPurchaseContainer = containerFactory
             .inAppPurchaseContainerFromContainers(containers: minimalAttributes() + [promotionalOfferIdentifierContainer()])
-        let inAppPurchase = try! self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer)
+        let inAppPurchase = try self.inAppPurchaseBuilder.build(fromContainer: inAppPurchaseContainer)
 
         expect(inAppPurchase.promotionalOfferIdentifier) == promotionalOfferIdentifier
     }

@@ -234,17 +234,7 @@ platform :ios do
     # Ask for new version number
     new_version_number = UI.input("New version number: ")
 
-    # Open CHANGELOG.latest.md in editor
-    changelog_filename = "CHANGELOG.latest.md"
-    changelog_path = File.absolute_path("../#{changelog_filename}")
-    editor = ENV['FASTLANE_EDITOR'] || ENV['EDITOR'] || 'vim'
-
-    UI.message("Will use '#{editor}'... Override by setting FASTLANE_EDITOR or EDITOR environment variable")
-    if UI.confirm("Open #{changelog_filename} in '#{editor}'?")
-      system(editor, File.absolute_path(changelog_path).shellescape)
-    else
-      UI.user_error!("Cancelled")
-    end
+    changelog_path = edit_changelog
 
     create_new_release_branch(version: new_version_number)
     replace_version_number(version: new_version_number)
@@ -256,6 +246,34 @@ platform :ios do
       base: "main",
       body: changelog
     )
+  end
+
+  private_lane :edit_changelog do |options|
+    # Open CHANGELOG.latest.md in editor
+    changelog_filename = "CHANGELOG.latest.md"
+    changelog_path = File.absolute_path("../#{changelog_filename}")
+    editor = ENV['FASTLANE_EDITOR'] || ENV['EDITOR'] || 'vim'
+
+    content_before_opening_editor = File.read(changelog_path)
+
+    UI.message("Will use '#{editor}'... Override by setting FASTLANE_EDITOR or EDITOR environment variable")
+    if UI.confirm("Open #{changelog_filename} in '#{editor}'?")
+      system(editor, changelog_path.shellescape)
+    else
+      UI.user_error!("Cancelled")
+    end
+
+    # Some people may use visual editors and `system` will continue right away.
+    # This will compare the content before and afer attempting to open
+    # and will open a blocking prompt for the visual editor changes to be saved
+    content_after_opening_editor = File.read(changelog_path)
+    if content_before_opening_editor == content_after_opening_editor
+      unless UI.confirm("You may have opened the changelog in a visual editor. Enter 'y' when changes are saved or 'n' to cancel")
+        UI.user_error!("Cancelled")
+      end
+    end
+
+    changelog_path
   end
 
   private_lane :create_new_release_branch do |options|

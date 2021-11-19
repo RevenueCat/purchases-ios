@@ -12,38 +12,38 @@ class ASN1ContainerBuilderTests: XCTestCase {
         containerBuilder = ASN1ContainerBuilder()
     }
 
-    func testBuildFromContainerExtractsClassCorrectly() {
+    func testBuildFromContainerExtractsClassCorrectly() throws {
         let universalClassByte: UInt8 = 0b00000000
         var payloadArray = mockContainerPayload
         payloadArray.insert(universalClassByte, at: 0)
         var payload = ArraySlice(payloadArray)
-        try! expect(self.containerBuilder.build(fromPayload: payload).containerClass) == .universal
+        try expect(self.containerBuilder.build(fromPayload: payload).containerClass) == .universal
         
         let applicationClassByte: UInt8 = 0b01000000
         payloadArray = mockContainerPayload
         payloadArray.insert(applicationClassByte, at: 0)
         payload = ArraySlice(payloadArray)
-        try! expect(self.containerBuilder.build(fromPayload: payload).containerClass) == .application
+        try expect(self.containerBuilder.build(fromPayload: payload).containerClass) == .application
 
         let contextSpecificClassByte: UInt8 = 0b10000000
         payloadArray = mockContainerPayload
         payloadArray.insert(contextSpecificClassByte, at: 0)
         payload = ArraySlice(payloadArray)
-        try! expect(self.containerBuilder.build(fromPayload: payload).containerClass) == .contextSpecific
+        try expect(self.containerBuilder.build(fromPayload: payload).containerClass) == .contextSpecific
 
         let privateClassByte: UInt8 = 0b11000000
         payloadArray = mockContainerPayload
         payloadArray.insert(privateClassByte, at: 0)
         payload = ArraySlice(payloadArray)
-        try! expect(self.containerBuilder.build(fromPayload: payload).containerClass) == .private
+        try expect(self.containerBuilder.build(fromPayload: payload).containerClass) == .private
     }
     
-    func testBuildFromContainerExtractsEncodingTypeCorrectly() {
+    func testBuildFromContainerExtractsEncodingTypeCorrectly() throws {
         let primitiveEncodingByte: UInt8 = 0b00000000
         var payloadArray = mockContainerPayload
         payloadArray.insert(primitiveEncodingByte, at: 0)
         var payload = ArraySlice(payloadArray)
-        try! expect(self.containerBuilder.build(fromPayload: payload).encodingType) == .primitive
+        try expect(self.containerBuilder.build(fromPayload: payload).encodingType) == .primitive
         
         let constructedEncodingByte: UInt8 = 0b00100000
         payloadArray = mockContainerPayload
@@ -53,35 +53,35 @@ class ASN1ContainerBuilderTests: XCTestCase {
         payloadArray.insert(containerLenghtByte, at: 1)
 
         payload = ArraySlice(payloadArray)
-        try! expect(self.containerBuilder.build(fromPayload: payload).encodingType) == .constructed
+        try expect(self.containerBuilder.build(fromPayload: payload).encodingType) == .constructed
     }
     
-    func testBuildFromContainerExtractsIdentifierCorrectly() {
+    func testBuildFromContainerExtractsIdentifierCorrectly() throws {
         for expectedIdentifier in ASN1Identifier.allCases {
             let identifierByte = UInt8(expectedIdentifier.rawValue)
             
             var payloadArray = mockContainerPayload
             payloadArray.insert(identifierByte, at: 0)
             let payload = ArraySlice(payloadArray)
-            try! expect(self.containerBuilder.build(fromPayload: payload).containerIdentifier) == expectedIdentifier
+            try expect(self.containerBuilder.build(fromPayload: payload).containerIdentifier) == expectedIdentifier
         }
     }
 
-    func testBuildFromContainerExtractsShortLengthCorrectly() {
+    func testBuildFromContainerExtractsShortLengthCorrectly() throws {
         let shortLengthValue: UInt8 = UInt8(mockContainerPayload.count - 1)
 
         var payloadArray = mockContainerPayload
         payloadArray.insert(shortLengthValue, at: 1)
         let payload = ArraySlice(payloadArray)
         
-        let container = try! self.containerBuilder.build(fromPayload: payload)
+        let container = try self.containerBuilder.build(fromPayload: payload)
         expect(container.length.value) == Int(shortLengthValue)
         expect(container.length.bytesUsedForLength) == 1
         expect(container.internalPayload.count) == Int(shortLengthValue)
         expect(container.internalPayload) == payload.dropFirst(2).prefix(Int(shortLengthValue))
     }
 
-    func testBuildFromContainerExtractsLongLengthCorrectly() {
+    func testBuildFromContainerExtractsLongLengthCorrectly() throws {
         // first 1 indicates long length, the next 7 bits are the number of bytes used for length
         let totalLengthBytes: [UInt8] = [0b10000011]
         
@@ -95,7 +95,7 @@ class ASN1ContainerBuilderTests: XCTestCase {
         payloadArray.insert(contentsOf: lengthArray, at: 1)
         let payload = ArraySlice(payloadArray)
         
-        let container = try! self.containerBuilder.build(fromPayload: payload)
+        let container = try self.containerBuilder.build(fromPayload: payload)
         
         expect(container.length.value) == expectedLengthValue
         expect(container.length.bytesUsedForLength) == 4
@@ -129,20 +129,20 @@ class ASN1ContainerBuilderTests: XCTestCase {
         expect { try self.containerBuilder.build(fromPayload: payload).length.value }.to(throwError())
     }
     
-    func testBuildFromContainerCalculatesTotalBytesCorrectlyForShortLength() {
+    func testBuildFromContainerCalculatesTotalBytesCorrectlyForShortLength() throws {
         let lengthByte: UInt8 = 0b00000111
         
         var payloadArray: [UInt8] = Array(repeating: 0, count: 100)
         payloadArray.insert(lengthByte, at: 1)
         let payload = ArraySlice(payloadArray)
         
-        let container = try! self.containerBuilder.build(fromPayload: payload)
+        let container = try self.containerBuilder.build(fromPayload: payload)
         
         expect(container.totalBytesUsed) == 1 + 1 + container.internalPayload.count
         expect(container.internalPayload.count) == Int(container.length.value)
     }
     
-    func testBuildFromContainerCalculatesTotalBytesCorrectlyForLongLength() {
+    func testBuildFromContainerCalculatesTotalBytesCorrectlyForLongLength() throws {
         // first 1 indicates long length, the next 7 bits are the number of bytes used for length
         let totalLengthBytes: [UInt8] = [0b10000011]
         
@@ -154,7 +154,7 @@ class ASN1ContainerBuilderTests: XCTestCase {
         payloadArray.insert(contentsOf: lengthArray, at: 1)
         let payload = ArraySlice(payloadArray)
         
-        let container = try! self.containerBuilder.build(fromPayload: payload)
+        let container = try self.containerBuilder.build(fromPayload: payload)
         
         expect(container.totalBytesUsed) == 1 + lengthArray.count + container.internalPayload.count
     }
@@ -163,7 +163,7 @@ class ASN1ContainerBuilderTests: XCTestCase {
         expect { try self.containerBuilder.build(fromPayload: ArraySlice([0b1])) }.to(throwError())
     }
     
-    func testBuildFromContainerBuildsInternalContainersCorrectlyIfTypeIsConstructed() {
+    func testBuildFromContainerBuildsInternalContainersCorrectlyIfTypeIsConstructed() throws {
         let constructedEncodingByte: UInt8 = 0b00100000
         
         let subContainer1InternalPayload = Array(repeating: UInt8(0b1), count: 4)
@@ -180,18 +180,18 @@ class ASN1ContainerBuilderTests: XCTestCase {
                                          + subContainer1Payload + subContainer2Payload // payload
         
         let payload = ArraySlice(containerPayload)
-        let container = try! self.containerBuilder.build(fromPayload: payload)
+        let container = try self.containerBuilder.build(fromPayload: payload)
         
         expect(container.internalContainers.count) == 2
     }
 
-    func testBuildFromContainerDoesntBuildInternalContainersIfTypeIsPrimitive() {
+    func testBuildFromContainerDoesntBuildInternalContainersIfTypeIsPrimitive() throws {
         let primitiveEncodingByte: UInt8 = 0b00000000
         var payloadArray = mockContainerPayload
         payloadArray.insert(primitiveEncodingByte, at: 0)
         let payload = ArraySlice(payloadArray)
         
-        let container = try! self.containerBuilder.build(fromPayload: payload)
+        let container = try self.containerBuilder.build(fromPayload: payload)
         expect(container.encodingType) == .primitive
         expect(container.internalContainers).to(beEmpty())
     }

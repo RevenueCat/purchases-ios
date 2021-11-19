@@ -25,19 +25,19 @@ class SystemInfoTests: XCTestCase {
         expect(SystemInfo.systemVersion) == ProcessInfo().operatingSystemVersionString
     }
 
-    func testPlatformFlavor() {
+    func testPlatformFlavor() throws {
         let flavor = "flavor"
-        let systemInfo = try! SystemInfo(platformFlavor: flavor,
-                                           platformFlavorVersion: "foo",
-                                           finishTransactions: false)
+        let systemInfo = try SystemInfo(platformFlavor: flavor,
+                                        platformFlavorVersion: "foo",
+                                        finishTransactions: false)
         expect(systemInfo.platformFlavor) == flavor
     }
 
-    func testPlatformFlavorVersion() {
+    func testPlatformFlavorVersion() throws {
         let flavorVersion = "flavorVersion"
-        let systemInfo = try! SystemInfo(platformFlavor: "foo",
-                                           platformFlavorVersion: flavorVersion,
-                                           finishTransactions: false)
+        let systemInfo = try SystemInfo(platformFlavor: "foo",
+                                        platformFlavorVersion: flavorVersion,
+                                        finishTransactions: false)
         expect(systemInfo.platformFlavorVersion) == flavorVersion
     }
 
@@ -63,44 +63,44 @@ class SystemInfoTests: XCTestCase {
             .toNot(throwError(SystemInfo.SystemInfoError.invalidInitializationData))
     }
 
-    func testFinishTransactions() {
+    func testFinishTransactions() throws {
         var finishTransactions = false
-        var systemInfo = try! SystemInfo(platformFlavor: nil,
-                                           platformFlavorVersion: nil,
-                                           finishTransactions: finishTransactions)
+        var systemInfo = try SystemInfo(platformFlavor: nil,
+                                        platformFlavorVersion: nil,
+                                        finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
 
         finishTransactions = true
 
-        systemInfo = try! SystemInfo(platformFlavor: nil,
-                                       platformFlavorVersion: nil,
-                                       finishTransactions: finishTransactions)
+        systemInfo = try SystemInfo(platformFlavor: nil,
+                                    platformFlavorVersion: nil,
+                                    finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
     }
     
-    func testIsSandbox() {
-        expect(SystemInfo.withReceiptResult(.sandboxReceipt).isSandbox) == true
+    func testIsSandbox() throws {
+        expect(try SystemInfo.withReceiptResult(.sandboxReceipt).isSandbox) == true
     }
     
-    func testIsNotSandbox() {
-        expect(SystemInfo.withReceiptResult(.receiptWithData).isSandbox) == false
+    func testIsNotSandbox() throws {
+        expect(try SystemInfo.withReceiptResult(.receiptWithData).isSandbox) == false
     }
     
-    func testIsNotSandboxIfNoReceiptURL() {
-        expect(SystemInfo.withReceiptResult(.nilURL).isSandbox) == false
+    func testIsNotSandboxIfNoReceiptURL() throws {
+        expect(try SystemInfo.withReceiptResult(.nilURL).isSandbox) == false
     }
 }
 
 private extension SystemInfo {
     
-    static func withReceiptResult(_ result: MockBundle.ReceiptURLResult) -> SystemInfo {
+    static func withReceiptResult(_ result: MockBundle.ReceiptURLResult) throws -> SystemInfo {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
         
-        return try! SystemInfo(platformFlavor: nil,
-                               platformFlavorVersion: nil,
-                               finishTransactions: false,
-                               bundle: bundle)
+        return try SystemInfo(platformFlavor: nil,
+                              platformFlavorVersion: nil,
+                              finishTransactions: false,
+                              bundle: bundle)
     }
     
 }

@@ -60,7 +60,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     var purchases: Purchases!
 
-    override func setUp() {
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
         userDefaults = UserDefaults(suiteName: "TestDefaults")
         self.mockDeviceCache = MockDeviceCache(userDefaults: userDefaults)
 
@@ -77,7 +79,7 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
         self.mockProductsManager = MockProductsManager(systemInfo: systemInfo)
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                              receiptParser: mockReceiptParser)
-        let systemInfoAttribution = try! MockSystemInfo(platformFlavor: "iOS",
+        let systemInfoAttribution = try MockSystemInfo(platformFlavor: "iOS",
                                                         platformFlavorVersion: "3.2.1",
                                                         finishTransactions: true)
         self.mockAttributionFetcher = MockAttributionFetcher(attributionFactory: AttributionTypeFactory(),
