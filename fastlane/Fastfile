@@ -173,28 +173,38 @@ platform :ios do
 
   desc "build Swift API tester"
   lane :build_swift_api_tester do
-      match(
-        type: "development",
-        git_url: ENV["CERTS_REPO_URL"],
-        storage_mode: "git",
-        type: "development",
-        app_identifier: ["com.revenuecat.SwiftAPITesterIOS"],
-        username: ENV["FASTLANE_USER"])
-      sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'SwiftAPITesterIOS')
-      sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'SwiftAPITester')
+    match(
+      type: "development",
+      git_url: ENV["CERTS_REPO_URL"],
+      storage_mode: "git",
+      type: "development",
+      app_identifier: ["com.revenuecat.SwiftAPITesterIOS"],
+      username: ENV["FASTLANE_USER"]
+    )
+
+    workspace = '../APITesters/APITesters.xcworkspace'
+    scheme = 'SwiftAPITester'
+
+    sh('xcodebuild', '-workspace', workspace, '-scheme', scheme, '-destination', 'generic/platform=iOS Simulator')
+    sh('xcodebuild', '-workspace', workspace, '-scheme', scheme, '-destination', 'generic/platform=macOS')
   end
   
   desc "build ObjC API tester"
   lane :build_objc_api_tester do
-      match(
-        type: "development",
-        git_url: ENV["CERTS_REPO_URL"],
-        storage_mode: "git",
-        type: "development",
-        app_identifier: ["com.revenuecat.ObjCAPITesterIOS"],
-        username: ENV["FASTLANE_USER"])
-      sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'ObjCAPITesterIOS')
-      sh('xcodebuild', '-workspace', '../APITesters/APITesters.xcworkspace', '-scheme', 'ObjCAPITester')
+    match(
+      type: "development",
+      git_url: ENV["CERTS_REPO_URL"],
+      storage_mode: "git",
+      type: "development",
+      app_identifier: ["com.revenuecat.ObjCAPITesterIOS"],
+      username: ENV["FASTLANE_USER"]
+    )
+
+    workspace = '../APITesters/APITesters.xcworkspace'
+    scheme = 'ObjCAPITester'
+
+    sh('xcodebuild', '-workspace', workspace, '-scheme', scheme, '-destination', 'generic/platform=iOS Simulator')
+    sh('xcodebuild', '-workspace', workspace, '-scheme', scheme, '-destination', 'generic/platform=macOS')
   end
 
   desc "replace API KEY for integration tests"

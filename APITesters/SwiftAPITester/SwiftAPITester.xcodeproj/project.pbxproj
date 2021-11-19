@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D6F3874270E593F002C9987 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C626EBE7EA007DDB75 /* main.swift */; };
 		2DD778D3270E233F0079CBD4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778D2270E233F0079CBD4 /* AppDelegate.swift */; };
 		2DD778D5270E233F0079CBD4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778D4270E233F0079CBD4 /* SceneDelegate.swift */; };
 		2DD778D7270E233F0079CBD4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD778D6270E233F0079CBD4 /* ViewController.swift */; };
@@ -25,37 +24,12 @@
 		2DD778ED270E23460079CBD4 /* OfferingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C726EBE7EA007DDB75 /* OfferingAPI.swift */; };
 		2DD778EE270E23460079CBD4 /* EntitlementInfosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */; };
 		2DD778EF270E23460079CBD4 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */; };
-		575885982748271100CA2169 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 575885972748271100CA2169 /* RevenueCat.framework */; };
-		575885992748271100CA2169 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 575885972748271100CA2169 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5758859C2748272A00CA2169 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5758859B2748272A00CA2169 /* RevenueCat.framework */; };
 		5758859D2748272A00CA2169 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5758859B2748272A00CA2169 /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A513AD34272B4C0100E0C1BA /* RefundRequestStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */; };
 		A513AD35272B4C0100E0C1BA /* RefundRequestStatusAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */; };
-		A5D614CF26EBE7EA007DDB75 /* ErrorCodesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */; };
-		A5D614D026EBE7EA007DDB75 /* OfferingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */; };
-		A5D614D126EBE7EA007DDB75 /* CustomerInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C426EBE7EA007DDB75 /* CustomerInfoAPI.swift */; };
-		A5D614D226EBE7EA007DDB75 /* EntitlementInfosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */; };
-		A5D614D426EBE7EA007DDB75 /* OfferingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C726EBE7EA007DDB75 /* OfferingAPI.swift */; };
-		A5D614D526EBE7EA007DDB75 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */; };
-		A5D614D626EBE7EA007DDB75 /* PackageAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */; };
-		A5D614D726EBE7EA007DDB75 /* AttributionNetworkAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */; };
-		A5D614D826EBE7EA007DDB75 /* TransactionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */; };
-		A5D614DA26EBE7EA007DDB75 /* IntroEligibilityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CD26EBE7EA007DDB75 /* IntroEligibilityAPI.swift */; };
-		A5D614DB26EBE7EA007DDB75 /* PurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		5758859A2748271100CA2169 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				575885992748271100CA2169 /* RevenueCat.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		5758859E2748272A00CA2169 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -67,19 +41,10 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A55F62B326EAFFD200A1B466 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		2DD778D0270E233F0079CBD4 /* SwiftAPITesterIOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftAPITesterIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DD778D0270E233F0079CBD4 /* SwiftAPITester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftAPITester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DD778D2270E233F0079CBD4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2DD778D4270E233F0079CBD4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		2DD778D6270E233F0079CBD4 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -90,7 +55,6 @@
 		575885972748271100CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5758859B2748272A00CA2169 /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefundRequestStatusAPI.swift; sourceTree = "<group>"; };
-		A55F62B526EAFFD200A1B466 /* SwiftAPITester */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SwiftAPITester; sourceTree = BUILT_PRODUCTS_DIR; };
 		A5D614C226EBE7EA007DDB75 /* ErrorCodesAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorCodesAPI.swift; sourceTree = "<group>"; };
 		A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingsAPI.swift; sourceTree = "<group>"; };
 		A5D614C426EBE7EA007DDB75 /* CustomerInfoAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerInfoAPI.swift; sourceTree = "<group>"; };
@@ -111,14 +75,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				5758859C2748272A00CA2169 /* RevenueCat.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A55F62B226EAFFD200A1B466 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				575885982748271100CA2169 /* RevenueCat.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -161,8 +117,7 @@
 		A55F62B626EAFFD200A1B466 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A55F62B526EAFFD200A1B466 /* SwiftAPITester */,
-				2DD778D0270E233F0079CBD4 /* SwiftAPITesterIOS.app */,
+				2DD778D0270E233F0079CBD4 /* SwiftAPITester.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -190,9 +145,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2DD778CF270E233F0079CBD4 /* SwiftAPITesterIOS */ = {
+		2DD778CF270E233F0079CBD4 /* SwiftAPITester */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2DD778E3270E23400079CBD4 /* Build configuration list for PBXNativeTarget "SwiftAPITesterIOS" */;
+			buildConfigurationList = 2DD778E3270E23400079CBD4 /* Build configuration list for PBXNativeTarget "SwiftAPITester" */;
 			buildPhases = (
 				2DD778CC270E233F0079CBD4 /* Sources */,
 				2DD778CD270E233F0079CBD4 /* Frameworks */,
@@ -203,32 +158,12 @@
 			);
 			dependencies = (
 			);
-			name = SwiftAPITesterIOS;
-			packageProductDependencies = (
-			);
-			productName = SwiftAPITesterIOS;
-			productReference = 2DD778D0270E233F0079CBD4 /* SwiftAPITesterIOS.app */;
-			productType = "com.apple.product-type.application";
-		};
-		A55F62B426EAFFD200A1B466 /* SwiftAPITester */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A55F62BC26EAFFD200A1B466 /* Build configuration list for PBXNativeTarget "SwiftAPITester" */;
-			buildPhases = (
-				A55F62B126EAFFD200A1B466 /* Sources */,
-				A55F62B226EAFFD200A1B466 /* Frameworks */,
-				A55F62B326EAFFD200A1B466 /* CopyFiles */,
-				5758859A2748271100CA2169 /* Embed Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
 			name = SwiftAPITester;
 			packageProductDependencies = (
 			);
-			productName = SwiftAPITester;
-			productReference = A55F62B526EAFFD200A1B466 /* SwiftAPITester */;
-			productType = "com.apple.product-type.tool";
+			productName = SwiftAPITesterIOS;
+			productReference = 2DD778D0270E233F0079CBD4 /* SwiftAPITester.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
@@ -241,9 +176,6 @@
 				LastUpgradeCheck = 1300;
 				TargetAttributes = {
 					2DD778CF270E233F0079CBD4 = {
-						CreatedOnToolsVersion = 13.0;
-					};
-					A55F62B426EAFFD200A1B466 = {
 						CreatedOnToolsVersion = 13.0;
 					};
 				};
@@ -263,8 +195,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A55F62B426EAFFD200A1B466 /* SwiftAPITester */,
-				2DD778CF270E233F0079CBD4 /* SwiftAPITesterIOS */,
+				2DD778CF270E233F0079CBD4 /* SwiftAPITester */,
 			);
 		};
 /* End PBXProject section */
@@ -305,26 +236,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A55F62B126EAFFD200A1B466 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A513AD34272B4C0100E0C1BA /* RefundRequestStatusAPI.swift in Sources */,
-				A5D614CF26EBE7EA007DDB75 /* ErrorCodesAPI.swift in Sources */,
-				2D6F3874270E593F002C9987 /* main.swift in Sources */,
-				A5D614D126EBE7EA007DDB75 /* CustomerInfoAPI.swift in Sources */,
-				A5D614D026EBE7EA007DDB75 /* OfferingsAPI.swift in Sources */,
-				A5D614D426EBE7EA007DDB75 /* OfferingAPI.swift in Sources */,
-				A5D614D526EBE7EA007DDB75 /* EntitlementInfoAPI.swift in Sources */,
-				A5D614DA26EBE7EA007DDB75 /* IntroEligibilityAPI.swift in Sources */,
-				A5D614D826EBE7EA007DDB75 /* TransactionAPI.swift in Sources */,
-				A5D614DB26EBE7EA007DDB75 /* PurchasesAPI.swift in Sources */,
-				A5D614D626EBE7EA007DDB75 /* PackageAPI.swift in Sources */,
-				A5D614D726EBE7EA007DDB75 /* AttributionNetworkAPI.swift in Sources */,
-				A5D614D226EBE7EA007DDB75 /* EntitlementInfosAPI.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
@@ -350,6 +261,7 @@
 		2DD778E1270E23400079CBD4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -372,7 +284,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SwiftAPITesterIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development com.revenuecat.SwiftAPITesterIOS";
-				SDKROOT = iphoneos;
+				SDKROOT = "";
+				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -382,6 +296,7 @@
 		2DD778E2270E23400079CBD4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -404,7 +319,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.SwiftAPITesterIOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "match Development com.revenuecat.SwiftAPITesterIOS";
-				SDKROOT = iphoneos;
+				SDKROOT = "";
+				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -527,32 +444,10 @@
 			};
 			name = Release;
 		};
-		A55F62BD26EAFFD200A1B466 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		A55F62BE26EAFFD200A1B466 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_HARDENED_RUNTIME = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2DD778E3270E23400079CBD4 /* Build configuration list for PBXNativeTarget "SwiftAPITesterIOS" */ = {
+		2DD778E3270E23400079CBD4 /* Build configuration list for PBXNativeTarget "SwiftAPITester" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2DD778E1270E23400079CBD4 /* Debug */,
@@ -566,15 +461,6 @@
 			buildConfigurations = (
 				A55F62BA26EAFFD200A1B466 /* Debug */,
 				A55F62BB26EAFFD200A1B466 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A55F62BC26EAFFD200A1B466 /* Build configuration list for PBXNativeTarget "SwiftAPITester" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A55F62BD26EAFFD200A1B466 /* Debug */,
-				A55F62BE26EAFFD200A1B466 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

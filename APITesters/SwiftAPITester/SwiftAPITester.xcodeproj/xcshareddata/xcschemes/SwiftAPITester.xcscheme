@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1300"
+   LastUpgradeVersion = "1310"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2DD778F4270E235B0079CBD4"
-               BuildableName = "ObjCAPITesterIOS.app"
-               BlueprintName = "ObjCAPITesterIOS"
-               ReferencedContainer = "container:ObjCAPITester.xcodeproj">
+               BlueprintIdentifier = "2DD778CF270E233F0079CBD4"
+               BuildableName = "SwiftAPITester.app"
+               BlueprintName = "SwiftAPITester"
+               ReferencedContainer = "container:SwiftAPITester.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -40,16 +40,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2DD778F4270E235B0079CBD4"
-            BuildableName = "ObjCAPITesterIOS.app"
-            BlueprintName = "ObjCAPITesterIOS"
-            ReferencedContainer = "container:ObjCAPITester.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -57,16 +47,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2DD778F4270E235B0079CBD4"
-            BuildableName = "ObjCAPITesterIOS.app"
-            BlueprintName = "ObjCAPITesterIOS"
-            ReferencedContainer = "container:ObjCAPITester.xcodeproj">
+            BlueprintIdentifier = "2DD778CF270E233F0079CBD4"
+            BuildableName = "SwiftAPITester.app"
+            BlueprintName = "SwiftAPITester"
+            ReferencedContainer = "container:SwiftAPITester.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
