@@ -21,7 +21,7 @@ let package = Package(
     name: "RevenueCat",
     platforms: [
         .macOS(.v10_13),
-        .watchOS(.v6_2),
+        .watchOS("6.2"),
         .tvOS(.v11),
         .iOS(.v11)
     ],
