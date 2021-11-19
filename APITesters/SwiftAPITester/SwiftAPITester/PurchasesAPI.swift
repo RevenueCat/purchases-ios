@@ -169,15 +169,6 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 }
 
 private func checkIdentity(purchases: Purchases) {
-    // should have deprecation warning 'createAlias' is deprecated: Use logIn instead.
-    purchases.createAlias("") { _, _ in }
-
-    // should have deprecation warning 'identify' is deprecated: Use logIn instead.
-    purchases.identify("") { _, _ in }
-
-    // should have deprecation warning 'reset' is deprecated: Use logOut instead.
-    purchases.reset { _, _ in }
-
     purchases.logOut { _, _ in }
 
     let loginComplete: (CustomerInfo?, Bool, Error?) -> Void = { _, _, _ in }
