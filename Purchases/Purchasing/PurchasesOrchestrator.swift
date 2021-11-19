@@ -212,7 +212,7 @@ class PurchasesOrchestrator {
             }
         } else {
             guard package.productDetails is SK1ProductDetails else {
-                fatalError("could not identify StoreKit version to use!")
+                fatalError("could not identify StoreKit version to use! ProductDetails: \(package.productDetails)")
             }
             purchase(sk1Package: package, completion: completion)
         }
