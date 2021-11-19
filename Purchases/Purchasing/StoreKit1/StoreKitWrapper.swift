@@ -112,7 +112,6 @@ extension StoreKitWrapper: SKPaymentQueueDelegate {
     }
 
     // Sent when a user initiated an in-app purchase from the App Store.
-    @available(iOS 11.0, macOS 11.0, macCatalyst 14.0, tvOS 11.0, *)
     @available(watchOS, unavailable)
     func paymentQueue(_ queue: SKPaymentQueue,
                       shouldAddStorePayment payment: SKPayment,

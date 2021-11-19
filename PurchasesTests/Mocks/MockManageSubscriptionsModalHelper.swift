@@ -19,8 +19,6 @@ class MockManageSubscriptionsModalHelper: ManageSubscriptionsModalHelper {
     var mockError: Error?
 
 #if os(iOS) || os(macOS)
-    @available(iOS 9.0, *)
-    @available(macOS 10.12, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     override func showManageSubscriptionModal(completion: @escaping (Result<Void, Error>) -> Void) {

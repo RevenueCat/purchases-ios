@@ -905,8 +905,6 @@ public extension Purchases {
      * - Parameter completion: A completion block that is called when the modal is closed.
      * If it was not successful, there will be an `Error`.
      */
-    @available(iOS 9.0, *)
-    @available(macOS 10.12, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @objc func showManageSubscriptionModal(completion: @escaping (Error?) -> Void) {

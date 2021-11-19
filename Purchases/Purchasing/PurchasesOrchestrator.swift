@@ -267,8 +267,6 @@ class PurchasesOrchestrator {
         storeKitWrapper.add(payment)
     }
 
-    @available(iOS 9.0, *)
-    @available(macOS 10.12, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showManageSubscriptionModal(completion: @escaping (Error?) -> Void) {
