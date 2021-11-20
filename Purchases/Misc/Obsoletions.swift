@@ -24,8 +24,10 @@ public extension Purchases {
      * - Parameter completion: A completion block called when customer info is available and not stale.
      * Called immediately if info is cached. Customer info can be nil if an error occurred.
      */
-    @available(swift, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
-    @available(*, deprecated, message: "use getCustomerInfoWithCompletion:", renamed: "getOfferingsWithCompletion")
+    @available(iOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
+    @available(tvOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
+    @available(watchOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
+    @available(macOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
     @objc func customerInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
         fatalError()
     }
@@ -36,8 +38,10 @@ public extension Purchases {
      * - Parameter completion: A completion block called when customer info is available and not stale.
      * Called immediately if info is cached. Customer info can be nil if an error occurred.
      */
-    @available(swift, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
-    @available(*, deprecated, message: "use getCustomerInfoWithCompletion:", renamed: "getOfferingsWithCompletion")
+    @available(iOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
+    @available(tvOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
+    @available(watchOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
+    @available(macOS, obsoleted: 1, renamed: "getCustomerInfo(completion:)")
     @objc func purchaserInfo(completion: @escaping (CustomerInfo?, Error?) -> Void) {
         fatalError()
     }
@@ -61,11 +65,10 @@ public extension Purchases {
      * - Parameter completion: An @escaping callback that is called with the loaded products.
      * If the fetch fails for any reason it will return an empty array.
      */
-    @available(*,
-                deprecated,
-                message: "use getProductsWithIdentifiers:completion:",
-                renamed: "getProductsWithIdentifiers")
-    @available(swift, obsoleted: 1, renamed: "getProducts(_:completion:)")
+    @available(iOS, obsoleted: 1, renamed: "getProducts(_:completion:)")
+    @available(tvOS, obsoleted: 1, renamed: "getProducts(_:completion:)")
+    @available(watchOS, obsoleted: 1, renamed: "getProducts(_:completion:)")
+    @available(macOS, obsoleted: 1, renamed: "getProducts(_:completion:)")
     @objc(productsWithIdentifiers:completion:)
     func products(_ productIdentifiers: [String], completion: @escaping ([SKProduct]) -> Void) {
         fatalError()
@@ -82,8 +85,10 @@ public extension Purchases {
      * - Parameter completion: A completion block called when offerings are available.
      * Called immediately if offerings are cached. Offerings will be nil if an error occurred.
      */
-    @available(swift, obsoleted: 1, renamed: "getOfferings(completion:)")
-    @available(*, deprecated, message: "use getOfferingsWithCompletion:", renamed: "getOfferingsWithCompletion")
+    @available(iOS, obsoleted: 1, renamed: "getOfferings(completion:)")
+    @available(tvOS, obsoleted: 1, renamed: "getOfferings(completion:)")
+    @available(watchOS, obsoleted: 1, renamed: "getOfferings(completion:)")
+    @available(macOS, obsoleted: 1, renamed: "getOfferings(completion:)")
     @objc func offerings(completion: @escaping (Offerings?, Error?) -> Void) {
         fatalError()
     }
@@ -101,7 +106,10 @@ public extension Purchases {
      * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `YES`.
      */
-    @available(swift, obsoleted: 1, renamed: "purchase(package:completion:)")
+    @available(iOS, obsoleted: 1, renamed: "purchase(package:completion:)")
+    @available(tvOS, obsoleted: 1, renamed: "purchase(package:completion:)")
+    @available(watchOS, obsoleted: 1, renamed: "purchase(package:completion:)")
+    @available(macOS, obsoleted: 1, renamed: "purchase(package:completion:)")
     func purchasePackage(_ package: Package, _ completion: @escaping PurchaseCompletedBlock) {
         fatalError()
     }
@@ -119,7 +127,10 @@ public extension Purchases {
      * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `YES`.
      */
-    @available(swift, obsoleted: 1, renamed: "purchase(package:discount:completion:)")
+    @available(iOS, obsoleted: 1, renamed: "purchase(package:discount:completion:)")
+    @available(tvOS, obsoleted: 1, renamed: "purchase(package:discount:completion:)")
+    @available(watchOS, obsoleted: 1, renamed: "purchase(package:discount:completion:)")
+    @available(macOS, obsoleted: 1, renamed: "purchase(package:discount:completion:)")
     @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
     func purchasePackage(_ package: Package,
                          discount: SKPaymentDiscount,
@@ -141,7 +152,10 @@ public extension Purchases {
      * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `YES`.
      */
-    @available(swift, obsoleted: 1, renamed: "purchase(product:_:)")
+    @available(iOS, obsoleted: 1, renamed: "purchase(product:_:)")
+    @available(tvOS, obsoleted: 1, renamed: "purchase(product:_:)")
+    @available(watchOS, obsoleted: 1, renamed: "purchase(product:_:)")
+    @available(macOS, obsoleted: 1, renamed: "purchase(product:_:)")
     func purchaseProduct(_ product: SKProduct, _ completion: @escaping PurchaseCompletedBlock) {
         fatalError()
     }
@@ -160,7 +174,10 @@ public extension Purchases {
      * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `YES`.
      */
-    @available(swift, obsoleted: 1, renamed: "purchase(product:discount:completion:)")
+    @available(iOS, obsoleted: 1, renamed: "purchase(product:discount:completion:)")
+    @available(tvOS, obsoleted: 1, renamed: "purchase(product:discount:completion:)")
+    @available(watchOS, obsoleted: 1, renamed: "purchase(product:discount:completion:)")
+    @available(macOS, obsoleted: 1, renamed: "purchase(product:discount:completion:)")
     @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
     func purchaseProduct(_ product: SKProduct,
                          discount: SKPaymentDiscount,
@@ -170,6 +187,8 @@ public extension Purchases {
 
 }
 
-@available(swift, obsoleted: 1, renamed: "CustomerInfo")
-@available(*, deprecated, message: "use RCCustomerInfo:", renamed: "RCCustomerInfo")
+@available(iOS, obsoleted: 1, renamed: "CustomerInfo")
+@available(tvOS, obsoleted: 1, renamed: "CustomerInfo")
+@available(watchOS, obsoleted: 1, renamed: "CustomerInfo")
+@available(macOS, obsoleted: 1, renamed: "CustomerInfo")
 @objc(RCPurchaserInfo) public class PurchaserInfo: NSObject { }
