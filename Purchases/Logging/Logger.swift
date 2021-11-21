@@ -29,19 +29,22 @@ import Foundation
 
 }
 
-/// A function that can handle a log message
+/// A function that can handle a log message including file and method information.
+public typealias VerboseLogHandler = (_ level: LogLevel,
+                                      _ message: String,
+                                      _ file: String?,
+                                      _ function: String?,
+                                      _ line: UInt) -> Void
+
+/// A function that can handle a log message.
 public typealias LogHandler = (_ level: LogLevel,
-                               _ message: String,
-                               _ file: String?,
-                               _ function: String?,
-                               _ line: UInt
-) -> Void
+                               _ message: String) -> Void
 
 class Logger {
     static var logLevel: LogLevel = .info
-    static var logHandler: LogHandler = { level, message, file, functionName, line in
+    static var logHandler: VerboseLogHandler = { level, message, file, functionName, line in
         let fileContext: String
-        if let file = file, let functionName = functionName {
+        if Logger.verbose, let file = file, let functionName = functionName {
             let fileName = (file as NSString)
                 .lastPathComponent
                 .replacingOccurrences(of: ".swift", with: "")
@@ -55,7 +58,9 @@ class Logger {
         NSLog("%@", "[\(frameworkDescription)] - \(level.description)\(fileContext): \(message)")
     }
 
-    private static let frameworkDescription = "Purchases"
+    static var verbose: Bool = false
+
+    internal static let frameworkDescription = "Purchases"
 
     static func debug(_ message: CustomStringConvertible,
                       fileName: String? = #fileID,
