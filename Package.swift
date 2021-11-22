@@ -8,7 +8,7 @@ func resolveTargets() -> [Target] {
     let baseTargets: [Target] = [
         .target(name: "RevenueCat",
                 path: ".",
-                exclude: ["Purchases/Info.plist", "RequiresXcode13"],
+                exclude: ["Purchases/Info.plist"],
                 sources: ["Purchases"]
         )
         // Note: publicHeadersPath: "Purchases/Public" doesn't actually pick up .h headers in Swift projects.
@@ -20,7 +20,10 @@ func resolveTargets() -> [Target] {
 let package = Package(
     name: "RevenueCat",
     platforms: [
-        .macOS(.v10_12), .iOS(.v9), .watchOS("6.2"), .tvOS(.v9)
+        .macOS(.v10_13),
+        .watchOS("6.2"),
+        .tvOS(.v11),
+        .iOS(.v11)
     ],
     products: [
         .library(name: "RevenueCat",

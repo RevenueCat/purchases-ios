@@ -4,6 +4,18 @@ but a number of updates make our Swift API more idomatic. We'll be updating this
 
 To start us off, Our framework name changed from `Purchases` to `RevenueCat` 😻! We also updated all references of `Purchaser` to `Customer` to be more consistent across our platform. 
 
+### Xcode version requirements and updated deployment targets
+`purchases-ios` v4 requires using Xcode 13.0 or newer. 
+It also updates the minimum deployment targets for iOS, macOS and tvOS. 
+
+##### Minimum deployment targets
+|  | v3 | v4 |
+| :-: | :-: | :-: |
+| iOS | 9.0 | 11.0 |
+| tvOS | 9.0 | 11.0 |
+| macOS | 10.12 | 10.13 |
+| watchOS | 6.2 | 6.2 (unchanged) |
+
 ### Known Issues
 
 #### ObjC + SPM
