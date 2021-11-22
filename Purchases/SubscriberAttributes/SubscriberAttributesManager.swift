@@ -238,3 +238,13 @@ private extension SubscriberAttributesManager {
     }
 
 }
+
+extension SubscriberAttributesManager: SubscriberAttributionSetter {
+
+    func setAttributionID(_ attributionID: String?, forIntegration integration: Integration, appUserID: String) {
+        collectDeviceIdentifiers(forAppUserID: appUserID)
+        Logger.debug(Strings.attribution.setting_attributes(attributes: [integration.attributeName]))
+        setAttribute(key: integration.attributeName, value: attributionID, appUserID: appUserID)
+    }
+
+}

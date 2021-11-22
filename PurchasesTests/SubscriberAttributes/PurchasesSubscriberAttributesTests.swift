@@ -356,6 +356,9 @@ class PurchasesSubscriberAttributesTests: XCTestCase {
 
     func testSetAndClearAirshipChannelID() {
         setupPurchases()
+        purchases.integrations = [AirshipIntegration.self]
+        purchases.configureIntegrations()
+
         purchases.setAirshipChannelID("airship")
         purchases.setAirshipChannelID(nil)
         expect(self.mockSubscriberAttributesManager.invokedSetAirshipChannelIDParametersList[0])

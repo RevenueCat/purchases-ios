@@ -13,7 +13,7 @@
 
 import Foundation
 
-class IdentityManager {
+class IdentityManager: AppUserIdentifiable {
 
     static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
 

@@ -81,6 +81,10 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
 
     private weak var privateDelegate: PurchasesDelegate?
     private let operationDispatcher: OperationDispatcher
+    var integrations: [Integration.Type]?
+    var configuredIntegrations: [String: Integration] = [:]
+    let identityManager: IdentityManager
+    let subscriberAttributesManager: SubscriberAttributesManager
 
     /**
      * Enable automatic collection of Apple Search Ads attribution. Disabled by default
@@ -151,7 +155,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     private let attributionPoster: AttributionPoster
     private let backend: Backend
     private let deviceCache: DeviceCache
-    private let identityManager: IdentityManager
     private let introEligibilityCalculator: IntroEligibilityCalculator
     private let notificationCenter: NotificationCenter
     private let offeringsFactory: OfferingsFactory
@@ -164,7 +167,6 @@ public typealias DeferredPromotionalPurchaseBlock = (@escaping PurchaseCompleted
     private let receiptParser: ReceiptParser
     private let requestFetcher: StoreKitRequestFetcher
     private let storeKitWrapper: StoreKitWrapper
-    private let subscriberAttributesManager: SubscriberAttributesManager
     private let systemInfo: SystemInfo
 
     fileprivate static let initLock = NSLock()
@@ -495,7 +497,8 @@ extension Purchases {
      * - Parameter airshipChannelID: nil will delete the subscriber attribute
      */
     @objc public func setAirshipChannelID(_ airshipChannelID: String?) {
-        subscriberAttributesManager.setAirshipChannelID(airshipChannelID, appUserID: appUserID)
+        let airship = getIntegration(for: AirshipIntegration.self)
+        airship?.setAirshipChannelID(airshipChannelID)
     }
 
     /**
@@ -1025,7 +1028,8 @@ public extension Purchases {
                   observerMode: observerMode,
                   userDefaults: userDefaults,
                   platformFlavor: nil,
-                  platformFlavorVersion: nil)
+                  platformFlavorVersion: nil,
+                  integrations: nil)
     }
 
     static internal func configure(apiKey: String,
@@ -1033,13 +1037,16 @@ public extension Purchases {
                                    observerMode: Bool,
                                    userDefaults: UserDefaults?,
                                    platformFlavor: String?,
-                                   platformFlavorVersion: String?) -> Purchases {
+                                   platformFlavorVersion: String?,
+                                   integrations: [Integration.Type]?) -> Purchases {
         let purchases = Purchases(apiKey: apiKey,
                                   appUserID: appUserID,
                                   userDefaults: userDefaults,
                                   observerMode: observerMode,
                                   platformFlavor: platformFlavor,
                                   platformFlavorVersion: platformFlavorVersion)
+        purchases.integrations = integrations
+        purchases.configureIntegrations()
         setDefaultInstance(purchases)
         return purchases
     }
