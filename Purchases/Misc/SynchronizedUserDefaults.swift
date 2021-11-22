@@ -17,7 +17,7 @@ import Foundation
 ///
 /// - Seealso: ``Atomic``.
 internal class SynchronizedUserDefaults {
-    
+
     private let atomic: Atomic<UserDefaults>
 
     init(userDefaults: UserDefaults) {

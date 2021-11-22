@@ -23,7 +23,7 @@ class InMemoryCachedObject<T> {
     var lastUpdatedAt: Date? {
         return self.content.value.lastUpdated
     }
-    
+
     func isCacheStale(durationInSeconds: Double) -> Bool {
         return self.content.withValue {
             guard let lastUpdated = $0.lastUpdated else {

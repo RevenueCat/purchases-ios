@@ -495,5 +495,4 @@ fileprivate extension UserDefaults {
 
 }
 
-
 // swiftlint:enable file_length
