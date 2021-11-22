@@ -107,8 +107,7 @@ private extension SK2BeginRefundRequestHelper {
             }
             return .success(rcStatus)
         case .failure(let error):
-            let message = getErrorMessage(from: error)
-            return .failure(ErrorUtils.beginRefundRequestError(withMessage: message))
+            return .failure(error)
         }
     }
 
