@@ -27,8 +27,6 @@ class ManageSubscriptionsModalHelper {
         self.identityManager = identityManager
     }
 
-    @available(iOS 9.0, *)
-    @available(macOS 10.12, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showManageSubscriptionModal(completion: @escaping (Result<Void, Error>) -> Void) {
@@ -68,8 +66,6 @@ class ManageSubscriptionsModalHelper {
 
 }
 
-@available(iOS 9.0, *)
-@available(macOS 10.12, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 private extension ManageSubscriptionsModalHelper {
@@ -104,19 +100,14 @@ private extension ManageSubscriptionsModalHelper {
         guard !systemInfo.isAppExtension,
               let application = systemInfo.sharedUIApplication else { return }
 
-        if #available(iOS 10.0, *) {
-            // NSInvocation is needed because the method takes three arguments
-            // and performSelector works for up to 2
-            typealias ClosureType = @convention(c) (AnyObject, Selector, NSURL, NSDictionary?, Any?) -> Void
+        // NSInvocation is needed because the method takes three arguments
+        // and performSelector works for up to 2
+        typealias ClosureType = @convention(c) (AnyObject, Selector, NSURL, NSDictionary?, Any?) -> Void
 
-            let selector: Selector = NSSelectorFromString("openURL:options:completionHandler:")
-            let methodIMP: IMP! = application.method(for: selector)
-            let openURLMethod = unsafeBitCast(methodIMP, to: ClosureType.self)
-            openURLMethod(application, selector, url as NSURL, nil, nil)
-        } else {
-            let selector = NSSelectorFromString("openURL:")
-            systemInfo.sharedUIApplication?.perform(selector, with: url)
-        }
+        let selector: Selector = NSSelectorFromString("openURL:options:completionHandler:")
+        let methodIMP: IMP! = application.method(for: selector)
+        let openURLMethod = unsafeBitCast(methodIMP, to: ClosureType.self)
+        openURLMethod(application, selector, url as NSURL, nil, nil)
     }
 
     @MainActor
