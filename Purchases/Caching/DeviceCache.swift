@@ -19,10 +19,10 @@ class DeviceCache {
 
     // Thread-safe, but don't call from anywhere inside this class.
     var cachedAppUserID: String? {
-        self.userDefaults.perform(Self.cachedAppUserID)
+        self.userDefaults.read(Self.cachedAppUserID)
     }
     var cachedLegacyAppUserID: String? {
-        self.userDefaults.perform {
+        self.userDefaults.read {
             $0.string(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
         }
     }
@@ -82,14 +82,14 @@ class DeviceCache {
     // MARK: - appUserID
 
     func cache(appUserID: String) {
-        self.userDefaults.perform {
+        self.userDefaults.write {
             $0.setValue(appUserID, forKey: CacheKeys.appUserDefaults)
             self.appUserIDHasBeenSet = true
         }
     }
 
     func clearCaches(oldAppUserID: String, andSaveWithNewUserID newUserID: String) {
-        self.userDefaults.perform { userDefaults in
+        self.userDefaults.write { userDefaults in
             userDefaults.removeObject(forKey: CacheKeys.legacyGeneratedAppUserDefaults)
             userDefaults.removeObject(
                 forKey: CacheKeyBases.customerInfoAppUserDefaults + oldAppUserID
@@ -116,13 +116,13 @@ class DeviceCache {
 
     // MARK: - customerInfo
     func cachedCustomerInfoData(appUserID: String) -> Data? {
-        return self.userDefaults.perform {
+        return self.userDefaults.read {
             $0.data(forKey: CacheKeyBases.customerInfoAppUserDefaults + appUserID)
         }
     }
 
     func cache(customerInfo: Data, appUserID: String) {
-        self.userDefaults.perform {
+        self.userDefaults.write {
             $0.set(customerInfo, forKey: CacheKeyBases.customerInfoAppUserDefaults + appUserID)
             Self.setCustomerInfoCacheTimestampToNow($0, appUserID: appUserID)
         }
@@ -130,7 +130,7 @@ class DeviceCache {
     }
 
     func isCustomerInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
-        return self.userDefaults.perform {
+        return self.userDefaults.read {
             guard let cachesLastUpdated = Self.customerInfoLastUpdated($0, appUserID: appUserID) else {
                 return true
             }
@@ -143,31 +143,32 @@ class DeviceCache {
     }
 
     func clearCustomerInfoCacheTimestamp(appUserID: String) {
-        self.userDefaults.perform {
+        self.userDefaults.write {
             Self.clearCustomerInfoCacheTimestamp($0, appUserID: appUserID)
         }
     }
 
     func setCustomerInfoCache(timestamp: Date, appUserID: String) {
-        self.userDefaults.perform {
+        self.userDefaults.write {
             Self.setCustomerInfoCache($0, timestamp: timestamp, appUserID: appUserID)
         }
     }
 
     func clearCustomerInfoCache(appUserID: String) {
-        self.userDefaults.perform {
+        self.userDefaults.write {
             Self.clearCustomerInfoCacheTimestamp($0, appUserID: appUserID)
             $0.removeObject(forKey: CacheKeyBases.customerInfoAppUserDefaults + appUserID)
         }
     }
 
     func setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: String) {
-        self.userDefaults.perform {
+        self.userDefaults.write {
             Self.setCustomerInfoCacheTimestampToNow($0, appUserID: appUserID)
         }
     }
 
     // MARK: - offerings
+
     func cache(offerings: Offerings) {
         offeringsCachedObject.cache(instance: offerings)
     }
@@ -196,7 +197,7 @@ class DeviceCache {
             return
         }
 
-        self.userDefaults.perform {
+        self.userDefaults.write {
             var groupedSubscriberAttributes = Self.storedAttributesForAllUsers($0)
             var subscriberAttributesForAppUserID = groupedSubscriberAttributes[appUserID] as? [String: Any] ?? [:]
             for (key, attributes) in subscriberAttributesByKey {
@@ -208,16 +209,13 @@ class DeviceCache {
     }
 
     func subscriberAttribute(attributeKey: String, appUserID: String) -> SubscriberAttribute? {
-        return self.userDefaults.perform {
+        return self.userDefaults.read {
             Self.storedSubscriberAttributes($0, appUserID: appUserID)[attributeKey]
         }
     }
 
-    // Threadsafe using accessQueue, however accessQueue is not reentrant. If you're calling this from somewhere
-    // that ends up in the accessQueue, it will deadlock. Instead, you'll want to call the version that isn't wrapped
-    // in a readCache{} block: threadUnsafeUnsyncedAttributesByKey
     func unsyncedAttributesByKey(appUserID: String) -> [String: SubscriberAttribute] {
-        return self.userDefaults.perform {
+        return self.userDefaults.read {
             Self.unsyncedAttributesByKey($0, appUserID: appUserID)
         }
     }
@@ -227,14 +225,14 @@ class DeviceCache {
     }
 
     func cleanupSubscriberAttributes() {
-        self.userDefaults.perform {
+        self.userDefaults.write {
             Self.migrateSubscriberAttributes($0)
             Self.deleteSyncedSubscriberAttributesForOtherUsers($0)
         }
     }
 
     func unsyncedAttributesForAllUsers() -> [String: [String: SubscriberAttribute]] {
-        self.userDefaults.perform {
+        self.userDefaults.read {
             let attributesDict = $0.dictionary(forKey: CacheKeys.subscriberAttributes) ?? [:]
             var attributes: [String: [String: SubscriberAttribute]] = [:]
             for (appUserID, attributesDictForUser) in attributesDict {
@@ -255,7 +253,7 @@ class DeviceCache {
     }
 
     func deleteAttributesIfSynced(appUserID: String) {
-        self.userDefaults.perform {
+        self.userDefaults.write {
             guard Self.unsyncedAttributesByKey($0, appUserID: appUserID).isEmpty else {
                 return
             }
@@ -272,7 +270,7 @@ class DeviceCache {
     // MARK: - attribution
 
     func latestNetworkAndAdvertisingIdsSent(appUserID: String) -> [String: String] {
-        return self.userDefaults.perform {
+        return self.userDefaults.read {
             let key = CacheKeyBases.attributionDataDefaults + appUserID
             let latestNetworkAndAdvertisingIdsSent = $0.object(forKey: key) as? [String: String] ?? [:]
             return latestNetworkAndAdvertisingIdsSent
@@ -280,14 +278,14 @@ class DeviceCache {
     }
 
     func set(latestNetworkAndAdvertisingIdsSent: [String: String], appUserID: String) {
-        self.userDefaults.perform {
+        self.userDefaults.write {
             $0.setValue(latestNetworkAndAdvertisingIdsSent,
                         forKey: CacheKeyBases.attributionDataDefaults + appUserID)
         }
     }
 
     func clearLatestNetworkAndAdvertisingIdsSent(appUserID: String) {
-        self.userDefaults.perform {
+        self.userDefaults.write {
             $0.removeObject(forKey: CacheKeyBases.attributionDataDefaults + appUserID)
         }
     }
